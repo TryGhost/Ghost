@@ -1,3 +1,5 @@
+import type { CreateRule, ESTree } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost. Preserve its matching behavior.
 
 const DEFAULT_COMPLEXITY = 3;
@@ -9,11 +11,11 @@ const DEFAULT_COMPLEXITY = 3;
  * @param {string} filename
  * @returns
  */
-function getAPIVersionAndEndpointName(filename) {
+function getAPIVersionAndEndpointName(filename: string) {
   let nameParts = filename.split('/api/');
-  let usefulPath = nameParts[1].split('/');
-  let version;
-  let endpoint;
+  let usefulPath = (nameParts[1] ?? '').split('/');
+  let version: string | undefined;
+  let endpoint: string | undefined;
 
   usefulPath.forEach((pathPart) => {
     if (pathPart.startsWith('v') || pathPart === 'canary') {
@@ -28,9 +30,13 @@ function getAPIVersionAndEndpointName(filename) {
   return { version, endpoint };
 }
 
-function getNameForReport(filename, funcNode) {
+function getNameForReport(filename: string, funcNode: ESTree.Node) {
   let api = getAPIVersionAndEndpointName(filename);
-  let method = funcNode.parent.parent.parent.key.name;
+  const methodNode = funcNode.parent?.parent?.parent;
+  const method =
+    methodNode && 'key' in methodNode && methodNode.key.type === 'Identifier'
+      ? methodNode.key.name
+      : undefined;
 
   return `${api.version} API ${api.endpoint}.${method}() query method`;
 }
@@ -39,7 +45,7 @@ function getNameForReport(filename, funcNode) {
 // Rule Definition
 //------------------------------------------------------------------------------
 
-export default {
+export const maxApiComplexity: CreateRule = {
   meta: {
     docs: {
       description: 'Enforce simple API endpoint methods',
@@ -78,14 +84,17 @@ export default {
   create(context) {
     const option = context.options[0];
     const filename = context.filename;
-    let THRESHOLD = DEFAULT_COMPLEXITY;
+    let THRESHOLD: number | undefined = DEFAULT_COMPLEXITY;
 
     if (
       typeof option === 'object' &&
+      option !== null &&
+      !Array.isArray(option) &&
       (Object.prototype.hasOwnProperty.call(option, 'maximum') ||
         Object.prototype.hasOwnProperty.call(option, 'max'))
     ) {
-      THRESHOLD = option.maximum || option.max;
+      const maximum = option.maximum || option.max;
+      THRESHOLD = typeof maximum === 'number' ? maximum : undefined;
     } else if (typeof option === 'number') {
       THRESHOLD = option;
     }
@@ -100,16 +109,21 @@ export default {
     //--------------------------------------------------------------------------
 
     // Using a stack to store complexity (handling nested functions)
-    const fns = [];
+    const fns: number[] = [];
 
     /**
      * When parsing a new function, store it in our function stack
      * @returns {void}
      * @private
      */
-    function startFunction(node) {
+    function startFunction(node: ESTree.Node) {
       // if this is a query function - e.g. the main part of an API
-      if (node.parent && node.parent.key && node.parent.key.name === 'query') {
+      if (
+        node.parent &&
+        'key' in node.parent &&
+        node.parent.key.type === 'Identifier' &&
+        node.parent.key.name === 'query'
+      ) {
         fns.push(1);
       }
 
@@ -122,12 +136,17 @@ export default {
      * @returns {void}
      * @private
      */
-    function endFunction(node) {
+    function endFunction(node: ESTree.Node) {
       // if this is a query function - e.g. the main part of an API
-      if (node.parent && node.parent.key && node.parent.key.name === 'query') {
+      if (
+        node.parent &&
+        'key' in node.parent &&
+        node.parent.key.type === 'Identifier' &&
+        node.parent.key.name === 'query'
+      ) {
         const complexity = fns.pop();
 
-        if (complexity > THRESHOLD) {
+        if (complexity !== undefined && THRESHOLD !== undefined && complexity > THRESHOLD) {
           const name = getNameForReport(filename, node);
 
           context.report({
@@ -146,7 +165,7 @@ export default {
      */
     function increaseComplexity() {
       if (fns.length) {
-        fns[fns.length - 1] += 1;
+        fns[fns.length - 1] = (fns[fns.length - 1] ?? 0) + 1;
       }
     }
 
@@ -156,7 +175,7 @@ export default {
      * @returns {void}
      * @private
      */
-    function increaseSwitchComplexity(node) {
+    function increaseSwitchComplexity(node: ESTree.SwitchCase) {
       // Avoiding `default`
       if (node.test) {
         increaseComplexity();

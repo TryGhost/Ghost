@@ -1,5 +1,7 @@
+import type { CreateRule } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost's no-native-error rule.
-export default {
+export const noNativeError: CreateRule = {
   meta: {
     type: 'problem',
     docs: {

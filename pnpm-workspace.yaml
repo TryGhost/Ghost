@@ -190,6 +190,7 @@ catalog:
   nock: 14.0.17
   node-html-markdown: 2.0.0
   oxfmt: 0.63.0
+  '@oxlint/plugins': 1.86.0
   oxlint: 1.86.0
   postcss: 8.5.26
   preact: ^10.29.2

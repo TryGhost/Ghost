@@ -1,4 +1,6 @@
-export default {
+import type { CreateRule } from '@oxlint/plugins';
+
+export const noHardcodedGhostPaths: CreateRule = {
   meta: {
     type: 'problem',
     docs: {

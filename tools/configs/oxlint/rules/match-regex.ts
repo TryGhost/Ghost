@@ -1,12 +1,15 @@
+import type { CreateRule } from '@oxlint/plugins';
+
 import path from 'node:path';
 
-export default {
+export const matchRegex: CreateRule = {
   meta: {
     type: 'problem',
     schema: [{ type: 'string' }, { type: ['boolean', 'null'] }, { type: ['boolean', 'null'] }],
   },
   create(context) {
-    const pattern = new RegExp(context.options[0]);
+    const patternOption = context.options[0];
+    const pattern = new RegExp(typeof patternOption === 'string' ? patternOption : '');
     const ignoreExporting = Boolean(context.options[1]);
     return {
       Program(node) {
