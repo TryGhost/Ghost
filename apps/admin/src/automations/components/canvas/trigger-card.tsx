@@ -74,8 +74,6 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
       </Select>
       {trigger.scope === 'selected_paid' && (
         <ChipPicker
-          chipClassName={() => 'text-(length:--text-control)'}
-          chipVariant={() => 'secondary'}
           describedBy={errorMessage ? `${id}-error` : undefined}
           emptyMessage={tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found'}
           getKey={(tier) => tier.id}

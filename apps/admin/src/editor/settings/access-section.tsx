@@ -160,8 +160,6 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
             <SectionLoadError message="Couldn’t load tiers." onRetry={() => void refetchTiers()} />
           ) : (
             <ChipPicker<TierOption, TierOption>
-              chipClassName={() => 'text-(length:--text-control)'}
-              chipVariant={() => 'secondary'}
               describedBy={tiersMissing ? tiersErrorId : undefined}
               emptyMessage={tiersFetching || hasNextPage ? 'Loading tiers...' : 'No tiers found'}
               getGroup={(option) => (option.archived ? 'Archived tiers' : 'Active tiers')}
