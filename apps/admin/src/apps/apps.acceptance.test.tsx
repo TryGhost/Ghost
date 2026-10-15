@@ -981,9 +981,19 @@ describe('Managing apps', () => {
         '/users/6500000000000000000000c3/token/',
         '/USERS/6500000000000000000000c3/Token',
         '/apps/installations/',
+        '/members/',
       ]) {
         expect(refusal(await callAppFrame(APP_ORIGIN, 'fetch', { path }))).toMatch(/^blocked: /);
       }
+      // A bulk delete is blocked for DELETE only, as it shares its path with listing posts.
+      expect(
+        refusal(
+          await callAppFrame(APP_ORIGIN, 'fetch', {
+            path: '/posts/?filter=tag:news',
+            method: 'DELETE',
+          }),
+        ),
+      ).toMatch(/^blocked: /);
       expect(tokenApi.requests).toHaveLength(0);
     });
 
