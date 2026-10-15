@@ -67,16 +67,16 @@ async function main() {
   // If we can't stream, throw an error while creating the connection
   process.env.REQUIRE_INFILE_STREAM = '1';
 
-  const tables = (argv.tables ? argv.tables.split(',') : []).map((table) => ({
-    name: table.split(':')[0],
-    quantity: parseInt(table.split(':')[1]) || undefined,
-  }));
+  const tables = (argv.tables ? argv.tables.split(',') : []).map((table) => {
+    const [name = '', quantity] = table.split(':');
+    return { name, quantity: parseInt(quantity ?? '') || undefined };
+  });
 
   const quantities: Record<string, number> = {};
 
   if (argv.quantities) {
     for (const quantity of argv.quantities.split(',')) {
-      const [table, amount] = quantity.split(':');
+      const [table = '', amount] = quantity.split(':');
 
       if (amount === undefined || !isFinite(parseInt(amount))) {
         logging.fatal(`Missing quantity for table ${table}`);
@@ -87,15 +87,15 @@ async function main() {
     }
   }
 
-  const { default: db } = await import('../../ghost/core/server/data/db');
+  const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   const knex = db.knex;
   try {
-    const { default: config } = await import('../../ghost/core/shared/config');
+    const { default: config } = await import('../../ghost/core/shared/config/index.ts');
     // @ts-expect-error The existing JavaScript schema has no type declarations.
-    const { default: schema } = await import('../../ghost/core/server/data/schema');
+    const { default: schema } = await import('../../ghost/core/server/data/schema/index.js');
     const { default: DataGenerator } =
       // @ts-expect-error The existing JavaScript generator has no type declarations.
-      await import('../../ghost/core/server/data/seeders/data-generator');
+      await import('../../ghost/core/server/data/seeders/data-generator.js');
     const schemaTables = schema.tables;
 
     const dataGenerator = new DataGenerator({

@@ -4,10 +4,10 @@
 // core/server/data/schema/in-development.ts so a local database picks up
 // changes to their definitions. Their data is discarded.
 
-import '../../ghost/core/server/overrides';
+import '../../ghost/core/server/overrides.js';
 import logging from '@tryghost/logging';
-import db from '../../ghost/core/server/data/db';
-import { rebuildInDevelopmentTables } from '../../ghost/core/server/data/schema/in-development';
+import db from '../../ghost/core/server/data/db/index.js';
+import { rebuildInDevelopmentTables } from '../../ghost/core/server/data/schema/in-development.ts';
 
 async function main() {
   try {

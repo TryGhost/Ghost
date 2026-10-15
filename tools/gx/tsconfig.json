@@ -2,6 +2,8 @@
   "extends": "@internal/cfg-typescript/esm.json",
   "compilerOptions": {
     "noEmit": true,
+    // Core's development-table helper uses Array.prototype.toReversed.
+    "lib": ["es2023"],
     "erasableSyntaxOnly": true
   },
   "include": ["*.ts", "test/**/*.ts"]

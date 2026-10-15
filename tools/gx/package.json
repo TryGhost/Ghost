@@ -9,7 +9,7 @@
     "lint": "eslint . --cache",
     "test:unit": "node --test test/*.test.ts",
     "test": "pnpm run '/^test:/'",
-    "test:types": "tsc6 --noEmit && tsc6 --noEmit -p tsconfig.core.json"
+    "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
     "@internal/scripts": "workspace:*",
