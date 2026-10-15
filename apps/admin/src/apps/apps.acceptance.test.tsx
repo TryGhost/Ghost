@@ -948,12 +948,12 @@ describe('Managing apps', () => {
       expect(tagsApi.requests[0].headers['content-type']).toBe('application/json');
     });
 
-    // This route expects a token in its URL, so it returns 401 whatever the session's state.
+    // An app's request can be refused as unauthorized while the staff session still works.
     it('stays with the app when its request is unauthorized while the session works', async () => {
       await fakeAppPage(installation());
-      const path = '/schedules/posts/6500000000000000000000c3/';
+      const path = '/tags/';
       fakeAdminEndpoint(
-        'PUT',
+        'GET',
         path,
         { errors: [{ type: 'UnauthorizedError', message: 'Invalid token' }] },
         { status: 401 },
@@ -962,7 +962,7 @@ describe('Managing apps', () => {
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      const result = await callAppFrame(APP_ORIGIN, 'fetch', { path, method: 'PUT' });
+      const result = await callAppFrame(APP_ORIGIN, 'fetch', { path });
 
       expect(answer(result).status).toBe(401);
       expect(sessionCheck.requests).toHaveLength(1);
@@ -970,10 +970,11 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
     });
 
-    it('refuses a blocked route without sending it', async () => {
+    it('refuses what the allowlist doesn’t allow without sending it', async () => {
       await fakeAppPage(installation());
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
       const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, { apiKey: {} });
+      const postsApi = fakeAdminEndpoint('POST', '/posts/', ({ body }) => body, { status: 201 });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -982,10 +983,14 @@ describe('Managing apps', () => {
         '/USERS/6500000000000000000000c3/Token',
         '/apps/installations/',
         '/members/',
+        // Core's rewrite for its old versioned addresses would send both of these to /db/.
+        '/v4/db/?x=ghost/api/v4/admin/',
+        '/dbv4//?x=ghost/api/v4/admin/',
       ]) {
-        expect(refusal(await callAppFrame(APP_ORIGIN, 'fetch', { path }))).toMatch(/^blocked: /);
+        expect(refusal(await callAppFrame(APP_ORIGIN, 'fetch', { path })), path).toMatch(
+          /^blocked: /,
+        );
       }
-      // A bulk delete is blocked for DELETE only, as it shares its path with listing posts.
       expect(
         refusal(
           await callAppFrame(APP_ORIGIN, 'fetch', {
@@ -993,8 +998,40 @@ describe('Managing apps', () => {
             method: 'DELETE',
           }),
         ),
-      ).toMatch(/^blocked: /);
+      ).toBe("blocked: Apps can't use DELETE /posts/");
+
+      // A write that would put script on the site.
+      const lexical = (node: object) =>
+        JSON.stringify({ root: { type: 'root', children: [node] } });
+      for (const [post, refused] of [
+        [
+          { lexical: lexical({ type: 'html', html: '<script></script>' }) },
+          'lexical with a "html" node',
+        ],
+        [{ codeinjection_head: '<script></script>' }, 'codeinjection_head'],
+        [{ mobiledoc: '{"cards":[["html",{"html":"<script></script>"}]]}' }, 'mobiledoc'],
+      ] as const) {
+        expect(
+          refusal(
+            await callAppFrame(APP_ORIGIN, 'fetch', {
+              path: '/posts/',
+              method: 'POST',
+              body: JSON.stringify({ posts: [{ title: 'Hello', ...post }] }),
+            }),
+          ),
+        ).toBe(`blocked: Apps can't send ${refused} to POST /posts/`);
+      }
+      expect(
+        refusal(
+          await callAppFrame(APP_ORIGIN, 'fetch', {
+            path: '/posts/?source=html',
+            method: 'POST',
+            body: JSON.stringify({ posts: [{ title: 'Hello', html: '<script></script>' }] }),
+          }),
+        ),
+      ).toBe("blocked: Apps can't use the source parameter on POST /posts/");
       expect(tokenApi.requests).toHaveLength(0);
+      expect(postsApi.requests).toHaveLength(0);
     });
 
     it('refuses a path the Admin API only redirects, and says its paths end in /', async () => {
