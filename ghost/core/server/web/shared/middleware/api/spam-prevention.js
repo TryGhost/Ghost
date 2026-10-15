@@ -45,7 +45,7 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
-const spamSupportRequestBlock = spam.support_request_block || {};
+let spamSupportRequestBlock = spam.support_request_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -786,6 +786,7 @@ module.exports = {
     contentApiKeyInstance = undefined;
     otcVerificationEnumerationInstance = undefined;
     otcVerificationInstance = undefined;
+    supportRequestBlockInstance = undefined;
 
     spam = config.get('spam') || {};
     spamPrivateBlock = spam.private_block || {};
@@ -801,5 +802,6 @@ module.exports = {
     spamContentApiKey = spam.content_api_key || {};
     spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
     spamOtcVerification = spam.otc_verification || {};
+    spamSupportRequestBlock = spam.support_request_block || {};
   },
 };
