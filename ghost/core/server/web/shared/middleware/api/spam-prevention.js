@@ -30,6 +30,7 @@ const messages = {
   },
   webmentionsBlock: 'Too many mention attempts',
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
+  supportRequestBlock: 'Too many support requests. Please try again later.',
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -44,6 +45,7 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
+const spamSupportRequestBlock = spam.support_request_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -63,6 +65,7 @@ let sendVerificationCodeInstance;
 let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
+let supportRequestBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -242,6 +245,42 @@ const emailPreviewBlock = () => {
     );
 
   return emailPreviewBlockInstance;
+};
+
+const supportRequestBlock = () => {
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('@tryghost/brute-knex');
+  const db = require('../../../../data/db');
+
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
+    });
+
+  supportRequestBlockInstance =
+    supportRequestBlockInstance ||
+    new ExpressBrute(
+      store,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.supportRequestBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+        },
+        pick(spamSupportRequestBlock, spamConfigKeys),
+      ),
+    );
+
+  return supportRequestBlockInstance;
 };
 
 const membersAuth = () => {
@@ -729,6 +768,7 @@ module.exports = {
   contentApiKey: contentApiKey,
   webmentionsBlock: webmentionsBlock,
   emailPreviewBlock: emailPreviewBlock,
+  supportRequestBlock: supportRequestBlock,
   reset: () => {
     store = undefined;
     memoryStore = undefined;

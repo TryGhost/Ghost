@@ -197,7 +197,8 @@
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/indexnow-ping/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
-        "ghost/core/server/services/slack-ping/index.ts"
+        "ghost/core/server/services/slack-ping/index.ts",
+        "ghost/core/server/services/support-requests/index.ts"
       ],
       "rules": {
         "ghost/service-root-shape": [

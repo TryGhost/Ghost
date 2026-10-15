@@ -436,6 +436,14 @@ module.exports = function apiRoutes() {
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+  // ## Support requests
+  router.post(
+    '/support_requests',
+    mw.authAdminApi,
+    shared.middleware.brute.supportRequestLimiter,
+    http(api.supportRequests.add),
+  );
+
   // ## Tinybird
   router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
