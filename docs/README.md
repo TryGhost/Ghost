@@ -100,6 +100,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
 - [Internal package migrations](contributing/internal-package-migrations.md)
+- [Tooling ownership](../tools/README.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Stripe testing](contributing/testing-stripe.md)
 - [Test data](contributing/test-data.md)
@@ -109,6 +110,7 @@ Reference guides provide tables and other information to look up while working
 on Ghost:
 
 - [Node.js compatibility](reference/node-compatibility.md)
+- [TypeScript inventory](reference/typescript-inventory.md)
 
 ### Finding Issues to Work On
 

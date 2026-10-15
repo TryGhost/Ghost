@@ -24,6 +24,28 @@ services:
         - core/server/services/activitypub/activity-pub-service.ts
         - core/boot.js
         - core/server/services/settings/settings-service.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The implementation already receives knex, site URL, logging and Identity Tokens; only the
+          separate wrapper owns settings and event wiring. Moving that composition to index.ts and
+          making the IdentityTokenService import type-only is bounded. The asynchronous settings
+          reconciliation and subscription cleanup remain lifecycle concerns, not evidence of a
+          dependency cycle.
+        preparation:
+          - >-
+            Move wrapper composition into the root and retain signing-keys then Identity Tokens then
+            ActivityPub readiness; update the instance consumer without resolving Identity Tokens
+            earlier.
+          - >-
+            Keep settings reads live and pass or retain the event binding at the root; characterize
+            background configuration separately from construction.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/activitypub/activity-pub-service-wrapper.js
+          - core/server/services/activitypub/activity-pub-service.ts
+          - core/server/services/identity-tokens/identity-token-service-wrapper.js
+          - core/boot.js
     entryPoints:
       - activitypub/index.js
     notes: >-
@@ -190,6 +212,31 @@ services:
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The manager already accepts config, base classes and a loader, but its supporting modules
+          share config and Node resolution with the build-time validator. Image helpers and
+          scheduling also acquire adapters during import. Moving the singleton behind readiness must
+          preserve those callers, lazy adapter loading and cached identities.
+        preparation:
+          - >-
+            Separate adapter path/base-class/loader support shared with bin/validate-adapters.ts
+            from application singleton wiring; keep native module resolution and lookup precedence
+            unchanged.
+          - >-
+            Move eager getAdapter calls in image and scheduling composition behind adapter-manager
+            readiness before adopting a guarded service getter.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/adapter-manager/index.ts
+          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/server/services/adapter-manager/adapter-paths.ts
+          - core/server/services/adapter-manager/base-classes.ts
+          - core/server/services/adapter-manager/utils.ts
+          - bin/validate-adapters.ts
+          - core/server/lib/image/index.js
+          - core/server/services/post-scheduling/index.ts
     entryPoints:
       - adapter-manager/index.ts
     notes: >-
@@ -424,6 +471,20 @@ services:
         - core/server/services/announcement-bar-service/announcement-bar-settings.js
         - core/server/api/endpoints/announcements.js
         - core/server/services/README.md
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already injects the only application dependency as a live settings callback;
+          implementation imports stay within the service. Dependency wiring needs no preparation.
+          Whether this capability should remain a service is still the separate ownership decision
+          recorded above.
+        preparation: []
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/announcement-bar-service/index.js
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/api/endpoints/announcements.js
+          - core/server/api/endpoints/utils/validators/input/settings.js
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
@@ -686,6 +747,27 @@ services:
         - core/server/services/email-service/email-service-wrapper.js
         - core/server/web/members/app.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already supplies models and URL dependencies to its repository and service.
+          Remaining implementation imports are the permissions facade in the controller and toPlain
+          in link construction; both have small injection seams. Email rendering captures the ready
+          service, while the members router needs the completed controller.
+        preparation:
+          - >-
+            Inject permissions and toPlain from index.ts and publish repository, service and
+            controller as one completed composition.
+          - >-
+            Await the root before Email captures its service and before the members router consumes
+            its controller.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/audience-feedback-controller.js
+          - core/server/services/audience-feedback/audience-feedback-service.js
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/web/members/app.js
     entryPoints:
       - audience-feedback/index.js
     notes: >-
@@ -902,6 +984,36 @@ services:
         - core/server/services/automations/automations-api.ts
         - core/server/lib/soonest-timer.ts
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The root exposes a poller while automations-api independently constructs repositories and
+          reads config, Tinybird and settings. Polling reaches member-welcome-emails and
+          email-analytics, while members, link tracking and endpoints retain the separately composed
+          API. Root-only wiring requires unifying these composition paths and preserving late access
+          to other services.
+        preparation:
+          - >-
+            Turn the API/repository composition into a factory and inject it into the poller,
+            members signup, analytics and link tracking instead of retaining a second eager graph.
+          - >-
+            Inject member lookup, welcome-email sending, analytics scheduling and live
+            Tinybird/settings providers into polling and repository helpers; keep current
+            configuration-read timing.
+          - >-
+            Wire scheduler helpers, logging and timer utilities at the root and use the existing
+            kernel clock for legacy Moment operations.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/automations/index.ts
+          - core/server/services/automations/service.ts
+          - core/server/services/automations/automations-api.ts
+          - core/server/services/automations/database-automations-repository.ts
+          - core/server/services/automations/poll.ts
+          - core/server/services/automations/welcome-email-automation-poll.ts
+          - core/server/services/members/members-api/members-api.js
+          - core/server/services/link-tracking/index.js
+          - core/boot.js
     entryPoints:
       - automations/index.ts
       - automations/automations-api.ts
@@ -1171,6 +1283,33 @@ services:
         - core/server/services/comments/comments-service-emails.js
         - core/server/api/endpoints/comments.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Models, settings, logging, mail and URL access already enter through the root. Remaining
+          imports can be passed through the existing controller and email constructors: query
+          helpers, event dispatch, translation, template I/O and HTML conversion. The email helper
+          reads Email's renderer only when building a notification link, and Members supplies
+          content-gating helpers without requiring a ready Members API; preserving those boundaries
+          avoids introducing a startup cycle.
+        preparation:
+          - >-
+            Wire controller/query helpers, comment-event dispatch and renderer dependencies from the
+            root, retaining local template imports and using the shared clock's legacy Moment
+            export.
+          - >-
+            Inject unsubscribe-link creation as a call-time capability rather than reading Email's
+            renderer during Comments construction; preserve the independent content-gating
+            dependency.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/comments/index.js
+          - core/server/services/comments/comments-controller.js
+          - core/server/services/comments/comments-service.js
+          - core/server/services/comments/comments-service-emails.js
+          - core/server/services/comments/comments-service-email-renderer.js
+          - core/server/services/members/api.js
+          - core/server/services/members/content-gating.js
     entryPoints:
       - comments/index.js
     notes: >-
@@ -1399,6 +1538,33 @@ services:
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
         - test/unit/server/services/content-import/index.test.ts
+      dependencies:
+        complexity: complex
+        reason: >-
+          The root injects the importer collaborators, but ZIP preparation still constructs archive
+          and storage-backed asset collaborators below it. CSV, HTML and row-validation helpers also
+          import libraries directly. Moving those dependencies requires preserving per-import
+          acquisition and the existing call-time jobs, media, storage, URL and timezone lookups
+          rather than capturing them at boot.
+        preparation:
+          - >-
+            Make source and asset preparation accept root-wired factories, retaining new archive and
+            asset-importer state per import and the existing storage acquisition timing.
+          - >-
+            Expose parser, filesystem, HTML, string and validation operations through local helper
+            factories; preserve the row schemas and validate any proposed stateless-library
+            allowance individually.
+          - >-
+            Use the existing clock compatibility export for Moment and inject logging without
+            replacing the existing lazy jobs/media/storage callbacks.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/content-import/index.ts
+          - core/server/services/content-import/import/source.ts
+          - core/server/services/content-import/import/assets.ts
+          - core/server/services/content-import/import/row.ts
+          - core/server/services/content-import/import/staged-file.ts
+          - core/server/data/importer/content-files.ts
     entryPoints:
       - content-import/index.ts
     notes: >-
@@ -1647,6 +1813,30 @@ services:
         - core/frontend/web/site.js
         - core/server/api/endpoints/redirects.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Store, live manager and dry-run manager are already injected, but parser and backup-path
+          helpers are also imported directly by storage adapters and API endpoints. Those shared
+          helpers currently load YAML, path and Moment themselves, so routing all of their
+          dependencies through the service root would couple adapter construction back to its owner.
+        preparation:
+          - >-
+            Give redirect parsing/serialization and backup-path support a shared library home used
+            by adapters and endpoints; keep those operations independent of the running service.
+          - >-
+            Require the existing dry-run-manager injection instead of its implementation fallback,
+            and inject logging, validation and error normalization from the root while retaining the
+            mounted manager.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/custom-redirects/index.js
+          - core/server/services/custom-redirects/redirects-service.ts
+          - core/server/services/custom-redirects/redirect-config-parser.ts
+          - core/server/services/custom-redirects/utils.ts
+          - core/server/adapters/redirects/FileStore.ts
+          - core/server/adapters/redirects/S3RedirectsStore.ts
+          - core/server/api/endpoints/redirects.js
     entryPoints:
       - custom-redirects/index.js
     notes: >-
@@ -1862,6 +2052,22 @@ services:
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/storage.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The model and shared render cache already arrive through the constructor. Remaining
+          non-allowlisted imports are Lodash, NQL and debug in one implementation; these can be
+          supplied by the root without changing theme activation ownership or cache identity.
+        preparation:
+          - >-
+            Inject debug, NQL evaluation and the remaining utility operations into the existing
+            constructor; keep theme activation separate from construction.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
+          - core/server/services/themes/activation-bridge.js
     entryPoints:
       - custom-theme-settings/index.js
     notes: >-
@@ -2248,6 +2454,35 @@ services:
         - core/server/api/endpoints/automated-email-design.js
         - core/boot.js
         - test/unit/server/services/email-address/wrapper.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Configuration and settings policy already arrives through live callbacks. The remaining
+          dependencies are logging and the Nodemailer address parser. The parser is also
+          deep-imported by mail, settings helpers and several email services, so it must remain
+          usable independently of the boot-owned policy instance.
+        preparation:
+          - >-
+            Inject logging and parsing from index.ts while preserving the existing live
+            configuration callbacks.
+          - >-
+            Move the shared parser to an appropriate server library in a small preparatory change,
+            or introduce an explicit parser factory without forcing unrelated parser callers to
+            initialize Email Address.
+          - >-
+            Await the policy before Email renderer/sender construction captures its service;
+            retain GhostMailer's send-time access. Replace defensive synchronous init calls in
+            Welcome Emails and the automated-email endpoint.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/email-address/email-address-service-wrapper.js
+          - core/server/services/email-address/email-address-service.ts
+          - core/server/services/email-address/email-address-parser.ts
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/lib/mail/ghost-mailer.js
+          - core/server/services/settings-helpers/settings-helpers.js
+          - core/server/services/member-welcome-emails/service.js
+          - core/server/api/endpoints/automated-email-design.js
     entryPoints:
       - email-address/index.js
     notes: >-
@@ -2451,6 +2686,34 @@ services:
         - core/server/services/email-analytics/jobs/index.js
         - core/boot.js
         - test/unit/server/services/email-analytics/index.test.ts
+      dependencies:
+        complexity: complex
+        reason: >-
+          The main root explicitly wires three executors, while jobs/index.js independently creates
+          a scheduler used by Email, Gifts and Automations. Newsletter processing also constructs
+          Email implementation classes, and provider creation and logging remain inside analytics
+          helpers. A root-only move must preserve these separate retained instances, late job lookup
+          and call-time provider configuration.
+        preparation:
+          - >-
+            Bring the scheduler composition under the root while preserving its late jobs getter,
+            existing scheduling gates and public scheduling callers.
+          - >-
+            Inject the Mailgun client factory, logger and query/helper operations through the
+            wrappers and processors; keep client construction per fetch and config/settings reads
+            live.
+          - >-
+            Define the ready aggregate and dependency order for member repositories, gift delivery
+            and automation APIs before replacing the current three getters.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/email-analytics/index.ts
+          - core/server/services/email-analytics/jobs/index.js
+          - core/server/services/email-analytics/email-analytics-service-wrapper.ts
+          - core/server/services/email-analytics/fetch-mailgun-events.ts
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/gifts/index.ts
+          - core/boot.js
     entryPoints:
       - email-analytics/index.ts
       - email-analytics/jobs/index.js
@@ -2721,6 +2984,36 @@ services:
         - core/server/services/email-service/README.md
         - core/boot.js
         - test/unit/server/services/email-service/batch-sending-service.test.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The wrapper captures ready member, attribution, feedback and address instances but passes
+          other live wrappers and an independently composed analytics scheduler. Rendering
+          additionally imports member gating, address parsing, filesystem/template and image
+          helpers, including deferred heavy libraries. Email analytics constructs some of the same
+          implementation classes separately, so one constructor edit cannot establish the whole
+          boundary.
+        preparation:
+          - >-
+            Make the renderer, sending, provider and event-processing collaborators accept explicit
+            dependencies from their respective roots; preserve lazy heavy renderer loading and
+            configuration reads.
+          - >-
+            Establish readiness before capturing member, attribution, feedback and address
+            instances, retaining explicit deferred access where a genuine dependency cycle exists.
+          - >-
+            Coordinate the analytics scheduler and shared event-processing construction with Email
+            Analytics, keeping retained delivery graph ownership separate from per-server shutdown
+            attachment.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/email-service/email-service-wrapper.js
+          - core/server/services/email-service/email-renderer.js
+          - core/server/services/email-service/mailgun-email-provider.js
+          - core/server/services/email-service/email-event-processor.js
+          - core/server/services/email-analytics/index.ts
+          - core/server/services/email-analytics/jobs/index.js
+          - core/boot.js
     entryPoints:
       - email-service/index.js
       - email-service/newsletter-email-event-storage.js
@@ -3050,6 +3343,30 @@ services:
         - core/server/services/members/api.js
         - core/server/services/email-analytics/index.ts
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The provider already takes a Suppression model and Mailgun client, but init replaces the
+          injected model from a global import and directly binds shared email events, DomainEvents
+          and logging. These are bounded root-wiring changes. Members and Email Analytics currently
+          capture the eager root, so they must receive its ready instance after migration;
+          duplicated subscriptions are a separate lifecycle problem.
+        preparation:
+          - >-
+            Acquire the ready Suppression model once in the root, remove init's global replacement,
+            and inject logging and the email-event subscription/dispatch capability.
+          - Update Members and Email Analytics to consume the ready provider after its boot barrier.
+          - >-
+            Keep the shared suppression event/data constructors independent; handle their
+            non-allowlisted assertion helper explicitly rather than hiding it through the root.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
+          - core/server/services/email-suppression-list/email-suppression-list.js
+          - core/server/services/members/api.js
+          - core/server/services/email-analytics/index.ts
+          - core/boot.js
     entryPoints:
       - email-suppression-list/index.js
     notes: >-
@@ -3248,6 +3565,32 @@ services:
         - core/server/services/posts/posts-service-instance.js
         - core/boot.js
         - test/e2e-server/boot-explore-ping.isolated.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The implementation already receives all dependencies. The root unnecessarily constructs
+          the full Posts graph for statistics, but that can be narrowed locally: Members exposes its
+          statistics object before init, and MRR is deliberately read through an optional Stats
+          facade. Preserve those narrow read paths rather than imposing whole-service readiness
+          barriers.
+        preparation:
+          - >-
+            Wire a narrow post-statistics collaborator instead of constructing PostsService,
+            retaining Members' existing statistics object without requiring its API to initialize.
+          - >-
+            Keep MRR access optional and resolved when the payload is collected, preserving
+            absence/failure behavior rather than introducing a Stats readiness requirement.
+          - >-
+            Preserve environment/privacy gates and nonblocking ping activation when migrating the
+            root; dependency wiring does not require adding payload or availability logic to boot.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/explore-ping/index.ts
+          - core/server/services/explore-ping/explore-ping-service.ts
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/stats/post-stats.js
+          - core/boot.js
+          - core/server/services/members/service.js
     entryPoints:
       - explore-ping/index.ts
     notes: >-
@@ -3607,6 +3950,29 @@ services:
         - core/boot.js
         - core/server/api/endpoints/utils/gift-link-access.ts
         - test/unit/server/services/gift-links/index.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Knex and action recording are already injected and acquired after the database connects.
+          Logging in the action helper and case-key conversion in the codec/serializer are the
+          remaining boundary violations. The data shape is small, so these can be removed or wired
+          without changing transactions or introducing service dependencies.
+        preparation:
+          - >-
+            Supply logging to the action recorder through the root while preserving best-effort
+            action failures.
+          - >-
+            Use explicit field mapping for the small codec/serializer shapes, or separately review
+            an exact-file case-keys allowance; do not make importable serializers depend on an
+            initialized service.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/gift-links/index.ts
+          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/codec.ts
+          - core/server/services/gift-links/serializers.ts
+          - core/server/services/gift-links/service.ts
+          - core/server/api/endpoints/utils/serializers/output/gift-links.ts
     entryPoints:
       - gift-links/index.ts
     notes: >-
@@ -3852,6 +4218,37 @@ services:
         - core/server/services/members/api.js
         - core/boot.js
         - test/unit/boot/init-services.test.ts
+      dependencies:
+        complexity: complex
+        reason: >-
+          The root composes repositories, payment and email adapters, two schedulers, delivery and
+          jobs. Its Members, Staff and Stripe getters intentionally defer reciprocal service access
+          until operations, while recovery runs after those services are ready. Logging, event
+          dispatch, renderer I/O, query/codec helpers and Luxon still enter below the root; Luxon
+          also constructs domain dates outside service instances. Preserving those boundaries needs
+          preparation across several layers, not just moving imports.
+        preparation:
+          - >-
+            Retain explicit call-time payment/member/staff capabilities and after-boot recovery;
+            test that constructing Gifts does not dereference those unready services.
+          - >-
+            Inject logging, domain dispatch, rendering I/O and query helpers into their existing
+            collaborators, including the nested jobs module; keep delivery and scheduling owners
+            explicit.
+          - >-
+            Characterize timezone/date arithmetic before choosing a narrow clock capability for
+            Luxon-dependent domain operations; the existing Moment compatibility export is not a
+            drop-in replacement. Review codec helper policy separately.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/gifts/index.ts
+          - core/server/services/gifts/gift-service.ts
+          - core/server/services/gifts/gift.ts
+          - core/server/services/gifts/gift-delivery-service.ts
+          - core/server/services/gifts/gift-email-renderer.ts
+          - core/server/services/gifts/jobs/index.js
+          - core/server/services/stripe/stripe-service.js
+          - core/boot.js
     entryPoints:
       - gifts/index.ts
       - gifts/jobs/index.js
@@ -4116,6 +4513,19 @@ services:
         - core/boot.js
         - core/server/services/gifts/index.ts
         - test/unit/boot/init-core.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Translator creation, the event bus, settings cache and debug are already loaded in the
+          root. Settings must be ready before choosing the initial locale; the retained delegates
+          and locale subscription do not require another dependency graph.
+        preparation: []
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/i18n/index.js
+          - core/server/services/i18n/README.md
+          - core/server/auth/session/index.js
+          - core/boot.js
     entryPoints:
       - i18n/index.js
     notes: >-
@@ -4310,6 +4720,28 @@ services:
         - core/server/api/endpoints/identities.js
         - core/server/services/activitypub/activity-pub-service-wrapper.js
         - test/unit/server/services/identity-tokens/index.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The wrapper already supplies the signing-key provider and captured issuer;
+          jsonwebtoken.sign is the only remaining runtime library import in the implementation. The
+          signing provider is read per token, so root wiring must preserve key rotation rather than
+          capture a key. ActivityPub and the identities endpoint are the two production instance
+          consumers to adapt.
+        preparation:
+          - >-
+            Inject the token-signing function from the root, retaining direct imports of allowlisted
+            libraries and the live signing-key provider.
+          - >-
+            Preserve signing-keys readiness before Identity Tokens and adapt ActivityPub and the
+            identities endpoint together with the root export change.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/identity-tokens/identity-token-service-wrapper.js
+          - core/server/services/identity-tokens/identity-token-service.ts
+          - core/server/services/activitypub/activity-pub-service-wrapper.js
+          - core/server/api/endpoints/identities.js
+          - core/boot.js
     entryPoints:
       - identity-tokens/index.js
     notes: >-
@@ -4664,6 +5096,22 @@ services:
         - core/server/api/endpoints/integrations.js
         - core/boot.js
         - test/e2e-api/admin/integrations.test.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The implementation already receives both Integration and ApiKey models and directly
+          imports only allowlisted errors and tpl. The Admin endpoint currently constructs its
+          instance, so the dependency work is moving that existing composition to the boot-owned
+          root and updating the endpoint's edit delegate.
+        preparation:
+          - >-
+            Construct the existing model-backed implementation in index.ts after models are ready,
+            and have the endpoint retrieve that ready instance instead of constructing one during
+            module loading.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/integrations/integrations-service.js
+          - core/server/api/endpoints/integrations.js
     entryPoints:
       - integrations/integrations-service.js
     notes: >-
@@ -4821,35 +5269,54 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Construct the eager key map during boot and update scheduling, authentication and
-        frontend consumers to retain the same ready map. Lazy database lookup and
-        clear/delete invalidation remain map operations, including caching rejected
+        Boot constructs one key map through defineService in initCore, before frontend and
+        scheduling consumers. Authentication and frontend access the same ready map. Lazy
+        database lookup and clear/delete invalidation remain map operations, including caching rejected
         promises. Merged tests characterize shared pending lookups, failure retention,
         invalidation and the retained frontend consumer.
-      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      reviewedAt: 326a1a3e711690149928fcb69e6fbc5516213ba9
       sources:
         - core/server/services/internal-keys/index.ts
         - core/server/services/post-scheduling/index.ts
         - core/server/auth/reset-authentication.ts
         - core/frontend/services/proxy.js
         - test/unit/server/services/internal-keys/index.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Both AutoFillingMap and the model registry are already imported by the root, and the map's
+          compute callback defers database access until get(). Keep one map for scheduling,
+          authentication and the frontend, preserving clear/delete invalidation without preloading
+          keys.
+        preparation: []
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/internal-keys/index.ts
+          - core/server/lib/auto-filling-map.ts
+          - core/server/services/post-scheduling/index.ts
+          - core/server/auth/reset-authentication.ts
+          - core/frontend/services/proxy.js
     entryPoints:
       - internal-keys/index.ts
     notes: >-
-      Preserve the shared mutable key map, lazy database reads and explicit invalidation;
-      changing promise retention or rotation behavior needs separate tests and a decision.
+      Initializer migration reviewed against main 326a1a3e711690149928fcb69e6fbc5516213ba9;
+      historical audit provenance is retained. The shared mutable map, lazy database reads
+      and explicit invalidation are unchanged. Promise retention or rotation changes need
+      separate tests and a decision.
     contracts:
       exports:
         summary: >-
-          The TypeScript default export is one AutoFillingMap from integration slugs to API-key
-          promises; CommonJS consumers use .default. Other exports are types only. The full
-          inherited Map surface remains available, including set, delete and clear; get is an
-          instance method requiring its receiver. There is no init or shutdown export.
+          The TypeScript default export is a defineService root with init and a guarded service
+          getter; CommonJS consumers use .default. The ready instance is one AutoFillingMap
+          from integration slugs to API-key promises. Other exports are types only; there are
+          no extras. The full inherited Map surface remains available, including set, delete
+          and clear; get requires its receiver. Normal shutdown ownership is unchanged.
         sources:
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
@@ -4857,9 +5324,9 @@ services:
         tests: []
       construction:
         summary: >-
-          Import loads the model registry and constructs an empty map, without querying keys.
-          A cache miss calls Integration.getApiKeyBySlug with the fixed slug-to-type mapping
-          and stores its returned promise immediately. The model joins integrations and
+          The root factory acquires the model registry and constructs an empty map when boot
+          awaits init, without querying keys. A cache miss calls Integration.getApiKeyBySlug
+          with the fixed slug-to-type mapping and stores its returned promise immediately. The model joins integrations and
           api_keys and returns a flat id/secret object. No alternate runtime map construction
           for this capability was found. Root tests exercise the actual exported map with
           controlled model lookups, including exact slug/type selection and shared promises.
@@ -4898,13 +5365,14 @@ services:
           - test/e2e-server/internal-keys.isolated.test.ts
       startup:
         summary: >-
-          This root has no readiness check. The first get needs initialized models/database and
-          seeded integration keys. Foreground boot supplies the map after initCore; post
-          scheduling may read it in rescheduleAll when the adapter requests boot rebuilding.
-          Gift recovery and automations scheduling can also read it, while frontend helpers
-          defer access until rendering. A cold-boot HTTP test uses the retained frontend/map
-          with real seeded keys and authentication rotation. Acquiring the map alone does not
-          establish key readiness; same-process reboot and signed-job rebuilding are separate.
+          Boot awaits init in initCore before frontend, API and other service loading. Post
+          scheduling retains the ready map during its own construction; boot supplies the same
+          map to gifts and automations. Frontend and authentication modules can import the root
+          early but resolve service only when invoked. Reading service before init throws.
+          The first get still needs initialized models/database and seeded integration keys.
+          A cold-boot HTTP test uses the retained frontend/map with real seeded keys and
+          authentication rotation. Empty-map readiness does not preload keys; same-process
+          reboot and signed-job rebuilding are separate obligations.
         sources:
           - core/boot.js
           - core/server/services/internal-keys/index.ts
@@ -4979,7 +5447,10 @@ services:
           reject. Future automation polls catch key failure after arming an in-memory timer.
           Auth reset cannot start rotation
           if the previous-key lookup fails; transaction failure leaves the cache intact, whereas
-          session/reschedule failure happens after commit and invalidation. No root retry exists.
+          session/reschedule failure happens after commit and invalidation. The initializer
+          permits an explicit retry if construction fails, but it does not retry or evict failed
+          key lookups. Lookup retention and errors are covered by existing root/model tests;
+          generic initialization readiness and retry are covered by kernel tests.
         sources:
           - core/server/models/integration.js
           - core/server/lib/auto-filling-map.ts
@@ -4992,13 +5463,14 @@ services:
           - test/unit/server/models/integration.test.js
           - test/unit/server/auth/reset-authentication.test.ts
           - test/unit/server/services/internal-keys/index.test.ts
+          - test/unit/kernel/define-service.test.ts
     unverified: []
     blockers:
       - >-
-        Preserve pre-database access and repeated boot behavior when assigning lifecycle
-        ownership. Actual-root units cover slug/type mapping, shared pending lookups,
-        rejection retention until invalidation and the retained frontend consumer. Cold-boot
-        HTTP now covers real key availability and rotation; same-process reboot remains open.
+        Same-process reboot remains untested. The initializer retains the same map after
+        successful init and shutdown still leaves its contents intact. Actual-root units cover
+        slug/type mapping, shared pending lookups, rejection retention until invalidation and
+        the retained frontend consumer. Cold-boot HTTP covers real key availability and rotation.
       - >-
         Test signed job rebuilding and post-commit session/reschedule failures. Root units
         cover default-map auth orchestration with a held fake transaction, frontend invalidation
@@ -5008,9 +5480,10 @@ services:
         without asserting scheduled-job rebuilding. Neither clear nor rotation revokes
         promises/key objects already held by callers or updates already signed jobs by itself.
       - >-
-        Decide cache ownership and invalidation for restart and external key changes before
-        adding a lifecycle initializer. There is no automatic expiry, failure eviction or
-        shutdown clear, and TypeScript slug types do not enforce valid keys at runtime.
+        Settle cache ownership and invalidation before introducing restart/replacement or
+        external key refresh. This initializer migration preserves the existing policy: no
+        automatic expiry, failure eviction or shutdown clear. TypeScript slug types do not
+        enforce valid keys at runtime.
   invites:
     kind: directory
     disposition: retain
@@ -5032,6 +5505,29 @@ services:
         - core/server/services/invites/accept.js
         - core/server/api/endpoints/invites.js
         - core/server/api/endpoints/authentication.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Sending already receives settings, URL and mail facades, plus API/model collaborators per
+          operation. The remaining logging and security imports are small injection changes.
+          Acceptance is a separately deep-imported function with global models/security, so it needs
+          its own injected construction without moving transaction state or invitation data into a
+          retained singleton.
+        preparation:
+          - >-
+            Inject logger and token encoding/decoding functions from index.ts while leaving settings
+            access live.
+          - >-
+            Give the acceptance action explicit model/security dependencies and update the
+            authentication endpoint, preserving its invocation-local transaction and the existing
+            API-mail delegation for sends.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/invites/index.js
+          - core/server/services/invites/invites.js
+          - core/server/services/invites/accept.js
+          - core/server/api/endpoints/invites.js
+          - core/server/api/endpoints/authentication.js
     entryPoints:
       - invites/index.js
     notes: >-
@@ -5271,6 +5767,31 @@ services:
         - core/boot.js
         - test/unit/server/services/jobs-service/index.test.js
         - test/unit/server/services/jobs-service/retained-consumer.test.ts
+      dependencies:
+        complexity: complex
+        reason: >-
+          Queue/backend, logging, reporting and outbox dependencies are mostly injected, but
+          register-job-handlers imports job classes across services and directly reaches Content
+          Import, Update Check and Signing Keys. It is application composition inside the queue
+          implementation, and registration must occur after its service dependencies exist.
+        preparation:
+          - >-
+            Move cross-service handler registration to application boot composition, keeping
+            queue-specific implementation independent of other service roots.
+          - >-
+            Inject cron validation and after-commit scheduling into JobsService; preserve
+            transaction boundaries and registration-before-start on the retained queue.
+          - >-
+            Keep per-boot handler reset and activation separate from one-time dependency
+            construction.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/jobs-service/index.ts
+          - core/server/services/jobs-service/jobs-service.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/server/services/jobs-service/jobs-outbox.ts
+          - core/server/services/jobs-service/outbox-relay.ts
+          - core/boot.js
     entryPoints:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
@@ -5451,6 +5972,26 @@ services:
         - core/boot.js
         - test/utils/host-limits-utils.ts
         - test/unit/server/services/limits.test.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          This file is already the composition point for LimitService, config, database and logging.
+          A root index.ts can keep that wiring together; the main dependency constraint is making
+          model and route consumers obtain the initialized instance after limits boot, rather than
+          evaluating its guarded getter during import.
+        preparation:
+          - >-
+            Move the composition into a service root and update eager model/API bindings to use the
+            ready policy instance at operation time, retaining boot-before-settings order and live
+            policy reload.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/limits.ts
+          - core/server/models/integration.js
+          - core/server/models/user.js
+          - core/server/models/invite.js
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/boot.js
     entryPoints:
       - limits.ts
     notes: >-
@@ -5677,6 +6218,27 @@ services:
         - core/server/services/link-tracking/index.js
         - core/boot.js
         - test/unit/server/services/link-redirection/link-redirect-repository.test.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already composes models, URLs, the optional cache and its event bus. Only the
+          implementation event dispatcher and repository debug logger need additional injection.
+          Link Tracking borrows the same repository, so preserve that public collaborator and
+          initialize redirection first; there is no reverse service dependency in this graph.
+        preparation:
+          - >-
+            Inject DomainEvents into the redirect implementation and the debug function into the
+            repository from index.ts.
+          - >-
+            Preserve the shared repository identity used by Link Tracking and the optional cache
+            policy when exposing the ready aggregate.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/link-redirects-service.js
+          - core/server/services/link-redirection/link-redirect-repository.js
+          - core/server/services/link-tracking/index.js
+          - core/boot.js
     entryPoints:
       - link-redirection/index.js
     notes: >-
@@ -5882,6 +6444,28 @@ services:
         - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         - core/boot.js
         - test/unit/server/services/link-tracking/index.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Models, transactions, the event bus, URLs, Automations and redirection are already
+          constructor dependencies. The remaining hidden dependencies are repository config/Sentry,
+          query/collection helpers and the RedirectEvent contract. These can be wired locally while
+          retaining live configuration reads and the repository shared with consumers; subscriber
+          cleanup remains a separate lifecycle problem.
+        preparation:
+          - >-
+            Inject repository config/Sentry and the remaining query, collection and redirect-event
+            dependencies through the existing constructors; use the shared clock for Moment.
+          - >-
+            Keep redirection readiness explicit and preserve the same service/repository for Email
+            and welcome-email callers when removing their initialization responsibility.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/link-tracking/index.js
+          - core/server/services/link-tracking/link-click-repository.js
+          - core/server/services/link-tracking/link-click-tracking-service.js
+          - core/server/services/link-tracking/post-link-repository.js
+          - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
     entryPoints:
       - link-tracking/index.js
     notes: >-
@@ -6123,6 +6707,34 @@ services:
         - core/server/services/machine-payments/adapters/x402-adapter.ts
         - core/frontend/web/site.js
         - test/integration/services/machine-payments/orchestration.test.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The root composes a graph, but implementations still supply hidden defaults for models,
+          settings, labs and Stripe clients. MPP and x402 load SDKs lazily, and Stripe factories
+          observe credential changes. Moving imports alone would change request-time loading and
+          live configuration or leave alternative composition paths behind.
+        preparation:
+          - >-
+            Make production dependencies explicit across the orchestrator, content loader, deposit
+            store and payment recorder; inject model/currency lookup and live settings providers
+            from the root.
+          - >-
+            Supply root-owned lazy SDK loaders through the existing x402 runtime/config and MPP
+            factory seams, retaining first-use loading and credential-keyed client refresh.
+          - >-
+            Inject logging and shared eligibility functions without capturing dynamic enablement as
+            a boot-time boolean.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/machine-payments/index.js
+          - core/server/services/machine-payments/service.ts
+          - core/server/services/machine-payments/content-loader.ts
+          - core/server/services/machine-payments/adapters/mpp-adapter.ts
+          - core/server/services/machine-payments/adapters/x402-adapter.ts
+          - core/server/services/machine-payments/stripe/deposit-address-store.ts
+          - core/server/services/machine-payments/stripe/payment-recorder.ts
+          - core/server/services/machine-payments/README.md
     entryPoints:
       - machine-payments/index.js
     notes: >-
@@ -6354,6 +6966,27 @@ services:
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
         - test/unit/server/services/media-inliner/service.test.ts
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Models and live storage selection already use a constructor seam. The remaining request,
+          logging, URL/image helpers and codecs can use that seam too. Preserve the existing
+          first-use file-type/HEIC loading and per-call upload configuration; these are bounded
+          wiring changes, not a dependency cycle.
+        preparation:
+          - >-
+            Move service.js composition into index.ts and pass request, logging, image/URL helpers
+            and utility operations into ExternalMediaInliner.
+          - >-
+            Supply lazy file-type/HEIC loaders and the bounded-regex operation from the root,
+            preserving import-error behavior and current codec loading timing.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/media-inliner/index.js
+          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/external-media-inliner.js
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/boot.js
     entryPoints:
       - media-inliner/index.js
     notes: >-
@@ -6547,6 +7180,30 @@ services:
         - core/server/services/email-service/email-service-wrapper.js
         - core/boot.js
         - test/e2e-server/services/member-attribution.test.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already wires models, URLs, live tracking settings and the translator/builder
+          graph. Remaining implementation imports are a ReferrerParser constructor, slugify,
+          LinkReplacer and toPlain, all with bounded constructor/function seams. Staff, Members and
+          Email capture this graph during boot, so explicit readiness must replace reliance on
+          synchronous publication inside Promise.all arguments.
+        preparation:
+          - >-
+            Construct the referrer parser in index.ts and pass it plus the outbound-link and
+            plain-data helpers into the existing collaborators.
+          - >-
+            Keep site/tracking getter timing unchanged and await attribution before Staff, Members
+            and Email capture its service, builder or tagger.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/referrer-translator.js
+          - core/server/services/member-attribution/outbound-link-tagger.js
+          - core/server/services/member-attribution/url-translator.js
+          - core/server/services/staff/index.js
+          - core/server/services/members/api.js
+          - core/boot.js
     entryPoints:
       - member-attribution/index.js
     notes: >-
@@ -6774,6 +7431,35 @@ services:
         - core/server/services/automations/welcome-email-automation-poll.ts
         - core/server/api/endpoints/automated-emails.js
         - test/integration/services/member-welcome-emails.test.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The implementation constructs mail, token, locale and rendering collaborators and reads
+          models/settings directly; the renderer also reaches into Email's helpers/templates and
+          Link Tracking. Stripe, automation pollers and API endpoints initialize it on demand.
+          Moving those dependencies to the root therefore changes when policy, templates, transport
+          and locale are acquired, and needs an explicit ready graph before callers run.
+        preparation:
+          - >-
+            Separate construction of mailers, token/MagicLink, models and the locale binding from
+            the implementation; keep live settings and cached sender/content refresh behavior
+            distinct.
+          - >-
+            Inject rendering, tracking and template-loading capabilities, and settle the shared
+            email parser/helper boundaries without requiring Email's ready renderer prematurely.
+          - >-
+            Add boot-owned initialization and adapt Stripe, both automation pollers and endpoints to
+            use it; preserve their explicit content-loading operations rather than treating
+            readiness as content refresh.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/automations/poll.ts
+          - core/server/services/automations/welcome-email-automation-poll.ts
+          - core/server/api/endpoints/automated-emails.js
+          - core/server/api/endpoints/automation-email-previews.js
     entryPoints:
       - member-welcome-emails/index.js
       - member-welcome-emails/service.js
@@ -7032,6 +7718,40 @@ services:
         - core/server/services/members/members-api/members-api.js
         - core/server/services/members/members-api/services/payments-service.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Composition is spread across service.js, api.js, the nested Members API, import/export and
+          jobs; repositories, middleware and helpers still import models, database, events,
+          configuration and other services directly. Members captures ready Offers, attribution,
+          email-address and metafields, while Stripe/Gifts/Comments retain reciprocal deferred
+          access. A root-only DI migration must distinguish these call-time edges from actual
+          initialization prerequisites and preserve independently constructed token providers and
+          request helpers.
+        preparation:
+          - >-
+            Refactor nested API, import/export and job composition to accept explicit dependencies
+            from the root, then remove direct database/model/config/event imports from
+            implementations in bounded slices.
+          - >-
+            Record and test the actual readiness graph for Stripe, Gifts, Comments, Offers,
+            newsletters, attribution, suppression and metafields; preserve lazy collaborators
+            instead of eagerly resolving every service.
+          - >-
+            Separate shared token, filtering and verification support from boot-owned state where
+            evidence supports it, preserving external constructors and deep helper consumers before
+            changing the public root.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/members/service.js
+          - core/server/services/members/api.js
+          - core/server/services/members/members-api/members-api.js
+          - core/server/services/members/members-api/repositories/member-repository.js
+          - core/server/services/members/import-export/index.ts
+          - core/server/services/members/jobs/index.js
+          - core/server/services/members/middleware.js
+          - core/server/services/stripe/stripe-service.js
+          - core/boot.js
     entryPoints:
       - members/index.js
       - members/jobs/index.js
@@ -7373,6 +8093,28 @@ services:
         - core/server/services/members-events/last-seen-at-updater.js
         - core/server/services/members-events/last-seen-at-cache.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The updater/cache already receive database, events, settings, config and a live Members
+          API getter from the root. Remaining imports are logging, event constructors and Moment
+          Timezone, which can use root binding plus the shared clock. Preserve the getter instead of
+          capturing Members during construction; subscription disposal remains separate lifecycle
+          work.
+        preparation:
+          - >-
+            Inject logging and event registration capabilities or event constructors from the root,
+            and use the shared clock's timezone-capable legacy Moment export in both updater and
+            cache.
+          - >-
+            Keep the call-time Members API getter, live timezone reads and construction-time
+            click-listener policy distinct.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/members-events/index.js
+          - core/server/services/members-events/last-seen-at-updater.js
+          - core/server/services/members-events/last-seen-at-cache.js
+          - core/kernel/clock.ts
     entryPoints:
       - members-events/index.js
     notes: >-
@@ -7569,6 +8311,39 @@ services:
         - core/server/services/members-metafields/bindings-service.ts
         - core/server/services/members/service.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The three service instances are already composed together, but runtime metafield
+          schemas/identity functions are imported throughout static codecs, access rules and
+          externally consumed helpers. Definitions and values also read database schema at module
+          load, config reads defaults at import, and query/key helpers load external libraries.
+          Under the current allowlist this is broader than constructor wiring, even though lifecycle
+          composition is simple.
+        preparation:
+          - >-
+            Review exact @tryghost/metafield-types and /identity contract allowances, plus
+            case-keys, independently of migration; without them introduce explicit helper factories
+            rather than hidden global dependency initialization.
+          - >-
+            Supply logging, database column metadata, key/query helpers and configured/default limit
+            resolution from index.ts, preserving the live limit getter.
+          - >-
+            Keep importable access/filter/schema contracts separate from ready instances and adapt
+            the model, API, Members and checkout consumers without forcing them to initialize this
+            service just to use a schema or constant.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/members-metafields/index.ts
+          - core/server/services/members-metafields/access.ts
+          - core/server/services/members-metafields/schema.ts
+          - core/server/services/members-metafields/config.ts
+          - core/server/services/members-metafields/definitions-service.ts
+          - core/server/services/members-metafields/values-service.ts
+          - core/server/services/members-metafields/queries.ts
+          - core/server/services/members-metafields/key.ts
+          - core/server/models/member.js
+          - core/server/services/stripe-checkout-config/service.ts
     entryPoints:
       - members-metafields/index.ts
     notes: >-
@@ -7791,6 +8566,32 @@ services:
         - core/server/services/mentions/mention-sending-service.js
         - core/server/services/recommendations/recommendation-service-wrapper.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The facade constructs controller and metadata objects at import time, and metadata
+          privately imports the oEmbed singleton. Recommendations later reads the facade
+          synchronously and mutates that same metadata object with a mapper; registered jobs retain
+          the controller and sender. Dependency injection must preserve these shared identities and
+          replace reliance on synchronous publication in parallel boot.
+        preparation:
+          - >-
+            Inject the oEmbed capability into metadata and wire logging/parser dependencies into the
+            controller, sender, discovery and repository implementations.
+          - >-
+            Make Mentions readiness an explicit prerequisite for Recommendations while preserving
+            one metadata instance and its mapper registration contract.
+          - >-
+            Keep URL-relation loading, current privacy checks and jobs access at their existing
+            operation boundaries when wiring the facade.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/mentions/service.js
+          - core/server/services/mentions/webmention-metadata.js
+          - core/server/services/mentions/mention-sending-service.js
+          - core/server/services/recommendations/recommendation-service-wrapper.js
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/boot.js
     entryPoints:
       - mentions/index.js
     notes: >-
@@ -8066,6 +8867,27 @@ services:
         - core/server/services/milestones/service.js
         - core/server/services/milestones/milestones-service.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Repository, queries and milestone logic already accept their dependencies. The external
+          imports are confined to service.js, which acts as the legacy composition root. Moving that
+          wiring to index.ts and keeping Stripe eligibility as a live settings callback is bounded;
+          the timer and run failure policy are lifecycle work rather than dependency-graph
+          obstacles.
+        preparation:
+          - >-
+            Move models, database, event bus, logger and configuration wiring from service.js into
+            index.ts.
+          - >-
+            Retain a call-time Stripe eligibility callback and the existing captured milestone
+            settings when separating the runner from scheduling.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/milestones/service.js
+          - core/server/services/milestones/milestones-service.js
+          - core/server/services/milestones/bookshelf-milestone-repository.js
+          - core/server/services/milestones/milestone-queries.js
     entryPoints:
       - milestones/index.js
     notes: >-
@@ -8250,6 +9072,28 @@ services:
         - core/server/services/newsletters/newsletters-service.js
         - core/server/services/members/api.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already injects models, token provider, URL, limits, labs and the Email Address
+          facade. The implementation still constructs GhostMailer and MagicLink and imports
+          logging/debug/Sentry/lodash, but these fit its existing constructor without a reciprocal
+          startup dependency. Members captures the newsletter instance, and its token provider is a
+          reusable constructor rather than a dependency on initialized Members.
+        preparation:
+          - >-
+            Move mailer/MagicLink construction and remaining library/logger wiring into index.ts
+            while retaining the separate token-provider instance and per-send callbacks.
+          - >-
+            Initialize after Email Address and before Members captures Newsletters; preserve live
+            policy/settings reads rather than caching their values during construction.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/newsletters-service.js
+          - core/server/services/members/single-use-token-provider.js
+          - core/server/services/members/api.js
+          - core/boot.js
     entryPoints:
       - newsletters/index.js
     notes: >-
@@ -8459,6 +9303,30 @@ services:
         - core/server/api/endpoints/notifications.js
         - core/server/services/notifications/notification-email.ts
         - core/server/services/update-check/index.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The retained notifications instance already receives its cache and Settings model.
+          Remaining dependencies are version comparison, utility and HTML-sanitizing functions, plus
+          legacy Moment. The separately constructed email helper uses the same sanitizer, so its
+          caller must retain an explicit composition path; no service cycle is needed for these
+          dependencies.
+        preparation:
+          - >-
+            Inject version/comparison, utility and sanitizing operations, and use the existing
+            kernel clock for Moment.
+          - >-
+            Give the caller-constructed email helper an explicit sanitizer dependency or a shared
+            library home; update Update Check without making it depend on notification-service
+            readiness.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/notifications/index.js
+          - core/server/services/notifications/notifications.js
+          - core/server/services/notifications/notification-email.ts
+          - core/server/services/notifications/sanitize-notification-html.ts
+          - core/server/services/update-check/index.js
+          - core/server/api/endpoints/notifications.js
     entryPoints:
       - notifications/index.js
       - notifications/notification-email.ts
@@ -8686,6 +9554,33 @@ services:
         - core/server/services/mentions/webmention-metadata.js
         - core/server/services/recommendations/recommendation-service-wrapper.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Transport, config and image storage are injected, but provider discovery, image processing
+          and standalone metadata extractors still load their own runtime libraries. Under the
+          current small allowlist, establishing DI spans the metadata/provider helper graph as well
+          as moving import-time adapter acquisition. That is substantial local composition work,
+          without evidence that the initializer model itself must change.
+        preparation:
+          - >-
+            Introduce explicit local metadata/provider helper factories so parser, extraction,
+            encoding and image operations are wired at the root; retain SSRF-protected transport on
+            every fetching path.
+          - >-
+            Preserve deferred loading of heavy provider/metadata helpers and distinguish startup
+            provider credentials from live config reads.
+          - >-
+            Move image-adapter acquisition to boot-owned construction before Mentions and
+            Recommendations consume oEmbed; review any proposed pure-library allowance individually.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/oembed/service.js
+          - core/server/services/oembed/oembed-service.js
+          - core/server/services/oembed/extract-metadata.ts
+          - core/server/services/oembed/extract-oembed.ts
+          - core/server/services/oembed/twitter-oembed-provider.js
+          - core/server/services/mentions/webmention-metadata.js
     entryPoints:
       - oembed/index.js
     notes: >-
@@ -8915,6 +9810,35 @@ services:
         - core/frontend/web/site.js
         - core/server/services/members/api.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Root composition is small, but external dependencies remain in repository/API/module
+          layers and in static domain value creation: OfferCode calls slugify and the shared
+          ValueObject imports lodash equality. Injecting only the repository and event bus will not
+          satisfy the rule. Frontend redirects and Members capture the resulting objects, so helper
+          preparation must preserve entity/event identity and the completed API/redirect graph.
+        preparation:
+          - >-
+            Inject DomainEvents, reporting/logging and repository query transforms from index.ts,
+            preserving event publication after transaction completion.
+          - >-
+            Give slug normalization and value comparison an explicit construction seam, or replace
+            their narrow uses with characterized local behavior; avoid introducing a module-global
+            dependency setter for static factories.
+          - >-
+            Publish one API/redirect graph after its initial load and adapt retained
+            frontend/Members consumers; subscription cleanup belongs in the separate lifecycle work.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/offers/service.js
+          - core/server/services/offers/offers-module.js
+          - core/server/services/offers/offer-bookshelf-repository.js
+          - core/server/services/offers/application/offers-api.js
+          - core/server/services/offers/domain/models/offer-code.js
+          - core/server/services/offers/domain/models/shared/value-object.js
+          - core/frontend/web/site.js
+          - core/server/services/members/api.js
     entryPoints:
       - offers/index.js
     notes: >-
@@ -9137,6 +10061,29 @@ services:
         - core/server/services/permissions/can-this.js
         - core/server/models/user.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          canThis and its providers load the model registry directly while User.permissible calls
+          back into permissions through a deliberately deferred import. The action map and
+          parity-report state are module globals. Dependency injection needs an explicit shared
+          authorization graph without turning the existing model/permissions cycle into eager
+          construction.
+        preparation:
+          - >-
+            Create providers and canThis from injected models, model-rule helpers and logging,
+            sharing one owned action map and parity-report set.
+          - >-
+            Keep the User model callback deferred until authorization runs; cover both model-first
+            and permission-first loading before switching consumers to a guarded service getter.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/permissions/index.js
+          - core/server/services/permissions/can-this.js
+          - core/server/services/permissions/providers.js
+          - core/server/services/permissions/actions-map-cache.js
+          - core/server/models/user.js
+          - core/server/api/endpoints/utils/permissions.js
     entryPoints:
       - permissions/index.js
     notes: >-
@@ -9337,6 +10284,27 @@ services:
         - core/server/adapters/scheduling/error-capture.ts
         - core/server/auth/reset-authentication.ts
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already supplies the scheduling adapter, API URL and internal keys. Models, event
+          bus, logging and signed-job helpers remain imported inside the class, but can be injected
+          into that same constructor. Adapter registration and rescheduling timing need lifecycle
+          care; they do not add a dependency cycle or require a new container.
+        preparation:
+          - >-
+            Inject the Post model, event bus, logger and job-building/idempotency functions from
+            index.ts, and import Moment through the shared clock.
+          - >-
+            Construct after adapter/internal-key availability while preserving the existing separate
+            adapter.run and rescheduleAll boot steps.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/post-scheduling/index.ts
+          - core/server/services/post-scheduling/post-scheduling.ts
+          - core/server/adapters/scheduling/build-signed-job.ts
+          - core/server/adapters/scheduling/get-scheduler-idempotency-key.ts
+          - core/boot.js
     entryPoints:
       - post-scheduling/index.ts
     notes: >-
@@ -9557,6 +10525,33 @@ services:
         - core/server/services/posts/posts-exporter.js
         - core/server/services/posts/post-scheduling.js
         - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The factory builds fresh Posts, export and statistics graphs for API callers, while
+          Lexical caches a separately created Posts instance and Email rendering uses Lexical. The
+          directory also contains a separate scheduled-publish path importing the API layer.
+          Retaining one root therefore changes dependency identity and exposes deferred cycles, not
+          just constructor syntax.
+        preparation:
+          - >-
+            Map and replace the fresh API and cached Lexical compositions with an agreed retained
+            Posts facade; preserve deferred Email/Lexical access instead of forcing eager capture.
+          - >-
+            Extract explicit collaborators for post statistics, email actions, export formatting,
+            transaction completion and event dispatch, with root-owned models/logging/config.
+          - >-
+            Give the scheduled-publish API adapter a clear owner and injected API operations so it
+            does not remain an independent hidden composition inside Posts.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/posts/posts-service-instance.js
+          - core/server/services/posts/posts-service.js
+          - core/server/services/posts/post-email-handler.js
+          - core/server/services/posts/stats/post-stats.js
+          - core/server/services/posts/post-scheduling.js
+          - core/server/lib/lexical.js
+          - core/server/api/endpoints/posts.js
     entryPoints:
       - posts/posts-service-instance.js
       - posts/post-scheduling.js
@@ -9820,6 +10815,18 @@ services:
         - core/server/services/posts-public/index.ts
         - core/server/api/endpoints/posts-public.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The migrated root already wires the cache adapter, its enablement config and the
+          site-change event bus in index.ts. The Content API captures the ready cache facade;
+          this composition is independent of the separate Posts domain service migration.
+        preparation: []
+        reviewedAt: 326a1a3e711690149928fcb69e6fbc5516213ba9
+        sources:
+          - core/server/services/posts-public/index.ts
+          - core/server/api/endpoints/posts-public.js
+          - core/boot.js
     entryPoints:
       - posts-public/index.ts
     notes: >-
@@ -10065,6 +11072,33 @@ services:
         - core/server/services/recommendations/service/incoming-recommendation-service.ts
         - core/server/services/mentions/webmention-metadata.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The wrapper shares Mentions API, sender and mutable metadata, creates its own mailer and
+          repositories, and launches asynchronous initialization after publishing fields. It also
+          depends on oEmbed and Settings and imports filesystem/logging helpers below the root.
+          Preserving shared mapper identity and service readiness requires coordinated wiring with
+          Mentions rather than independent import moves.
+        preparation:
+          - >-
+            Await Mentions and oEmbed readiness before constructing the aggregate, and specify
+            ownership of the mapper installed into Mentions metadata.
+          - >-
+            Inject logging, filesystem and repository transformation operations through the local
+            classes; move genuinely test-only in-memory repositories to test support after checking
+            callers.
+          - >-
+            Keep Settings reads, staff-recipient lookup and mail delivery as explicit collaborators,
+            separating the ready graph from asynchronous publication/metadata refresh.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/recommendations/recommendation-service-wrapper.js
+          - core/server/services/recommendations/service/recommendation-service.ts
+          - core/server/services/recommendations/service/well-known-service.ts
+          - core/server/services/recommendations/service/in-memory-recommendation-repository.ts
+          - core/server/services/mentions/webmention-metadata.js
+          - core/boot.js
     entryPoints:
       - recommendations/index.js
     notes: >-
@@ -10314,6 +11348,24 @@ services:
         - core/server/services/remote-flags/remote-flags-service.ts
         - core/shared/labs-flag-overrides.ts
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already supplies request, override replacement, site identity and polling
+          configuration. The implementation's only remaining application import is logging; crypto
+          and Zod in flag resolution are allowed. Disabled startup and poller replacement remain
+          lifecycle questions, not dependency blockers.
+        preparation:
+          - >-
+            Inject logging alongside the existing request and override-sink dependencies, preserving
+            live override publication and the root's configuration timing.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/remote-flags/index.ts
+          - core/server/services/remote-flags/remote-flags-service.ts
+          - core/server/services/remote-flags/resolve.ts
+          - core/shared/labs-flag-overrides.ts
+          - core/boot.js
     entryPoints:
       - remote-flags/index.ts
     notes: >-
@@ -10494,6 +11546,30 @@ services:
         - core/boot.js
         - core/bridge.js
         - core/server/api/endpoints/settings.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Storage is configured before routing exists. Upload later requires URL and bridge, with an
+          explicit deferred import to avoid the bridge/API/settings cycle. Parsers are also shared
+          directly with storage adapters. Root-only wiring needs a late frontend-reload boundary and
+          independent parsing support, rather than eagerly resolving the full graph.
+        preparation:
+          - >-
+            Inject a deferred reload operation and the URL facade while retaining separate storage
+            configuration and router start.
+          - >-
+            Move adapter-shared YAML parsing into a capability library, then inject logging/debug
+            and parsing into the running service without routing adapters back through its root.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/route-settings/index.js
+          - core/server/services/route-settings/dynamic-routing-service.js
+          - core/server/services/route-settings/route-settings-parser.ts
+          - core/server/services/route-settings/yaml-parser.js
+          - core/server/adapters/route-settings/FileStore.ts
+          - core/server/adapters/route-settings/S3RouteSettingsStore.ts
+          - core/bridge.js
+          - core/boot.js
     entryPoints:
       - route-settings/index.js
     notes: >-
@@ -10761,6 +11837,35 @@ services:
         - core/server/services/settings/settings-bread-service.js
         - core/server/services/settings-helpers/index.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Cache initialization, calculated fields and caller-created BREAD/mail/token graphs are
+          composed in settings-service.js. BREAD reaches Stripe later, while models and a migration
+          import the site-UUID helper before ordinary service boot. These early utilities and live
+          helper/cache dependencies cannot all become reads from one initialized service.
+        preparation:
+          - >-
+            Separate boot-independent site-UUID and settings-value utilities from runtime service
+            composition so models and migrations do not depend on a ready service.
+          - >-
+            Make BREAD construction accept logging, reporting, mail/token and a deferred
+            Stripe-connect operation instead of loading collaborators internally.
+          - >-
+            Wire calculated-field callbacks, cache, settings helpers, limits and email-address
+            access with their existing read timing; keep cache refresh/reset distinct from
+            construction.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/settings/settings-service.js
+          - core/server/services/settings/settings-bread-service.js
+          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings-helpers/index.js
+          - core/server/models/settings.js
+          - >-
+            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+          - core/server/api/endpoints/settings.js
+          - core/boot.js
     entryPoints:
       - settings/index.js
       - settings/settings-service.js
@@ -10984,6 +12089,24 @@ services:
         - core/server/services/settings/settings-service.js
         - core/frontend/services/proxy.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Config, settings cache, URL utilities, labs and limits already enter through the
+          constructor and are read when methods run. Remaining direct dependencies are
+          logging/debug, IP detection and the email-address parser. Constructing the facade need not
+          read populated settings, which avoids a new readiness cycle with calculated settings.
+        preparation:
+          - >-
+            Inject logging/debug, IP detection and email parsing, and initialize the facade before
+            settings binds calculated-field methods while retaining the shared cache reference.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/settings-helpers/index.js
+          - core/server/services/settings-helpers/settings-helpers.js
+          - core/server/services/settings/settings-service.js
+          - core/frontend/services/proxy.js
+          - core/server/api/endpoints/themes.js
     entryPoints:
       - settings-helpers/index.js
     notes: >-
@@ -11422,6 +12545,26 @@ services:
         - core/server/services/slack-notifications/service.js
         - core/server/services/slack-notifications/slack-notifications-service.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Both notification classes already accept logger/config/event-bus or URL dependencies.
+          Remaining imports are the milestone event contract plus transport, validator, version and
+          Moment in the formatter. These are bounded constructor changes; consuming a milestone
+          event does not require an initialized Milestones service.
+        preparation:
+          - >-
+            Wire the milestone event contract, transport, validator and version from index.ts; keep
+            errors direct and use the existing clock compatibility export for Moment.
+          - >-
+            Move service.js composition into index.ts while preserving captured enablement/threshold
+            settings and subscription behavior.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/slack-notifications/service.js
+          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/slack-notifications/slack-notifications.js
+          - core/server/services/milestones/milestone-created-event.js
     entryPoints:
       - slack-notifications/index.js
     notes: >-
@@ -11802,6 +12945,29 @@ services:
         - core/server/services/staff/staff-service.js
         - core/server/services/gifts/index.ts
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Models, logging, mail, settings, URLs, DomainEvents and attribution already enter through
+          the root. Remaining work is injecting event constructors and renderer dependencies such as
+          template I/O, Handlebars, Juice and the shared address parser; Moment can come from the
+          existing clock. Gifts and Stripe use Staff emails through deferred access, so preserving
+          that access avoids a new construction cycle.
+        preparation:
+          - >-
+            Inject event contracts and renderer I/O/libraries through the existing constructors, and
+            use the shared clock for unchanged Moment behavior.
+          - >-
+            Preserve independent address-parser use and await attribution before Staff construction;
+            retain call-time Staff-email access in Gifts and Stripe.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/staff/index.js
+          - core/server/services/staff/staff-service.js
+          - core/server/services/staff/staff-service-emails.js
+          - core/server/services/gifts/index.ts
+          - core/server/services/stripe/stripe-service.js
+          - core/boot.js
     entryPoints:
       - staff/index.js
     notes: >-
@@ -12001,6 +13167,34 @@ services:
         - core/server/services/stats/stats-service.js
         - core/server/api/endpoints/stats.js
         - core/server/services/tinybird/tinybird-service-wrapper.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          StatsService.create assembles query services and replaces Tinybird's shared current
+          client. The Stats request client then holds that instance, while the token endpoint can
+          replace it and Automations reads the latest instance when creating its own client. Live
+          request configuration and captured authentication can therefore diverge; DI needs an
+          explicit ownership and refresh contract.
+        preparation:
+          - >-
+            Characterize Tinybird replacement and configuration refresh across Stats, the token
+            endpoint and Automations before choosing boot-owned readiness and an injected optional
+            capability.
+          - >-
+            Choose a shared owner for the Tinybird request-client factory used by Stats and
+            Automations, retaining their different availability gates and transport behavior.
+          - >-
+            Remove config/request/settings fallback requires and inject logger/URL helpers through
+            query services; route existing Moment operations through the shared clock.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/stats/service.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/posts-stats-service.js
+          - core/server/services/automations/automations-api.ts
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/api/endpoints/tinybird.js
     entryPoints:
       - stats/index.js
       - stats/utils/tinybird.js
@@ -12236,6 +13430,35 @@ services:
         - core/server/services/stripe/service.js
         - core/server/services/stripe/stripe-service.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Stripe builds API, webhook and billing collaborators before Members, Gifts, Staff and
+          checkout configuration are ready, deliberately using getters for later operations. Nested
+          code still imports those services, Welcome Emails, config/labs/i18n, event dispatch,
+          Stripe SDK and rate-limit construction. Configuration replaces provider clients later, so
+          eagerly moving every require to a one-time factory would change both availability and
+          configuration timing.
+        preparation:
+          - >-
+            Pass explicit deferred member/gift/staff/checkout/metafield capabilities from index.ts
+            and remove nested service imports without turning operation-time getters into startup
+            reads.
+          - >-
+            Inject SDK and rate-limit factories plus logging/config/translation/event dependencies,
+            retaining configuration-time acquisition and live tax-policy behavior.
+          - >-
+            Separate one-time graph construction from configure/reconfigure and remove Welcome
+            Emails' call-site initialization after its boot owner is established.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/stripe/service.js
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/stripe/stripe-api.js
+          - core/server/services/stripe/config.js
+          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/members/api.js
+          - core/boot.js
     entryPoints:
       - stripe/index.js
     notes: >-
@@ -12506,6 +13729,34 @@ services:
         - core/server/services/stripe-checkout-config/service.ts
         - core/server/services/stripe-checkout-config/preview-service.ts
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          Checkout config starts before Stripe and Members, then uses deferred callbacks back into
+          those consumers for preview/branding. Module-level schemas also capture logging and import
+          checkout/metafield contracts, while API callers consume root serializers and multiple
+          instances. Preserving the existing deferred cycle and separating schema libraries from
+          runtime collaborators needs preparation beyond a root wrapper.
+        preparation:
+          - >-
+            Keep preview/branding callbacks deferred and characterize the
+            config-to-Stripe-to-Members dependency path before changing boot order or instance
+            capture.
+          - >-
+            Make logging-dependent codecs/actions explicit factories or collaborators, keeping pure
+            schema contracts separate; assess narrowly named checkout/case-key allowances rather
+            than allowlisting whole services.
+          - >-
+            Define the ready aggregate and the home of API serializer/context helpers so callers no
+            longer rely on unrelated root runtime exports.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/stripe-checkout-config/index.ts
+          - core/server/services/stripe-checkout-config/codec.ts
+          - core/server/services/stripe-checkout-config/models.ts
+          - core/server/services/stripe-checkout-config/service.ts
+          - core/server/services/stripe/stripe-service.js
+          - core/server/api/endpoints/stripe-checkout-config.ts
     entryPoints:
       - stripe-checkout-config/index.ts
     notes: >-
@@ -12561,6 +13812,21 @@ services:
         - core/server/services/tags-public/service.js
         - core/server/api/endpoints/tags-public.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The service has one optional adapter cache and one site-change subscription, with all
+          external dependencies acquired in service.js. The Content API reads that cache facade.
+          Root wiring is bounded and independent of the larger post and URL service migrations.
+        preparation:
+          - >-
+            Wire cache enablement, the adapter and event bus in index.ts while preserving the
+            Content API cache facade and invalidation behavior.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/tags-public/index.js
+          - core/server/services/tags-public/service.js
+          - core/server/api/endpoints/tags-public.js
     entryPoints:
       - tags-public/index.js
     notes: >-
@@ -12763,6 +14029,36 @@ services:
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/validate.js
         - core/boot.js
+      dependencies:
+        complexity: complex
+        reason: >-
+          The catalogue, lazy ThemeStorage instance and validation-cache adapter live in different
+          modules. Activation reaches bridge and Custom Theme Settings, while validation loads gscan
+          lazily and reads live labs/config. Shared upload-reporting is also imported by HTTP
+          middleware. These are multiple composition and ownership boundaries, not just logger
+          imports.
+        preparation:
+          - >-
+            Create one explicit composition for catalogue, storage, validation and activation,
+            injecting filesystem, configuration, logging and the Custom Theme Settings/bridge
+            operations.
+          - >-
+            Keep gscan behind a root-owned lazy loader and preserve when storage paths versus live
+            validation settings are read.
+          - >-
+            Separate the upload-limit reporter shared with HTTP middleware from the running theme
+            graph; reconsider ThemeStorage's external adapter inheritance as a storage dependency
+            boundary.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/themes/index.js
+          - core/server/services/themes/list.js
+          - core/server/services/themes/storage.js
+          - core/server/services/themes/theme-storage.js
+          - core/server/services/themes/validate.js
+          - core/server/services/themes/activation-bridge.js
+          - core/server/services/themes/upload-size-limit-reporter.js
+          - core/server/web/api/middleware/upload.js
     entryPoints:
       - themes/index.js
       - themes/activate.js
@@ -13062,6 +14358,29 @@ services:
         - core/server/services/tiers/tier-repository.js
         - core/server/api/endpoints/tiers.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Product models, event dispatch and slug generation are already supplied by the wrapper,
+          and the repository is hydrated before publishing the API. Remaining NQL imports are local
+          repository dependencies. Members, Gifts and Stripe checkout read the shared facade later;
+          they do not require a reverse runtime service dependency inside Tiers.
+        preparation:
+          - >-
+            Move wrapper composition to index.ts and inject the NQL operation into the production
+            repository; move the test-only in-memory implementation to test support or wire its
+            dependency explicitly.
+          - >-
+            Preserve API/repository identity and readiness for root and deep service.js consumers,
+            including Members middleware and payment-event subscriptions.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/tiers/service.js
+          - core/server/services/tiers/tier-repository.js
+          - core/server/services/tiers/in-memory-tier-repository.js
+          - core/server/services/members/middleware.js
+          - core/server/services/members/service.js
+          - core/server/services/stripe-checkout-config/index.ts
     entryPoints:
       - tiers/index.js
       - tiers/service.js
@@ -13288,6 +14607,29 @@ services:
         - core/server/services/stats/stats-service.js
         - core/server/api/endpoints/tinybird.js
         - core/server/services/stats/utils/tinybird.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The implementation receives a configuration object and captures the selected site identity
+          and mode flags, with only the JWT library imported directly. Dependency wiring is small,
+          but both the token endpoint and Stats call init, which replaces the shared client; the
+          endpoint does so on every request. Client replacement, configuration refresh and
+          token-cache lifetime remain separate unresolved lifecycle decisions.
+        preparation:
+          - >-
+            Inject JWT signing/verification from index.ts while preserving the distinction between
+            the configuration object and the identity/mode flags captured by each client.
+          - >-
+            Characterize per-request replacement, Stats-held client identity, configuration refresh
+            and the unconfigured state before choosing a retained facade and boot-owned
+            initialization; do not silently lengthen token-cache lifetime.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/tinybird/tinybird-service-wrapper.js
+          - core/server/services/tinybird/tinybird-service.js
+          - core/server/services/stats/stats-service.js
+          - core/server/services/automations/automations-api.ts
+          - core/server/api/endpoints/tinybird.js
     entryPoints:
       - tinybird/index.js
     notes: >-
@@ -13524,6 +14866,27 @@ services:
         - core/server/services/tinybird-sync/tinybird-sync-service.ts
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The factory already receives config, settings, database, logger, randomness, clock, fetch
+          and ID creation. Its only non-allowlisted cross-service implementation import is the
+          stateless cron helper. Config is read on each sync and the jobs instance is supplied when
+          scheduling, so no service lookup cycle needs untangling.
+        preparation:
+          - >-
+            Inject the cron-generation operation from index.ts or review an exact allowance for the
+            pure helper, keeping the existing allowed Job base import direct.
+          - >-
+            Move factory invocation to boot-owned construction while preserving live ingest
+            configuration and jobs-service scheduling after startup.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/tinybird-sync/index.ts
+          - core/server/services/tinybird-sync/tinybird-sync-service.ts
+          - core/server/services/tinybird-sync/get-ingest-config.ts
+          - core/server/services/jobs-service/cron.ts
+          - core/boot.js
     entryPoints:
       - tinybird-sync/index.ts
     notes: >-
@@ -13729,6 +15092,24 @@ services:
         - core/server/services/update-check/jobs/update-check-job.ts
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
+      dependencies:
+        complexity: not-applicable
+        reason: >-
+          The root creates a new checker and mail collaborators for each permitted invocation; jobs
+          own scheduling and call it as an operation. This confirmed relocation entry should keep
+          its API/request dependencies at that call boundary rather than acquire a retained service
+          initializer.
+        preparation:
+          - >-
+            Move the cohesive checker and job support to server/lib/update-check, updating boot
+            scheduling and handler imports while preserving per-invocation config and error policy.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/update-check/index.js
+          - core/server/services/update-check/update-check-service.js
+          - core/server/services/update-check/jobs/update-check-job.ts
+          - core/server/services/jobs-service/register-job-handlers.ts
+          - core/boot.js
     entryPoints:
       - update-check/index.js
     notes: >-
@@ -13939,6 +15320,30 @@ services:
         - core/server/services/url/lazy-url-service.ts
         - core/boot.js
         - core/bridge.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The URL implementation already accepts URL utilities, resource lookup and enumeration
+          hooks. Remaining model/schema fallback, NQL/filter, matching and logging imports can be
+          wired through those hooks and small helper factories. Router registration/reset remains a
+          separate readiness contract; dependency wiring itself does not need frontend construction.
+        preparation:
+          - >-
+            Make the root supply URL utilities and an enumeration closure over
+            models/schema/database detection, removing implementation fallbacks.
+          - >-
+            Inject NQL, matching, logging/debug and utility operations into helper factories, while
+            retaining one facade for serializers, RouterManager and bridge reload.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/url/index.js
+          - core/server/services/url/lazy-url-service.ts
+          - core/server/services/url/lazy-find-resource.ts
+          - core/server/services/url/routable-resources.js
+          - core/server/services/url/router-filter.ts
+          - core/server/services/url/permalink-matcher.ts
+          - core/frontend/services/proxy.js
+          - core/bridge.js
     entryPoints:
       - url/index.js
     notes: >-
@@ -14177,6 +15582,26 @@ services:
         - core/server/services/users.js
         - core/server/api/endpoints/users.js
         - core/server/api/endpoints/authentication.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Both endpoint-owned instances receive the same models. Auth, apiMail and apiSettings are
+          stored but unused by the implementation; removing those stale inputs avoids bringing API
+          composition into the new root. Domain-event dispatch, its event constructor and
+          PostRevisions are the remaining hidden dependencies.
+        preparation:
+          - >-
+            Remove unused auth/apiMail/apiSettings constructor inputs from both endpoint
+            compositions.
+          - >-
+            Inject event dispatch and revision cleanup from the new root, retaining
+            transaction-local options and one shared Users instance.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/users.js
+          - core/server/api/endpoints/users.js
+          - core/server/api/endpoints/authentication.js
+          - core/server/lib/post-revisions.ts
     entryPoints:
       - users.js
     notes: >-
@@ -14362,6 +15787,27 @@ services:
         - core/server/services/verification/verification-webhook-service.ts
         - core/server/services/verification-trigger.js
         - core/server/services/members/service.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The sender already accepts config, logging and request, but supplies global defaults and
+          exports an eager singleton that Members binds into its trigger. Removing defaults and
+          composing the sender in the chosen owner is a bounded dependency change; the
+          signed-webhook helper is already allowlisted. This does not settle the separate question
+          of whether verification remains a root or moves under Members.
+        preparation:
+          - >-
+            Settle verification/trigger ownership before adding a root, then construct the sender
+            explicitly with config, logger and request instead of its global default dependencies.
+          - >-
+            Preserve Members' retained sender binding and per-call configuration reads; avoid
+            freezing webhook settings during construction.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/verification/verification-webhook-service.ts
+          - core/server/services/verification-trigger.js
+          - core/server/services/members/service.js
+          - core/server/lib/signed-webhook.ts
     entryPoints:
       - verification/verification-webhook-service.ts
     notes: >-
@@ -14543,6 +15989,26 @@ services:
         - core/server/services/verification-trigger.js
         - core/server/services/members/service.js
         - core/server/services/email-service/email-service-wrapper.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          Members already constructs this collaborator with live thresholds, persistence, statistics
+          and a bound sender, and Email captures that same trigger. Its remaining external runtime
+          imports are DomainEvents and MemberCreatedEvent, so dependency injection itself is
+          bounded. Moving the trigger or deciding its lifecycle owner remains a separate ownership
+          task; a new initializer should not be inferred from this classification.
+        preparation:
+          - >-
+            Inject the member-event registration capability from the chosen owner while retaining
+            the live state/threshold callbacks and single retained trigger shared with Email.
+          - >-
+            Coordinate its placement with the verification sender before changing imports; preserve
+            the existing Members-to-Email readiness dependency.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/verification-trigger.js
+          - core/server/services/members/service.js
+          - core/server/services/email-service/email-service-wrapper.js
     entryPoints:
       - verification-trigger.js
     notes: >-
@@ -14739,6 +16205,29 @@ services:
         - core/server/services/webhooks/webhooks-service.js
         - core/server/api/endpoints/webhooks.js
         - core/boot.js
+      dependencies:
+        complexity: straightforward
+        reason: >-
+          The root already composes the serializer, payload builder and trigger. Remaining
+          dependencies are a deferred API serializer lookup, member-metafield filtering and trigger
+          transport/logging/config helpers. They fit those existing seams if API and Members access
+          remains deferred; listener lifetime and duplicate registration are separate migration
+          concerns.
+        preparation:
+          - >-
+            Inject serializer operations and member-metafield filtering from index.ts, preserving
+            deferred API/Members access rather than loading the API graph during root construction.
+          - >-
+            Select the transport in the root using the current internal-IP policy, and inject
+            debug/logger/version plus collection helpers without moving crypto out of its direct
+            allowance.
+        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        sources:
+          - core/server/services/webhooks/index.js
+          - core/server/services/webhooks/serialize.js
+          - core/server/services/webhooks/webhook-trigger.js
+          - core/server/services/webhooks/listen.js
+          - core/boot.js
     entryPoints:
       - webhooks/index.js
       - webhooks/webhooks-service.js

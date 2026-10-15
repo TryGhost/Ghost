@@ -6,11 +6,17 @@ const { mockManager } = require('../../../utils/e2e-framework');
 
 const comments = require('../../../../core/frontend/helpers/comments');
 const proxy = require('../../../../core/frontend/services/proxy');
-const internalKeys = require('../../../../core/server/services/internal-keys').default;
+const internalKeysRoot = require('../../../../core/server/services/internal-keys').default;
 const { settingsCache } = proxy;
 
 describe('{{comments}} helper', function () {
+  let internalKeys;
   let settingsCacheGetStub;
+
+  beforeAll(async function () {
+    await internalKeysRoot.init();
+    internalKeys = internalKeysRoot.service;
+  });
 
   beforeEach(function () {
     internalKeys.clear();

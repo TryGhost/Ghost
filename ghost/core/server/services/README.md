@@ -174,6 +174,41 @@ to redesign a service. Recheck the evidence before implementation. An assessment
 neither completes the contract audit nor establishes test coverage or passing tests.
 Migrated services cannot be classified as `not-applicable`.
 
+#### Dependency assessment
+
+Unmigrated entries also record `migration.dependencies`, separately from the
+earlier overall migration assessment above:
+
+- `complexity: straightforward` means dependencies are already explicit or can
+  move to root wiring through bounded constructor or factory changes. This can
+  still require several imports and caller updates.
+- `complexity: complex` means wiring depends on resolving a cycle, shared or
+  duplicated composition, ownership, or the timing of dependency access. The
+  `reason` names the concrete coupling; a large import count alone is insufficient.
+- `not-applicable` is only for confirmed non-services being relocated. An
+  unresolved ownership question does not qualify.
+- `preparation` lists proposed steps to make the dependency boundary explicit;
+  an empty list means no separate preparation was identified. These are not
+  implemented changes or permission to redesign the capability.
+- `sources` lists evidence relative to `ghost`. `reviewedAt` identifies the
+  source revision inspected for this assessment independently of the overall
+  assessment and `auditedAt`.
+
+Use the full dependency audit and inspect source, root wiring and consumers.
+The report excludes imports in legacy roots and cannot establish whether a
+captured dependency is ready or a deferred lookup must stay deferred. Keep
+live settings reads and operation-local state intact when introducing injection.
+
+A newer complex dependency assessment supersedes an older straightforward
+overall estimate for planning: that service needs preparation before a small
+initializer migration. A straightforward dependency assessment does not establish
+an easy lifecycle migration, sufficient test coverage or passing tests. Existing
+`blockers` and contract evidence still apply. Preserve this assessment as historical evidence
+when marking a service migrated; recheck it against current source before use.
+Do not store report totals in the inventory or infer kernel requirements from
+violation counts. Shared primitives need a demonstrated application-independent
+contract; feature-specific helpers stay with their owners.
+
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
 `audited` means all facets have been investigated and recorded from source or

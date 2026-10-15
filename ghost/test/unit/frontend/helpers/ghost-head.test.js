@@ -16,7 +16,7 @@ const logging = require('@tryghost/logging');
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const assetHash = require('../../../../core/frontend/services/asset-hash');
-const internalKeys = require('../../../../core/server/services/internal-keys').default;
+const internalKeysRoot = require('../../../../core/server/services/internal-keys').default;
 const { settingsCache, settingsHelpers } = proxy;
 
 /**
@@ -56,6 +56,8 @@ async function testGhostHead(options) {
 }
 
 describe('{{ghost_head}} helper', function () {
+  let internalKeys;
+
   const posts = [];
   const tags = [];
   const authors = [];
@@ -63,6 +65,11 @@ describe('{{ghost_head}} helper', function () {
 
   let getStub;
   let routingRegistryGetRssUrlStub;
+
+  beforeAll(async function () {
+    await internalKeysRoot.init();
+    internalKeys = internalKeysRoot.service;
+  });
 
   const makeFixtures = () => {
     const { createPost, createUser, createTag } = testUtils.DataGenerator.forKnex;
