@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* oxlint-disable ghost/ghost-custom/no-native-error */
 
 /**
  * Seeds multi-subscription test scenarios for BER-3345 verification.
