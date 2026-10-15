@@ -151,6 +151,11 @@ async function initCore({ ghostServer, config }) {
   await signingKeys.init();
   debug('End: signing keys');
 
+  debug('Begin: Internal Keys Service');
+  const internalKeys = require('./server/services/internal-keys').default;
+  await internalKeys.init();
+  debug('End: Internal Keys Service');
+
   debug('Begin: i18n');
   const i18n = require('./server/services/i18n');
   await i18n.init();
@@ -398,7 +403,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const models = require('./server/models');
   const urlUtils = require('./shared/url-utils').default;
   const settingsCache = require('./shared/settings-cache');
-  const internalKeys = require('./server/services/internal-keys').default;
+  const internalKeys = require('./server/services/internal-keys').default.service;
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
