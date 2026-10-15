@@ -158,6 +158,30 @@ describe('MW Version Rewrites', function () {
     return promise;
   });
 
+  it('rewrites a legacy url whatever the case of its version', function () {
+    const { promise, resolve, reject } = Promise.withResolvers();
+    req.url = '/V4/admin/posts/';
+
+    assertVersionRewrittenWithHeaders('v4', '/admin/posts/', resolve, reject);
+    return promise;
+  });
+
+  it('rewrites a legacy url whatever the case of its api name', function () {
+    const { promise, resolve, reject } = Promise.withResolvers();
+    req.url = '/v4/Admin/posts/';
+
+    assertVersionRewrittenWithHeaders('v4', '/Admin/posts/', resolve, reject);
+    return promise;
+  });
+
+  it('rewrites a legacy canary url in capitals as if it were v4', function () {
+    const { promise, resolve, reject } = Promise.withResolvers();
+    req.url = '/CANARY/CONTENT/posts/?key=xxx';
+
+    assertVersionRewrittenWithHeaders('v4', '/CONTENT/posts/?key=xxx', resolve, reject);
+    return promise;
+  });
+
   it('rewrites only the leading version of a legacy url', function () {
     const { promise, resolve, reject } = Promise.withResolvers();
     req.url = '/v4/admin/posts/v4/?filter=tag:v4/';

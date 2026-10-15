@@ -93,6 +93,17 @@ describe('Legacy Path Match', function () {
     assert.deepEqual(legacyApiPathMatch('/v4/admin?x=1'), { version: 'v4', api: 'admin' });
   });
 
+  it('matches a legacy version and api name in any case, as Express routes them', function () {
+    assert.deepEqual(legacyApiPathMatch('/ghost/api/V4/admin/posts/'), {
+      version: 'V4',
+      api: 'admin',
+    });
+    assert.deepEqual(legacyApiPathMatch('/ghost/api/v4/Admin/posts/'), {
+      version: 'v4',
+      api: 'Admin',
+    });
+  });
+
   it('ignores the query string', function () {
     const permutations = [
       '/subdir/ghost/api/admin/db/?x=ghost/api/v4/admin/',
