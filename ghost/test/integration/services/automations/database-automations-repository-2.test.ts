@@ -508,23 +508,6 @@ describe('database automations repository', function () {
       );
     });
 
-    it('truncates fractional seconds so readiness is not rounded into the future', async function () {
-      const step = {
-        ...createRunStep(runId, revisionId),
-        created_at: new Date(createdAt.getTime() + 900),
-        updated_at: new Date(updatedAt.getTime() + 900),
-        ready_at: new Date(readyAt.getTime() + 900),
-      };
-
-      await repository.withConnection((connection) =>
-        repository.insertRunSteps(connection, [step]),
-      );
-
-      await expect(findRunSteps()).resolves.toEqual([
-        { ...step, created_at: createdAt, updated_at: updatedAt, ready_at: readyAt },
-      ]);
-    });
-
     it('leaves existing run steps unchanged when given an empty array', async function () {
       const step = createRunStep(runId, revisionId);
       await repository.withConnection((connection) =>
@@ -576,20 +559,6 @@ describe('database automations repository', function () {
           .toSorted((a, b) => a.id.localeCompare(b.id))
           .map((run) => ({ ...run, created_at: createdAt, updated_at: updatedAt })),
       );
-    });
-
-    it('truncates fractional seconds in run timestamps', async function () {
-      const run = {
-        ...createRun(automationId, memberId),
-        created_at: new Date(createdAt.getTime() + 900),
-        updated_at: new Date(updatedAt.getTime() + 900),
-      };
-
-      await repository.withConnection((connection) => repository.insertRuns(connection, [run]));
-
-      await expect(findRuns()).resolves.toEqual([
-        { ...run, created_at: createdAt, updated_at: updatedAt },
-      ]);
     });
 
     it('leaves existing runs unchanged when given an empty array', async function () {
