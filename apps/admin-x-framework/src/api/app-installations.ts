@@ -73,13 +73,11 @@ export interface AppInstallationsResponseType {
 }
 
 /**
- * One session of an installed app. `revision` is the installation's revision when the session
- * started. `installation` is the installation as Ghost returned it after re-checking the app's
- * manifest. The two revisions match when the session starts, and the session ends once the
- * installation's revision changes.
+ * One session of an installed app: the installation as Ghost returned it after re-checking the
+ * app's manifest. The session is pinned to that installation's revision, and ends once the
+ * revision changes.
  */
 export interface AppSession {
-  revision: number;
   installation: AppInstallation;
 }
 

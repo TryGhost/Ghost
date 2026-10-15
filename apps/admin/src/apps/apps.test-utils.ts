@@ -79,9 +79,7 @@ const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
 export function fakeSessionStart(id: string, answer: AppInstallation | Response) {
   let next = answer;
   const capture = fakeAdminEndpoint('POST', sessionsPath(id), () =>
-    next instanceof Response
-      ? next
-      : { app_sessions: [{ revision: next.revision, installation: next }] },
+    next instanceof Response ? next : { app_sessions: [{ installation: next }] },
   );
   return Object.assign(capture, {
     set: (nextAnswer: AppInstallation | Response) => {
