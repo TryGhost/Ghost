@@ -1,6 +1,6 @@
 const security = require('@tryghost/security');
 const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
+const accept = require('./accept');
 
 const messages = {
   invitedByName: '{invitedByName} has invited you to join {blogName}',
@@ -12,11 +12,17 @@ const messages = {
 };
 
 class Invites {
-  constructor({ settingsCache, settingsHelpers, mailService, urlUtils }) {
+  constructor({ settingsCache, settingsHelpers, mailService, urlUtils, models, logging }) {
     this.settingsCache = settingsCache;
     this.settingsHelpers = settingsHelpers;
     this.mailService = mailService;
     this.urlUtils = urlUtils;
+    this.models = models;
+    this.logging = logging;
+  }
+
+  accept(invitation) {
+    return accept(invitation, this.models);
   }
 
   add({ api, InviteModel, invites, options, user }) {
@@ -119,7 +125,7 @@ class Invites {
           });
           const helpText = tpl(messages.errorSendingEmail.help);
           err.message = `${errorMessage} ${helpText}`;
-          logging.warn(err.message);
+          this.logging.warn(err.message);
         }
 
         return Promise.reject(err);

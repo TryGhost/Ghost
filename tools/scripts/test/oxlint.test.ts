@@ -494,6 +494,21 @@ test('reports direct allowlisted bindings and members passed to local service co
   assert.ok(result.diagnostics.some((d) => d.message.includes('Import @tryghost/tpl directly')));
 });
 
+test('keeps security primitives directly imported rather than injected into services', () => {
+  const result = lint(
+    `
+    import Service from './service';
+    import security from '@tryghost/security';
+    new Service({encode: security.url.encodeBase64});
+    `,
+    serviceRoot,
+  );
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 1);
+  assert.equal(result.diagnostics[0]?.code, injectionCode);
+  assert.ok(result.diagnostics[0]?.message.includes('Import @tryghost/security directly'));
+});
+
 test('allows local library use, computed values, injected application dependencies and shadowed bindings', () => {
   const result = lint(
     `

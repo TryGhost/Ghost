@@ -1,6 +1,5 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const models = require('../../models');
 const security = require('@tryghost/security');
 
 const messages = {
@@ -13,7 +12,7 @@ const messages = {
   },
 };
 
-async function accept(invitation) {
+async function accept(invitation, models) {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
 

@@ -150,14 +150,20 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     [`${alpha}/implementation.ts`]: `
       import './helper'; import type {Config} from '../../../shared/config';
       export type {Config} from '../../../shared/config';
-      import '@tryghost/errors'; import '@tryghost/errors/detail'; import '@tryghost/tpl'; import 'zod';
+      import '@tryghost/errors'; import '@tryghost/errors/detail'; import '@tryghost/tpl'; import '@tryghost/security'; import 'zod';
       import 'node:crypto'; import 'util'; import 'bson-objectid';
       import '../../lib/db-types/date'; import '../../lib/db-types/boolean'; import '../../lib/db-types/json';
       import '../../lib/public-jwk'; import '../jobs-service/job';
       import {getUnixTime, moment} from '../../../kernel/clock';
     `,
   });
-  for (const name of ['@tryghost/errors', '@tryghost/tpl', 'zod', 'bson-objectid']) {
+  for (const name of [
+    '@tryghost/errors',
+    '@tryghost/tpl',
+    '@tryghost/security',
+    'zod',
+    'bson-objectid',
+  ]) {
     f.write(
       `node_modules/${name}/package.json`,
       JSON.stringify({
@@ -186,6 +192,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'dist/helper.ts': "import '../../../../shared/config';",
     'sibling.ts': "import '../alpha-extra/helper';",
     'package.ts': "import '@tryghost/errors-extra';",
+    'security-package.ts': "import '@tryghost/security-extra';",
     'shared.ts': "import '../../lib/db-types/other';",
     'kernel.ts': "import '../../../kernel/clock-extra';",
   };
@@ -202,6 +209,8 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'ghost/core/kernel/clock-extra.ts': 'export {};',
     'node_modules/@tryghost/errors-extra/package.json': '{"main":"index.js"}',
     'node_modules/@tryghost/errors-extra/index.js': 'module.exports = {};',
+    'node_modules/@tryghost/security-extra/package.json': '{"main":"index.js"}',
+    'node_modules/@tryghost/security-extra/index.js': 'module.exports = {};',
   });
   const graph = f.graph();
   assert.deepEqual(
