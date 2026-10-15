@@ -24,6 +24,7 @@ const {
 } = matchers;
 const { cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard } = assertions;
 const localUtils = require('./utils');
+const rolePermissions = require('../../../core/server/services/permissions/role-permissions');
 
 const userMatcher = {
   id: anyObjectId,
@@ -871,5 +872,119 @@ describe('User API: role assignment', function () {
       .expectStatus(200);
 
     assert.equal(await roleNameForUser(authorId), 'Administrator');
+  });
+});
+
+describe('User API: permission includes', function () {
+  /** @type {import('../../utils/agents').AdminAPITestAgent} */
+  let agent;
+
+  // Pinned separately from the role map so that a change to the map, or to
+  // where the API reads permissions from, has to update this too.
+  const PERMISSION_COUNTS = {
+    Administrator: 146,
+    Editor: 54,
+    Author: 31,
+    Contributor: 22,
+    'Super Editor': 74,
+  };
+
+  const PERMISSION_KEYS = [
+    'action_type',
+    'created_at',
+    'id',
+    'name',
+    'object_id',
+    'object_type',
+    'updated_at',
+  ];
+
+  const byKey = (a, b) =>
+    `${a.object_type}:${a.action_type}`.localeCompare(`${b.object_type}:${b.action_type}`);
+
+  const grantsOf = (permissions) =>
+    permissions.map(({ action_type, object_type }) => ({ action_type, object_type })).sort(byKey);
+
+  const expectedGrantsFor = (roleName) => grantsOf(rolePermissions.forRoles([roleName]));
+
+  function assertRolePermissions(role) {
+    const grants = grantsOf(role.permissions);
+
+    assert.equal(grants.length, PERMISSION_COUNTS[role.name], `${role.name} permission count`);
+    assert.deepEqual(grants, expectedGrantsFor(role.name), `${role.name} permissions`);
+    role.permissions.forEach((permission) => {
+      assert.deepEqual(Object.keys(permission).sort(), PERMISSION_KEYS);
+      assert.equal(permission.object_id, null);
+    });
+  }
+
+  async function userIdByRole(name) {
+    const users = await models.User.findAll({ withRelated: ['roles'] });
+    const match = users.find((user) => user.related('roles').at(0).get('name') === name);
+    return match.id;
+  }
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+    await agent.loginAsOwner();
+  });
+
+  for (const roleName of Object.keys(PERMISSION_COUNTS)) {
+    it(`Includes the ${roleName} role's permissions`, async function () {
+      const userId = await userIdByRole(roleName);
+      const { body } = await agent
+        .get(`users/${userId}/?include=roles,roles.permissions`)
+        .expectStatus(200);
+
+      const [user] = body.users;
+      assert.equal(user.roles.length, 1);
+      assert.equal(user.roles[0].name, roleName);
+      assertRolePermissions(user.roles[0]);
+    });
+  }
+
+  it('Includes no permissions for the Owner role', async function () {
+    const userId = await userIdByRole('Owner');
+    const { body } = await agent
+      .get(`users/${userId}/?include=roles,roles.permissions`)
+      .expectStatus(200);
+
+    const [role] = body.users[0].roles;
+    assert.equal(role.name, 'Owner');
+    assert.deepEqual(role.permissions, []);
+  });
+
+  it('Includes no permissions held by the user directly', async function () {
+    const userId = await userIdByRole('Editor');
+    const { body } = await agent.get(`users/${userId}/?include=permissions`).expectStatus(200);
+
+    assert.deepEqual(body.users[0].permissions, []);
+  });
+
+  it('Includes roles when only role permissions are requested', async function () {
+    const userId = await userIdByRole('Author');
+    const { body } = await agent
+      .get(`users/${userId}/?include=roles.permissions`)
+      .expectStatus(200);
+
+    const [user] = body.users;
+    assert.equal(user.roles.length, 1);
+    assert.equal(user.roles[0].name, 'Author');
+    assertRolePermissions(user.roles[0]);
+  });
+
+  it('Includes role permissions when editing a user', async function () {
+    const userId = await userIdByRole('Contributor');
+    const { body } = await agent
+      .put(`users/${userId}/?include=roles.permissions`)
+      .body({ users: [{ id: userId, name: 'Edited Contributor' }] })
+      .expectStatus(200);
+
+    const [user] = body.users;
+    assert.equal(user.name, 'Edited Contributor');
+    assert.equal(user.roles.length, 1);
+    assert.equal(user.roles[0].name, 'Contributor');
+    assertRolePermissions(user.roles[0]);
   });
 });
