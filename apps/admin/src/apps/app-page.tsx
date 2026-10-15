@@ -40,7 +40,7 @@ import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
-import { appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
+import { appEntryPath, appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
@@ -201,7 +201,8 @@ const AppFrame: React.FC<{
   const surfaceOrigin = new URL(url).origin;
   const { id, manifest } = installation;
 
-  const path = appPathFromLocation(id, location);
+  const entryPath = appEntryPath(url);
+  const path = appPathFromLocation(id, location, entryPath);
   const move = appMoveOf(location.state);
   const theme = useMemo<Theme>(
     () => ({ mode: resolvedTheme, accent_color: accentColor }),
@@ -245,8 +246,8 @@ const AppFrame: React.FC<{
       surfaceOrigin,
       context: () => contextRef.current,
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
-      navigate: (next, { move: appMove }) =>
-        navigateForApp(appPathRoute(id, next), { replace: true, state: { appMove } }),
+      navigate: (next, { replace, move: appMove }) =>
+        navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
       open: (place) => navigateForApp(placeRoute(place)),
     }),
   );
@@ -254,11 +255,20 @@ const AppFrame: React.FC<{
     frameSession.subscribe,
     frameSession.getState,
   );
+  // Each load of the frame opens the app's page at the app's current route, so a reload of Admin,
+  // or coming back to the app, shows the page the publisher was on, also in a multi-page app. The
+  // address is fixed for the life of the frame: changing it would reload the page.
+  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: new URL(path, url).href }));
+  if (frameSource.attempt !== attempt) {
+    setFrameSource({ attempt, src: new URL(path, url).href });
+  }
 
   useAppTitle(manifest.name, title);
 
-  // Runs for every location, keyed by `location.key`. React Router commits in a transition, which
-  // can merge the app's quick navigations into one location on a route Admin was already on.
+  // Runs for every location, keyed by `location.key`. React Router commits in a transition, so a
+  // location it commits can lag behind the app, which may have moved on since, and quick moves can
+  // merge into one location on a route Admin was already on. The move markers tell those apart
+  // from Admin's own navigations.
   useEffect(() => frameSession.pathChanged(path, move), [frameSession, location.key, path, move]);
   useEffect(() => frameSession.themeChanged(theme), [frameSession, theme]);
 
@@ -291,7 +301,7 @@ const AppFrame: React.FC<{
         data-testid="app-frame"
         referrerPolicy="strict-origin-when-cross-origin"
         sandbox={APP_FRAME_SANDBOX}
-        src={url}
+        src={frameSource.src}
         title={manifest.name}
       />
     </div>

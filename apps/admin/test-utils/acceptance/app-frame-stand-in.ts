@@ -12,9 +12,9 @@
  * waits for the app to connect, then returns `{ value }` or `{ error }`. A `GhostAppError` from the
  * SDK becomes `code: message`, so specs can assert a refusal as data.
  *
- * It routes like a single-page app, keeping its route in the frame's history state: `navigate`
- * pushes an entry and reports the move, back and forward within the frame report the route they
- * land on, and a move Admin makes replaces the current entry, as the SDK's docs ask.
+ * It routes as an app does, with the History API and links, which the SDK hands to Admin's history.
+ * As a single-page app, it follows a move Admin makes from the `popstate` the SDK dispatches; with
+ * the `multiPage` flag, it loads the new address instead, as a page with no router does.
  */
 import type * as AppSdk from '@tryghost/app-sdk';
 import type { Ghost } from '@tryghost/app-sdk';
@@ -32,6 +32,8 @@ export interface AppFrameFlags {
   silent?: boolean;
   /** Waits this long after loading before connecting, like a slow app. */
   connectDelayMs?: number;
+  /** Loads the address Admin moves it to, as a page with no router of its own does. */
+  multiPage?: boolean;
 }
 
 /** What Admin sent the app after starting it, in order. */
@@ -61,12 +63,12 @@ export interface AppFrameHooks {
   fetch(request: FetchRequest): Promise<AppFrameResult<FetchResponse>>;
   /** Sets the page's own title, which the SDK reports to Admin. */
   setTitle(title: string): Promise<AppFrameResult<void>>;
-  /** Reports a move with `path.set` alone, without routing, as a page that doesn't route might. */
-  setPath(path: string): Promise<AppFrameResult<void>>;
-  /** Routes to `path` as a single-page app does: pushes a history entry, then reports the move. */
+  /** Routes to `path` with `history.pushState`, as a router does. */
   navigate(path: string): Promise<AppFrameResult<void>>;
-  /** Moves through `paths` at once, sending each `path.set` before the previous one resolves. */
-  setPaths(paths: string[]): Promise<AppFrameResult<void>>;
+  /** Routes to `path` with `history.replaceState`, as a router's redirect does. */
+  redirect(path: string): Promise<AppFrameResult<void>>;
+  /** Clicks a link to `href`, which the SDK turns into a move before the page loads it. */
+  followLink(href: string): Promise<AppFrameResult<void>>;
   open(place: Place): Promise<AppFrameResult<void>>;
 }
 
@@ -132,15 +134,23 @@ window.__app = {
       document.title = title;
       return Promise.resolve();
     }),
-  setPath: (path) => settle((app) => app.path.set(path)),
   navigate: (path) =>
-    settle((app) => {
-      history.pushState({ route: path }, '');
-      return app.path.set(path);
+    settle(() => {
+      history.pushState({ route: path }, '', path);
+      return Promise.resolve();
     }),
-  setPaths: (paths) =>
-    settle(async (app) => {
-      await Promise.all(paths.map((path) => app.path.set(path)));
+  redirect: (path) =>
+    settle(() => {
+      history.replaceState({ route: path }, '', path);
+      return Promise.resolve();
+    }),
+  followLink: (href) =>
+    settle(() => {
+      const link = document.createElement('a');
+      link.href = href;
+      document.body.append(link);
+      link.click();
+      return Promise.resolve();
     }),
   open: (place) => settle((app) => app.open(place)),
 };
@@ -158,13 +168,9 @@ async function start() {
   app.onThemeChange((theme) => received.push({ call: 'themeChanged', value: theme }));
   app.onPathChange((path) => {
     received.push({ call: 'pathChanged', value: path });
-    history.replaceState({ route: path }, '');
-  });
-  // The route this entry shows, so back and forward land on it.
-  history.replaceState({ route: app.path.current }, '');
-  window.addEventListener('popstate', (event) => {
-    const { route } = (event.state ?? {}) as { route?: string };
-    void app.path.set(route ?? '/');
+    if (flags.multiPage) {
+      window.location.replace(path);
+    }
   });
   ghost = app;
   return app;

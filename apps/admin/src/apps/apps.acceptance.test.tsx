@@ -639,9 +639,9 @@ describe('Managing apps', () => {
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
     const frame = appsScreen.frame().element();
-    await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
+    answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12'));
     await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
-    expect((await appState()).context?.path).toBe('/');
+    expect((await appState()).context?.path).toBe('/admin');
 
     // The old document's channel is gone with it, and the new document's SDK sends a hello.
     await reloadFrame(APP_ORIGIN);
@@ -659,15 +659,15 @@ describe('Managing apps', () => {
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
     const frame = appsScreen.frame().element();
-    await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
+    answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12'));
     await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
 
     // A page rendered by the app's server posts a form, and the response is a new document.
     await postFrameForm(APP_ORIGIN, '/episodes/12/save');
 
-    await expect.poll(async () => (await appState()).context?.path).toBe('/episodes/12');
+    // The form's response is shown, not a fresh load of the app's page, and Admin follows it.
+    await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12/save`);
     await expect.element(appsScreen.frame()).toBeVisible();
-    // The form's response is shown, not a fresh load of the app's page.
     expect((await appState()).address).toBe('/episodes/12/save');
     expect(appsScreen.frame().element()).toBe(frame);
     expect(sessionsApi.requests).toHaveLength(1);
@@ -714,60 +714,80 @@ describe('Managing apps', () => {
   describe('the app’s route', () => {
     // The index of Admin's current history entry, as React Router numbers them.
     const historyIndex = () => (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    const frameAddress = async () => (await appState()).address;
 
-    it('follows the app’s own route in Admin’s URL, without reloading the app or adding history', async () => {
+    it('follows the app’s own route in Admin’s URL, without reloading the app', async () => {
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
       const start = historyIndex();
 
-      await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12'));
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
-      await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/13');
+      // A router's redirect replaces Admin's entry rather than adding one.
+      answer(await callAppFrame(APP_ORIGIN, 'redirect', '/episodes/13'));
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/13`);
 
-      // Admin replaced its own entry each time.
-      expect(historyIndex()).toBe(start);
-      // It's still the page that started at the app's first route, and it isn't sent any path it
+      expect(historyIndex()).toBe(start + 1);
+      // It's still the page that started at the app's entry route, and it isn't sent any path it
       // reported itself.
       const { context, path, received } = await appState();
-      expect(context?.path).toBe('/');
+      expect(context?.path).toBe('/admin');
       expect(path).toBe('/episodes/13');
       expect(received).toEqual([]);
       await expect.element(appsScreen.frame()).toHaveAttribute('src', APP_PAGE_URL);
     });
 
-    // The frame's history is the tab's: each route the app pushes is a step back takes. If Admin
-    // also pushed an entry for each move, back would go between two pages forever.
-    it('steps back and forward through the app’s own history, then leaves the app', async () => {
-      fakeInstallations([installation()]);
-      await fakeAppPage(installation());
-      await renderAdminApp('/apps', { labs });
-      await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
-      await expect.poll(currentRoute).toBe(APP_ROUTE);
-      await expect.element(appsScreen.frame()).toBeVisible();
+    // Admin owns the history: each of the app's moves is one entry in Admin's, and the frame
+    // keeps a single one. Each of these steps through the app with back and forward, leaves it,
+    // and comes back to where it was.
+    for (const multiPage of [false, true]) {
+      it(`steps back and forward through ${multiPage ? 'a multi-page' : 'a single-page'} app, leaves it and comes back`, async () => {
+        fakeInstallations([installation()]);
+        await fakeAppPage(installation(), { flags: { multiPage } });
+        await renderAdminApp('/apps', { labs });
+        await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
+        await expect.poll(currentRoute).toBe(APP_ROUTE);
+        await expect.element(appsScreen.frame()).toBeVisible();
+        const move = (path: string) =>
+          multiPage
+            ? callAppFrame(APP_ORIGIN, 'followLink', path)
+            : callAppFrame(APP_ORIGIN, 'navigate', path);
 
-      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes'));
-      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12'));
-      await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
+        answer(await move('/episodes'));
+        await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
+        await expect.poll(frameAddress).toBe('/episodes');
+        answer(await move('/episodes/12'));
+        await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
+        await expect.poll(frameAddress).toBe('/episodes/12');
 
-      window.history.back();
-      await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
-      window.history.back();
-      await expect.poll(currentRoute).toBe(APP_ROUTE);
-      window.history.forward();
-      await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
-      expect((await appState()).path).toBe('/episodes');
-      // Each step was the app's own, so Admin sent it nothing.
-      expect((await appState()).received).toEqual([]);
+        window.history.back();
+        await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
+        await expect.poll(frameAddress).toBe('/episodes');
+        window.history.back();
+        await expect.poll(currentRoute).toBe(APP_ROUTE);
+        await expect.poll(frameAddress).toBe('/admin');
+        window.history.forward();
+        await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
+        await expect.poll(frameAddress).toBe('/episodes');
 
-      window.history.back();
-      await expect.poll(currentRoute).toBe(APP_ROUTE);
-      window.history.back();
-      await expect.poll(currentRoute).toBe('/apps');
-    });
+        // The publisher leaves for the Apps list, then comes back with back.
+        await sidebarScreen.navLink('Apps').click();
+        await expect.poll(currentRoute).toBe('/apps');
+        window.history.back();
+        await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
+        await expect.element(appsScreen.frame()).toBeVisible();
+        // The page opens where the publisher was, with no steps of the frame's own to go through.
+        await expect.poll(frameAddress).toBe('/episodes');
+        window.history.back();
+        await expect.poll(currentRoute).toBe(APP_ROUTE);
+        await expect.poll(frameAddress).toBe('/admin');
+        window.history.back();
+        await expect.poll(currentRoute).toBe('/apps');
+      });
+    }
 
-    it('moves the app when Admin moves itself, and the app follows without adding history', async () => {
+    it('moves the app when Admin moves itself, and back undoes it', async () => {
       fakeInstallations([installation()]);
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
@@ -775,47 +795,50 @@ describe('Managing apps', () => {
       answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12'));
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
 
-      // The publisher opens the app from the sidebar, so Admin itself goes to the app's first route.
+      // The publisher opens the app from the sidebar, so Admin itself goes to the app's entry.
       await appsScreen.sidebarApp('Podcast').click();
       await expect.poll(currentRoute).toBe(APP_ROUTE);
       await expect
         .poll(async () => (await appState()).received)
-        .toEqual([{ call: 'pathChanged', value: '/' }]);
+        .toEqual([{ call: 'pathChanged', value: '/admin' }]);
+      expect(await frameAddress()).toBe('/admin');
 
-      // Back undoes Admin's own move, and the app follows again. Not in WebKit: there, Admin's
-      // replace after the frame's push updates the entry before it, so this entry still has Admin's
-      // address from before the app moved, and the app is sent back to its first route.
       window.history.back();
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
-      await expect
-        .poll(async () => (await appState()).received)
-        .toEqual([
-          { call: 'pathChanged', value: '/' },
-          { call: 'pathChanged', value: '/episodes/12' },
-        ]);
-      // Then back reaches the app's own entry.
+      await expect.poll(frameAddress).toBe('/episodes/12');
       window.history.back();
       await expect.poll(currentRoute).toBe(APP_ROUTE);
-      expect((await appState()).path).toBe('/');
+      await expect.poll(frameAddress).toBe('/admin');
+    });
+
+    it('opens the app’s page at the route in Admin’s URL', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(`${APP_ROUTE}/episodes/12?tab=notes`, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      await expect
+        .element(appsScreen.frame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12?tab=notes`);
+      expect((await appState()).context?.path).toBe('/episodes/12?tab=notes');
+      expect(currentRoute()).toBe(`${APP_ROUTE}/episodes/12?tab=notes`);
     });
 
     it('follows an app that bounced away and back faster than Admin renders, sending nothing back', async () => {
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
-      const start = historyIndex();
 
       // For example, an auth guard's bounce: both moves reach Admin before it has rendered either.
-      answer(await callAppFrame(APP_ORIGIN, 'setPaths', ['/login', '/']));
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/login'));
+      answer(await callAppFrame(APP_ORIGIN, 'redirect', '/admin'));
       await expect.poll(currentRoute).toBe(APP_ROUTE);
 
-      expect(historyIndex()).toBe(start);
       // Admin passing through /login isn't sent back to the app, which has already left it.
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 100);
       });
       expect((await appState()).received).toEqual([]);
-      expect((await appState()).path).toBe('/');
+      expect((await appState()).path).toBe('/admin');
     });
 
     it('lets the publisher leave the app while the route they chose loads', async () => {
@@ -831,7 +854,7 @@ describe('Managing apps', () => {
       await sidebarScreen.navLink('Pages').click();
       // Meanwhile the app navigates and asks to open a place. Neither takes the publisher back to
       // the app.
-      answer(await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12'));
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12'));
       expect(refusal(await callAppFrame(APP_ORIGIN, 'open', { apps: true }))).toBe(
         'rejected: The publisher is on their way elsewhere in Admin',
       );
@@ -839,7 +862,7 @@ describe('Managing apps', () => {
       // The app is sent the path Admin stays on.
       await expect
         .poll(async () => (await appState()).received)
-        .toEqual([{ call: 'pathChanged', value: '/' }]);
+        .toEqual([{ call: 'pathChanged', value: '/admin' }]);
 
       await loadPages();
       await expect.poll(currentRoute).toBe('/pages');
@@ -852,9 +875,9 @@ describe('Managing apps', () => {
       await renderAdminApp(`/apps/${id}`, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      answer(await callAppFrame(APP_ORIGIN, 'setPath', '/?labs=someFlag'));
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/?labs=someFlag'));
 
-      await expect.poll(currentRoute).toBe(`/apps/${id}?labs=someFlag`);
+      await expect.poll(currentRoute).toBe(`/apps/${id}/?labs=someFlag`);
       expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBeNull();
     });
 
@@ -866,12 +889,15 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
 
       for (const path of ['//evil.example/', 'https://evil.example/', 'episodes']) {
-        expect(refusal(await callHostRaw(APP_ORIGIN, 'pathChanged', path))).toMatch(
+        expect(refusal(await callHostRaw(APP_ORIGIN, 'pathChanged', path, 'push'))).toMatch(
           /^invalid_path: /,
         );
       }
+      expect(refusal(await callHostRaw(APP_ORIGIN, 'pathChanged', '/episodes', 'back'))).toBe(
+        'invalid_argument: Expected a move of push or replace',
+      );
       // `..` is resolved within the app's own routes, never Admin's.
-      await callHostRaw(APP_ORIGIN, 'pathChanged', '/../../settings');
+      await callHostRaw(APP_ORIGIN, 'pathChanged', '/../../settings', 'push');
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/settings`);
     });
   });

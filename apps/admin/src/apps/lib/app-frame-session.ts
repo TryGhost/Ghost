@@ -17,11 +17,13 @@ export interface AppFrameState {
 }
 
 /**
- * Options for the navigation Admin makes to follow the app to one of the app's routes. Admin always
- * replaces its current history entry for it: the frame's own history already has an entry for the
- * move, and a second one would make back go between the two forever.
+ * Options for the navigation Admin makes to follow the app to one of the app's routes. Admin owns
+ * the app's history: the frame keeps a single entry, and each of the app's moves adds an entry to
+ * Admin's history or replaces its current one, as the SDK flagged it.
  */
 export interface AppMoveOptions {
+  /** Replaces Admin's current history entry rather than adding one. */
+  replace: boolean;
   /**
    * Identifies this navigation. The location Admin creates for it passes the number back to
    * `pathChanged`, so the session can tell Admin following the app apart from Admin navigating by
@@ -41,8 +43,8 @@ export interface AppFrameSessionOptions {
   fetchAdminApi: AdminApiFetch;
   /**
    * Called when the app moves to one of its routes that Admin isn't on yet. Admin navigates there,
-   * replacing its current history entry, and returns whether it did. It doesn't navigate while the
-   * publisher is leaving the app.
+   * adding a history entry or replacing its current one, and returns whether it did. It doesn't
+   * navigate while the publisher is leaving the app.
    */
   navigate: (path: string, options: AppMoveOptions) => boolean;
   /**
@@ -115,9 +117,9 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * by leaving more than `MAX_SHORT_LIVED` pages in a row, each within `SHORT_LIVED_MS` of it
  * starting.
  *
- * Admin follows the app's moves by replacing its URL, never by adding to its history: the frame
- * keeps its own history, so each route the app pushes is already a step back takes, and back within
- * the app reaches the app as its own back, which it reports like any other move.
+ * Admin owns the app's history. The SDK keeps the frame at a single entry and reports each of the
+ * app's moves as a push or a replace, which Admin records in its own history. Back and forward are
+ * then Admin's own navigations, which the session sends to the app.
  *
  * Path and theme changes are passed between Admin and the app once each. The session never sends
  * the app a value it already has, whether the app sent it to Admin or Admin sent it to the app,
@@ -228,14 +230,14 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       fetchAdminApi: options.fetchAdminApi,
       handlers: {
         titleChanged: (title) => update({ title }),
-        pathChanged: (next) => {
+        pathChanged: (next, move) => {
           // Where Admin is going if it's still following the app, or where Admin is otherwise.
           if (next === (following.at(-1)?.path ?? adminPath)) {
             appPath = next;
             return appPath;
           }
           lastMove += 1;
-          if (options.navigate(next, { move: lastMove })) {
+          if (options.navigate(next, { replace: move === 'replace', move: lastMove })) {
             following.push({ path: next, move: lastMove });
             appPath = next;
           } else if (adminPath !== undefined) {
