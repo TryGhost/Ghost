@@ -229,7 +229,6 @@ describe('Automations API', function () {
 
     beforeEach(async function () {
       mockManager.mockLabsEnabled('automations');
-      mockManager.mockLabsEnabled('automationsPerTier');
       await models.Base.knex('products').insert(
         tierIds.map((id) => ({
           id,
@@ -484,16 +483,13 @@ describe('Automations API', function () {
       );
     });
 
-    it.each(['automations', 'automationsPerTier'])(
-      'returns 404 when %s is disabled',
-      async function (flag) {
-        mockManager.mockLabsDisabled(flag);
-        await agent
-          .post('automations')
-          .body({ automations: [payload] })
-          .expectStatus(404);
-      },
-    );
+    it('returns 404 when automations is disabled', async function () {
+      mockManager.mockLabsDisabled('automations');
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(404);
+    });
 
     it('denies unauthenticated requests', async function () {
       agent.resetAuthentication();

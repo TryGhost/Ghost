@@ -31,7 +31,6 @@ describe('Automation host limits', () => {
   beforeEach(async () => {
     const stub = sinon.stub(labs, 'isSet').callThrough();
     stub.withArgs('automations').returns(true);
-    stub.withArgs('automationsPerTier').returns(true);
   });
   afterEach(async () => {
     sinon.restore();
