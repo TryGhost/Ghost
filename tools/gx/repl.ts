@@ -33,12 +33,12 @@ async function main() {
   logging.info(`a knex database instance is available as ${chalk.magenta('knex')}`);
   logging.info(`bookshelf models are available as ${chalk.magenta('models')}`);
 
-  const { default: db } = await import('../../ghost/core/server/data/db');
+  const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   const knex = db.knex;
   try {
     const { default: models } =
       // @ts-expect-error Core's JavaScript models have no type declarations.
-      await import('../../ghost/core/server/models');
+      await import('../../ghost/core/server/models/index.js');
     function initializeContext(context: Record<string, unknown>) {
       context.models = models;
       context.m = models;

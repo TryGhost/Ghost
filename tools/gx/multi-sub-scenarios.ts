@@ -43,9 +43,11 @@
  *      backfill produced different values than the runtime path would.
  */
 
-import ObjectId from 'bson-objectid';
+import bsonObjectId from 'bson-objectid';
 import { parseArgs } from 'node:util';
-import type { knex as connection } from '../../ghost/core/server/data/db';
+import type { knex as connection } from '../../ghost/core/server/data/db/index.js';
+// The CommonJS package also exposes its constructor on .default.
+const ObjectId = bsonObjectId.default;
 let knex: typeof connection;
 
 type Subscription = {
@@ -299,7 +301,7 @@ async function refreshLookupTable(memberIds: string[]) {
     return;
   }
   // Use the same VIEW the production code does, scoped to our seeded members.
-  const { default: config } = await import('../../ghost/core/shared/config');
+  const { default: config } = await import('../../ghost/core/shared/config/index.ts');
   const isMySQL = (config.get('database') && config.get('database').client) === 'mysql2';
   if (isMySQL) {
     await knex.raw(
@@ -371,7 +373,7 @@ async function main() {
     return;
   }
   process.env.NODE_ENV ||= 'development';
-  const { default: db } = await import('../../ghost/core/server/data/db');
+  const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   knex = db.knex;
   console.log('Connecting to database…');
   const { stripePrice } = await ensureProductAndPrice();

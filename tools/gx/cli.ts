@@ -67,7 +67,7 @@ cli.command({
       desc: 'Drop and recreate development-only tables.',
       run() {
         commandRun = true;
-        runGhostCommand('./rebuild-in-development-tables.cts', args.slice(2));
+        runGhostCommand('./rebuild-in-development-tables.ts', args.slice(2));
       },
     });
   },
@@ -78,16 +78,16 @@ cli.command({
   desc: 'Generate development data and verification scenarios.',
   setup(group: CommandGroup) {
     for (const command of [
-      { flags: 'generate', desc: 'Generate a development dataset.', file: './generate-data.cts' },
+      { flags: 'generate', desc: 'Generate a development dataset.', file: './generate-data.ts' },
       {
         flags: 'shift-dates',
         desc: 'Shift database dates for testing.',
-        file: './shift-dates.cts',
+        file: './shift-dates.ts',
       },
       {
         flags: 'multi-sub-scenarios',
         desc: 'Seed multi-subscription scenarios.',
-        file: './multi-sub-scenarios.cts',
+        file: './multi-sub-scenarios.ts',
       },
     ]) {
       group.command({
@@ -107,7 +107,7 @@ cli.command({
   desc: 'Open a REPL with Ghost models and database access.',
   run() {
     commandRun = true;
-    runGhostCommand('./repl.cts', args.slice(1), true);
+    runGhostCommand('./repl.ts', args.slice(1), true);
   },
 });
 

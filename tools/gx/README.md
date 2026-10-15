@@ -39,9 +39,9 @@ schemas. This drops and recreates the listed tables, discarding their data.
 Start the development database first. gx uses the existing development-environment
 runner and the checkout's Ghost working directory; it does not start services.
 
-Core-dependent commands use `.cts` to preserve their CommonJS boundary and are
-checked with Core's TypeScript configuration; other gx commands use the shared
-ESM configuration. The table-rebuilding logic remains in Core.
+All gx commands use TypeScript ES modules and the shared strict configuration.
+Core-dependent commands import Core's existing CommonJS modules through the
+source loader. The table-rebuilding logic remains in Core.
 
 ## Development data
 
@@ -52,10 +52,9 @@ options and prerequisites. Existing `pnpm reset:data` variants and
 `pnpm seed:multi-sub-scenarios` forward to these commands.
 
 Both reuse the checkout's development-environment runner and Ghost working
-directory. They run through Core's source loader and `.cts` boundary, with the
-data-generation engine remaining in Core. The generator preserves its existing
-environment permissions and options. `node index.js generate-data` now reports
-its gx replacement.
+directory. They use the source loader, with the data-generation engine remaining
+in Core. The generator preserves its existing environment permissions and
+options. `node index.js generate-data` now reports its gx replacement.
 
 ## REPL and date shifting
 

@@ -26,8 +26,8 @@ async function fixture() {
   for (const file of [
     'cli.ts',
     'run-ghost-command.ts',
-    'generate-data.cts',
-    'multi-sub-scenarios.cts',
+    'generate-data.ts',
+    'multi-sub-scenarios.ts',
   ]) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
@@ -56,7 +56,7 @@ export const resolveGhostDevEnv = async () => ({
 `,
   );
   await writeFile(
-    join(root, 'ghost/core/shared/config/index.js'),
+    join(root, 'ghost/core/shared/config/index.ts'),
     `
 module.exports = { getSiteUrl: () => process.env.url, get: () => ({client: 'mysql2'}) };
 `,

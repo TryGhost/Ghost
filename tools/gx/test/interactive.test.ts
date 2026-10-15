@@ -21,7 +21,7 @@ async function fixture() {
   ]) {
     await mkdir(join(root, directory), { recursive: true });
   }
-  for (const file of ['cli.ts', 'run-ghost-command.ts', 'repl.cts', 'shift-dates.cts']) {
+  for (const file of ['cli.ts', 'run-ghost-command.ts', 'repl.ts', 'shift-dates.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
   await cp(

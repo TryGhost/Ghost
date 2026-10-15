@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-test('Core commands expose real generator dependencies and REPL context without database or network access', async () => {
+test('Core commands load real generator, REPL and rebuild modules without database or network access', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'gx-data-core-'));
   try {
     const contentPath = join(directory, 'content');
@@ -25,6 +25,7 @@ test('Core commands expose real generator dependencies and REPL context without 
           connection: { filename: ':memory:' },
           useNullAsDefault: true,
         },
+        createInDevelopmentTables: false,
         sentry: { disabled: true },
         logging: { level: 'error', transports: ['stdout'] },
       }),
@@ -50,6 +51,7 @@ Module._load = function (request, parent, isMain) {
 };
 `,
     );
+    // Match the gx launcher so workspace packages load source without a prior build.
     // Loading real Core models/importers can take longer on a cold TypeScript loader.
     const result = spawnSync(
       process.execPath,
@@ -58,7 +60,8 @@ Module._load = function (request, parent, isMain) {
         guard,
         '--import',
         import.meta.resolve('tsx'),
-        fileURLToPath(new URL('../generate-data.cts', import.meta.url)),
+        '--conditions=source',
+        fileURLToPath(new URL('../generate-data.ts', import.meta.url)),
         '--print-dependencies',
         '--tables',
         'posts_tags',
@@ -99,7 +102,8 @@ Module._load = function (request, parent, isMain) {
         guard,
         '--import',
         import.meta.resolve('tsx'),
-        fileURLToPath(new URL('../repl.cts', import.meta.url)),
+        '--conditions=source',
+        fileURLToPath(new URL('../repl.ts', import.meta.url)),
       ],
       {
         cwd: directory,
@@ -120,6 +124,25 @@ Module._load = function (request, parent, isMain) {
     assert.equal(repl.status, 0, repl.stdout + repl.stderr);
     assert.match(repl.stdout, /CORE_CONTEXT function true function true/);
     assert.match(repl.stdout, /CORE_RESET function true function true/);
+    const rebuild = spawnSync(
+      process.execPath,
+      [
+        '--require',
+        guard,
+        '--import',
+        import.meta.resolve('tsx'),
+        fileURLToPath(new URL('../rebuild-in-development-tables.ts', import.meta.url)),
+      ],
+      {
+        cwd: directory,
+        env: { NODE_ENV: 'development', logging__level: 'warn', NO_COLOR: '1' },
+        encoding: 'utf8',
+        timeout: 15000,
+      },
+    );
+    assert.equal(rebuild.error, undefined, rebuild.stdout + rebuild.stderr);
+    assert.equal(rebuild.status, 0, rebuild.stdout + rebuild.stderr);
+    assert.match(rebuild.stdout, /In-development tables are disabled/);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
