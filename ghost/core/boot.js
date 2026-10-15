@@ -184,6 +184,11 @@ async function initCore({ ghostServer, config }) {
   await exportRequests.init();
   debug('End: Export Requests Service');
 
+  debug('Begin: Invites Service');
+  const invites = require('./server/services/invites').default;
+  await invites.init();
+  debug('End: Invites Service');
+
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
   const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');

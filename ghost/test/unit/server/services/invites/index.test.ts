@@ -30,7 +30,7 @@ describe('Invites service root', function () {
   let getAdminUrl: sinon.SinonStub;
   let warn: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     previousModule = require.cache[rootPath];
     delete require.cache[rootPath];
     const values: Record<string, string> = {
@@ -57,7 +57,9 @@ describe('Invites service root', function () {
       .withArgs('admin', true)
       .returns('https://example.com/blog/ghost/');
     warn = sandbox.stub(logging, 'warn');
-    invitesService = require(rootPath);
+    const invites = require(rootPath).default;
+    await invites.init();
+    invitesService = invites.service;
     input = {
       api,
       InviteModel,
@@ -75,8 +77,8 @@ describe('Invites service root', function () {
     }
   });
 
-  it('imports one instance without rendering or sending an invitation', function () {
-    assert.equal(require(rootPath), invitesService);
+  it('retains one initialized instance without rendering or sending an invitation', function () {
+    assert.equal(require(rootPath).default.service, invitesService);
     sinon.assert.notCalled(render);
     sinon.assert.notCalled(api.mail.send);
   });
@@ -206,7 +208,7 @@ describe('Invites service root', function () {
       api.mail.send.lastCall.args[0].mail[0].message.subject,
       'You have been invited to join Renamed publication',
     );
-    assert.equal(require(rootPath), invitesService);
+    assert.equal(require(rootPath).default.service, invitesService);
   });
 
   it('adds actionable mail context to the original delivery error without marking the invitation sent', async function () {
