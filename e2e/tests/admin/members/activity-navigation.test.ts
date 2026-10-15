@@ -50,7 +50,7 @@ test.describe('Ghost Admin - Member activity', () => {
     await expect(page).toHaveURL(new RegExp(`#/members-activity\\?member=${member.id}$`));
     await expect(page.getByRole('heading', { name: 'Activity Target', exact: true })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Member', exact: true })).toBeHidden();
-    await expect(page.getByText('Signed up', { exact: true })).toBeVisible();
+    await expect(page.getByText('Signed up via manual entry', { exact: true })).toBeVisible();
     await expect(page.getByText(otherMember.email, { exact: true })).toBeHidden();
 
     await page.getByRole('link', { name: /View member profile/ }).click();
