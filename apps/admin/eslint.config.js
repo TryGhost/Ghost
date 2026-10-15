@@ -46,13 +46,6 @@ export default tseslint.config(
       ],
     },
   },
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/**/*.test.*'],
-    rules: {
-      'local/no-hardcoded-ghost-paths': 'off',
-    },
-  },
   // Autofix can produce wrong paths for cross-directory imports here; use
   // @/* for src/ and @test-utils/* for test-utils/ manually.
   {

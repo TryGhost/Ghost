@@ -1,9 +1,8 @@
 import { nodeLibConfig } from '@internal/cfg-eslint';
 
 const cliRules = {
-  // Executable commands use top-level await and report native errors directly.
+  // Executable commands use top-level await.
   'no-restricted-syntax': 'off',
-  'ghost/ghost-custom/no-native-error': 'off',
 };
 
 export default [

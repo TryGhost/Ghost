@@ -182,10 +182,6 @@ export const nodeLibRules = {
   ...correctnessRules,
   'no-var': 'error',
   'one-var': ['error', 'never'],
-  // Custom rules are enforced by the root Oxlint check.
-  'ghost/ghost-custom/no-native-error': 'off',
-  'ghost/ghost-custom/ghost-error-usage': 'off',
-  'ghost/ghost-custom/ghost-tpl-usage': 'off',
 };
 
 // Ban top-level await in shipped Node-library source. It makes the ESM module

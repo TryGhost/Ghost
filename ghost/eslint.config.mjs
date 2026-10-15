@@ -12,7 +12,7 @@ import {
 } from '@internal/cfg-eslint';
 
 // nodeLibRules + jsUnusedVarsRule covers the bulk. Two workspace-specific:
-// turn off ghost/filenames/match-regex (Oxlint owns local-filenames/match-regex) and no-unused-private-class-members (codebase has
+// turn off ghost/filenames/match-regex and no-unused-private-class-members (codebase has
 // intentional placeholder private fields; ESLint 9 added this rule to
 // recommended without warning).
 const ghostBaseRules = {
@@ -161,33 +161,6 @@ export default tseslint.config(
     },
   },
   // ============================================================
-  // API endpoints (custom complexity check migrated to Oxlint)
-  // ============================================================
-  {
-    // Single-level glob is intentional. The rule guards the endpoint files
-    // themselves (one per resource: posts.js, members.js, etc.); nested
-    // endpoints/utils/ holds helpers that aren't endpoints and are
-    // deliberately exempt from the complexity guard.
-    files: ['core/server/api/endpoints/*'],
-    rules: {
-      'ghost/ghost-custom/max-api-complexity': 'off',
-    },
-  },
-  // ============================================================
-  // Migrations: filename check migrated to Oxlint
-  // ============================================================
-  {
-    files: ['core/server/data/migrations/versions/**'],
-    ignores: [
-      'core/server/data/migrations/versions/1.*/*',
-      'core/server/data/migrations/versions/2.*/*',
-      'core/server/data/migrations/versions/3.*/*',
-    ],
-    rules: {
-      'local-filenames/match-regex': 'off',
-    },
-  },
-  // ============================================================
   // Migrations: ban loops + return-in-loop
   // ============================================================
   {
@@ -220,26 +193,6 @@ export default tseslint.config(
     },
   },
   // ============================================================
-  // Core filenames: migrated to Oxlint with the adapters carve-out
-  // ============================================================
-  {
-    files: ['core/**/*.{js,ts}'],
-    ignores: ['core/server/adapters/**'],
-    rules: {
-      'local-filenames/match-regex': 'off',
-    },
-  },
-  // ============================================================
-  // Frontend helper filenames: Oxlint allows underscores
-  // (e.g. ghost_head.js → {{ghost_head}})
-  // ============================================================
-  {
-    files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
-    rules: {
-      'local-filenames/match-regex': 'off',
-    },
-  },
-  // ============================================================
   // Browser-only admin-auth bridge scripts
   // ============================================================
   {
@@ -253,7 +206,6 @@ export default tseslint.config(
       },
     },
     rules: {
-      'ghost/ghost-custom/no-native-error': 'off',
       'no-console': 'off',
     },
   },
@@ -294,8 +246,7 @@ export default tseslint.config(
     rules: {
       ...js.configs.recommended.rules,
       // Tests historically extended ghost/test (= base + test-rules).
-      // Base rules come from correctnessRules (minus the ghost-filenames
-      // rule replaced by local-filenames in Oxlint); test-rules are the
+      // Base rules come from correctnessRules (minus ghost-filenames); test-rules are the
       // workspace-specific extras after.
       ...correctnessRules,
       'ghost/filenames/match-regex': 'off',
@@ -313,7 +264,6 @@ export default tseslint.config(
         },
       ],
       'no-useless-escape': 'off',
-      'local-filenames/match-regex': 'off',
     },
   },
   {

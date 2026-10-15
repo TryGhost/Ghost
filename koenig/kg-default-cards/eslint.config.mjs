@@ -30,7 +30,6 @@ export default defineConfig([
     files: ['test/**/*.ts'],
     rules: {
       ...ghostPlugin.configs['ts-test'].rules,
-      // Migrated to the root Oxlint check.
       'ghost/ghost-custom/node-assert-strict': 'off',
       'ghost/mocha/no-global-tests': 'off',
       'ghost/mocha/handle-done-callback': 'off',

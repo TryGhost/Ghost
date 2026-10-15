@@ -108,7 +108,6 @@ export default tseslint.config([
   {
     files: ['tests/**/*.ts'],
     rules: {
-      'local/no-unsafe-reset-environment': 'off',
       'no-restricted-syntax': [
         'error',
         {

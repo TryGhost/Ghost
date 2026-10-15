@@ -28,7 +28,7 @@ temporary migration exceptions rather than defaults for new work.
 
 Ghost Core keeps a standalone configuration because its rule set does not fit
 a shared factory. Read that file directly. It can still import shared atoms such as `correctnessRules`, `nodeLibRules`,
-`localFilenamesPlugin`, and `strictLinterOptions` from `@internal/cfg-eslint`.
+and `strictLinterOptions` from `@internal/cfg-eslint`.
 
 ## Plugin dependencies
 
@@ -50,8 +50,9 @@ lint when changing shared rule atoms or either factory.
 `pnpm lint:oxlint` owns the eight `ghost-custom` rules and the three local rules
 (filename matching, Admin paths and E2E reset safety). Their standalone
 implementations live in `../oxlint/rules/`; they do not load ESLint plugins.
-The ESLint equivalents are off. Other rules supplied by `eslint-plugin-ghost`
-remain in ESLint.
+The ESLint entries are removed, except for overrides that disable rules inherited
+from presets. `eslint-plugin-ghost` still supplies other checks, including import
+sorting, filename conventions and Mocha rules, so it remains installed.
 
 The root `.oxlintrc.json` preserves the previous workspace scopes, options and
 exceptions. API line limits, assertion-method checks and assertion-parameter

@@ -7,7 +7,6 @@ export default nodeLibConfig({
   extraSrcRules: noGhostIgnitionRequireRule,
   extraTestRules: {
     ...noGhostIgnitionRequireRule,
-    'ghost/ghost-custom/node-assert-strict': 'off',
   },
   extraBlocks: [
     {
