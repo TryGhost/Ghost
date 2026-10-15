@@ -9,7 +9,6 @@ import {
   type RelativeRoutingType,
   resolvePath,
   RouteObject,
-  RouterProvider as ReactRouterProvider,
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
   useLocation,
@@ -17,6 +16,8 @@ import {
   useResolvedPath,
   Navigate as ReactRouterNavigate,
 } from 'react-router';
+// The DOM build honors a navigation's `flushSync` option.
+import { RouterProvider as ReactRouterProvider } from 'react-router/dom';
 import { useFramework } from './framework-provider';
 import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';

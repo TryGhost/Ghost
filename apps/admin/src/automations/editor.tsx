@@ -9,6 +9,7 @@ import AutomationHeader, { type AutomationValidationAction } from './components/
 import { useFeatureFlag, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
 import React from 'react';
+import { flushSync } from 'react-dom';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -282,9 +283,12 @@ const AutomationEditorContent: React.FC<{
           setActionErrors({});
           setEditState({ phase: 'idle' });
           if (isNew) {
-            creation?.onCreated(savedDraft.id);
+            // The saved route commits with its URL change, not in a transition that a
+            // navigation landing first would skip, keeping the saved session at /new.
+            // The session must know the new id before it does.
+            flushSync(() => creation?.onCreated(savedDraft.id));
             bypassNextNavigation();
-            navigate(`/automations/${savedDraft.id}`, { replace: true });
+            navigate(`/automations/${savedDraft.id}`, { replace: true, flushSync: true });
           }
         },
         // Another publisher can take the final slot after the frontend check.
