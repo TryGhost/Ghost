@@ -19,7 +19,7 @@ import { Stack } from '@tryghost/shade/primitives';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { type SupportTicketDraft, submitSupportTicket } from './support-ticket';
+import { type SupportRequestDraft, submitSupportRequest } from './support-request';
 
 interface FormState {
   name: string;
@@ -28,15 +28,15 @@ interface FormState {
   message: string;
 }
 
-interface SupportTicketModalProps {
+interface SupportRequestModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  draft: SupportTicketDraft;
+  draft: SupportRequestDraft;
   onSent?: () => void;
 }
 
 function initialFormState(
-  draft: SupportTicketDraft,
+  draft: SupportRequestDraft,
   currentUser?: { name?: string; email?: string },
 ): FormState {
   return {
@@ -47,7 +47,12 @@ function initialFormState(
   };
 }
 
-export function SupportTicketModal({ open, onOpenChange, draft, onSent }: SupportTicketModalProps) {
+export function SupportRequestModal({
+  open,
+  onOpenChange,
+  draft,
+  onSent,
+}: SupportRequestModalProps) {
   const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser();
   const { data: siteData } = useBrowseSite();
@@ -55,7 +60,7 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
   const { formState, updateForm, handleSave, saveState, errors, clearError } = useForm<FormState>({
     initialState: initialFormState(draft, currentUser),
     onSave: async (state) => {
-      await submitSupportTicket({
+      await submitSupportRequest({
         name: state.name.trim(),
         email: state.email.trim(),
         subject: state.subject.trim(),
@@ -119,7 +124,7 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
         onOpenChange(next);
       }}
     >
-      <DialogContent data-testid="support-ticket-modal">
+      <DialogContent data-testid="support-request-modal">
         <DialogHeader>
           <DialogTitle>Contact support</DialogTitle>
           <DialogDescription>
@@ -128,11 +133,11 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
         </DialogHeader>
         <Stack gap="lg">
           <Field data-invalid={Boolean(errors.name) || undefined}>
-            <FieldLabel htmlFor="support-ticket-name">Name</FieldLabel>
+            <FieldLabel htmlFor="support-request-name">Name</FieldLabel>
             <Input
               aria-invalid={Boolean(errors.name) || undefined}
               disabled={isSubmitting}
-              id="support-ticket-name"
+              id="support-request-name"
               value={formState.name}
               onChange={(event) => updateForm((state) => ({ ...state, name: event.target.value }))}
               onKeyDown={() => clearError('name')}
@@ -140,11 +145,11 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
             {errors.name && <FieldError>{errors.name}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.email) || undefined}>
-            <FieldLabel htmlFor="support-ticket-email">Email</FieldLabel>
+            <FieldLabel htmlFor="support-request-email">Email</FieldLabel>
             <Input
               aria-invalid={Boolean(errors.email) || undefined}
               disabled={isSubmitting}
-              id="support-ticket-email"
+              id="support-request-email"
               type="email"
               value={formState.email}
               onChange={(event) => updateForm((state) => ({ ...state, email: event.target.value }))}
@@ -153,11 +158,11 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
             {errors.email && <FieldError>{errors.email}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.subject) || undefined}>
-            <FieldLabel htmlFor="support-ticket-subject">Subject</FieldLabel>
+            <FieldLabel htmlFor="support-request-subject">Subject</FieldLabel>
             <Input
               aria-invalid={Boolean(errors.subject) || undefined}
               disabled={isSubmitting}
-              id="support-ticket-subject"
+              id="support-request-subject"
               value={formState.subject}
               onChange={(event) =>
                 updateForm((state) => ({ ...state, subject: event.target.value }))
@@ -167,11 +172,11 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
             {errors.subject && <FieldError>{errors.subject}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.message) || undefined}>
-            <FieldLabel htmlFor="support-ticket-message">Message</FieldLabel>
+            <FieldLabel htmlFor="support-request-message">Message</FieldLabel>
             <Textarea
               aria-invalid={Boolean(errors.message) || undefined}
               disabled={isSubmitting}
-              id="support-ticket-message"
+              id="support-request-message"
               rows={6}
               value={formState.message}
               onChange={(event) =>
@@ -195,7 +200,7 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
             Cancel
           </Button>
           <Button
-            data-testid="support-ticket-send"
+            data-testid="support-request-send"
             disabled={isSubmitting}
             type="button"
             onClick={() => void onSubmit()}
@@ -206,7 +211,7 @@ export function SupportTicketModal({ open, onOpenChange, draft, onSent }: Suppor
                 <span className="sr-only">Sending</span>
               </>
             ) : (
-              'Send ticket'
+              'Send'
             )}
           </Button>
         </DialogFooter>

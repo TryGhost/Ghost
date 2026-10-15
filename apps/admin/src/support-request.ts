@@ -1,7 +1,7 @@
-/** Replace with the real support-ticket webhook URL when available. */
-export const SUPPORT_TICKET_WEBHOOK_URL = '';
+/** Replace with the real support-request webhook URL when available. */
+export const SUPPORT_REQUEST_WEBHOOK_URL = '';
 
-export interface SupportTicketDraft {
+export interface SupportRequestDraft {
   name?: string;
   email?: string;
   subject?: string;
@@ -12,7 +12,7 @@ export interface SupportTicketDraft {
   transcript?: string;
 }
 
-export interface SupportTicketPayload {
+export interface SupportRequestPayload {
   name: string;
   email: string;
   subject: string;
@@ -24,15 +24,15 @@ export interface SupportTicketPayload {
   transcript: string | null;
 }
 
-export async function submitSupportTicket(payload: SupportTicketPayload): Promise<void> {
-  if (!SUPPORT_TICKET_WEBHOOK_URL) {
+export async function submitSupportRequest(payload: SupportRequestPayload): Promise<void> {
+  if (!SUPPORT_REQUEST_WEBHOOK_URL) {
     // eslint-disable-next-line no-console
-    console.info('[Support ticket] Webhook is not configured', payload);
-    throw new Error('Support ticket webhook is not configured');
+    console.info('[Support request] Webhook is not configured', payload);
+    throw new Error('Support request webhook is not configured');
   }
 
   // eslint-disable-next-line no-restricted-syntax -- external support webhook, not the Admin API
-  const response = await fetch(SUPPORT_TICKET_WEBHOOK_URL, {
+  const response = await fetch(SUPPORT_REQUEST_WEBHOOK_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
