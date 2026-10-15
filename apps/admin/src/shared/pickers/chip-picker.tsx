@@ -196,7 +196,9 @@ export function ChipPicker<TOption, TChip>({
         padding: VIEWPORT_GUTTER_PX,
         apply({ availableHeight, elements, rects }) {
           Object.assign(elements.floating.style, {
-            minWidth: `${rects.reference.width}px`,
+            // Never narrower than the field, unless the field outgrows the viewport:
+            // min-width beats the class's max-width, so it carries the gutter too.
+            minWidth: `min(${rects.reference.width}px, calc(100vw - ${VIEWPORT_GUTTER_PX * 2}px))`,
             maxHeight: `${Math.min(LIST_MAX_HEIGHT_PX, availableHeight)}px`,
           });
         },

@@ -338,7 +338,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
       size({
         padding: GUTTER,
         apply({ availableHeight, elements, rects }) {
-          elements.floating.style.minWidth = `${rects.reference.width}px`;
+          // Never narrower than the field, unless the field outgrows the viewport:
+          // min-width beats the class's max-width, so it carries the gutter too.
+          elements.floating.style.minWidth = `min(${rects.reference.width}px, calc(100vw - ${GUTTER * 2}px))`;
           elements.floating.style.setProperty(
             '--label-list-max-height',
             `${Math.max(MIN_HEIGHT, Math.min(PREFERRED_HEIGHT, availableHeight))}px`,
