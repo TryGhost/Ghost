@@ -33,13 +33,14 @@ nightlies and host build labels pass through unchanged.
 
 Adapter rejections map to `UPGRADE_UNSUPPORTED` (409), `UPGRADE_BUSY` (409),
 `UPGRADE_TARGET_UNAPPROVED` (422), `UPGRADE_IDEMPOTENCY_CONFLICT` (409),
-`UPGRADE_REQUEST_EXPIRED` (409) and `UPGRADE_UNAVAILABLE` (503), with any
+`UPGRADE_REQUEST_EXPIRED` (409) and `UPGRADE_UNAVAILABLE` (502), with any
 diagnostics in `errors[].details.diagnostics`. Unexpected adapter errors and
 invalid adapter output are logged and returned as `UPGRADE_UNAVAILABLE`.
 
 `GET /upgrades/` never fails because of the host: an adapter failure is reported
 as `{supported: true, availability: "unavailable"}`. Admin treats any 503 as
-Ghost itself being under maintenance, so status checks must not return one.
+Ghost itself being under maintenance, so upgrade errors never use it: an
+unreachable host is a 502 Bad Gateway.
 
 ## Rate limits
 
