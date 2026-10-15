@@ -44,9 +44,9 @@
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "dts-bundle-generator": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",
+    "rolldown-plugin-dts": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

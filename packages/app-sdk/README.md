@@ -254,7 +254,7 @@ shape checks, so the SDK and Admin read paths, themes and start contexts by the
 same rules. It imports only the contracts' root entry point, which loads no
 `zod`, and the build writes what it uses into the SDK, so the contracts are a
 dev dependency: `build/index.js` imports only `@quilted/threads`,
-`build/index.d.ts` (bundled by `dts-bundle-generator`) imports nothing, and
-`dist/` imports nothing at all, which `test/bundle.test.ts` checks on a fresh
-build. The build fails on a Node builtin, which Vite would otherwise replace
-with an empty stub.
+`build/index.d.ts` (emitted by TypeScript 7 and bundled by
+`rolldown-plugin-dts`) imports nothing, and `dist/` imports nothing at all,
+which `test/bundle.test.ts` checks on a fresh build. The build fails on a Node
+builtin, which Vite would otherwise replace with an empty stub.

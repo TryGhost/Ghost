@@ -1,6 +1,8 @@
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-import { generateDtsBundle } from 'dts-bundle-generator';
+import { dts } from 'rolldown-plugin-dts';
 import { defineConfig, type Plugin, type UserConfig } from 'vite';
 
 // pnpm keeps dependencies in a store outside the repository, so the paths the bundler
@@ -44,28 +46,50 @@ const refuseNodeBuiltins: Plugin = {
 
 // Writes the package's type declarations to one file next to its code, with the contract types
 // the SDK uses inlined, so an app needs nothing from @tryghost/app-contracts. Only the types the
-// entry point exports are exported.
-function bundleDeclarations(): Plugin {
-  let root = '';
-  return {
-    name: 'bundle-declarations',
-    configResolved(config) {
-      root = config.root;
+// entry point exports are exported. TypeScript 7 emits the declarations. The plugin looks for it
+// as `typescript`, which is the TypeScript 6 shim here, so it is pointed at `@typescript/native`.
+async function bundleDeclarations(): Promise<Plugin[]> {
+  const typescript = createRequire(import.meta.url).resolve('@typescript/native/package.json');
+  const { default: getExePath } = (await import(
+    pathToFileURL(join(dirname(typescript), 'lib/getExePath.js')).href
+  )) as { default: () => string };
+  return [
+    // Typed as Rolldown plugins, whose `resolveId` options Vite's own type for them narrows.
+    ...(dts({
+      generator: 'tsgo',
+      tsgo: { path: getExePath() },
+      cwd: import.meta.dirname,
+      tsconfig: 'tsconfig.json',
+      // A declaration map would point into src/, which the package doesn't publish.
+      sourcemap: false,
+    }) as Plugin[]),
+    {
+      // The contracts' root declarations import zod for their manifest types, which the SDK
+      // doesn't use. Leaving zod out spares loading its declarations, which are CommonJS and
+      // can't be bundled; with no side effects, the import goes when nothing uses it, and the
+      // bundle tests fail if something does.
+      name: 'leave-out-zod-declarations',
+      // Before Vite resolves the import to zod's own files.
+      enforce: 'pre',
+      resolveId(source, importer) {
+        if (importer?.endsWith('.d.ts') && /^zod(?:\/|$)/.test(source)) {
+          return { id: source, external: true, moduleSideEffects: false };
+        }
+      },
     },
-    generateBundle() {
-      const [declarations] = generateDtsBundle(
-        [
-          {
-            filePath: join(root, 'src/index.ts'),
-            libraries: { inlinedLibraries: ['@tryghost/app-contracts'] },
-            output: { noBanner: true, exportReferencedTypes: false },
-          },
-        ],
-        { preferredConfigPath: join(root, 'tsconfig.json') },
-      );
-      this.emitFile({ type: 'asset', fileName: 'index.d.ts', source: declarations });
+    {
+      // The plugin drops the declaration map, but the build's `sourcemap` still adds the
+      // comment that points to it.
+      name: 'drop-declaration-map-comment',
+      generateBundle(_options, bundle) {
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk' && chunk.fileName.endsWith('.d.ts')) {
+            chunk.code = chunk.code.replace(/\n\/\/# sourceMappingURL=\S+\s*$/, '\n');
+          }
+        }
+      },
     },
-  };
+  ];
 }
 
 const shared = {
@@ -78,21 +102,26 @@ const shared = {
 
 // The build a bundler imports, in `build/`, built with `--mode package`: one ES module with
 // the parts of @tryghost/app-contracts the SDK uses inlined, so the package depends only on
-// @quilted/threads.
-const packageBuild: UserConfig = {
+// @quilted/threads. A function, so only this build sets up the declaration plugin.
+const packageBuild = (): UserConfig => ({
   plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
+  // Vite would compile the generated declarations to JavaScript, which drops every type. This
+  // replaces Vite's own exclusions, so JavaScript stays excluded too.
+  oxc: { exclude: [/\.js$/, /\.d\.[cm]?ts$/] },
   build: {
     ...shared,
     outDir: 'build',
-    lib: { entry: 'src/index.ts', formats: ['es'], fileName: () => 'index.js' },
+    // Named after the entry, as the declarations are the same entry named `index.d`, and the
+    // declaration plugin turns `index.d.js` into `index.d.ts`.
+    lib: { entry: 'src/index.ts', formats: ['es'], fileName: (_format, name) => `${name}.js` },
     rolldownOptions: {
       external: [/^@quilted\/threads(?:\/|$)/],
       output: { sourcemapPathTransform: fromNodeModules },
-      // Generating the declarations builds a TypeScript program, which is expected to be slow.
+      // Generating the declarations runs TypeScript, which is expected to be slow.
       checks: { pluginTimings: false },
     },
   },
-};
+});
 
 // The browser bundle, in `dist/`, built by default: one ES module with @quilted/threads
 // inlined too, for a page to load from a <script type="module"> with no bundler of its own.
@@ -111,4 +140,4 @@ const browserBundle: UserConfig = {
   },
 };
 
-export default defineConfig(({ mode }) => (mode === 'package' ? packageBuild : browserBundle));
+export default defineConfig(({ mode }) => (mode === 'package' ? packageBuild() : browserBundle));
