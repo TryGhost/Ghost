@@ -134,7 +134,7 @@ describe('fetch', () => {
     ['a path that is not text', 42 as unknown as string, {}, 'invalid_path'],
     ['an unknown method', '/posts/', { method: 'TRACE' }, 'invalid_argument'],
     ['a body on a GET', '/posts/', { body: 'x' }, 'invalid_argument'],
-    ['a body on a HEAD', '/posts/', { method: 'head', body: { a: 1 } }, 'invalid_argument'],
+    ['a method no route allows', '/posts/', { method: 'patch' }, 'invalid_argument'],
     [
       'a binary body',
       '/posts/',

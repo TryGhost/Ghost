@@ -39,7 +39,8 @@ import type { FetchMethod } from './rules.ts';
  * Routes are written as `METHOD /path`, in path segments. `:id` matches only an object ID: 24
  * lowercase hexadecimal characters. Any other `:name` matches any one segment, such as a slug.
  * A route matches with or without a trailing `/`, and its fixed segments in any case, as Ghost's
- * router reads them.
+ * router reads them. A fixed segment must be written out, not escaped: Ghost's router matches
+ * the path as it arrives, so `/posts/sl%75g/…` doesn't reach the slug route.
  */
 
 export interface AdminApiScope {
@@ -157,6 +158,11 @@ const ROUTES: readonly Route[] = ADMIN_API_ALLOWLIST.flatMap((scope) =>
   }),
 );
 
+const OPAQUE_SEGMENT = /^\.{1,2}$/;
+
+// Matches the path's segments as they arrive. A parameter is decoded before it's checked, as
+// Ghost's router decodes it, and mustn't decode to `.`, `..` or a separator; a fixed segment
+// isn't decoded, as the router matches it escaped.
 function matches(route: Route, segments: readonly string[]): boolean {
   return (
     route.segments.length === segments.length &&
@@ -165,7 +171,15 @@ function matches(route: Route, segments: readonly string[]): boolean {
       if (part.kind === 'fixed') {
         return part.value === segment.toLowerCase();
       }
-      return part.kind === 'any' || OBJECT_ID.test(segment);
+      if (part.kind === 'id') {
+        return OBJECT_ID.test(segment);
+      }
+      try {
+        const decoded = decodeURIComponent(segment);
+        return !OPAQUE_SEGMENT.test(decoded) && !/[/\\]/.test(decoded);
+      } catch {
+        return false;
+      }
     })
   );
 }
@@ -182,22 +196,19 @@ export interface AllowedAdminApiRoute {
  * returns `undefined` when apps can't make it. Takes a pathname relative to the Admin API root,
  * such as `/posts/`, without the query.
  *
- * A path is read after decoding percent-escapes, with empty segments dropped. A path that can't
- * be decoded, or that still contains `.` or `..` after decoding, matches nothing, because where
- * such a path leads depends on which parser reads it.
+ * A path matches nothing if it has an empty segment, other than the trailing `/`, or a segment
+ * that is `.` or `..`, written out or escaped, because where such a path leads depends on which
+ * parser reads it.
  */
 export function findAllowedAdminApiRoute(
   pathname: string,
   method: FetchMethod,
 ): AllowedAdminApiRoute | undefined {
-  let decoded: string;
-  try {
-    decoded = decodeURIComponent(pathname);
-  } catch {
+  if (!pathname.startsWith('/')) {
     return undefined;
   }
-  const segments = decoded.split('/').filter(Boolean);
-  if (segments.some((segment) => segment === '.' || segment === '..')) {
+  const segments = pathname.slice(1).replace(/\/$/, '').split('/');
+  if (segments.some((segment) => segment === '' || OPAQUE_SEGMENT.test(segment))) {
     return undefined;
   }
   const route = ROUTES.find((each) => each.method === method && matches(each, segments));

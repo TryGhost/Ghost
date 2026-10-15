@@ -27,7 +27,7 @@ describe('a fetch request', () => {
       body: JSON.stringify({ posts: [{ title: 'Hello' }] }),
     };
     expect(FetchRequestSchema.parse(request)).toEqual(request);
-    for (const method of ['GET', 'PUT', 'DELETE', 'PATCH', 'HEAD']) {
+    for (const method of ['GET', 'PUT', 'DELETE']) {
       expect(FetchRequestSchema.parse({ path: '/posts/', method }).method).toBe(method);
     }
   });
@@ -58,7 +58,7 @@ describe('a fetch request', () => {
   it('refuses methods the Admin API does not answer', () => {
     for (const method of ['get', 'OPTIONS', 'TRACE', 'CONNECT', 1]) {
       expect(requestErrors({ path: '/posts/', method })).toEqual([
-        { path: ['method'], message: 'Expected a method of: GET, POST, PUT, DELETE, PATCH, HEAD' },
+        { path: ['method'], message: 'Expected a method of: GET, POST, PUT, DELETE' },
       ]);
     }
   });
@@ -176,10 +176,10 @@ describe('a fetch request', () => {
     expect(FetchRequestSchema.safeParse({ path: '/posts/', headers }).success).toBe(true);
   });
 
-  it('refuses a body on a GET or HEAD request', () => {
-    for (const method of [undefined, 'GET', 'HEAD']) {
+  it('refuses a body on a GET request', () => {
+    for (const method of [undefined, 'GET']) {
       expect(requestErrors({ path: '/posts/', method, body: '{}' })).toEqual([
-        { path: ['body'], message: 'Expected no body on a GET or HEAD request' },
+        { path: ['body'], message: 'Expected no body on a GET request' },
       ]);
     }
   });

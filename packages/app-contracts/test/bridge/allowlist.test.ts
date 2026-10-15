@@ -71,8 +71,6 @@ describe('the Admin API allowlist', () => {
       ['POST', `/posts/${ID}/copy/`],
       ['GET', `/posts/${ID}/gift_links/`],
       ['POST', '/posts/upload/'],
-      ['HEAD', '/posts/'],
-      ['PATCH', `/posts/${ID}/`],
       ['GET', `/users/${ID}/`],
       ['GET', `/users/${ID}/token/`],
       ['GET', '/users/me/'],
@@ -124,9 +122,21 @@ describe('the Admin API allowlist', () => {
     expect(allowed('GET', `/Posts/${ID}`)).toBe('GET /posts/:id');
   });
 
-  it('reads a path once decoded and with empty segments dropped', () => {
-    expect(allowed('GET', '/%70osts/')).toBe('GET /posts');
-    expect(allowed('GET', `//posts//${ID}/`)).toBe('GET /posts/:id');
+  it('matches fixed segments only as written out, as Ghost’s router does', () => {
+    // The router matches `/%70osts/` as it arrives, so it isn't the posts route.
+    expect(allowed('GET', '/%70osts/')).toBeUndefined();
+    // Read as the slug route here, it would reach another route in Ghost.
+    expect(allowed('GET', '/posts/sl%75g/welcome/')).toBeUndefined();
+    expect(allowed('GET', `/posts/%35${ID.slice(1)}/`)).toBeUndefined();
+    // A parameter is decoded, as the router decodes it.
+    expect(allowed('GET', '/posts/slug/caf%C3%A9/')).toBe('GET /posts/slug/:slug');
+    expect(allowed('GET', '/slugs/post/My%20title/')).toBe('GET /slugs/:type/:name');
+  });
+
+  it('matches nothing for a path with an empty segment', () => {
+    for (const path of [`//posts/${ID}/`, `/posts//${ID}/`, '/posts//', '/tags/slug//', '/']) {
+      expect(allowed('GET', path), path).toBeUndefined();
+    }
   });
 
   it('matches nothing for a path whose destination depends on which parser reads it', () => {
@@ -135,9 +145,11 @@ describe('the Admin API allowlist', () => {
       '/posts/%2e%2e/tags/',
       '/posts/./',
       '/tags/..',
-      '/%',
-      '/posts/%zz/',
-      '/posts/%E0%A4%A/',
+      '/posts/slug/%',
+      '/posts/slug/%zz/',
+      '/posts/slug/%E0%A4%A/',
+      '/posts/slug/%2e%2e/',
+      '/posts/slug/./',
     ]) {
       expect(allowed('GET', path), path).toBeUndefined();
     }

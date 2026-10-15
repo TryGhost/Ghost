@@ -282,17 +282,15 @@ describe('a refusal', () => {
 });
 
 describe('a body', () => {
-  it('is allowed with every method except GET and HEAD', () => {
-    expect(['POST', 'PUT', 'PATCH', 'DELETE'].every(methodAllowsBody)).toBe(true);
-    expect(['GET', 'HEAD'].some(methodAllowsBody)).toBe(false);
+  it('is allowed with every method except GET', () => {
+    expect(['POST', 'PUT', 'DELETE'].every(methodAllowsBody)).toBe(true);
+    expect(methodAllowsBody('GET')).toBe(false);
   });
 });
 
 describe('the messages for a refused argument', () => {
   it('name what was expected, with the methods spelled out', () => {
-    expect(ARGUMENT_MESSAGES.fetchMethod).toBe(
-      'Expected a method of: GET, POST, PUT, DELETE, PATCH, HEAD',
-    );
+    expect(ARGUMENT_MESSAGES.fetchMethod).toBe('Expected a method of: GET, POST, PUT, DELETE');
     // Lowercase whatever case the name was given in, because the SDK only ever has it in
     // lowercase.
     for (const name of ['cookie', 'Cookie', 'COOKIE']) {

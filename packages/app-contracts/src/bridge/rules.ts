@@ -26,18 +26,20 @@ export const START_TIMEOUT_MS = 10_000;
 /** Long enough for any real page title, short enough that Admin's own name still shows. */
 export const TITLE_MAX_LENGTH = 200;
 
-/** The methods the Admin API supports, in uppercase. The SDK uppercases what apps pass. */
-export const FETCH_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'] as const;
+/**
+ * The methods an app may use, in uppercase: the ones the allowlist has routes for. The SDK
+ * uppercases what apps pass.
+ */
+export const FETCH_METHODS = ['GET', 'POST', 'PUT', 'DELETE'] as const;
 
 export type FetchMethod = (typeof FETCH_METHODS)[number];
 
 /**
  * Whether a request with this method may carry a body. Expects an uppercase method from
- * `FETCH_METHODS`. The Admin API reads no body on a `GET` or `HEAD`, and fetch refuses to send
- * one.
+ * `FETCH_METHODS`. The Admin API reads no body on a `GET`, and fetch refuses to send one.
  */
 export function methodAllowsBody(method: string): boolean {
-  return method !== 'GET' && method !== 'HEAD';
+  return method !== 'GET';
 }
 
 // The headers Admin sets itself on a request it makes for an app: the credentials, which only
@@ -67,7 +69,7 @@ export function isReservedRequestHeader(name: string): boolean {
 export const ARGUMENT_MESSAGES = {
   fetchPath: 'Expected an Admin API path such as /posts/, not a URL',
   fetchMethod: `Expected a method of: ${FETCH_METHODS.join(', ')}`,
-  fetchBody: 'Expected no body on a GET or HEAD request',
+  fetchBody: 'Expected no body on a GET request',
   // Header names are case-insensitive, and `Headers` lowercases them on the SDK's side, so the
   // name is lowercased here too and both sides produce the same message.
   reservedHeader: (name: string) =>
