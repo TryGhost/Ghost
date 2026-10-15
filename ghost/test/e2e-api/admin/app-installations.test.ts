@@ -739,11 +739,6 @@ describe('App installations Admin API', function () {
   });
 
   describe('POST /apps/installations/:id/sessions/', function () {
-    /** What the re-check logged about the app being unavailable. */
-    const unavailableLogged = (warn: sinon.SinonStub) =>
-      warn.args
-        .map(([message]) => message)
-        .filter((message) => typeof message === 'string' && message.includes('is unavailable.'));
     const pendingOf = async (id: string) => {
       const row = await installationRow(id);
       return row.pending_manifest_id
@@ -915,9 +910,8 @@ describe('App installations Admin API', function () {
       assert.match(body.errors[0].context, /^APP_MANIFEST_UNREACHABLE: /);
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
-      // Loading the manifest logs this, so the re-check doesn't log it again.
+      // The loader logs why the request failed, which the answer leaves out.
       assert.ok(warn.calledWith(`Could not load the app manifest at ${MANIFEST_URL}`));
-      assert.deepEqual(unavailableLogged(warn), []);
 
       serve(manifest());
       const { body: opened } = await start(installed.id);
@@ -925,48 +919,46 @@ describe('App installations Admin API', function () {
       assert.equal(opened.app_sessions[0].revision, 0);
     });
 
-    it('fails as unavailable when the fetched manifest is not valid, and logs why', async function () {
+    it('fails as unavailable when the fetched manifest is not valid, saying why', async function () {
       const installed = await install();
       serve(manifest({ accent_color: 'red' }));
-      const warn = sinon.stub(logging, 'warn');
 
       const { body } = await start(installed.id, 409);
 
       assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
-      const [logged] = unavailableLogged(warn);
-      assert.ok(logged.includes(`${installed.id} (com.example.podcast)`), logged);
-      assert.match(logged, /APP_MANIFEST_INVALID: .*\(accent_color: /);
+      assert.match(body.errors[0].context, /^APP_MANIFEST_INVALID: .*\(accent_color: /);
     });
 
-    it('fails as unavailable when the manifest URL serves another app, and logs why', async function () {
+    it('fails as unavailable when the manifest URL serves another app, saying why', async function () {
       const installed = await install();
       serve(manifest({ id: 'com.example.other' }));
-      const warn = sinon.stub(logging, 'warn');
 
       const { body } = await start(installed.id, 409);
 
       assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
-      const [logged] = unavailableLogged(warn);
-      assert.match(logged, /APP_MANIFEST_OTHER_APP: .* now serves com\.example\.other/);
+      assert.match(
+        body.errors[0].context,
+        /^APP_MANIFEST_OTHER_APP: .* now serves com\.example\.other/,
+      );
     });
 
-    it('fails as unavailable when the manifest URL redirects to another host, and logs where', async function () {
+    it('fails as unavailable when the manifest URL redirects to another host, saying where', async function () {
       const installed = await install();
       nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(302, undefined, {
         location: 'https://elsewhere.example.com/ghost-app.json',
       });
-      const warn = sinon.stub(logging, 'warn');
-
       const { body } = await start(installed.id, 409);
 
       assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
       assert.equal((await manifestRows()).length, 1);
-      const [logged] = unavailableLogged(warn);
-      assert.match(logged, /APP_MANIFEST_REDIRECTED: .*redirects to elsewhere\.example\.com\)$/);
+      assert.match(
+        body.errors[0].context,
+        /^APP_MANIFEST_REDIRECTED: .*redirects to elsewhere\.example\.com\)$/,
+      );
     });
 
     it('fails the session on an error that is not about the manifest, then tries again', async function () {

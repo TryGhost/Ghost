@@ -1,5 +1,4 @@
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
@@ -623,14 +622,14 @@ export class AppInstallationsService {
       throw notInstalled();
     }
 
-    // Returns the error to fail the session with, and logs why. Returns null if the
-    // installation changed while the manifest was loading, since it may no longer use that
-    // URL; the session then returns the installation as it is. The loader already logs an
-    // unreachable manifest, so that case isn't logged twice.
+    // Returns the error to fail the session with. Its context says what was wrong, and the
+    // request log records it. Returns null if the installation changed while the manifest
+    // was loading, since it may no longer use that URL; the session then returns the
+    // installation as it is.
     const unavailableBecause = async (
       code: string | null,
       message: string,
-      { reason, log = true }: { reason?: string; log?: boolean } = {},
+      reason?: string,
     ): Promise<Error | null> => {
       const current = await currentInstallation({ id }, this.knex);
       if (!current) {
@@ -639,11 +638,7 @@ export class AppInstallationsService {
       if (current.revision !== before.revision) {
         return null;
       }
-      const why = `${code}: ${message}${reason ? ` (${reason})` : ''}`;
-      if (log) {
-        logging.warn(`App installation ${id} (${before.app_id}) is unavailable. ${why}`);
-      }
-      return unavailable(why);
+      return unavailable(`${code}: ${message}${reason ? ` (${reason})` : ''}`);
     };
     let loaded: LoadedManifest;
     try {
@@ -652,10 +647,7 @@ export class AppInstallationsService {
       if (!(err instanceof errors.ValidationError)) {
         throw err;
       }
-      const failure = await unavailableBecause(err.code, err.message, {
-        reason: err.context,
-        log: err.code !== 'APP_MANIFEST_UNREACHABLE',
-      });
+      const failure = await unavailableBecause(err.code, err.message, err.context);
       if (failure) {
         throw failure;
       }
