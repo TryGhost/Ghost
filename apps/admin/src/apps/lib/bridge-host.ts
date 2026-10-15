@@ -6,8 +6,6 @@ import {
   FetchRequestSchema,
   HelloMessageSchema,
   type HostExports,
-  type PathChangeOptions,
-  PathChangeOptionsSchema,
   type Place,
   PlaceSchema,
   type StartContext,
@@ -25,7 +23,7 @@ export interface AppFrameHandlers {
    * `path` is already normalised by `AppPathSchema`, the single form Admin stores app paths in.
    * Returns the app's path as Admin now has it: `path`, or Admin's own when it didn't follow.
    */
-  pathChanged(path: string, options: PathChangeOptions): string;
+  pathChanged(path: string): string;
   /** Takes the publisher to `place`, and returns whether Admin navigated there. */
   open(place: Place): boolean;
   /**
@@ -168,10 +166,9 @@ export function bindAppFrame({
       titleChanged: guarded((title: unknown) => {
         handlers.titleChanged(parseFromFrame(TitleSchema, title));
       }),
-      pathChanged: guarded((path: unknown, options: unknown = {}) => {
-        const appPath = parseFromFrame(AppPathSchema, path, 'invalid_path');
-        return handlers.pathChanged(appPath, parseFromFrame(PathChangeOptionsSchema, options));
-      }),
+      pathChanged: guarded((path: unknown) =>
+        handlers.pathChanged(parseFromFrame(AppPathSchema, path, 'invalid_path')),
+      ),
       open: guarded((place: unknown) => {
         if (!handlers.open(parseFromFrame(PlaceSchema, place))) {
           throw new BridgeError('rejected', 'The publisher is on their way elsewhere in Admin');

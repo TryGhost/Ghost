@@ -583,13 +583,8 @@ describe('createAppFrameSession', () => {
     const frame = await started();
 
     // Answers with the path Admin now has for the app, which the page stores.
-    await expect(frame.host.pathChanged('/episodes/12', { replace: true })).resolves.toBe(
-      '/episodes/12',
-    );
-    expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', {
-      replace: true,
-      move: moveOf(0),
-    });
+    await expect(frame.host.pathChanged('/episodes/12')).resolves.toBe('/episodes/12');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', { move: moveOf(0) });
     // Admin follows, which changes Admin's path within the app to the app's current path.
     session.pathChanged('/episodes/12', moveOf(0));
     await settle();
@@ -606,8 +601,8 @@ describe('createAppFrameSession', () => {
     // The app moves away and back before Admin has followed either move.
     await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
     expect(navigate.mock.calls).toEqual([
-      ['/login', { replace: undefined, move: moveOf(0) }],
-      ['/', { replace: undefined, move: moveOf(0) + 1 }],
+      ['/login', { move: moveOf(0) }],
+      ['/', { move: moveOf(0) + 1 }],
     ]);
     // Admin arrives at each route in turn, including the one the app has left.
     session.pathChanged('/login', moveOf(0));
@@ -625,16 +620,14 @@ describe('createAppFrameSession', () => {
   it('follows the app to its last route when Admin skips one in between', async () => {
     const frame = await started();
 
-    await Promise.all([
-      frame.host.pathChanged('/a'),
-      frame.host.pathChanged('/b', { replace: true }),
-    ]);
+    await Promise.all([frame.host.pathChanged('/a'), frame.host.pathChanged('/b')]);
     // Only the last route is rendered.
     session.pathChanged('/b', moveOf(1));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
-    // Going back to the route Admin skipped isn't an app move, so it's sent to the app.
+    // A location with the marker of a move Admin has since left behind isn't an app move, so its
+    // path is sent to the app.
     session.pathChanged('/a', moveOf(0));
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/a'));
   });
