@@ -27,7 +27,7 @@ installs easy to manage.
 
 The monorepo publishes packages to npm through two lanes. Which lane a package
 is on is the one piece of hand-maintained state:
-[`tools/scripts/publish-manifest.json`](../../tools/scripts/publish-manifest.json)
+[`tools/scripts/release/publish-manifest.json`](../../tools/scripts/release/publish-manifest.json)
 lists the continuous lane; every other publishable package is on the changeset
 lane.
 

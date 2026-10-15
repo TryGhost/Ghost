@@ -18,8 +18,8 @@ import { resolve } from 'node:path';
 import { parseArgs, promisify } from 'node:util';
 import semver, { type SemVer } from 'semver';
 
-import { continuousPackage, type VersioningPolicy } from './lib/publish-manifest.ts';
-import { readJson } from './lib/utils.ts';
+import { continuousPackage, type VersioningPolicy } from '../lib/publish-manifest.ts';
+import { readJson } from '../lib/utils.ts';
 
 const execFileAsync = promisify(execFile);
 

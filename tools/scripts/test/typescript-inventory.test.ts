@@ -1,4 +1,4 @@
-import type { ResolvedDependency } from '../lib/typescript-inventory-types.ts';
+import type { ResolvedDependency } from '../ci/typescript-inventory-types.ts';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -12,7 +12,7 @@ import {
   inventoryAtRevision,
   parseSource,
   scoreFile,
-} from '../typescript-inventory.ts';
+} from '../ci/typescript-inventory.ts';
 
 test('parses real imports, re-exports and computed calls without matching comments or strings', () => {
   const result = parseSource(

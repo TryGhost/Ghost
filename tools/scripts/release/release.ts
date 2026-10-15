@@ -7,9 +7,9 @@ import camelcaseKeys from 'camelcase-keys';
 import { setTimeout } from 'node:timers/promises';
 import type { ExecSyncOptionsWithStringEncoding } from 'node:child_process';
 
-import { ROOT_DIR } from './lib/constants.ts';
-import { resolveBaseTag } from './lib/resolve-base-tag.ts';
-import { readJsonSync, writeJsonSync } from './lib/utils.ts';
+import { ROOT_DIR } from '../lib/constants.ts';
+import { resolveBaseTag } from './resolve-base-tag.ts';
+import { readJsonSync, writeJsonSync } from '../lib/utils.ts';
 
 const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/package.json');
 const CASPER_DIR = join(ROOT_DIR, 'ghost/content/themes/casper');
@@ -493,7 +493,7 @@ async function main() {
   // 4b. Consume changesets → version the publishable workspace packages
   // (kg-*, packages/*, ...). These changes land in the Ghost release commit
   // below, tying every package version to the Ghost release that carries its
-  // content; publishing (tools/scripts/publish-packages.ts) reads those off npm.
+  // content; publishing (tools/scripts/release/publish-packages.ts) reads those off npm.
   logStep('Applying changeset versions to publishable packages');
   applyChangesetVersions();
 

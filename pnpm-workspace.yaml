@@ -31,7 +31,7 @@ allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
   # sentry-cli's postinstall only downloads a fallback binary; CI's sourcemap
-  # upload (tools/scripts/upload-sentry-sourcemaps.ts) uses the one from its platform
+  # upload (tools/scripts/build/upload-sentry-sourcemaps.ts) uses the one from its platform
   # optionalDependency.
   '@sentry/cli': false
   'better-sqlite3@12.11.1': true

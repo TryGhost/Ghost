@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { latestInLine, nextVersion } from '../next-version.ts';
+import { latestInLine, nextVersion } from '../release/next-version.ts';
 
 const published = ['2.69.3', '2.69.4', '2.70.0', '2.70.1', '2.70.2', '2.70.5-beta.1', '3.0.0'];
 

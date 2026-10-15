@@ -2,14 +2,14 @@ import { join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import semver from 'semver';
 
-import { execAsync, readJson, writeJson } from './lib/utils.ts';
+import { execAsync, readJson, writeJson } from '../lib/utils.ts';
 import {
   continuousPackage,
   readDefaults,
   writeDefaults,
   DEFAULTS_PATH,
   majorMinor,
-} from './lib/publish-manifest.ts';
+} from '../lib/publish-manifest.ts';
 
 const CURRENT_DIR = process.cwd();
 
@@ -28,7 +28,7 @@ const app = continuousPackage(APP_NAME);
 async function ensureEnabledApp() {
   if (!app?.cdn) {
     console.error(
-      `${APP_NAME} is not a CDN-served app — give it a cdn key in tools/scripts/publish-manifest.json to release it here`,
+      `${APP_NAME} is not a CDN-served app — give it a cdn key in tools/scripts/release/publish-manifest.json to release it here`,
     );
     process.exit(1);
   }

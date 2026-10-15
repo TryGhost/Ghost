@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 
-import { ROOT_DIR } from './constants.ts';
+import { ROOT_DIR } from '../lib/constants.ts';
 
 // Stays in sync with lib/git.ts: git always runs from the repo root, and a
 // child's stderr never leaks into the caller's output — the pre-commit hook

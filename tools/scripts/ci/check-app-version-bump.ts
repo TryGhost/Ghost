@@ -12,8 +12,8 @@ import {
   DEFAULTS_REPO_PATH,
   majorMinor,
   type ContinuousPackage,
-} from './lib/publish-manifest.ts';
-import { resolveBaseCommit } from './lib/pr-base.ts';
+} from '../lib/publish-manifest.ts';
+import { resolveBaseCommit } from './pr-base.ts';
 
 type PublicApp = ContinuousPackage;
 
@@ -79,7 +79,7 @@ function getChangedApps(changedFiles: string[]): PublicApp[] {
 }
 
 function getPrVersion(app: PublicApp): string {
-  const packageJsonPath = join(import.meta.dirname, '../..', app.path, 'package.json');
+  const packageJsonPath = join(import.meta.dirname, '../../..', app.path, 'package.json');
 
   if (!existsSync(packageJsonPath)) {
     throw new Error(`${app.path}/package.json does not exist in this PR`);

@@ -176,6 +176,9 @@
         "tools/gx/lib/**/*.ts",
         "tools/gx/test/dev*.test.ts",
         "tools/scripts/*.ts",
+        "tools/scripts/ci/**/*.ts",
+        "tools/scripts/build/**/*.ts",
+        "tools/scripts/release/**/*.ts",
         "tools/scripts/lib/**/*.ts",
         "tools/scripts/test/**/*.test.ts"
       ],

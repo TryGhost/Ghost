@@ -52,7 +52,7 @@ function runLint(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
     );
-    const resolver = 'tools/scripts/lib/service-dependency-resolver.mjs';
+    const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
     mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
     cpSync(path.join(root, resolver), path.join(cwd, resolver));
     mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });

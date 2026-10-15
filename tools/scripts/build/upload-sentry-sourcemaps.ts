@@ -16,7 +16,7 @@ const { values, positionals } = parseArgs({
 
 if (positionals.length === 0) {
   console.error(
-    'Usage: node tools/scripts/upload-sentry-sourcemaps.ts [--release <name>] <dist-dir>...',
+    'Usage: node tools/scripts/build/upload-sentry-sourcemaps.ts [--release <name>] <dist-dir>...',
   );
   process.exit(1);
 }

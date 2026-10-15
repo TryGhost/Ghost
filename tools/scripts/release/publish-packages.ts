@@ -2,15 +2,15 @@ import { parseArgs } from 'node:util';
 import { $ } from 'execa';
 import camelcaseKeys from 'camelcase-keys';
 
-import { ROOT_DIR } from './lib/constants.ts';
-import { getWorkspace, getPublishablePackages } from './lib/pnpm.ts';
+import { ROOT_DIR } from '../lib/constants.ts';
+import { getWorkspace, getPublishablePackages } from '../lib/pnpm.ts';
 
 /**
  * publish-packages.ts — publish the workspace's public packages to npm.
  *
  * Runs in the release (tag) lane and via the packages-only workflow_dispatch.
  * The version of each package is whatever `pnpm version -r` wrote into
- * package.json when the release commit was cut (see tools/scripts/release.ts), driven
+ * package.json when the release commit was cut (see tools/scripts/release/release.ts), driven
  * by the changesets in .changeset/. This script does no version computation and
  * no git diffing — it hands the publishable set to `pnpm publish`, which skips
  * any version already on npm, rewrites `workspace:` ranges, and orders the
@@ -22,7 +22,7 @@ import { getWorkspace, getPublishablePackages } from './lib/pnpm.ts';
  * pnpm-workspace.yaml `versioning.ignore`. Ghost itself is ignored there and
  * ships via its own tarball job.
  *
- * Usage: node tools/scripts/publish-packages.ts [--dry-run] [--package <name>]...
+ * Usage: node tools/scripts/release/publish-packages.ts [--dry-run] [--package <name>]...
  *
  * --package restricts the run to the named package(s) — the escape hatch for
  * out-of-band publishes.

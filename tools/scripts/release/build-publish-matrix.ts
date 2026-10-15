@@ -15,7 +15,7 @@ import {
   readDefaults,
   type DefaultsEntry,
   type VersioningPolicy,
-} from './lib/publish-manifest.ts';
+} from '../lib/publish-manifest.ts';
 
 const DEFAULTS = await readDefaults();
 

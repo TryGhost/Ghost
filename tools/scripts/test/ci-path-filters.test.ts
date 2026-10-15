@@ -45,7 +45,7 @@ describe('CI path filters', () => {
       const patterns = await getFilterPatterns(name);
       assert.ok(
         patterns.some((pattern) =>
-          picomatch(pattern, { dot: true })('tools/scripts/e2e-shards.ts'),
+          picomatch(pattern, { dot: true })('tools/scripts/ci/e2e-shards.ts'),
         ),
         `${name} must select moved automation`,
       );
