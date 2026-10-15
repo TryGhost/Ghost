@@ -262,7 +262,6 @@ interface DocsBot {
 /**
  * Lazy-loads the DocsBot.ai chat widget (https://docsbot.ai/documentation/developer/embeddable-chat-widget).
  *
- *
  * `mountWidget` renders DocsBot's own floating chat bubble
  */
 export function useDocsBot(): DocsBot {
