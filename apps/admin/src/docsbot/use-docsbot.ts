@@ -1,5 +1,5 @@
-import { useBrowseConfig } from '../api/config';
-import { useCurrentUser } from '../api/current-user';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface DocsBotIdentify {
@@ -186,7 +186,7 @@ function loadDocsBotSDK(): Promise<void> {
 let widgetOperationChain: Promise<void> = Promise.resolve();
 let widgetMounted = false;
 
-function enqueueWidgetOperation(operation: () => Promise<void>): Promise<void> {
+function enqueueWidgetOperation(operation: () => void | Promise<void>): Promise<void> {
   const next = widgetOperationChain.then(operation);
   widgetOperationChain = next.catch(() => {});
   return next;
@@ -229,7 +229,7 @@ function mountDocsBotWidget(id: string, identify?: DocsBotIdentify): Promise<voi
 }
 
 function unmountDocsBotWidget(): void {
-  void enqueueWidgetOperation(async () => {
+  void enqueueWidgetOperation(() => {
     if (!widgetMounted) {
       return;
     }

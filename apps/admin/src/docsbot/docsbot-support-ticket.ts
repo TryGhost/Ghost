@@ -1,5 +1,5 @@
-import { type DocsBotSupportRequest, formatDocsBotHistory } from '@tryghost/admin-x-framework';
-import type { SupportRequestDraft } from './support-request';
+import { type DocsBotSupportRequest, formatDocsBotHistory } from './use-docsbot';
+import type { SupportRequestDraft } from '@/support-request';
 
 export const DOCSBOT_SUPPORT_REQUEST_THANKS_MESSAGE =
   'Thanks — your support request has been sent. Our team will follow up by email.';

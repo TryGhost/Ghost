@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useDocsBot } from '@tryghost/admin-x-framework';
-import { SupportRequestModal } from './support-request-modal';
+import { useDocsBot } from './use-docsbot';
+import { SupportRequestModal } from '@/support-request-modal';
 import {
   DOCSBOT_SUPPORT_REQUEST_THANKS_MESSAGE,
   toSupportRequestDraft,

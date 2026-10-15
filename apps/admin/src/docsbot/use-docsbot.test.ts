@@ -3,7 +3,7 @@ import {
   normalizeDocsBotHistory,
   normalizeDocsBotMetadata,
   normalizeDocsBotTicket,
-} from '../../../src/hooks/use-docsbot';
+} from './use-docsbot';
 
 describe('formatDocsBotHistory', () => {
   it('formats Human and AI turns as a markdown transcript', () => {
