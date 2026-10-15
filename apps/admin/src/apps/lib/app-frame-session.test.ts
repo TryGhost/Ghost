@@ -582,7 +582,10 @@ describe('createAppFrameSession', () => {
   it('follows the app’s route without sending the route back to the app', async () => {
     const frame = await started();
 
-    await frame.host.pathChanged('/episodes/12', { replace: true });
+    // Answers with the path Admin now has for the app, which the page stores.
+    await expect(frame.host.pathChanged('/episodes/12', { replace: true })).resolves.toBe(
+      '/episodes/12',
+    );
     expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', {
       replace: true,
       move: moveOf(0),
@@ -672,7 +675,7 @@ describe('createAppFrameSession', () => {
     // The publisher is leaving the app.
     navigate.mockReturnValueOnce(false);
 
-    await frame.host.pathChanged('/episodes');
+    await expect(frame.host.pathChanged('/episodes')).resolves.toBe('/');
 
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
     // Admin has nothing to catch up with, so navigating there is sent to the app.
