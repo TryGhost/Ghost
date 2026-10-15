@@ -14,7 +14,7 @@ async function fixture() {
   roots.push(root);
   await mkdir(join(root, 'tools/gx'), { recursive: true });
   await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
-  for (const file of ['cli.ts', 'create-package.ts']) {
+  for (const file of ['cli.ts', 'run-ghost-command.ts', 'create-package.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
   for (const file of ['constants.ts', 'package-template.ts']) {
@@ -69,6 +69,9 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     ['db'],
     ['db', 'unknown'],
     ['db', '--help'],
+    ['data'],
+    ['data', 'unknown'],
+    ['data', '--help'],
     ['--help', 'unknown'],
     ['--version'],
   ]) {

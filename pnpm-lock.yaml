@@ -488,12 +488,18 @@ catalogs:
     chai:
       specifier: 4.5.0
       version: 4.5.0
+    chalk:
+      specifier: 4.1.2
+      version: 4.1.2
     cheerio:
       specifier: 1.2.0
       version: 1.2.0
     chrono-node:
       specifier: 2.10.1
       version: 2.10.1
+    cli-progress:
+      specifier: 3.12.0
+      version: 3.12.0
     clsx:
       specifier: 2.1.1
       version: 2.1.1
@@ -575,6 +581,9 @@ catalogs:
     html-to-text:
       specifier: 10.0.1
       version: 10.0.1
+    inquirer:
+      specifier: 8.2.7
+      version: 8.2.7
     ipaddr.js:
       specifier: 2.5.0
       version: 2.5.0
@@ -2220,9 +2229,6 @@ importers:
       '@tryghost/parse-email-address':
         specifier: workspace:*
         version: link:../packages/parse-email-address
-      '@tryghost/pretty-cli':
-        specifier: 3.3.18
-        version: 3.3.18
       '@tryghost/prometheus-metrics':
         specifier: 5.0.5
         version: 5.0.5(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)
@@ -2629,9 +2635,6 @@ importers:
       chai:
         specifier: 'catalog:'
         version: 4.5.0
-      cli-progress:
-        specifier: 3.12.0
-        version: 3.12.0
       cssnano:
         specifier: 7.1.9
         version: 7.1.9(postcss@8.5.26)
@@ -2650,9 +2653,6 @@ importers:
       html-validate:
         specifier: 11.5.5
         version: 11.5.5(@vitest/expect@4.1.11)(jest-snapshot@30.4.1(supports-color@10.2.2))(vitest@4.1.11)
-      inquirer:
-        specifier: 8.2.7
-        version: 8.2.7(@types/node@22.20.1)
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
@@ -4356,15 +4356,33 @@ importers:
       '@tryghost/pretty-cli':
         specifier: 'catalog:'
         version: 3.3.18
+      bson-objectid:
+        specifier: 'catalog:'
+        version: 2.0.4
+      chalk:
+        specifier: 'catalog:'
+        version: 4.1.2
+      cli-progress:
+        specifier: 'catalog:'
+        version: 3.12.0
+      inquirer:
+        specifier: 'catalog:'
+        version: 8.2.7(@types/node@22.20.1)
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
+      luxon:
+        specifier: 'catalog:'
+        version: 3.7.2
       semver:
         specifier: 'catalog:'
         version: 7.8.5
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4375,6 +4393,9 @@ importers:
       '@types/jsonwebtoken':
         specifier: 'catalog:'
         version: 9.0.10
+      '@types/luxon':
+        specifier: 'catalog:'
+        version: 3.7.4
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1

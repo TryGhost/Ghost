@@ -166,6 +166,11 @@
         "tools/gx/generate-golden-email.ts",
         "tools/gx/create-migration.ts",
         "tools/gx/rebuild-in-development-tables.cts",
+        "tools/gx/generate-data.cts",
+        "tools/gx/multi-sub-scenarios.cts",
+        "tools/gx/repl.cts",
+        "tools/gx/shift-dates.cts",
+        "tools/gx/run-ghost-command.ts",
         "tools/scripts/*.ts",
         "tools/scripts/lib/**/*.ts",
         "tools/scripts/test/**/*.test.ts"

@@ -15,14 +15,21 @@
     "@internal/scripts": "workspace:*",
     "@tryghost/logging": "catalog:",
     "@tryghost/pretty-cli": "catalog:",
+    "bson-objectid": "catalog:",
+    "chalk": "catalog:",
+    "cli-progress": "catalog:",
+    "inquirer": "catalog:",
     "jsonwebtoken": "catalog:",
+    "luxon": "catalog:",
     "semver": "catalog:",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@types/jsonwebtoken": "catalog:",
+    "@types/luxon": "catalog:",
     "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "eslint": "catalog:",
@@ -41,6 +48,11 @@
         "{workspaceRoot}/ghost/core/server/data/schema/schema.js",
         "{workspaceRoot}/ghost/tsconfig.json",
         "{workspaceRoot}/ghost/types/**/*.d.ts"
+      ],
+      "dataCommands": [
+        "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
+        "{workspaceRoot}/ghost/core/server/data/schema/**/*",
+        "{workspaceRoot}/ghost/core/server/models/**/*"
       ]
     },
     "targets": {
@@ -51,6 +63,7 @@
           "packageTemplate",
           "developmentTablesCommand",
           "goldenEmailCommand",
+          "dataCommands",
           {
             "runtime": "node -v"
           }
@@ -61,6 +74,7 @@
           "default",
           "^default",
           "developmentTablesCommand",
+          "dataCommands",
           {
             "runtime": "node -v"
           }

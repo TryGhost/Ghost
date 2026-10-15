@@ -140,8 +140,10 @@ catalog:
   body-parser: 1.20.8
   bson-objectid: 2.0.4
   chai: 4.5.0
+  chalk: 4.1.2
   cheerio: 1.2.0
   chrono-node: 2.10.1
+  cli-progress: 3.12.0
   clsx: 2.1.1
   concurrently: 10.0.6
   country-flag-icons: 1.6.20
@@ -172,6 +174,7 @@ catalog:
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
   jsonrepair: 3.15.0
+  inquirer: 8.2.7
   jsonwebtoken: 8.5.1
   juice: 11.1.1
   knex: 2.4.2

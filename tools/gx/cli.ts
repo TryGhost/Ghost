@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 // @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
+import { runGhostCommand } from './run-ghost-command.ts';
 
 type Command = { flags: string; desc: string; run: () => void | Promise<void> };
 type CommandGroup = { command: (command: Command) => unknown };
@@ -66,50 +67,56 @@ cli.command({
       desc: 'Drop and recreate development-only tables.',
       run() {
         commandRun = true;
-        const ghostDir = fileURLToPath(new URL('../../ghost', import.meta.url));
-        const runner = fileURLToPath(new URL('../scripts/with-ghost-dev-env.ts', import.meta.url));
-        const command = fileURLToPath(
-          new URL('./rebuild-in-development-tables.cts', import.meta.url),
-        );
-        const child = spawn(
-          process.execPath,
-          [
-            runner,
-            process.execPath,
-            '--import',
-            import.meta.resolve('tsx'),
-            command,
-            ...args.slice(2),
-          ],
-          {
-            cwd: ghostDir,
-            stdio: 'inherit',
-          },
-        );
-        for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-          process.on(signal, () => child.kill(signal));
-        }
-        child.on('error', (error) => {
-          process.stderr.write(`${error.message}\n`);
-          process.exitCode = 1;
-        });
-        child.on('exit', (code, signal) => {
-          if (signal) {
-            process.removeAllListeners(signal);
-            process.kill(process.pid, signal);
-          } else {
-            process.exitCode = code ?? 1;
-          }
-        });
+        runGhostCommand('./rebuild-in-development-tables.cts', args.slice(2));
       },
     });
+  },
+});
+
+cli.command({
+  flags: 'data',
+  desc: 'Generate development data and verification scenarios.',
+  setup(group: CommandGroup) {
+    for (const command of [
+      { flags: 'generate', desc: 'Generate a development dataset.', file: './generate-data.cts' },
+      {
+        flags: 'shift-dates',
+        desc: 'Shift database dates for testing.',
+        file: './shift-dates.cts',
+      },
+      {
+        flags: 'multi-sub-scenarios',
+        desc: 'Seed multi-subscription scenarios.',
+        file: './multi-sub-scenarios.cts',
+      },
+    ]) {
+      group.command({
+        flags: command.flags,
+        desc: command.desc,
+        run() {
+          commandRun = true;
+          runGhostCommand(command.file, args.slice(2), true);
+        },
+      });
+    }
+  },
+});
+
+cli.command({
+  flags: 'repl',
+  desc: 'Open a REPL with Ghost models and database access.',
+  run() {
+    commandRun = true;
+    runGhostCommand('./repl.cts', args.slice(1), true);
   },
 });
 
 // Parse only the command path; tool arguments and help flags pass through untouched.
 const rootHelp =
   args.length === 0 || (args.length === 1 && ['--help', '-h'].includes(args[0] ?? ''));
-const result: unknown = await cli.parse(rootHelp ? ['--help'] : args.slice(0, 2));
+const result: unknown = await cli.parse(
+  rootHelp ? ['--help'] : args.slice(0, args[0] === 'repl' ? 1 : 2),
+);
 assert(result && typeof result === 'object' && 'code' in result && typeof result.code === 'number');
 assert('output' in result && typeof result.output === 'string');
 if (!commandRun) {

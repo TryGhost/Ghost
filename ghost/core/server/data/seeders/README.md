@@ -1,7 +1,7 @@
 # Data Generator
 
 The development data generator populates related Ghost tables in dependency
-order. Its CLI entry point is `node index.js generate-data`; contributors
+order. Its CLI entry point is `pnpm gx data generate`; contributors
 normally use the root `reset:data` scripts described in the
 [test-data guide](../../../../../docs/contributing/test-data.md).
 
