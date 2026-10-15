@@ -626,12 +626,15 @@ services:
         summary: >-
           Boot awaits initialization after database setup. The factory returns one
           AppInstallationsService from knex, the Action model and a manifest loader built
-          from the outbound request guard, a manifest-rules getter and the localhost alias;
-          successful initialization retains that ready instance. Root units prove no connection
-          access on import, one retained instance without queries/delivery, and no publication after
-          a failed connection acquisition followed by a successful retry. The retained
-          instance also holds the in-flight re-check per installation that app sessions
-          starting together share; e2e tests cover two sessions making one fetch.
+          from the outbound request guard, a manifest-rules getter and the localhost alias.
+          The root supplies logging to manifest loading and action recording. Successful
+          initialization retains that ready instance. Root units prove no connection access
+          on import, one retained instance without queries/delivery, and no publication after
+          a failed connection acquisition followed by a successful retry. They also verify
+          logged transport failures keep generic public errors and logged action-write failures
+          do not fail installation. The retained instance also holds the in-flight re-check
+          per installation that app sessions starting together share; e2e tests cover two
+          sessions making one fetch.
         sources:
           - core/server/services/app-installations/index.ts
           - core/server/services/app-installations/service.ts

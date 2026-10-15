@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
 import type { Got, PlainResponse } from 'got';
 
@@ -34,7 +34,7 @@ function statusOf(err: unknown): number | undefined {
 // Says only that the app answered with an error status, never why any other request
 // failed, so the preview can't be used to probe the server's network. The reason is
 // logged, so an operator can still tell a timeout from a certificate problem.
-function unreachable(manifestUrl: string, err: unknown) {
+function unreachable(manifestUrl: string, err: unknown, logging: Pick<GhostLogger, 'warn'>) {
   const status = statusOf(err);
   logging.warn(`Could not load the app manifest at ${manifestUrl}`);
   logging.warn(err);
@@ -75,9 +75,11 @@ function staysOnHost(from: URL, to: URL): boolean {
  */
 export function createManifestFetcher({
   request,
+  logging,
   getLocalhostAlias,
 }: {
   request: Got;
+  logging: Pick<GhostLogger, 'warn'>;
   getLocalhostAlias: () => string | null;
 }): FetchManifest {
   return async function fetchManifest(manifestUrl) {
@@ -178,7 +180,7 @@ export function createManifestFetcher({
       text = await pending.text();
     } catch (err) {
       if (refusedRedirect) {
-        throw refused(manifestUrl, refusedRedirect);
+        throw refused(manifestUrl, refusedRedirect, logging);
       }
       // Only a manifest is held to the size limit; a large error page is still reported
       // with its status. The status isn't known until the headers arrive, so the download
@@ -191,10 +193,10 @@ export function createManifestFetcher({
           context: manifestUrl,
         });
       }
-      throw unreachable(manifestUrl, err);
+      throw unreachable(manifestUrl, err, logging);
     }
     if (refusedRedirect) {
-      throw refused(manifestUrl, refusedRedirect);
+      throw refused(manifestUrl, refusedRedirect, logging);
     }
 
     // A byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
@@ -213,7 +215,11 @@ export function createManifestFetcher({
   };
 }
 
-function refused(manifestUrl: string, { status, target }: { status: number; target: URL | null }) {
+function refused(
+  manifestUrl: string,
+  { status, target }: { status: number; target: URL | null },
+  logging: Pick<GhostLogger, 'warn'>,
+) {
   if (!target) {
     // Reported as unreachable, so logged like every other unreachable manifest.
     const context = `${manifestUrl} answered with HTTP ${status} and a Location that is not a URL`;

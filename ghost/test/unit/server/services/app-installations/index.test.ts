@@ -10,9 +10,10 @@ const endpointPaths = [
 ];
 const requestPath = require.resolve('../../../../../core/server/lib/request-external');
 // Load the real model registry before substituting the root's database connection.
-require('../../../../../core/server/models');
+const models = require('../../../../../core/server/models');
 const db = require('../../../../../core/server/data/db');
 const { IncorrectUsageError } = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const config = require('../../../../../core/shared/config');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { AppInstallationsService } =
@@ -123,6 +124,57 @@ describe('App installations composition root', function () {
     });
     sinon.assert.calledOnceWithExactly(startSession, 'installation-id');
     assert.equal(startSession.firstCall.thisValue, root.service);
+  });
+
+  it('wires logging through the manifest loader and fetcher', async function () {
+    const failure = new Error('Transport failed');
+    const warn = sandbox.stub(logging, 'warn');
+    request.returns({ on: () => {}, text: sandbox.stub().rejects(failure) });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    await assert.rejects(root.service.preview(manifestUrl), {
+      code: 'APP_MANIFEST_UNREACHABLE',
+      message: 'Could not load the app’s manifest.',
+      context: manifestUrl,
+    });
+
+    sinon.assert.calledTwice(warn);
+    sinon.assert.calledWithExactly(
+      warn.firstCall,
+      `Could not load the app manifest at ${manifestUrl}`,
+    );
+    sinon.assert.calledWithExactly(warn.secondCall, failure);
+  });
+
+  it('logs action recording failures without failing the installation', async function () {
+    const failure = new Error('History write failed');
+    const error = sandbox.stub(logging, 'error');
+    const add = sandbox.stub(models.Action, 'add').rejects(failure);
+    const insert = sandbox.stub().resolves();
+    const trx = sandbox.stub().returns({ insert });
+    Object.assign(query, {
+      transaction: async (write: (connection: Knex.Transaction) => Promise<void>) =>
+        write(trx as unknown as Knex.Transaction),
+    });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    const preview = await root.service.preview(manifestUrl);
+
+    const installed = await root.service.create(
+      { actor: { id: 'staff-id', type: 'user' } },
+      { manifestUrl, digest: preview.digest },
+    );
+
+    assert.equal(installed.app_id, manifest.id);
+    sinon.assert.calledTwice(insert);
+    sinon.assert.calledOnce(add);
+    assert.equal(add.firstCall.args[0].resource_id, installed.id);
+    sinon.assert.calledOnceWithExactly(error, failure);
   });
 
   it('reads manifest rules and the development localhost alias per operation', async function () {

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import logging from '@tryghost/logging';
 import got from 'got';
 import nock from 'nock';
 import sinon from 'sinon';
@@ -49,7 +48,6 @@ describe('createManifestLoader', function () {
 
   afterEach(function () {
     nock.cleanAll();
-    sinon.restore();
   });
 
   afterAll(function () {
@@ -59,9 +57,15 @@ describe('createManifestLoader', function () {
   const loader = ({
     alias = null,
     rules = RULES,
-  }: { alias?: string | null; rules?: ManifestRules } = {}) =>
+    logging = { warn: sinon.stub() },
+  }: {
+    alias?: string | null;
+    rules?: ManifestRules;
+    logging?: { warn(value: unknown): void };
+  } = {}) =>
     createManifestLoader({
       request: got,
+      logging,
       getManifestRules: () => rules,
       getLocalhostAlias: () => alias,
     });
@@ -273,12 +277,12 @@ describe('createManifestLoader', function () {
     );
 
     it('reports a redirect to a Location that is not a URL as unreachable, with its status', async function () {
-      const warn = sinon.stub(logging, 'warn');
+      const warn = sinon.stub();
       nock('https://podcast.example.com')
         .get('/ghost-app.json')
         .reply(302, '', { location: 'http://[bad' });
 
-      const err = await refusal(loader()(MANIFEST_URL));
+      const err = await refusal(loader({ logging: { warn } })(MANIFEST_URL));
       assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
       assert.equal(
         err.context,
@@ -392,6 +396,29 @@ describe('createManifestLoader', function () {
 
       assert.equal(loaded.manifestUrl, 'http://localhost:8787/ghost-app.json');
       assert.equal(loaded.manifest.surfaces[0].url, 'http://localhost:8787/v2/admin');
+    });
+
+    it('logs transport details through the supplied logger without exposing them to the caller', async function () {
+      const warn = sinon.stub();
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .replyWithError('Connection failed at a private upstream address');
+
+      await assert.rejects(loader({ logging: { warn } })(MANIFEST_URL), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_UNREACHABLE',
+        message: 'Could not load the app’s manifest.',
+        context: MANIFEST_URL,
+      });
+
+      sinon.assert.calledTwice(warn);
+      sinon.assert.calledWithExactly(
+        warn.firstCall,
+        `Could not load the app manifest at ${MANIFEST_URL}`,
+      );
+      const failure = warn.secondCall.args[0];
+      assert.ok(failure instanceof Error);
+      assert.equal(failure.message, 'Connection failed at a private upstream address');
     });
 
     it('reports a large error page as unreachable, with its status', async function () {
