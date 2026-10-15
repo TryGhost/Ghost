@@ -169,6 +169,8 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 
 type BuildGraphParams = {
   actionErrors: Record<string, string>;
+  // Draw the line to the exit card and bring the card in, for a flow just created.
+  connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
   tierQuery: TriggerData['tierQuery'];
@@ -191,6 +193,7 @@ type BuildGraphParams = {
 
 const buildGraph = ({
   actionErrors,
+  connectIn,
   automation,
   savedTriggerTierIds,
   tierQuery,
@@ -317,7 +320,7 @@ const buildGraph = ({
       x: nodeX,
       y: cursorY,
     },
-    data: {},
+    data: { connectIn },
     ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
@@ -365,6 +368,7 @@ const buildGraph = ({
       disabledReason,
       onPick,
       label: 'Add step',
+      connectIn,
     } satisfies AddStepEdgeData,
     focusable: false,
     style: { stroke: DEFAULT_EDGE_STROKE },
@@ -379,14 +383,20 @@ const buildGraph = ({
   return { nodes: measuredNodes, edges, contentBounds };
 };
 
-const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
+const getInitialViewport = (
+  canvasWidth: number,
+  triggerTop = INITIAL_VIEWPORT_Y,
+): { x: number; y: number; zoom: number } => ({
   x: Math.round(canvasWidth / 2 - NODE_COLUMN_CENTER_X),
-  y: INITIAL_VIEWPORT_Y + HEADER_UNDERLAP_Y,
+  y: triggerTop + HEADER_UNDERLAP_Y,
   zoom: 1,
 });
 
 type AutomationCanvasProps = {
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
+  // Set when a trigger was just picked: the canvas opens with the trigger where the
+  // picker's card was, and the flow below it plays in.
+  initialTriggerTop?: number;
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
@@ -419,6 +429,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
+  initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
   onWaitValidityChange,
@@ -664,7 +675,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     null,
   );
   const configQuery = useBrowseConfig();
-  const isPerformanceEnabled = Boolean(automation?.id) && Boolean(configQuery.data?.config.stats);
+  const isPerformanceEnabled = Boolean(configQuery.data?.config.stats);
   const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   const [sidebar, setSidebar] = useState<{
     open: boolean;
@@ -676,7 +687,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       open: initialSidebar !== 'closed',
       tab:
         initialSidebar === 'closed'
-          ? isPerformanceEnabled
+          ? isPerformanceEnabled && automation?.id
             ? 'performance'
             : 'settings'
           : initialSidebar,
@@ -691,6 +702,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
+    initialTriggerTop,
   );
   const isHistoryOpen = selectedRunId !== null;
 
@@ -715,12 +727,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     requestAnimationFrame(() => editingCanvasRef.current?.focus());
   };
 
+  // Only for the edges and card that first appear; later ones arrive as usual.
+  const [connecting, setConnecting] = useState(initialTriggerTop !== undefined);
+  useEffect(() => {
+    if (!connecting) {
+      return;
+    }
+    const timer = setTimeout(() => setConnecting(false), 500);
+    return () => clearTimeout(timer);
+  }, [connecting]);
+
   const graph = useMemo(() => {
     if (!automation) {
       return null;
     }
     return buildGraph({
       actionErrors,
+      connectIn: connecting,
       automation,
       savedTriggerTierIds,
       tierQuery,
@@ -746,6 +769,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     });
   }, [
     actionErrors,
+    connecting,
     savedTriggerTierIds,
     tierQuery,
     onChange,
