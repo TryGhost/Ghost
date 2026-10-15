@@ -5537,7 +5537,10 @@ services:
       lifecycle or change the sending instance as part of its relocation. Root units now use
       the real composition with controlled models/rendering/API mail to assert payloads, live
       settings, sequential resend, held mail delivery and step failures; these are not real
-      persistence rollback or provider-delivery tests.
+      persistence rollback or provider-delivery tests. Acceptance coverage was expanded against
+      main 4509d04ab76c837343d12faa6dc269895bc9bba5 without changing production; the historical
+      audit provenance remains unchanged. These units control models and the transaction,
+      so they do not prove persisted rollback, row-lock behavior or committed model events.
     contracts:
       exports:
         summary: >-
@@ -5569,8 +5572,9 @@ services:
           user, deletes the invite and creates the user in that order. Email and role come from
           the stored invite; name and password come from the request. No invocation state is
           retained. Root units assert that import renders and sends nothing, and drive add
-          through its actual collaborators. Acceptance units separately stub the
-          transaction and selected model operations.
+          through its actual collaborators. Acceptance units stub the transaction and model
+          operations, asserting decoded sent-token lookup, shared transaction/internal/locking
+          options and the stored email/role as authority for user-creation arguments.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
@@ -5661,7 +5665,8 @@ services:
           strictly less than Date.now is rejected. It looks up the decoded token and sent status
           without regenerating or checking a token signature. Database configuration, password
           policy and user defaults belong to the models; the action has no feature flag or
-          configuration snapshot. These expiry/lookup details are source evidence.
+          configuration snapshot. Acceptance units pin URL-safe token decoding, rejection one
+          millisecond after expiry and acceptance at the exact expiry boundary using a fixed clock.
         sources:
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
@@ -5673,6 +5678,7 @@ services:
           - core/server/data/db/index.js
         tests:
           - test/unit/server/services/invites/index.test.ts
+          - test/unit/server/services/invites/accept.test.js
       resources:
         summary: >-
           The root borrows models, template filesystem work and API-mail sending. It awaits
@@ -5683,9 +5689,10 @@ services:
           Acceptance borrows the shared database for one transaction and row locks; the
           transaction owns release. User creation and role attachment receive that transaction,
           and model events are deferred until commit. It adds no timers, subscriptions,
-          transport or drain hook. Its units prove call order and selected transaction-option
-          forwarding, without testing actual rollback, locks, event delivery, destroy options or
-          forUpdate flags.
+          transport or drain hook. Units assert internal context, the same transaction and
+          forUpdate on invite/user lookup, invite deletion and user creation. Held promises
+          prove deletion finishes before user creation and acceptance waits for creation.
+          They do not test actual rollback, acquired locks or committed event delivery.
         sources:
           - core/server/services/invites/invites.js
           - core/server/api/endpoints/mail.js
@@ -5710,9 +5717,11 @@ services:
           Acceptance rejects missing sent invites and expired invites with NotFoundError, and
           existing users with ValidationError. Decode, database and user-validation errors
           propagate; transaction failures reject without a catch or retry. HTTP cases assert
-          missing-invite 404, duplicate-user 422 and successful 200, without proving expiry
-          boundaries, malformed input, rollback after deletion, emitted events or staff role
-          assignment.
+          missing-invite 404, duplicate-user 422 and successful 200. Acceptance units also
+          assert missing/expired/duplicate errors, exact user-creation arguments and original
+          rejection propagation from lookup, deletion, creation and transaction start/completion,
+          with no subsequent model steps after failure. Malformed input, persisted rollback
+          after deletion, emitted events and persisted staff-role assignment remain untested here.
         sources:
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
@@ -5723,6 +5732,7 @@ services:
         tests:
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/services/invites/index.test.ts
+          - test/unit/server/services/invites/accept.test.js
     unverified: []
     blockers:
       - >-
@@ -5741,11 +5751,13 @@ services:
         composition; test readiness and shutdown of pending work separately.
       - >-
         Add real-database contracts for rollback when user creation or role attachment fails,
-        concurrent acceptance, token reuse and committed model events. Current units stub
-        the transaction and do not even assert destroy's options or forUpdate flags.
+        concurrent acceptance, token reuse and committed model events. Units now pin all model
+        options, awaited deletion/creation and failure propagation, but stub the transaction;
+        they do not establish persisted rollback or acquired locks.
       - >-
-        Assert decoded-token lookup, stored email/role authority, created user/password and
-        expiry boundary behavior. Current HTTP success assertions stop at the response.
+        Extend HTTP acceptance assertions beyond the response to the persisted user, staff role
+        and password behavior. Units now pin decoded sent-token lookup, stored email/role
+        authority, forwarded name/password and the expiry boundary without real persistence.
   jobs-service:
     kind: directory
     disposition: retain
