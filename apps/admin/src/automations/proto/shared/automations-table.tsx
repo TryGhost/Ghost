@@ -75,7 +75,12 @@ const relRunDate = (iso: string | null): string => (iso ? startedLabel(iso) : 'N
 // 920px leaves the name about 240px. It's px, not a theme step: Admin's root
 // font size is 62.5%, so a rem breakpoint lands far narrower than its name.
 const WIDE_COLS = '@min-[920px]/table:grid-cols-[minmax(0,1fr)_130px_130px_130px_130px_72px]';
-const rowGrid = `grid grid-cols-[repeat(3,minmax(0,1fr))_auto_auto] gap-x-4 gap-y-3 px-2 py-6 @min-[920px]/table:gap-y-0 @min-[920px]/table:p-0 ${WIDE_COLS}`;
+// No column gap in the table layout: the cells carry their own padding (p-4,
+// TABLE_CELL), as the build's real table does. It matters since Shade's large
+// list titles (#31810) made the header labels sticky, each <th> drawing its own
+// bottom line on its own background: gaps between them broke that line into
+// one dash per column and let rows show through it while scrolling.
+const rowGrid = `grid grid-cols-[repeat(3,minmax(0,1fr))_auto_auto] gap-x-4 gap-y-3 px-2 py-6 @min-[920px]/table:gap-0 @min-[920px]/table:p-0 ${WIDE_COLS}`;
 
 // A cell's place in each layout. Stacked: explicit rows, no padding of its own
 // (the row carries it). Table: back to the grid's own flow, with the cell padding
@@ -371,7 +376,14 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
       <TableHeader className="hidden @min-[920px]/table:flex @min-[920px]/table:flex-col">
         <TableRow
           className={cn(
-            'grid w-full items-center gap-x-4 border-b hover:bg-transparent',
+            // No gap — see rowGrid. The labels' cells must touch.
+            //
+            // [&>th]:content-center: Shade's sticky labels are 44px tall and
+            // rely on a table cell's vertical-align to centre their text. In a
+            // grid a <th> is a plain block, so the text sat at the top against
+            // the line above; align-content centres it within the cell instead,
+            // and keeps each cell's own text-left / text-right.
+            'grid w-full items-center border-b hover:bg-transparent [&>th]:content-center',
             WIDE_COLS,
           )}
         >

@@ -1,6 +1,7 @@
-// LIFECYCLE TRIGGERS V3 — phase-4's screens, copied in Oct '26 for a follow-up
-// demo. Same screens again; this lane offers the combined lifecycle trigger as
-// a From → To move (paid_tier_changed) instead of v2's change-type question.
+// LIFECYCLE TRIGGERS — phase 2's screens, carried on in Oct '26 so phase 2
+// could be locked, offering the lifecycle trigger as a From → To move
+// (paid_tier_changed). Two earlier versions of this lane were compared against
+// it and removed once this design was approved; they're in the branch history.
 
 import React, { useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';

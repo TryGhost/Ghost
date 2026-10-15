@@ -24,7 +24,7 @@
 // flow mechanics. Mechanics are common; screens diverge.
 // ---------------------------------------------------------------------------
 
-export type LaneId = 'phase-1' | 'phase-2' | 'phase-3' | 'phase-4' | 'phase-5' | 'exploration-2';
+export type LaneId = 'phase-1' | 'phase-2' | 'phase-5' | 'exploration-2';
 
 // Where a lane stands: shipped and holding still, or still moving. Shown as a
 // badge beside the lane's name in the switcher.
@@ -44,17 +44,18 @@ export interface Lane {
 // "Sandbox: Full canvas" (exploration), the disappearing-chrome concept, and
 // "Future: Next & Later" (future), the roadmap lane — its triggers, its Update
 // member step and its publish checks all live in GA now.
+//
+// Two more went in Oct '26 once the lifecycle design was approved: the first
+// "Lifecycle triggers" (phase-3, separate upgraded and ended triggers) and v2
+// (phase-4, one trigger asking which change). v3 (phase-5, the From → To move)
+// was the one approved, and took the "Lifecycle triggers" name; it keeps its
+// phase-5 id and URL, as every renamed lane does.
 export const LANES: Lane[] = [
   { id: 'phase-1', label: 'Automation analytics', status: 'done' },
   { id: 'phase-2', label: 'Tier-based welcome sequences', status: 'in-progress' },
-  // Forked from phase-2 as an exact copy, so phase 2 can be locked while this
-  // one keeps moving.
-  { id: 'phase-3', label: 'Lifecycle triggers', status: 'in-progress' },
-  // Phase 3's screens again, offering one combined lifecycle trigger instead of
-  // two — the pair exists to be compared (see shared/capabilities).
-  { id: 'phase-4', label: 'Lifecycle triggers v2', status: 'in-progress' },
-  // v2's screens again, with the combined trigger asking From → To.
-  { id: 'phase-5', label: 'Lifecycle triggers v3', status: 'in-progress' },
+  // Phase 2's screens, carried on so phase 2 can be locked, with one lifecycle
+  // trigger asking From → To (see shared/capabilities). The approved design.
+  { id: 'phase-5', label: 'Lifecycle triggers', status: 'in-progress' },
   // Formerly "Sandbox: Right panel": the post editor's shape, a fixed header and
   // the pane on the canvas's right, carrying everything on the roadmap to GA.
   { id: 'exploration-2', label: 'Automations 1.0 (GA)', status: 'in-progress' },

@@ -57,20 +57,10 @@ const MEMBERSHIP_TRIGGERS: TriggerType[] = ['member_subscribes', 'paid_subscript
 export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
   'phase-1': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
   'phase-2': { triggers: MEMBERSHIP_TRIGGERS, extraSteps: [] },
-  // Phase 2's set plus the two the lane is named for: an upgrade (the "thanks
-  // for upgrading" flow) and a subscription ending (the winback).
-  'phase-3': {
-    triggers: [...MEMBERSHIP_TRIGGERS, 'paid_subscription_upgraded', 'paid_subscription_ended'],
-    extraSteps: [],
-  },
-  // The other lifecycle design, for comparison: phase 3's two triggers folded
-  // back into one, "Paid subscription changed", that asks which change first.
-  'phase-4': {
-    triggers: [...MEMBERSHIP_TRIGGERS, 'paid_subscription_changed'],
-    extraSteps: [],
-  },
-  // v2's combined trigger reshaped as a move: from a tier (or any paid tier) to
-  // another tier or to free.
+  // Lifecycle triggers: phase 2's set plus one lifecycle trigger shaped as a
+  // move — from a tier (or any paid tier) to another tier or to free. It won
+  // over two earlier designs (separate upgraded and ended triggers; one trigger
+  // asking which change), whose lanes were removed in Oct '26.
   'phase-5': {
     triggers: [...MEMBERSHIP_TRIGGERS, 'paid_tier_changed'],
     extraSteps: [],
