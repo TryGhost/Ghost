@@ -36,6 +36,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
+  '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
 ];
 

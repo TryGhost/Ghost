@@ -194,6 +194,7 @@
       "files": [
         "ghost/core/server/services/app-installations/index.ts",
         "ghost/core/server/services/donations/index.ts",
+        "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/indexnow-ping/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
         "ghost/core/server/services/slack-ping/index.ts"
