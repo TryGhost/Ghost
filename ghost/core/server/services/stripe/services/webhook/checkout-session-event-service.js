@@ -348,6 +348,11 @@ module.exports = class CheckoutSessionEventService {
     const memberPreexisted =
       Boolean(member) && !(session.created && member.get('created_at') >= session.created * 1000);
     const checkoutType = _.get(session, 'metadata.checkoutType');
+    // Typing an email address into a checkout doesn't prove owning it, so an unverified
+    // checkout can link a subscription to an existing member but not edit their details.
+    const canUpdateMember =
+      !memberPreexisted ||
+      session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
 
     if (!member) {
       const metadataName = _.get(session, 'metadata.name');
@@ -397,7 +402,7 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      if (payerName && !member.get('name')) {
+      if (canUpdateMember && payerName && !member.get('name')) {
         await memberRepository.update({ name: payerName }, { id: member.get('id') });
       }
 
@@ -437,7 +442,7 @@ module.exports = class CheckoutSessionEventService {
 
     // After the subscription work and apart from it: a throw here would fail the webhook, and
     // Stripe's retry could repeat the payment work.
-    await this.saveShippingDetails(member.id, session, { memberPreexisted });
+    await this.saveShippingDetails(member.id, session, { canUpdateMember });
 
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
@@ -470,21 +475,16 @@ module.exports = class CheckoutSessionEventService {
    * @param {string} memberId
    * @param {import('stripe').Stripe.Checkout.Session} session
    * @param {object} options
-   * @param {boolean} options.memberPreexisted Whether the member existed before this checkout
+   * @param {boolean} options.canUpdateMember Whether this checkout may write to the member's record
    */
-  async saveShippingDetails(memberId, session, { memberPreexisted }) {
+  async saveShippingDetails(memberId, session, { canUpdateMember }) {
     try {
       const { SHIPPING_FLAG } = this.deps.stripeCheckoutConfig;
       if (!session.shipping_address_collection || !this.deps.labs.isSet(SHIPPING_FLAG)) {
         return;
       }
 
-      // Typing an email address into a checkout doesn't prove owning it. A member this
-      // checkout created holds only what the buyer gave, but one that existed before belongs
-      // to whoever verified that address, so it is only written by a signed-in member.
-      const wasAuthenticated =
-        session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
-      if (memberPreexisted && !wasAuthenticated) {
+      if (!canUpdateMember) {
         logging.warn(
           {
             event: { name: 'stripe_checkout.shipping.save_skipped' },
