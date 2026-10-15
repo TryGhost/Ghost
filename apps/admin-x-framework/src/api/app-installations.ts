@@ -12,8 +12,8 @@ export interface AppInstallation {
   app_id: string;
   status: AppInstallationStatus;
   /**
-   * Moves on with every change to the installation, so a session can tell it has ended.
-   * Missing on a Ghost from before app sessions.
+   * Increments with every change to the installation, so a session can tell it has ended. Missing
+   * on Ghost versions from before app sessions.
    */
   revision?: number;
   manifest_url: string;
@@ -28,8 +28,8 @@ export interface AppInstallation {
  * `actor` is null when Ghost made the change itself.
  * It's also null when there's no record of who installed the app.
  *
- * `resumed` is a suspended app going back to the manifest it was approved with, so the
- * changes that waited for approval no longer do.
+ * `resumed` means a suspended app reverted to its approved manifest, so the changes that were
+ * waiting for approval are no longer pending.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
@@ -73,9 +73,10 @@ export interface AppInstallationsResponseType {
 }
 
 /**
- * One session of an installed app: the revision it is pinned to, and the installation as
- * Ghost found it once the app's manifest was re-checked. The two revisions are the same
- * when the session starts; the session ends once the installation's moves on.
+ * One session of an installed app. `revision` is the installation's revision when the session
+ * started. `installation` is the installation as Ghost returned it after re-checking the app's
+ * manifest. The two revisions match when the session starts, and the session ends once the
+ * installation's revision changes.
  */
 export interface AppSession {
   revision: number;
@@ -106,7 +107,7 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
-/** The Admin API path that reads one installation, for a read made without the hook. */
+/** The Admin API path for reading one installation, for reads that don't use the hook. */
 export const appInstallationPath = (id: string) => `/apps/installations/${id}/`;
 
 /**
@@ -130,12 +131,12 @@ export const usePreviewAppInstallation = createMutation<
 });
 
 /**
- * Starts a session of an installed app, which is what opening its page does. Ghost
- * re-checks the app's manifest first, so a silent change applies and one that needs
- * approval suspends the app, and answers with the installation as it stands: that answer
- * alone decides whether the app loads. The session ends when the installation moves on
- * from the revision it answers with. An app that isn't installed answers 404 with the code
- * `APP_NOT_INSTALLED`; a Ghost from before app sessions answers its plain 404.
+ * Starts a session of an installed app. Opening the app's page does this. Ghost first re-checks the
+ * app's manifest: a change that needs no approval is applied, and one that needs approval suspends
+ * the app. Ghost then returns the current installation, and only that response decides whether the
+ * app loads. The session ends when the installation's revision changes from the one in the
+ * response. For an app that isn't installed, Ghost returns 404 with the code `APP_NOT_INSTALLED`.
+ * Ghost versions from before app sessions return a plain 404.
  */
 export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
   method: 'POST',

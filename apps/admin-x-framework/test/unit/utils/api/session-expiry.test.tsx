@@ -328,7 +328,7 @@ describe('session expiry handling', () => {
   });
 });
 
-// For the requests Admin makes for an app, which hand over the response they got.
+// For the requests Admin makes for an app, which pass in the response they received.
 describe('handling session expiry for a response', () => {
   const POSTS = 'http://localhost:3000/ghost/api/admin/posts/';
   const USERS_ME = 'http://localhost:3000/ghost/api/admin/users/me/';
@@ -340,7 +340,7 @@ describe('handling session expiry for a response', () => {
     return modules.handleSessionExpiry;
   };
 
-  /** The session expires: Ghost answers the current user unauthorized from now on. */
+  /** Expires the session: from now on, Ghost returns 401 for the current user. */
   const sessionExpires = () => {
     const checks = vi.fn(unauthorized);
     server.use(http.get(USERS_ME, checks));
@@ -377,8 +377,8 @@ describe('handling session expiry for a response', () => {
     expect(await response.json()).toEqual(expiredSessionBody);
   });
 
-  // An app can provoke a 401 of its own, from a route that wants a token in its URL.
-  it('does not redirect while Ghost says the session still works', async () => {
+  // An app can trigger a 401 on purpose, from a route that expects a token in its URL.
+  it('does not redirect while Ghost reports the session still works', async () => {
     const handleSessionExpiry = await signedIn();
 
     await handleSessionExpiry(
@@ -390,7 +390,7 @@ describe('handling session expiry for a response', () => {
     expect(window.location.replace).not.toHaveBeenCalled();
   });
 
-  it('does not redirect when the session check fails to answer', async () => {
+  it('does not redirect when the session check gets no response', async () => {
     const handleSessionExpiry = await signedIn();
     server.use(http.get(USERS_ME, () => HttpResponse.error()));
 

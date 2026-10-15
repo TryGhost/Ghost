@@ -99,7 +99,7 @@ const appRoutes: RouteObject[] = [
   },
   {
     // An installed app's page, in a sandboxed frame. `*` is the app's own route, e.g.
-    // /apps/<id>/week, which the bridge passes on to the app, with its own query.
+    // /apps/<id>/week, which the bridge passes to the app along with the query.
     path: '/apps/:installationId/*',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppPageScreen),

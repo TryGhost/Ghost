@@ -128,10 +128,10 @@ export function ScrollRestoration({ containerRef }: ScrollRestorationProps) {
   return null;
 }
 
-/** The router `RouterProvider` made, for what reads its state outside a render. */
+/** The router that `RouterProvider` created, for code that reads its state outside a render. */
 interface FrameworkRouter {
   router: ReturnType<typeof createHashRouter>;
-  /** Where a navigation a screen transition holds back is headed, while it's held. */
+  /** The destination of a navigation that a screen transition is holding back, while it's held. */
   held: { pathname?: string };
 }
 
@@ -198,20 +198,22 @@ export function RouterProvider({
 export type NavigateOptions = ReactRouterNavigateOptions;
 
 /**
- * `pathname` as `useLocation` gives it, without the router's basename (`RouterProvider`'s
- * prefix, normalised), which every location the router holds starts with.
+ * Returns `pathname` in the form `useLocation` gives it, without the router's basename. The
+ * basename is `RouterProvider`'s normalised prefix, and every location the router holds starts with
+ * it.
  */
 function withinBasename(pathname: string, basename = '/'): string {
   return basename === '/' ? pathname : pathname.slice(basename.length) || '/';
 }
 
 /**
- * Reads, when called, the pathname the router is headed for: where a navigation under way
- * or held back by a screen transition goes, or else where the router is. The router knows
- * the moment a navigation begins, and the moment it lands, while `useLocation` shows either
- * only once React has committed it, which it does in a transition: code that runs between,
- * such as a message from a frame, would otherwise take Admin to be where it's leaving.
- * `undefined` outside `RouterProvider`.
+ * Returns a function that reads the pathname the router is going to: the destination of a
+ * navigation that is in progress or held back by a screen transition, or otherwise the router's
+ * current pathname. The router's state changes as soon as a navigation starts and as soon as it
+ * finishes. `useLocation` only shows either change once React has committed it, which happens in a
+ * transition. Without this, code that runs in between, such as a handler for a message from a
+ * frame, would treat Admin as still on the page it's leaving. The function returns `undefined`
+ * outside `RouterProvider`.
  */
 export function useRouterDestination(): () => string | undefined {
   const frameworkRouter = useContext(RouterContext);
@@ -261,7 +263,7 @@ const ABSOLUTE_URL = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
 
 /**
  * Runs `navigate` after the controller's `beforeTransition`, when it has one. While it waits,
- * `held` says where the navigation is headed.
+ * `held` records the navigation's destination.
  */
 function navigateAfterTransitionStart(
   controller: ViewTransitionController,

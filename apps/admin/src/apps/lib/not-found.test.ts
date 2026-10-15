@@ -8,11 +8,11 @@ const apiError = (status: number, code: string | null) =>
   } as unknown as ErrorResponse);
 
 describe('isSessionsRouteMissing', () => {
-  it('reads Ghost’s plain 404 as a Ghost without app sessions', () => {
+  it('treats a plain 404 as a Ghost version without app sessions', () => {
     expect(isSessionsRouteMissing(apiError(404, null))).toBe(true);
   });
 
-  it('reads a 404 that says the app isn’t installed as just that', () => {
+  it('treats a 404 with APP_NOT_INSTALLED as the app not being installed', () => {
     expect(isSessionsRouteMissing(apiError(404, 'APP_NOT_INSTALLED'))).toBe(false);
     expect(isInstallationNotFound(apiError(404, 'APP_NOT_INSTALLED'))).toBe(true);
   });
@@ -25,7 +25,7 @@ describe('isSessionsRouteMissing', () => {
 });
 
 describe('isAppUnavailable', () => {
-  it('reads Ghost’s 409 for a manifest it couldn’t use as the app being unavailable', () => {
+  it('treats a 409 with APP_UNAVAILABLE as the app being unavailable', () => {
     expect(isAppUnavailable(apiError(409, 'APP_UNAVAILABLE'))).toBe(true);
     expect(isInstallationNotFound(apiError(409, 'APP_UNAVAILABLE'))).toBe(false);
   });

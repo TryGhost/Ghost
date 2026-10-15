@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 
-// The title a page has asked for in place of Admin's own, by the latest page to ask.
+// The title the most recent page asked to show instead of Admin's own.
 let pageTitle: { title: string } | undefined;
 const listeners = new Set<() => void>();
 
@@ -20,8 +20,8 @@ const setPageTitle = (next: { title: string } | undefined) => {
 };
 
 /**
- * Shows `title` as the document's title while the calling page is mounted, in place of
- * Admin's own, which comes back once it unmounts or passes `undefined`.
+ * Shows `title` as the document's title, instead of Admin's own, while the calling page is mounted.
+ * Admin's title comes back once the page unmounts or passes `undefined`.
  */
 export function usePageTitle(title: string | undefined) {
   useEffect(() => {
@@ -31,7 +31,7 @@ export function usePageTitle(title: string | undefined) {
     const own = { title };
     setPageTitle(own);
     return () => {
-      // Only its own: another page may have asked since.
+      // Only clear this page's title: another page may have set one since.
       if (pageTitle === own) {
         setPageTitle(undefined);
       }
@@ -39,7 +39,7 @@ export function usePageTitle(title: string | undefined) {
   }, [title]);
 }
 
-/** Keeps the document's title: Admin's, with the site's, unless a page has given its own. */
+/** Sets the document's title to Admin's title with the site's, unless a page has set its own. */
 export function useDocumentTitle() {
   const { data } = useBrowseSite({ defaultErrorHandler: false });
   const siteTitle = data?.site.title;

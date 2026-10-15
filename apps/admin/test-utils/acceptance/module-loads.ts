@@ -18,10 +18,10 @@ export function failModuleLoads(pathEnd: string): Promise<void> {
 }
 
 /**
- * Holds requests for the module whose path ends with `pathEnd` back, as a slow connection
- * would, so a navigation to a route it serves stays pending until the spec calls the release
- * this answers with; the spec's end releases it too. Once loaded, the browser keeps it for the
- * rest of the spec file, so only a module no earlier spec in the file loads is held.
+ * Holds back requests for the module whose path ends with `pathEnd`, as a slow connection would. A
+ * navigation to a route the module serves stays pending until the spec calls the release function
+ * this returns. The end of the spec releases it too. Once loaded, the browser keeps the module for
+ * the rest of the spec file, so this only holds a module that no earlier spec in the file loaded.
  */
 export async function holdModuleLoads(pathEnd: string): Promise<() => Promise<void>> {
   await commands.holdModuleLoads(pathEnd);

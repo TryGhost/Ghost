@@ -10,11 +10,10 @@ import { BridgeError, sessionEnded } from './bridge-error';
 export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Promise<FetchResponse>;
 
 /**
- * Makes the requests an app asks for, to the Admin API under `apiRoot` and nowhere else.
- * `request` is already validated; where its path leads is checked here, and a path that
- * leaves the API or that the blocklist closes is refused before anything reaches the
- * network. Headers only Admin sets are dropped here too, so none of the app's can stand
- * in for Admin's, whatever reaches this.
+ * Sends the requests an app asks for, only to the Admin API under `apiRoot`. `request` is already
+ * validated. This function checks where its path leads, and refuses a path that leaves the API or
+ * that the blocklist blocks before anything reaches the network. It also drops headers that only
+ * Admin sets, so none of the app's headers can replace Admin's, whatever reaches this function.
  */
 export function createAdminApiFetch({
   apiRoot,
@@ -40,8 +39,8 @@ export function createAdminApiFetch({
         .map(([name, value]) => [name.toLowerCase(), value]),
     );
 
-    // A request the session's end aborted is refused as every call is then; anything else
-    // that stops it is the network's doing.
+    // A request aborted because the session ended is refused like every other call after the
+    // session ends. Any other failure is a network error.
     const failed = (what: string, error: unknown) =>
       signal.aborted
         ? sessionEnded()
@@ -49,18 +48,18 @@ export function createAdminApiFetch({
 
     let response: Response;
     try {
-      // eslint-disable-next-line no-restricted-syntax -- a raw request, answered to the app as it is
+      // eslint-disable-next-line no-restricted-syntax -- a raw request, returned to the app as is
       response = await fetch(url, {
         method: request.method ?? 'GET',
         headers: { ...ghostApiRequestHeaders({ ghostVersion, body: request.body }), ...appHeaders },
         body: request.body,
-        // The staff user's own session goes with the request. It stands in for the
-        // app-scoped token that comes with Permissions and auth, and the blocklist above
-        // goes with it: until then, it is what keeps the session's keys from the app.
+        // The request carries the staff user's own session. That stands in for the app-scoped token
+        // that comes with Permissions and auth, and the blocklist above goes away along with it.
+        // Until then, the blocklist is what keeps the session's keys away from the app.
         credentials: 'include',
-        // A redirect could lead off the API, where the app's path would no longer say
-        // where the request went, so none is followed. Most the Admin API answers with
-        // are for a path missing its trailing `/`, which the app can fix.
+        // A redirect could lead off the API, where the app's path would no longer show where the
+        // request went, so no redirect is followed. Most Admin API redirects are for a path missing
+        // its trailing `/`, which the app can fix.
         redirect: 'manual',
         signal,
       });
@@ -69,7 +68,8 @@ export function createAdminApiFetch({
     }
 
     if (response.type === 'opaqueredirect') {
-      // A path with its `/` is spelled right; it redirects on purpose, as Stripe's connect does.
+      // A path that ends in `/` is correct, so the redirect is intentional, as with Stripe's
+      // connect.
       throw new BridgeError(
         'invalid_path',
         check.pathname.endsWith('/')
@@ -78,9 +78,9 @@ export function createAdminApiFetch({
       );
     }
 
-    // The staff user's session expiring shows up here as anywhere else in Admin, which
-    // leaves for sign-in once Ghost confirms it, as an app can provoke an unauthorized
-    // answer of its own. The app gets its answer all the same.
+    // An expired staff session is handled here the same way as anywhere else in Admin. Admin leaves
+    // for sign-in only once Ghost confirms the session expired, because an app can trigger an
+    // unauthorized response on purpose. The app still gets the response.
     await handleSessionExpiry(url, response);
 
     let body: string;

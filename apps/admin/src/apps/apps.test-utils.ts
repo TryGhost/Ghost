@@ -52,9 +52,9 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
 export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
 /**
- * The app's page at its own URL, which its frame loads: by default one built on the SDK
- * (see `appFramePage`), with `flags` to tune it. `kind: 'raw'` is one that speaks the
- * bridge without the SDK, for `callHostRaw`; `html` replaces the page.
+ * Fakes the app's page at its own URL, which its frame loads. By default the page is built on the
+ * SDK (see `appFramePage`), and `flags` adjust its behaviour. `kind: 'raw'` gives a page that uses
+ * the bridge without the SDK, for `callHostRaw`. `html` replaces the page entirely.
  */
 export async function fakeAppFrame({
   html,
@@ -64,7 +64,7 @@ export async function fakeAppFrame({
   await fakeFrameOrigin(APP_PAGE_URL, html ?? (await appFramePage(flags, kind)));
 }
 
-/** An app whose server can't be reached: its frame gets no answer. */
+/** An app whose server can't be reached: its frame gets no response. */
 export function failAppFrame() {
   return failFrameOrigin(APP_PAGE_URL);
 }
@@ -72,9 +72,9 @@ export function failAppFrame() {
 const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
 
 /**
- * Starting a session of the installation `id`, answered with `answer`: the installation as
- * Ghost found it, pinning its revision, or a `Response` such as an error. `set` changes the
- * answer for the sessions that follow.
+ * Fakes starting a session of the installation `id`. Ghost responds with `answer`: either the
+ * installation, whose revision the session is pinned to, or a `Response` such as an error. `set`
+ * changes the response for later sessions.
  */
 export function fakeSessionStart(id: string, answer: AppInstallation | Response) {
   let next = answer;
@@ -91,9 +91,9 @@ export function fakeSessionStart(id: string, answer: AppInstallation | Response)
 }
 
 /**
- * The app's page as Admin opens it: the session it starts, the installation it reads to
- * tell when the session ends, and the page it frames (options as for `fakeAppFrame`).
- * `set` moves the installation on, for the sessions and reads that follow.
+ * Fakes the app's page as Admin opens it: the session it starts, the installation it reads to
+ * detect when the session ends, and the page it frames (options as for `fakeAppFrame`). `set`
+ * changes the installation for later sessions and reads.
  */
 export async function fakeAppPage(
   read: AppInstallation,
