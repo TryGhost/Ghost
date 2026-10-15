@@ -67,9 +67,9 @@ Supported edges, in `src/utils/edge-challenge/`:
   assets) and blocks (406, 449).
 - **Cloudflare**: managed, JavaScript and interactive challenges (detected by
   the `cf-mitigated: challenge` header) and block or rate limiting pages (403,
-  429 with `cf-ray` and an HTML body). The frame loads the challenged URL with a
-  GET, so the WAF rule has to match the endpoint's path, not only `POST`
-  requests, for example:
+  429 with `cf-ray` and a body that isn't JSON). The frame loads the challenged
+  URL with a GET, so the WAF rule has to match the endpoint's path, not only
+  `POST` requests, for example:
 
   ```txt
   http.request.uri.path in {"/members/api/send-magic-link/" "/members/api/integrity-token/"}

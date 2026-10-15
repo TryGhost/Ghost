@@ -49,7 +49,7 @@ export const cloudflare: EdgeProvider = {
   isBlock(res) {
     return (
       BLOCK_STATUSES.includes(res.status) &&
-      res.headers.has('cf-ray') &&
+      !!res.headers?.has('cf-ray') &&
       !res.headers.has(MITIGATED_HEADER) &&
       !(res.headers.get('content-type') || '').toLowerCase().includes('application/json')
     );

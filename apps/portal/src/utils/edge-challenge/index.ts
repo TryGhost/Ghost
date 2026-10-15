@@ -226,11 +226,12 @@ export function solveEdgeChallenge(challenge: EdgeChallenge): Promise<void> {
  */
 export async function fetchWithEdgeChallenge(url: string, options?: RequestInit) {
   const res = await fetch(url, options);
-  if (isEdgeBlockResponse(res)) {
-    throw new EdgeChallengeError();
-  }
+  // Check for a challenge first, another edge's challenge page can look like a Cloudflare block
   const challenge = await challengeOf(res, url);
   if (!challenge) {
+    if (isEdgeBlockResponse(res)) {
+      throw new EdgeChallengeError();
+    }
     return res;
   }
 

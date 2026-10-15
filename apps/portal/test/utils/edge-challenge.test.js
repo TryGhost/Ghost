@@ -14,13 +14,13 @@ const siteUrl = window.location.origin;
 
 // Mirrors the structure of the real interstitial: it loads script.js (not challenge.js) from
 // inline JS, alongside its own assets
-function challengePage({ status = 200, token = '1T1wmsGaOgGaSxcX' } = {}) {
+function challengePage({ status = 200, token = '1T1wmsGaOgGaSxcX', headers = {} } = {}) {
   return new Response(
     `<html><head><title>Client Challenge</title>
       <link rel="stylesheet" href="/_fs-ch-${token}/assets/styles.css">
       <script>loadScript('/_fs-ch-${token}/errors.js').then(() => loadScript('/_fs-ch-${token}/script.js'));</script>
       </head><body><noscript>JavaScript is disabled in your browser.</noscript><div id="loading-error" role="alert" aria-live="assertive"></div></body></html>`,
-    { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+    { status, headers: { 'Content-Type': 'text/html; charset=utf-8', ...headers } },
   );
 }
 
@@ -148,6 +148,22 @@ describe('fetchWithEdgeChallenge', () => {
     expect(window.fetch).toHaveBeenCalledTimes(2);
     expect(challenges.frames).toHaveLength(1);
     expect(challengeFrame()).toBeNull();
+  });
+
+  test('solves a challenge that reaches the page through Cloudflare', async () => {
+    vi.spyOn(window, 'fetch')
+      .mockResolvedValueOnce(
+        challengePage({ status: 403, headers: { 'cf-ray': '8f1e2d3c4b5a6978-VIE' } }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
+    challenges = completeChallengesWhenEmbedded();
+
+    const res = await fetchWithEdgeChallenge(`${siteUrl}/members/api/send-magic-link/`, {
+      method: 'POST',
+    });
+
+    expect(res.status).toBe(201);
+    expect(challenges.frames).toHaveLength(1);
   });
 
   test('runs the challenge script in its own hidden frame, not the page', async () => {
