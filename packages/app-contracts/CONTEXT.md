@@ -64,8 +64,8 @@ _Avoid_: app host, origin
 
 **Surface origin**:
 The origin of a surface's resolved URL. It is the only origin Admin talks to
-for that surface: a hello from anywhere else is ignored, and the connect is
-addressed to it alone. The manifest lists no other origins.
+for that surface: Admin ignores a hello from any other origin and addresses the
+connect only to this one. The manifest lists no other origins.
 _Avoid_: allowed origin, app origin
 
 ### Changes
@@ -96,40 +96,40 @@ everything the page sends; the page trusts Admin.
 _Avoid_: postMessage API, iframe protocol, RPC
 
 **Hello**:
-The window message an app's page posts to Admin once the SDK has loaded, and
-repeats until Admin answers. It names the SDK's version, for diagnostics only,
-and an ID for the page's document (when the document began, as
-`performance.timeOrigin`), so Admin can tell a hello repeated by a document it
-has connected from a new document's.
+The window message the SDK in an app's page posts to Admin once it has loaded,
+repeating it until Admin answers. It contains the SDK's version, for
+diagnostics only, and an ID for the page's document (the time the document was
+created, as `performance.timeOrigin`). Admin uses the ID to tell whether a hello
+comes from a document it already connected or from a new document.
 _Avoid_: handshake, ready, init
 
 **Connect**:
-Admin's answer to a hello from the frame it mounted and the surface origin,
-handing the page the port the rest of the session travels over, and naming the
-calls this Admin exports, so the page knows which an older Admin lacks. Only
-the first connect counts.
+Admin's answer to a hello that comes from the frame Admin mounted and from the
+surface origin. It hands the page the port that carries the rest of the
+session, and lists the calls this Admin exports, so the page knows which calls
+an older Admin lacks. Only the first connect counts.
 _Avoid_: ack, handshake
 
 **Start**:
-Admin's first call over the bridge, telling the page about the site, the staff
-user by ID and role, the theme, the session's revision and the app path. The
-page is shown once it has answered.
+Admin's first call over the bridge. It sends the page the site, the staff
+user's ID and role, the theme, the session's revision and the app path. Admin
+shows the page once the page has responded.
 _Avoid_: init, boot, launch
 
 **Session**:
-The page's connection to Admin, from connect until the page or Admin lets go.
-It is started against one installation revision, and Admin ends it when the
-installation moves on, so an app never runs against a revision nobody
-approved. Every call fails once it has ended; a page Admin starts again gets a
-new session. Not the staff user's sign-in session.
+The page's connection to Admin, from connect until the page or Admin closes
+it. It starts at one installation revision, and Admin ends it when the
+installation's revision changes, so an app never runs against an unapproved
+revision. Every call fails once the session has ended; a page Admin starts
+again gets a new session. Not the staff user's sign-in session.
 _Avoid_: connection, login, token
 
 **App path**:
 A route within an app's own page, such as `/episodes/12`, which Admin mirrors
-in its own address so a reload or a shared link lands on the same page. It
-starts with a single `/` and can never name anything outside the app. Admin and
-the page keep it as the URL parser spells it, so the same route reads the same
-on both sides.
+in its own URL so a reload or a shared link opens the same page. It starts with
+a single `/` and can never point outside the app. Admin and the page both store
+it in the URL parser's normalised form, so the same route is identical on both
+sides.
 _Avoid_: URL, location, deep link
 
 **Place**:
@@ -147,5 +147,5 @@ _Avoid_: proxy, API access, app token
 **Blocklist**:
 The Admin API routes the fetch escape hatch refuses whatever the method, listed
 by category with a reason for each in `ADMIN_API_BLOCKLIST`. It is a stopgap,
-not a complete list, and goes when the app token arrives.
+not a complete list, and will be removed once apps have their own token.
 _Avoid_: permissions, scopes, denylist

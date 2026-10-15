@@ -30,16 +30,16 @@ export interface FakeParent {
   postMessage: Mock<(message: unknown, targetOrigin: string) => void>;
 }
 
-/** Puts the page in a frame: `window.parent` becomes a stand-in for Admin's window. */
 /**
- * Makes the page a new document, with the time it began, and with no copy of the SDK
- * having claimed it yet. Tests load the SDK afresh as well.
+ * Makes the page a new document, with a new start time and no copy of the SDK claiming it yet.
+ * Tests also reload the SDK.
  */
 export function freshPage(timeOrigin = 1_760_000_000_000.5) {
   vi.spyOn(performance, 'timeOrigin', 'get').mockReturnValue(timeOrigin);
   delete (globalThis as unknown as Record<symbol, unknown>)[Symbol.for('@tryghost/app-sdk')];
 }
 
+/** Puts the page in a frame: `window.parent` becomes a stand-in for Admin's window. */
 export function frame(): FakeParent {
   const parent: FakeParent = { postMessage: vi.fn() };
   vi.spyOn(window, 'parent', 'get').mockReturnValue(parent as unknown as Window);
@@ -87,7 +87,7 @@ export class FakeAdmin {
     this.channel.port1.start();
   }
 
-  /** Answers the hello, handing the page its end of the channel and naming its exports. */
+  /** Answers the hello: hands the page its end of the channel and lists Admin's exports. */
   connect(options: { source?: unknown; origin?: string } = {}) {
     postToPage({
       data: { type: CONNECT_MESSAGE_TYPE, exports: Object.keys(this.exports) },
@@ -106,7 +106,7 @@ export class FakeAdmin {
   }
 }
 
-/** Waits for messages in flight on the channel to land. */
+/** Waits for in-flight messages on the channel to be delivered. */
 export function settle(): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, 10);

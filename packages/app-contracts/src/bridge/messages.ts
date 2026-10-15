@@ -3,22 +3,24 @@ import { z } from 'zod';
 import { HELLO_MESSAGE_TYPE } from './rules.ts';
 
 /**
- * The two window messages that set up the channel; everything after them travels over the
- * `MessagePort` the connect message hands over.
+ * The two window messages that set up the channel. Everything after them travels over the
+ * `MessagePort` that the connect message carries.
  *
- * Neither carries a protocol version. The hello names the SDK's version for diagnostics only,
- * and nothing gates on it: Admin only ever adds exports and optional fields.
+ * Neither message carries a protocol version. The hello includes the SDK's version for
+ * diagnostics only, and no behaviour depends on it: Admin only ever adds exports and optional
+ * fields.
  *
- * Only the hello has a schema, as Admin reads it from an untrusted frame. The connect comes
- * from Admin, which the SDK trusts, so `ConnectMessage` and its guard are in `rules.ts`.
+ * Only the hello has a schema, because Admin reads it from an untrusted frame. The connect
+ * comes from Admin, which the SDK trusts, so `ConnectMessage` and its guard live in `rules.ts`.
  */
 
 const SDK_VERSION_MAX_LENGTH = 100;
 const DOCUMENT_ID_MAX_LENGTH = 64;
 
 /**
- * Unknown fields are dropped rather than refused, unlike the calls over the channel: a newer
- * SDK may say more in its hello, and an older Admin refusing it would never connect at all.
+ * Unknown fields are dropped rather than refused, unlike in the calls over the channel. A newer
+ * SDK may add fields to its hello, and if an older Admin refused them, the page would never
+ * connect.
  */
 export const HelloMessageSchema = z.object({
   type: z.literal(HELLO_MESSAGE_TYPE),
@@ -29,10 +31,10 @@ export const HelloMessageSchema = z.object({
       `Expected an SDK version of at most ${SDK_VERSION_MAX_LENGTH} characters`,
     ),
   /**
-   * An ID for the page's document, the same in every hello it sends, so Admin can tell a
-   * repeated hello from a document it has connected from a new document in the same frame,
-   * after a reload, a form post or a link. The SDK sends the document's
-   * `performance.timeOrigin`, as text.
+   * An ID for the page's document. It stays the same in every hello the document sends.
+   * Admin uses it to tell whether a hello comes from the document it already connected or
+   * from a new document in the same frame, loaded by a reload, a form post or a link. The SDK
+   * sends the document's `performance.timeOrigin` as text.
    */
   document: z
     .string('Expected the document ID as text')

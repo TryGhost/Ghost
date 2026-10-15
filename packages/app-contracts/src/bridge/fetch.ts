@@ -9,7 +9,7 @@ import {
   methodAllowsBody,
 } from './rules.ts';
 
-/** As long as an app's own path, which an Admin API path with its query easily fits. */
+/** The same limit as an app path. An Admin API path with its query fits easily within it. */
 export const FETCH_PATH_MAX_LENGTH = 2048;
 
 /** 1 MiB, in UTF-8 bytes. Bodies are JSON and text; a multipart content type is refused. */
@@ -18,23 +18,23 @@ export const FETCH_BODY_MAX_BYTES = 1024 * 1024;
 const FETCH_HEADERS_MAX_COUNT = 50;
 const FETCH_HEADER_VALUE_MAX_LENGTH = 8192;
 
-// A header name is an HTTP token. Anything else would make the browser's fetch throw, so it is
-// refused here with a message rather than there with a TypeError.
+// A header name must be an HTTP token. The browser's fetch throws a TypeError on anything else,
+// so the schema refuses it here with a clear message instead.
 const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9a-z-]+$/i;
 
-// Latin-1 text with tabs and no other control characters, as HTTP allows. Fetch throws a
-// TypeError on anything else, which Admin could only report as failing to reach its own API,
-// and line breaks are what header injection is made of.
+// Latin-1 text, with tabs but no other control characters, as HTTP allows. Fetch throws a
+// TypeError on anything else, which Admin could only report as a failure to reach its own API.
+// Line breaks are also how header injection works.
 const HEADER_VALUE = /^[\t\x20-\x7e\x80-\xff]*$/;
 
 const utf8 = new TextEncoder();
 
 /**
- * A request an app asks Admin to make to the Admin API on its behalf. The path is never a URL:
- * Admin resolves and checks it with `checkAdminApiPath` before anything reaches the network.
+ * A request that an app asks Admin to make to the Admin API on its behalf. The path is never a
+ * URL: Admin resolves and checks it with `checkAdminApiPath` before sending anything.
  *
- * Unknown fields are refused, so an option Admin does not support fails loudly instead of the
- * request going out without it.
+ * Unknown fields are refused, so an option Admin doesn't support fails loudly instead of being
+ * silently left out of the request.
  */
 export const FetchRequestSchema = z
   .strictObject({
@@ -90,8 +90,8 @@ export const FetchRequestSchema = z
       .optional(),
     body: z
       .string('Expected the body as text')
-      // Every UTF-16 code unit is at least one UTF-8 byte, so counting characters first keeps
-      // a huge body from being encoded just to be refused.
+      // Every UTF-16 code unit is at least one UTF-8 byte, so checking the character count first
+      // avoids encoding a huge body only to refuse it.
       .max(FETCH_BODY_MAX_BYTES, { message: 'Expected a body of at most 1 MiB', abort: true })
       .refine(
         (body) => utf8.encode(body).byteLength <= FETCH_BODY_MAX_BYTES,

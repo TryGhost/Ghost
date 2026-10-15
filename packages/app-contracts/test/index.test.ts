@@ -9,8 +9,8 @@ describe('the root entry point', () => {
     vi.resetModules();
   });
 
-  // The lint rule says this of each module the root loads; this checks the whole graph, by
-  // loading the root afresh and noting whether anything asks for zod.
+  // The lint rule checks each module the root imports; this test checks the whole import
+  // graph, by reloading the root and recording whether anything imports zod.
   it('loads without zod', async () => {
     let loadedZod = false;
     vi.resetModules();
@@ -22,7 +22,7 @@ describe('the root entry point', () => {
     await expect(import('../src/index.ts')).resolves.toHaveProperty('isStartContext');
     expect(loadedZod).toBe(false);
 
-    // The check itself would notice: the bridge's own entry point does load zod.
+    // Confirm the check works: the bridge's own entry point does import zod.
     await import('../src/bridge/index.ts').catch(() => {});
     expect(loadedZod).toBe(true);
   });

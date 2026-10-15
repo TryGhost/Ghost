@@ -51,20 +51,20 @@ const response = {
 };
 
 describe('a contained path', () => {
-  // The SDK checks an app path with the guard and Admin with the schema built on it, so
-  // both are held to every case.
+  // The SDK checks an app path with the guard, and Admin checks it with the schema built on
+  // the guard, so both are tested against every case.
   const check = (value: unknown, expected: boolean) => {
     holds(isContainedPath)(value, expected);
     expect(AppPathSchema.safeParse(value).success, JSON.stringify(value)).toBe(expected);
   };
 
-  it('is a path within something', () => {
+  it('stays within its base', () => {
     for (const path of ['/', '/episodes/12', '/search?q=a%20b', '/a:b', '/tab#details']) {
       check(path, true);
     }
   });
 
-  it('is never a way out of it', () => {
+  it('never escapes its base', () => {
     for (const path of [
       '',
       'episodes',
@@ -86,7 +86,7 @@ describe('a contained path', () => {
 });
 
 describe('a normalised app path', () => {
-  it('is spelled as the URL parser spells it, so the same route compares equal', () => {
+  it('is in the normalised form of the URL parser, so the same route compares equal', () => {
     expect(normaliseAppPath('/episodes/a b')).toBe('/episodes/a%20b');
     expect(normaliseAppPath('/episodes/a%20b')).toBe('/episodes/a%20b');
     expect(normaliseAppPath('/search?q=a b#notes 2')).toBe('/search?q=a%20b#notes%202');
@@ -100,7 +100,7 @@ describe('a normalised app path', () => {
     expect(normaliseAppPath('/./a/.')).toBe('/a/');
   });
 
-  it('stays as it is once normalised', () => {
+  it('is unchanged when normalised again', () => {
     for (const path of ['/episodes/a b', '/../x', '/search?q=ü#é', '/a:b', '/?', '/#']) {
       const once = normaliseAppPath(path);
       expect(normaliseAppPath(once), path).toBe(once);
@@ -128,7 +128,7 @@ describe('a theme', () => {
     check({ ...theme, somethingNew: true }, true);
   });
 
-  it('is never system, nor missing a field', () => {
+  it('rejects system, or a missing field', () => {
     for (const value of [
       { mode: 'system', accent_color: '#ff5500' },
       { mode: 'dark' },
@@ -145,13 +145,13 @@ describe('a theme', () => {
 describe('a start context', () => {
   const check = holds(isStartContext);
 
-  it('is what Admin sends, whatever a newer Admin adds', () => {
+  it('accepts what Admin sends, including fields a newer Admin adds', () => {
     check(context, true);
     check({ ...context, user: { ...context.user, email: 'person@example.com' }, extra: 1 }, true);
     check({ ...context, session: { revision: 0 } }, true);
   });
 
-  it('is never missing what the SDK relies on', () => {
+  it('rejects a context missing anything the SDK relies on', () => {
     for (const value of [
       null,
       { ...context, site: undefined },
@@ -173,13 +173,13 @@ describe('a start context', () => {
 describe('a connect message', () => {
   const check = holds(isConnectMessage);
 
-  it("is the connect type with the names of Admin's exports, whatever else it carries", () => {
+  it("accepts the connect type with the names of Admin's exports, plus any other fields", () => {
     check({ type: 'ghost-app:connect', exports: ['fetch', 'open'] }, true);
     check({ type: 'ghost-app:connect', exports: [] }, true);
     check({ type: 'ghost-app:connect', exports: ['fetch'], extra: true }, true);
   });
 
-  it('is nothing else', () => {
+  it('rejects anything else', () => {
     for (const value of [
       null,
       'ghost-app:connect',
@@ -197,13 +197,13 @@ describe('a connect message', () => {
 describe('a fetch response', () => {
   const check = holds(isFetchResponse);
 
-  it('carries a status a Response can be built with', () => {
+  it('accepts a status a Response can be built with', () => {
     check(response, true);
     check({ ...response, status: 204, headers: {}, body: '' }, true);
     check({ ...response, status: 599 }, true);
   });
 
-  it('is nothing else', () => {
+  it('rejects anything else', () => {
     for (const value of [
       null,
       { ...response, status: 0 },
@@ -250,10 +250,10 @@ describe('a refusal', () => {
     expect(new Set(BRIDGE_ERROR_CODES)).toEqual(new Set([...HOST_ERROR_CODES, ...APP_ERROR_CODES]));
   });
 
-  it('is read only with a code the other side may send', () => {
+  it('is decoded only with a code the other side may send', () => {
     const fromAdmin = (message: string) => decodeBridgeError(message, HOST_ERROR_CODES);
     expect(fromAdmin('blocked: No')).toEqual({ code: 'blocked', detail: 'No' });
-    // Only the page refuses with it, so from Admin it is no code at all.
+    // Only the page refuses with it, so in a message from Admin it is not a code.
     expect(fromAdmin('invalid_context: Odd')).toBeUndefined();
     expectTypeOf(fromAdmin).returns.toEqualTypeOf<
       { code: HostErrorCode; detail: string } | undefined
@@ -268,7 +268,7 @@ describe('a refusal', () => {
     >();
   });
 
-  it('is not read from a message without a known code', () => {
+  it('is not decoded from a message without a known code', () => {
     for (const message of [
       '',
       'Unknown place',
@@ -283,7 +283,7 @@ describe('a refusal', () => {
 });
 
 describe('a body', () => {
-  it('goes with every method but GET and HEAD', () => {
+  it('is allowed with every method except GET and HEAD', () => {
     expect(['POST', 'PUT', 'PATCH', 'DELETE'].every(methodAllowsBody)).toBe(true);
     expect(['GET', 'HEAD'].some(methodAllowsBody)).toBe(false);
   });
@@ -294,7 +294,8 @@ describe('the messages for a refused argument', () => {
     expect(ARGUMENT_MESSAGES.fetchMethod).toBe(
       'Expected a method of: GET, POST, PUT, DELETE, PATCH, HEAD',
     );
-    // In lowercase, whatever the case it was given in, as the SDK only ever has it that way.
+    // Lowercase whatever case the name was given in, because the SDK only ever has it in
+    // lowercase.
     for (const name of ['cookie', 'Cookie', 'COOKIE']) {
       expect(ARGUMENT_MESSAGES.reservedHeader(name)).toBe(
         'Expected no cookie header, which only Admin sets',
@@ -307,7 +308,7 @@ describe('the messages for a refused argument', () => {
 });
 
 describe('a multipart content type', () => {
-  it('is any multipart type, in any case', () => {
+  it('matches any multipart type, in any case', () => {
     for (const value of [
       'multipart/form-data; boundary=x',
       'Multipart/Mixed',
@@ -318,7 +319,7 @@ describe('a multipart content type', () => {
     }
   });
 
-  it('is no other', () => {
+  it('matches nothing else', () => {
     for (const value of [
       'application/json',
       'text/plain; x=multipart/form-data',
@@ -331,7 +332,7 @@ describe('a multipart content type', () => {
 });
 
 describe('a reserved request header', () => {
-  it('is one only Admin sets, in any case', () => {
+  it('matches a header only Admin sets, in any case', () => {
     for (const name of [
       'cookie',
       'COOKIE',
@@ -343,7 +344,7 @@ describe('a reserved request header', () => {
     }
   });
 
-  it('is no other', () => {
+  it('matches nothing else', () => {
     for (const name of ['content-type', 'accept', 'x-ghost', 'x-ghostly', 'cookies', 'hosts']) {
       expect(isReservedRequestHeader(name), name).toBe(false);
     }

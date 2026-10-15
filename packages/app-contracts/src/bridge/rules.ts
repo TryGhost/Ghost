@@ -1,54 +1,56 @@
 /**
- * The bridge's rules that depend on nothing, exported from the root entry point so the SDK can
- * use them without zod. The schemas in this folder build on them, so a path or a refusal means
- * the same thing to the SDK as to Admin.
+ * The bridge's rules that have no dependencies. The root entry point exports them so the SDK
+ * can use them without zod. The schemas in this folder build on them, so the SDK and Admin
+ * read a path or a refusal the same way.
  *
- * What Admin sends the page has no schema, as Admin builds it and never parses it; its types
- * are declared here beside the guards the SDK checks it with. The SDK trusts Admin, so the
- * guards check shape and path containment, turning a mismatch into a clear error rather than
- * `undefined` somewhere in the app. Limits are left to the schemas.
+ * What Admin sends the page has no schema, because Admin builds it and never parses it. Its
+ * types are declared here, next to the guards the SDK checks it with. The SDK trusts Admin, so
+ * the guards only check shape and path containment. They turn a mismatch into a clear error
+ * rather than `undefined` somewhere in the app. Only the schemas check limits.
  */
 
 /** Posted by the app's page to `window.parent` once the SDK has loaded. */
 export const HELLO_MESSAGE_TYPE = 'ghost-app:hello';
 
-/** Posted by Admin to the frame that said hello, with the channel's port attached. */
+/** Posted by Admin to the frame that sent the hello, with the channel's port attached. */
 export const CONNECT_MESSAGE_TYPE = 'ghost-app:connect';
 
 /**
- * How long an app's page has to start, in milliseconds: Admin gives up on a frame this long
- * after mounting it, and the SDK waits this long for Admin to start it unless the app says
- * otherwise. Long enough for a slow page on a slow connection to load and say hello.
+ * How long an app's page has to start, in milliseconds. Admin gives up on a frame this long
+ * after mounting it, and the SDK waits this long for Admin to start the app unless the app
+ * passes its own `timeout`. Long enough for a slow page on a slow connection to load and send
+ * its hello.
  */
 export const START_TIMEOUT_MS = 10_000;
 
 /** Long enough for any real page title, short enough that Admin's own name still shows. */
 export const TITLE_MAX_LENGTH = 200;
 
-/** The methods the Admin API answers. Written in uppercase; the SDK normalises what apps pass. */
+/** The methods the Admin API supports, in uppercase. The SDK uppercases what apps pass. */
 export const FETCH_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'] as const;
 
 export type FetchMethod = (typeof FETCH_METHODS)[number];
 
 /**
- * Whether a request with this method may carry a body. Written for the uppercase methods in
- * `FETCH_METHODS`: the Admin API reads no body on a `GET` or `HEAD`, and fetch refuses one.
+ * Whether a request with this method may carry a body. Expects an uppercase method from
+ * `FETCH_METHODS`. The Admin API reads no body on a `GET` or `HEAD`, and fetch refuses to send
+ * one.
  */
 export function methodAllowsBody(method: string): boolean {
   return method !== 'GET' && method !== 'HEAD';
 }
 
-// The headers Admin sets itself on a request it makes for an app: the credentials, which are
-// Admin's to send; Admin's own markers, which Ghost reads as Admin speaking; and the ones that
-// describe the connection, or the proxies on the way, rather than the request.
+// The headers Admin sets itself on a request it makes for an app: the credentials, which only
+// Admin may send; Admin's own markers, which Ghost core treats as coming from Admin; and the
+// headers that describe the connection, or the proxies along the way, rather than the request.
 const RESERVED_REQUEST_HEADER =
   /^(?:cookie|authorization|x-ghost-.*|app-pragma|host|origin|referer|content-length|x-forwarded-.*|forwarded|x-real-ip|via)$/i;
 
 /**
- * Whether an app may not set a request header, whatever its case. Admin refuses a request that
- * sets one rather than dropping it, so an app learns it cannot rather than wondering why the
- * header never arrived. The browser refuses some of these anyway; they are named so none of
- * them depends on that.
+ * Whether a request header is one that apps may not set, in any case. Admin refuses a request
+ * that sets one rather than dropping the header, so the app gets an error instead of wondering
+ * why the header never arrived. The browser refuses some of these anyway; they are listed here
+ * so that none of them relies on the browser.
  */
 export function isReservedRequestHeader(name: string): boolean {
   return RESERVED_REQUEST_HEADER.test(name);
@@ -57,25 +59,25 @@ export function isReservedRequestHeader(name: string): boolean {
 const MULTIPART = /^\s*multipart\//i;
 
 /**
- * Whether a request's content type is multipart, as an upload's is. Files stay out of the
- * bridge for now, and a body is text, but an app could write a multipart body as text and
- * reach an upload route, so a multipart content type is refused whatever the body.
+ * Whether a request's content type is multipart, as an upload's is. The bridge doesn't carry
+ * files yet, and a body is always text. But an app could write a multipart body as text and
+ * reach an upload route, so a multipart content type is refused whatever the body holds.
  */
 export function isMultipartContentType(value: string): boolean {
   return MULTIPART.test(value);
 }
 
 /**
- * What Admin and the SDK say when they refuse an argument for the same reason, so an app hears
- * the same words whichever of them catches it. The SDK checks only what is plainly wrong, before
- * anything crosses the channel; Admin's schemas check everything again.
+ * The messages Admin and the SDK use when they refuse an argument for the same reason, so an
+ * app gets the same message whichever side catches the problem. The SDK checks only for obvious
+ * mistakes, before anything crosses the channel; Admin's schemas check everything again.
  */
 export const ARGUMENT_MESSAGES = {
   fetchPath: 'Expected an Admin API path such as /posts/, not a URL',
   fetchMethod: `Expected a method of: ${FETCH_METHODS.join(', ')}`,
   fetchBody: 'Expected no body on a GET or HEAD request',
-  // Header names are compared in any case, and `Headers` lowercases them on the SDK's side,
-  // so the name is lowercased here for both sides to say the same.
+  // Header names are case-insensitive, and `Headers` lowercases them on the SDK's side, so the
+  // name is lowercased here too and both sides produce the same message.
   reservedHeader: (name: string) =>
     `Expected no ${name.toLowerCase()} header, which only Admin sets`,
   multipart: "Expected a content type other than multipart/*: apps can't upload files yet",
@@ -86,24 +88,26 @@ export const ARGUMENT_MESSAGES = {
 } as const;
 
 /**
- * The statuses an answer to `fetch` may have. The SDK turns it back into a `Response`, which
- * only accepts statuses from 200 to 599; fetch never hands script an informational one.
+ * The statuses a `fetch` response may have. The SDK turns the response back into a
+ * `Response`, which only accepts statuses from 200 to 599. Fetch never returns an
+ * informational (1xx) status to scripts anyway.
  */
 export const FETCH_RESPONSE_STATUS_MIN = 200;
 export const FETCH_RESPONSE_STATUS_MAX = 599;
 
 /**
- * The codes a refused call carries across the channel. Only an error's message survives the
- * structured clone that carries it, so the side that refuses leads the message with the code,
- * as `blocked: Apps can't use /db/`, and the other side reads it back. Codes are only ever
- * added: an SDK that does not know one reads the whole message as a refusal.
+ * The codes a refused call carries across the channel. The structured clone that carries an
+ * error keeps only its message, so the refusing side puts the code at the start of the
+ * message, as in `blocked: Apps can't use /db/`, and the other side parses it back out. Codes
+ * are only ever added: an SDK that doesn't know a code treats the whole message as a generic
+ * refusal.
  *
- * Admin refuses the page's calls with these, the host codes:
+ * The host codes, which Admin refuses the page's calls with:
  *
  * - `session_ended`: the session is over; the page is about to be replaced.
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
- *   the Admin API answers only with a redirect, such as a path without its trailing `/`.
+ *   the Admin API only responds to with a redirect, such as a path without its trailing `/`.
  * - `blocked`: an Admin API route apps may not reach.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
@@ -121,7 +125,7 @@ export const HOST_ERROR_CODES = [
 export type HostErrorCode = (typeof HOST_ERROR_CODES)[number];
 
 /**
- * The page refuses Admin's calls with these, the app codes:
+ * The app codes, which the page refuses Admin's calls with:
  *
  * - `invalid_context`: a start context the SDK cannot read, or a call before the app has
  *   started.
@@ -140,18 +144,17 @@ export type BridgeErrorCode = (typeof BRIDGE_ERROR_CODES)[number];
 const CODED_MESSAGE = /^([a-z_]+): ([\s\S]*)$/;
 
 /**
- * The message a refusal crosses the channel as: `code: detail`. Each side passes only its
- * own codes; typing its refusals as `HostErrorCode` or `AppErrorCode` keeps it to them.
+ * Builds the message a refusal crosses the channel as: `code: detail`. Each side should pass
+ * only its own codes; typing its refusals as `HostErrorCode` or `AppErrorCode` enforces that.
  */
 export function encodeBridgeError(code: BridgeErrorCode, detail: string): string {
   return `${code}: ${detail}`;
 }
 
 /**
- * The code and detail a refusal's message carries, read back from `code: detail`. Takes the
- * codes the other side may send, `HOST_ERROR_CODES` for a refusal from Admin and
- * `APP_ERROR_CODES` for one from the page, and answers `undefined` for a message that leads
- * with none of them.
+ * Reads the code and detail back from a refusal's `code: detail` message. Takes the codes the
+ * other side may send: `HOST_ERROR_CODES` for a refusal from Admin, and `APP_ERROR_CODES` for
+ * one from the page. Returns `undefined` for a message that doesn't start with one of them.
  */
 export function decodeBridgeError<Code extends BridgeErrorCode>(
   message: string,
@@ -170,8 +173,8 @@ export type Theme = {
 };
 
 /**
- * What Admin tells an app's page when the session starts. Fields a newer Admin adds are
- * ignored rather than refused, so they do not stop an older SDK from starting.
+ * What Admin sends an app's page when the session starts. An older SDK ignores fields a newer
+ * Admin adds rather than refusing them, so they don't stop it from starting.
  */
 export type StartContext = {
   site: {
@@ -182,8 +185,8 @@ export type StartContext = {
   };
   /**
    * Who is using the app, by ID and role only. Name and email are left out on purpose: an
-   * app that needs more about a person asks the API, through `/users/?filter=id:…`, where
-   * app scopes will apply.
+   * app that needs more about a person reads it from the API, through `/users/?filter=id:…`,
+   * where app scopes will apply.
    */
   user: {
     id: string;
@@ -191,21 +194,22 @@ export type StartContext = {
   };
   theme: Theme;
   /**
-   * The installation revision this session was started against. Admin ends the session when
-   * the installation moves on, so an app never runs against a revision nobody approved.
+   * The installation's revision when this session started. Admin ends the session when the
+   * installation's revision changes, so an app never runs against an unapproved revision.
    */
   session: {
     revision: number;
   };
   /**
-   * The app's own route, from Admin's address, so a reload or a shared link lands on the
-   * same page. `/` when Admin's address names none.
+   * The app's own route, taken from Admin's URL, so a reload or a shared link opens the same
+   * page. `/` when Admin's URL has no app route.
    */
   path: string;
 };
 
 // `Place` and `PathChangeOptions` are written out rather than inferred from their schemas, so
-// the SDK's declarations, which carry them, carry no zod. Tests hold each equal to its schema.
+// the SDK's declarations, which include them, don't depend on zod. Tests check that each one
+// matches its schema.
 
 /**
  * A place in Admin an app can send the publisher to: a post, a page or a member by its ID, or
@@ -227,14 +231,15 @@ export type PathChangeOptions = {
 export type ConnectMessage = {
   type: typeof CONNECT_MESSAGE_TYPE;
   /**
-   * The names of the calls this Admin exports, its `HostExports`. An older Admin lacks the
-   * newer ones, so the SDK refuses a call missing here as `unsupported` without making it.
+   * The names of the calls this Admin exports, from `HostExports`. An older Admin lacks the
+   * newer ones, so the SDK rejects a call missing from this list as `unsupported` without
+   * sending it.
    */
   exports: string[];
 };
 
 /**
- * The Admin API's answer to `fetch`, as plain data so it can cross the channel, with a status
+ * The Admin API's response to `fetch`, as plain data so it can cross the channel, with a status
  * the SDK can build a `Response` from.
  */
 export type FetchResponse = {
@@ -244,14 +249,14 @@ export type FetchResponse = {
   body: string;
 };
 
-// Control characters are stripped or refused unevenly by URL parsers and routers, so a path
-// holding one can mean something different to each of them.
+// URL parsers and routers don't agree on whether to strip or refuse control characters, so a
+// path containing one can mean something different to each of them.
 const CONTROL_CHARACTER = /\p{Cc}/u;
 
 /**
- * Whether a value is a path within something rather than a way out of it: it starts with a
- * single `/`, so it cannot carry a scheme or be read as `//host`, and it holds no `\`, which
- * URL parsers read as `/`, and no control character.
+ * Whether a value is a path that stays within the base it is resolved against, rather than
+ * escaping it. It must start with a single `/`, so it can't carry a scheme or be read as
+ * `//host`. It must not contain `\`, which URL parsers read as `/`, or any control character.
  */
 export function isContainedPath(value: unknown): value is string {
   return (
@@ -263,19 +268,20 @@ export function isContainedPath(value: unknown): value is string {
   );
 }
 
-// Only parsed against, never requested: it gives a path the URL parser's own spelling.
+// Used only as a base for parsing, never requested. Parsing against it gives a path the URL
+// parser's normalised form.
 const APP_PATH_BASE = 'https://app.invalid';
 
 /**
- * An app path as the URL parser spells it, the one spelling Admin and the SDK keep it in: `.`
- * and `..` resolved within the app, so a path can never climb out of it, and what needs
- * escaping escaped once, so a path the app reported and the same path read back from Admin's
- * address compare equal. `/search?q=a b` becomes `/search?q=a%20b`, and `/x/../episodes/1`
- * becomes `/episodes/1`.
+ * Returns an app path in the URL parser's normalised form, the one form Admin and the SDK
+ * store it in. `.` and `..` are resolved within the app, so a path can never climb out of it.
+ * Characters that need escaping are escaped once, so a path the app reported compares equal to
+ * the same path read back from Admin's URL. `/search?q=a b` becomes `/search?q=a%20b`, and
+ * `/x/../episodes/1` becomes `/episodes/1`.
  *
- * Takes a path `isContainedPath` accepts; anything else may not be a path within the app at
- * all. `AppPathSchema` answers with this spelling, so Admin never calls it itself; the SDK,
- * which loads no zod, does.
+ * Expects a path that `isContainedPath` accepts; anything else may not be a path within the
+ * app at all. `AppPathSchema` already returns this form, so Admin never calls this directly.
+ * The SDK, which doesn't load zod, does.
  */
 export function normaliseAppPath(path: string): string {
   const url = new URL(path, APP_PATH_BASE);

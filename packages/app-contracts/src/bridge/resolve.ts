@@ -2,13 +2,13 @@ import { isBlockedAdminApiPath } from './blocklist.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { isContainedPath } from './rules.ts';
 
-// A separator written as an escape is one segment to the URL parser and possibly two to
-// whatever decodes it next.
+// The URL parser reads an escaped separator as part of one segment, but whatever decodes the
+// path next may read it as two segments.
 const ENCODED_SEPARATOR = /%2f|%5c/i;
 
 /**
- * What `checkAdminApiPath` makes of a path: the URL to request and the path within the API
- * that the blocklist read, or the code Admin refuses the request with.
+ * The result of `checkAdminApiPath`: either the URL to request and the path within the API
+ * that the blocklist checked, or the code Admin refuses the request with.
  */
 export type AdminApiPathCheck =
   | { readonly url: URL; readonly pathname: string; readonly problem?: undefined }
@@ -23,11 +23,12 @@ export type AdminApiPathCheck =
  * `https://site.example/ghost/api/admin/posts/?limit=5`. The root may be written with or
  * without its trailing `/`, and its query and fragment are ignored.
  *
- * The path is `invalid_path` unless it stays under the root on the root's own origin:
- * absolute and protocol-relative URLs, a path that does not start with `/`, backslashes,
- * `..` in any spelling the URL parser understands, and escaped separators all are. A path
- * that stays under the root is then `blocked` if the blocklist closes where it lands, read
- * as `pathname`: relative to the root, with its leading `/`, without the query.
+ * The result is `invalid_path` unless the path stays under the root, on the root's origin.
+ * Absolute and protocol-relative URLs, paths that don't start with `/`, backslashes, `..` in
+ * any spelling the URL parser understands, and escaped separators are all `invalid_path`. A
+ * path that stays under the root is `blocked` if the blocklist covers where it resolves to.
+ * The blocklist checks it as `pathname`: relative to the root, with its leading `/`, and
+ * without the query.
  */
 export function checkAdminApiPath(path: string, apiRoot: URL): AdminApiPathCheck {
   if (typeof path !== 'string' || path.length > FETCH_PATH_MAX_LENGTH || !isContainedPath(path)) {
@@ -41,9 +42,9 @@ export function checkAdminApiPath(path: string, apiRoot: URL): AdminApiPathCheck
     root.pathname = `${root.pathname}/`;
   }
 
-  // Written as `./…`, the reference is always relative to the root's own path, so the
-  // parser cannot read it as a scheme or a host. Only `..` can climb out, and the checks
-  // below catch it whatever the parser made of it.
+  // With a `.` in front, the path becomes `./…`, which is always relative to the root's path,
+  // so the parser can't read it as a scheme or a host. Only `..` can climb out, and the
+  // checks below catch that however the parser resolved it.
   const url = new URL(`.${path}`, root);
 
   if (
@@ -54,8 +55,8 @@ export function checkAdminApiPath(path: string, apiRoot: URL): AdminApiPathCheck
     return { problem: 'invalid_path' };
   }
 
-  // Cut against the root as normalised above, so a root written without its trailing `/`
-  // cannot shift the cut and slip a path past the blocklist.
+  // Slice against the root as normalised above, so a root written without its trailing `/`
+  // can't shift the slice and let a path slip past the blocklist.
   const pathname = url.pathname.slice(root.pathname.length - 1);
   if (isBlockedAdminApiPath(pathname)) {
     return { problem: 'blocked', pathname };

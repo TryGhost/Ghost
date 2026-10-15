@@ -4,8 +4,8 @@ import { checkAdminApiPath } from '../../src/bridge/index.ts';
 
 const root = new URL('https://site.example/ghost/api/admin/');
 
-// The URL a path resolves to, or null when it is not an Admin API path. Every path here but
-// the ones about the blocklist is open to apps.
+// The URL a path resolves to, or null when it is not an Admin API path. Every path in these
+// tests is open to apps, except in the tests about the blocklist.
 function resolved(path: string, apiRoot = root) {
   const check = checkAdminApiPath(path, apiRoot);
   expect(check.problem, path).not.toBe('blocked');
@@ -167,7 +167,7 @@ describe('checking an Admin API path', () => {
     expect(resolved(null as unknown as string)).toBeNull();
   });
 
-  it('cannot be moved to another origin', () => {
+  it('never resolves to another origin', () => {
     for (const path of ['/@evil.example/', '/:443@evil.example/', '/%40evil.example']) {
       expect(new URL(resolved(path)!).origin).toBe('https://site.example');
     }

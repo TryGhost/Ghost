@@ -1,5 +1,5 @@
 /**
- * The SDK's version, sent in the hello for Admin's logs. Kept in step with package.json by a
- * test, as the source stays within `src/`.
+ * The SDK's version, sent in the hello for Admin's logs. A test keeps it in sync with
+ * package.json, because the source stays within `src/` and doesn't read package.json.
  */
 export const SDK_VERSION = 'private';

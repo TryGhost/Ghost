@@ -4,8 +4,8 @@ import { generateDtsBundle } from 'dts-bundle-generator';
 import { defineConfig, type Plugin, type UserConfig } from 'vite';
 
 // pnpm keeps dependencies in a store outside the repository, so the paths the bundler
-// writes into region comments and the source map lead through the machine that built it.
-// From `node_modules/` on is all a reader needs.
+// writes into region comments and the source map include local paths on the build machine.
+// A reader only needs the part from `node_modules/` on.
 const fromNodeModules = (path: string) => path.replace(/^.*\/node_modules\//, 'node_modules/');
 
 const tidyRegionComments: Plugin = {
@@ -15,18 +15,18 @@ const tidyRegionComments: Plugin = {
       code: code.replace(/^\/\/#region .*$/gm, (line) =>
         line.replace(/ .*\/node_modules\//, ' node_modules/'),
       ),
-      // Only comment lines change, and no line is added or removed, so the map still holds.
+      // Only comment lines change, and no line is added or removed, so the map stays valid.
       map: null,
     };
   },
 };
 
-// Vite turns a Node builtin, such as `node:crypto`, into an empty stub for the browser and
-// only warns about it, so a bundle that needs one would build, import nothing, and break the
-// page that called it. Anything the SDK or the contracts' root reaches must run in a page, so
-// a builtin fails the build instead: one named as `node:…`, or one Vite stubbed, which is
-// how a builtin named without the prefix shows. How Vite names its stub is its own affair, so
-// the prefix is checked first.
+// Vite replaces a Node builtin, such as `node:crypto`, with an empty stub for the browser and
+// only logs a warning. A bundle that needs one would build, import nothing, and break the page
+// that called it. Everything the SDK or the contracts' root entry point imports must run in a
+// page, so a builtin fails the build instead. That covers a builtin imported as `node:…`, and
+// one Vite stubbed, which is how a builtin imported without the prefix shows up. How Vite
+// names its stub is an internal detail, so the prefix is checked first.
 const refuseNodeBuiltins: Plugin = {
   name: 'refuse-node-builtins',
   enforce: 'pre',
@@ -42,9 +42,9 @@ const refuseNodeBuiltins: Plugin = {
   },
 };
 
-// The package's type declarations, in one file beside its code, with the contract types the
-// SDK uses written into it, so an app needs nothing from @tryghost/app-contracts. Only the
-// types the entry point exports are exported.
+// Writes the package's type declarations to one file next to its code, with the contract types
+// the SDK uses inlined, so an app needs nothing from @tryghost/app-contracts. Only the types the
+// entry point exports are exported.
 function bundleDeclarations(): Plugin {
   let root = '';
   return {
@@ -76,9 +76,9 @@ const shared = {
   emptyOutDir: true,
 } as const;
 
-// What a bundler imports, in `build/`, built with `--mode package`: one ES module with what
-// the SDK uses from @tryghost/app-contracts inlined, so the package depends on @quilted/threads
-// alone.
+// The build a bundler imports, in `build/`, built with `--mode package`: one ES module with
+// the parts of @tryghost/app-contracts the SDK uses inlined, so the package depends only on
+// @quilted/threads.
 const packageBuild: UserConfig = {
   plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
   build: {
@@ -88,7 +88,7 @@ const packageBuild: UserConfig = {
     rolldownOptions: {
       external: [/^@quilted\/threads(?:\/|$)/],
       output: { sourcemapPathTransform: fromNodeModules },
-      // Writing the declarations takes a TypeScript program, which is slow by design.
+      // Generating the declarations builds a TypeScript program, which is expected to be slow.
       checks: { pluginTimings: false },
     },
   },
@@ -104,7 +104,7 @@ const browserBundle: UserConfig = {
     outDir: 'dist',
     lib: { entry: 'src/index.ts', formats: ['es'], fileName: () => 'app-sdk.js' },
     rolldownOptions: {
-      // Nothing is left for the page to provide.
+      // Bundle every dependency, so the page doesn't have to provide any.
       external: [],
       output: { sourcemapPathTransform: fromNodeModules },
     },

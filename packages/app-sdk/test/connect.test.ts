@@ -55,7 +55,7 @@ describe('connect', () => {
     -1,
     Number.NaN,
     Number.POSITIVE_INFINITY,
-    // setTimeout would clamp it to nothing, and give up at once.
+    // setTimeout would treat it as 0, and time out immediately.
     2 ** 31,
     '10' as unknown as number,
   ])('refuses a timeout of %s', async (timeout) => {
@@ -82,7 +82,7 @@ describe('connect', () => {
     });
   });
 
-  it('says hello to the parent and resolves once Admin has started the app', async () => {
+  it('sends a hello to the parent and resolves once Admin has started the app', async () => {
     const parent = frame();
     const fake = admin();
     const connecting = sdk.connect();
@@ -111,7 +111,7 @@ describe('connect', () => {
     expect(ghost.connected).toBe(true);
   });
 
-  it('addresses the hello to the embedding origin when the browser tells it', async () => {
+  it('sends the hello to the embedding origin when the browser exposes it', async () => {
     Object.defineProperty(window.location, 'ancestorOrigins', {
       value: [ADMIN_ORIGIN],
       configurable: true,
@@ -142,7 +142,7 @@ describe('connect', () => {
     expect(parent.postMessage).toHaveBeenCalledWith(expect.anything(), '*');
   });
 
-  it('says hello again until Admin answers', async () => {
+  it('repeats the hello until Admin answers', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     const parent = frame();
     const fake = admin();
@@ -159,7 +159,7 @@ describe('connect', () => {
     await expect(connecting).resolves.toBeDefined();
   });
 
-  it('names its document the same in every hello, connecting again included', async () => {
+  it('sends the same document ID in every hello, including when connecting again', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
     const parent = frame();
     const failed = expect(sdk.connect({ timeout: 600 })).rejects.toMatchObject({
@@ -176,7 +176,7 @@ describe('connect', () => {
     expect(documents.length).toBeGreaterThan(3);
     expect(new Set(documents).size).toBe(1);
 
-    // A new document, as a reload makes, began later.
+    // A new document, as after a reload, has a later start time.
     freshPage(1_760_000_000_250.25);
     vi.resetModules();
     const reloaded: Sdk = await import('../src/index.ts');
@@ -196,7 +196,7 @@ describe('connect', () => {
     const error = await other.connect().catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(other.GhostAppError);
     expect(error).toMatchObject({ code: 'duplicate_sdk' });
-    // Only the first copy says hello, and it still connects.
+    // Only the first copy sends a hello, and it still connects.
     expect(parent.postMessage).toHaveBeenCalledTimes(1);
     expect(sdk.connect()).toBe(connecting);
     fake.connect();
@@ -204,7 +204,7 @@ describe('connect', () => {
     await expect(connecting).resolves.toBeDefined();
   });
 
-  it('keeps the page for the copy that claimed it, after its connection failed', async () => {
+  it('keeps the page claimed by the first copy after its connection fails', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
     const parent = frame();
     const failed = expect(sdk.connect({ timeout: 100 })).rejects.toMatchObject({
@@ -222,7 +222,7 @@ describe('connect', () => {
     vi.advanceTimersByTime(START_TIMEOUT_MS);
   });
 
-  it('ignores messages that are not Admin connecting', async () => {
+  it('ignores messages that are not a connect from Admin', async () => {
     frame();
     const fake = admin();
     const connecting = sdk.connect();
@@ -263,7 +263,7 @@ describe('connect', () => {
     expect(second.exports.open).not.toHaveBeenCalled();
   });
 
-  it('gives up when Admin does not start the app in time', async () => {
+  it('times out when Admin does not start the app in time', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
     const parent = frame();
     const connecting = sdk.connect({ timeout: 1000 });
@@ -277,7 +277,7 @@ describe('connect', () => {
     expect(parent.postMessage).toHaveBeenCalledTimes(hellos);
   });
 
-  it('gives up, and closes the channel, when Admin connects but never starts', async () => {
+  it('times out and closes the channel when Admin connects but never starts the app', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     frame();
     const fake = admin();
@@ -288,15 +288,15 @@ describe('connect', () => {
     const failed = expect(connecting).rejects.toMatchObject({ code: 'not_connected' });
     fake.connect();
 
-    // As long as Admin gives the page, by default.
+    // By default, the same time Admin gives the page.
     vi.advanceTimersByTime(START_TIMEOUT_MS);
     await failed;
     vi.useRealTimers();
-    // Admin's end hears the page let go, so it can't start a page that has given up.
+    // Admin's end of the port sees it close, so Admin can't start a page that has timed out.
     expect(await pending(closed)).toBe(false);
   });
 
-  it('shares one connection between calls, and tries again after a failure', async () => {
+  it('shares one connection between calls, and retries after a failure', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     frame();
     const first = sdk.connect({ timeout: 100 });
@@ -314,7 +314,8 @@ describe('connect', () => {
     await expect(second).resolves.toBeDefined();
   });
 
-  // Admin answers a document once, so the page's first answered connection is its only one.
+  // Admin answers each document only once, so the first connection Admin answers is the
+  // page's only one.
   it('rejects every call once the session has ended, with the error it ended with', async () => {
     const parent = frame();
     const first = admin();
@@ -351,7 +352,7 @@ describe('connect', () => {
     expect(parent.postMessage).toHaveBeenCalledTimes(hellos);
   });
 
-  it('refuses a start it does not understand', async () => {
+  it('refuses a start context it cannot read', async () => {
     frame();
     const fake = admin();
     const connecting = sdk.connect();
@@ -361,14 +362,14 @@ describe('connect', () => {
     });
     fake.connect();
 
-    // Admin hears why, coded the way it codes its own refusals.
+    // Admin gets the reason, encoded the same way as its own refusals.
     await expect(fake.start({ ...startContext(), theme: { mode: 'system' } })).rejects.toThrow(
       "invalid_context: Ghost started the app with a context this SDK doesn't understand",
     );
     await failed;
   });
 
-  it('answers a second start without starting again', async () => {
+  it('resolves a second start without starting again', async () => {
     frame();
     const fake = admin();
     const connecting = sdk.connect();

@@ -23,7 +23,7 @@ describe('plain text', () => {
     }
   });
 
-  it('can be made of any text, by dropping what it refuses', () => {
+  it('can be made from any text by dropping the characters it refuses', () => {
     expect(toPlainText('\u202esedosipe\u202c · \u200ePodcast\n')).toBe('sedosipe · Podcast');
     expect(toPlainText('👩\u200d💻 Code')).toBe('👩\u200d💻 Code');
     expect(isPlainText(toPlainText('a\u2066b\u0000c\u2028d'))).toBe(true);

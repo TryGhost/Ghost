@@ -16,7 +16,7 @@ export type Site = Readonly<StartContext['site']>;
  */
 export type User = Readonly<StartContext['user']>;
 
-/** The session with Admin: the installation revision it was started against. */
+/** The session with Admin: the installation's revision when the session started. */
 export type Session = Readonly<StartContext['session']>;
 
 export interface ConnectOptions {
@@ -36,12 +36,12 @@ export interface GhostFetchInit {
   body?: string | JsonBody | null;
 }
 
-/** The app's own route, mirrored in Admin's address. */
+/** The app's own route, mirrored in Admin's URL. */
 export interface GhostPath {
   /**
-   * The app's route, such as `/episodes/12`. `/` when Admin's address names none. Spelled as
-   * the URL parser spells it, as Admin keeps it: after `set('/search?q=a b')` it is
-   * `/search?q=a%20b`, and `..` is resolved.
+   * The app's route, such as `/episodes/12`, or `/` when Admin's URL has no app route. It is
+   * in the URL parser's normalised form, as Admin stores it: after `set('/search?q=a b')` it
+   * is `/search?q=a%20b`, and `..` is resolved.
    */
   readonly current: string;
   /**
@@ -67,16 +67,16 @@ export interface Ghost {
   /** Called when the publisher switches Admin's theme. */
   onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe;
   /**
-   * Called when Admin's address moves within the app, by back, forward or a link. Not
-   * called for the app's own `path.set`.
+   * Called when Admin's URL changes to another route within the app, through back, forward
+   * or a link. Not called for the app's own `path.set`.
    */
   onPathChange(callback: (path: string) => void): Unsubscribe;
   /** Called once when the session ends. Called straight away if it already has. */
   onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe;
   /**
    * Calls the Admin API as the signed-in staff user. `path` is relative to the Admin API
-   * root, such as `/posts/?limit=5`, never a URL. Answers with a real `Response`, whatever
-   * its status; it rejects only when Admin refuses to make the request.
+   * root, such as `/posts/?limit=5`, never a URL. Resolves with a real `Response` whatever
+   * its status, and rejects only when Admin refuses to make the request.
    */
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
   /** Sends the publisher to a place in Admin, such as `{ post: { id } }`. */

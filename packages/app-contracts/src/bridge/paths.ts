@@ -3,17 +3,17 @@ import { z } from 'zod';
 import { ARGUMENT_MESSAGES, isContainedPath, normaliseAppPath } from './rules.ts';
 
 /**
- * The longest path an app may report for itself. It ends up in Admin's own address, so it
- * stays well inside what browsers and proxies accept for a whole URL.
+ * The longest path an app may report. Admin puts the path in its own URL, so the limit stays
+ * well below what browsers and proxies accept for a whole URL.
  */
 export const APP_PATH_MAX_LENGTH = 2048;
 
 /**
- * A route within the app's own page, such as `/episodes/12`. Admin mirrors it into its own
- * address under `/apps/:installationId`, so it must not be able to name anything outside it.
+ * A route within the app's own page, such as `/episodes/12`. Admin mirrors it in its own URL
+ * under `/apps/:installationId`, so it must not be able to point outside that.
  *
- * Parsing holds it to a path rather than a URL or `//host`, and answers with it as
- * `normaliseAppPath` spells it, `..` resolved within the app, ready to use as it is.
+ * Parsing accepts only a path, not a URL or `//host`, and returns it normalised by
+ * `normaliseAppPath`, with `..` resolved within the app, so it is ready to use.
  */
 export const AppPathSchema = z
   .string('Expected a path')

@@ -4,10 +4,10 @@ import { isPlainText } from '../plain-text.ts';
 import { TITLE_MAX_LENGTH } from './rules.ts';
 
 /**
- * The title of the app's page, which Admin shows as its own while the page is open, as
- * "{title} · {app name}". It is only ever set as text, but a character that reorders text
- * could still make the app's name read backwards, so a title is held to the same plain-text
- * rule as an app's name. An empty title is fine: Admin shows the app's name alone.
+ * The title of the app's page. Admin shows it as its own title while the page is open, as
+ * "{title} · {app name}". Admin only ever sets it as text, but a character that reorders text
+ * could still make the app's name read backwards, so a title must follow the same plain-text
+ * rule as an app's name. An empty title is allowed: Admin then shows only the app's name.
  */
 export const TitleSchema = z
   .string('Expected a title')

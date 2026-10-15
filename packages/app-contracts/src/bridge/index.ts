@@ -1,13 +1,13 @@
 /**
- * The bridge: the channel between Admin and an app's page, framed inside Admin.
+ * The bridge: the channel between Admin and an app's page, which Admin shows in a frame.
  *
- * Admin and the SDK talk over a `MessagePort` that Admin hands the frame once it has said
- * hello from the right origin. This entry point holds what both sides agree on: the two
- * window messages that set the channel up, the calls each side exposes, the validation Admin
- * applies to every argument from the untrusted frame, and what the fetch escape hatch may
- * reach (`checkAdminApiPath` and the blocklist).
+ * Admin and the SDK talk over a `MessagePort`. Admin hands the port to the frame once the SDK
+ * in it has sent a hello from the right origin. This entry point holds what both sides agree
+ * on: the two window messages that set up the channel, the calls each side exposes, the
+ * validation Admin applies to every argument from the untrusted frame, and what the fetch
+ * escape hatch may reach (`checkAdminApiPath` and the blocklist).
  *
- * The zod-free rules in `rules.ts` are also exported from the root entry point, for the SDK.
+ * The root entry point also exports the zod-free rules in `rules.ts`, for the SDK.
  */
 
 export { ADMIN_API_BLOCKLIST, type BlockedAdminApiCategory } from './blocklist.ts';

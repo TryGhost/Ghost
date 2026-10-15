@@ -106,10 +106,10 @@ of the app's choosing. The author's link is exempt, since Ghost never loads it.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
-derive it where it is used, with `new URL(surface.url).origin`. Everything on
-that origin speaks for the app: any page there that says hello from the app's
-frame gets the bridge, `fetch` as the staff user included, so the origin must
-serve only the app (the SDK's README says what to keep off it).
+derive it where it is used, with `new URL(surface.url).origin`. Admin treats
+everything on that origin as the app: any page there that sends a hello from the
+app's frame gets the bridge, including `fetch` as the staff user. So the origin
+must serve only the app (the SDK's README lists what to keep off it).
 
 ### The manifest URL
 
@@ -160,28 +160,28 @@ Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK
 posts a `ghost-app:hello` to `window.parent`, with an ID for its document (its
 `performance.timeOrigin`); Admin checks the sender is the frame and its origin
 is the surface's, and answers with a `ghost-app:connect` carrying the port and
-the names of the calls it exports. The
-ID tells a hello repeated by a document Admin has connected from a new
-document's. Over it, each side exposes named calls: `HostExports` are what an
-app may ask of Admin (`fetch`, `titleChanged`, `pathChanged`, `open`),
-`AppExports` what Admin tells the app (`start`, `themeChanged`, `pathChanged`).
+the names of the calls it exports. The ID lets Admin tell whether a hello comes
+from a document it already connected or from a new document. Over the port,
+each side exposes named calls: `HostExports` are what an app may call on Admin
+(`fetch`, `titleChanged`, `pathChanged`, `open`), and `AppExports` what Admin
+calls on the app (`start`, `themeChanged`, `pathChanged`).
 
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
 acting. Nothing is versioned: Admin only adds calls and optional fields, and the
-SDK refuses a call the connect doesn't name as `unsupported`, without making it.
+SDK rejects a call the connect doesn't list as `unsupported`, without sending it.
 
-The bridge's rules that depend on nothing live in `src/bridge/rules.ts` and are
-exported from the root entry point as well:
+The bridge's rules that have no dependencies live in `src/bridge/rules.ts`, and
+the root entry point exports them as well:
 
 - the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
-  the statuses a fetch answer may have;
-- `isContainedPath`, and `normaliseAppPath`, the one spelling both sides keep an
-  app path in, with `..` resolved within the app (`AppPathSchema` answers with
-  it, so Admin needn't call it);
+  the statuses a fetch response may have;
+- `isContainedPath`, and `normaliseAppPath`, which returns the one normalised
+  form both sides store an app path in, with `..` resolved within the app
+  (`AppPathSchema` already returns it, so Admin doesn't need to call it);
 - `isReservedRequestHeader` for the headers only Admin sets,
   `isMultipartContentType` for the uploads apps can't make yet,
-  `methodAllowsBody`, and the words both sides refuse an argument with
+  `methodAllowsBody`, and the messages both sides refuse an argument with
   (`ARGUMENT_MESSAGES`);
 - the codes a refused call carries, written and read as `code: detail` by
   `encodeBridgeError` and `decodeBridgeError`: `HOST_ERROR_CODES` are those Admin
@@ -193,17 +193,17 @@ exported from the root entry point as well:
   `isConnectMessage`, `isFetchResponse`).
 
 The SDK checks what it sends and what Admin sends it with these, without zod.
-What Admin sends has no schema, as Admin builds it and never parses it; what a
-page sends does, and those schemas build on the same rules, so both sides read
-a path, a header or a refusal the same way.
+What Admin sends has no schema, because Admin builds it and never parses it;
+what a page sends does, and those schemas build on the same rules, so both
+sides read a path, a header or a refusal the same way.
 
 `fetch` takes an Admin API path, never a URL. Admin checks it with
 `checkAdminApiPath(path, apiRoot)`, which resolves it against the Admin API root
-and answers with the URL to request, or with `invalid_path` for anything that
-leaves the root and `blocked` for what the blocklist closes.
-`ADMIN_API_BLOCKLIST` lists those routes by category, each with its reason, and
-its header names what it leaves open for the security review (BER-3992). It is
-a stopgap until apps have their own token.
+and returns the URL to request, or `invalid_path` for anything that leaves the
+root and `blocked` for what the blocklist covers. `ADMIN_API_BLOCKLIST` lists
+those routes by category, each with its reason, and its header comment lists
+what it leaves open until the security review (BER-3992). It is a stopgap until
+apps have their own token.
 
 ```ts
 import { checkAdminApiPath } from '@tryghost/app-contracts/bridge';

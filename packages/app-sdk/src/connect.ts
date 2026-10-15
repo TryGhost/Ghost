@@ -12,17 +12,18 @@ import type { ConnectOptions, Ghost } from './types.ts';
 import { SDK_VERSION } from './version.ts';
 
 /**
- * How often the hello is said again until Admin answers. Admin may start listening only
- * after the page has loaded and said its first hello, so one is not enough.
+ * How often, in milliseconds, the SDK repeats the hello until Admin answers. Admin may only
+ * start listening after the page has loaded and sent its first hello, so one hello is not
+ * enough.
  */
 const HELLO_INTERVAL = 250;
 
 /**
- * The origin to address the hello to: the embedder's, where the browser exposes it
+ * The target origin for the hello: the embedding page's origin where the browser exposes it
  * (`location.ancestorOrigins`, in Chromium and WebKit), and `'*'` elsewhere. The hello grants
- * nothing; the port travels the other way, addressed by Admin to this page's origin alone.
- * `document.referrer` is no use: once the page has navigated within itself, it names the
- * page's own origin.
+ * nothing: the port goes the other way, and Admin addresses it to this page's origin only.
+ * `document.referrer` doesn't work here: once the page has navigated within itself, it holds
+ * the page's own origin.
  */
 function parentOrigin(): string {
   const origin = window.location.ancestorOrigins?.[0];
@@ -30,21 +31,21 @@ function parentOrigin(): string {
 }
 
 /**
- * The hello's `document` ID: when the page's document began, which a reload, a form post or a
- * link renews.
+ * The hello's `document` ID: the time the page's document was created. A reload, a form post
+ * or a link creates a new document, and with it a new ID.
  */
 function documentIdentity(): string {
   return String(performance.timeOrigin);
 }
 
 /**
- * Where the first copy of the SDK to connect claims the page. A symbol from the global
- * registry, so a second copy bundled into the same page finds the same key.
+ * The global key where the first copy of the SDK to connect claims the page. It is a symbol
+ * from the global registry, so a second copy bundled into the same page finds the same key.
  */
 const PAGE_CLAIM = Symbol.for('@tryghost/app-sdk');
 const thisCopy = Object.freeze({ sdk: SDK_VERSION });
 
-/** Claims the page for this copy of the SDK, unless another copy has; says whether it's ours. */
+/** Claims the page for this copy of the SDK unless another copy has. Returns whether it did. */
 function claimPage(): boolean {
   const page = globalThis as unknown as Record<symbol, unknown>;
   page[PAGE_CLAIM] ??= thisCopy;
@@ -52,8 +53,8 @@ function claimPage(): boolean {
 }
 
 /**
- * The longest wait `setTimeout` keeps: anything longer it clamps to nothing, and the timeout
- * would fire at once.
+ * The longest delay `setTimeout` supports. It treats anything longer as 0, so the timeout
+ * would fire immediately.
  */
 const TIMEOUT_MAX = 2 ** 31 - 1;
 
@@ -64,7 +65,8 @@ function handshake(
   if (!isRecord(options)) {
     return Promise.reject(invalidArgument('Expected options such as { timeout: 10000 }'));
   }
-  // Waiting longer than Admin gives the page would wait on a frame Admin has given up on.
+  // By default, wait as long as Admin gives the page. Waiting longer would mean waiting on a
+  // frame Admin has already given up on.
   const { timeout = START_TIMEOUT_MS } = options;
   if (typeof timeout !== 'number' || !(timeout > 0) || !(timeout <= TIMEOUT_MAX)) {
     return Promise.reject(
@@ -97,8 +99,8 @@ function handshake(
       }
     };
 
-    // The channel is bound to whoever answers from the parent window, and only the first
-    // answer counts: the listener goes as soon as one arrives.
+    // The channel is bound to the first valid answer from the parent window. The listener is
+    // removed as soon as that answer arrives, so later answers are ignored.
     const onMessage = (event: MessageEvent) => {
       const port = event.ports?.[0];
       if (
@@ -146,11 +148,12 @@ function handshake(
 }
 
 let connecting: Promise<Ghost> | undefined;
-// How the page's one connection ended, once Admin answered it: Admin answers a document once.
+// The error the page's connection ended with, after Admin answered it. Admin answers each
+// document only once, so this connection was the page's only one.
 let spent: GhostAppError | undefined;
 
-// Only the connection still shared is forgotten: one that ended may report it after a
-// newer one has begun.
+// Forgets an attempt only if it is still the shared one: an attempt that ended may report
+// that after a newer attempt has started.
 function forget(attempt: Promise<Ghost>) {
   if (connecting === attempt) {
     connecting = undefined;
@@ -158,18 +161,19 @@ function forget(attempt: Promise<Ghost>) {
 }
 
 /**
- * Connects to Ghost Admin, which the page must be framed in, and resolves once Admin has
- * started the app. Safe to call as soon as the page loads.
+ * Connects to Ghost Admin, which must frame the page, and resolves once Admin has started the
+ * app. Safe to call as soon as the page loads.
  *
- * Every call shares the one connection; the options of the first call apply. Only one copy
- * of the SDK in a page can connect; another rejects with `duplicate_sdk`. Admin answers a
- * document once, so once it has, that connection is the page's only one: after it fails or
- * its session ends, every call rejects with the error it ended with, and only a new
- * document (a reload, say) connects again. A failure before Admin answered, such as a bad
- * option or no answer in time, can be retried.
+ * Every call shares one connection, and the first call's options apply. Only one copy of the
+ * SDK in a page can connect; any other copy rejects with `duplicate_sdk`. Admin answers each
+ * document only once, so after it answers, that connection is the page's only one. Once it
+ * fails or its session ends, every call rejects with the error it ended with, and only a new
+ * document (after a reload, for example) can connect again. A failure before Admin answered,
+ * such as a bad option or a timeout, can be retried.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
-  // Both copies would say hello for the same document, and Admin answers a document once.
+  // Two copies would both send a hello for the same document, and Admin answers each document
+  // only once.
   if (!claimPage()) {
     return Promise.reject(
       new GhostAppError(

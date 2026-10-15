@@ -165,7 +165,7 @@ describe('the Admin API blocklist', () => {
     }
   });
 
-  it('blocks paths whose destination depends on who reads them', () => {
+  it('blocks paths whose destination depends on which parser reads them', () => {
     for (const path of [
       '/posts/../db/',
       '/posts/%2e%2e/db/',

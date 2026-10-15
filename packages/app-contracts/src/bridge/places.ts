@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { ARGUMENT_MESSAGES } from './rules.ts';
 
-// Ghost's IDs are ObjectIds, written in lowercase hex, so anything else names nothing.
+// Ghost's IDs are ObjectIds in lowercase hex, so no other value can match anything.
 const OBJECT_ID = /^[0-9a-f]{24}$/;
 
 const objectId = z
@@ -11,13 +11,13 @@ const objectId = z
 
 /**
  * A place in Admin an app can send the publisher to. Places are named rather than given as
- * paths or URLs, so an app can only ever open what Admin has chosen to offer, and Admin
- * decides where each one lives. A new place is a new entry here.
+ * paths or URLs, so an app can only open what Admin chooses to offer, and Admin decides which
+ * route each one opens. Adding a place means adding an entry here.
  *
- * Each entry is strict, so an object naming two places, or a place Admin does not know, is
- * refused rather than half-understood.
+ * Each entry is strict, so an object naming two places, or a place Admin doesn't know, is
+ * refused rather than partly read.
  *
- * `post` is for posts only: a page has an editor route of its own, so it is named as `page`.
+ * `post` is for posts only. Pages have their own editor route, so they use `page`.
  */
 export const PlaceSchema = z.union(
   [

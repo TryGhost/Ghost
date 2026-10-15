@@ -2,8 +2,8 @@ import { TITLE_MAX_LENGTH, toPlainText } from '@tryghost/app-contracts';
 
 /**
  * Trims a title to what Admin accepts, without splitting a character in two. Admin refuses a
- * title holding a character that reorders or hides text, so those are dropped rather than
- * the whole title lost: a right-to-left title often carries a direction mark.
+ * title containing a character that reorders or hides text, so the SDK drops those characters
+ * rather than losing the whole title: a right-to-left title often contains a direction mark.
  */
 function clampTitle(title: string): string {
   const trimmed = toPlainText(title).trim();
@@ -20,10 +20,11 @@ function clampTitle(title: string): string {
  * Reports the page's title now and every time it changes, so Admin can show it as its own.
  * Returns a function that stops watching.
  *
- * A title changes by its text being edited, its element being replaced, or one being added
- * where there was none, and frameworks do all three. Rather than tell those apart, every
- * batch of changes in `<head>` reads `document.title` and reports it only if it differs from
- * the last one; a mutation observer already delivers each batch once, in a microtask.
+ * A title can change in three ways, and frameworks use all three: its text is edited, its
+ * element is replaced, or an element is added where there was none. Rather than distinguish
+ * them, the SDK reads `document.title` after every batch of changes in `<head>` and reports it
+ * only if it differs from the last one. A mutation observer already delivers each batch once,
+ * in a microtask.
  */
 export function watchTitle(report: (title: string) => void): () => void {
   let last: string | undefined;

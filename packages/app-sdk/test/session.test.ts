@@ -60,7 +60,7 @@ function circular(): Record<string, unknown> {
 }
 
 describe('fetch', () => {
-  it('sends the request Admin takes and rebuilds its answer as a Response', async () => {
+  it('sends the request Admin accepts and rebuilds its response as a Response', async () => {
     const { ghost, host } = await started();
 
     const response = await ghost.fetch('/posts/', {
@@ -88,7 +88,7 @@ describe('fetch', () => {
     expect(host.fetch).toHaveBeenCalledWith({ path: '/posts/?limit=5', method: 'GET' });
   });
 
-  it('sends text as it is, and keeps a content type the app set', async () => {
+  it('sends text unchanged, and keeps a content type the app set', async () => {
     const { ghost, host } = await started();
     await ghost.fetch('/posts/', {
       method: 'PUT',
@@ -124,7 +124,7 @@ describe('fetch', () => {
     expect(response.body).toBeNull();
   });
 
-  it('passes error statuses on as responses', async () => {
+  it('returns error statuses as responses', async () => {
     const host = hostExports();
     host.fetch.mockResolvedValue({
       status: 404,
@@ -248,7 +248,7 @@ describe('fetch', () => {
 });
 
 describe('a refused argument', () => {
-  it('is refused in the words Admin uses for it', async () => {
+  it('is refused with the same message Admin uses', async () => {
     const { ghost } = await started();
     const refusals: [Promise<unknown>, string][] = [
       [ghost.fetch('posts/'), ARGUMENT_MESSAGES.fetchPath],
@@ -256,7 +256,7 @@ describe('a refused argument', () => {
       [ghost.fetch('/posts/', { body: 'x' }), ARGUMENT_MESSAGES.fetchBody],
       [
         ghost.fetch('/posts/', { headers: { Authorization: 'x' } }),
-        // As Admin words it for the app's own spelling of the name.
+        // The message Admin gives for the name as the app spelled it.
         ARGUMENT_MESSAGES.reservedHeader('Authorization'),
       ],
       [
@@ -284,7 +284,7 @@ describe('when Admin refuses a call', () => {
     ['invalid_argument', 'Expected a method of: GET'],
     ['network_error', 'Couldn’t reach the Admin API: TypeError'],
     ['rejected', 'No: really, no'],
-  ])('passes on the code %s that leads its message', async (code, detail) => {
+  ])('passes on the code %s from the start of its message', async (code, detail) => {
     const host = hostExports();
     host.fetch.mockRejectedValue(new Error(`${code}: ${detail}`));
     const { ghost } = await started(host);
@@ -330,7 +330,7 @@ describe('when Admin refuses a call', () => {
     });
   });
 
-  it("says when this site's Ghost does not have the call, from the calls Admin named", async () => {
+  it('rejects a call missing from the calls Admin listed as unsupported', async () => {
     const { titleChanged, pathChanged, fetch } = hostExports();
     const { ghost } = await started({ titleChanged, pathChanged, fetch });
     await expect(ghost.open({ apps: true })).rejects.toMatchObject({
@@ -340,12 +340,12 @@ describe('when Admin refuses a call', () => {
     expect(ghost.connected).toBe(true);
   });
 
-  it('reads nothing into the words of the library under the channel', async () => {
+  it('reads no code from an error raised by the channel library', async () => {
     frame();
     const { titleChanged, pathChanged, fetch } = hostExports();
     admin = new FakeAdmin({ titleChanged, pathChanged, fetch });
     const connecting = sdk.connect();
-    // Admin names a call it then turns out not to have.
+    // Admin lists a call that it turns out not to have.
     postToPage({
       data: {
         type: CONNECT_MESSAGE_TYPE,
@@ -364,7 +364,7 @@ describe('when Admin refuses a call', () => {
 });
 
 describe('path', () => {
-  it('tells Admin about the app moving, and remembers where it is', async () => {
+  it('tells Admin when the app moves, and stores the current path', async () => {
     const { ghost, host } = await started();
 
     await ghost.path.set('/episodes/12');
@@ -377,7 +377,7 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/episodes/13');
   });
 
-  it('remembers the path spelled as Admin keeps it', async () => {
+  it('stores the path in the normalised form Admin uses', async () => {
     const { ghost, host } = await started();
 
     await ghost.path.set('/search?q=a b');
@@ -388,7 +388,7 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/episodes/1');
   });
 
-  it("keeps a path Admin sent while answering the app's move", async () => {
+  it("keeps a path Admin sent before answering the app's move", async () => {
     const host = hostExports();
     host.pathChanged.mockImplementation(async () => {
       await admin?.thread.imports.pathChanged('/inbox');
@@ -399,7 +399,7 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/inbox');
   });
 
-  it('stays where it was when Admin refuses', async () => {
+  it('keeps the current path when Admin refuses', async () => {
     const host = hostExports();
     host.pathChanged.mockRejectedValue(new Error('Expected a path within the app'));
     const { ghost } = await started(host);
@@ -424,7 +424,7 @@ describe('path', () => {
     expect(host.pathChanged).not.toHaveBeenCalled();
   });
 
-  it("follows Admin's address and tells subscribers", async () => {
+  it("follows Admin's URL and notifies subscribers", async () => {
     const { admin: fake, ghost, host } = await started();
     const seen: string[] = [];
     const unsubscribe = ghost.onPathChange((path) => seen.push(path));
@@ -438,7 +438,7 @@ describe('path', () => {
     expect(host.pathChanged).not.toHaveBeenCalled();
   });
 
-  it('refuses a path from Admin it does not understand', async () => {
+  it('refuses a path from Admin it cannot read', async () => {
     const { admin: fake } = await started();
     for (const path of ['nope', '//evil.example']) {
       await expect(fake.thread.imports.pathChanged(path)).rejects.toThrow(
@@ -468,8 +468,8 @@ describe('open', () => {
   });
 });
 
-describe('the Ghost an app holds', () => {
-  it('has only the members its type declares, none of the channel behind it', async () => {
+describe('the Ghost object an app gets', () => {
+  it('has only the members its type declares, and nothing from the channel', async () => {
     const { ghost } = await started();
     expect(Object.keys(ghost).sort()).toEqual([
       'connected',
@@ -512,7 +512,7 @@ describe('the context', () => {
 });
 
 describe('theme', () => {
-  it("follows Admin's theme and tells subscribers", async () => {
+  it("follows Admin's theme and notifies subscribers", async () => {
     const { admin: fake, ghost } = await started();
     const seen: string[] = [];
     const unsubscribe = ghost.onThemeChange((theme) => seen.push(theme.mode));
@@ -535,7 +535,7 @@ describe('theme', () => {
     );
   });
 
-  it('keeps telling the other subscribers when one throws', async () => {
+  it('keeps notifying the other subscribers when one throws', async () => {
     const rethrown: unknown[] = [];
     vi.stubGlobal('queueMicrotask', (callback: () => void) => {
       try {
@@ -566,7 +566,7 @@ describe('title', () => {
 
     document.title = 'Episodes';
     await settle();
-    // Swapping the element for one with the same text is no change.
+    // Replacing the element with one that has the same text is not a change.
     const title = document.createElement('title');
     title.textContent = 'Episodes';
     document.head.replaceChildren(title);
@@ -587,13 +587,13 @@ describe('title', () => {
     expect(host.titleChanged).toHaveBeenLastCalledWith('b'.repeat(200));
   });
 
-  it('drops the characters Admin refuses in a title, rather than the title', async () => {
+  it('drops the characters Admin refuses, rather than the whole title', async () => {
     document.title = '\u200Fפודקאסט\u200F · \u202EEpisodes';
     const { host } = await started();
     expect(host.titleChanged).toHaveBeenCalledWith('פודקאסט · Episodes');
   });
 
-  it('watches a title outside a head, in a page that has none', async () => {
+  it('watches a title outside <head>, in a page without one', async () => {
     document.head.remove();
     const title = document.createElement('title');
     title.textContent = 'Headless';
@@ -606,7 +606,7 @@ describe('title', () => {
     title.remove();
   });
 
-  it("leaves Admin's title alone on a Ghost without titles", async () => {
+  it("leaves Admin's title alone when Admin doesn't support titles", async () => {
     const observe = vi.spyOn(MutationObserver.prototype, 'observe');
     const { fetch, pathChanged, open } = hostExports();
     const { ghost } = await started({ fetch, pathChanged, open });
@@ -659,7 +659,7 @@ describe('the end of the session', () => {
     await expect(ghost.path.set('/a')).rejects.toBe(error);
   });
 
-  it('tells a subscriber that comes late straight away', async () => {
+  it('notifies a subscriber that joins after the session has ended', async () => {
     const { admin: fake, ghost } = await started();
     await new Promise((resolve) => {
       ghost.onSessionEnd(resolve);
@@ -673,14 +673,14 @@ describe('the end of the session', () => {
     expect(late).toHaveBeenCalledWith(expect.objectContaining({ code: 'session_ended' }));
   });
 
-  it('does not tell a late subscriber that left straight away', async () => {
+  it('does not notify a late subscriber that unsubscribes straight away', async () => {
     const { admin: fake, ghost } = await started();
     await new Promise((resolve) => {
       ghost.onSessionEnd(resolve);
       fake.close();
     });
 
-    // As an effect that cleans up and runs again does.
+    // As an effect that cleans up and runs again would.
     const left = vi.fn();
     ghost.onSessionEnd(left)();
     const stayed = vi.fn();
@@ -690,7 +690,7 @@ describe('the end of the session', () => {
     expect(stayed).toHaveBeenCalledTimes(1);
   });
 
-  it('does not tell a subscriber that left', async () => {
+  it('does not notify a subscriber that unsubscribed', async () => {
     const { admin: fake, ghost } = await started();
     const left = vi.fn();
     ghost.onSessionEnd(left)();

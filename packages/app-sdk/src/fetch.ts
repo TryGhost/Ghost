@@ -30,8 +30,8 @@ function isJsonBody(value: unknown): value is JsonBody {
   return prototype === Object.prototype || prototype === null;
 }
 
-// A cycle or a BigInt makes `JSON.stringify` throw, and a `toJSON` that answers nothing
-// makes it answer nothing.
+// A cycle or a BigInt makes `JSON.stringify` throw, and a `toJSON` that returns `undefined`
+// makes it return `undefined`.
 function toJson(body: JsonBody): string {
   let json: string | undefined;
   try {
@@ -54,7 +54,7 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
       cause: error,
     });
   }
-  // Lowercased by `Headers`, so a content type the app set is found whatever its case.
+  // `Headers` lowercases the names, so a content type the app set is found in any case.
   const entries = [...headers.entries()];
   const reserved = entries.find(([name]) => isReservedRequestHeader(name));
   if (reserved) {
@@ -67,14 +67,14 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
 }
 
 /**
- * Turns `fetch(path, init)` into the plain request Admin takes. Only what is plainly wrong is
- * refused here, with the same rules Admin applies; Admin checks everything again.
+ * Converts `fetch(path, init)` into the plain request Admin accepts. Only obvious mistakes are
+ * refused here, using the same rules Admin applies; Admin checks everything again.
  */
 export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRequest {
   if (!isContainedPath(path)) {
     throw invalidPath(ARGUMENT_MESSAGES.fetchPath);
   }
-  // Typed away, but a page without TypeScript can pass anything.
+  // The types rule this out, but a page without TypeScript can pass anything.
   if (typeof init !== 'object' || init === null) {
     throw invalidArgument('Expected options such as { method, headers, body }');
   }
@@ -111,12 +111,12 @@ export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRe
 
 const UNREADABLE_ANSWER = "Ghost answered with a response this SDK doesn't understand";
 
-/** Rebuilds Admin's answer as the `Response` the app would have had from `fetch`. */
+/** Rebuilds Admin's response as the `Response` the app would have got from `fetch`. */
 export function toResponse(answer: unknown): Response {
   if (!isFetchResponse(answer)) {
     throw new GhostAppError('rejected', UNREADABLE_ANSWER);
   }
-  // A header name or status text a `Response` can't hold makes its constructor throw.
+  // The `Response` constructor throws on a header name or status text it can't hold.
   try {
     return new Response(NULL_BODY_STATUSES.has(answer.status) ? null : answer.body, {
       status: answer.status,

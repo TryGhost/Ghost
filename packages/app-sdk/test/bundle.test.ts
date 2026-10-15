@@ -95,8 +95,8 @@ describe('the package', () => {
   const code = join(built.package, 'index.js');
   const declarations = join(built.package, 'index.d.ts');
 
-  // An app installs the SDK with @quilted/threads alone: what it uses of the contracts is
-  // written into it.
+  // An app installs the SDK with only @quilted/threads: the parts of the contracts it uses
+  // are inlined.
   it('imports @quilted/threads and nothing else', () => {
     expect(new Set(importsOf(code))).toEqual(new Set(['@quilted/threads']));
   });

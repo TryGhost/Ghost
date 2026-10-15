@@ -23,7 +23,7 @@ describe('an app path', () => {
     }
   });
 
-  it('answers with the one spelling Admin and the SDK keep it in', () => {
+  it('returns the normalised form that Admin and the SDK both store', () => {
     expect(AppPathSchema.parse('/search?q=a b')).toBe('/search?q=a%20b');
     expect(AppPathSchema.parse('/x/../episodes/1')).toBe('/episodes/1');
     expect(AppPathSchema.parse('/../../settings/')).toBe('/settings/');

@@ -39,13 +39,13 @@ type HostCall<K extends keyof HostExports> = (
   ...args: Parameters<HostExports[K]>
 ) => ReturnType<HostExports[K]>;
 
-/** Calls a listener the app registered, so that one that throws cannot stop the others. */
+/** Calls each listener the app registered, so that one that throws can't stop the others. */
 function notify<T>(listeners: ReadonlySet<(value: T) => void>, value: T) {
   for (const listener of [...listeners]) {
     try {
       listener(value);
     } catch (error) {
-      // Thrown again outside the SDK, where the page's own error handling sees it.
+      // Rethrown outside the SDK, where the page's own error handling sees it.
       queueMicrotask(() => {
         throw error;
       });
@@ -54,18 +54,19 @@ function notify<T>(listeners: ReadonlySet<(value: T) => void>, value: T) {
 }
 
 /**
- * A refusal of one of Admin's calls. Only its message reaches Admin, so it leads with the
- * code, as Admin's own refusals do.
+ * An error that refuses one of Admin's calls. Only its message reaches Admin, so the message
+ * starts with the code, as Admin's own refusals do.
  */
 function refusal(code: AppErrorCode, detail: string): Error {
   return new Error(encodeBridgeError(code, detail));
 }
 
 /**
- * The copy of an argument that crosses the channel, or `invalid_argument` with `message` for
- * one that can't. The structured clone that carries a call refuses a symbol or a DOM node only
- * once the call is under way, and the channel would proxy a function, where nothing crossing
- * the bridge is one; cloning first refuses all of them before Admin is asked.
+ * Returns the copy of an argument that will cross the channel, or throws `invalid_argument`
+ * with `message` if it can't cross. The structured clone that carries a call only refuses a
+ * symbol or a DOM node once the call is in progress, and the channel would proxy a function,
+ * though no argument in the bridge's calls is a function. Cloning first refuses all of these
+ * before anything is sent to Admin.
  */
 function cloneArgument<T>(value: T, message: string): T {
   try {
@@ -82,7 +83,10 @@ function subscribe<T>(listeners: Set<T>, listener: T): Unsubscribe {
   };
 }
 
-/** What `start` keeps of Admin's context. The theme and path change, so they are kept apart. */
+/**
+ * The parts of Admin's start context that `start` keeps. The theme and path can change, so
+ * they are stored separately.
+ */
 interface StartedContext {
   site: Site;
   user: User;
@@ -90,20 +94,20 @@ interface StartedContext {
 }
 
 export interface ChannelEvents {
-  /** Admin started the app: the connection is ready for it. */
+  /** Admin started the app, and the connection is ready for it to use. */
   started(ghost: Ghost): void;
   /** The channel ended, before or after the start. */
   ended(error: GhostAppError): void;
 }
 
 /**
- * The channel to Admin over the port it handed the page, and the `Ghost` object the app
- * holds once Admin has called `start`. The channel itself stays inside the SDK.
+ * The channel to Admin over the port Admin handed the page, and the `Ghost` object the app
+ * gets once Admin has called `start`. The channel itself stays inside the SDK.
  *
- * The channel ends when the port closes, which browsers that fire `close` on a port (and
- * Node) report when Admin closes its end or its document goes away; when a call fails
- * because the thread has closed; or when Admin rejects a call with `session_ended`. From
- * then on every call rejects with the one same error.
+ * The channel ends in three cases: when the port closes, which browsers that fire `close` on
+ * a port (and Node) report when Admin closes its end or its document goes away; when a call
+ * fails because the thread has closed; or when Admin rejects a call with `session_ended`.
+ * After that, every call rejects with the same error.
  */
 export class Channel {
   readonly #port: MessagePort;
@@ -117,7 +121,8 @@ export class Channel {
   #context: StartedContext | undefined;
   #theme: Readonly<Theme> | undefined;
   #path = '/';
-  // Counts the paths Admin has sent, so a `path.set` answered after one keeps Admin's.
+  // Counts the paths Admin has sent, so that if Admin sends a path before answering a
+  // `path.set`, the SDK keeps Admin's path.
   #pathsFromAdmin = 0;
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
@@ -145,7 +150,8 @@ export class Channel {
     }
     if (!isStartContext(context)) {
       const detail = "Ghost started the app with a context this SDK doesn't understand";
-      // Ended after Admin has had its answer, so it hears why rather than waiting it out.
+      // End the channel only after Admin has received the refusal, so Admin learns why instead
+      // of waiting for its timeout.
       setTimeout(() => this.end(new GhostAppError('invalid_context', detail)), 0);
       throw refusal('invalid_context', detail);
     }
@@ -156,12 +162,12 @@ export class Channel {
     };
     this.#theme = Object.freeze({ ...context.theme });
     this.#path = context.path;
-    // Reported before `start` answers, so Admin has the title by the time it shows the page.
-    // An older Ghost without titles keeps its own.
+    // Report the title before `start` returns, so Admin has it by the time it shows the page.
+    // An older Admin without `titleChanged` keeps its own title.
     if (this.#hostExports.has('titleChanged')) {
       this.#stopWatchingTitle = watchTitle((title) => {
         this.#call('titleChanged', title).catch(() => {
-          // A title Admin refused leaves Admin's own.
+          // If Admin refuses a title, it keeps showing its own.
         });
       });
     }
@@ -219,8 +225,8 @@ export class Channel {
   }
 
   /**
-   * Ends the channel, once: pending and later calls reject with `error`. Returns the error
-   * the channel ended with, which is the first one given.
+   * Ends the channel. Only the first call has an effect: pending and later calls reject with
+   * its `error`. Returns the error the channel ended with.
    */
   end(error: GhostAppError): GhostAppError {
     if (this.#ended) {
@@ -237,8 +243,8 @@ export class Channel {
   }
 
   /**
-   * The `Ghost` the app holds, handed out once `start` has set the context: only the members
-   * the type declares, so nothing of the channel, such as `end`, is in the app's reach.
+   * The `Ghost` object the app gets once `start` has set the context. It has only the members
+   * its type declares, so no part of the channel, such as `end`, is reachable from the app.
    */
   readonly ghost: Ghost = this.#createGhost();
 
@@ -295,10 +301,11 @@ export class Channel {
               path,
               cloneArgument(options, ARGUMENT_MESSAGES.pathChangeOptions),
             ));
-        // Admin may send where it is before answering, when it doesn't follow the app.
+        // Admin may send its current path before answering, when it doesn't follow the app's
+        // move.
         if (this.#pathsFromAdmin === pathsFromAdmin) {
-          // Kept as Admin keeps it, so it reads the same as the path Admin sends back after a
-          // reload or a move of its own.
+          // Stored in the normalised form Admin uses, so it matches the path Admin sends back
+          // after a reload or its own navigation.
           this.#path = normaliseAppPath(path);
         }
       },
@@ -308,7 +315,8 @@ export class Channel {
   #onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe {
     const ended = this.#ended;
     if (ended) {
-      // Told in a microtask, as a subscriber that came in time is, unless it has left by then.
+      // Notify it in a microtask, as an earlier subscriber would be, unless it has
+      // unsubscribed by then.
       let left = false;
       queueMicrotask(() => {
         if (!left) {
