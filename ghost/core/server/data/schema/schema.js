@@ -2672,9 +2672,9 @@ module.exports = {
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
-    // How the row was added: when the app was installed, when an Administrator approved
-    // changes, when Ghost picked up a newer version by itself, or when Ghost ran a suspended
-    // app again because the app went back on the changes that waited.
+    // How the row was added: the app was installed, an Administrator approved changes, the
+    // re-check applied a newer manifest or stored one for approval (`update`), or the
+    // re-check lifted a suspension because the app reverted the pending changes (`resume`).
     source: {
       type: 'string',
       maxlength: 50,
