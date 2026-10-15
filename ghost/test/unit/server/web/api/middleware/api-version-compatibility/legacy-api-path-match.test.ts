@@ -84,4 +84,25 @@ describe('Legacy Path Match', function () {
       assert.deepEqual(legacyApiPathMatch(url), { version: 'v4', api: 'admin' }, url);
     });
   });
+
+  it('keeps matching legacy versions when there is a query string', function () {
+    assert.deepEqual(legacyApiPathMatch('/ghost/api/v4/admin/posts/?filter=tag:v3'), {
+      version: 'v4',
+      api: 'admin',
+    });
+    assert.deepEqual(legacyApiPathMatch('/v4/admin?x=1'), { version: 'v4', api: 'admin' });
+  });
+
+  it('ignores the query string', function () {
+    const permutations = [
+      '/subdir/ghost/api/admin/db/?x=ghost/api/v4/admin/',
+      '/ghost/api/admin/db/?x=ghost/api/v4/admin/',
+      '/ghost/api/admin/db?x=ghost/api/canary/admin/',
+      '/admin/db/?x=ghost/api/v4/admin/',
+    ];
+
+    permutations.forEach((url) => {
+      assert.deepEqual(legacyApiPathMatch(url), { version: null, api: 'admin' }, url);
+    });
+  });
 });

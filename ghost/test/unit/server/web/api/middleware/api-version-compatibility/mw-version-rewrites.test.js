@@ -149,4 +149,63 @@ describe('MW Version Rewrites', function () {
     assertVersionRewrittenWithHeaders('v4', '/content/posts/?key=xxx', resolve, reject);
     return promise;
   });
+
+  it('rewrites a legacy versioned api root without a trailing slash', function () {
+    const { promise, resolve, reject } = Promise.withResolvers();
+    req.url = '/v4/admin';
+
+    assertVersionRewrittenWithHeaders('v4', '/admin', resolve, reject);
+    return promise;
+  });
+
+  it('rewrites only the leading version of a legacy url', function () {
+    const { promise, resolve, reject } = Promise.withResolvers();
+    req.url = '/v4/admin/posts/v4/?filter=tag:v4/';
+
+    assertVersionRewrittenWithHeaders('v4', '/admin/posts/v4/?filter=tag:v4/', resolve, reject);
+    return promise;
+  });
+
+  describe('urls that only contain a version outside the leading segment', function () {
+    function assertNotRewritten(url) {
+      const { promise, resolve, reject } = Promise.withResolvers();
+      req.url = url;
+
+      mwVersionRewrites(req, res, (err) => {
+        try {
+          assert.equal(req.url, url, 'url was NOT rewritten');
+          assert.deepEqual(req.headers, {}, 'accept version header was NOT set on req');
+          sinon.assert.notCalled(res.header);
+        } catch (assertionError) {
+          return reject(assertionError);
+        }
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+      return promise;
+    }
+
+    it('ignores a versioned api path in the query string', function () {
+      return assertNotRewritten('/admin/db/?x=ghost/api/v4/admin/');
+    });
+
+    it('ignores a version later in the path', function () {
+      return assertNotRewritten('/admin/v4/db/?x=ghost/api/v4/admin/');
+    });
+
+    it('ignores a version suffix inside a path segment', function () {
+      return assertNotRewritten('/admin/dbv4//?x=ghost/api/v4/admin/');
+    });
+
+    it('ignores a versioned api path nested later in the path', function () {
+      return assertNotRewritten('/admin/db/ghost/api/v4/admin/');
+    });
+
+    it('ignores a version segment that is not followed by an api name', function () {
+      return assertNotRewritten('/v4/db/?x=/admin/');
+    });
+  });
 });
