@@ -51,6 +51,7 @@ Module._load = function (request, parent, isMain) {
 };
 `,
     );
+    // Match the gx launcher so workspace packages load source without a prior build.
     // Loading real Core models/importers can take longer on a cold TypeScript loader.
     const result = spawnSync(
       process.execPath,
@@ -59,6 +60,7 @@ Module._load = function (request, parent, isMain) {
         guard,
         '--import',
         import.meta.resolve('tsx'),
+        '--conditions=source',
         fileURLToPath(new URL('../generate-data.ts', import.meta.url)),
         '--print-dependencies',
         '--tables',
@@ -100,6 +102,7 @@ Module._load = function (request, parent, isMain) {
         guard,
         '--import',
         import.meta.resolve('tsx'),
+        '--conditions=source',
         fileURLToPath(new URL('../repl.ts', import.meta.url)),
       ],
       {
