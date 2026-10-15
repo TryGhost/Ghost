@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Downstream hosting and image tooling runs these from installed trees; they can't be seen from this repo.
-const SHIPPED_ENTRYPOINTS = ['validate-adapters.ts', 'warm-compile-cache.sh'];
+const SHIPPED_ENTRYPOINTS = ['generate-data.ts', 'validate-adapters.ts', 'warm-compile-cache.sh'];
 
 const binDir = path.join(__dirname, '../../../bin');
 
