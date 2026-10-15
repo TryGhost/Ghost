@@ -10,13 +10,22 @@ export const appFrameTimeouts = { ready: START_TIMEOUT_MS };
 /**
  * What the app's frame may do. The app runs on its own origin, checked when it was installed to
  * differ from Admin's, so with `allow-same-origin` the sandbox keeps it on that origin rather than
- * making it opaque. No popups and no top navigation: an app stays in its frame and can't take the
- * publisher elsewhere. Instead, it asks Admin over the bridge to open one of the places Admin
- * offers. No modals either, on purpose: `alert`, `confirm` and `prompt` would be the browser's
- * dialogs over Ghost's page, indistinguishable from Ghost's own, so an app brings its own dialogs.
- * In the frame they return at once, `confirm` with false.
+ * making it opaque.
+ *
+ * Popups and downloads are allowed, so an app can open a page elsewhere (a sign-in with another
+ * service, a preview) and hand the publisher a file. Without `allow-popups-to-escape-sandbox`, a
+ * popup inherits this sandbox: it can't navigate Admin's tab, which it could otherwise reach through
+ * `window.opener.parent`, or any other window. Top navigation stays out, so an app can't take the
+ * publisher elsewhere itself; it asks Admin over the bridge to open one of the places Admin offers.
+ * Letting a popup escape the sandbox, and asking the publisher before an app opens popups or
+ * downloads, would come later through the manifest, with Permissions and auth.
+ *
+ * No modals, on purpose: `alert`, `confirm` and `prompt` would be the browser's dialogs over
+ * Ghost's page, indistinguishable from Ghost's own, so an app brings its own dialogs. In the frame
+ * they return at once, `confirm` with false.
  */
-export const APP_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
+export const APP_FRAME_SANDBOX =
+  'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads';
 
 /**
  * Features that default to the top document's own origin. Being cross-origin already
@@ -75,8 +84,10 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  * server can redirect, and the page can set its own location, which the sandbox allows.
  * A document from Admin's origin loaded that way, such as a post the app injected a script into, is
  * same-origin with Admin. It can reach `window.parent` and call the Admin API as the staff user,
- * bypassing the blocklist. The handshake only withholds the bridge from it, and Admin reloads the
+ * bypassing the allowlist. The handshake only withholds the bridge from it, and Admin reloads the
  * app once it notices, after that script has already run. The fix belongs in Core, which can
- * sandbox what it serves into another origin's frame (BER-3992).
+ * sandbox what it serves into another origin's frame (BER-3992). That doesn't cover a popup, which
+ * is a top-level document: the allowlist's checks on what a write may contain keep script out of
+ * the site instead.
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';

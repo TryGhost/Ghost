@@ -196,6 +196,14 @@ describe('Managing apps', () => {
     expect(readApi.requests).toHaveLength(0);
     await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
     await expect.element(frame).toHaveAttribute('sandbox', APP_FRAME_SANDBOX);
+    // Popups stay sandboxed, so one can't navigate Admin's tab, and neither can the frame.
+    expect(APP_FRAME_SANDBOX.split(' ').sort()).toEqual([
+      'allow-downloads',
+      'allow-forms',
+      'allow-popups',
+      'allow-same-origin',
+      'allow-scripts',
+    ]);
     await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
     // On for every origin unless refused, so the frame must say so.
     await expect
