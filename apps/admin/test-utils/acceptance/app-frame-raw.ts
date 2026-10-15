@@ -41,8 +41,8 @@ const hooks: RawAppFrameHooks = {
 };
 (window as unknown as { __app: RawAppFrameHooks }).__app = hooks;
 
-// Identifies the document the same way the SDK does.
-const documentId = String(performance.timeOrigin);
+// A random ID for this document, made once as the SDK makes its own.
+const documentId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 const hello = () =>
   window.parent.postMessage({ type: HELLO_MESSAGE_TYPE, sdk: 'raw', document: documentId }, '*');
 const helloTimer = window.setInterval(hello, 250);
