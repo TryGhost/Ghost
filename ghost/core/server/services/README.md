@@ -77,6 +77,84 @@ The inventory's `exemplaryMigration` points to IndexNow as the example to follow
 The marker tracks adoption independently of audit completeness or remaining
 lifecycle work.
 
+### Dependency boundaries
+
+For migrated services, the root `index.ts` wires runtime dependencies and passes
+them to the implementation. Other files in that service may import:
+
+- Files within the same service, except its root `index.ts`.
+- Types, using explicit type-only imports.
+- The libraries and individual shared files in the
+  [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
+
+The shared [clock](../../kernel/clock.ts) is allowed directly, including its
+deprecated `moment` export for existing date logic. Service migration does not
+require rewriting those date operations.
+
+Import allowlisted libraries directly where they are used; do not pass the
+library or its exports through the service's dependencies. Local use in the
+root is fine, including validating configuration with Zod and passing computed
+values such as `getUnixTime()`.
+
+`pnpm lint:oxlint` enforces direct constructor wiring with
+`ghost/no-injected-service-libraries`. In migrated root `index.ts` files, it
+rejects allowlisted imports and `const require()` bindings passed to constructors
+imported from within that service, including values in literal options objects
+and arrays. It reads the same allowlist and service scope as the boundary rule.
+Factories, forwarding callbacks, indirect aliases and separately assembled
+options objects still need review; this is not general data-flow analysis.
+
+Logging, settings, models, event buses and other service instances belong in the
+root wiring. Nested `index.ts` files are implementation files, not extra wiring
+roots. The rule covers static imports, `require()`, literal dynamic imports and
+re-exports. All implementation source inside a service is checked, including
+nested folders named `test` or `fixtures`.
+
+Where JavaScript has a matching TypeScript sibling, the audit and boundary
+checks inspect the TypeScript source and resolve imports back to it. This keeps
+adjacent `build:tsc` output out of the report; ordinary JavaScript implementations
+remain checked. Package exports resolve through their `source` condition when
+available, so workspace contracts are checked without relying on build output.
+
+`pnpm lint:boundaries`, also run by `pnpm check` and CI, enforces these rules as
+errors for every entry marked `migrated: true`. New implementation files inherit
+the same rules. Marking a service migrated opts it into enforcement; review
+changes to that marker as part of the migration.
+
+The allowlist names individual packages or files, with a reason for each.
+Review additions individually; do not allow whole shared directories or all
+`@tryghost/*` packages.
+
+To inspect the remaining work across **all** entries:
+
+```bash
+pnpm audit:services
+pnpm --silent audit:services:summary
+pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
+```
+
+The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
+all entries, including those absent from the inventory. It uses Dependency
+Cruiser's built-in terminal report, with Markdown and JSON also available.
+The audit returns success even when it finds violations; the normal lint
+command fails on violations in migrated services. Reports list source files and
+dependency targets, without custom inventory grouping. Legacy root `index.js`
+files are treated as wiring
+candidates; imports there do not prove readiness for migration.
+
+The optional summary requires `jq`. It groups `service-dependencies` findings
+by dependency and counts distinct importing implementation files, largest first.
+Multiple imports of the same target in one file count once. It does not include
+unresolved-import or own-root findings; use the detailed audit for those.
+
+Counts in the detailed report describe rule violations; one import can appear
+under more than one rule. Review whether each dependency needs injection, a
+library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
+by this static check and are not separately scanned. Unresolved imports,
+globals, runtime state and initialization behavior still need tests and review.
+
+### Migration assessment
+
 Each entry also has a source-based `migration` assessment:
 
 - `complexity: straightforward` means bounded factory, export and boot-order changes.

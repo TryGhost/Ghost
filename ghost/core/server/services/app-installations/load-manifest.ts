@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import type { Got } from 'got';
 import { z } from 'zod';
 import {
@@ -58,14 +59,16 @@ function digestOf(manifestUrl: string, serialisedManifest: string): string {
  */
 export function createManifestLoader({
   request,
+  logging,
   getManifestRules,
   getLocalhostAlias,
 }: {
   request: Got;
+  logging: Pick<GhostLogger, 'warn'>;
   getManifestRules: () => ManifestRules;
   getLocalhostAlias: () => string | null;
 }): LoadManifest {
-  const fetchManifest = createManifestFetcher({ request, getLocalhostAlias });
+  const fetchManifest = createManifestFetcher({ request, logging, getLocalhostAlias });
 
   return async function loadManifest(input) {
     const rules = getManifestRules();

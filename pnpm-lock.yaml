@@ -857,6 +857,9 @@ importers:
       husky:
         specifier: 9.1.7
         version: 9.1.7
+      js-yaml:
+        specifier: 'catalog:'
+        version: 4.3.2
       knip:
         specifier: 'catalog:'
         version: 6.32.1
@@ -4466,6 +4469,9 @@ importers:
       '@types/semver':
         specifier: 'catalog:'
         version: 7.8.0
+      dependency-cruiser:
+        specifier: 'catalog:'
+        version: 18.1.1
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)

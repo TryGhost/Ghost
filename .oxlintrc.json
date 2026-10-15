@@ -206,6 +206,12 @@
           }
         ]
       }
+    },
+    {
+      "files": ["ghost/core/server/services/*/index.ts"],
+      "rules": {
+        "ghost/no-injected-service-libraries": "error"
+      }
     }
   ],
   "ignorePatterns": [

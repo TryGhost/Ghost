@@ -66,6 +66,12 @@ in `.oxlintrc.json`. Its standalone implementation is
 a root migrated; a tooling test compares them with the service inventory.
 Catalogue metadata validation remains separate from linting.
 
+The Oxlint-only `ghost/no-injected-service-libraries` rule checks migrated
+service roots for allowlisted libraries passed into local constructors. It
+reuses the service dependency policy in `.dependency-cruiser.cjs`; see the
+[services guide](../../../ghost/core/server/services/README.md#dependency-boundaries)
+for its scope and limits. There is no ESLint equivalent enabled.
+
 Run `pnpm lint` from the repository root to run both linters. CI does the same
 checks. When adding a workspace or changing a source/test scope, update the
 Oxlint overrides as well as the workspace's ESLint config. Use `oxlint-disable`

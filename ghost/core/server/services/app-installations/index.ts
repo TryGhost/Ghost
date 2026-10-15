@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
@@ -46,13 +47,14 @@ export default defineService(
     const externalRequest = require('../../lib/request-external');
 
     const recordAction: RecordAppInstallationAction = (input) =>
-      recordAppInstallationAction({ Action: models.Action, ...input });
+      recordAppInstallationAction({ Action: models.Action, logging, ...input });
 
     return new AppInstallationsService({
       knex,
       recordAction,
       loadManifest: createManifestLoader({
         request: externalRequest,
+        logging,
         // Read per load, not once at boot: both are config, which tests change.
         getManifestRules: () => ({
           ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],

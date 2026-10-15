@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -29,9 +37,22 @@ function lint(code: string, filename = 'ghost/core/server/services/app-installat
   try {
     const localConfig = structuredClone(config);
     // A standalone copy must not resolve any ESLint plugin or parser dependencies.
-    cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'plugin'), { recursive: true });
+    cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'tools/configs/oxlint'), {
+      recursive: true,
+    });
+    // The injection guard loads the shared service policy from the repository root.
+    for (const file of [
+      '.dependency-cruiser.cjs',
+      'tools/scripts/lib/service-dependency-resolver.mjs',
+      'ghost/core/server/services/service-inventory.yaml',
+    ]) {
+      mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
+      cpSync(path.join(root, file), path.join(cwd, file));
+    }
+    mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });
+    symlinkSync(path.join(root, 'node_modules/js-yaml'), path.join(cwd, 'node_modules/js-yaml'));
     for (const plugin of localConfig.jsPlugins) {
-      plugin.specifier = `./plugin/${path.basename(plugin.specifier)}`;
+      plugin.specifier = `./tools/configs/oxlint/${path.basename(plugin.specifier)}`;
     }
     writeFileSync(path.join(cwd, '.oxlintrc.json'), JSON.stringify(localConfig));
     mkdirSync(path.dirname(path.join(cwd, filename)), { recursive: true });

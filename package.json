@@ -75,7 +75,9 @@
     "data:analytics:clear": "node tools/scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node tools/scripts/release.ts",
     "inventory:typescript": "node tools/scripts/typescript-inventory.ts",
-    "gx": "node tools/gx/cli.ts"
+    "gx": "node tools/gx/cli.ts",
+    "audit:services": "GHOST_SERVICE_DEPENDENCY_AUDIT=1 depcruise ghost/core/server/services --config .dependency-cruiser.cjs --output-type json | depcruise-fmt -",
+    "audit:services:summary": "pnpm --silent audit:services --output-type json | jq -er '[.summary.violations[] | select(.rule.name == \"service-dependencies\") | {target: (if (.dependencyTypes | any(startswith(\"npm\"))) then .unresolvedTo else .to end), from}] | unique_by([.target, .from]) | group_by(.target) | sort_by(-length, .[0].target) | ([\"FILES\", \"DEPENDENCY\"], (.[] | [length, .[0].target])) | @tsv'"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
@@ -84,6 +86,7 @@
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
     "husky": "9.1.7",
+    "js-yaml": "catalog:",
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
@@ -125,9 +128,16 @@
         "cache": true,
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
+          "{workspaceRoot}/tools/scripts/lib/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
+          "{workspaceRoot}/ghost/package.json",
+          "{workspaceRoot}/packages/**/*",
+          "{workspaceRoot}/koenig/**/*",
           "{workspaceRoot}/apps/**/*",
-          "sharedGlobals"
+          "sharedGlobals",
+          {
+            "env": "GHOST_SERVICE_DEPENDENCY_AUDIT"
+          }
         ],
         "outputs": [],
         "options": {
