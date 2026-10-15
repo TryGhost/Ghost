@@ -634,15 +634,6 @@ services:
         dependencies: []
         failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
         destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
-      isAvailable:
-        purpose: Keep the installation API dormant where the experimental database tables are not enabled.
-        callers:
-          - core/server/web/api/endpoints/admin/routes.js
-        timing: Read live configuration per request; no ready instance or database query is required.
-        dependencies:
-          - Development-table schema declarations and shared configuration.
-        failurePolicy: An ineligible environment returns false and the route answers 404; this is not a table-existence probe.
-        destination: A declared service or domain availability rule once that interface is established.
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -651,10 +642,10 @@ services:
         holds no resources, but it keeps the manifest re-checks in flight, which starting
         app sessions together relies on to share one fetch, so it must stay the one retained
         instance rather than be composed per request. Return that instance through the
-        initializer and update endpoint access, preserving schema gating and live
-        manifest/configuration callbacks. The new history, detail, uninstall and app session
+        initializer and update endpoint access, preserving live manifest/configuration
+        callbacks. The new history, detail, uninstall and app session
         behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 3c94513eb28f32663409d7990c74cccfb9528523
+      reviewedAt: 8aa0a03e32d18cca54cd98c19536f8a17fcdeccb
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
@@ -666,18 +657,16 @@ services:
     entryPoints:
       - app-installations/index.ts
     notes: >-
-      Composition-only service over a table that is still in development; preserve the
-      availability check that keeps it dormant wherever the table does not exist. Root units
+      Composition-only service over the app installation tables, which have migrations and
+      exist in every database; the private `apps` flag keeps the routes dormant. Root units
       now cover deferred database acquisition, retained identity, failure/retry, earlier-loaded
       controllers and live manifest rules/localhost aliases with a fake outbound transport.
     contracts:
       exports:
         summary: >-
           The root default-exports the shared initializer with async init and a guarded
-          service getter and typed extras for isAvailable and actingContext. There are no
-          named runtime exports. Reading
-          service before readiness throws. The Express guard that asks isAvailable lives
-          with the Admin API routes in server/web.
+          service getter and a typed actingContext extra. There are no named runtime
+          exports. Reading service before readiness throws.
         sources:
           - core/server/services/app-installations/index.ts
         tests:
@@ -710,12 +699,10 @@ services:
           is loaded (preview, install, approval and the re-check at app session start), not
           captured at construction. Root units
           change development aliases, environment and publication URLs on one instance and
-          assert current preview routing/validation. Availability is read per request from
-          config and has separate HTTP coverage.
+          assert current preview routing/validation.
         sources:
           - core/server/services/app-installations/index.ts
           - core/server/services/app-installations/load-manifest.ts
-          - core/server/data/schema/in-development.ts
         tests:
           - test/e2e-api/admin/app-installations.test.ts
           - test/unit/server/services/app-installations/index.test.ts
