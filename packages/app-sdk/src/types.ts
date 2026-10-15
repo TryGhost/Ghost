@@ -75,7 +75,11 @@ export interface Ghost {
    * app's own `path.set`.
    */
   onPathChange(callback: (path: string) => void): Unsubscribe;
-  /** Called once when the session ends. Called straight away if it already has. */
+  /**
+   * Called once when this document leaves the app session, because the page reloads, posts a
+   * form or follows a link, or when the app session itself ends. Called straight away if that
+   * has already happened.
+   */
   onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe;
   /**
    * Calls the Admin API as the signed-in staff user. `path` is relative to the Admin API
