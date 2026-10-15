@@ -18,7 +18,7 @@ import {
   worktreeList,
 } from './lib/dev-stack.ts';
 import { devProcesses, processEntries, stopOrphans } from './lib/dev-processes.ts';
-import { checkoutRoot } from './lib/ghost-dev-env.ts';
+import { checkoutRoot } from '../scripts/lib/ghost-dev-env.ts';
 
 // Stops this checkout's stack: whatever holds its ports, everything that started, and Nx tasks
 // whose nx has exited. MySQL, Redis and Mailpit keep running for other checkouts.

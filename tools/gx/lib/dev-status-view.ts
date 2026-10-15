@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { emitKeypressEvents, type Key } from 'node:readline';
 import { stopOrphans } from './dev-processes.ts';
 import type { GitOperation } from './dev-stack.ts';
-import { checkoutRoot } from './ghost-dev-env.ts';
+import { checkoutRoot } from '../../scripts/lib/ghost-dev-env.ts';
 import { BASE_BRANCHES, type PullRequest, pullRequests } from './pull-requests.ts';
 
 export interface DevStatus {
@@ -502,11 +502,11 @@ export function browse(
       return;
     }
     // Other checkouts may still be on a branch from before the tools migration.
-    const script = ['tools/scripts/dev-down.ts', 'scripts/dev-down.ts']
+    const script = ['tools/gx/dev-down.ts', 'tools/scripts/dev-down.ts', 'scripts/dev-down.ts']
       .map((file) => join(row.root, file))
       .find((file) => existsSync(file));
     if (!script) {
-      message = `${row.name} has no tools/scripts/dev-down.ts`;
+      message = `${row.name} has no dev shutdown script`;
       return;
     }
     // Not `pnpm dev:down`, which installs first when the checkout's dependencies are stale

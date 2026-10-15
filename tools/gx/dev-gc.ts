@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { checkoutEnv, checkouts, unusedDatabases, unusedE2eNames } from './lib/dev-stack.ts';
-import { checkoutRoot } from './lib/ghost-dev-env.ts';
+import { checkoutRoot } from '../scripts/lib/ghost-dev-env.ts';
 
 // Lists what's left behind in the shared services: dev_* databases and interrupted e2e runs'
 // containers, databases and snapshots of worktrees that no longer exist, and killed DB test runs'

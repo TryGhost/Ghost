@@ -16,7 +16,7 @@ import {
   unusedDatabases,
   unusedE2eNames,
 } from '../lib/dev-stack.ts';
-import { worktreeDatabases } from '../lib/ghost-dev-env.ts';
+import { worktreeDatabases } from '../../scripts/lib/ghost-dev-env.ts';
 
 describe('parseProc', () => {
   it('reads a process from /proc, including a command name with spaces', () => {

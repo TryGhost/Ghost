@@ -6,6 +6,8 @@ package: `pnpm nx run-many -t lint test` covers it, and Nx's affected graph runs
 those targets whenever anything here changes.
 
 New automation belongs here by default, whether it runs locally, in CI, or both.
+Contributor commands belong in [gx](../gx/README.md), including development-stack
+management. Shared environment and infrastructure helpers stay here.
 The old `.github/scripts` split tracked nothing real — `release-apps` is run by
 devs via `pnpm ship`, while `release.ts` is run by a workflow.
 

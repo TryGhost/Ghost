@@ -58,6 +58,7 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     assert.match(result.stdout, /package/);
     if (args.length < 2) {
       assert.match(result.stdout, /db/);
+      assert.match(result.stdout, /dev/);
     } else {
       assert.match(result.stdout, /Usage: pnpm gx generate package <name> \[options\]/);
     }
@@ -67,6 +68,9 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     ['generate'],
     ['generate', 'unknown'],
     ['generate', '--help'],
+    ['dev'],
+    ['dev', 'unknown'],
+    ['dev', '--help'],
     ['db'],
     ['db', 'unknown'],
     ['db', '--help'],

@@ -6,5 +6,5 @@
     "lib": ["es2023"],
     "erasableSyntaxOnly": true
   },
-  "include": ["*.ts", "test/**/*.ts"]
+  "include": ["*.ts", "lib/**/*.ts", "test/**/*.ts"]
 }

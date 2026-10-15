@@ -14,6 +14,21 @@ helpers in `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alia
 Run `pnpm install` after generating a package; custom destinations must be covered
 by the workspace globs.
 
+## Development stacks
+
+Run `pnpm gx dev up`, `pnpm gx dev down`, `pnpm gx dev status` and
+`pnpm gx dev gc` to manage development stacks. Existing arguments still apply,
+including `up dev:analytics`, `down --all`, `down --orphans`, `status --json`
+and `gc --yes`. See [development setup](../../docs/contributing/development-setup.md#worktrees)
+for behavior and options.
+
+`pnpm dev:up`, `pnpm dev:down`, `pnpm dev:status` and `pnpm dev:gc` remain direct
+shortcuts to the same command files. The private session-end hook and shutdown
+path use Node built-ins only. Run `node tools/gx/dev-down.ts` directly when
+workspace dependencies are missing or stale; shutdown from the status view also
+uses direct Node execution and supports checkouts with the older script paths.
+Shared environment and infrastructure setup remain in `tools/scripts`.
+
 ## Golden email preview
 
 Run `pnpm gx generate golden-email <segment> <output-path>` against a running Ghost dev

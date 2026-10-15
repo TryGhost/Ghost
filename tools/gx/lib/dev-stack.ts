@@ -12,7 +12,12 @@ import http from 'node:http';
 import net from 'node:net';
 import { join, resolve as resolvePath, sep } from 'node:path';
 import { promisify } from 'node:util';
-import { checkoutRoot, ENV_FILE, parseEnv, worktreeDatabases } from './ghost-dev-env.ts';
+import {
+  checkoutRoot,
+  ENV_FILE,
+  parseEnv,
+  worktreeDatabases,
+} from '../../scripts/lib/ghost-dev-env.ts';
 
 export const PID_FILE = '.ghost-dev.pid';
 export const LOG_FILE = '.ghost-dev.log';

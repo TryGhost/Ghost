@@ -159,6 +159,11 @@ pnpm dev:status  # this checkout and any other running one; --all lists every ch
 pnpm dev:down    # stop this checkout's Ghost, however it was started; --all stops everything
 ```
 
+These shortcuts run the same commands as `pnpm gx dev up`, `pnpm gx dev status`
+and `pnpm gx dev down`; `pnpm dev:gc` also remains a shortcut for `pnpm gx dev gc`.
+If dependencies are missing or stale, use `node tools/gx/dev-down.ts` directly
+to stop Ghost without installing them.
+
 `pnpm dev:up` writes its output to `.ghost-dev.log` and refuses to start while
 the checkout's ports are in use. Pass a variant's script name, such as
 `pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
