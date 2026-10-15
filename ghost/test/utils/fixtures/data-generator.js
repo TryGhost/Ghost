@@ -2779,7 +2779,6 @@ DataGenerator.forKnex = (function () {
         createGenericUser,
         createBasic,
         createRole: createBasic,
-        createPermission: createBasic,
         createPostsTags,
         createSetting,
         createToken,

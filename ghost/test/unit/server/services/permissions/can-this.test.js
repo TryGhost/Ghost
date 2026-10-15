@@ -9,6 +9,7 @@ const providers = require('../../../../../core/server/services/permissions/provi
 const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
 const { limitService } = require('../../../../../core/server/services/limits');
 const logging = require('@tryghost/logging');
+const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
 
 describe('Permissions', function () {
   let fakePermissions = [];
@@ -27,10 +28,6 @@ describe('Permissions', function () {
     fakePermissions = loadFakePermissions();
     loggingError = sinon.stub(logging, 'error');
 
-    sinon.stub(models.Permission, 'findAll').callsFake(function () {
-      return Promise.resolve(models.Permissions.forge(fakePermissions));
-    });
-
     findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
       // @TODO: the test env has no concept of including relations
       const post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]);
@@ -45,7 +42,7 @@ describe('Permissions', function () {
       return Promise.resolve({});
     });
 
-    return permissions.init();
+    actionsMap.init(fakePermissions);
   });
 
   afterEach(async function () {
@@ -86,7 +83,7 @@ describe('Permissions', function () {
     }
 
     return _.map(fixturePermissions, function (testPerm) {
-      return testUtils.DataGenerator.forKnex.createPermission(testPerm);
+      return { action_type: testPerm.action_type, object_type: testPerm.object_type };
     });
   }
 
@@ -816,8 +813,7 @@ describe('Permissions', function () {
     });
 
     it('does not duplicate user reads or nested role-assignment checks', async function () {
-      fakePermissions.push({ name: 'Assign role', action_type: 'assign', object_type: 'role' });
-      await permissions.init();
+      actionsMap.init([...fakePermissions, { action_type: 'assign', object_type: 'role' }]);
 
       const userProviderStub = sinon.stub(providers, 'user').resolves({
         permissions: rolePermissions.forRoles(['Administrator']),
