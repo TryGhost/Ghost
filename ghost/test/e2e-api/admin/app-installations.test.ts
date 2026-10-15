@@ -739,11 +739,11 @@ describe('App installations Admin API', function () {
   });
 
   describe('POST /apps/installations/:id/sessions/', function () {
-    /** What the re-check logged about keeping the approved manifest. */
-    const keptLogged = (warn: sinon.SinonStub) =>
+    /** What the re-check logged about the app being unavailable. */
+    const unavailableLogged = (warn: sinon.SinonStub) =>
       warn.args
         .map(([message]) => message)
-        .filter((message) => typeof message === 'string' && message.includes('keeps its approved'));
+        .filter((message) => typeof message === 'string' && message.includes('is unavailable.'));
     const pendingOf = async (id: string) => {
       const row = await installationRow(id);
       return row.pending_manifest_id
@@ -905,65 +905,74 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('keeps the approved manifest when the app cannot be reached', async function () {
+    it('fails as unavailable when the app cannot be reached, changing nothing, and opens again once it can', async function () {
       const installed = await install();
       nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(503);
       const warn = sinon.stub(logging, 'warn');
 
-      const { body } = await start(installed.id);
+      const { body } = await start(installed.id, 409);
 
-      assert.equal(body.app_sessions[0].installation.status, 'active');
+      assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
+      assert.match(body.errors[0].context, /^APP_MANIFEST_UNREACHABLE: /);
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
       // Loading the manifest logs this, so the re-check doesn't log it again.
       assert.ok(warn.calledWith(`Could not load the app manifest at ${MANIFEST_URL}`));
-      assert.deepEqual(keptLogged(warn), []);
+      assert.deepEqual(unavailableLogged(warn), []);
+
+      serve(manifest());
+      const { body: opened } = await start(installed.id);
+      assert.equal(opened.app_sessions[0].installation.status, 'active');
+      assert.equal(opened.app_sessions[0].revision, 0);
     });
 
-    it('keeps the approved manifest when the fetched one is not valid, and logs why', async function () {
+    it('fails as unavailable when the fetched manifest is not valid, and logs why', async function () {
       const installed = await install();
       serve(manifest({ accent_color: 'red' }));
       const warn = sinon.stub(logging, 'warn');
 
-      const { body } = await start(installed.id);
+      const { body } = await start(installed.id, 409);
 
-      assert.equal(body.app_sessions[0].installation.manifest.accent_color, '#ff5500');
+      assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
       assert.equal((await manifestRows()).length, 1);
-      const [logged] = keptLogged(warn);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      const [logged] = unavailableLogged(warn);
       assert.ok(logged.includes(`${installed.id} (com.example.podcast)`), logged);
       assert.match(logged, /APP_MANIFEST_INVALID: .*\(accent_color: /);
     });
 
-    it('keeps the approved manifest when the address serves another app, and logs why', async function () {
+    it('fails as unavailable when the address serves another app, and logs why', async function () {
       const installed = await install();
       serve(manifest({ id: 'com.example.other' }));
       const warn = sinon.stub(logging, 'warn');
 
-      const { body } = await start(installed.id);
+      const { body } = await start(installed.id, 409);
 
-      assert.equal(body.app_sessions[0].installation.app_id, 'com.example.podcast');
+      assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
       assert.equal((await manifestRows()).length, 1);
-      const [logged] = keptLogged(warn);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      const [logged] = unavailableLogged(warn);
       assert.match(logged, /APP_MANIFEST_OTHER_APP: .* now serves com\.example\.other/);
     });
 
-    it('keeps the approved manifest when the address redirects to another host, and logs where', async function () {
+    it('fails as unavailable when the address redirects to another host, and logs where', async function () {
       const installed = await install();
       nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(302, undefined, {
         location: 'https://elsewhere.example.com/ghost-app.json',
       });
       const warn = sinon.stub(logging, 'warn');
 
-      await start(installed.id);
+      const { body } = await start(installed.id, 409);
 
+      assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
       assert.equal((await manifestRows()).length, 1);
-      const [logged] = keptLogged(warn);
+      const [logged] = unavailableLogged(warn);
       assert.match(logged, /APP_MANIFEST_REDIRECTED: .*redirects to elsewhere\.example\.com\)$/);
     });
 
     it('fails the session on an error that is not about the manifest, then tries again', async function () {
       const installed = await install();
-      // A fault in Ghost, not the app, so the approved manifest is not quietly kept.
+      // A fault in Ghost, not the app, so it isn't answered as the app being unavailable.
       const load = sinon
         .stub(service() as unknown as { loadManifest: () => Promise<unknown> }, 'loadManifest')
         .rejects(new Error('Ghost broke'));

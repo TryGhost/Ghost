@@ -104,7 +104,8 @@ _Avoid_: login, token, connection
 **Re-check**:
 Ghost loading an installed app's manifest again from its approved manifest URL
 when an app session starts, and keeping what changed. A manifest Ghost cannot
-load, or one for another app, leaves the approved manifest running.
+load, or one for another app, makes the app unavailable: the session fails and
+nothing is kept, so the app opens again once its manifest is back.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:

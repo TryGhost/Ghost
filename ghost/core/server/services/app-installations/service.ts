@@ -108,6 +108,18 @@ function uninstalled() {
   });
 }
 
+/**
+ * The app's manifest URL no longer serves a manifest Ghost can run the app on. Nothing is
+ * written, so the app opens again once the manifest is back.
+ */
+function unavailable(why: string) {
+  return new errors.ConflictError({
+    message: 'This app is unavailable.',
+    context: why,
+    code: 'APP_UNAVAILABLE',
+  });
+}
+
 /** The reviewed manifest belongs to some other app than the one installed. */
 function forAnotherApp(appId: string) {
   return new errors.ValidationError({
@@ -594,8 +606,9 @@ export class AppInstallationsService {
    * wait as the pending manifest, suspending the app. Nobody decided this, so nothing is
    * recorded in the staff history; the manifest rows tell it.
    *
-   * A manifest Ghost cannot load, or one for another app, leaves the approved manifest
-   * running: that is the app's problem, not the publisher's.
+   * A manifest Ghost cannot load, or one for another app, means the app is broken or its
+   * address now serves someone else, so the session fails as unavailable rather than run
+   * the approved manifest as if nothing were wrong.
    *
    * Keyed on the installation's ID, never its app's, so a re-check that started before an
    * uninstall can neither revive that installation nor touch a later one of the same app.
@@ -608,30 +621,40 @@ export class AppInstallationsService {
       throw notInstalled();
     }
 
-    // Nothing else shows why the app keeps its approved manifest, so the log says, down to
-    // what was wrong. Loading already logs an app it cannot reach.
-    const keptApproved = (code: string | null, message: string, reason?: string) =>
-      logging.warn(
-        `App installation ${id} (${before.app_id}) keeps its approved manifest. ${code}: ${message}${reason ? ` (${reason})` : ''}`,
-      );
+    // The log says what was wrong, down to the field; loading already logs an app it
+    // cannot reach.
+    const unavailableBecause = async (
+      code: string | null,
+      message: string,
+      { reason, log = true }: { reason?: string; log?: boolean } = {},
+    ) => {
+      // Ended while the manifest was loading, so there is no app left to be unavailable.
+      if (!(await currentInstallation({ id }, this.knex))) {
+        return notInstalled();
+      }
+      const why = `${code}: ${message}${reason ? ` (${reason})` : ''}`;
+      if (log) {
+        logging.warn(`App installation ${id} (${before.app_id}) is unavailable. ${why}`);
+      }
+      return unavailable(why);
+    };
     let loaded: LoadedManifest;
     try {
       loaded = await this.loadManifest(before.manifest_url);
     } catch (err) {
       if (err instanceof errors.ValidationError) {
-        if (err.code !== 'APP_MANIFEST_UNREACHABLE') {
-          keptApproved(err.code, err.message, err.context);
-        }
-        return;
+        throw await unavailableBecause(err.code, err.message, {
+          reason: err.context,
+          log: err.code !== 'APP_MANIFEST_UNREACHABLE',
+        });
       }
       throw err;
     }
     if (loaded.manifest.id !== before.app_id) {
-      keptApproved(
+      throw await unavailableBecause(
         'APP_MANIFEST_OTHER_APP',
         `${before.manifest_url} now serves ${loaded.manifest.id}.`,
       );
-      return;
     }
 
     await this.knex.transaction(async (trx) => {
