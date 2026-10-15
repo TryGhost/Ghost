@@ -10196,12 +10196,12 @@ services:
       construction:
         summary: >-
           Import loads shared models, providers and one module-level empty actions cache without
-          querying permissions or constructing a service class. Every init forwards the supplied
-          options, or a new empty object, to Permission.findAll and rebuilds the map on fulfillment.
+          querying permissions or constructing a service class. Every init calls
+          Permission.findAll and rebuilds the map on fulfillment.
           Action/object pairs are deduplicated; object_id is not part of this map. canThis starts
           user/key loads and builds handlers against a cloned action map and model references at
           check creation. Units use a stubbed Permission query and forged models to assert map
-          loading/deduplication; import purity, option identity and provider-query timing are source-only.
+          loading/deduplication; import purity and provider-query timing are source-only.
         sources:
           - core/server/services/permissions/index.js
           - core/server/services/permissions/actions-map-cache.js
@@ -10331,7 +10331,7 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin real uninitialized-root behavior, empty query results, init option forwarding, boot
+        Pin real uninitialized-root behavior, empty query results, boot
         failure/recovery and authorization ordering against other boot tasks. The current pre-init
         test stubs cache.empty and does not establish a fresh module's state or readiness gate.
       - >-
