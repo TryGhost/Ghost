@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, rectSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
 import { Badge, type BadgeProps, tokenFieldClasses } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -22,6 +23,12 @@ const trimTerm = (search: string) => search.trim();
 
 /** Within two rows of the end, so the next page is on its way before the last row shows. */
 const END_REACHED_PX = 64;
+
+/** The list's tallest, as `max-h-64` held it before it was positioned by hand. */
+const LIST_MAX_HEIGHT_PX = 256;
+
+/** The room the list keeps from the viewport's edges. */
+const VIEWPORT_GUTTER_PX = 16;
 
 /** The offer to commit what was typed as something the list does not hold yet. */
 export interface ChipPickerCreateRow<TOption> {
@@ -48,10 +55,14 @@ export interface ChipPickerProps<TOption, TChip> {
   /** Whether a row is a chip the field already carries. Keys are the default test. */
   isChosen?: (option: TOption, chip: TChip) => boolean;
   renderOption?: (option: TOption, state: { chosen: boolean }) => ReactNode;
+  /** Shown on hovering a row, for a detail the row leaves out. */
+  getOptionTitle?: (option: TOption) => string | undefined;
   /** Heads runs of rows that share a group; options should already be ordered by it. */
   getGroup?: (option: TOption) => string | undefined;
   chipVariant?: (chip: TChip) => BadgeProps['variant'];
   chipClassName?: (chip: TChip) => string | undefined;
+  /** Shown on hovering a chip, for a detail the chip leaves out. */
+  getChipTitle?: (chip: TChip) => string | undefined;
   onAdd: (option: TOption) => void;
   onRemove: (key: string) => void;
   /** Lets the chips be dragged into a new order, handed back whole. */
@@ -131,9 +142,11 @@ export function ChipPicker<TOption, TChip>({
   getLabel,
   isChosen,
   renderOption,
+  getOptionTitle,
   getGroup,
   chipVariant,
   chipClassName,
+  getChipTitle,
   onAdd,
   onRemove,
   onReorder,
@@ -164,7 +177,40 @@ export function ChipPicker<TOption, TChip>({
   const input = inputRef ?? ownInputRef;
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+
+  // Fixed rather than absolute, so a list wider than the field is not clipped
+  // by a scrolling or overflow-hidden ancestor such as the editor's sidebar.
+  // It stays in the picker's subtree, which the outside-pointer and blur
+  // checks, and an enclosing Dialog's scroll-lock, all rely on.
+  const { refs, floatingStyles } = useFloating({
+    open,
+    placement: 'bottom-end',
+    strategy: 'fixed',
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(4),
+      flip({ padding: VIEWPORT_GUTTER_PX }),
+      shift({ padding: VIEWPORT_GUTTER_PX }),
+      size({
+        padding: VIEWPORT_GUTTER_PX,
+        apply({ availableHeight, elements, rects }) {
+          Object.assign(elements.floating.style, {
+            minWidth: `${rects.reference.width}px`,
+            maxHeight: `${Math.min(LIST_MAX_HEIGHT_PX, availableHeight)}px`,
+          });
+        },
+      }),
+    ],
+  });
+
+  const setScroller = useCallback(
+    (node: HTMLDivElement | null) => {
+      scrollerRef.current = node;
+      refs.setFloating(node);
+    },
+    [refs],
+  );
 
   // Read at call time: with the handler in the end check's deps, every render
   // would ask again for a page that failed.
@@ -373,6 +419,7 @@ export function ChipPicker<TOption, TChip>({
       }}
     >
       <div
+        ref={refs.setReference}
         className={cn(tokenFieldClasses.field, 'pr-8')}
         data-testid={testIds?.field}
         onClick={() => {
@@ -397,6 +444,7 @@ export function ChipPicker<TOption, TChip>({
                 id={getKey(chip)}
                 label={getLabel(chip)}
                 testId={testIds?.chip}
+                title={getChipTitle?.(chip)}
                 variant={chipVariant?.(chip) ?? 'default'}
                 onRemove={() => onRemove(getKey(chip))}
               />
@@ -409,6 +457,7 @@ export function ChipPicker<TOption, TChip>({
               className={chipClassName?.(chip)}
               label={getLabel(chip)}
               testId={testIds?.chip}
+              title={getChipTitle?.(chip)}
               variant={chipVariant?.(chip) ?? 'default'}
               onRemove={() => onRemove(getKey(chip))}
             />
@@ -446,9 +495,12 @@ export function ChipPicker<TOption, TChip>({
         <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
       </div>
       {open && (
+        // As wide as its longest row, from the field's width up to 480px, past
+        // which a row wraps: a long name reads whole rather than cut short.
         <div
-          ref={scrollerRef}
-          className="absolute top-full left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30"
+          ref={setScroller}
+          className="z-50 w-max max-w-[min(480px,calc(100vw-32px))] overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30"
+          style={floatingStyles}
           onScroll={onEndReached ? reportEnd : undefined}
         >
           {notice}
@@ -480,6 +532,7 @@ export function ChipPicker<TOption, TChip>({
                     data-highlighted={isHighlighted}
                     id={optionId(index)}
                     role="option"
+                    title={row.kind === 'option' ? getOptionTitle?.(row.option) : undefined}
                     onClick={() => choose(row)}
                     // Keeps focus in the input, which clicking a plain div would
                     // otherwise drop, so typing and Escape both still work after a pick.
@@ -489,7 +542,7 @@ export function ChipPicker<TOption, TChip>({
                     {row.kind === 'create'
                       ? createRow?.render(term)
                       : (renderOption?.(row.option, { chosen }) ?? (
-                          <span className="truncate">{getLabel(row.option)}</span>
+                          <OptionLabel>{getLabel(row.option)}</OptionLabel>
                         ))}
                   </div>
                 );
@@ -525,6 +578,11 @@ export function ChipPicker<TOption, TChip>({
   );
 }
 
+/** A row's label, wrapping onto more lines rather than cut short. */
+export function OptionLabel({ children }: { children: ReactNode }) {
+  return <span className="min-w-0 [overflow-wrap:anywhere]">{children}</span>;
+}
+
 interface ChipProps {
   label: string;
   variant: BadgeProps['variant'];
@@ -534,6 +592,7 @@ interface ChipProps {
   listeners?: DraggableSyntheticListeners;
   className?: string;
   style?: CSSProperties;
+  title?: string;
 }
 
 function Chip({
@@ -545,14 +604,27 @@ function Chip({
   listeners,
   className,
   style,
+  title,
 }: ChipProps) {
   return (
-    <Badge className={cn(tokenFieldClasses.chip, className)} variant={variant} asChild>
+    // Wraps rather than truncates, so a long name stays whole once it is picked.
+    // The fixed radius is half a one-line chip's height: one line still reads as
+    // a pill, and a taller chip keeps soft corners rather than turning oval.
+    <Badge
+      className={cn(
+        tokenFieldClasses.chip,
+        'h-auto min-h-6 rounded-[12px] py-0.5 text-left whitespace-normal',
+        className,
+      )}
+      variant={variant}
+      asChild
+    >
       <button
         ref={setRef}
         aria-label={`Remove ${label}`}
         data-testid={testId}
         style={style}
+        title={title}
         type="button"
         {...listeners}
         onClick={(event) => {
@@ -560,8 +632,9 @@ function Chip({
           onRemove();
         }}
       >
-        <span className="truncate">{label}</span>
-        <LucideIcon.X className="size-3" />
+        <span className="min-w-0 [overflow-wrap:anywhere]">{label}</span>
+        {/* Level with the first line rather than the middle of a wrapped chip. */}
+        <LucideIcon.X className="mt-1 size-3 shrink-0 self-start" />
       </button>
     </Badge>
   );
