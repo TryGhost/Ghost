@@ -375,7 +375,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailAnalytics = require('./server/services/email-analytics');
   const mentionsService = require('./server/services/mentions');
   const tagsPublic = require('./server/services/tags-public');
-  const postsPublic = require('./server/services/posts-public');
+  const postsPublic = require('./server/services/posts-public').default;
   const slackNotifications = require('./server/services/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');

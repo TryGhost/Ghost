@@ -200,6 +200,7 @@
         "ghost/core/server/services/donations/index.ts",
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/indexnow-ping/index.ts",
+        "ghost/core/server/services/posts-public/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
         "ghost/core/server/services/slack-ping/index.ts"
       ],
