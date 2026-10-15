@@ -443,6 +443,9 @@ catalogs:
     '@types/stoppable':
       specifier: 1.1.3
       version: 1.1.3
+    '@types/supertest':
+      specifier: 7.2.1
+      version: 7.2.1
     '@types/validator':
       specifier: 13.15.10
       version: 13.15.10
@@ -720,8 +723,8 @@ catalogs:
       specifier: 17.14.1
       version: 17.14.1
     supertest:
-      specifier: 7.2.2
-      version: 7.2.2
+      specifier: 7.3.1
+      version: 7.3.1
     tailwindcss:
       specifier: 4.3.3
       version: 4.3.3
@@ -2639,8 +2642,8 @@ importers:
         specifier: 'catalog:'
         version: 1.1.3
       '@types/supertest':
-        specifier: 6.0.3
-        version: 6.0.3
+        specifier: 'catalog:'
+        version: 7.2.1
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -2694,7 +2697,7 @@ importers:
         version: 22.1.0
       supertest:
         specifier: 'catalog:'
-        version: 7.2.2(supports-color@10.2.2)
+        version: 7.3.1(supports-color@10.2.2)
       tmp:
         specifier: 0.2.7
         version: 0.2.7
@@ -8973,8 +8976,8 @@ packages:
   '@types/superagent@8.1.10':
     resolution: {integrity: sha512-nbt4IWXABhW0jGmmpRzCFNlbmwCTzZ2gTUsNIr+X+ItdqPms+PAJZbWsNzpS2USqXjcoNLQcO6nXo60zcPQiIg==}
 
-  '@types/supertest@6.0.3':
-    resolution: {integrity: sha512-8WzXq62EXFhJ7QsH3Ocb/iKQ/Ty9ZVWnVzoTKc9tyyFRRF3a74Tk2+TLFgaFFw364Ere+npzHKEJ6ga2LzIL7w==}
+  '@types/supertest@7.2.1':
+    resolution: {integrity: sha512-4CbBvoYVLHL7+yhbYrZET0vsvuyXTC05aRe7dNQkwMzm56auceoy6Yu3K50uZmwfHna1os3CMSgM/3QVkUtPTw==}
 
   '@types/supports-color@8.1.3':
     resolution: {integrity: sha512-Hy6UMpxhE3j1tLpl27exp1XqHD7n8chAiNPzWfz16LPZoMMoSc4dzLl6w9qijkEb/r5O1ozdu1CWGA2L83ZeZg==}
@@ -15461,8 +15464,8 @@ packages:
     resolution: {integrity: sha512-B+4Ik7ROgVKrQsXTV0Jwp2u+PXYLSlqtDAhYnkkD+zn3yg8s/zjA2MeGayPoY/KICrbitwneDHrjSotxKL+0XQ==}
     engines: {node: '>=14.18.0'}
 
-  supertest@7.2.2:
-    resolution: {integrity: sha512-oK8WG9diS3DlhdUkcFn4tkNIiIbBx9lI2ClF8K+b2/m8Eyv47LSawxUzZQSNKUrVb2KsqeTDCcjAAVPYaSLVTA==}
+  supertest@7.3.1:
+    resolution: {integrity: sha512-vNaNCFoCR/edDbErQZp5KLNT8R4dSPHX7rlDLoE8hWLAm/878j6ShMbe8HK/E6RwwuhlSXVelXAIg9AxR5WWPw==}
     engines: {node: '>=14.18.0'}
 
   supports-color@10.2.2:
@@ -21088,7 +21091,7 @@ snapshots:
       '@types/node': 22.20.1
       form-data: 4.0.6
 
-  '@types/supertest@6.0.3':
+  '@types/supertest@7.2.1':
     dependencies:
       '@types/methods': 1.1.4
       '@types/superagent': 8.1.10
@@ -28758,7 +28761,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  supertest@7.2.2(supports-color@10.2.2):
+  supertest@7.3.1(supports-color@10.2.2):
     dependencies:
       cookie-signature: 1.2.2
       methods: 1.1.2
