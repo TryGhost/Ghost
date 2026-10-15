@@ -511,6 +511,24 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.notInstalled()).toBeVisible();
   });
 
+  it('says an app is unavailable when Ghost can’t use its manifest, and opens it once it can', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(apiError(409, 'This app is unavailable.', 'APP_UNAVAILABLE'));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('Podcast isn’t available');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('podcast.example.com');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+
+    sessionsApi.set(installation());
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect(sessionsApi.requests).toHaveLength(2);
+  });
+
   it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
     fakeSessionStart(
       'missing',
