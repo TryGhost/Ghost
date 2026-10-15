@@ -49,3 +49,7 @@ missing socket, an unresolvable or unreachable host, a refused connection, a
 Responses over 1 MiB are refused. Job IDs come from the host; a replay with
 the same idempotency key (already a per-user sha256) returns the original job.
 ghost-docker uses the key itself as the job ID.
+
+To try the adapter without a host, `pnpm dev:fake-upgrades` runs Ghost against
+the E2E fake upgrade host; see
+[Testing Ghost updates](../../../../../docs/contributing/testing-ghost-updates.md).
