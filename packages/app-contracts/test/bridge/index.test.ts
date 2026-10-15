@@ -6,7 +6,7 @@ import type { AppExports, HostExports } from '../../src/bridge/index.ts';
 describe('the bridge entry point', () => {
   it('exposes the contract and nothing else', () => {
     expect(Object.keys(bridge).sort()).toEqual([
-      'ADMIN_API_BLOCKLIST',
+      'ADMIN_API_ALLOWLIST',
       'APP_ERROR_CODES',
       'APP_PATH_MAX_LENGTH',
       'ARGUMENT_MESSAGES',
@@ -26,7 +26,7 @@ describe('the bridge entry point', () => {
       'START_TIMEOUT_MS',
       'TITLE_MAX_LENGTH',
       'TitleSchema',
-      'checkAdminApiPath',
+      'checkAdminApiRequest',
       'decodeBridgeError',
       'encodeBridgeError',
       'isConnectMessage',

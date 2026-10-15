@@ -96,7 +96,7 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
 /**
  * The codes a refused call carries across the channel. The structured clone that carries an
  * error keeps only its message, so the refusing side puts the code at the start of the
- * message, as in `blocked: Apps can't use /db/`, and the other side parses it back out. Codes
+ * message, as in `blocked: Apps can't use GET /db/`, and the other side parses it back out. Codes
  * are only ever added: an SDK that doesn't know a code treats the whole message as a generic
  * refusal.
  *
@@ -106,7 +106,7 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
  *   the Admin API only responds to with a redirect, such as a path without its trailing `/`.
- * - `blocked`: an Admin API route apps may not reach.
+ * - `blocked`: a request the allowlist doesn't allow, or a write it refuses.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
  */

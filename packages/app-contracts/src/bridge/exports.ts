@@ -21,8 +21,8 @@ import type { FetchResponse, Place, StartContext, Theme } from './rules.ts';
 /** What Admin exposes to an app's page. Admin validates every argument; the frame is untrusted. */
 export interface HostExports {
   /**
-   * Calls the Admin API on the app's behalf. Paths that are blocked, or that escape the Admin
-   * API root, never reach the network.
+   * Calls the Admin API on the app's behalf. A request the allowlist doesn't allow, or whose
+   * path escapes the Admin API root, never reaches the network.
    */
   fetch(request: FetchRequest): Promise<FetchResponse>;
   /** Reports a new page title. Admin shows it as its own title while the page is open. */

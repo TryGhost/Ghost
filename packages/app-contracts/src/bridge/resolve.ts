@@ -1,4 +1,4 @@
-import { isBlockedAdminApiPath } from './blocklist.ts';
+import { findAllowedAdminApiRoute, type AdminApiScope } from './allowlist.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { isContainedPath, type FetchMethod } from './rules.ts';
 
@@ -6,18 +6,41 @@ import { isContainedPath, type FetchMethod } from './rules.ts';
 // path next may read it as two segments.
 const ENCODED_SEPARATOR = /%2f|%5c/i;
 
-/**
- * The result of `checkAdminApiPath`: either the URL to request and the path within the API
- * that the blocklist checked, or the code Admin refuses the request with.
- */
-export type AdminApiPathCheck =
-  | { readonly url: URL; readonly pathname: string; readonly problem?: undefined }
-  | { readonly problem: 'invalid_path' }
-  | { readonly problem: 'blocked'; readonly pathname: string };
+// Ghost still answers the API's old versioned addresses. Its rewrite looks for `ghost/api`
+// anywhere in the address, the query included, and removes a version from it, so a request
+// whose path or query mentions either could reach a route other than the one checked here.
+const GHOST_API = /ghost\/api/i;
+const VERSION_SEGMENT = /^(?:v2|v3|v4|canary)$/i;
+
+// Decodes every escape that's valid on its own, byte by byte, and leaves the rest. Only used
+// to look for the ASCII text above, so a byte of a longer character can decode to anything.
+const decodeEscapes = (text: string) =>
+  text.replace(/%[0-9a-f]{2}/gi, (escape) => String.fromCharCode(parseInt(escape.slice(1), 16)));
+
+/** What `checkAdminApiRequest` checks: an app's `fetch`, already validated by its schema. */
+export interface AdminApiRequest {
+  readonly path: string;
+  readonly method?: FetchMethod | undefined;
+}
 
 /**
- * Checks the path an app passes to `fetch` against the Admin API root, such as
- * `https://site.example/ghost/api/admin/`, and against the blocklist, in one step.
+ * The result of `checkAdminApiRequest`: the URL to request, the path within the API it reaches
+ * and the scope that allows it, or the code Admin refuses the request with. A refusal as
+ * `blocked` says why in `detail`, naming the method and path, or what in the request was refused.
+ */
+export type AdminApiRequestCheck =
+  | {
+      readonly url: URL;
+      readonly pathname: string;
+      readonly scope: AdminApiScope;
+      readonly problem?: undefined;
+    }
+  | { readonly problem: 'invalid_path' }
+  | { readonly problem: 'blocked'; readonly pathname: string; readonly detail: string };
+
+/**
+ * Checks a request an app asks Admin to make against the Admin API root, such as
+ * `https://site.example/ghost/api/admin/`, and against the allowlist, in one step.
  *
  * A leading `/` means the API root, not the origin, so `/posts/?limit=5` is
  * `https://site.example/ghost/api/admin/posts/?limit=5`. The root may be written with or
@@ -25,17 +48,15 @@ export type AdminApiPathCheck =
  *
  * The result is `invalid_path` unless the path stays under the root, on the root's origin.
  * Absolute and protocol-relative URLs, paths that don't start with `/`, backslashes, `..` in
- * any spelling the URL parser understands, and escaped separators are all `invalid_path`. A
- * path that stays under the root is `blocked` if the blocklist covers where it resolves to,
- * for `method`.
- * The blocklist checks it as `pathname`: relative to the root, with its leading `/`, and
- * without the query.
+ * any spelling the URL parser understands, and escaped separators are all `invalid_path`.
+ *
+ * A path that stays under the root is `blocked` unless the allowlist has a route for where it
+ * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
+ * or its first segment is an old API version (`v4`), whatever the allowlist says, and when it
+ * carries a query parameter its scope refuses.
  */
-export function checkAdminApiPath(
-  path: string,
-  method: FetchMethod,
-  apiRoot: URL,
-): AdminApiPathCheck {
+export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): AdminApiRequestCheck {
+  const { path, method = 'GET' } = request;
   if (typeof path !== 'string' || path.length > FETCH_PATH_MAX_LENGTH || !isContainedPath(path)) {
     return { problem: 'invalid_path' };
   }
@@ -61,10 +82,33 @@ export function checkAdminApiPath(
   }
 
   // Slice against the root as normalised above, so a root written without its trailing `/`
-  // can't shift the slice and let a path slip past the blocklist.
+  // can't shift the slice.
   const pathname = url.pathname.slice(root.pathname.length - 1);
-  if (isBlockedAdminApiPath(pathname, method)) {
-    return { problem: 'blocked', pathname };
+  const blocked = (detail: string) => ({ problem: 'blocked', pathname, detail }) as const;
+
+  const address = `${pathname}${url.search}`;
+  const [first = ''] = decodeEscapes(pathname).split('/').filter(Boolean);
+  if (
+    GHOST_API.test(address) ||
+    GHOST_API.test(decodeEscapes(address)) ||
+    VERSION_SEGMENT.test(first)
+  ) {
+    return blocked(`Apps can't use ${method} ${pathname}: it names an old API address`);
   }
-  return { url, pathname };
+
+  const allowed = findAllowedAdminApiRoute(pathname, method);
+  if (!allowed) {
+    return blocked(`Apps can't use ${method} ${pathname}`);
+  }
+  const { scope } = allowed;
+
+  for (const name of url.searchParams.keys()) {
+    // `newsletter[]` and `newsletter[a]` are read as `newsletter` too.
+    const parameter = (name.split('[', 1)[0] as string).toLowerCase();
+    if (scope.refusedParameters?.includes(parameter)) {
+      return blocked(`Apps can't use the ${parameter} parameter on ${method} ${pathname}`);
+    }
+  }
+
+  return { url, pathname, scope };
 }

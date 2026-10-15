@@ -40,7 +40,7 @@ function isJson(body: string): boolean {
 
 /**
  * A request that an app asks Admin to make to the Admin API on its behalf. The path is never a
- * URL: Admin resolves and checks it with `checkAdminApiPath` before sending anything.
+ * URL: Admin resolves and checks it with `checkAdminApiRequest` before sending anything.
  *
  * Unknown fields are refused, so an option Admin doesn't support fails loudly instead of being
  * silently left out of the request.

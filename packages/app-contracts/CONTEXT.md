@@ -148,13 +148,13 @@ the app's behalf. It stands in for an app's own token until apps have
 permissions, and takes an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 
-**Blocklist**:
-The Admin API routes the fetch escape hatch refuses, listed by category with a
-reason for each in `ADMIN_API_BLOCKLIST`. A route is refused for every method,
-unless its path is shared with a harmless read: bulk deletes are refused for
-`DELETE` only, and test email sends for `POST` and `PUT`. It is a stopgap, not
-a complete list, and will be removed once apps have their own token.
-_Avoid_: permissions, scopes, denylist
+**Allowlist**:
+The Admin API routes the fetch escape hatch allows, by method, grouped under
+the scope names Permissions and auth will use (`posts:read`, `posts:write`),
+in `ADMIN_API_ALLOWLIST`. Everything else is refused. Writes of posts, pages
+and tags are also checked so they can't send email or carry script. It stands
+in for apps' own token, which takes the scopes over.
+_Avoid_: permissions, blocklist, denylist
 
 **Feature name**:
 A name in the connect message's list for something an Admin supports beyond

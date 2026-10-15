@@ -59,10 +59,10 @@ export {
   normaliseAppPath,
 } from './bridge/rules.ts';
 export type {
+  AdminApiScope,
   AppErrorCode,
   AppExports,
   AppPath,
-  BlockedAdminApiCategory,
   BridgeErrorCode,
   ConnectMessage,
   FetchMethod,

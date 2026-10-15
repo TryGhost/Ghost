@@ -1,25 +1,36 @@
 import { describe, expect, it } from 'vitest';
 
-import { checkAdminApiPath } from '../../src/bridge/index.ts';
+import { checkAdminApiRequest } from '../../src/bridge/index.ts';
+import type { FetchMethod } from '../../src/bridge/rules.ts';
 
 const root = new URL('https://site.example/ghost/api/admin/');
 
-// The URL a path resolves to, or null when it is not an Admin API path. Every path in these
-// tests is open to apps, except in the tests about the blocklist.
+const check = (path: string, method: FetchMethod = 'GET', apiRoot = root) =>
+  checkAdminApiRequest({ path, method }, apiRoot);
+
+// The URL a path resolves to, or null when it is not an Admin API path. Every path these tests
+// resolve is one apps can reach, except in the tests about the allowlist.
 function resolved(path: string, apiRoot = root) {
-  const check = checkAdminApiPath(path, 'GET', apiRoot);
-  expect(check.problem, path).not.toBe('blocked');
-  return check.problem ? null : check.url.href;
+  const result = check(path, 'GET', apiRoot);
+  expect(result.problem, path).not.toBe('blocked');
+  return result.problem ? null : result.url.href;
 }
 
-describe('checking an Admin API path', () => {
+// Where a path lands within the API, whether apps can reach it or not, or null when it is not
+// an Admin API path.
+function landsOn(path: string, apiRoot = root) {
+  const result = check(path, 'GET', apiRoot);
+  return result.problem === 'invalid_path' ? null : result.pathname;
+}
+
+describe('checking an Admin API request', () => {
   it('resolves a leading / against the API root, not the origin', () => {
     expect(resolved('/posts/')).toBe('https://site.example/ghost/api/admin/posts/');
     expect(resolved('/posts/?limit=5&filter=tag:news')).toBe(
       'https://site.example/ghost/api/admin/posts/?limit=5&filter=tag:news',
     );
-    expect(resolved('/')).toBe('https://site.example/ghost/api/admin/');
-    expect(resolved('/a:b/')).toBe('https://site.example/ghost/api/admin/a:b/');
+    expect(landsOn('/')).toBe('/');
+    expect(landsOn('/a:b/')).toBe('/a:b/');
   });
 
   it('keeps an encoded value in the query string as it is', () => {
@@ -29,17 +40,17 @@ describe('checking an Admin API path', () => {
   });
 
   it('returns a new URL, leaving the root alone', () => {
-    const check = checkAdminApiPath('/posts/', 'GET', root);
-    expect(check.problem).toBeUndefined();
-    expect((check as { url: URL }).url).not.toBe(root);
+    const result = check('/posts/');
+    expect(result.problem).toBeUndefined();
+    expect((result as { url: URL }).url).not.toBe(root);
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
   });
 
-  it('names the path within the API, as the blocklist read it', () => {
-    expect(checkAdminApiPath('/posts/?limit=5', 'GET', root)).toMatchObject({
-      pathname: '/posts/',
-    });
-    expect(checkAdminApiPath('/', 'GET', root)).toMatchObject({ pathname: '/' });
+  it('names the path within the API, as the allowlist read it, and the scope that allows it', () => {
+    const result = check('/posts/?limit=5');
+    expect(result).toMatchObject({ pathname: '/posts/' });
+    expect(result.problem === undefined && result.scope.name).toBe('posts:read');
+    expect(check('/')).toMatchObject({ pathname: '/' });
   });
 
   it('works with a root written without its trailing slash, a query or a fragment', () => {
@@ -111,33 +122,27 @@ describe('checking an Admin API path', () => {
     expect(resolved('/../admin-evil/posts/')).toBeNull();
   });
 
-  it('allows .. that stays within the root, so the blocklist sees where it lands', () => {
+  it('allows .. that stays within the root, so the allowlist sees where it lands', () => {
     expect(resolved('/posts/%2e%2e/tags/')).toBe('https://site.example/ghost/api/admin/tags/');
-    expect(checkAdminApiPath('/posts/%2e%2e/users/password/', 'GET', root)).toEqual({
+    expect(check('/posts/%2e%2e/users/password/')).toEqual({
       problem: 'blocked',
       pathname: '/users/password/',
+      detail: "Apps can't use GET /users/password/",
     });
   });
 
-  it('blocks what the blocklist closes, naming the path within the API', () => {
-    expect(checkAdminApiPath('/db/?include=all', 'GET', root)).toEqual({
+  it('blocks what the allowlist leaves out, naming the method and the path within the API', () => {
+    expect(check('/db/?include=all')).toEqual({
       problem: 'blocked',
       pathname: '/db/',
+      detail: "Apps can't use GET /db/",
     });
-    expect(checkAdminApiPath('/members/abc/signin_urls/', 'GET', root)).toEqual({
-      problem: 'blocked',
-      pathname: '/members/abc/signin_urls/',
-    });
-  });
-
-  it('checks the blocklist for the method of the request', () => {
-    expect(checkAdminApiPath('/posts/?filter=tag:news', 'DELETE', root)).toEqual({
+    expect(check('/posts/?filter=tag:news', 'DELETE')).toEqual({
       problem: 'blocked',
       pathname: '/posts/',
+      detail: "Apps can't use DELETE /posts/",
     });
-    expect(checkAdminApiPath('/posts/?filter=tag:news', 'GET', root)).toMatchObject({
-      pathname: '/posts/',
-    });
+    expect(check('/posts/?filter=tag:news', 'GET')).toMatchObject({ pathname: '/posts/' });
   });
 
   it('blocks the same paths whichever way the root is written', () => {
@@ -148,16 +153,62 @@ describe('checking an Admin API path', () => {
       'https://site.example/',
       'https://site.example',
     ]) {
-      expect(checkAdminApiPath('/db/', 'GET', new URL(apiRoot)), apiRoot).toEqual({
+      expect(check('/db/', 'GET', new URL(apiRoot)), apiRoot).toMatchObject({
         problem: 'blocked',
         pathname: '/db/',
       });
-      expect(checkAdminApiPath('/users/abc/token', 'GET', new URL(apiRoot)), apiRoot).toMatchObject(
-        {
-          problem: 'blocked',
-        },
-      );
+      expect(check('/posts/', 'GET', new URL(apiRoot)).problem, apiRoot).toBeUndefined();
     }
+  });
+
+  // Ghost's rewrite for the API's old versioned addresses looks for `ghost/api` anywhere in the
+  // address and removes the first `v4/` it finds, so both of these reached `/db/`.
+  it('blocks a request that names an old API address, wherever it does', () => {
+    for (const path of [
+      '/v4/db/?x=ghost/api/v4/admin/',
+      '/dbv4//?x=ghost/api/v4/admin/',
+      '/posts/?filter=ghost/api',
+      '/posts/?filter=GHOST/API',
+      '/posts/?filter=ghost%2Fapi',
+      '/posts/?filter=%67host%2fapi',
+      '/v4/posts/',
+      '/V3/posts/',
+      '/canary/posts/',
+      '/v2/',
+    ]) {
+      expect(check(path), path).toMatchObject({
+        problem: 'blocked',
+        detail: expect.stringMatching(/: it names an old API address$/),
+      });
+    }
+    expect(check('/posts/?filter=tag:v4').problem).toBeUndefined();
+    expect(check('/posts/slug/v4/').problem).toBeUndefined();
+  });
+
+  it('blocks the query parameters a scope refuses, however they are written', () => {
+    const id = '5ddc9141c35e7700383b2937';
+    for (const [method, path, parameter] of [
+      ['PUT', `/posts/${id}/?newsletter=weekly`, 'newsletter'],
+      ['PUT', `/posts/${id}/?newsletter=weekly&email_segment=all`, 'newsletter'],
+      ['PUT', `/pages/${id}/?email_segment=status:free`, 'email_segment'],
+      ['POST', '/posts/?source=html', 'source'],
+      ['POST', '/pages/?SOURCE=html', 'source'],
+      ['PUT', `/posts/${id}/?news%6cetter=weekly`, 'newsletter'],
+      ['PUT', `/posts/${id}/?newsletter[]=weekly`, 'newsletter'],
+      ['PUT', `/posts/${id}/?newsletter%5Ba%5D=weekly`, 'newsletter'],
+      ['PUT', `/posts/${id}/?newsletter`, 'newsletter'],
+    ] as const) {
+      const pathname = path.split('?')[0];
+      expect(check(path, method), `${method} ${path}`).toEqual({
+        problem: 'blocked',
+        pathname,
+        detail: `Apps can't use the ${parameter} parameter on ${method} ${pathname}`,
+      });
+    }
+    expect(check(`/posts/${id}/?formats=lexical`, 'PUT').problem).toBeUndefined();
+    expect(check('/posts/?filter=newsletter:weekly').problem).toBeUndefined();
+    // Only writes refuse them.
+    expect(check('/posts/?source=html').problem).toBeUndefined();
   });
 
   it('refuses escaped separators, which a later reader may decode', () => {
@@ -172,8 +223,8 @@ describe('checking an Admin API path', () => {
   });
 
   it('refuses a path that is too long', () => {
-    expect(resolved(`/${'a'.repeat(2047)}`)).not.toBeNull();
-    expect(resolved(`/${'a'.repeat(2048)}`)).toBeNull();
+    expect(landsOn(`/${'a'.repeat(2047)}`)).not.toBeNull();
+    expect(landsOn(`/${'a'.repeat(2048)}`)).toBeNull();
   });
 
   it('refuses a path that is not text', () => {
@@ -183,7 +234,10 @@ describe('checking an Admin API path', () => {
 
   it('never resolves to another origin', () => {
     for (const path of ['/@evil.example/', '/:443@evil.example/', '/%40evil.example']) {
-      expect(new URL(resolved(path)!).origin).toBe('https://site.example');
+      expect(landsOn(path), path).toBe(path);
+    }
+    for (const path of ['/posts/?x=@evil.example', '/posts/#@evil.example']) {
+      expect(new URL(resolved(path)!).origin, path).toBe('https://site.example');
     }
   });
 });

@@ -5,12 +5,12 @@
  * in it has sent a hello from the right origin. This entry point holds what both sides agree
  * on: the two window messages that set up the channel, the calls each side exposes, the
  * validation Admin applies to every argument from the untrusted frame, and what the fetch
- * escape hatch may reach (`checkAdminApiPath` and the blocklist).
+ * escape hatch may reach (`checkAdminApiRequest` and the allowlist).
  *
  * The root entry point also exports the zod-free rules in `rules.ts`, for the SDK.
  */
 
-export { ADMIN_API_BLOCKLIST, type BlockedAdminApiCategory } from './blocklist.ts';
+export { ADMIN_API_ALLOWLIST, type AdminApiScope } from './allowlist.ts';
 export type { AppExports, HostExports } from './exports.ts';
 export {
   FETCH_BODY_MAX_BYTES,
@@ -21,7 +21,11 @@ export {
 export { HelloMessageSchema, type HelloMessage } from './messages.ts';
 export { APP_PATH_MAX_LENGTH, AppPathSchema, type AppPath } from './paths.ts';
 export { PlaceSchema } from './places.ts';
-export { checkAdminApiPath, type AdminApiPathCheck } from './resolve.ts';
+export {
+  checkAdminApiRequest,
+  type AdminApiRequest,
+  type AdminApiRequestCheck,
+} from './resolve.ts';
 export {
   APP_ERROR_CODES,
   ARGUMENT_MESSAGES,
