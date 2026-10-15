@@ -44,7 +44,7 @@ export function EditorFontSection({ control }: { control: EditorFontControl }) {
         id={choicesId}
       >
         <Box className="min-h-0 overflow-hidden">
-          <Box className="px-5 pt-2 pb-4">
+          <Box className="px-5 py-3">
             <EditorFontPicker control={control} />
           </Box>
         </Box>
