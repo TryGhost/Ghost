@@ -15,7 +15,7 @@ import {
   processInfo,
   upGroup,
 } from './lib/dev-stack.ts';
-import { checkoutRoot, devUrl, resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
+import { checkoutRoot, devUrl, resolveGhostDevEnv } from '../scripts/lib/ghost-dev-env.ts';
 
 // Starts this checkout's `pnpm dev`, or the variant named, in the background and returns
 // once Ghost answers through the front door

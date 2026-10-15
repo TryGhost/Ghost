@@ -17,7 +17,7 @@ import {
 } from './lib/dev-stack.ts';
 import { type DevProcess, devProcesses, processEntries } from './lib/dev-processes.ts';
 import { browse, type DevStatus } from './lib/dev-status-view.ts';
-import { checkoutRoot, devUrl } from './lib/ghost-dev-env.ts';
+import { checkoutRoot, devUrl } from '../scripts/lib/ghost-dev-env.ts';
 import { BASE_BRANCHES, pullRequests } from './lib/pull-requests.ts';
 
 // This checkout's dev stack and every other running one, or with --all every checkout that has

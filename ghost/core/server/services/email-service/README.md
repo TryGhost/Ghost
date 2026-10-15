@@ -287,18 +287,21 @@ measure Mailgun acceptance or delivery, including uncertain POST outcomes.
 
 ## Benchmarking preparation
 
-From `ghost`, run the synthetic MySQL benchmark. Credentials default to
-`root` / `root`, matching `testing-mysql`; override them with
-`database__connection__user` and `database__connection__password` for a different
-local database (an explicitly empty password is preserved):
+From the repository root, run the synthetic MySQL benchmark against the
+configured development MySQL server:
 
 ```sh
-NODE_OPTIONS=--conditions=source node --expose-gc scripts/benchmark-recipient-preparation.js 500000 2
+pnpm gx benchmark recipient-preparation 500000 2
 ```
 
+gx supplies the source loader, `--expose-gc` and the checkout's development
+environment. Override `database__connection__host`, `database__connection__port`,
+`database__connection__user` or `database__connection__password` to use a different
+local server (an explicitly empty password is preserved).
+
 The arguments are member count and preparation concurrency. The harness creates
-and drops its own database on `127.0.0.1:3306`, uses Ghost's schema and preparation
-service with a pool of five, and never submits email. Members are split evenly
+and drops its own database, uses Ghost's schema and preparation service with a
+pool of five, and never submits email. Members are split evenly
 between free and paid segments to exercise the combined audience selection.
 It measures the full audience, discard and rebuild after a complete pending attempt, and a label
 audience containing every fifth member. JSON output includes database settings,

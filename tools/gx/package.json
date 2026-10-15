@@ -56,6 +56,10 @@
         "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
         "{workspaceRoot}/ghost/core/server/data/schema/**/*",
         "{workspaceRoot}/ghost/core/server/models/**/*"
+      ],
+      "developmentStackCommands": [
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/.codex/hooks.json"
       ]
     },
     "targets": {
@@ -67,6 +71,7 @@
           "developmentTablesCommand",
           "goldenEmailCommand",
           "dataCommands",
+          "developmentStackCommands",
           {
             "runtime": "node -v"
           }

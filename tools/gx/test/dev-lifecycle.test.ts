@@ -139,11 +139,16 @@ describe('Codex session markers', () => {
       rmSync(join(root, '.git'));
       const init = spawnSync('git', ['init', '--quiet', root]);
       assert.equal(init.status, 0);
-      for (const file of ['dev-session-end.ts', 'lib/dev-lifecycle.ts', 'lib/ghost-dev-env.ts']) {
-        const target = join(root, 'tools/scripts', file);
+      for (const file of ['dev-session-end.ts', 'lib/dev-lifecycle.ts']) {
+        const target = join(root, 'tools/gx', file);
         mkdirSync(dirname(target), { recursive: true });
         copyFileSync(new URL(`../${file}`, import.meta.url), target);
       }
+      mkdirSync(join(root, 'tools/scripts/lib'), { recursive: true });
+      copyFileSync(
+        new URL('../../scripts/lib/ghost-dev-env.ts', import.meta.url),
+        join(root, 'tools/scripts/lib/ghost-dev-env.ts'),
+      );
       writeFileSync(join(root, 'package.json'), '{"type":"module"}');
       const marker = createCodexMarker(root, 'owner');
       const other = createCodexMarker(root, 'other');
@@ -168,6 +173,45 @@ describe('Codex session markers', () => {
 });
 
 describe('dev process watcher', { concurrency: true, skip: process.platform === 'win32' }, () => {
+  it('runs the shutdown shortcut without installed dependencies', async (t) => {
+    const dev = await stack(t);
+    const manifest = JSON.parse(
+      readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'),
+    ) as { scripts: Record<string, string> };
+    const shortcut = manifest.scripts['dev:down']!;
+    assert.match(shortcut, /^node /);
+    for (const file of ['dev-down.ts', 'lib/dev-stack.ts', 'lib/dev-processes.ts']) {
+      const target = join(dev.root, 'tools/gx', file);
+      mkdirSync(dirname(target), { recursive: true });
+      copyFileSync(new URL(`../${file}`, import.meta.url), target);
+    }
+    mkdirSync(join(dev.root, 'tools/scripts/lib'), { recursive: true });
+    copyFileSync(
+      new URL('../../scripts/lib/ghost-dev-env.ts', import.meta.url),
+      join(dev.root, 'tools/scripts/lib/ghost-dev-env.ts'),
+    );
+    writeFileSync(join(dev.root, 'package.json'), '{"type":"module"}');
+    writeFileSync(join(dev.root, '.ghost-dev.pid'), `${dev.child.pid}\n`);
+    assert.equal(existsSync(join(dev.root, 'node_modules')), false);
+    const shutdown = spawn(process.execPath, [shortcut.slice('node '.length)], {
+      cwd: dev.root,
+      env: { ...process.env, GHOST_DEV_PORT: String(dev.port), GHOST_DEV_BACKEND_PORT: '' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let output = '';
+    shutdown.stdout.on('data', (chunk) => {
+      output += String(chunk);
+    });
+    shutdown.stderr.on('data', (chunk) => {
+      output += String(chunk);
+    });
+    const [code] = await once(shutdown, 'exit');
+    assert.equal(code, 0, output);
+    assert.match(output, /Stopped\. Ports .* are free/);
+    assert.equal(await isListening(dev.port), false);
+    assert.equal(existsSync(join(dev.root, '.ghost-dev.pid')), false);
+  });
+
   it('stops the stack when the checkout .git is removed', async (t) => {
     const dev = await stack(t);
     rmSync(join(dev.root, '.git'));

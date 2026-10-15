@@ -59,6 +59,29 @@ cli.command({
 });
 
 cli.command({
+  flags: 'dev',
+  desc: 'Start, stop, inspect and clean up development stacks.',
+  setup(group: CommandGroup) {
+    for (const command of [
+      { flags: 'up', desc: 'Start this checkout in the background.' },
+      { flags: 'down', desc: 'Stop development stacks and orphaned processes.' },
+      { flags: 'status', desc: 'Inspect development stacks.' },
+      { flags: 'gc', desc: 'Inspect or remove unused development resources.' },
+    ]) {
+      group.command({
+        flags: command.flags,
+        desc: command.desc,
+        async run() {
+          commandRun = true;
+          process.argv = [...process.argv.slice(0, 2), ...args.slice(2)];
+          await import(`./dev-${command.flags}.ts`);
+        },
+      });
+    }
+  },
+});
+
+cli.command({
   flags: 'db',
   desc: 'Development database tools.',
   setup(group: CommandGroup) {
