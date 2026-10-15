@@ -4,7 +4,19 @@ import boundaries from '../../../../.dependency-cruiser.cjs';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 // Reuse the native boundary rule: $1 denotes internal service files, not libraries.
-const boundary = boundaries.forbidden.find(({ name }) => name === 'service-dependencies');
+const boundary = Array.isArray(boundaries?.forbidden)
+  ? boundaries.forbidden.find((rule) => rule?.name === 'service-dependencies')
+  : undefined;
+if (
+  typeof boundary?.from?.path !== 'string' ||
+  !Array.isArray(boundary.to?.pathNot) ||
+  !boundary.to.pathNot.every((pattern) => typeof pattern === 'string')
+) {
+  throw new Error(
+    'ghost/no-injected-service-libraries: .dependency-cruiser.cjs must define ' +
+      'service-dependencies with a string from.path and a string array to.pathNot',
+  );
+}
 const services = new RegExp(boundary.from.path);
 const libraries = boundary.to.pathNot
   .filter((pattern) => !pattern.includes('$1'))

@@ -28,7 +28,7 @@ interface Diagnostic {
   labels: { span: { line: number; column: number } }[];
 }
 
-function lint(
+function runLint(
   code: string,
   filename: string,
   allOff = false,
@@ -84,18 +84,58 @@ function lint(
       },
     );
     assert.ifError(result.error);
-    assert.equal(result.stderr, '');
-    assert.ok(result.status === 0 || result.status === 1, result.stdout);
-    assert.ok(result.stdout.trimStart().startsWith('{'), result.stdout);
-    const output = JSON.parse(result.stdout) as {
-      diagnostics: Diagnostic[];
-      number_of_rules: number;
-    };
-    return { ...output, status: result.status };
+    return result;
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }
 }
+
+function lint(...args: Parameters<typeof runLint>) {
+  const result = runLint(...args);
+  assert.equal(result.stderr, '');
+  assert.ok(result.status === 0 || result.status === 1, result.stdout);
+  assert.ok(result.stdout.trimStart().startsWith('{'), result.stdout);
+  const output = JSON.parse(result.stdout) as {
+    diagnostics: Diagnostic[];
+    number_of_rules: number;
+  };
+  return { ...output, status: result.status };
+}
+
+test('explains missing or malformed service dependency policy', () => {
+  for (const policy of [
+    {},
+    { forbidden: {} },
+    { forbidden: [] },
+    { forbidden: [{ name: 'renamed-service-dependencies' }] },
+    { forbidden: [{ name: 'service-dependencies', to: { pathNot: [] } }] },
+    { forbidden: [{ name: 'service-dependencies', from: { path: 42 }, to: { pathNot: [] } }] },
+    { forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }] },
+    {
+      forbidden: [
+        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: '' } },
+      ],
+    },
+    {
+      forbidden: [
+        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: [42] } },
+      ],
+    },
+  ]) {
+    const result = runLint(
+      '',
+      'ghost/core/server/example.ts',
+      false,
+      undefined,
+      `module.exports = ${JSON.stringify(policy)};`,
+    );
+    assert.equal(result.status, 1);
+    assert.match(
+      result.stdout + result.stderr,
+      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and a string array to\.pathNot/,
+    );
+  }
+});
 
 test('all categories are off and custom rules report JS/TS violations', () => {
   assert.ok(Object.values(config.categories).every((value) => value === 'off'));
