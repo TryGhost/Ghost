@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-sso",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "The adapter-base-sso package for Ghost.",
   "license": "MIT",
   "author": "Ghost Foundation",
