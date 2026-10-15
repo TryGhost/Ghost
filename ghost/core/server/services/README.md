@@ -113,7 +113,8 @@ nested folders named `test` or `fixtures`.
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
 adjacent `build:tsc` output out of the report; ordinary JavaScript implementations
-remain checked.
+remain checked. Package exports resolve through their `source` condition when
+available, so workspace contracts are checked without relying on build output.
 
 `pnpm lint:boundaries`, also run by `pnpm check` and CI, enforces these rules as
 errors for every entry marked `migrated: true`. New implementation files inherit

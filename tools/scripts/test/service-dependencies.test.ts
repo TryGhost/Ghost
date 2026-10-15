@@ -45,10 +45,10 @@ function fixture(t: TestContext, files: Record<string, string>) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     symlinkSync(path.join(repository, file), path.join(root, file));
   }
-  const run = (output = 'json', audit = false) => {
+  const run = (output = 'json', audit = false, input = services) => {
     const result = spawnSync(
       process.execPath,
-      [cli, services, '--config', '.dependency-cruiser.cjs', '--output-type', output],
+      [cli, input, '--config', '.dependency-cruiser.cjs', '--output-type', output],
       {
         cwd: root,
         encoding: 'utf8',
@@ -62,8 +62,12 @@ function fixture(t: TestContext, files: Record<string, string>) {
   return {
     write,
     run,
-    graph(audit = false): ICruiseResult {
-      const result = run('json', audit);
+    link(source: string, destination: string) {
+      mkdirSync(path.dirname(path.join(root, destination)), { recursive: true });
+      symlinkSync(path.join(root, source), path.join(root, destination));
+    },
+    graph(audit = false, input = services): ICruiseResult {
+      const result = run('json', audit, input);
       assert.equal(result.status, 0, result.stderr);
       const graph: ICruiseResult = JSON.parse(result.stdout);
       assert.ok(graph.modules.length > 0, 'The fixture must actually be analyzed');
@@ -138,6 +142,8 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     [`${alpha}/index.ts`]: "import '../../../shared/config';",
     [`${alpha}/helper.ts`]: 'export const helper = true;',
     'ghost/core/server/lib/db-types/date.ts': 'export const date = true;',
+    'ghost/core/server/lib/db-types/boolean.ts': 'export const boolean = true;',
+    'ghost/core/server/lib/db-types/json.ts': 'export const json = true;',
     'ghost/core/kernel/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
     'ghost/core/server/lib/public-jwk.ts': 'export const key = true;',
     [`${services}/jobs-service/job.ts`]: 'export class Job {}',
@@ -145,12 +151,13 @@ it('allows same-service code, explicit types, approved libraries and root wiring
       import './helper'; import type {Config} from '../../../shared/config';
       export type {Config} from '../../../shared/config';
       import '@tryghost/errors'; import '@tryghost/errors/detail'; import '@tryghost/tpl'; import 'zod';
-      import 'node:crypto'; import 'util'; import '../../lib/db-types/date';
+      import 'node:crypto'; import 'util'; import 'bson-objectid';
+      import '../../lib/db-types/date'; import '../../lib/db-types/boolean'; import '../../lib/db-types/json';
       import '../../lib/public-jwk'; import '../jobs-service/job';
       import {getUnixTime, moment} from '../../../kernel/clock';
     `,
   });
-  for (const name of ['@tryghost/errors', '@tryghost/tpl', 'zod']) {
+  for (const name of ['@tryghost/errors', '@tryghost/tpl', 'zod', 'bson-objectid']) {
     f.write(
       `node_modules/${name}/package.json`,
       JSON.stringify({
@@ -174,6 +181,9 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'reexport.ts': "export {enabled} from '../../../shared/config';",
     'nested/index.ts': "import '../../../../shared/config';",
     'test/helper.ts': "import '../../../../shared/config';",
+    'build/helper.ts': "import '../../../../shared/config';",
+    'built/helper.ts': "import '../../../../shared/config';",
+    'dist/helper.ts': "import '../../../../shared/config';",
     'sibling.ts': "import '../alpha-extra/helper';",
     'package.ts': "import '@tryghost/errors-extra';",
     'shared.ts': "import '../../lib/db-types/other';",
@@ -261,10 +271,163 @@ it('preserves source edges and violations after adjacent TypeScript emission', (
   assert.deepEqual(violations(after), violations(before));
 });
 
+it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
+  const contract = 'packages/app-contracts';
+  const manifest = `${contract}/src/manifest/index.ts`;
+  const f = fixture(t, {
+    [`${alpha}/implementation.ts`]: `
+      import '@tryghost/app-contracts/manifest';
+      import '@tryghost/errors';
+    `,
+    [`${alpha}/other.ts`]: "import '@tryghost/app-contracts/other';",
+    [`${alpha}/root.ts`]: "import '@tryghost/app-contracts';",
+    [`${alpha}/private.ts`]: "import '@tryghost/app-contracts/private';",
+    [`${contract}/package.json`]: JSON.stringify({
+      name: '@tryghost/app-contracts',
+      type: 'module',
+      exports: {
+        '.': { source: './src/index.ts', default: './build/index.js' },
+        './manifest': {
+          types: './build/manifest/index.d.ts',
+          source: './src/manifest/index.ts',
+          default: './build/manifest/index.js',
+        },
+        './other': { source: './src/other.ts', default: './build/other.js' },
+      },
+    }),
+    [manifest]: 'export const schema = {};',
+    [`${contract}/build/manifest/index.d.ts`]: 'export declare const schema: object;',
+    [`${contract}/src/index.ts`]: 'export const other = true;',
+    [`${contract}/src/other.ts`]: 'export const other = true;',
+    [`${contract}/private.js`]: 'module.exports = {};',
+    'node_modules/@tryghost/errors/package.json': JSON.stringify({
+      name: '@tryghost/errors',
+      exports: { '.': { types: './index.d.ts', default: './index.js' } },
+    }),
+    'node_modules/@tryghost/errors/index.d.ts': 'export declare class GhostError {}',
+    'node_modules/@tryghost/errors/index.js': 'module.exports = {};',
+  });
+  f.link(contract, 'node_modules/@tryghost/app-contracts');
+  const before = f.graph();
+  assert.ok(
+    edges(before).some(
+      ([from, specifier, to]) =>
+        from === `${alpha}/implementation.ts` &&
+        specifier === '@tryghost/app-contracts/manifest' &&
+        to === manifest,
+    ),
+  );
+  assert.ok(
+    edges(before).some(
+      ([, specifier, to]) =>
+        specifier === '@tryghost/errors' && to === 'node_modules/@tryghost/errors/index.js',
+    ),
+  );
+  assert.deepEqual(violations(before), [
+    ['service-dependencies', `${alpha}/other.ts`, `${contract}/src/other.ts`],
+    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
+    ['service-dependencies', `${alpha}/root.ts`, `${contract}/src/index.ts`],
+    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
+  ]);
+  f.write(`${contract}/build/manifest/index.js`, 'export const schema = {};');
+  f.write(`${contract}/build/index.js`, 'export const other = true;');
+  f.write(`${contract}/build/other.js`, 'export const other = true;');
+  const after = f.graph();
+  assert.deepEqual(edges(after), edges(before));
+  assert.deepEqual(violations(after), violations(before));
+});
+
+it('preserves app boundaries and the test-selector allowance after workspace exports resolve', (t) => {
+  const f = fixture(t, {
+    'apps/shade/src/forbidden.ts': "import '@tryghost/admin-x-framework/helpers';",
+    'apps/admin-x-framework/src/forbidden.ts': "import '@tryghost/activitypub/api';",
+    'apps/admin-x-framework/src/root.ts': "import '@tryghost/activitypub';",
+    'apps/portal/src/forbidden.ts': "import '@tryghost/shade/primitives';",
+    'apps/portal/src/test-data.ts': "import '@tryghost/test-data';",
+    'apps/portal/src/selectors.ts': "import '@tryghost/test-data/selectors/member';",
+  });
+  for (const [name, directory, subpath, target] of [
+    ['@tryghost/admin-x-framework', 'apps/admin-x-framework', './helpers', 'helpers.ts'],
+    ['@tryghost/activitypub', 'apps/activitypub', './api', 'index.ts'],
+    ['@tryghost/shade', 'apps/shade', './primitives', 'primitives.ts'],
+    ['@tryghost/test-data', 'packages/testing/test-data', '.', 'index.ts'],
+  ] as const) {
+    f.write(
+      `${directory}/package.json`,
+      JSON.stringify({
+        name,
+        exports: {
+          [subpath]: {
+            source: `./src/${target}`,
+            default: `./build/${target.replace('.ts', '.js')}`,
+          },
+          ...(name === '@tryghost/test-data' ? { './selectors/*': './src/selectors/*.ts' } : {}),
+          ...(name === '@tryghost/activitypub'
+            ? {
+                '.': { import: './dist/activitypub.js', require: './dist/activitypub.umd.cjs' },
+              }
+            : {}),
+        },
+      }),
+    );
+    f.write(`${directory}/src/${target}`, 'export {};');
+    f.link(directory, `node_modules/${name}`);
+  }
+  f.write('packages/testing/test-data/src/selectors/member.ts', 'export const member = "member";');
+  const graph = f.graph(false, 'apps');
+  const expected = [
+    [
+      'framework-not-feature-apps',
+      'apps/admin-x-framework/src/forbidden.ts',
+      'apps/activitypub/src/index.ts',
+    ],
+    ['framework-not-feature-apps', 'apps/admin-x-framework/src/root.ts', '@tryghost/activitypub'],
+    [
+      'no-test-data-in-production-source',
+      'apps/portal/src/test-data.ts',
+      'packages/testing/test-data/src/index.ts',
+    ],
+    ['public-apps-not-admin-libs', 'apps/portal/src/forbidden.ts', 'apps/shade/src/primitives.ts'],
+    ['shade-is-leaf', 'apps/shade/src/forbidden.ts', 'apps/admin-x-framework/src/helpers.ts'],
+  ];
+  assert.deepEqual(violations(graph), expected);
+  assert.ok(
+    edges(graph).some(
+      ([from, , to]) =>
+        from === 'apps/portal/src/selectors.ts' &&
+        to === 'packages/testing/test-data/src/selectors/member.ts',
+    ),
+  );
+  const output = 'apps/activitypub/dist/activitypub.js';
+  f.write(output, "import '../../../packages/output-only/index.js';");
+  f.write('apps/activitypub/dist/unreferenced.js', 'export {};');
+  f.write('packages/output-only/index.js', 'export {};');
+  const built = f.graph(false, 'apps');
+  assert.deepEqual(
+    violations(built),
+    expected.map(([rule, from, to]) => [rule, from, to === '@tryghost/activitypub' ? output : to]),
+  );
+  assert.ok(
+    edges(built).some(
+      ([from, specifier, to]) =>
+        from === 'apps/admin-x-framework/src/root.ts' &&
+        specifier === '@tryghost/activitypub' &&
+        to === output,
+    ),
+  );
+  assert.deepEqual(built.modules.find(({ source }) => source === output)?.dependencies, []);
+  assert.ok(!built.modules.some(({ source }) => source === 'packages/output-only/index.js'));
+  assert.ok(
+    !built.modules.some(({ source }) => source === 'apps/activitypub/dist/unreferenced.js'),
+  );
+});
+
 it('invalidates cached boundary checks and fixture tests when their configuration changes', () => {
   const root = JSON.parse(readFileSync(path.join(repository, 'package.json'), 'utf8'));
   assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${resolver}`));
-  assert.ok(root.nx.targets['lint:boundaries'].inputs.includes('{workspaceRoot}/ghost/core/**/*'));
+  for (const input of ['ghost/core/**/*', 'ghost/package.json', 'packages/**/*', 'koenig/**/*']) {
+    assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${input}`));
+  }
   const scripts = JSON.parse(
     readFileSync(path.join(repository, 'tools/scripts/package.json'), 'utf8'),
   );

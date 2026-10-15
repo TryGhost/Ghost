@@ -504,20 +504,37 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
   const source = `
     import Service from './service';
     import errors from '@tryghost/errors/subpath';
+    import manifest from '@tryghost/app-contracts/manifest';
+    import contracts from '@tryghost/app-contracts';
+    import otherContract from '@tryghost/app-contracts/other';
+    import objectId from 'bson-objectid';
+    import boolean from '../../lib/db-types/boolean';
+    import json from '../../lib/db-types/json';
     import lookalike from '@tryghost/errors-extra';
     import clock from '../../../kernel/clock-extra';
     import os from 'node:os';
-    new Service({errors, lookalike, clock, os});
+    new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, clock, os});
   `;
   const original = lint(source, serviceRoot);
-  assert.equal(original.diagnostics.length, 1);
-  assert.match(original.diagnostics[0]!.message, /@tryghost\/errors\/subpath/);
+  assert.equal(original.diagnostics.length, 5);
+  for (const library of [
+    '@tryghost/errors/subpath',
+    '@tryghost/app-contracts/manifest',
+    'bson-objectid',
+    '../../lib/db-types/boolean',
+    '../../lib/db-types/json',
+  ]) {
+    assert.ok(
+      original.diagnostics.some((d) => d.message.includes(`Import ${library} directly`)),
+      library,
+    );
+  }
   const changed = readFileSync(path.join(root, '.dependency-cruiser.cjs'), 'utf8').replace(
     'const serviceDependencyAllowlist = [',
     () => "const serviceDependencyAllowlist = ['^node:os$',",
   );
   const result = lint(source, serviceRoot, false, undefined, changed);
-  assert.equal(result.diagnostics.length, 2);
+  assert.equal(result.diagnostics.length, 6);
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
 });
 

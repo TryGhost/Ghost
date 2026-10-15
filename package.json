@@ -130,6 +130,9 @@
           "{workspaceRoot}/.dependency-cruiser.cjs",
           "{workspaceRoot}/tools/scripts/lib/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
+          "{workspaceRoot}/ghost/package.json",
+          "{workspaceRoot}/packages/**/*",
+          "{workspaceRoot}/koenig/**/*",
           "{workspaceRoot}/apps/**/*",
           "sharedGlobals",
           {

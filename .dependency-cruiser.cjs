@@ -27,10 +27,14 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
   '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
+  '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
+  '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
+  '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
+  '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
 ];
@@ -50,10 +54,9 @@ const serviceDependencyAllowlist = [
  *                 feature apps. Public UMD bundles (portal, comments-ui,
  *                 etc.) must not depend on admin libs.
  *
- *                 Workspace packages appear as unresolved `@tryghost/*` module
- *                 specifiers in the graph (pnpm workspace symlinks are stopped
- *                 by doNotFollow:node_modules), so `to.path` matches on
- *                 package name rather than a file path.
+ *                 Workspace imports may resolve to source through package exports.
+ *                 Match both package specifiers and workspace paths so resolution
+ *                 cannot bypass a boundary.
  *
  * @type {import('dependency-cruiser').IConfiguration}
  */
@@ -187,7 +190,7 @@ module.exports = {
       comment: 'shade/ must not depend on admin-x-framework. It is the foundation layer.',
       severity: 'error',
       from: { path: '^apps/shade/' },
-      to: { path: '^@tryghost/admin-x-framework' },
+      to: { path: '^@tryghost/admin-x-framework($|/)|^apps/admin-x-framework/' },
     },
     // ============================================================
     // apps/ — admin-x-framework/ must not depend on feature apps
@@ -198,7 +201,7 @@ module.exports = {
         'admin-x-framework/ must not depend on feature apps (activitypub). The framework layer sits below the feature layer.',
       severity: 'error',
       from: { path: '^apps/admin-x-framework/' },
-      to: { path: '^@tryghost/activitypub' },
+      to: { path: '^@tryghost/activitypub($|/)|^apps/activitypub/' },
     },
     // ============================================================
     // apps/ — public UMD apps must not depend on admin-only libraries
@@ -211,7 +214,7 @@ module.exports = {
       from: {
         path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
-      to: { path: '^@tryghost/(shade|admin-x-framework)' },
+      to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^apps/(shade|admin-x-framework)/' },
     },
     // ============================================================
     // apps/ — admin is an app, not a library
@@ -302,6 +305,11 @@ module.exports = {
     },
   ],
   options: {
+    // Resolve public package exports to authored workspace source when available.
+    enhancedResolveOptions: {
+      exportsFields: ['exports'],
+      conditionNames: ['source', 'import', 'require', 'node', 'default'],
+    },
     reporterOptions: {
       err: { showExternalModulesUnresolved: true },
       markdown: { showExternalModulesUnresolved: true },
@@ -309,13 +317,20 @@ module.exports = {
     // Use the CLI's supported resolver hook to inspect authored TypeScript,
     // even when build:tsc has emitted adjacent JavaScript.
     webpackConfig: { fileName: './tools/scripts/lib/service-dependency-resolver.mjs' },
-    doNotFollow: { path: auditServices ? `^(?!${servicesRoot}/)` : 'node_modules' },
-    // Keeps edges into node_modules so rules can see npm packages, but skips
-    // our own tests and build output. All source inside services stays visible:
+    // Keep incoming edges to built packages visible without scanning their output.
+    doNotFollow: {
+      path: auditServices
+        ? `^(?!${servicesRoot}/)`
+        : [
+            'node_modules',
+            '^(?!ghost/core/server/services/)(apps|ghost|packages|koenig)/.*/(build|built|dist)/',
+          ],
+    },
+    // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
-        '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/',
+        '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test)/',
         ...sourceExclusions(__dirname),
       ],
     },
