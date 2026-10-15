@@ -10272,9 +10272,10 @@ services:
         tests: []
       configuration:
         summary: >-
-          No config/settings/URL values are read by the root; database rows define available chains.
-          User providers require active status and merge/deduplicate individual and role permissions
-          by action/object/object_id; API-key providers use their single role. Authorization matches
+          No config/settings/URL values are read by the root; permissions-data.ts defines available
+          chains. User providers require active status and take the deduplicated union of their
+          roles' permissions from code; API-key providers use their single role, and content keys
+          (no role) get none. Authorization matches
           action/object, with model-specific rules responsible for resource restrictions. Owner
           user roles bypass the generic user-permission check. When both user and key exist, user
           permissions win and model overrides receive apiKey:null, although both providers load.
