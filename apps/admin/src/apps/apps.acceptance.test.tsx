@@ -1018,10 +1018,21 @@ describe('Managing apps', () => {
           name,
         ).toMatch(/^invalid_argument: /);
       }
+      // A body in UTF-7 would carry code injection past the checks on what a write contains.
+      expect(
+        refusal(
+          await callHostRaw(APP_ORIGIN, 'fetch', {
+            path: '/posts/',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=utf-7' },
+            body: '{"posts":[{"codeinjection_head":"+ADw-script+AD4-"}]}',
+          }),
+        ),
+      ).toBe('invalid_argument: Expected no content-type header, which only Admin sets');
       expect(postsApi.requests).toHaveLength(0);
     });
 
-    it('sends a write with its body, as JSON unless the app says otherwise', async () => {
+    it('sends a write with its body, labelled as JSON', async () => {
       await fakeAppPage(installation());
       const tagsApi = fakeAdminEndpoint('POST', '/tags/', ({ body }) => body, { status: 201 });
       await renderAdminApp(APP_ROUTE, { labs });
@@ -1120,6 +1131,25 @@ describe('Managing apps', () => {
           }),
         ),
       ).toBe("blocked: Apps can't use the source parameter on POST /posts/");
+      // Ghost's query parser reads both of these as `newsletter`, and an app could publish with
+      // email through either.
+      for (const path of [
+        '/posts/6500000000000000000000a1/?[newsletter]=weekly',
+        '/posts/6500000000000000000000a1/?%5Bnewsletter%5D=weekly',
+      ]) {
+        expect(
+          refusal(
+            await callAppFrame(APP_ORIGIN, 'fetch', {
+              path,
+              method: 'PUT',
+              body: JSON.stringify({ posts: [{ status: 'published' }] }),
+            }),
+          ),
+          path,
+        ).toBe(
+          "blocked: Apps can't use the [newsletter] parameter on PUT /posts/6500000000000000000000a1/",
+        );
+      }
       expect(tokenApi.requests).toHaveLength(0);
       expect(postsApi.requests).toHaveLength(0);
     });

@@ -45,6 +45,31 @@ describe('createAdminApiFetch', () => {
     expect(init?.headers).toEqual({ 'app-pragma': 'no-cache', 'x-ghost-version': '6.0' });
   });
 
+  it('labels a body as JSON itself, whatever content type the app set', async () => {
+    fetchMock.mockResolvedValue(new Response('{}'));
+
+    // The schema refuses these before a request gets here, but this test doesn't rely on that.
+    await adminApiFetch(
+      {
+        path: '/posts/',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-7',
+          'content-encoding': 'gzip',
+        },
+        body: '{"posts":[{"title":"Hello"}]}',
+      },
+      session.signal,
+    );
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init?.headers).toEqual({
+      'app-pragma': 'no-cache',
+      'content-type': 'application/json',
+      'x-ghost-version': '6.0',
+    });
+  });
+
   it('returns the Admin API’s response as plain data, for a request sent with Admin’s headers', async () => {
     fetchMock.mockResolvedValue(
       new Response('{"posts":[]}', {
