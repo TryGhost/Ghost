@@ -622,15 +622,19 @@ export class AppInstallationsService {
     }
 
     // The log says what was wrong, down to the field; loading already logs an app it
-    // cannot reach.
+    // cannot reach. No error when the installation changed while the manifest was loading,
+    // as it may no longer run what failed; the session answers with it as it stands.
     const unavailableBecause = async (
       code: string | null,
       message: string,
       { reason, log = true }: { reason?: string; log?: boolean } = {},
-    ) => {
-      // Ended while the manifest was loading, so there is no app left to be unavailable.
-      if (!(await currentInstallation({ id }, this.knex))) {
+    ): Promise<Error | null> => {
+      const current = await currentInstallation({ id }, this.knex);
+      if (!current) {
         return notInstalled();
+      }
+      if (current.revision !== before.revision) {
+        return null;
       }
       const why = `${code}: ${message}${reason ? ` (${reason})` : ''}`;
       if (log) {
@@ -642,19 +646,27 @@ export class AppInstallationsService {
     try {
       loaded = await this.loadManifest(before.manifest_url);
     } catch (err) {
-      if (err instanceof errors.ValidationError) {
-        throw await unavailableBecause(err.code, err.message, {
-          reason: err.context,
-          log: err.code !== 'APP_MANIFEST_UNREACHABLE',
-        });
+      if (!(err instanceof errors.ValidationError)) {
+        throw err;
       }
-      throw err;
+      const failure = await unavailableBecause(err.code, err.message, {
+        reason: err.context,
+        log: err.code !== 'APP_MANIFEST_UNREACHABLE',
+      });
+      if (failure) {
+        throw failure;
+      }
+      return;
     }
     if (loaded.manifest.id !== before.app_id) {
-      throw await unavailableBecause(
+      const failure = await unavailableBecause(
         'APP_MANIFEST_OTHER_APP',
         `${before.manifest_url} now serves ${loaded.manifest.id}.`,
       );
+      if (failure) {
+        throw failure;
+      }
+      return;
     }
 
     await this.knex.transaction(async (trx) => {

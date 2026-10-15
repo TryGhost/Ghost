@@ -1162,6 +1162,29 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 2);
     });
 
+    it('does not fail a session on a manifest it could not use, when the installation changed while it was fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await service().preview(MANIFEST_URL);
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          serve(manifest({ name: 'Podcasts' }));
+          await service().approve(owner, installed.id, {
+            manifestUrl: MANIFEST_URL,
+            digest: reviewed.digest,
+            revision: 0,
+          });
+          return manifest({ id: 'com.example.other' });
+        });
+
+      const { body } = await start(installed.id);
+
+      const [session] = body.app_sessions;
+      assert.equal(session.revision, 1);
+      assert.equal(session.installation.manifest.name, 'Podcasts');
+    });
+
     it('answers 404 for an installation that does not exist, saying it is not installed', async function () {
       const { body } = await start(new ObjectId().toHexString(), 404);
 
