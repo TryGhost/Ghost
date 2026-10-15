@@ -1,6 +1,7 @@
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { SupportRequestDraft } from '@/support-request';
 
 interface DocsBotIdentify {
   name?: string;
@@ -25,13 +26,6 @@ export interface DocsBotMetadata {
   conversationId?: string;
   conversationUrl?: string;
   [key: string]: unknown;
-}
-
-export interface DocsBotSupportRequest {
-  history: DocsBotHistoryEntry[];
-  metadata: DocsBotMetadata;
-  ticket: DocsBotSupportTicket | null;
-  currentUrl: string;
 }
 
 type DocsBotSupportCallback = (
@@ -145,7 +139,28 @@ export function formatDocsBotHistory(history: DocsBotHistoryEntry[]): string {
   return blocks.join('\n\n');
 }
 
-type SupportRequestListener = (request: DocsBotSupportRequest) => void;
+export function toSupportRequestDraft(
+  history: unknown,
+  metadata: unknown,
+  ticket: unknown,
+  pageUrl: string,
+): SupportRequestDraft {
+  const normalizedMetadata = normalizeDocsBotMetadata(metadata);
+  const normalizedTicket = normalizeDocsBotTicket(ticket);
+
+  return {
+    name: normalizedMetadata.name,
+    email: normalizedMetadata.email,
+    subject: normalizedTicket?.subject,
+    message: normalizedTicket?.message,
+    source: 'docsbot',
+    pageUrl,
+    conversationUrl: normalizedMetadata.conversationUrl,
+    transcript: formatDocsBotHistory(normalizeDocsBotHistory(history)),
+  };
+}
+
+type SupportRequestListener = (request: SupportRequestDraft) => void;
 let supportRequestListener: SupportRequestListener | null = null;
 
 let docsBotSDKPromise: Promise<void> | null = null;
@@ -200,12 +215,7 @@ function handleSupportCallback(
 ): void {
   event.preventDefault();
   void window.DocsBotAI?.close?.();
-  supportRequestListener?.({
-    history: normalizeDocsBotHistory(history),
-    metadata: normalizeDocsBotMetadata(metadata),
-    ticket: normalizeDocsBotTicket(ticket),
-    currentUrl: window.location.href,
-  });
+  supportRequestListener?.(toSupportRequestDraft(history, metadata, ticket, window.location.href));
 }
 
 async function ensureWidgetMounted(id: string, identify?: DocsBotIdentify): Promise<void> {
@@ -243,7 +253,7 @@ interface DocsBot {
   isAvailable: boolean;
   mountWidget: () => void;
   unmountWidget: () => void;
-  supportRequest: DocsBotSupportRequest | null;
+  supportRequest: SupportRequestDraft | null;
   clearSupportRequest: () => void;
   addBotMessage: (message: string) => Promise<void | false>;
   openWidget: () => Promise<void>;
@@ -258,7 +268,7 @@ interface DocsBot {
 export function useDocsBot(): DocsBot {
   const { data: config } = useBrowseConfig();
   const { data: currentUser } = useCurrentUser();
-  const [supportRequest, setSupportRequest] = useState<DocsBotSupportRequest | null>(null);
+  const [supportRequest, setSupportRequest] = useState<SupportRequestDraft | null>(null);
 
   const { enabled, id } = config?.config.docsbot ?? {};
   // The /config/ response isn't runtime-validated, so guard against a

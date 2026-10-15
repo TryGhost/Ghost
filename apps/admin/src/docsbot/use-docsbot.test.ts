@@ -3,6 +3,7 @@ import {
   normalizeDocsBotHistory,
   normalizeDocsBotMetadata,
   normalizeDocsBotTicket,
+  toSupportRequestDraft,
 } from './use-docsbot';
 
 describe('formatDocsBotHistory', () => {
@@ -103,5 +104,59 @@ describe('normalizeDocsBotTicket', () => {
 
   it('coerces missing subject and message to empty strings', () => {
     expect(normalizeDocsBotTicket({})).toEqual({ subject: '', message: '' });
+  });
+});
+
+describe('toSupportRequestDraft', () => {
+  it('maps a DocsBot support request to a support request draft', () => {
+    const draft = toSupportRequestDraft(
+      [
+        { Human: 'I cannot publish a post', timestamp: '2025-05-08T22:56:28.514357' },
+        { AI: 'Have you checked your permissions?', timestamp: '2025-05-08T22:56:30.645700' },
+      ],
+      {
+        name: 'Ada Lovelace',
+        email: 'ada@example.com',
+        conversationId: 'conv-1',
+        conversationUrl: 'https://docsbot.ai/conversation/conv-1',
+      },
+      {
+        subject: 'Cannot publish a post',
+        message: 'I still cannot publish after checking permissions.',
+      },
+      'http://localhost:2368/ghost/#/posts',
+    );
+
+    expect(draft).toEqual({
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+      subject: 'Cannot publish a post',
+      message: 'I still cannot publish after checking permissions.',
+      source: 'docsbot',
+      pageUrl: 'http://localhost:2368/ghost/#/posts',
+      conversationUrl: 'https://docsbot.ai/conversation/conv-1',
+      transcript: [
+        '**User** (8 May 2025, 22:56)',
+        'I cannot publish a post',
+        '',
+        '**Assistant** (8 May 2025, 22:56)',
+        'Have you checked your permissions?',
+      ].join('\n'),
+    });
+  });
+
+  it('leaves identity and ticket fields empty when DocsBot does not provide them', () => {
+    const draft = toSupportRequestDraft([], null, null, 'http://localhost:2368/ghost/');
+
+    expect(draft).toEqual({
+      name: undefined,
+      email: undefined,
+      subject: undefined,
+      message: undefined,
+      source: 'docsbot',
+      pageUrl: 'http://localhost:2368/ghost/',
+      conversationUrl: undefined,
+      transcript: '',
+    });
   });
 });
