@@ -399,6 +399,24 @@ describe('handling session expiry for a response', () => {
     expect(window.location.replace).not.toHaveBeenCalled();
   });
 
+  it('gives up on a session check that doesn’t answer in time, without redirecting', async () => {
+    const handleSessionExpiry = await signedIn();
+    const timeout = new AbortController();
+    const timeoutFor = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(timeout.signal);
+    server.use(http.get(USERS_ME, () => new Promise<Response>(() => {})));
+
+    try {
+      const handled = handleSessionExpiry(POSTS, unauthorized());
+      await vi.waitFor(() => expect(timeoutFor).toHaveBeenCalledWith(10_000));
+      timeout.abort(new DOMException('The session check timed out', 'TimeoutError'));
+      await handled;
+    } finally {
+      timeoutFor.mockRestore();
+    }
+
+    expect(window.location.replace).not.toHaveBeenCalled();
+  });
+
   it('redirects only once across several expired responses, checking the session once', async () => {
     const handleSessionExpiry = await signedIn();
     const checks = sessionExpires();

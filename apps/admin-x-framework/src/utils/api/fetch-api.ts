@@ -123,6 +123,10 @@ const redirectOnSessionExpiry = () => {
 // Runs one session check at a time, however many responses ask for one.
 let sessionCheck: Promise<boolean> | undefined;
 
+// How long the session check may take. An app's request waits on it, so a check that never answers
+// mustn't hold the request forever; one that times out counts as the session still working.
+const SESSION_CHECK_TIMEOUT_MS = 10_000;
+
 // Whether Ghost reports that the session has expired, checked with the current user's endpoint.
 const sessionHasExpired = (): Promise<boolean> => {
   sessionCheck ??= (async () => {
@@ -131,6 +135,7 @@ const sessionHasExpired = (): Promise<boolean> => {
       const response = await fetch(endpoint, {
         credentials: 'include',
         headers: ghostApiRequestHeaders({}),
+        signal: AbortSignal.timeout(SESSION_CHECK_TIMEOUT_MS),
       });
       return await handleResponse(response).then(
         () => false,
