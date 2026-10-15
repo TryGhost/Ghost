@@ -474,6 +474,7 @@ describe('Importer', function () {
       table.string('name').unique();
       table.string('slug').unique();
       table.string('description', 2000);
+      table.string('trigger_type');
       table.string('trigger_tier_scope');
       table.dateTime('created_at');
       table.dateTime('updated_at');

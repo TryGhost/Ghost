@@ -14,9 +14,10 @@ describe('Unit: models/automation', function () {
       const defaults = model.defaults();
 
       assert.ok(defaults);
-      assert.equal(Object.keys(defaults).length, 2);
+      assert.equal(Object.keys(defaults).length, 3);
       assert.equal(defaults.status, 'inactive');
       assert.equal(defaults.description, '');
+      assert.equal(defaults.trigger_type, 'member_sign_up');
     });
   });
 

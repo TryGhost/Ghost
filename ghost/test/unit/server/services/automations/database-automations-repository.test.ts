@@ -79,6 +79,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('name').notNullable().unique();
     table.text('description').notNullable();
     table.text('status').notNullable();
+    table.text('trigger_type').notNullable();
     table.text('trigger_tier_scope');
   });
 
@@ -239,6 +240,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
       description: 'Welcome new free members after they sign up.',
+      trigger_type: 'member_sign_up',
       trigger_tier_scope: 'free',
       status: 'active',
     },
@@ -249,6 +251,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
       description: 'Welcome new paid members after they start their subscription.',
+      trigger_type: 'member_sign_up',
       trigger_tier_scope: 'all_paid',
       status: 'active',
     },
@@ -571,6 +574,7 @@ describe('automations repository', function () {
       name: slug ?? 'Automation with no slug',
       description: slug ?? 'Automation with no slug',
       status,
+      trigger_type: 'member_sign_up',
       trigger_tier_scope: triggerTierScope,
     });
     if (triggerTierIds.length > 0) {
@@ -762,6 +766,7 @@ describe('automations repository', function () {
       assert.deepEqual(await repo.getById(automation.id), automation);
       const row = await knex('automations').where({ id: automation.id }).first();
       assert.equal(row.trigger_tier_scope, 'selected_paid');
+      assert.equal(row.trigger_type, 'member_sign_up');
       assert.equal(row.created_at, row.updated_at);
       assert.deepEqual(
         await knex('automation_trigger_tiers')
@@ -927,6 +932,7 @@ describe('automations repository', function () {
             name: 'Alpha flow',
             description: '',
             status: 'inactive',
+            trigger_type: 'member_sign_up',
           },
           {
             id: '000000000000000000000002',
@@ -936,6 +942,7 @@ describe('automations repository', function () {
             name: 'Zulu flow',
             description: '',
             status: 'inactive',
+            trigger_type: 'member_sign_up',
           },
         ]);
 
@@ -1066,15 +1073,16 @@ describe('automations repository', function () {
       await repo.browse({ includeStats: false });
 
       const automations = await knex('automations')
-        .select('id', 'name', 'slug', 'status', 'trigger_tier_scope')
+        .select('id', 'name', 'slug', 'status', 'trigger_type', 'trigger_tier_scope')
         .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status, trigger_tier_scope }) => ({
+        automations.map(({ name, slug, status, trigger_type, trigger_tier_scope }) => ({
           name,
           slug,
           status,
+          trigger_type,
           trigger_tier_scope,
         })),
         [
@@ -1082,12 +1090,14 @@ describe('automations repository', function () {
             name: 'Free member welcome flow',
             slug: 'member-welcome-email-free',
             status: 'inactive',
+            trigger_type: 'member_sign_up',
             trigger_tier_scope: 'free',
           },
           {
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid',
             status: 'inactive',
+            trigger_type: 'member_sign_up',
             trigger_tier_scope: 'all_paid',
           },
         ],
