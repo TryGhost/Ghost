@@ -21,8 +21,11 @@ import type { AdminApiFetch } from './bridge-fetch';
 /** How Admin handles requests from an app's page, after validating each request. */
 export interface AppFrameHandlers {
   titleChanged(title: string): void;
-  /** `path` is already normalised by `AppPathSchema`, the single form Admin stores app paths in. */
-  pathChanged(path: string, options: PathChangeOptions): void;
+  /**
+   * `path` is already normalised by `AppPathSchema`, the single form Admin stores app paths in.
+   * Returns the app's path as Admin now has it: `path`, or Admin's own when it didn't follow.
+   */
+  pathChanged(path: string, options: PathChangeOptions): string;
   /** Takes the publisher to `place`, and returns whether Admin navigated there. */
   open(place: Place): boolean;
   /**
@@ -167,7 +170,7 @@ export function bindAppFrame({
       }),
       pathChanged: guarded((path: unknown, options: unknown = {}) => {
         const appPath = parseFromFrame(AppPathSchema, path, 'invalid_path');
-        handlers.pathChanged(appPath, parseFromFrame(PathChangeOptionsSchema, options));
+        return handlers.pathChanged(appPath, parseFromFrame(PathChangeOptionsSchema, options));
       }),
       open: guarded((place: unknown) => {
         if (!handlers.open(parseFromFrame(PlaceSchema, place))) {

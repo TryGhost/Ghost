@@ -120,8 +120,8 @@ Every rejection is a `GhostAppError`, whose `code` gives the reason:
 
 The SDK posts `{ type: 'ghost-app:hello', sdk: <version>, document: <id> }` to
 `window.parent` every 250 ms until Admin replies with `ghost-app:connect`, a
-`MessagePort` and the names of the calls Admin exports. `document` is the page's
-`performance.timeOrigin` as text. It stays the same for the life of the
+`MessagePort` and the names of the calls Admin exports. `document` is a random
+ID the SDK makes when it loads. It stays the same for the life of the
 document, so Admin can tell whether a hello comes from a page it has already
 connected or from a new page. The SDK accepts only the first reply, and only
 from the parent window. Over the port, it uses

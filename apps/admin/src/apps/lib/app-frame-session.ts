@@ -226,7 +226,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           // Where Admin is going if it's still following the app, or where Admin is otherwise.
           if (next === (following.at(-1)?.path ?? adminPath)) {
             appPath = next;
-            return;
+            return appPath;
           }
           lastMove += 1;
           if (options.navigate(next, { replace, move: lastMove })) {
@@ -237,6 +237,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
             appPath = adminPath;
             host?.pathChanged(adminPath);
           }
+          // The app's path as Admin now has it, which the page stores as its current path.
+          return appPath ?? next;
         },
         open: (place) => options.open(place),
         documentChanged: () => {
