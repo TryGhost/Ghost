@@ -24,7 +24,7 @@ const sanitizeHtml = require('sanitize-html');
 module.exports = {
   getFrontendKey: async () => {
     try {
-      const key = await internalKeys.get('ghost-internal-frontend');
+      const key = await internalKeys.service.get('ghost-internal-frontend');
       return key.secret;
     } catch (err) {
       logging.error(

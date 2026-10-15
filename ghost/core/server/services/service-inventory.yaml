@@ -5269,17 +5269,18 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Construct the eager key map during boot and update scheduling, authentication and
-        frontend consumers to retain the same ready map. Lazy database lookup and
-        clear/delete invalidation remain map operations, including caching rejected
+        Boot constructs one key map through defineService in initCore, before frontend and
+        scheduling consumers. Authentication and frontend access the same ready map. Lazy
+        database lookup and clear/delete invalidation remain map operations, including caching rejected
         promises. Merged tests characterize shared pending lookups, failure retention,
         invalidation and the retained frontend consumer.
-      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      reviewedAt: 326a1a3e711690149928fcb69e6fbc5516213ba9
       sources:
         - core/server/services/internal-keys/index.ts
         - core/server/services/post-scheduling/index.ts
@@ -5304,15 +5305,18 @@ services:
     entryPoints:
       - internal-keys/index.ts
     notes: >-
-      Preserve the shared mutable key map, lazy database reads and explicit invalidation;
-      changing promise retention or rotation behavior needs separate tests and a decision.
+      Initializer migration reviewed against main 326a1a3e711690149928fcb69e6fbc5516213ba9;
+      historical audit provenance is retained. The shared mutable map, lazy database reads
+      and explicit invalidation are unchanged. Promise retention or rotation changes need
+      separate tests and a decision.
     contracts:
       exports:
         summary: >-
-          The TypeScript default export is one AutoFillingMap from integration slugs to API-key
-          promises; CommonJS consumers use .default. Other exports are types only. The full
-          inherited Map surface remains available, including set, delete and clear; get is an
-          instance method requiring its receiver. There is no init or shutdown export.
+          The TypeScript default export is a defineService root with init and a guarded service
+          getter; CommonJS consumers use .default. The ready instance is one AutoFillingMap
+          from integration slugs to API-key promises. Other exports are types only; there are
+          no extras. The full inherited Map surface remains available, including set, delete
+          and clear; get requires its receiver. Normal shutdown ownership is unchanged.
         sources:
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
@@ -5320,9 +5324,9 @@ services:
         tests: []
       construction:
         summary: >-
-          Import loads the model registry and constructs an empty map, without querying keys.
-          A cache miss calls Integration.getApiKeyBySlug with the fixed slug-to-type mapping
-          and stores its returned promise immediately. The model joins integrations and
+          The root factory acquires the model registry and constructs an empty map when boot
+          awaits init, without querying keys. A cache miss calls Integration.getApiKeyBySlug
+          with the fixed slug-to-type mapping and stores its returned promise immediately. The model joins integrations and
           api_keys and returns a flat id/secret object. No alternate runtime map construction
           for this capability was found. Root tests exercise the actual exported map with
           controlled model lookups, including exact slug/type selection and shared promises.
@@ -5361,13 +5365,14 @@ services:
           - test/e2e-server/internal-keys.isolated.test.ts
       startup:
         summary: >-
-          This root has no readiness check. The first get needs initialized models/database and
-          seeded integration keys. Foreground boot supplies the map after initCore; post
-          scheduling may read it in rescheduleAll when the adapter requests boot rebuilding.
-          Gift recovery and automations scheduling can also read it, while frontend helpers
-          defer access until rendering. A cold-boot HTTP test uses the retained frontend/map
-          with real seeded keys and authentication rotation. Acquiring the map alone does not
-          establish key readiness; same-process reboot and signed-job rebuilding are separate.
+          Boot awaits init in initCore before frontend, API and other service loading. Post
+          scheduling retains the ready map during its own construction; boot supplies the same
+          map to gifts and automations. Frontend and authentication modules can import the root
+          early but resolve service only when invoked. Reading service before init throws.
+          The first get still needs initialized models/database and seeded integration keys.
+          A cold-boot HTTP test uses the retained frontend/map with real seeded keys and
+          authentication rotation. Empty-map readiness does not preload keys; same-process
+          reboot and signed-job rebuilding are separate obligations.
         sources:
           - core/boot.js
           - core/server/services/internal-keys/index.ts
@@ -5442,7 +5447,10 @@ services:
           reject. Future automation polls catch key failure after arming an in-memory timer.
           Auth reset cannot start rotation
           if the previous-key lookup fails; transaction failure leaves the cache intact, whereas
-          session/reschedule failure happens after commit and invalidation. No root retry exists.
+          session/reschedule failure happens after commit and invalidation. The initializer
+          permits an explicit retry if construction fails, but it does not retry or evict failed
+          key lookups. Lookup retention and errors are covered by existing root/model tests;
+          generic initialization readiness and retry are covered by kernel tests.
         sources:
           - core/server/models/integration.js
           - core/server/lib/auto-filling-map.ts
@@ -5455,13 +5463,14 @@ services:
           - test/unit/server/models/integration.test.js
           - test/unit/server/auth/reset-authentication.test.ts
           - test/unit/server/services/internal-keys/index.test.ts
+          - test/unit/kernel/define-service.test.ts
     unverified: []
     blockers:
       - >-
-        Preserve pre-database access and repeated boot behavior when assigning lifecycle
-        ownership. Actual-root units cover slug/type mapping, shared pending lookups,
-        rejection retention until invalidation and the retained frontend consumer. Cold-boot
-        HTTP now covers real key availability and rotation; same-process reboot remains open.
+        Same-process reboot remains untested. The initializer retains the same map after
+        successful init and shutdown still leaves its contents intact. Actual-root units cover
+        slug/type mapping, shared pending lookups, rejection retention until invalidation and
+        the retained frontend consumer. Cold-boot HTTP covers real key availability and rotation.
       - >-
         Test signed job rebuilding and post-commit session/reschedule failures. Root units
         cover default-map auth orchestration with a held fake transaction, frontend invalidation
@@ -5471,9 +5480,10 @@ services:
         without asserting scheduled-job rebuilding. Neither clear nor rotation revokes
         promises/key objects already held by callers or updates already signed jobs by itself.
       - >-
-        Decide cache ownership and invalidation for restart and external key changes before
-        adding a lifecycle initializer. There is no automatic expiry, failure eviction or
-        shutdown clear, and TypeScript slug types do not enforce valid keys at runtime.
+        Settle cache ownership and invalidation before introducing restart/replacement or
+        external key refresh. This initializer migration preserves the existing policy: no
+        automatic expiry, failure eviction or shutdown clear. TypeScript slug types do not
+        enforce valid keys at runtime.
   invites:
     kind: directory
     disposition: retain

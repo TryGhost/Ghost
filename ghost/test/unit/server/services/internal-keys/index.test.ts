@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import type { InternalKeys } from '../../../../../core/server/services/internal-keys';
 
-const internalKeys: InternalKeys =
-  require('../../../../../core/server/services/internal-keys').default;
+const internalKeysRoot = require('../../../../../core/server/services/internal-keys')
+  .default as typeof import('../../../../../core/server/services/internal-keys').default;
 const models = require('../../../../../core/server/models');
 const { getFrontendKey } = require('../../../../../core/frontend/services/proxy');
 const { default: resetAuthentication } =
@@ -13,6 +13,12 @@ describe('Internal keys root', function () {
   const sandbox = sinon.createSandbox();
   let previousEntries: Array<[Parameters<InternalKeys['get']>[0], ReturnType<InternalKeys['get']>]>;
   let lookup: sinon.SinonStub;
+  let internalKeys: InternalKeys;
+
+  beforeAll(async function () {
+    await internalKeysRoot.init();
+    internalKeys = internalKeysRoot.service;
+  });
 
   beforeEach(function () {
     previousEntries = Array.from(internalKeys.entries());
