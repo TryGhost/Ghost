@@ -28,12 +28,15 @@ type PageHeaderProps = PropsWithChildrenAndClassName & {
   blurredBackground?: boolean;
 };
 
-/** Header tooltips require Admin 7 and never belong on primary actions. */
+/**
+ * Header tooltips require Admin 7 and never belong on primary actions. A tooltip
+ * without a label shows only the shortcut, for a control whose text already names it.
+ */
 function PageHeaderTooltip({
   children,
   label,
   shortcut,
-}: React.PropsWithChildren<{ label: string; shortcut?: string }>) {
+}: React.PropsWithChildren<{ label?: string; shortcut?: string }>) {
   const { isAdmin7 } = useShade();
   if (!isAdmin7) {
     return <>{children}</>;
@@ -112,10 +115,12 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
         {...props}
       />
     );
+    // A labelled action already shows its name, so its shortcut tooltip shows the keys alone.
+    const tooltipLabel = iconOnly || !shortcut ? label : undefined;
     return primary || !isAdmin7 || !tooltip ? (
       button
     ) : (
-      <PageHeaderTooltip label={label} shortcut={shortcut}>
+      <PageHeaderTooltip label={tooltipLabel} shortcut={shortcut}>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
       </PageHeaderTooltip>
     );
