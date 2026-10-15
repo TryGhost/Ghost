@@ -99,8 +99,8 @@ const isSessionExpiry = (endpoint: string | URL) => {
   return GHOST_API_REQUEST.test(url) && !SESSION_API_REQUEST.test(url);
 };
 
-// Whether what a request to `endpoint` failed with means the session expired: the
-// one rule for every request Admin makes, through `useFetchApi` or not.
+// Whether the error a request to `endpoint` failed with means the session expired. This is the
+// single rule for every request Admin makes, whether through `useFetchApi` or not.
 const isExpiredSession = (error: unknown, endpoint: string | URL): error is UnauthorizedError =>
   error instanceof UnauthorizedError && isSessionExpiry(endpoint);
 
@@ -120,10 +120,10 @@ const redirectOnSessionExpiry = () => {
   }
 };
 
-// One check of the session at a time, however many answers ask for one.
+// Runs one session check at a time, however many responses ask for one.
 let sessionCheck: Promise<boolean> | undefined;
 
-// Whether Ghost says the session has expired, asked of the current user's endpoint.
+// Whether Ghost reports that the session has expired, checked with the current user's endpoint.
 const sessionHasExpired = (): Promise<boolean> => {
   sessionCheck ??= (async () => {
     const endpoint = apiUrl('/users/me/');
@@ -146,13 +146,13 @@ const sessionHasExpired = (): Promise<boolean> => {
 };
 
 /**
- * Leaves the page as `useFetchApi` does when a request finds the session expired, for
- * the requests Admin makes for an app. Their unauthorized answers can't be taken at their
- * word, as an app can provoke one, say from a route that wants a token in its URL, so
- * one only counts once Ghost says the session has expired, asked of `/users/me/`. As for
- * any request, only a Ghost API path other than the session endpoint counts, and only
- * once this page load has seen the session work. Reads a clone of a failed `response`,
- * so its body is still the caller's to read; a successful one isn't read at all.
+ * Redirects to the Admin root, as `useFetchApi` does, when a request Admin makes for an app finds
+ * the session expired. An unauthorized response to these requests can't be trusted alone,
+ * because an app can trigger one, for example from a route that expects a token in its URL. So it
+ * only counts once Ghost confirms the session has expired, by checking `/users/me/`. As with any
+ * request, only a Ghost API path other than the session endpoint counts, and only once this page
+ * load has seen the session work. Reads a clone of a failed `response`, so the caller can still
+ * read its body. A successful response isn't read at all.
  */
 export const handleSessionExpiry = async (
   endpoint: string | URL,
@@ -242,8 +242,8 @@ const fetchWithXhr = (
   });
 
 /**
- * The headers Admin sends with every request to Ghost's API, named in lowercase. Shared
- * with requests Admin makes on an app's behalf, so those look like Admin's own.
+ * The headers Admin sends with every request to Ghost's API, with lowercase names. Requests Admin
+ * makes on an app's behalf use them too, so those requests look like Admin's own.
  */
 export const ghostApiRequestHeaders = ({
   ghostVersion,

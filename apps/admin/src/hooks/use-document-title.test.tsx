@@ -24,20 +24,20 @@ describe('useDocumentTitle', () => {
     vi.clearAllMocks();
   });
 
-  it('shows Admin’s title with the site’s', () => {
+  it('shows Admin’s title with the site title', () => {
     renderHook(() => useDocumentTitle());
 
     expect(document.title).toBe('Ghost Admin - Example');
   });
 
-  it('shows a page’s own title while it is mounted, and Admin’s once it unmounts', () => {
+  it('shows a page’s title while the page is mounted, and Admin’s after it unmounts', () => {
     const admin = renderHook(() => useDocumentTitle());
     const page = renderHook(({ title }) => usePageTitle(title), {
       initialProps: { title: 'Episodes · Podcast' },
     });
     expect(document.title).toBe('Episodes · Podcast');
 
-    // The site's title changing meanwhile leaves the page's in place.
+    // A change to the site title in the meantime doesn't replace the page's title.
     mockSiteTitle('Renamed');
     admin.rerender();
     expect(document.title).toBe('Episodes · Podcast');
@@ -46,7 +46,7 @@ describe('useDocumentTitle', () => {
     expect(document.title).toBe('Ghost Admin - Renamed');
   });
 
-  it('shows Admin’s title while a page has given none', () => {
+  it('shows Admin’s title when a page has not set a title', () => {
     renderHook(() => useDocumentTitle());
     renderHook(() => usePageTitle(undefined));
 

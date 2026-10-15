@@ -27,29 +27,35 @@ function isPreview(value: unknown): value is AppInstallationPreview {
   );
 }
 
-/** How a review ended well: with the installation now active, and whether it is new. */
+/**
+ * The result of a successful review: the installation that is now active, and whether it is new.
+ */
 export interface InstallDone {
   installationId: string;
-  /** Whether confirming installed the app afresh, rather than approving it or finding it so. */
+  /**
+   * Whether confirming was a fresh install, rather than an approval or finding nothing left to
+   * approve.
+   */
   installed: boolean;
 }
 
 interface InstallDialogProps {
   manifestUrl: string | null;
-  /** Leaving without deciding. By default, back to the Apps list. */
+  /** Called when the publisher leaves without deciding. By default, goes back to the Apps list. */
   onClose?: () => void;
   /**
-   * After installing, approving, or finding nothing left to approve, with the installation
-   * now active, which can be another than the one the review was opened for. By default a
-   * fresh install opens the app, and the rest go back to the Apps list.
+   * Called after installing, approving, or finding nothing left to approve, with the installation
+   * that is now active. That can be a different installation from the one the review was opened
+   * for. By default, a fresh install opens the app, and every other outcome goes back to the Apps
+   * list.
    */
   onDone?: (done: InstallDone | undefined) => void;
 }
 
 /**
- * The install link's screen, and the review of an app's changes. Ghost fetches and checks
- * the app's manifest, the publisher reviews it, and confirming installs or approves
- * exactly the version they reviewed.
+ * The install link's screen, also used to review an app's changes. Ghost fetches and checks the
+ * app's manifest, the publisher reviews it, and confirming installs or approves exactly the version
+ * they reviewed.
  */
 export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClose, onDone }) => {
   const navigate = useNavigate();
@@ -97,8 +103,8 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
 
   let content: React.ReactNode;
   const reviewed = preview.data;
-  // Leaving a review that found nothing to approve is as done as approving: what was to be
-  // approved already has been.
+  // Leaving a review that found nothing to approve counts as done, the same as approving: the
+  // changes are already approved.
   let leave = close;
   if (!manifestUrl) {
     content = <Failed attempted="check" failure={{ kind: 'incomplete-link' }} onClose={close} />;

@@ -34,9 +34,9 @@ export function failFrameOrigin(origin: string): Promise<void> {
 }
 
 /**
- * The scripts an app's page runs: the one place that names them. `sdk` is an app built on
- * the SDK, the real one, exposing the hooks `callAppFrame` calls; `raw` speaks the bridge
- * without it, for `callHostRaw`.
+ * The scripts an app's page runs. This is the only place that names them. `sdk` is an app built on
+ * the real SDK, exposing the hooks `callAppFrame` calls. `raw` uses the bridge without the SDK, for
+ * `callHostRaw`.
  */
 const APP_FRAME_SCRIPTS = {
   sdk: 'test-utils/acceptance/app-frame-stand-in.ts',
@@ -45,13 +45,13 @@ const APP_FRAME_SCRIPTS = {
 
 export type AppFramePageKind = keyof typeof APP_FRAME_SCRIPTS;
 
-/** A value as a script's literal, with nothing in it that could end the script early. */
+/** Serialises a value as a script literal that can't end the script early. */
 const scriptLiteral = (value: unknown) => JSON.stringify(value).replaceAll('</', '<\\/');
 
 /**
- * An app's page that speaks the bridge, for `fakeFrameOrigin`: by default the SDK's (see
- * app-frame-stand-in.ts), with `flags` set for it to read first, and the SDK's built bundle
- * for it to load; `raw` for one without the SDK (see app-frame-raw.ts), which takes no flags.
+ * Builds an app page that uses the bridge, for `fakeFrameOrigin`. By default it's the SDK page (see
+ * app-frame-stand-in.ts), with `flags` set for it to read first and the SDK's built bundle for it
+ * to load. `raw` builds a page without the SDK (see app-frame-raw.ts), which doesn't read flags.
  */
 export async function appFramePage(
   flags: AppFrameFlags = {},
@@ -63,8 +63,8 @@ export async function appFramePage(
     '<!doctype html>',
     '<html><head><title>Podcast app</title>',
     `<script>window.__appFlags = ${scriptLiteral(flags)};</script>`,
-    // The bundle as text, for the page to load as the module it is: inline, it couldn't
-    // be imported from.
+    // The bundle as text, so the page can load it as a module. An inline module script can't be
+    // imported from.
     sdk ? `<script>window.__appSdkSource = ${scriptLiteral(sdk)};</script>` : '',
     '</head><body><h1>Podcast app</h1>',
     // A closing tag inside the script would end it early.
@@ -74,9 +74,8 @@ export async function appFramePage(
 }
 
 /**
- * Calls one of the hooks of the SDK's page framed from `origin` (see
- * app-frame-stand-in.ts), as the app itself would act. The frame is another origin's, so
- * the call goes through the browser driver.
+ * Calls one of the hooks of the SDK page framed from `origin` (see app-frame-stand-in.ts), acting
+ * as the app would. The frame is on another origin, so the call goes through the browser driver.
  */
 export function callAppFrame<Hook extends keyof AppFrameHooks>(
   origin: string,
@@ -89,8 +88,8 @@ export function callAppFrame<Hook extends keyof AppFrameHooks>(
 }
 
 /**
- * Calls Admin's export `name` with `args` as given, from the raw page framed from `origin`
- * (`appFramePage(flags, 'raw')`): what an app that skips the SDK could send.
+ * Calls Admin's export `name` with `args` unchanged, from the raw page framed from `origin`
+ * (`appFramePage(flags, 'raw')`). This is what an app that skips the SDK could send.
  */
 export function callHostRaw(
   origin: string,
@@ -103,16 +102,16 @@ export function callHostRaw(
 }
 
 /**
- * Reloads the page framed from `origin`, as the app's own `location.reload()` or a link
- * within it would: a new document in the same frame.
+ * Reloads the page framed from `origin`, as the app's own `location.reload()` or a link in it
+ * would. The result is a new document in the same frame.
  */
 export function reloadFrame(origin: string): Promise<void> {
   return commands.reloadFrame(new URL(origin).origin);
 }
 
 /**
- * Posts a form from the page framed from `origin` to `action`, as a form in the page would:
- * the answer, served as the page is, is a new document in the same frame.
+ * Posts a form from the page framed from `origin` to `action`, as a form in the page would. The
+ * response is served the same way as the page, and becomes a new document in the same frame.
  */
 export function postFrameForm(origin: string, action: string): Promise<void> {
   return commands.postFrameForm(new URL(origin).origin, action);

@@ -403,7 +403,7 @@ export interface CapturedEndpointRequest {
   url: string;
   /** Parsed JSON, multipart fields, or plain text; undefined when there is no body. */
   body: unknown;
-  /** As the request was sent, with names in lowercase. */
+  /** The headers as the request was sent, with lowercase names. */
   headers: Record<string, string>;
 }
 

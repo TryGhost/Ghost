@@ -87,7 +87,7 @@ const apiError = (status: number, message: string, code?: string) =>
     headers: { 'content-type': 'application/json' },
   });
 
-/** What Ghost answers a request for an Admin API route it doesn't have. */
+/** What Ghost returns for a request to an Admin API route it doesn't have. */
 const routeNotFound = () =>
   new Response(
     JSON.stringify({
@@ -109,8 +109,8 @@ const routeNotFound = () =>
   );
 
 /**
- * Holds `appFrameTimeouts.ready` at `ms` for the length of `run`, or until it calls
- * `restore` to give what follows the usual time.
+ * Sets `appFrameTimeouts.ready` to `ms` while `run` runs, or until `run` calls `restore` to give
+ * the rest of the spec the usual timeout.
  */
 async function withReadyTimeout(ms: number, run: (restore: () => void) => Promise<void>) {
   const previous = appFrameTimeouts.ready;
@@ -125,14 +125,17 @@ async function withReadyTimeout(ms: number, run: (restore: () => void) => Promis
   }
 }
 
-/** The app's page as it stands, from inside its frame. */
+/** The app page's current state, read from inside its frame. */
 const appState = () => callAppFrame(APP_ORIGIN, 'state');
 
-/** What a call from the app's page was refused with, or what it answered if it wasn't. */
+/**
+ * The error a call from the app's page was refused with, or the value it returned if it wasn't
+ * refused.
+ */
 const refusal = (result: AppFrameResult<unknown>) =>
   'error' in result ? result.error : `answered ${JSON.stringify(result.value)}`;
 
-/** What a call from the app's page answered, failing the spec if it was refused. */
+/** The value a call from the app's page returned. Fails the spec if the call was refused. */
 function answer<Value>(result: AppFrameResult<Value>): Value {
   if ('error' in result) {
     throw new Error(`Refused: ${result.error}`);
@@ -148,7 +151,8 @@ const fakeUninstall = (id = 'installation-1') =>
   );
 
 describe('Managing apps', () => {
-  // The sidebar lists the installed apps on every screen; specs that need some fake their own.
+  // The sidebar lists the installed apps on every screen. Specs that need installed apps fake their
+  // own.
   beforeEach(() => {
     fakeInstallations();
   });
@@ -186,8 +190,8 @@ describe('Managing apps', () => {
     await expect.poll(currentRoute).toBe(APP_ROUTE);
     const frame = appsScreen.frame();
     await expect.element(frame).toBeVisible();
-    // Opening the page starts a session, which re-checks the app before any of it loads,
-    // and answers with the installation: nothing else is read to open it.
+    // Opening the page starts a session, which re-checks the app before any of it loads and returns
+    // the installation. Nothing else is read to open the app.
     expect(sessionsApi.requests).toHaveLength(1);
     expect(readApi.requests).toHaveLength(0);
     await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
@@ -250,7 +254,7 @@ describe('Managing apps', () => {
 
     await renderAdminApp(APP_ROUTE, { labs });
 
-    // In the document, so it loads, but out of sight and reach while the app starts.
+    // The frame is in the document so it loads, but hidden and unreachable while the app starts.
     const frame = appsScreen.frame();
     await expect.element(frame).toBeInTheDocument();
     await expect.element(frame).toHaveAttribute('aria-hidden', 'true');
@@ -260,7 +264,7 @@ describe('Managing apps', () => {
     await expect.element(frame).toHaveAttribute('aria-hidden', 'false');
   });
 
-  it('calls an app unresponsive when it never says hello, and tries again', async () => {
+  it('shows an app as unresponsive when it never sends a hello, and tries again', async () => {
     await withReadyTimeout(300, async (restore) => {
       const { sessionsApi } = await fakeAppPage(installation(), { flags: { silent: true } });
       await renderAdminApp(APP_ROUTE, { labs });
@@ -281,10 +285,10 @@ describe('Managing apps', () => {
     });
   });
 
-  it('calls an app unresponsive when its server can’t be reached', async () => {
+  it('shows an app as unresponsive when its server can’t be reached', async () => {
     await withReadyTimeout(300, async () => {
       await fakeAppPage(installation());
-      // A server that can't be reached is a hello that never comes.
+      // A server that can't be reached means the hello never arrives.
       await failAppFrame();
 
       await renderAdminApp(APP_ROUTE, { labs });
@@ -296,9 +300,9 @@ describe('Managing apps', () => {
     });
   });
 
-  it('leaves a started app alone once the time it had to start is up', async () => {
-    // Short, so the spec doesn't wait long for it to pass, but with room for the app to
-    // start first on a slow runner.
+  it('keeps a started app open after the start timeout passes', async () => {
+    // Short, so the spec doesn't wait long for the timeout, but long enough for the app to start
+    // first on a slow runner.
     await withReadyTimeout(1_000, async () => {
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
@@ -352,7 +356,7 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
-  it('opens the review on top of a suspended app, and loads the app once approved', async () => {
+  it('opens the review over a suspended app, and loads the app once approved', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
     fakeInstallations([suspended]);
     const { sessionsApi, set } = await fakeAppPage(suspended);
@@ -367,11 +371,11 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
-    // The review opens straight away, where the app would be, and the URL stays the app's.
+    // The review opens straight away, in place of the app, and the URL stays on the app's route.
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     expect(currentRoute()).toBe(APP_ROUTE);
 
-    // Closing it leaves the page explaining why, with a way back to the review.
+    // Closing it leaves the page explaining why, with a button to reopen the review.
     await appsScreen.cancelButton().click();
     await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
     await appsScreen.reviewChangesButton().click();
@@ -386,10 +390,10 @@ describe('Managing apps', () => {
     expect((await appState()).context?.session).toEqual({ revision: 2 });
   });
 
-  it('loads a suspended app once the review finds its changes approved already', async () => {
+  it('loads a suspended app once the review finds its changes already approved', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
     const { sessionsApi } = await fakeAppPage(suspended);
-    // Approved in another tab meanwhile: the review has nothing left to approve.
+    // Approved in another tab in the meantime, so the review has nothing left to approve.
     const approved = installation({ revision: 2 });
     fakeAdminEndpoint('POST', '/apps/installations/preview/', {
       app_installation_previews: [
@@ -424,10 +428,10 @@ describe('Managing apps', () => {
     expect((await appState()).context?.session).toEqual({ revision: 2 });
   });
 
-  it('opens the new installation when the review installs an app uninstalled meanwhile', async () => {
+  it('opens the new installation when the review reinstalls an app uninstalled in the meantime', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
     const { sessionsApi } = await fakeAppPage(suspended);
-    // Uninstalled in another tab meanwhile: the review offers a fresh install.
+    // Uninstalled in another tab in the meantime, so the review offers a fresh install.
     fakeAdminEndpoint('POST', '/apps/installations/preview/', {
       app_installation_previews: [
         { manifest_url: MANIFEST_URL, manifest: manifest(), digest: 'digest-2' },
@@ -447,7 +451,7 @@ describe('Managing apps', () => {
     expect(reinstalledSessionsApi.requests).toHaveLength(1);
   });
 
-  it('opens the active installation when the review finds the app installed afresh meanwhile', async () => {
+  it('opens the active installation when the review finds the app reinstalled in the meantime', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
     const { sessionsApi } = await fakeAppPage(suspended);
     // Uninstalled and installed again in another tab: the review finds the new installation.
@@ -485,9 +489,10 @@ describe('Managing apps', () => {
     expect(reinstalledSessionsApi.requests).toHaveLength(1);
   });
 
-  it('doesn’t load an uninstalled app, on a Ghost that has no app sessions', async () => {
-    // Ghost refuses to start a session of an uninstalled app, as the next spec has it. One
-    // from before app sessions answers the start with its plain 404, and the read with the app.
+  it('doesn’t load an uninstalled app on a Ghost version without app sessions', async () => {
+    // A current Ghost refuses to start a session of an uninstalled app, as the next spec shows. A
+    // Ghost from before app sessions returns a plain 404 to the session start, and returns the app
+    // to the read.
     const older = installation({ status: 'uninstalled' });
     delete older.revision;
     fakeSessionStart('installation-1', routeNotFound());
@@ -502,7 +507,7 @@ describe('Managing apps', () => {
     expect(readApi.requests).toHaveLength(1);
   });
 
-  it('says when an app page’s app isn’t installed, or never was', async () => {
+  it('says the app isn’t installed when it was uninstalled or never installed', async () => {
     const id = 'abcdefabcdefabcdefabcdef';
     fakeSessionStart(id, apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'));
 
@@ -543,7 +548,7 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.notInstalled()).toBeVisible();
   });
 
-  it('says an app page couldn’t load in its own words, not the API’s, and tries again', async () => {
+  it('shows Admin’s own message, not the API’s, when an app page can’t load, and retries', async () => {
     const { sessionsApi } = await fakeAppPage(installation());
     sessionsApi.set(apiError(500, 'Ghost is having a moment.'));
 
@@ -560,9 +565,9 @@ describe('Managing apps', () => {
     expect(sessionsApi.requests).toHaveLength(2);
   });
 
-  it('opens an app as it did before, on a Ghost that has no app sessions', async () => {
-    // Admin and Core deploy independently: a Ghost from before app sessions answers the
-    // start of one with its plain 404, and its installations have no revision.
+  it('opens an app without a re-check on a Ghost version without app sessions', async () => {
+    // Admin and Core deploy independently. A Ghost from before app sessions returns a plain 404
+    // when Admin starts a session, and its installations have no revision.
     const older = installation();
     delete older.revision;
     const { sessionsApi, readApi, set } = await fakeAppPage(installation());
@@ -574,37 +579,39 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).toBeVisible();
     expect((await appState()).context?.session).toEqual({ revision: 0 });
     expect(sessionsApi.requests).toHaveLength(1);
-    // Read once, to open the app, without a re-check; and not again for the session's end,
-    // which a revision that never moves on can't show, coming back to the tab included.
+    // The installation is read once to open the app, without a re-check. It isn't read again to
+    // detect the session's end, even when the publisher comes back to the tab, because a missing
+    // revision never changes.
     window.dispatchEvent(new Event('visibilitychange'));
     await expect.poll(() => queryClient.isFetching()).toBe(0);
     expect(readApi.requests).toHaveLength(1);
   });
 
-  it('ends the session when the installation moves on, and starts another', async () => {
+  it('ends the session when the installation’s revision increases, and starts a new one', async () => {
     const { sessionsApi, readApi, set } = await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
     expect((await appState()).context?.session).toEqual({ revision: 0 });
     expect(readApi.requests).toHaveLength(0);
 
-    // Changed while the publisher was away from the tab, which reads it again on return.
+    // Changed while the publisher was away from the tab. The tab reads it again when they return.
     set(installation({ revision: 1, manifest: manifest({ description: 'Episodes.' }) }));
-    // And again by the time the next session starts, so the read the last session left
-    // behind is behind this one too.
+    // Changed again before the next session starts, so the read the previous session left in the
+    // cache shows a lower revision than the new session's.
     sessionsApi.set(installation({ revision: 2 }));
     window.dispatchEvent(new Event('visibilitychange'));
 
     await expect.poll(() => sessionsApi.requests.length).toBe(2);
     await expect.element(appsScreen.frame()).toBeVisible();
     await expect.poll(async () => (await appState()).context?.session).toEqual({ revision: 2 });
-    // The new session isn't ended by what the last one read, and reads nothing to start.
+    // The previous session's read doesn't end the new session, and the new session reads nothing to
+    // start.
     expect(sessionsApi.requests).toHaveLength(2);
     expect(readApi.requests).toHaveLength(1);
   });
 
-  it('doesn’t end the session on a read showing an earlier revision', async () => {
-    // As a read sent before the session started, and answered after it had, shows.
+  it('doesn’t end the session when a read shows a lower revision', async () => {
+    // This happens when a read is sent before the session starts and its response arrives after.
     const { sessionsApi, readApi } = await fakeAppPage(installation({ revision: 1 }));
     sessionsApi.set(installation({ revision: 2 }));
     const { queryClient } = await renderAdminApp(APP_ROUTE, { labs });
@@ -619,7 +626,7 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).toBeVisible();
   });
 
-  it('starts the app again in place when its page reloads itself', async () => {
+  it('restarts the app in place when its page reloads itself', async () => {
     const { sessionsApi } = await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
@@ -628,10 +635,10 @@ describe('Managing apps', () => {
     await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
     expect((await appState()).context?.path).toBe('/');
 
-    // The new document's SDK says hello, its channel gone with the old one.
+    // The old document's channel is gone with it, and the new document's SDK sends a hello.
     await reloadFrame(APP_ORIGIN);
 
-    // Started again, in the same frame, at Admin's route for it, within the same session.
+    // The app starts again in the same frame, at Admin's current route, within the same session.
     await expect.poll(async () => (await appState()).context?.path).toBe('/episodes/12');
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(appsScreen.frame().element()).toBe(frame);
@@ -639,7 +646,7 @@ describe('Managing apps', () => {
     expect(sessionsApi.requests).toHaveLength(1);
   });
 
-  it('starts the document a form in the app loads in place, keeping where it went', async () => {
+  it('starts the document a form in the app loads in place, keeping the form’s result', async () => {
     const { sessionsApi } = await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
@@ -647,18 +654,18 @@ describe('Managing apps', () => {
     await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
     await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
 
-    // A page the app's server renders posts a form; its answer is a new document.
+    // A page rendered by the app's server posts a form, and the response is a new document.
     await postFrameForm(APP_ORIGIN, '/episodes/12/save');
 
     await expect.poll(async () => (await appState()).context?.path).toBe('/episodes/12');
     await expect.element(appsScreen.frame()).toBeVisible();
-    // The answer is what shows, not the app's page loaded again.
+    // The form's response is shown, not a fresh load of the app's page.
     expect((await appState()).address).toBe('/episodes/12/save');
     expect(appsScreen.frame().element()).toBe(frame);
     expect(sessionsApi.requests).toHaveLength(1);
   });
 
-  it('tells the app when Admin’s theme changes', async () => {
+  it('notifies the app when Admin’s theme changes', async () => {
     await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
@@ -677,7 +684,7 @@ describe('Managing apps', () => {
   });
 
   describe('the app’s title', () => {
-    it('shows the app’s page title as Admin’s while it is open, and puts Admin’s back after', async () => {
+    it('shows the app page’s title as the document title while open, and restores Admin’s after', async () => {
       fakeInstallations([installation()]);
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
@@ -697,7 +704,7 @@ describe('Managing apps', () => {
   });
 
   describe('the app’s route', () => {
-    it('follows the app’s own route in Admin’s address, without reloading the app', async () => {
+    it('follows the app’s own route in Admin’s URL, without reloading the app', async () => {
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -705,11 +712,12 @@ describe('Managing apps', () => {
       await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
 
-      // A redirect within the app takes the place of the route it came from.
+      // A redirect within the app replaces the route it came from.
       await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/13', { replace: true });
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/13`);
 
-      // Still the page that started at the app's first route, told nothing it said itself.
+      // It's still the page that started at the app's first route, and it isn't sent any path it
+      // reported itself.
       const { context, path, received } = await appState();
       expect(context?.path).toBe('/');
       expect(path).toBe('/episodes/13');
@@ -724,16 +732,17 @@ describe('Managing apps', () => {
       expect((await appState()).path).toBe('/');
     });
 
-    it('hears Back after the app bounced away and back faster than Admin renders', async () => {
+    it('sends Back to the app after it bounced away and back faster than Admin renders', async () => {
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      // Which history entry Admin is on, as React Router numbers them.
+      // The index of Admin's current history entry, as React Router numbers them.
       const historyIndex = () => (window.history.state as { idx?: number } | null)?.idx ?? 0;
       const start = historyIndex();
 
-      // An auth guard's bounce, say: both moves reach Admin before it has rendered either.
+      // For example, an auth guard's bounce: both navigations reach Admin before it has rendered
+      // either.
       answer(await callAppFrame(APP_ORIGIN, 'setPaths', ['/login', '/']));
       await expect.poll(historyIndex).toBe(start + 2);
       expect(currentRoute()).toBe(APP_ROUTE);
@@ -749,19 +758,21 @@ describe('Managing apps', () => {
       // The pages list owns its request graph.
       allowUnhandledRequests();
       await fakeAppPage(installation());
-      // Pages loads slowly, so leaving for it takes until the spec lets it load.
+      // The Pages route loads slowly, so navigating to it doesn't finish until the spec lets it
+      // load.
       const loadPages = await holdModuleLoads('/src/posts/list/pages-route.tsx');
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
       await sidebarScreen.navLink('Pages').click();
-      // The app moves meanwhile, and asks for a place: neither takes the publisher back.
+      // Meanwhile the app navigates and asks to open a place. Neither takes the publisher back to
+      // the app.
       answer(await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12'));
       expect(refusal(await callAppFrame(APP_ORIGIN, 'open', { apps: true }))).toBe(
         'rejected: The publisher is on their way elsewhere in Admin',
       );
       expect(currentRoute()).toBe(APP_ROUTE);
-      // The app hears where Admin stays.
+      // The app is sent the path Admin stays on.
       await expect
         .poll(async () => (await appState()).received)
         .toEqual([{ call: 'pathChanged', value: '/' }]);
@@ -771,7 +782,7 @@ describe('Managing apps', () => {
     });
 
     it('keeps a `labs` query in the app’s route from setting Admin’s Labs overrides', async () => {
-      // An ID as Ghost makes them, an ObjectId, which is how Admin tells an app's page.
+      // An ObjectId, as Ghost generates them, which is how Admin recognises an app's page.
       const id = '6a1b2c3d4e5f60718293a4b5';
       await fakeAppPage(installation({ id }));
       await renderAdminApp(`/apps/${id}`, { labs });
@@ -784,7 +795,8 @@ describe('Managing apps', () => {
     });
 
     it('refuses a route that would leave the app, and stays where it is', async () => {
-      // Without the SDK, which refuses most of these itself: Admin can't count on it.
+      // Uses a page without the SDK, which refuses most of these itself, because Admin can't rely
+      // on the SDK.
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -868,7 +880,7 @@ describe('Managing apps', () => {
   });
 
   describe('the Admin API, on the app’s behalf', () => {
-    it('answers an app’s request, with Admin’s headers and the app’s own', async () => {
+    it('sends an app’s request with Admin’s headers and the app’s own, and returns the response', async () => {
       await fakeAppPage(installation());
       const postsApi = fakeAdminEndpoint('GET', '/posts/?limit=5', {
         posts: [{ id: 'post-1', title: 'Episode 1' }],
@@ -892,9 +904,10 @@ describe('Managing apps', () => {
     });
 
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
-      // Without the SDK, which refuses these itself: Admin can't count on it.
+      // Uses a page without the SDK, which refuses these itself, because Admin can't rely on the
+      // SDK.
       await fakeAppPage(installation(), { kind: 'raw' });
-      // Faked, so a request that got through would be seen rather than fail as unhandled.
+      // Faked so that a request that got through is recorded, rather than failing as unhandled.
       const postsApi = fakeAdminEndpoint('GET', '/posts/', { posts: [] });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -935,7 +948,7 @@ describe('Managing apps', () => {
       expect(tagsApi.requests[0].headers['content-type']).toBe('application/json');
     });
 
-    // Such a route wants a token in its URL, so it's unauthorized whatever the session.
+    // This route expects a token in its URL, so it returns 401 whatever the session's state.
     it('stays with the app when its request is unauthorized while the session works', async () => {
       await fakeAppPage(installation());
       const path = '/schedules/posts/6500000000000000000000c3/';
@@ -957,9 +970,9 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
     });
 
-    it('refuses a route the blocklist closes, without sending it', async () => {
+    it('refuses a blocked route without sending it', async () => {
       await fakeAppPage(installation());
-      // Faked, so a request that got through would be seen rather than fail as unhandled.
+      // Faked so that a request that got through is recorded, rather than failing as unhandled.
       const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, { apiKey: {} });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -974,9 +987,9 @@ describe('Managing apps', () => {
       expect(tokenApi.requests).toHaveLength(0);
     });
 
-    it('refuses a path the Admin API only redirects, saying its paths end in /', async () => {
+    it('refuses a path the Admin API only redirects, and says its paths end in /', async () => {
       await fakeAppPage(installation());
-      // As Ghost answers a path without its trailing `/`.
+      // As Ghost responds to a path without its trailing `/`.
       const postsApi = fakeAdminEndpoint(
         'GET',
         '/posts',
@@ -992,7 +1005,8 @@ describe('Managing apps', () => {
     });
 
     it('refuses a path that would leave the Admin API, without sending it', async () => {
-      // Without the SDK, which refuses a URL itself: Admin can't count on it.
+      // Uses a page without the SDK, which refuses a URL itself, because Admin can't rely on the
+      // SDK.
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();

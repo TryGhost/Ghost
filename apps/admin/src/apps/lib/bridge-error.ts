@@ -2,9 +2,9 @@ import { type HostErrorCode, encodeBridgeError } from '@tryghost/app-contracts/b
 import type { z } from 'zod';
 
 /**
- * A call from an app's page that Admin refuses, with one of the bridge's codes, which the
- * SDK turns into an error the app can branch on. Only an error's message survives the
- * channel, so the code travels in it, encoded as the contract says.
+ * The error Admin refuses a call from an app's page with. It carries one of the bridge's codes,
+ * which the SDK turns into an error the app can branch on. Only an error's message survives the
+ * channel, so the code is encoded in the message, as the contract defines.
  */
 export class BridgeError extends Error {
   readonly code: HostErrorCode;
@@ -16,13 +16,13 @@ export class BridgeError extends Error {
   }
 }
 
-/** What every call still running, or made after, is refused with once the session ends. */
+/** The error Admin refuses every running or later call with once the session ends. */
 export const sessionEnded = () => new BridgeError('session_ended', 'The app’s session ended');
 
 /**
- * Parses what a frame sent, which Admin never trusts, refusing it with the schema's first
- * message. `code` says what a refusal is called, from the part of the value at fault, so
- * an app can tell a bad path from a bad call.
+ * Parses a value a frame sent, which Admin never trusts. If the value is invalid, throws a
+ * `BridgeError` with the schema's first message. `code` sets the error's code, optionally from the
+ * path of the invalid part of the value, so an app can tell a bad path from a bad call.
  */
 export function parseFromFrame<Schema extends z.ZodType>(
   schema: Schema,

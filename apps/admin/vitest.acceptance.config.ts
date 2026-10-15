@@ -88,7 +88,7 @@ const failFrameOrigin: BrowserCommand<[origin: string]> = async ({ page }, origi
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
 };
 
-// What a build answers with: its entry chunk's code, which is what a frame loads.
+// Returns the code of a build's entry chunk, which is what a frame loads.
 function entryChunkCode(result: Awaited<ReturnType<typeof build>>, what: string): string {
   const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
   const chunk = outputs
@@ -100,8 +100,8 @@ function entryChunkCode(result: Awaited<ReturnType<typeof build>>, what: string)
   return chunk.code;
 }
 
-// Each build once for the whole run, by key. A failed one is built again by the next spec
-// that asks, rather than failing every spec after it.
+// Runs each build once for the whole run, by key. If a build fails, the next spec that asks builds
+// it again, rather than every later spec failing.
 const builds = new Map<string, Promise<string>>();
 
 function buildOnce(key: string, run: () => Promise<string>): Promise<string> {
@@ -114,8 +114,8 @@ function buildOnce(key: string, run: () => Promise<string>): Promise<string> {
   return built;
 }
 
-// A script a faked frame runs, bundled into one module with what it imports, since the
-// frame is on another origin and can load nothing from the test server.
+// Bundles a script that a faked frame runs into one module with its imports, because the frame is
+// on another origin and can't load anything from the test server.
 async function buildFrameScript(entry: string): Promise<string> {
   const root = fileURLToPath(new URL('.', import.meta.url));
   const result = await build({
@@ -137,11 +137,10 @@ async function buildFrameScript(entry: string): Promise<string> {
 const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) =>
   buildOnce(`frame:${entry}`, () => buildFrameScript(entry));
 
-// The app SDK's browser bundle, built with the SDK's own build config, as `pnpm build`
-// writes it to packages/app-sdk/dist/app-sdk.js. Built here rather than read from there,
-// so the specs run the SDK as the checkout has it, built or not. Workspace packages
-// resolve to their source, as everywhere in these specs, so app-contracts needn't be
-// built either.
+// The app SDK's browser bundle, built with the SDK's own build config, as `pnpm build` writes it to
+// packages/app-sdk/dist/app-sdk.js. It's built here rather than read from there, so the specs run
+// the SDK as it is in the checkout, whether or not it has been built. Workspace packages resolve to
+// their source, as everywhere in these specs, so app-contracts doesn't need to be built either.
 const APP_SDK_ROOT = fileURLToPath(new URL('../../packages/app-sdk/', import.meta.url));
 
 async function buildAppSdk(): Promise<string> {
@@ -157,12 +156,12 @@ async function buildAppSdk(): Promise<string> {
 
 const bundleAppSdk: BrowserCommand<[]> = () => buildOnce('app-sdk', buildAppSdk);
 
-// How long `callInFrame` waits for Playwright to see a frame the page already shows. Another
-// origin's frame runs in a process of its own, which Playwright attaches to on its own time:
-// on a busy machine, after the page has heard from the frame.
+// How long `callInFrame` waits for Playwright to see a frame the page already shows. A frame on
+// another origin runs in its own process, and Playwright attaches to it asynchronously. On a busy
+// machine, that can happen after the page has already received messages from the frame.
 const FRAME_ATTACH_TIMEOUT_MS = 5000;
 
-// The newest frame on `origin`, waiting for Playwright to attach to it if it has yet to.
+// Returns the newest frame on `origin`, waiting for Playwright to attach to it if it hasn't yet.
 async function newestFrameOn(page: BrowserPage, origin: string, purpose: string) {
   const newestOnOrigin = () =>
     page
@@ -185,8 +184,8 @@ async function newestFrameOn(page: BrowserPage, origin: string, purpose: string)
   return frame;
 }
 
-// Calls a hook the script in a faked frame exposes on `window.__app`, in the newest frame
-// on `origin`: the frame is another origin's, so the spec can't reach into it itself.
+// Calls a hook that the script in a faked frame exposes on `window.__app`, in the newest frame on
+// `origin`. The frame is on another origin, so the spec can't reach into it directly.
 const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]]> = async (
   { page },
   origin,
@@ -206,17 +205,17 @@ const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]
   );
 };
 
-// Reloads the document in the newest frame on `origin`, as the page itself would, without
-// the frame's element changing. Scheduled, so the call returns before the document goes;
-// a string, as it runs in the frame, where this file's types don't.
+// Reloads the document in the newest frame on `origin`, as the page itself would, without changing
+// the frame element. The reload is scheduled, so the call returns before the document unloads. The
+// script is a string because it runs in the frame, where this file's types don't exist.
 const reloadFrame: BrowserCommand<[origin: string]> = async ({ page }, origin) => {
   const frame = await newestFrameOn(page, origin, 'reload');
   await frame.evaluate('setTimeout(() => location.reload(), 0)');
 };
 
-// Posts a form from the document in the newest frame on `origin` to `action`, as the page's
-// own form would, which loads the answer as a new document in the same frame. Scheduled and
-// a string, as `reloadFrame` is.
+// Posts a form from the document in the newest frame on `origin` to `action`, as the page's own
+// form would. The response loads as a new document in the same frame. Scheduled and passed as a
+// string, like `reloadFrame`.
 const postFrameForm: BrowserCommand<[origin: string, action: string]> = async (
   { page },
   origin,
@@ -241,7 +240,8 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 };
 
 // Module requests fail as a dropped connection would, or are held back as a slow one would
-// (test-utils/acceptance/module-loads.ts); the routes doing either, to undo after each spec.
+// (test-utils/acceptance/module-loads.ts). These are the routes that do either, so they can be
+// removed after each spec.
 // Routed on the context: the page's routes never see what MSW's service worker fetches.
 type BrowserContext = BrowserCommandContext['context'];
 const routedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
@@ -252,7 +252,7 @@ const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, p
   routedModules.set(context, [...(routedModules.get(context) ?? []), matcher]);
 };
 
-// What lets each module `holdModuleLoads` holds back go, by its path's end.
+// The release function for each module `holdModuleLoads` holds back, by the end of its path.
 const heldModules = new WeakMap<BrowserContext, Map<string, () => void>>();
 
 const holdModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
@@ -266,7 +266,7 @@ const holdModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, p
   const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
   await context.route(matcher, async (route) => {
     await released;
-    // The spec may have ended meanwhile, and the request with it.
+    // The spec may have ended in the meantime, and the request with it.
     await route.fallback().catch(() => {});
   });
   routedModules.set(context, [...(routedModules.get(context) ?? []), matcher]);

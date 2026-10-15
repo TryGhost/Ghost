@@ -87,8 +87,8 @@ const NotResponding: React.FC<{
 );
 
 /**
- * Ghost couldn't use the app's manifest when the session started. The session answered with
- * no installation, so its name comes from the list the sidebar reads.
+ * Shown when Ghost couldn't use the app's manifest as the session started. The session's response
+ * has no installation, so the app's name comes from the list the sidebar reads.
  */
 const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = ({
   installationId,
@@ -116,15 +116,15 @@ const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = (
   );
 };
 
-/** The number of the app's move a location of Admin's was made for, if it was. */
+/** Returns the number of the app navigation an Admin location was created for, if any. */
 function appMoveOf(state: unknown): number | undefined {
   const move = (state as { appMove?: unknown } | null)?.appMove;
   return typeof move === 'number' ? move : undefined;
 }
 
 /**
- * Shows the app's page title as Admin's own while the page is open, once the page has given
- * one, and puts Admin's back when it closes.
+ * Shows the app page's title as the document title while the page is open, once the page has set
+ * one. Admin's own title comes back when the page closes.
  */
 function useAppTitle(appName: string, title: string | undefined) {
   usePageTitle(title === undefined ? undefined : title ? `${title} · ${appName}` : appName);
@@ -133,17 +133,16 @@ function useAppTitle(appName: string, title: string | undefined) {
 const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
 
 /**
- * Ends the session when the installation moves on from the revision it was started
- * against, as reading it again shows: the app is then running something nobody approved,
- * or nothing at all. Only a read made during this session counts. Revisions only go up,
- * so only a later one does: a read sent before the session started, that lands after,
- * shows an earlier one.
+ * Ends the session when a fresh read of the installation shows a higher revision than the one the
+ * session started with. The app would then be running an unapproved manifest, or nothing at all.
+ * Only a read made during this session counts, and only a higher revision ends it. Revisions only
+ * increase, so a read sent before the session started that arrives after it shows a lower revision.
  *
- * This only sees changes this tab reads. Changes made in another tab, or by another staff
- * user, are deferred to the app token in Permissions and auth.
+ * This only sees changes this tab reads. Changes made in another tab, or by another staff user, are
+ * left to the app token that comes with Permissions and auth.
  *
- * A Ghost from before app sessions gives its installations no revision, so there's none to
- * move on from, and nothing is read.
+ * Ghost versions from before app sessions don't give installations a revision, so there's nothing
+ * to compare, and nothing is read.
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
@@ -153,13 +152,14 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,
-    // The session came with the installation as it stands, so opening reads nothing more.
-    // This seeds an empty cache only; what a previous session left there predates `since`.
+    // The session's response already includes the current installation, so opening the page doesn't
+    // read it again. This only fills an empty cache. Anything a previous session left there is
+    // older than `since`.
     initialData: { app_installations: [session.installation] },
     refetchOnMount: false,
-    // Coming back to the tab is when a change made meanwhile shows up. TanStack Query
-    // hears the tab being shown again, not a window regaining focus, so a change made in
-    // another window side by side waits for the next open.
+    // A change made in the meantime shows up when the publisher comes back to the tab. TanStack
+    // Query reacts to the tab becoming visible again, not to the window regaining focus, so a
+    // change made in another window side by side isn't seen until the page next opens.
     refetchOnWindowFocus: 'always',
   });
   const revision = data?.app_installations[0]?.revision;
@@ -176,11 +176,11 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
 }
 
 /**
- * The app's page, loaded from its own URL in a sandboxed frame and bound to Admin by the
- * bridge. The frame stays hidden until the app has started, which is what ready means; a
- * page that never says hello, or doesn't start in time, gets the not-responding state,
- * and the rest of Admin stays usable either way. `createAppFrameSession` runs all that;
- * this shows it, and keeps it told where Admin is.
+ * The app's page, loaded from its own URL in a sandboxed frame and connected to Admin by the
+ * bridge. The frame stays hidden until the app has started, which is what the `ready` status means.
+ * A page that never sends a hello, or doesn't start in time, gets the not-responding state, and the
+ * rest of Admin stays usable either way. `createAppFrameSession` handles all of that. This
+ * component renders the session's state and keeps the session updated with Admin's location.
  */
 const AppFrame: React.FC<{
   session: AppSession;
@@ -214,16 +214,16 @@ const AppFrame: React.FC<{
     session: { revision: session.revision },
     path,
   };
-  // Read when the page connects, so it starts with Admin as it is then.
+  // Read when the page connects, so the app starts with Admin's context at that moment.
   const contextRef = useRef(context);
   contextRef.current = context;
-  // The session outlives navigations, so it mustn't depend on a navigate that may not.
+  // The session outlives navigations, so it mustn't hold on to a `navigate` that may not.
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
-  // Where Admin is headed, as the app asks to move it. Away from the app, it's the
-  // publisher's own move, which the app mustn't override by moving Admin itself. Read from
-  // the router when the app asks, as React may not have rendered a move that has begun or
-  // landed; the router's the same for the session's life.
+  // Where Admin is going when the app asks to navigate. If that's away from the app, the publisher
+  // started the navigation, and the app mustn't override it by navigating Admin itself. Read from
+  // the router when the app asks, because React may not have rendered a navigation that has started
+  // or finished. The router stays the same for the whole session.
   const routerDestination = useRouterDestination();
   const navigateForApp = (to: string, options?: { replace?: boolean; state?: unknown }) => {
     const destination = routerDestination();
@@ -234,11 +234,11 @@ const AppFrame: React.FC<{
     return true;
   };
 
-  // Made once per `AppFrame`: one made again would bind to a frame whose page has already
-  // said hello, and call the app unresponsive. Its inputs don't change: a new installation
-  // or address remounts `AppFrame` by key, and Ghost's version is fixed while Admin runs.
-  // Side effects start and end with the frame, through `attach`, its ref. Nothing calls
-  // `dispose` from an effect, as Strict Mode's double effects would end a live session.
+  // Created once per `AppFrame`. A second session would bind to a frame whose page has already sent
+  // its hello, and would mark the app unresponsive. Its inputs don't change: a new installation or
+  // URL remounts `AppFrame` by key, and Ghost's version is fixed while Admin runs. Side effects
+  // start and stop with the frame, through `attach`, the frame's ref. Nothing calls `dispose` from
+  // an effect, because Strict Mode's double effects would end a live session.
   const [frameSession] = useState(() =>
     createAppFrameSession({
       surfaceOrigin,
@@ -256,8 +256,8 @@ const AppFrame: React.FC<{
 
   useAppTitle(manifest.name, title);
 
-  // Runs for every location, by its key: React Router commits in a transition, which can
-  // fold the app's quick moves into one location on a route Admin was already on.
+  // Runs for every location, keyed by `location.key`. React Router commits in a transition, which
+  // can merge the app's quick navigations into one location on a route Admin was already on.
   useEffect(() => frameSession.pathChanged(path, move), [frameSession, location.key, path, move]);
   useEffect(() => frameSession.themeChanged(theme), [frameSession, theme]);
 
@@ -321,9 +321,9 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * An active app loads in its frame, once its page is known to be somewhere other than
  * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
  * is framed until the site's address is known, so the check can't be skipped by timing,
- * or by the site's address failing to load. Nor before the staff user is known, so the
- * app never starts without knowing who is using it. The origin check is of the URL the
- * frame starts from; `isGhostOrigin` says what it doesn't cover.
+ * or by the site's address failing to load. Nothing is framed before the staff user is known
+ * either, so the app never starts without knowing who is using it. The origin check applies
+ * to the URL the frame starts from; `isGhostOrigin` describes what it doesn't cover.
  */
 const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   session,
@@ -332,7 +332,7 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   const { installation } = session;
   const site = useBrowseSite({ defaultErrorHandler: false });
   const settings = useBrowseSettings({ defaultErrorHandler: false });
-  // Reports its own failure, as Admin's other screens rely on it doing.
+  // This hook reports its own failure, which Admin's other screens rely on.
   const user = useCurrentUser();
   const error = site.error ?? settings.error;
   useEffect(() => {
@@ -381,7 +381,7 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   const surfaceOrigin = new URL(appPageUrl(installation.manifest)).origin;
   return (
     <AppFrame
-      // The frame's session is made for one installation at one address.
+      // The frame's session is created for one installation at one origin.
       key={`${installation.id} ${surfaceOrigin}`}
       accentColor={
         getSettingValue<string>(values, 'accent_color') ?? site.data.site.accent_color ?? ''
@@ -396,13 +396,14 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
 };
 
 /**
- * A suspended app doesn't load: the review of its changes opens on top of the page straight
- * away, and the page behind it says why, with a way back to the review once it's closed.
+ * A suspended app doesn't load. The review of its changes opens over the page straight away. The
+ * page behind it explains why, and has a button to reopen the review once it's closed.
  *
- * Approving starts a new session, as does a review that finds the changes approved already,
- * say from another tab. A review that finds the app uninstalled meanwhile offers to install
- * it afresh, which makes another installation, and one that finds it installed afresh
- * meanwhile has found another: either way, the page opens that one instead.
+ * Approving starts a new session. So does a review that finds the changes already approved, for
+ * example from another tab. If the review finds the app was uninstalled in the meantime, it offers
+ * a fresh install, which creates a new installation. If it finds the app was reinstalled in the
+ * meantime, it has found a different installation. Either way, the page opens that installation
+ * instead.
  */
 const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
   installation,
@@ -454,27 +455,27 @@ const NotInstalled: React.FC = () => (
 );
 
 /**
- * Starts a session of the app when the page opens, and again on `restart`. Ghost re-checks
- * the app's manifest first, and its answer alone decides what the page shows; nothing of
- * the app loads before it. A Ghost from before app sessions can't re-check, and the
- * installation as read decides instead.
+ * Starts a session of the app when the page opens, and again on `restart`. Ghost first re-checks
+ * the app's manifest, and only its response decides what the page shows. No part of the app loads
+ * before then. Ghost versions from before app sessions can't re-check, so a plain read of the
+ * installation decides instead.
  */
 function useAppSession(installationId: string): {
   settled: boolean;
   session?: AppSession;
   error?: unknown;
-  /** Ends this session and starts another, as after approving changes. */
+  /** Ends this session and starts a new one, for example after approving changes. */
   restart: () => void;
 } {
   const fetchApi = useFetchApi();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
 
-  // One start per open, and per restart: each is a query of its own that never goes stale,
-  // isn't retried, and is dropped once nothing shows it.
+  // One start per open and per restart. Each start is its own query that never goes stale, isn't
+  // retried, and is removed once nothing renders it.
   const { data, error, isPending } = useQuery({
     queryKey: ['app-session', installationId, generation],
-    // `null` when there's nothing to open, as a query can't answer `undefined`.
+    // `null` when there's nothing to open, because a query can't return `undefined`.
     queryFn: async (): Promise<AppSession | null> => {
       try {
         return (await start(installationId)).app_sessions[0] ?? null;
@@ -484,14 +485,15 @@ function useAppSession(installationId: string): {
         }
       }
 
-      // Admin and Core deploy independently, so this Admin may be talking to a Core from
-      // before app sessions, which has no route for them. The app opens as it did there:
-      // on the installation as read, without a re-check, pinned to the revision read.
+      // Admin and Core deploy independently, so this Admin may be talking to a Core from before app
+      // sessions, which has no route for them. The app then opens as it did before sessions: from a
+      // plain read of the installation, without a re-check, and pinned to the revision that read
+      // returned.
       const read = await fetchApi<AppInstallationsResponseType>(
         apiUrl(appInstallationPath(installationId)),
       );
       const installation = read.app_installations[0];
-      // That Core's installations may not carry a revision either; theirs never moves on.
+      // That Core's installations may not have a revision either, in which case it never changes.
       return installation ? { revision: installation.revision ?? 0, installation } : null;
     },
     staleTime: Infinity,
@@ -506,8 +508,8 @@ function useAppSession(installationId: string): {
 }
 
 /**
- * `/apps/:installationId/*`. Only an active installation loads, in a session of its own;
- * the rest of the path is the app's own route, which the bridge passes on.
+ * `/apps/:installationId/*`. Only an active installation loads, in its own session. The rest of the
+ * path is the app's own route, which the bridge passes to the app.
  */
 export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
@@ -546,8 +548,7 @@ export const AppPage: React.FC = () => {
       </Centered>
     );
   } else {
-    // Not found, uninstalled, or answered with nothing: there is nothing to show but the
-    // way back.
+    // Not found, uninstalled, or an empty response: the only thing to show is the way back.
     body = <NotInstalled />;
   }
 

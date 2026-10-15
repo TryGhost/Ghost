@@ -27,16 +27,17 @@ const context = (overrides: Partial<StartContext> = {}): StartContext => ({
   ...overrides,
 });
 
-/** Lets messages in flight on the channel land. */
+/** Waits for messages in flight on the channel to arrive. */
 const settle = () =>
   new Promise<void>((resolve) => {
     setTimeout(resolve, 10);
   });
 
 /**
- * A document in an app's frame, as far as Admin can see one: the page's side of the channel,
- * which answers with `app`, which a spec can hold back. Like the SDK, it takes the first
- * connect it's sent and ignores the rest. `host` is Admin's side, as the page calls it.
+ * A fake document in an app's frame, as Admin sees it: the page's side of the channel, which
+ * responds with `app`. A spec can make `app` hold back its responses. Like the SDK, it accepts the
+ * first connect message it receives and ignores the rest. `host` is Admin's side, as the page calls
+ * it.
  */
 function fakeDocument() {
   const id = crypto.randomUUID().replaceAll('-', '');
@@ -66,9 +67,9 @@ function fakeDocument() {
 }
 
 /**
- * A frame holding an app's page, as far as Admin can see one: a window that Admin posts the
- * connect message to, and that says hello, and an element that says when it has loaded a
- * document. `app` and `host` are the current document's (see `fakeDocument`).
+ * A fake frame holding an app's page, as Admin sees it: a window that sends a hello and that Admin
+ * posts the connect message to, and an element that fires `load` when it has loaded a document.
+ * `app` and `host` belong to the current document (see `fakeDocument`).
  */
 function fakeFrame() {
   let document = fakeDocument();
@@ -87,7 +88,7 @@ function fakeFrame() {
     get host() {
       return document.host;
     },
-    /** Says hello from the page, as its SDK does once loaded, naming the current document. */
+    /** Sends a hello with the current document's ID from the page, as the SDK does once loaded. */
     hello(origin = ORIGIN, id = document.id) {
       const event = new MessageEvent('message', {
         data: { type: HELLO_MESSAGE_TYPE, sdk: 'test', document: id },
@@ -96,11 +97,11 @@ function fakeFrame() {
       Object.defineProperty(event, 'source', { value: contentWindow });
       window.dispatchEvent(event);
     },
-    /** The current document has finished loading, as the frame's `load` says. */
+    /** Fires the frame's `load` event, as when the current document finishes loading. */
     loaded() {
       element.dispatchEvent(new Event('load'));
     },
-    /** Replaces the document, as a reload or navigation does. Answers the one it replaced. */
+    /** Replaces the document, as a reload or navigation does. Returns the replaced document. */
     navigate() {
       const previous = document;
       document = fakeDocument();
@@ -138,17 +139,20 @@ describe('createAppFrameSession', () => {
     fetchAdminApi.mockReset();
   });
 
-  /** The number of the `index`th move Admin made to follow the app, as its location carries. */
+  /**
+   * The number of the `index`th navigation Admin made to follow the app, as its location carries
+   * it.
+   */
   const moveOf = (index: number): number => navigate.mock.calls[index][1].move;
 
-  /** Has the page set its title over a channel Admin has let go of, which changes nothing. */
+  /** Sets the page's title over a channel Admin has closed, and checks that nothing changes. */
   async function callUnheard(frame: Pick<FakeFrame, 'host'>, title: string) {
     frame.host.titleChanged(title).catch(() => {});
     await settle();
     expect(session.getState().title).not.toBe(title);
   }
 
-  /** A frame attached to the session, as mounting it does, whose page has started. */
+  /** Attaches a frame to the session, as mounting it does, and waits for its page to start. */
   async function started(): Promise<FakeFrame> {
     const frame = fakeFrame();
     session.attach(frame.element);
@@ -157,7 +161,7 @@ describe('createAppFrameSession', () => {
     return frame;
   }
 
-  it('stays loading, so hidden, until the app has started', async () => {
+  it('stays loading, with the frame hidden, until the app has started', async () => {
     let finishStarting!: () => void;
     const frame = fakeFrame();
     frame.app.start.mockImplementation(
@@ -178,7 +182,7 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
   });
 
-  it('starts the app with Admin as it is when the page connects', async () => {
+  it('starts the app with Admin’s context from when the page connects', async () => {
     const frame = fakeFrame();
     session.attach(frame.element);
     admin.context = context({ path: '/episodes/12' });
@@ -200,7 +204,7 @@ describe('createAppFrameSession', () => {
     expect(frame.contentWindow.postMessage).not.toHaveBeenCalled();
   });
 
-  it('fails a page that doesn’t start in time, and tells whoever listens', () => {
+  it('fails a page that doesn’t start in time, and notifies subscribers', () => {
     vi.useFakeTimers();
     const listener = vi.fn();
     session.subscribe(listener);
@@ -214,7 +218,7 @@ describe('createAppFrameSession', () => {
     expect(listener).toHaveBeenCalled();
   });
 
-  it('leaves a started app alone once its time to start is up', async () => {
+  it('keeps a started app ready after the start timeout passes', async () => {
     appFrameTimeouts.ready = 50;
     await started();
 
@@ -225,7 +229,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState().status).toBe('ready');
   });
 
-  it('loads the page again in a new frame on retry, with the full time to start', async () => {
+  it('reloads the page in a new frame on retry, with the full start timeout', async () => {
     vi.useFakeTimers();
     session.attach(fakeFrame().element);
     vi.advanceTimersByTime(appFrameTimeouts.ready);
@@ -242,7 +246,7 @@ describe('createAppFrameSession', () => {
     await started();
   });
 
-  it('shows the page’s title, and forgets it when the page loads again', async () => {
+  it('shows the page’s title, and clears it when the page reloads', async () => {
     const frame = await started();
 
     await frame.host.titleChanged('Episodes');
@@ -252,13 +256,13 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBeUndefined();
   });
 
-  it('starts a new document in a started page’s frame in place, once it says hello', async () => {
+  it('starts a new document in a started page’s frame in place, once it sends a hello', async () => {
     let finishStarting!: () => void;
     const frame = await started();
     await frame.host.titleChanged('Episodes');
     admin.context = context({ path: '/episodes/12' });
 
-    // A form post, say, whose result is a document of its own.
+    // For example, a form post whose result is a new document.
     const old = frame.navigate();
     frame.app.start.mockImplementation(
       () =>
@@ -279,7 +283,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBe('Saved');
   });
 
-  it('ends the calls of a document that gave way to another', async () => {
+  it('ends the calls of a document that another document replaced', async () => {
     const frame = await started();
     fetchAdminApi.mockImplementation(() => new Promise(() => {}));
     const request = frame.host.fetch({ path: '/posts/' });
@@ -294,7 +298,7 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
   });
 
-  it('loads the page again when a new document refuses to start', async () => {
+  it('reloads the page when a new document refuses to start', async () => {
     const frame = await started();
 
     frame.navigate();
@@ -306,10 +310,10 @@ describe('createAppFrameSession', () => {
     );
   });
 
-  it('keeps a started page that says hello again, as its SDK can before it hears back', async () => {
+  it('keeps a started page that repeats its hello, as its SDK can before Admin replies', async () => {
     const frame = await started();
 
-    // Sent before Admin's answer reached the page, and heard after the app started.
+    // Sent before Admin's reply reached the page, and received after the app started.
     frame.hello();
     await settle();
 
@@ -319,7 +323,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBe('Episodes');
   });
 
-  it('starts the app once when it says hello again while starting', async () => {
+  it('starts the app once when it repeats its hello while starting', async () => {
     const frame = fakeFrame();
     frame.app.start.mockImplementation(() => settle());
     session.attach(frame.element);
@@ -335,7 +339,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBe('Episodes');
   });
 
-  it('starts the page that loaded while the last one was starting, in the time left', async () => {
+  it('starts a page that loaded while the previous one was starting, in the time left', async () => {
     vi.useFakeTimers();
     const frame = fakeFrame();
     // The first document never starts: it reloads before it can.
@@ -352,7 +356,7 @@ describe('createAppFrameSession', () => {
     expect(frame.app.start).toHaveBeenCalledWith(admin.context);
   });
 
-  it('starts the latest of the documents that replace one starting in place', async () => {
+  it('starts the latest document when several replace one that is starting in place', async () => {
     const frame = await started();
     frame.navigate();
     frame.app.start.mockImplementation(() => new Promise<void>(() => {}));
@@ -371,7 +375,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBe('Saved');
   });
 
-  it('ignores a late hello from a document that has given way', async () => {
+  it('ignores a late hello from a document that was replaced', async () => {
     const frame = fakeFrame();
     frame.app.start.mockImplementation(() => new Promise<void>(() => {}));
     session.attach(frame.element);
@@ -389,7 +393,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBe('Episodes');
   });
 
-  it('fails a page that keeps reloading while it starts, once its time is up', async () => {
+  it('fails a page that keeps reloading while it starts, once the start timeout passes', async () => {
     vi.useFakeTimers();
     const frame = fakeFrame();
     session.attach(frame.element);
@@ -404,9 +408,9 @@ describe('createAppFrameSession', () => {
     expect(session.getState().status).toBe('failed');
   });
 
-  it('waits for a new document a started page’s frame loads to say hello, and starts it', async () => {
+  it('waits for a hello from a new document in a started page’s frame, and starts it', async () => {
     const frame = await started();
-    // Its own load, which can come after it started, is no news.
+    // The document's own load can fire after it started, and changes nothing.
     frame.loaded();
     await settle();
     expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
@@ -422,12 +426,12 @@ describe('createAppFrameSession', () => {
     );
   });
 
-  it('loads the page again when a new document its frame loads doesn’t start in time', async () => {
+  it('reloads the page when a new document in its frame doesn’t start in time', async () => {
     const frame = await started();
     frame.loaded();
     vi.useFakeTimers();
 
-    // Navigated anywhere, say to an origin that never says hello.
+    // Navigated anywhere, for example to an origin that never sends a hello.
     frame.navigate();
     frame.loaded();
     vi.advanceTimersByTime(appFrameTimeouts.ready - 1);
@@ -437,10 +441,10 @@ describe('createAppFrameSession', () => {
     expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
   });
 
-  it('loads the page again when a started page’s frame loads one of Admin’s own', async () => {
+  it('reloads the page when a started page’s frame loads a document from Admin’s origin', async () => {
     const frame = fakeFrame();
     session.attach(frame.element);
-    // Loaded before it connected, so the next load is the first since.
+    // Loaded before it connected, so the next load is the first one since.
     frame.loaded();
     frame.hello();
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
@@ -453,22 +457,22 @@ describe('createAppFrameSession', () => {
     expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
   });
 
-  describe('a page that keeps bringing documents that don’t stay', () => {
-    /** Has the started page in `frame` leave for Admin's own origin, which Admin can read. */
+  describe('a page whose documents keep being replaced soon after they start', () => {
+    /** Makes the started page in `frame` navigate to Admin's own origin, which Admin can read. */
     const leave = (frame: FakeFrame) => {
       frame.navigate();
       Object.assign(frame.element, { contentDocument: {} });
       frame.loaded();
     };
 
-    /** Has the started page in `frame` reload itself, and waits for the new one to start. */
+    /** Makes the started page in `frame` reload itself, and waits for the new document to start. */
     const reload = async (frame: FakeFrame) => {
       frame.navigate();
       frame.hello();
       await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     };
 
-    it('is called unresponsive when it reloads itself as soon as it starts', async () => {
+    it('is marked unresponsive when it reloads itself as soon as it starts', async () => {
       const frame = await started();
       for (let count = 1; count <= MAX_SHORT_LIVED; count += 1) {
         await reload(frame);
@@ -482,7 +486,7 @@ describe('createAppFrameSession', () => {
       expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(MAX_SHORT_LIVED + 1);
     });
 
-    it('is called unresponsive when it leaves as soon as it starts, until Try again', async () => {
+    it('is marked unresponsive when it navigates away as soon as it starts, until Try again', async () => {
       for (let attempt = 1; attempt <= MAX_SHORT_LIVED; attempt += 1) {
         leave(await started());
         expect(session.getState()).toMatchObject({ status: 'loading', attempt });
@@ -491,7 +495,7 @@ describe('createAppFrameSession', () => {
       leave(await started());
 
       expect(session.getState()).toMatchObject({ status: 'failed', attempt: MAX_SHORT_LIVED });
-      // Try again starts the count over.
+      // Try again resets the count.
       session.restart();
       for (let attempt = MAX_SHORT_LIVED + 2; attempt <= 2 * MAX_SHORT_LIVED + 1; attempt += 1) {
         leave(await started());
@@ -499,7 +503,7 @@ describe('createAppFrameSession', () => {
       }
     });
 
-    it('counts the documents it starts in place and the loads afresh together', async () => {
+    it('counts documents started in place and fresh page loads together', async () => {
       const frame = await started();
       for (let count = 1; count < MAX_SHORT_LIVED; count += 1) {
         await reload(frame);
@@ -512,15 +516,15 @@ describe('createAppFrameSession', () => {
       expect(session.getState()).toMatchObject({ status: 'failed', attempt: 1 });
     });
 
-    it('is never stopped while each document stays a while', async () => {
+    it('is never stopped while each document stays open for a while', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
       const frame = await started();
-      // A publisher going through a server-rendered app, a page every few seconds.
+      // A publisher moving through a server-rendered app, one page every few seconds.
       for (let count = 1; count <= 3 * MAX_SHORT_LIVED; count += 1) {
         vi.setSystemTime(Date.now() + SHORT_LIVED_MS);
         await reload(frame);
       }
-      // A document that stays a while starts the count over.
+      // A document that stays open for a while resets the count.
       for (let count = 1; count <= MAX_SHORT_LIVED; count += 1) {
         await reload(frame);
       }
@@ -533,7 +537,7 @@ describe('createAppFrameSession', () => {
       expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
     });
 
-    it('counts each load afresh, even one after a document that stayed', async () => {
+    it('counts each fresh page load, even one after a document that stayed open', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
       const frame = await started();
       vi.setSystemTime(Date.now() + SHORT_LIVED_MS);
@@ -548,7 +552,7 @@ describe('createAppFrameSession', () => {
       expect(session.getState()).toMatchObject({ status: 'failed', attempt: MAX_SHORT_LIVED });
     });
 
-    it('is loaded again each time it leaves after staying a while', async () => {
+    it('is reloaded each time it navigates away after staying open for a while', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
       for (let attempt = 1; attempt <= 2 * MAX_SHORT_LIVED; attempt += 1) {
         const frame = await started();
@@ -559,10 +563,10 @@ describe('createAppFrameSession', () => {
     });
   });
 
-  it('keeps a page reached by a redirect in script once it has started', async () => {
+  it('keeps a started page that was reached through a redirect in script', async () => {
     const frame = fakeFrame();
     session.attach(frame.element);
-    // The frame's first document loads, and sends it on to the app's page in script.
+    // The frame's first document loads, then redirects the frame to the app's page in script.
     frame.loaded();
     frame.navigate();
     frame.hello();
@@ -575,7 +579,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
   });
 
-  it('follows the app’s route without telling it back where it went', async () => {
+  it('follows the app’s route without sending the route back to the app', async () => {
     const frame = await started();
 
     await frame.host.pathChanged('/episodes/12', { replace: true });
@@ -583,75 +587,75 @@ describe('createAppFrameSession', () => {
       replace: true,
       move: moveOf(0),
     });
-    // Admin follows, which moves its address within the app to where the app already is.
+    // Admin follows, which changes Admin's path within the app to the app's current path.
     session.pathChanged('/episodes/12', moveOf(0));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
-    // Back, to where the app no longer is: that it hears about.
+    // Going back to a route the app has left is sent to the app.
     session.pathChanged('/');
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
   });
 
-  it('follows routes the app moves through quickly to the last, telling it nothing back', async () => {
+  it('follows the app quickly through several routes to the last one, sending nothing back', async () => {
     const frame = await started();
 
-    // Away and back again before Admin has followed either.
+    // The app moves away and back before Admin has followed either move.
     await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
     expect(navigate.mock.calls).toEqual([
       ['/login', { replace: undefined, move: moveOf(0) }],
       ['/', { replace: undefined, move: moveOf(0) + 1 }],
     ]);
-    // Admin arrives at each in turn, the route the app has left included.
+    // Admin arrives at each route in turn, including the one the app has left.
     session.pathChanged('/login', moveOf(0));
     session.pathChanged('/', moveOf(1));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
-    // Then moves on its own, which the app hears about.
+    // Then Admin navigates without an app move, so the path is sent to the app.
     session.pathChanged('/episodes');
     await vi.waitFor(() =>
       expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/episodes'),
     );
   });
 
-  it('follows the app to its last route when Admin skips one it moved through', async () => {
+  it('follows the app to its last route when Admin skips one in between', async () => {
     const frame = await started();
 
     await Promise.all([
       frame.host.pathChanged('/a'),
       frame.host.pathChanged('/b', { replace: true }),
     ]);
-    // Only the last is rendered.
+    // Only the last route is rendered.
     session.pathChanged('/b', moveOf(1));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
-    // Back, to the route Admin skipped: Admin moving on its own now, which the app hears.
+    // Going back to the route Admin skipped isn't an app move, so it's sent to the app.
     session.pathChanged('/a', moveOf(0));
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/a'));
   });
 
-  it('follows moves a render folds into one that ends where Admin was, and hears Back after', async () => {
+  it('follows navigations a render merges into one ending where Admin was, then sends Back', async () => {
     const frame = await started();
 
-    // An auth guard's bounce: away and back before Admin has rendered either.
+    // An auth guard's bounce: the app moves away and back before Admin has rendered either move.
     await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
-    // Both commit as one location, the last move's, on the route Admin was already on.
+    // Both commit as one location, with the last move's number, on the route Admin was already on.
     session.pathChanged('/', moveOf(1));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
-    // Back, to the entry the first move made: Admin moving on its own, which the app hears.
+    // Going back to the entry the first move created isn't an app move, so it's sent to the app.
     session.pathChanged('/login', moveOf(0));
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/login'));
   });
 
-  it('tells a new document of a route Admin was still headed for when it connected', async () => {
+  it('sends a new document the route Admin was still navigating to when it connected', async () => {
     const frame = await started();
     await frame.host.pathChanged('/episodes');
 
-    // A new document starts before Admin has arrived, where Admin still is.
+    // A new document starts at Admin's current path, before Admin has arrived.
     frame.navigate();
     frame.hello();
     await vi.waitFor(() => expect(frame.app.start).toHaveBeenCalledWith(admin.context));
@@ -663,20 +667,20 @@ describe('createAppFrameSession', () => {
     );
   });
 
-  it('tells the app where Admin stays when Admin doesn’t follow it', async () => {
+  it('sends the app Admin’s path when Admin doesn’t follow it', async () => {
     const frame = await started();
-    // The publisher is on their way out of the app.
+    // The publisher is leaving the app.
     navigate.mockReturnValueOnce(false);
 
     await frame.host.pathChanged('/episodes');
 
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
-    // Nothing for Admin to catch up with: a move of its own there is news to the app.
+    // Admin has nothing to catch up with, so navigating there is sent to the app.
     session.pathChanged('/episodes');
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenLastCalledWith('/episodes'));
   });
 
-  it('doesn’t move Admin to the route it is already on', async () => {
+  it('doesn’t navigate Admin to the route it is already on', async () => {
     const frame = await started();
 
     await frame.host.pathChanged('/');
@@ -684,7 +688,7 @@ describe('createAppFrameSession', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('tells the app of a theme it doesn’t have yet, once', async () => {
+  it('sends the app a theme it doesn’t have yet, once', async () => {
     const frame = await started();
     const dark = { mode: 'dark', accent_color: '#ff5500' } as const;
 
@@ -695,7 +699,7 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(frame.app.themeChanged).toHaveBeenCalledExactlyOnceWith(dark));
   });
 
-  it('tells a page nothing before it has connected', async () => {
+  it('sends a page nothing before it has connected', async () => {
     const frame = fakeFrame();
     session.attach(frame.element);
 
@@ -717,7 +721,7 @@ describe('createAppFrameSession', () => {
     expect(open).toHaveBeenCalledExactlyOnceWith({ post: { id: '5ddc9141c35e7700383b2937' } });
   });
 
-  it('refuses a place Admin doesn’t go to, as the publisher is leaving', async () => {
+  it('rejects a place Admin doesn’t open because the publisher is leaving', async () => {
     const frame = await started();
     open.mockReturnValueOnce(false);
 
@@ -726,7 +730,7 @@ describe('createAppFrameSession', () => {
     );
   });
 
-  it('makes the app’s request, checked, with a signal that ends with the session', async () => {
+  it('sends the app’s validated request with a signal that aborts when the session ends', async () => {
     const frame = await started();
     fetchAdminApi.mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' });
 
@@ -739,7 +743,7 @@ describe('createAppFrameSession', () => {
     expect(signal.aborted).toBe(true);
   });
 
-  it('refuses a request that sets a header only Admin sets, without making it', async () => {
+  it('refuses a request that sets a header only Admin sets, without sending it', async () => {
     const frame = await started();
 
     await expect(
@@ -748,7 +752,7 @@ describe('createAppFrameSession', () => {
     expect(fetchAdminApi).not.toHaveBeenCalled();
   });
 
-  it('refuses a request still running when the session ends, as ended', async () => {
+  it('rejects a running request with session_ended when the session ends', async () => {
     const frame = await started();
     fetchAdminApi.mockImplementation(() => new Promise(() => {}));
 
@@ -759,7 +763,7 @@ describe('createAppFrameSession', () => {
     await expect(request).rejects.toThrow('session_ended: The app’s session ended');
   });
 
-  it('refuses a request still running when the page loads again, as ended', async () => {
+  it('rejects a running request with session_ended when the page reloads', async () => {
     const frame = await started();
     fetchAdminApi.mockImplementation(() => new Promise(() => {}));
 
@@ -770,7 +774,7 @@ describe('createAppFrameSession', () => {
     await expect(request).rejects.toThrow('session_ended: The app’s session ended');
   });
 
-  it('lets go of a frame that unmounts, before or after it started', async () => {
+  it('releases a frame that unmounts, before or after it started', async () => {
     const loading = fakeFrame();
     session.attach(loading.element);
     session.attach(null);
@@ -786,7 +790,7 @@ describe('createAppFrameSession', () => {
     await callUnheard(frame, 'Gone');
   });
 
-  it('hears nothing more once disposed', async () => {
+  it('ignores everything once disposed', async () => {
     const frame = await started();
     const listener = vi.fn();
     session.subscribe(listener);

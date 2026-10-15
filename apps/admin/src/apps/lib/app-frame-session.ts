@@ -11,40 +11,44 @@ import { appFrameTimeouts } from './frame';
 export type AppFrameStatus = 'loading' | 'ready' | 'failed';
 
 export interface AppFrameState {
-  /** Loading until the app has started, which is when its frame is shown. */
+  /** `loading` until the app has started. Admin shows the frame from then on. */
   status: AppFrameStatus;
-  /** The page's own title, once it has given one. */
+  /** The title the app's page set, once it has set one. */
   title?: string;
-  /** Which load of the page this is. Each load needs a frame of its own. */
+  /** Counts the loads of the app's page. Each load needs a new frame. */
   attempt: number;
-  /** When this load began, to say how long the app has gone without answering. */
+  /** When this load started. Used to show how long the app has gone without responding. */
   startedAt: Date;
 }
 
-/** How Admin follows the app to one of its routes. */
+/** Options for the navigation Admin makes to follow the app to one of the app's routes. */
 export interface AppMoveOptions extends PathChangeOptions {
   /**
-   * The move's number, which the location Admin makes for it carries back to `pathChanged`,
-   * so the session can tell Admin arriving there from Admin moving on its own.
+   * Identifies this navigation. The location Admin creates for it passes the number back to
+   * `pathChanged`, so the session can tell Admin following the app apart from Admin navigating by
+   * itself.
    */
   move: number;
 }
 
 export interface AppFrameSessionOptions {
-  /** The origin of the app's page, the only one a hello is accepted from. */
+  /** The origin of the app's page. Admin accepts a hello only from this origin. */
   surfaceOrigin: string;
-  /** Admin as it is now. Read when the page connects, so the app starts with it. */
+  /**
+   * Returns Admin's current context. Read when the page connects, so the app starts with the latest
+   * values.
+   */
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
   /**
-   * The app moved to another of its routes, which Admin isn't on yet: Admin follows, and
-   * says whether it did. It doesn't while the publisher is on their way out of the app.
+   * Called when the app moves to one of its routes that Admin isn't on yet. Admin navigates there
+   * and returns whether it did. It doesn't navigate while the publisher is leaving the app.
    */
   navigate: (path: string, options: AppMoveOptions) => boolean;
   /**
-   * The app asked for a place in Admin, already checked to be one Admin offers: Admin goes
-   * there, and says whether it did. It doesn't while the publisher is on their way out of
-   * the app.
+   * Called when the app asks to open a place in Admin. The place is already validated as one Admin
+   * offers. Admin navigates there and returns whether it did. It doesn't navigate while the
+   * publisher is leaving the app.
    */
   open: (place: Place) => boolean;
 }
@@ -55,59 +59,63 @@ export interface AppFrameSession {
   /** Calls `listener` whenever the state changes. Returns the unsubscribe. */
   subscribe: (listener: () => void) => () => void;
   /**
-   * Binds the session to the frame of the current load, or lets go of it with `null`. Its
-   * shape is a ref callback's, which is how the frame is given: the clock starts as the
-   * frame mounts, and unmounting it ends what it was running.
+   * Binds the session to the frame for the current load, or releases the frame when given `null`.
+   * It has the shape of a ref callback because that is how the frame is passed in. The timeout
+   * starts when the frame mounts, and unmounting the frame stops everything it was running.
    */
   attach: (frame: HTMLIFrameElement | null) => void;
   /** Loads the app's page again, in a fresh frame, within the same session. */
   restart: () => void;
   /**
-   * Admin's location within the app changed. `move` is the number of the app's move the
-   * location was made for, if it was; otherwise Admin moved on its own, by back, forward or
-   * a link, and the app follows. Called for every location Admin commits, as a render can
-   * fold several moves into one, ending where an earlier one did.
+   * Called when Admin's location within the app changes. If Admin created the location to follow
+   * the app, `move` is that navigation's number. Otherwise Admin navigated without one (back, forward
+   * or a link), and the app is told to follow. Called for every location Admin commits, because one
+   * render can merge several navigations and end at the same path as an earlier one.
    */
   pathChanged: (path: string, move?: number) => void;
-  /** Admin's theme changed: the app is told. */
+  /** Called when Admin's theme changes. The session sends the new theme to the app. */
   themeChanged: (theme: Theme) => void;
-  /** Ends the session: the frame is let go of, and nothing further is heard from it. */
+  /** Ends the session. The session releases the frame and ignores anything else it sends. */
   dispose: () => void;
 }
 
 /**
- * How long a document must stay started to count as one the publisher used, rather than
- * one that left as soon as it started (see `createAppFrameSession`).
+ * How long a document must stay started to count as one the publisher used, rather than one that
+ * was replaced as soon as it started (see `createAppFrameSession`).
  */
 export const SHORT_LIVED_MS = 3_000;
-/** How many short-lived documents in a row a page may bring before it's called unresponsive. */
+/**
+ * How many short-lived documents in a row a page may load before Admin treats the app as
+ * unresponsive.
+ */
 export const MAX_SHORT_LIVED = 3;
 
-// Numbers the moves Admin makes for apps, from when Admin loaded, so a history entry made
-// before, which keeps the number it was made with, never matches a move made since.
+// Numbers the navigations Admin makes to follow apps. Numbering starts at the time Admin loaded, so
+// a history entry from before this load keeps its old number and never matches a newer navigation.
 let lastMove = Date.now();
 
 const sameTheme = (a: Theme | undefined, b: Theme) =>
   a?.mode === b.mode && a.accent_color === b.accent_color;
 
 /**
- * The lifecycle of an app's frame, apart from how it's shown. Each load of the app's page
- * gets a frame of its own, bound by `bindAppFrame`, which says how documents come and go
- * in it. The frame is hidden until a document has started. The first gets
- * `appFrameTimeouts.ready` from the frame's mount, and has failed if it doesn't start in
- * that time; each document that replaces a started one gets as long from its arrival, and
- * the app's page is loaded afresh, in a new frame, if it doesn't start in it.
+ * Manages the lifecycle of an app's frame, separately from how the frame is rendered. Each load of
+ * the app's page gets a new frame. `bindAppFrame` binds to it and reports when documents in it
+ * change. The frame stays hidden until a document has started. The first document has
+ * `appFrameTimeouts.ready` from the frame's mount to start, or the app has failed. A document that
+ * replaces a started one gets the same time from when it arrives. If it doesn't start in time, the
+ * session reloads the app's page in a new frame.
  *
- * A page that reloads or leaves each time it starts would loop between the spinner and the
- * app, never reaching Try again, so short-lived documents are counted: each started one
- * replaced within `SHORT_LIVED_MS` of starting, and each time Admin loads the page afresh on
- * its own. A document that stays started longer starts the count over, as Try again does,
- * so a publisher going from page to page of a server-rendered app is never stopped. Past
- * `MAX_SHORT_LIVED` in a row, the app has failed until Try again.
+ * A page that reloads or navigates away every time it starts would loop between the spinner and the
+ * app, and never reach Try again. To prevent that, the session counts short-lived documents: each
+ * started document that is replaced within `SHORT_LIVED_MS` of starting, and each reload of the
+ * page that Admin makes without the publisher asking. A document that stays started longer resets
+ * the count, as Try again does, so a publisher moving between pages of a server-rendered app is
+ * never stopped. After more than `MAX_SHORT_LIVED` in a row, the app has failed until the publisher
+ * clicks Try again.
  *
- * Path and theme changes pass both ways, each once: what the app was last told, or told
- * Admin, is never echoed back to it, even while Admin is still catching up with routes the
- * app has since left.
+ * Path and theme changes are passed between Admin and the app once each. The session never sends
+ * the app a value it already has, whether the app sent it to Admin or Admin sent it to the app,
+ * even while Admin is still catching up with routes the app has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -117,18 +125,19 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   let frame: HTMLIFrameElement | null = null;
   let host: AppFrameHost | null = null;
   let timer: number | undefined;
-  // How many short-lived documents in a row the page has brought, and when the current
-  // document started, if it has.
+  // How many short-lived documents in a row the page has loaded, and when the current document
+  // started (undefined until it has).
   let shortLived = 0;
   let documentStartedAt: number | undefined;
 
-  // Where Admin is within the app, and what the app last heard or said about where it is.
+  // Admin's path within the app, and the path and theme the app last sent or was sent.
   let adminPath: string | undefined;
   let appPath: string | undefined;
   let appTheme: Theme | undefined;
-  // The moves Admin made to follow the app, in order, that it hasn't arrived at yet. The app
-  // can move again before Admin has, so where Admin is, as it says, can be a route the app
-  // has left: a location made for one of these is Admin catching up, not moving on its own.
+  // The navigations Admin started to follow the app but hasn't completed yet, in order. The app can
+  // move again before Admin arrives, so Admin's reported path can be a route the app has already
+  // left. A location created for one of these entries means Admin is catching up, not navigating by
+  // itself.
   let following: { path: string; move: number }[] = [];
 
   const update = (next: Partial<AppFrameState>) => {
@@ -167,8 +176,9 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   };
 
   /**
-   * The current document is going, to another or to a fresh load of the page (`reload`).
-   * Says whether the page may carry on, or has brought too many short-lived documents.
+   * Called when the current document is being replaced, either by another document or by a fresh
+   * load of the page (`reload`). Returns false if the page has loaded too many short-lived
+   * documents, and true if it may continue.
    */
   const documentEnded = (reload: boolean): boolean => {
     const lived = documentStartedAt === undefined ? 0 : Date.now() - documentStartedAt;
@@ -187,7 +197,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     return true;
   };
 
-  /** Loads the page afresh because of something it did, unless it keeps doing it. */
+  /** Reloads the page because of something the page did, unless it keeps doing it. */
   const restartOnItsOwn = () => {
     if (!disposed && documentEnded(true)) {
       restart();
@@ -204,7 +214,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         adminPath = context.path;
         appPath = context.path;
         appTheme = context.theme;
-        // A new page starts where Admin is; a route Admin is still headed for is news to it.
+        // A new page starts at Admin's current path. It doesn't know about routes Admin is still
+        // navigating to.
         following = [];
         return context;
       },
@@ -212,7 +223,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       handlers: {
         titleChanged: (title) => update({ title }),
         pathChanged: (next, { replace }) => {
-          // Where Admin is headed, if it's still following the app; where it is otherwise.
+          // Where Admin is going if it's still following the app, or where Admin is otherwise.
           if (next === (following.at(-1)?.path ?? adminPath)) {
             appPath = next;
             return;
@@ -222,7 +233,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
             following.push({ path: next, move: lastMove });
             appPath = next;
           } else if (adminPath !== undefined) {
-            // Admin stays where it is, for now, and the app hears where that is.
+            // Admin stays where it is for now, and the app is sent Admin's path.
             appPath = adminPath;
             host?.pathChanged(adminPath);
           }
@@ -240,8 +251,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
             started();
           }
         },
-        // A new frame, at the page's own address and with Admin's route, as a reload of
-        // Admin would start it.
+        // Starts a new frame at the page's own URL with Admin's route, the same way reloading Admin
+        // would.
         reloaded: restartOnItsOwn,
       },
     });
@@ -253,7 +264,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         update({ status: 'failed', title: undefined });
       }
     };
-    // Stops the moment the app has started, so nothing calls a started app unresponsive.
+    // Cleared as soon as the app starts, so a started app is never marked unresponsive.
     timer = window.setTimeout(fail, appFrameTimeouts.ready);
     bound.ready.then(
       () => {
@@ -288,7 +299,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       }
     },
     restart: () => {
-      // The publisher asked: the count starts over.
+      // The publisher asked for this, so the count resets.
       shortLived = 0;
       restart();
     },
@@ -296,8 +307,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       adminPath = path;
       const caughtUp = following.findIndex((entry) => entry.move === move);
       if (caughtUp !== -1) {
-        // Admin caught up with the app, past any moves a render folded into this one: the
-        // app has been there already.
+        // Admin caught up with the app, including any navigations a render merged into this one.
+        // The app has already been to this path.
         following = following.slice(caughtUp + 1);
         return;
       }

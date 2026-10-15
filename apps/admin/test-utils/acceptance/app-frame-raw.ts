@@ -1,12 +1,12 @@
 /**
- * The page of an app that speaks the bridge without the SDK, so that it can send Admin
- * what the SDK would refuse to: specs that assert Admin's own checks frame it (see
- * `appFramePage` in frames.ts) and call Admin through it with `callHostRaw`. Everything
- * else frames the SDK's page, app-frame-stand-in.ts.
+ * A fake app page that uses the bridge without the SDK, so it can send Admin things the SDK would
+ * refuse to send. Specs that test Admin's own checks frame this page (see `appFramePage` in
+ * frames.ts) and call Admin through it with `callHostRaw`. All other specs frame the SDK's page,
+ * app-frame-stand-in.ts.
  *
- * Bundled with its dependencies into one module by the `bundleFrameScript` command, as the
- * frame can load nothing from the test server. It runs in the frame, so from the workspace
- * it imports only the contracts' zod-free root entry point, and types.
+ * The `bundleFrameScript` command bundles it with its dependencies into one module, because the
+ * frame can't load anything from the test server. It runs in the frame, so from the workspace it
+ * imports only types and the contracts' zod-free root entry point.
  */
 import { ThreadMessagePort } from '@quilted/threads';
 import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from '@tryghost/app-contracts';
@@ -21,8 +21,8 @@ export interface RawAppFrameHooks {
 
 let host: HostExports | undefined;
 let markStarted: () => void = () => {};
-// Not resolved with `host` itself: the thread's imports answer every property, `then`
-// included, so a promise would take them for a thenable and wait on Admin forever.
+// Not resolved with `host` itself. The thread's imports respond to every property name, including
+// `then`, so a promise would treat them as a thenable and wait on Admin forever.
 const started = new Promise<void>((resolve) => {
   markStarted = resolve;
 });
@@ -32,7 +32,7 @@ const hooks: RawAppFrameHooks = {
     await started;
     const calls = host as unknown as Record<string, (...rest: unknown[]) => Promise<unknown>>;
     try {
-      // Admin leads the message with the code, as in `invalid_path: …`.
+      // Admin puts the code at the start of the message, as in `invalid_path: …`.
       return { value: await calls[name](...args) };
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) };
@@ -41,7 +41,7 @@ const hooks: RawAppFrameHooks = {
 };
 (window as unknown as { __app: RawAppFrameHooks }).__app = hooks;
 
-// Names the document as the SDK does.
+// Identifies the document the same way the SDK does.
 const documentId = String(performance.timeOrigin);
 const hello = () =>
   window.parent.postMessage({ type: HELLO_MESSAGE_TYPE, sdk: 'raw', document: documentId }, '*');

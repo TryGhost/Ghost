@@ -1,9 +1,9 @@
 import type { Place } from '@tryghost/app-contracts/bridge';
 
 /**
- * Where each place an app can name lives in Admin. Admin decides, so a place can move
- * without any app changing. Every place is named here: one added to the bridge's places
- * doesn't compile until it has a route.
+ * Returns the Admin route for each place an app can open. Admin owns this mapping, so a place's
+ * route can change without any app changing. Every place is listed here, so a place added to the
+ * bridge doesn't compile until it has a route.
  */
 export function placeRoute(place: Place): string {
   if ('post' in place) {

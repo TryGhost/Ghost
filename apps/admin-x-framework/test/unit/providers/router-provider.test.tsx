@@ -43,7 +43,7 @@ describe('feature flag overrides', () => {
     await waitFor(() => expect(onFeatureFlagOverridesChange).toHaveBeenCalled());
   });
 
-  it('keeps the stored overrides on an app’s page, whose query is the app’s', async () => {
+  it('keeps the stored overrides on an app’s page, because its query belongs to the app', async () => {
     sessionStorage.setItem('ghost-admin:labs-overrides', '["storedFlag"]');
     window.history.replaceState(null, '', '/#/apps/6a1b2c3d4e5f60718293a4b5/?labs=');
 
@@ -179,7 +179,7 @@ describe('useRouterDestination', () => {
     return <div>Home</div>;
   }
 
-  /** A router whose `/slow` route loads slowly, so a navigation to it stays under way. */
+  /** Renders a router whose `/slow` route never loads, so a navigation to it stays in progress. */
   async function renderRouter({
     prefix = '/',
     controller = { shouldTransition: () => false },
@@ -210,7 +210,7 @@ describe('useRouterDestination', () => {
     window.history.replaceState(null, '', '/');
   });
 
-  it('reads a navigation the moment it begins, before React has committed it', async () => {
+  it('returns a navigation’s destination as soon as it starts, before React commits it', async () => {
     await renderRouter();
     expect(destination()).toBe('/');
 
@@ -219,7 +219,7 @@ describe('useRouterDestination', () => {
     expect(destination()).toBe('/slow');
   });
 
-  it('reads the pathname within the router, without its basename', async () => {
+  it('returns the pathname within the router, without its basename', async () => {
     window.history.replaceState(null, '', '/#/admin/');
     await renderRouter({ prefix: 'admin' });
     expect(destination()).toBe('/');
@@ -229,7 +229,7 @@ describe('useRouterDestination', () => {
     expect(destination()).toBe('/slow');
   });
 
-  it('reads a navigation a screen transition holds back', async () => {
+  it('returns the destination of a navigation a screen transition holds back', async () => {
     let release!: (proceed: boolean) => void;
     await renderRouter({
       controller: {
@@ -244,12 +244,12 @@ describe('useRouterDestination', () => {
     navigate('/slow');
     expect(destination()).toBe('/slow');
 
-    // Dropped by the transition, so the router stays where it is.
+    // The transition cancels the navigation, so the router stays where it is.
     release(false);
     await waitFor(() => expect(destination()).toBe('/'));
   });
 
-  it('lets go of a held navigation whose transition fails', async () => {
+  it('clears a held navigation whose transition fails', async () => {
     let fail!: (error: Error) => void;
     await renderRouter({
       controller: {
@@ -268,7 +268,7 @@ describe('useRouterDestination', () => {
     await waitFor(() => expect(destination()).toBe('/'));
   });
 
-  it('reads nothing outside the framework’s router', () => {
+  it('returns undefined outside the framework’s router', () => {
     function Outside() {
       destination = useRouterDestination();
       return null;
