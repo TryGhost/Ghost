@@ -16,7 +16,11 @@
     "@tryghost/logging": "catalog:",
     "@tryghost/pretty-cli": "catalog:",
     "bson-objectid": "catalog:",
+    "chalk": "catalog:",
+    "cli-progress": "catalog:",
+    "inquirer": "catalog:",
     "jsonwebtoken": "catalog:",
+    "luxon": "catalog:",
     "semver": "catalog:",
     "tsx": "catalog:",
     "zod": "catalog:"
@@ -25,6 +29,7 @@
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@types/jsonwebtoken": "catalog:",
+    "@types/luxon": "catalog:",
     "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "eslint": "catalog:",
@@ -46,7 +51,8 @@
       ],
       "dataCommands": [
         "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
-        "{workspaceRoot}/ghost/core/server/data/schema/**/*"
+        "{workspaceRoot}/ghost/core/server/data/schema/**/*",
+        "{workspaceRoot}/ghost/core/server/models/**/*"
       ]
     },
     "targets": {

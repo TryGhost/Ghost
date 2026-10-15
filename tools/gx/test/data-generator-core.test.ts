@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-test('the moved data command prints real Core dependencies without opening a database or network connection', async () => {
+test('Core commands expose real generator dependencies and REPL context without database or network access', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'gx-data-core-'));
   try {
     const contentPath = join(directory, 'content');
@@ -50,6 +50,7 @@ Module._load = function (request, parent, isMain) {
 };
 `,
     );
+    // Loading real Core models/importers can take longer on a cold TypeScript loader.
     const result = spawnSync(
       process.execPath,
       [
@@ -66,7 +67,7 @@ Module._load = function (request, parent, isMain) {
         cwd: directory,
         env: { NODE_ENV: 'development', NO_COLOR: '1' },
         encoding: 'utf8',
-        timeout: 5000,
+        timeout: 15000,
       },
     );
     assert.equal(result.error, undefined, result.stdout + result.stderr);
@@ -91,6 +92,34 @@ Module._load = function (request, parent, isMain) {
         assert(names.indexOf(dependency) < names.indexOf(name));
       }
     }
+    const repl = spawnSync(
+      process.execPath,
+      [
+        '--require',
+        guard,
+        '--import',
+        import.meta.resolve('tsx'),
+        fileURLToPath(new URL('../repl.cts', import.meta.url)),
+      ],
+      {
+        cwd: directory,
+        env: { NODE_ENV: 'development', NODE_REPL_HISTORY: '', NO_COLOR: '1' },
+        encoding: 'utf8',
+        timeout: 15000,
+        input: [
+          'console.log("CORE_CONTEXT", typeof models.User.findOne, models === m, typeof knex, knex === k)',
+          'models = null; m = null; knex = null; k = null',
+          '.clear',
+          'console.log("CORE_RESET", typeof models.User.findOne, models === m, typeof knex, knex === k)',
+          '.exit',
+          '',
+        ].join('\n'),
+      },
+    );
+    assert.equal(repl.error, undefined, repl.stdout + repl.stderr);
+    assert.equal(repl.status, 0, repl.stdout + repl.stderr);
+    assert.match(repl.stdout, /CORE_CONTEXT function true function true/);
+    assert.match(repl.stdout, /CORE_RESET function true function true/);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

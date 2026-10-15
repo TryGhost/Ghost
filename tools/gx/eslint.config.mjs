@@ -21,7 +21,13 @@ export default [
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
   ...nodeLibConfig({
-    srcGlobs: ['rebuild-in-development-tables.cts', 'generate-data.cts', 'multi-sub-scenarios.cts'],
+    srcGlobs: [
+      'rebuild-in-development-tables.cts',
+      'generate-data.cts',
+      'multi-sub-scenarios.cts',
+      'repl.cts',
+      'shift-dates.cts',
+    ],
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
 ];

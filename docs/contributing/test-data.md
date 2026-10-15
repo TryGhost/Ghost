@@ -77,3 +77,18 @@ Re-running replaces the scenario members and their subscriptions. The script
 prints expected and actual resolved subscriptions. It can also seed before the
 lookup-table migration, skipping that table until it exists. The legacy
 `pnpm seed:multi-sub-scenarios` shortcut forwards to gx.
+
+## Shift Dates
+
+Run `pnpm gx data shift-dates` to shift all dateTime fields forward based on the
+last member login, or use `--offset=<days>` to specify the shift. Negative
+values shift dates backwards. This is destructive and is restricted to the
+`development` and `local` environments. The command asks for confirmation;
+`--force` skips that prompt.
+
+## REPL
+
+Run `pnpm gx repl` to open a shell with the checkout's configured database and
+Ghost models. `knex`/`k` refer to the connection and `models`/`m` to the models.
+`.clear` restores those bindings and `.exit` closes the database connection.
+This command is also restricted to `development` and `local`.

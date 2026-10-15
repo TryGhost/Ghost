@@ -55,7 +55,20 @@ Both reuse the checkout's development-environment runner and Ghost working
 directory. They run through Core's source loader and `.cts` boundary, with the
 data-generation engine remaining in Core. The generator preserves its existing
 environment permissions and options. `node index.js generate-data` now reports
-its gx replacement; REPL and timetravel remain in Core pending their migrations.
+its gx replacement.
+
+## REPL and date shifting
+
+Run `pnpm gx repl` for an interactive shell with `models`/`m` and `knex`/`k`.
+Clearing the REPL restores those bindings; exiting closes the connection.
+
+Run `pnpm gx data shift-dates` to shift database dates up to the present day, or
+pass `--offset=<days>` to choose an offset. This modifies all dateTime columns.
+It asks for confirmation unless `--force` is supplied. Both commands retain
+their development/local environment restriction and use the same Core runner.
+
+The former `node index.js repl` and `node index.js timetravel` entrypoints report
+their gx replacements. The old `ghost/core/cli` framework has been removed.
 
 ## Validation
 

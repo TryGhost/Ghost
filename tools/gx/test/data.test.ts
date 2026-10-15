@@ -69,9 +69,10 @@ module.exports = { getSiteUrl: () => process.env.url, get: () => ({client: 'mysq
     join(root, 'ghost/core/server/data/db/index.js'),
     `
 process.stdout.write('DB_LOADED\\n');
-exports.knex = Object.assign(() => ({ where: () => ({ first: async () => undefined }) }), {
+const knex = Object.assign(() => ({ where: () => ({ first: async () => undefined }) }), {
   destroy: async () => process.stdout.write('DESTROYED\\n'),
 });
+Object.defineProperty(exports, 'knex', {get: () => knex});
 `,
   );
   await writeFile(
@@ -85,7 +86,7 @@ module.exports = class DataGenerator {
   async importData() {
     const { knex, logger, ...options } = this.options;
     logger.log('GENERATOR_LOG');
-    process.stdout.write(JSON.stringify({ options, cwd: process.cwd(), env: process.env.NODE_ENV,
+    process.stdout.write(JSON.stringify({ options, connection: typeof knex, cwd: process.cwd(), env: process.env.NODE_ENV,
       database: process.env.database__connection__database,
       port: process.env.database__connection__port,
       infile: process.env.REQUIRE_INFILE_STREAM,
@@ -139,6 +140,7 @@ test('data generate forwards all options and uses the checkout environment from 
       quantities: { posts: 3 },
       seed: 123,
     },
+    connection: 'function',
     cwd: await realpath(join(root, 'ghost')),
     env: 'development',
     database: 'fixture_db',

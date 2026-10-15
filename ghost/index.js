@@ -1,10 +1,7 @@
 /**
- * Internal CLI Placeholder
- *
- * If we want to add alternative commands, flags, or modify environment vars, it should all go here.
- * Important: This file should not contain any requires, unless we decide to add pretty-cli/commander type tools
- *
- **/
+ * Boot Ghost, or direct retired development commands to the contributor CLI.
+ * Keep this entrypoint dependency-free until server boot is selected.
+ */
 
 // Don't allow NODE_ENV to be null
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -16,12 +13,16 @@ const mode = argv[2];
 switch (mode) {
   case 'repl':
   case 'timetravel':
-    require('./core/cli/command').run(mode);
-    break;
-  case 'generate-data':
-    process.stderr.write('Use pnpm gx data generate instead of node index.js generate-data.\n');
+  case 'generate-data': {
+    const command = {
+      repl: 'repl',
+      timetravel: 'data shift-dates',
+      'generate-data': 'data generate',
+    }[mode];
+    process.stderr.write(`Use pnpm gx ${command} instead of node index.js ${mode}.\n`);
     process.exitCode = 1;
     break;
+  }
   default:
     require('./core/boot')();
 }

@@ -87,7 +87,8 @@ async function main() {
     }
   }
 
-  const { knex } = await import('../../ghost/core/server/data/db');
+  const { default: db } = await import('../../ghost/core/server/data/db');
+  const knex = db.knex;
   try {
     const { default: config } = await import('../../ghost/core/shared/config');
     // @ts-expect-error The existing JavaScript schema has no type declarations.
