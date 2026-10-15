@@ -1,14 +1,14 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
-import type { Got } from 'got';
+import type { Got, PlainResponse } from 'got';
 
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
-export const MANIFEST_MAX_BYTES = 64 * 1024;
+const MANIFEST_MAX_BYTES = 64 * 1024;
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
 
-export interface FetchedManifest {
+interface FetchedManifest {
   /**
    * Where the manifest was finally read from, after any redirects on the same host. Its
    * relative URLs resolve against this, as they would in a browser.
@@ -17,7 +17,7 @@ export interface FetchedManifest {
   body: unknown;
 }
 
-export type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
+type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
 /** The HTTP status the app answered with, if it answered at all. */
 function statusOf(err: unknown): number | undefined {
@@ -96,7 +96,23 @@ export function createManifestFetcher({
     };
     const hostHeader = (url: URL) => (isAliased(url) ? { host: url.host } : {});
 
-    let refusedRedirect: URL | undefined;
+    // Where a response's Location header points, by the address the browser would use:
+    // undefined without one, null when it is not a URL.
+    const locationOf = (response: PlainResponse): URL | null | undefined => {
+      const rawLocation = response.headers.location;
+      if (!rawLocation) {
+        return undefined;
+      }
+      // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
+      const target = URL.parse(Buffer.from(rawLocation, 'binary').toString('utf8'), response.url);
+      // Undo the alias, so the redirect is judged by where the browser would go.
+      if (target && isAliased(current) && target.hostname === alias) {
+        target.hostname = current.hostname;
+      }
+      return target;
+    };
+
+    let refusedRedirect: { status: number; target: URL | null } | undefined;
     let tooLarge = false;
     const abort = new AbortController();
 
@@ -111,29 +127,33 @@ export function createManifestFetcher({
       // Decided here rather than in a redirect hook: got asks this before any hook runs,
       // so a redirect to another host is refused before the outbound guard looks its
       // target up, and Ghost never resolves a host it was always going to refuse.
+      //
+      // got asks about every response, a 200 included, and more than once about the same
+      // one, so this only judges; `current` moves in beforeRedirect. A Location off the
+      // host, or one that is not a URL, is refused whatever the status, so the rule holds
+      // whichever statuses got follows, but only a refused 3xx is reported: a Location on
+      // a manifest or an error page is ignored.
       followRedirect: (response) => {
-        // got asks on every response, a plain 200 included, not only on redirects.
-        const rawLocation = response.headers.location;
-        if (!rawLocation) {
+        const target = locationOf(response);
+        if (target === undefined || (target && staysOnHost(current, target))) {
           return true;
         }
-        // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
-        const location = Buffer.from(rawLocation, 'binary').toString('utf8');
-        const target = new URL(location, response.url);
-        // Undo the alias, so the redirect is judged by where the browser would go.
-        if (isAliased(current) && target.hostname === alias) {
-          target.hostname = current.hostname;
+        if (response.statusCode >= 300 && response.statusCode < 400) {
+          refusedRedirect = { status: response.statusCode, target };
         }
-        if (!staysOnHost(current, target)) {
-          refusedRedirect = target;
-          return false;
-        }
-        current = target;
-        return true;
+        return false;
       },
       hooks: {
         beforeRedirect: [
-          (options) => {
+          (options, response) => {
+            // got runs this once for each redirect it follows, after followRedirect has let
+            // it through, so its Location is a URL on the same host.
+            const target = locationOf(response)!;
+            // got follows a Location without the credentials it carries, as a browser
+            // would, so the manifest is not read from an address with them either.
+            target.username = '';
+            target.password = '';
+            current = target;
             // Only an aliased hop needs its address rewritten; everywhere else got's own
             // reading of the redirect stands.
             if (isAliased(current)) {
@@ -159,7 +179,7 @@ export function createManifestFetcher({
       text = await pending.text();
     } catch (err) {
       if (refusedRedirect) {
-        throw redirected(manifestUrl, refusedRedirect);
+        throw refused(manifestUrl, refusedRedirect);
       }
       // Only a manifest is held to the limit: a large error page is still an error page,
       // reported with its status. The status is only known once the headers are in, so
@@ -175,7 +195,7 @@ export function createManifestFetcher({
       throw unreachable(manifestUrl, err);
     }
     if (refusedRedirect) {
-      throw redirected(manifestUrl, refusedRedirect);
+      throw refused(manifestUrl, refusedRedirect);
     }
 
     // A byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
@@ -194,7 +214,18 @@ export function createManifestFetcher({
   };
 }
 
-function redirected(manifestUrl: string, target: URL) {
+function refused(manifestUrl: string, { status, target }: { status: number; target: URL | null }) {
+  if (!target) {
+    // Reported as unreachable, so logged like every other unreachable manifest.
+    const context = `${manifestUrl} answered with HTTP ${status} and a Location that is not a URL`;
+    logging.warn(`Could not load the app manifest at ${manifestUrl}`);
+    logging.warn(context);
+    return new errors.ValidationError({
+      message: 'Could not load the app’s manifest.',
+      code: 'APP_MANIFEST_UNREACHABLE',
+      context,
+    });
+  }
   return new errors.ValidationError({
     message: 'The app’s manifest redirects to another host.',
     code: 'APP_MANIFEST_REDIRECTED',

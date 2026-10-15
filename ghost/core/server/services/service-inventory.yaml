@@ -601,23 +601,27 @@ services:
       construction:
         summary: >-
           Boot awaits initialization after database setup. The factory returns one
-          AppInstallationsService from knex, the Action model and a manifest-rules getter;
+          AppInstallationsService from knex, the Action model and a manifest loader built
+          from the outbound request guard, a manifest-rules getter and the localhost alias;
           successful initialization retains that ready instance. Root units prove no connection
           access on import, one retained instance without queries/delivery, and no publication after
           a failed connection acquisition followed by a successful retry.
         sources:
           - core/server/services/app-installations/index.ts
+          - core/server/services/app-installations/load-manifest.ts
           - core/boot.js
         tests:
           - test/unit/server/services/app-installations/index.test.ts
       configuration:
         summary: >-
-          The site and Admin URLs and the development flag are read on every install, not
-          captured at construction. Root units change development aliases, environment and
-          publication URLs on one instance and assert current preview routing/validation.
-          Availability is read per request from config and has separate HTTP coverage.
+          The site and Admin URLs and the development flag are read every time a manifest
+          is loaded (preview, install and approval), not captured at construction. Root units
+          change development aliases, environment and publication URLs on one instance and
+          assert current preview routing/validation. Availability is read per request from
+          config and has separate HTTP coverage.
         sources:
           - core/server/services/app-installations/index.ts
+          - core/server/services/app-installations/load-manifest.ts
           - core/server/data/schema/in-development.ts
         tests:
           - test/e2e-api/admin/app-installations.test.ts

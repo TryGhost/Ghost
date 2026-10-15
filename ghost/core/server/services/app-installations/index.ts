@@ -7,7 +7,7 @@ import {
   shouldCreateInDevelopmentTables,
 } from '../../data/schema/in-development';
 import { recordAppInstallationAction, type RecordAppInstallationAction } from './actions';
-import { createManifestFetcher } from './fetch-manifest';
+import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
@@ -22,8 +22,11 @@ export type { AppInstallationPreview } from './service';
  */
 const AppsConfig = z.object({ localhostAlias: z.string().min(1).nullable().default(null) });
 
+// Localhost manifest URLs, and the alias they are fetched through, are for development only.
+const isDevelopment = () => config.get('env') === 'development';
+
 function localhostAlias(): string | null {
-  if (config.get('env') !== 'development') {
+  if (!isDevelopment()) {
     return null;
   }
   return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
@@ -41,13 +44,13 @@ export default defineService('App Installations', () => {
   return new AppInstallationsService({
     knex,
     recordAction,
-    // Read per install, not once at boot: both are config, which tests change.
-    getManifestRules: () => ({
-      ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-      allowLocalhost: config.get('env') === 'development',
-    }),
-    fetchManifest: createManifestFetcher({
+    loadManifest: createManifestLoader({
       request: externalRequest,
+      // Read per load, not once at boot: both are config, which tests change.
+      getManifestRules: () => ({
+        ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
+        allowLocalhost: isDevelopment(),
+      }),
       getLocalhostAlias: localhostAlias,
     }),
   });

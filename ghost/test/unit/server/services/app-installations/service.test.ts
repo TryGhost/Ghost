@@ -1,18 +1,29 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import { vi } from 'vitest';
+import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { AppInstallationsService } from '../../../../../core/server/services/app-installations/service';
 import type { RecordAppInstallationAction } from '../../../../../core/server/services/app-installations/actions';
+import type {
+  LoadedManifest,
+  LoadManifest,
+} from '../../../../../core/server/services/app-installations/load-manifest';
 
-const manifestUrl = 'https://podcast.example.com/ghost-app.json';
-const manifest = {
+const manifest: AppManifest = {
   id: 'com.example.podcast',
   name: 'Podcast',
   description: 'Publish episodes.',
-  author: { name: 'Example Audio', url: 'https://example.com' },
+  author: { name: 'Example Audio', url: 'https://example.com/' },
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
-  surfaces: [{ type: 'admin_page', url: '/admin' }],
+  surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+};
+const loaded: LoadedManifest = {
+  manifestUrl: 'https://podcast.example.com/ghost-app.json',
+  manifest,
+  // Not what re-encoding the manifest gives, so a test can tell the loader's text was kept.
+  serialised: JSON.stringify(manifest, null, 2),
+  digest: 'reviewed-digest',
 };
 const deadlock = () => Object.assign(new Error('Deadlock victim'), { code: 'ER_LOCK_DEADLOCK' });
 
@@ -28,12 +39,35 @@ function setup() {
   const service = new AppInstallationsService({
     knex: { transaction } as unknown as Knex,
     recordAction,
-    getManifestRules: () => ({ ghostUrls: ['https://site.example.com'] }),
-    fetchManifest: vi.fn(),
+    loadManifest: vi.fn<LoadManifest>().mockResolvedValue(loaded),
   });
-  const install = () => service.install({ actor: null }, { manifestUrl, manifest });
+  const install = () =>
+    service.create({ actor: null }, { manifestUrl: loaded.manifestUrl, digest: loaded.digest });
   return { install, insert, trx, transaction, recordAction };
 }
+
+describe('App installation storage', function () {
+  it('stores the manifest text and digest exactly as the loader produced them', async function () {
+    const { install, insert, trx } = setup();
+
+    const installed = await install();
+
+    assert.deepEqual(
+      trx.mock.calls.map(([table]) => table),
+      ['app_installations', 'app_installation_manifests'],
+    );
+    assert.deepEqual(insert.mock.calls[1][0], {
+      id: insert.mock.calls[0][0].manifest_id,
+      installation_id: installed.id,
+      manifest_url: loaded.manifestUrl,
+      manifest: loaded.serialised,
+      digest: loaded.digest,
+      source: 'install',
+      requires_approval: false,
+      created_at: insert.mock.calls[0][0].created_at,
+    });
+  });
+});
 
 describe('App installation transaction failures', function () {
   it('restarts the whole transaction when its manifest insert deadlocks', async function () {
