@@ -66,6 +66,7 @@ const messages = {
   invalidAutomationEdge: 'Automation edges cannot connect an action to itself.',
   invalidAutomationGraphShape:
     'Automation graph must be a single linear path without branches or cycles.',
+  emptyActionsWhenActive: 'Active automations require at least one action.',
   emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
   emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
   invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
@@ -102,7 +103,6 @@ const automationShape = {
   status: z.enum(['active', 'inactive', 'archived']),
   actions: z
     .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-    .min(1)
     .max(MAX_AUTOMATION_ACTIONS),
   edges: z.array(edgeSchema),
 };
@@ -439,6 +439,9 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
 }
 
 async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {
+  if (data.status === 'active' && data.actions.length === 0) {
+    throwValidationError(messages.emptyActionsWhenActive, 'actions');
+  }
   validateGraph(data.actions, data.edges);
   await validateEmailLexical(data.actions);
   validateActiveEmailSteps(data.status, data.actions);
@@ -610,8 +613,8 @@ function validateLinearGraph(
   outgoing: Map<string, string>,
   incoming: Map<string, string>,
 ) {
-  // A single-action automation is valid only when it has no edges.
-  if (actionIdentities.size === 1) {
+  // Automations with fewer than 2 actions should have no edges.
+  if (actionIdentities.size <= 1) {
     if (outgoing.size !== 0 || incoming.size !== 0) {
       throwValidationError(messages.invalidAutomationGraphShape, 'edges');
     }

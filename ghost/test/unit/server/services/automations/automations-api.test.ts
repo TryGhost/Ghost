@@ -113,6 +113,19 @@ describe('automations API', function () {
       });
     });
 
+    it.each(['inactive', 'archived'] as const)(
+      'can add an %s automation with no actions',
+      async function (status) {
+        const payload = { ...valid, status, actions: [], edges: [] };
+        const saved = { ...payload, id: ObjectId().toHexString() };
+        repositoryAdd.mockResolvedValue(saved);
+
+        assert.strictEqual(await automationsApi.add(payload), saved);
+
+        expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
+      },
+    );
+
     it('rejects invalid inputs', async function () {
       const invalidPayloads = [
         undefined,
@@ -192,6 +205,19 @@ describe('automations API', function () {
       },
     );
 
+    it.each(['inactive', 'archived'] as const)(
+      'saves an empty graph for %s automations',
+      async function (status) {
+        const payload = { status, actions: [], edges: [] };
+        const saved = { id: automationId, ...payload };
+        repositoryEdit.mockResolvedValue(saved);
+
+        assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
+
+        expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
+      },
+    );
+
     it.each([
       ['actions', { actions: [buildWaitAction()] }, /edges:/],
       ['edges', { edges: [] }, /actions:/],
@@ -229,6 +255,33 @@ describe('automations API', function () {
         property: 'status',
         message: 'Status-only automation edits can only set status to inactive or archived.',
       });
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('rejects activation with no actions', async function () {
+      await assert.rejects(
+        automationsApi.edit(automationId, { status: 'active', actions: [], edges: [] }),
+        {
+          errorType: 'ValidationError',
+          property: 'actions',
+          message: 'Active automations require at least one action.',
+        },
+      );
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('rejects edges in an empty graph', async function () {
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [],
+          edges: [buildEdge(buildWaitAction(), buildWaitAction())],
+        }),
+        {
+          errorType: 'ValidationError',
+          property: 'edges',
+        },
+      );
       expect(repositoryEdit).not.toHaveBeenCalled();
     });
 
