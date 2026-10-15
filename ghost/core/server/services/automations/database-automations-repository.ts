@@ -1022,15 +1022,14 @@ async function ensureWelcomeEmailAction(
     return;
   }
 
-  const nowDate = new Date();
-  const now = toDatabaseDate(nowDate);
+  const now = new Date();
   const actionId = ObjectId().toHexString();
 
   await repository2.insertActions(trx, [
     {
       id: actionId,
-      created_at: nowDate,
-      updated_at: nowDate,
+      created_at: now,
+      updated_at: now,
       automation_id: automationId,
       type: 'send_email',
     },
@@ -1047,7 +1046,7 @@ async function ensureWelcomeEmailAction(
           email_design_setting_id: email.email_design_setting_id,
         },
       },
-      createdAt: getNextRevisionCreatedAt(null, now),
+      createdAt: getNextRevisionCreatedAt(null, toDatabaseDate(now)),
     },
   ]);
 }
