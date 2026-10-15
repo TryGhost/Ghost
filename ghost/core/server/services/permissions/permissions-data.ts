@@ -1,7 +1,6 @@
 // The permissions Ghost knows about and which roles hold them. This is the
-// source of truth for permission checks. The same data is still seeded into the
-// permissions tables from fixtures.json while those tables exist, and a test
-// keeps the two in step until that seeding is removed.
+// source of truth for permission checks: to add a permission, add it here and
+// grant it to roles. No migration is needed.
 //
 // Owner is not listed: it has no permissions of its own and is handled as a
 // bypass in canThis.

@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import * as rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
 
-// Which roles hold each permission, as the "Fixtures > Populate" migration
-// test checks for the seeded permissions_roles rows.
+// Which roles hold each permission.
 //
 // Roles are listed in the order they are created in fixtures.json.
 const ROLE_ORDER = [
