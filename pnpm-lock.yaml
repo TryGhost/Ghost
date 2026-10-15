@@ -4353,6 +4353,9 @@ importers:
       '@internal/scripts':
         specifier: workspace:*
         version: link:../scripts
+      '@tryghost/errors':
+        specifier: 3.4.4
+        version: 3.4.4
       '@tryghost/logging':
         specifier: 6.0.1
         version: 6.0.1(supports-color@10.2.2)
@@ -4374,6 +4377,12 @@ importers:
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
+      knex:
+        specifier: 'catalog:'
+        version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.24.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex-migrator:
+        specifier: 'catalog:'
+        version: 6.2.1(@types/node@22.20.1)(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.24.5(@types/node@22.20.1))(supports-color@10.2.2))(supports-color@10.2.2)
       luxon:
         specifier: 'catalog:'
         version: 3.7.2

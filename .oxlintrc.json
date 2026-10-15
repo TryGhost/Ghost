@@ -170,6 +170,7 @@
         "tools/gx/multi-sub-scenarios.ts",
         "tools/gx/repl.ts",
         "tools/gx/shift-dates.ts",
+        "tools/gx/benchmark-recipient-preparation.ts",
         "tools/gx/run-ghost-command.ts",
         "tools/scripts/*.ts",
         "tools/scripts/lib/**/*.ts",

@@ -103,6 +103,23 @@ cli.command({
 });
 
 cli.command({
+  flags: 'benchmark',
+  desc: 'Run development benchmarks.',
+  setup(group: CommandGroup) {
+    group.command({
+      flags: 'recipient-preparation',
+      desc: 'Measure email recipient preparation with synthetic members.',
+      run() {
+        commandRun = true;
+        runGhostCommand('./benchmark-recipient-preparation.ts', args.slice(2), true, [
+          '--expose-gc',
+        ]);
+      },
+    });
+  },
+});
+
+cli.command({
   flags: 'repl',
   desc: 'Open a REPL with Ghost models and database access.',
   run() {

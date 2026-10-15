@@ -69,6 +69,18 @@ their development/local environment restriction and use the same Core runner.
 The former `node index.js repl` and `node index.js timetravel` entrypoints report
 their gx replacements. The old `ghost/core/cli` framework has been removed.
 
+## Recipient preparation benchmark
+
+Run `pnpm gx benchmark recipient-preparation [members] [concurrency]` to measure
+email recipient preparation. Defaults are 500,000 members and concurrency 2;
+start smaller with `pnpm gx benchmark recipient-preparation 10000 2`.
+
+gx supplies the source loader and `--expose-gc`. The benchmark uses the configured
+MySQL server, creates its own uniquely named database and drops it afterwards.
+Its database user needs permission to create and drop databases. It prints JSON
+metrics for preparing all members, rebuilding interrupted preparation and
+preparing a label segment. See [performance testing](../../docs/contributing/performance-testing.md).
+
 ## Validation
 
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
