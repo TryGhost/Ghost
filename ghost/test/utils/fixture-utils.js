@@ -1022,7 +1022,7 @@ const toDoList = {
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialized
- *  * `perms:init` - initialize the permissions object after having added permissions
+ *  * `perms:init` - build the permissions actions map
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */

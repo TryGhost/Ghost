@@ -10196,18 +10196,18 @@ services:
       construction:
         summary: >-
           Import loads shared models, providers and one module-level empty actions cache without
-          querying permissions or constructing a service class. Every init calls
-          Permission.findAll and rebuilds the map on fulfillment.
-          Action/object pairs are deduplicated; object_id is not part of this map. canThis starts
+          querying permissions or constructing a service class. Every init rebuilds the map from
+          the permissions defined in code (role-permissions all()); it does no I/O.
+          Action/object pairs are deduplicated. canThis starts
           user/key loads and builds handlers against a cloned action map and model references at
-          check creation. Units use a stubbed Permission query and forged models to assert map
-          loading/deduplication; import purity and provider-query timing are source-only.
+          check creation. Units assert the map built from the static data; import purity and
+          provider-query timing are source-only.
         sources:
           - core/server/services/permissions/index.js
           - core/server/services/permissions/actions-map-cache.js
           - core/server/services/permissions/can-this.js
           - core/server/services/permissions/providers.js
-          - core/server/models/permission.js
+          - core/server/services/permissions/role-permissions.ts
         tests:
           - test/unit/server/services/permissions/index.test.js
           - test/unit/server/services/permissions/can-this.test.js
@@ -10240,8 +10240,10 @@ services:
         summary: >-
           Boot awaits init in its main service Promise.all after database setup, before readiness;
           imports and parseContext need no populated map. canThis throws synchronously when the
-          map is empty, including internal requests. An empty successful query therefore resolves
-          init but leaves checks unavailable; no explicit ready flag is set. The pre-init unit
+          map is empty, including internal requests. Init builds the map from static data, so a
+          successful init populates it; it is also empty before init, after a rebuild that throws
+          (see failures), or if a caller empties the mutable map init returns (see lifetime). No
+          explicit ready flag is set. The pre-init unit
           stubs empty() rather than loading a fresh root. Booted HTTP suites establish successful
           composition, not empty data, init rejection, frontend-disabled ordering or the absence
           of authorization calls from other concurrently initializing services.
@@ -10256,7 +10258,7 @@ services:
       lifetime:
         summary: >-
           There is no init guard, in-flight sharing, invalidation subscription or stop/reset hook.
-          Each successful load replaces the cache; overlapping queries publish in completion order.
+          Each init replaces the cache synchronously.
           getAll clones it, but init returns its mutable object directly. Existing checks retain
           their handler set and one user/key permissions promise; calling a handler again does not
           reload authorization. New checks load fresh user/key data, while action definitions stay
@@ -10311,8 +10313,8 @@ services:
         tests: []
       failures:
         summary: >-
-          A rejected Permission query propagates while preserving the previous map; a failure
-          during rebuilding can leave an empty/partial replacement. Missing users/keys and inactive
+          Init reads no data, so it cannot fail on I/O; a throwing rebuild can leave an
+          empty/partial replacement. Missing users/keys and inactive
           users reject, as do denied checks; model override errors/results propagate. API support
           rewrites NoPermission messages, preserves Ghost errors and wraps other failures; role
           serialization instead omits roles on any check failure. Provider and canThis units pin
@@ -10331,7 +10333,7 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin real uninitialized-root behavior, empty query results, boot
+        Pin real uninitialized-root behavior, boot
         failure/recovery and authorization ordering against other boot tasks. The current pre-init
         test stubs cache.empty and does not establish a fresh module's state or readiness gate.
       - >-
