@@ -147,7 +147,7 @@ _Avoid_: proxy, API access, app token
 **Blocklist**:
 The Admin API routes the fetch escape hatch refuses, listed by category with a
 reason for each in `ADMIN_API_BLOCKLIST`. A route is refused for every method,
-except bulk deletes, which share their path with listing and are refused for
-`DELETE` only. It is a stopgap, not a complete list, and will be removed once
-apps have their own token.
+unless its path is shared with a harmless read: bulk deletes are refused for
+`DELETE` only, and test email sends for `POST` and `PUT`. It is a stopgap, not
+a complete list, and will be removed once apps have their own token.
 _Avoid_: permissions, scopes, denylist

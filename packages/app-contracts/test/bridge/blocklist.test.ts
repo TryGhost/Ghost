@@ -15,6 +15,9 @@ describe('the Admin API blocklist', () => {
       'gift_links',
       'settings',
       'uploads',
+      'email_sending',
+      'member_replies_and_clicks',
+      'notifications',
       'bulk_deletes',
       'invites',
       'webhooks',
@@ -100,6 +103,18 @@ describe('the Admin API blocklist', () => {
       '/redirects/upload/',
       '/posts/upload/',
     ],
+    email_sending: [
+      '/email_previews/posts/abc/',
+      '/automations/abc/email_test/',
+      '/automated_emails/abc/test/',
+      '/emails/abc/retry/',
+    ],
+    member_replies_and_clicks: [
+      '/newsletters/verifications/',
+      '/automated_emails/verifications/',
+      '/links/bulk/?filter=post_id:abc',
+    ],
+    notifications: ['/notifications/', '/notifications/abc/'],
     bulk_deletes: ['/posts/', '/posts/?filter=tag:news', '/pages/', '/PAGES'],
     invites: ['/invites/', '/invites/abc/'],
     webhooks: ['/webhooks/', '/webhooks/abc/'],
@@ -131,8 +146,9 @@ describe('the Admin API blocklist', () => {
     });
   }
 
-  it('leaves listing posts and pages, and deleting one at a time, open', () => {
+  it('leaves listing posts and pages, deleting one at a time, and reading an email preview open', () => {
     for (const [method, path] of [
+      ['GET', '/email_previews/posts/abc/'],
       ['GET', '/posts/'],
       ['GET', '/pages/?filter=status:draft'],
       ['POST', '/posts/'],
@@ -175,6 +191,8 @@ describe('the Admin API blocklist', () => {
       '/tiers/',
       '/offers/',
       '/newsletters/',
+      '/newsletters/abc/',
+      '/links/',
       '/stats/member_count/',
       '/emails/abc/',
       '/emails/abc/batches/',

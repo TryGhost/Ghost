@@ -7,8 +7,9 @@ import type { FetchMethod } from './rules.ts';
  * token with permissions, and the blocklist will be removed once that token exists. Until then,
  * it blocks the routes that hand out a credential that outlives the app's session, change who
  * can sign in or who the staff users are, read or change members or their personal details,
- * change the site's settings, send site events to other services, upload a file, delete in
- * bulk, import, export or delete the whole site, or install and approve apps.
+ * send email or redirect members' replies and clicks, show staff a notification, change the
+ * site's settings, send site events to other services, upload a file, delete in bulk, import,
+ * export or delete the whole site, or install and approve apps.
  *
  * The list is not complete. These routes stay open until the security review that comes before
  * opening apps to external developers decides on them (BER-3992):
@@ -18,11 +19,13 @@ import type { FetchMethod } from './rules.ts';
  *   unchanged, so any script in them runs on the site's own origin.
  * - Bulk edits and exports of posts and pages: `PUT /posts/bulk`, `PUT /pages/bulk` and
  *   `GET /posts/export`.
+ * - Publishing a post with email (`PUT /posts/:id/?newsletter=…`), which sends it to the
+ *   members the newsletter and segment cover.
  *
- * A route is blocked for every method, unless its category names the methods it blocks. Only
- * bulk deletes do, because they share their path with listing: `DELETE /posts/` deletes
- * every post a filter matches, while `GET /posts/` lists them. Deleting one post or page at a
- * time stays open.
+ * A route is blocked for every method, unless its category names the methods it blocks.
+ * Two categories do, because their paths are shared with harmless reads: `DELETE /posts/`
+ * deletes every post a filter matches while `GET /posts/` lists them, and
+ * `POST /email_previews/posts/:id` sends a test email while `GET` only renders the preview.
  *
  * Patterns are written in path segments: `:id` matches any one segment, and a final `*`
  * matches one or more further segments, so `/db` and `/db/*` together cover `/db` and
@@ -107,6 +110,30 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
       '/redirects/upload',
       '/posts/upload',
     ],
+  },
+  {
+    name: 'email_sending',
+    reason:
+      "Test sends go from the site's own sending domain to any addresses the app names, and retrying an email sends it to every member it was for.",
+    paths: [
+      '/email_previews/posts/:id',
+      '/automations/:id/email_test',
+      '/automated_emails/:id/test',
+      '/emails/:id/retry',
+    ],
+    methods: ['POST', 'PUT'],
+  },
+  {
+    name: 'member_replies_and_clicks',
+    reason:
+      "Confirming a newsletter's or a sender's reply-to address sends members' replies, with their names and emails, to whoever owns it. A bulk link edit changes where the tracked links in sent newsletters lead, so members' clicks land wherever the app chooses.",
+    paths: ['/newsletters/verifications', '/automated_emails/verifications', '/links/bulk'],
+  },
+  {
+    name: 'notifications',
+    reason:
+      "An Admin notification shows to every staff user outside the app's frame, can link anywhere, and can be made impossible to close, so it outlasts the app.",
+    paths: ['/notifications', '/notifications/*'],
   },
   {
     name: 'bulk_deletes',
