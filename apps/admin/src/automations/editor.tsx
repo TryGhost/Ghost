@@ -507,6 +507,11 @@ const AutomationEditorContent: React.FC<{
         saveButtonVariant={saveButtonVariant}
         validationFeedback={selectedRunId ? null : validationFeedback}
         onDismissValidationFeedback={() => setValidationFeedback(null)}
+        onNameChange={
+          automationsPerTierEnabled && !selectedRunId && draft
+            ? (name) => onDraftChange({ ...draft, name })
+            : undefined
+        }
         onPublish={onPublish}
         onSave={() => void save()}
         onTurnOff={() => {

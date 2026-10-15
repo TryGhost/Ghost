@@ -22,28 +22,23 @@ describe('Run history preserves editor drafts', () => {
       ...flags,
       labs: { ...flags.labs, automationsPerTier: true },
     });
+    const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
+    await nameField().fill('Unsaved name');
     await open();
-    await page.getByRole('tab', { name: 'Settings' }).click();
-    await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Unsaved name');
-    await page.getByRole('tab', { name: 'Performance' }).click();
     await select();
     await expect.element(canvas()).toBeVisible();
+    await expect.element(nameField()).not.toBeInTheDocument();
+    await expect.element(page.getByText('Unsaved name', { exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Settings' }).click();
-    await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeDisabled();
     await expect
       .element(page.getByRole('textbox', { name: 'Description', exact: true }))
       .toBeDisabled();
-    await expect
-      .element(page.getByRole('textbox', { name: 'Name', exact: true }))
-      .toHaveValue('Unsaved name');
     await close();
-    await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeEnabled();
+    await expect.element(nameField()).toBeEnabled();
+    await expect.element(nameField()).toHaveValue('Unsaved name');
     await expect
       .element(page.getByRole('textbox', { name: 'Description', exact: true }))
       .toBeEnabled();
-    await expect
-      .element(page.getByRole('textbox', { name: 'Name', exact: true }))
-      .toHaveValue('Unsaved name');
   });
 
   it('keeps metadata hidden during and after history when automationsPerTier is disabled', async () => {
@@ -58,7 +53,7 @@ describe('Run history preserves editor drafts', () => {
     await expect.element(canvas()).toBeVisible();
     await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
     await expect
-      .element(page.getByRole('textbox', { name: 'Name', exact: true }))
+      .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
       .not.toBeInTheDocument();
     await close();
     await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
