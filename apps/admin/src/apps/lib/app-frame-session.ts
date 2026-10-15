@@ -1,9 +1,4 @@
-import {
-  type PathChangeOptions,
-  type Place,
-  type StartContext,
-  type Theme,
-} from '@tryghost/app-contracts/bridge';
+import { type Place, type StartContext, type Theme } from '@tryghost/app-contracts/bridge';
 import type { AdminApiFetch } from './bridge-fetch';
 import { type AppFrameHost, bindAppFrame } from './bridge-host';
 import { appFrameTimeouts } from './frame';
@@ -21,8 +16,12 @@ export interface AppFrameState {
   startedAt: Date;
 }
 
-/** Options for the navigation Admin makes to follow the app to one of the app's routes. */
-export interface AppMoveOptions extends PathChangeOptions {
+/**
+ * Options for the navigation Admin makes to follow the app to one of the app's routes. Admin always
+ * replaces its current history entry for it: the frame's own history already has an entry for the
+ * move, and a second one would make back go between the two forever.
+ */
+export interface AppMoveOptions {
   /**
    * Identifies this navigation. The location Admin creates for it passes the number back to
    * `pathChanged`, so the session can tell Admin following the app apart from Admin navigating by
@@ -41,8 +40,9 @@ export interface AppFrameSessionOptions {
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
   /**
-   * Called when the app moves to one of its routes that Admin isn't on yet. Admin navigates there
-   * and returns whether it did. It doesn't navigate while the publisher is leaving the app.
+   * Called when the app moves to one of its routes that Admin isn't on yet. Admin navigates there,
+   * replacing its current history entry, and returns whether it did. It doesn't navigate while the
+   * publisher is leaving the app.
    */
   navigate: (path: string, options: AppMoveOptions) => boolean;
   /**
@@ -112,6 +112,10 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * the count, as Try again does, so a publisher moving between pages of a server-rendered app is
  * never stopped. After more than `MAX_SHORT_LIVED` in a row, the app has failed until the publisher
  * clicks Try again.
+ *
+ * Admin follows the app's moves by replacing its URL, never by adding to its history: the frame
+ * keeps its own history, so each route the app pushes is already a step back takes, and back within
+ * the app reaches the app as its own back, which it reports like any other move.
  *
  * Path and theme changes are passed between Admin and the app once each. The session never sends
  * the app a value it already has, whether the app sent it to Admin or Admin sent it to the app,
@@ -222,14 +226,14 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       fetchAdminApi: options.fetchAdminApi,
       handlers: {
         titleChanged: (title) => update({ title }),
-        pathChanged: (next, { replace }) => {
+        pathChanged: (next) => {
           // Where Admin is going if it's still following the app, or where Admin is otherwise.
           if (next === (following.at(-1)?.path ?? adminPath)) {
             appPath = next;
             return appPath;
           }
           lastMove += 1;
-          if (options.navigate(next, { replace, move: lastMove })) {
+          if (options.navigate(next, { move: lastMove })) {
             following.push({ path: next, move: lastMove });
             appPath = next;
           } else if (adminPath !== undefined) {

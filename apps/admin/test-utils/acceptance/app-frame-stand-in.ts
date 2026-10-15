@@ -11,13 +11,16 @@
  * A spec drives the page through `window.__app`, using `callAppFrame` from frames.ts. Every hook
  * waits for the app to connect, then returns `{ value }` or `{ error }`. A `GhostAppError` from the
  * SDK becomes `code: message`, so specs can assert a refusal as data.
+ *
+ * It routes like a single-page app, keeping its route in the frame's history state: `navigate`
+ * pushes an entry and reports the move, back and forward within the frame report the route they
+ * land on, and a move Admin makes replaces the current entry, as the SDK's docs ask.
  */
 import type * as AppSdk from '@tryghost/app-sdk';
 import type { Ghost } from '@tryghost/app-sdk';
 import type {
   FetchRequest,
   FetchResponse,
-  PathChangeOptions,
   Place,
   StartContext,
   Theme,
@@ -58,7 +61,10 @@ export interface AppFrameHooks {
   fetch(request: FetchRequest): Promise<AppFrameResult<FetchResponse>>;
   /** Sets the page's own title, which the SDK reports to Admin. */
   setTitle(title: string): Promise<AppFrameResult<void>>;
-  setPath(path: string, options?: PathChangeOptions): Promise<AppFrameResult<void>>;
+  /** Reports a move with `path.set` alone, without routing, as a page that doesn't route might. */
+  setPath(path: string): Promise<AppFrameResult<void>>;
+  /** Routes to `path` as a single-page app does: pushes a history entry, then reports the move. */
+  navigate(path: string): Promise<AppFrameResult<void>>;
   /** Moves through `paths` at once, sending each `path.set` before the previous one resolves. */
   setPaths(paths: string[]): Promise<AppFrameResult<void>>;
   open(place: Place): Promise<AppFrameResult<void>>;
@@ -126,7 +132,12 @@ window.__app = {
       document.title = title;
       return Promise.resolve();
     }),
-  setPath: (path, options) => settle((app) => app.path.set(path, options)),
+  setPath: (path) => settle((app) => app.path.set(path)),
+  navigate: (path) =>
+    settle((app) => {
+      history.pushState({ route: path }, '');
+      return app.path.set(path);
+    }),
   setPaths: (paths) =>
     settle(async (app) => {
       await Promise.all(paths.map((path) => app.path.set(path)));
@@ -145,7 +156,16 @@ async function start() {
     path: app.path.current,
   };
   app.onThemeChange((theme) => received.push({ call: 'themeChanged', value: theme }));
-  app.onPathChange((path) => received.push({ call: 'pathChanged', value: path }));
+  app.onPathChange((path) => {
+    received.push({ call: 'pathChanged', value: path });
+    history.replaceState({ route: path }, '');
+  });
+  // The route this entry shows, so back and forward land on it.
+  history.replaceState({ route: app.path.current }, '');
+  window.addEventListener('popstate', (event) => {
+    const { route } = (event.state ?? {}) as { route?: string };
+    void app.path.set(route ?? '/');
+  });
   ghost = app;
   return app;
 }

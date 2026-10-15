@@ -245,8 +245,8 @@ const AppFrame: React.FC<{
       surfaceOrigin,
       context: () => contextRef.current,
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
-      navigate: (next, { replace, move: appMove }) =>
-        navigateForApp(appPathRoute(id, next), { replace, state: { appMove } }),
+      navigate: (next, { move: appMove }) =>
+        navigateForApp(appPathRoute(id, next), { replace: true, state: { appMove } }),
       open: (place) => navigateForApp(placeRoute(place)),
     }),
   );
