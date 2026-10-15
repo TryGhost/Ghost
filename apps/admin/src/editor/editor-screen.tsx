@@ -93,10 +93,13 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 function EditorHeader({
   postType,
   analyticsReturn,
+  iconOnlyBack,
   children,
 }: {
   postType: PostType;
   analyticsReturn?: string;
+  /** The back link shows its arrow alone, its destination named only to assistive tech. */
+  iconOnlyBack: boolean;
   children?: ReactNode;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
@@ -112,20 +115,22 @@ function EditorHeader({
     >
       <PageHeader.Action
         className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
-        fallbackSize="sm"
+        fallbackSize={iconOnlyBack ? 'icon-sm' : 'sm'}
         fallbackVariant="ghost"
+        iconOnly={iconOnlyBack}
         label={backLabel}
+        tooltip={false}
         asChild
       >
         {analyticsReturn ? (
           <AdminLink to={analyticsReturn}>
             <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
+            {!iconOnlyBack && <span className="max-[500px]:sr-only">{backLabel}</span>}
           </AdminLink>
         ) : (
           <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
             <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
+            {!iconOnlyBack && <span className="max-[500px]:sr-only">{backLabel}</span>}
           </AdminLink>
         )}
       </PageHeader.Action>
@@ -465,7 +470,11 @@ function EditorContent({
             )}
             data-writing-focus={writingFocus}
           >
-            <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+            <EditorHeader
+              analyticsReturn={analyticsReturn}
+              iconOnlyBack={editorImprovements}
+              postType={postType}
+            >
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
                 <EditorStatus
                   isDirty={session.isDirty()}

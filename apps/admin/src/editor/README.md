@@ -118,6 +118,10 @@ entry, but a new post never gets it. While the link leads to analytics, the
 status line is hidden unless the post's newsletter failed to send or a save
 failed.
 
+Under `admin7EditorImprovements` the link shows its arrow alone at every width,
+as a square button with no tooltip, and "Posts", "Pages" or "Analytics" stays
+its accessible name. Without the flag the arrow stands alone only below 500px.
+
 ## Images
 
 The feature image and the X and Facebook card images share one field: a file
