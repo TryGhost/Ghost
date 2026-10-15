@@ -9,7 +9,6 @@ import {
   isTheme,
   type AppExports,
   type HostExports,
-  type PathChangeOptions,
   type Place,
   type Theme,
 } from '@tryghost/app-contracts';
@@ -281,20 +280,11 @@ export class Channel {
       get current(): string {
         return current();
       },
-      set: async (path: string, options?: PathChangeOptions): Promise<void> => {
+      set: async (path: string): Promise<void> => {
         if (!isContainedPath(path)) {
           throw invalidPath(ARGUMENT_MESSAGES.appPath);
         }
-        if (options !== undefined && !isRecord(options)) {
-          throw invalidArgument(ARGUMENT_MESSAGES.pathChangeOptions);
-        }
-        const adminPath = await (options === undefined
-          ? this.#call('pathChanged', path)
-          : this.#call(
-              'pathChanged',
-              path,
-              cloneArgument(options, ARGUMENT_MESSAGES.pathChangeOptions),
-            ));
+        const adminPath = await this.#call('pathChanged', path);
         if (!isContainedPath(adminPath)) {
           throw new GhostAppError(
             'rejected',

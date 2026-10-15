@@ -71,7 +71,6 @@ export type {
   HelloMessage,
   HostErrorCode,
   HostExports,
-  PathChangeOptions,
   Place,
   StartContext,
   Theme,

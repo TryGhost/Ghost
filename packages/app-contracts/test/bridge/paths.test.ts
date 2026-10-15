@@ -1,12 +1,9 @@
-import { describe, expect, expectTypeOf, it } from 'vitest';
-import type { z } from 'zod';
+import { describe, expect, it } from 'vitest';
 
 import {
   APP_PATH_MAX_LENGTH,
   AppPathSchema,
-  PathChangeOptionsSchema,
   TITLE_MAX_LENGTH,
-  type PathChangeOptions,
   TitleSchema,
 } from '../../src/bridge/index.ts';
 
@@ -65,25 +62,6 @@ describe('an app path', () => {
     const spaces = `/s?q=${' '.repeat(1000)}x`;
     expect(spaces.length).toBeLessThan(APP_PATH_MAX_LENGTH);
     expect(pathError(spaces)).toBe('Expected a path of at most 2048 characters');
-  });
-});
-
-describe('path change options', () => {
-  it('parse to the PathChangeOptions type, which is written out without zod', () => {
-    expectTypeOf<z.output<typeof PathChangeOptionsSchema>>().toEqualTypeOf<PathChangeOptions>();
-  });
-
-  it('accepts replace, or nothing', () => {
-    expect(PathChangeOptionsSchema.parse({})).toEqual({});
-    expect(PathChangeOptionsSchema.parse({ replace: true })).toEqual({ replace: true });
-  });
-
-  it('refuses options it does not know', () => {
-    expect(PathChangeOptionsSchema.safeParse({ replace: 'yes' }).success).toBe(false);
-    expect(PathChangeOptionsSchema.safeParse({ reload: true }).success).toBe(false);
-    expect(PathChangeOptionsSchema.safeParse(null).error?.issues[0]?.message).toBe(
-      'Expected options such as { replace: true }',
-    );
   });
 });
 

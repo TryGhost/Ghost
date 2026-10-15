@@ -82,7 +82,6 @@ export const ARGUMENT_MESSAGES = {
     `Expected no ${name.toLowerCase()} header, which only Admin sets`,
   multipart: "Expected a content type other than multipart/*: apps can't upload files yet",
   appPath: 'Expected a path within the app, starting with a single /',
-  pathChangeOptions: 'Expected options such as { replace: true }',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
 } as const;
@@ -207,9 +206,8 @@ export type StartContext = {
   path: string;
 };
 
-// `Place` and `PathChangeOptions` are written out rather than inferred from their schemas, so
-// the SDK's declarations, which include them, don't depend on zod. Tests check that each one
-// matches its schema.
+// `Place` is written out rather than inferred from its schema, so the SDK's declarations, which
+// include it, don't depend on zod. A test checks that it matches its schema.
 
 /**
  * A place in Admin an app can send the publisher to: a post, a page or a member by its ID, or
@@ -220,12 +218,6 @@ export type Place =
   | { page: { id: string } }
   | { member: { id: string } }
   | { apps: true };
-
-/** How Admin records an app's new path in its history. */
-export type PathChangeOptions = {
-  /** For a redirect within the app, so the back button doesn't return to the path it left. */
-  replace?: boolean | undefined;
-};
 
 /** Admin's answer to a hello. The port travels in the message's transfer list, not its data. */
 export type ConnectMessage = {

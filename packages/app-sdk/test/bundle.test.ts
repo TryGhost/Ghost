@@ -151,7 +151,6 @@ describe('the package', () => {
         'GhostFetchInit',
         'GhostPath',
         'JsonBody',
-        'PathChangeOptions',
         'Place',
         'Session',
         'Site',

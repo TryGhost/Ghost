@@ -17,7 +17,6 @@ export type {
   GhostFetchInit,
   GhostPath,
   JsonBody,
-  PathChangeOptions,
   Place,
   Session,
   Site,

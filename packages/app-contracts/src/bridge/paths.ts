@@ -26,14 +26,3 @@ export const AppPathSchema = z
   .pipe(z.string().max(APP_PATH_MAX_LENGTH, tooLong));
 
 export type AppPath = z.output<typeof AppPathSchema>;
-
-/**
- * How Admin records an app's new path in its history. `replace` is for a redirect within the
- * app, which should not leave an entry the back button returns to.
- */
-export const PathChangeOptionsSchema = z.strictObject(
-  {
-    replace: z.boolean('Expected replace to be true or false').optional(),
-  },
-  ARGUMENT_MESSAGES.pathChangeOptions,
-);

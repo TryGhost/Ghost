@@ -268,7 +268,6 @@ describe('a refused argument', () => {
         ARGUMENT_MESSAGES.multipart,
       ],
       [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
-      [ghost.path.set('/a', true as never), ARGUMENT_MESSAGES.pathChangeOptions],
       [ghost.open('/posts' as never), ARGUMENT_MESSAGES.place],
     ];
     for (const [refusal, message] of refusals) {
@@ -368,12 +367,9 @@ describe('path', () => {
     const { ghost, host } = await started();
 
     await ghost.path.set('/episodes/12');
-    await ghost.path.set('/episodes/13', { replace: true });
+    await ghost.path.set('/episodes/13');
 
-    expect(host.pathChanged.mock.calls).toEqual([
-      ['/episodes/12'],
-      ['/episodes/13', { replace: true }],
-    ]);
+    expect(host.pathChanged.mock.calls).toEqual([['/episodes/12'], ['/episodes/13']]);
     expect(ghost.path.current).toBe('/episodes/13');
   });
 
@@ -429,18 +425,15 @@ describe('path', () => {
   });
 
   it.each([
-    ['a path without a leading slash', 'episodes', undefined, 'invalid_path'],
-    ['a path that names another host', '//evil.example', undefined, 'invalid_path'],
-    ['a path with a backslash', '/\\evil.example', undefined, 'invalid_path'],
-    ['a path that is not text', 12 as unknown as string, undefined, 'invalid_path'],
-    ['options that are not an object', '/a', true as never, 'invalid_argument'],
-    ['options holding a function', '/a', { replace: () => true } as never, 'invalid_argument'],
-    ['options holding a symbol', '/a', { replace: Symbol('x') } as never, 'invalid_argument'],
-  ])('refuses %s without asking Admin', async (_label, path, options, code) => {
+    ['a path without a leading slash', 'episodes'],
+    ['a path that names another host', '//evil.example'],
+    ['a path with a backslash', '/\\evil.example'],
+    ['a path that is not text', 12 as unknown as string],
+  ])('refuses %s without asking Admin', async (_label, path) => {
     const { ghost, host } = await started();
-    const error = await ghost.path.set(path, options).catch((caught: unknown) => caught);
+    const error = await ghost.path.set(path).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(sdk.GhostAppError);
-    expect(error).toMatchObject({ code });
+    expect(error).toMatchObject({ code: 'invalid_path' });
     expect(host.pathChanged).not.toHaveBeenCalled();
   });
 

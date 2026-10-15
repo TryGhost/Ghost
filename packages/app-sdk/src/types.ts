@@ -1,8 +1,8 @@
-import type { PathChangeOptions, Place, StartContext, Theme } from '@tryghost/app-contracts';
+import type { Place, StartContext, Theme } from '@tryghost/app-contracts';
 
 import type { GhostAppError } from './errors.ts';
 
-export type { PathChangeOptions, Place, StartContext, Theme };
+export type { Place, StartContext, Theme };
 
 // The context is read-only: the SDK hands out frozen copies, so no part of a page can change
 // what every other part reads.
@@ -45,11 +45,13 @@ export interface GhostPath {
    */
   readonly current: string;
   /**
-   * Tells Admin the app moved to another of its own routes, so the address bar, a reload
-   * and the back button follow it. Use `replace` for a redirect. The app does its own
-   * routing; this does not navigate the page.
+   * Tells Admin the app moved to another of its own routes, so Admin's address and a reload
+   * follow it. Call it for every route change, including back and forward within the app.
+   * Admin replaces its current address rather than adding a history entry: the entry the back
+   * button returns to is the app's own. The app does its own routing; this does not navigate
+   * the page.
    */
-  set(path: string, options?: PathChangeOptions): Promise<void>;
+  set(path: string): Promise<void>;
 }
 
 export type Unsubscribe = () => void;
@@ -67,8 +69,10 @@ export interface Ghost {
   /** Called when the publisher switches Admin's theme. */
   onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe;
   /**
-   * Called when Admin's URL changes to another route within the app, through back, forward
-   * or a link. Not called for the app's own `path.set`.
+   * Called when Admin moves the app to another of its routes, such as through a link in Admin
+   * or back and forward across Admin's own history. Follow it without adding a history entry:
+   * `history.replaceState`, or `location.replace` in a multi-page app. Not called for the
+   * app's own `path.set`.
    */
   onPathChange(callback: (path: string) => void): Unsubscribe;
   /** Called once when the session ends. Called straight away if it already has. */

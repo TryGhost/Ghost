@@ -128,7 +128,9 @@ _Avoid_: session, connection, login, token
 
 **App path**:
 A route within an app's own page, such as `/episodes/12`, which Admin mirrors
-in its own URL so a reload or a shared link opens the same page. It starts with
+in its own URL so a reload or a shared link opens the same page. Admin mirrors
+each move by replacing its URL, so the frame's own history entry is the only
+one a move adds; a move Admin makes, the page follows the same way. It starts with
 a single `/` and can never point outside the app. Admin and the page both store
 it in the URL parser's normalised form, so the same route is identical on both
 sides.
