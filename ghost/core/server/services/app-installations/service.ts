@@ -83,11 +83,11 @@ export interface AppInstallationPreview {
 }
 
 /**
- * `revision` is the installation's revision when the session started. Every change to the
- * installation increments it, so the session ends once the two differ.
+ * The session is pinned to `installation.revision` as it was when the session started.
+ * Every change to the installation increments the revision, so the session ends once it
+ * changes.
  */
 export interface AppSession {
-  revision: number;
   installation: AppInstallation;
 }
 
@@ -578,8 +578,8 @@ export class AppInstallationsService {
 
   /**
    * Starts an app session when Admin opens an app page. Re-checks the manifest, then
-   * returns the installation and its current revision, which Admin decides what to show
-   * from. Nothing about the session is stored.
+   * returns the installation, which Admin decides what to show from. Nothing about the
+   * session is stored.
    */
   async startSession(id: string): Promise<AppSession> {
     await this.recheck(id);
@@ -588,7 +588,7 @@ export class AppInstallationsService {
     if (installation.status === 'uninstalled') {
       throw notInstalled();
     }
-    return { revision: installation.revision, installation };
+    return { installation };
   }
 
   private recheck(id: string): Promise<void> {

@@ -97,9 +97,9 @@ _Avoid_: accept, update
 
 **App session**:
 One run of an installed app in Admin, started when Admin opens one of its
-pages. Starting a session re-checks the app and returns the installation and
-its current revision. Nothing is stored and no token is issued; the session
-ends when the installation's revision changes.
+pages. Starting a session re-checks the app and returns the installation. The
+session is pinned to the installation's revision at that point. Nothing is
+stored and no token is issued; the session ends when the revision changes.
 _Avoid_: login, token, connection
 
 **Re-check**:

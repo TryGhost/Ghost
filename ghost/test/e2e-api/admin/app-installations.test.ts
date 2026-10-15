@@ -748,7 +748,7 @@ describe('App installations Admin API', function () {
         : null;
     };
 
-    it('returns the revision and the installation, changing nothing when the manifest is unchanged', async function () {
+    it('returns the installation, changing nothing when the manifest is unchanged', async function () {
       const installed = await install();
       serve(manifest());
 
@@ -756,8 +756,7 @@ describe('App installations Admin API', function () {
 
       assert.deepEqual(Object.keys(body), ['app_sessions']);
       const [session] = body.app_sessions;
-      assert.deepEqual(Object.keys(session).sort(), ['installation', 'revision']);
-      assert.equal(session.revision, 0);
+      assert.deepEqual(Object.keys(session), ['installation']);
       assert.equal(session.installation.id, installed.id);
       assert.equal(session.installation.status, 'active');
       assert.equal(session.installation.revision, 0);
@@ -772,7 +771,6 @@ describe('App installations Admin API', function () {
       const { body } = await start(installed.id);
 
       const [session] = body.app_sessions;
-      assert.equal(session.revision, 1);
       assert.equal(session.installation.revision, 1);
       assert.equal(session.installation.status, 'active');
       assert.equal(session.installation.manifest.description, 'Episodes and players.');
@@ -916,7 +914,7 @@ describe('App installations Admin API', function () {
       serve(manifest());
       const { body: opened } = await start(installed.id);
       assert.equal(opened.app_sessions[0].installation.status, 'active');
-      assert.equal(opened.app_sessions[0].revision, 0);
+      assert.equal(opened.app_sessions[0].installation.revision, 0);
     });
 
     it('fails as unavailable when the fetched manifest is not valid, saying why', async function () {
@@ -977,7 +975,7 @@ describe('App installations Admin API', function () {
       load.restore();
       serve(manifest({ description: 'Changed' }));
       const { body } = await start(installed.id);
-      assert.equal(body.app_sessions[0].revision, 1);
+      assert.equal(body.app_sessions[0].installation.revision, 1);
     });
 
     it('answers 404 for an installation that has been uninstalled, without fetching', async function () {
@@ -1115,7 +1113,7 @@ describe('App installations Admin API', function () {
       assert.equal(first.isDone(), true);
       assert.equal(second.isDone(), false);
       assert.deepEqual(
-        sessions.map(({ body }) => body.app_sessions[0].revision),
+        sessions.map(({ body }) => body.app_sessions[0].installation.revision),
         [1, 1],
       );
       assert.equal((await manifestRows()).length, 2);
@@ -1143,7 +1141,7 @@ describe('App installations Admin API', function () {
       const { body } = await start(installed.id);
 
       const [session] = body.app_sessions;
-      assert.equal(session.revision, 1);
+      assert.equal(session.installation.revision, 1);
       assert.equal(session.installation.status, 'active');
       assert.equal(session.installation.manifest.name, 'Podcasts');
       const row = await installationRow(installed.id);
@@ -1172,7 +1170,7 @@ describe('App installations Admin API', function () {
       const { body } = await start(installed.id);
 
       const [session] = body.app_sessions;
-      assert.equal(session.revision, 1);
+      assert.equal(session.installation.revision, 1);
       assert.equal(session.installation.manifest.name, 'Podcasts');
     });
 
