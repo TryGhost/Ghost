@@ -1360,9 +1360,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
-          # Admin's nx build fans out across the whole frontend graph (admin-x-*,
-          # shade, koenig-lexical) via nx dependsOn rather than package
-          # deps, so a filtered install would miss pieces — install the full workspace.
+          # Admin's nx build fans out across the frontend graph (activitypub,
+          # admin-x-framework, shade, koenig-lexical), so install the full workspace.
 
       - name: Build admin
         # IS_SHIPPING enables the Sentry vite plugins in apps/admin and

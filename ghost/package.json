@@ -22,8 +22,6 @@
   "files": [
     "core/",
     "!core/built/**/*.map",
-    "!core/built/**/test-*",
-    "!core/built/**/tests-*",
     "content/*/README.md",
     "content/themes/casper/",
     "!content/themes/casper/pnpm-lock.yaml",
