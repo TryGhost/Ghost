@@ -490,6 +490,7 @@ function EditorContent({
                 <EditorHeaderActions
                   bottomBar={bottomBar}
                   currentUser={currentUser}
+                  editorImprovements={editorImprovements}
                   offersEmailRetry={offersEmailRetry}
                   openFlow={openFlow}
                   post={publishPost}
@@ -566,7 +567,6 @@ function EditorContent({
             postType={postType}
             reveal={settingsReveal}
             session={session}
-            showEditorHelp={editorImprovements}
             siteUrl={cardConfig.siteUrl}
           />
         ) : null}

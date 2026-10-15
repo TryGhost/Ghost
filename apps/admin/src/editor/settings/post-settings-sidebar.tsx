@@ -39,11 +39,12 @@ import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { SettingsLinkRow } from './settings-navigation-row';
 import { EDITOR_HELP_URL } from '@/editor/editor-help';
 import { MetaDataSection } from './meta-data-section';
+import { MetaDataTabsSection } from './meta-data-tabs-section';
 import { PostHistorySection } from './post-history-section';
 import { focusSettingsField } from './focus-settings-field';
 import {
-  SETTINGS_FIELD_SECTIONS,
   SETTINGS_SECTION_ORDER,
+  settingsSectionFor,
   type SettingsPanelField,
   type SettingsSectionId,
 } from './sections';
@@ -62,6 +63,7 @@ const MemoCodeInjectionSection = memo(CodeInjectionSection);
 const MemoDeleteSection = memo(DeleteSection);
 const MemoKeyboardShortcutsSection = memo(KeyboardShortcutsSection);
 const MemoMetaDataSection = memo(MetaDataSection);
+const MemoMetaDataTabsSection = memo(MetaDataTabsSection);
 const MemoPostHistorySection = memo(PostHistorySection);
 const MemoPublishDateSection = memo(PublishDateSection);
 const MemoShowTitleSection = memo(ShowTitleSection);
@@ -148,8 +150,11 @@ export interface PostSettingsSidebarProps {
    * already open rather than sliding in. Read only as the panel mounts.
    */
   opensInPlace?: boolean;
-  /** The link to Ghost's guide to the editor, which leaves the footer under admin7EditorImprovements. */
-  showEditorHelp?: boolean;
+  /**
+   * admin7EditorImprovements: the link to Ghost's guide to the editor, which leaves
+   * the footer, and Meta data's pane holding the X and Facebook cards as tabs.
+   */
+  editorImprovements?: boolean;
 }
 
 /**
@@ -167,7 +172,7 @@ export function PostSettingsSidebar({
   reveal,
   frameRef,
   opensInPlace = false,
-  showEditorHelp = false,
+  editorImprovements = false,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -195,7 +200,7 @@ export function PostSettingsSidebar({
   // Only a new request reveals: closing the pane afterwards must not reopen it.
   useEffect(() => {
     if (reveal) {
-      subviews.reveal(SETTINGS_FIELD_SECTIONS[reveal.field]);
+      subviews.reveal(settingsSectionFor(reveal.field, { combinedMetaData: editorImprovements }));
       setFocusing(reveal);
     }
   }, [reveal]);
@@ -225,9 +230,19 @@ export function PostSettingsSidebar({
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
-    'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
+    'meta-data': editorImprovements ? (
+      <MemoMetaDataTabsSection
+        cardConfig={cardConfig}
+        featureImage={featureImage}
+        revealField={focusing?.field}
+        session={session}
+        siteUrl={siteUrl}
+      />
+    ) : (
+      <MemoMetaDataSection session={session} siteUrl={siteUrl} />
+    ),
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
-    'editor-help': showEditorHelp ? (
+    'editor-help': editorImprovements ? (
       <SettingsLinkRow href={EDITOR_HELP_URL} icon={<LucideIcon.CircleHelp />}>
         {settingsEditorHelpRow}
       </SettingsLinkRow>
@@ -240,7 +255,8 @@ export function PostSettingsSidebar({
         <MemoDeleteSection postType={postType} session={session} />
       </Box>
     ),
-    'x-card': (
+    // Under admin7EditorImprovements the cards are tabs of Meta data's pane.
+    'x-card': editorImprovements ? null : (
       <MemoSocialCardSection
         cardConfig={cardConfig}
         featureImage={featureImage}
@@ -249,7 +265,7 @@ export function PostSettingsSidebar({
         siteUrl={siteUrl}
       />
     ),
-    'facebook-card': (
+    'facebook-card': editorImprovements ? null : (
       <MemoSocialCardSection
         cardConfig={cardConfig}
         featureImage={featureImage}

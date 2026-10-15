@@ -78,8 +78,9 @@ with `data-settings-field`, and `SETTINGS_FIELD_SECTIONS` in `sections.ts` names
 the section each field the save checks lives in.
 
 Returning to the section list and reopening the same social-card pane keeps an
-in-progress image upload pending. Its file picker and Unsplash button stay
-disabled until the upload succeeds or fails.
+in-progress image upload pending, as does switching between Meta data's tabs.
+Its file picker and Unsplash button stay disabled until the upload succeeds or
+fails.
 
 ## Escape
 
@@ -414,6 +415,11 @@ engines will compose their own. The address is the canonical URL when the post
 carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
+
+Under `admin7EditorImprovements` the X and Facebook cards are tabs of this pane
+rather than panes of their own: Search, X card and Facebook card, with no rows of
+their own in the section list. The pane opens on Search every time, unless the
+panel is taking the writer to a card's field, when it opens on that card's tab.
 
 ## X and Facebook cards
 
