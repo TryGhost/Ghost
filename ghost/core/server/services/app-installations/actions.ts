@@ -1,4 +1,4 @@
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 
 export interface Actor {
   id: string;
@@ -53,12 +53,14 @@ export type RecordAppInstallationAction = (input: {
  */
 export async function recordAppInstallationAction({
   Action,
+  logging,
   context,
   event,
   subject,
   details,
 }: {
   Action: ActionRecorder;
+  logging: Pick<GhostLogger, 'error'>;
   context: RequestContext;
   event: AppInstallationEvent;
   subject: string;

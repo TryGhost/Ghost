@@ -105,7 +105,7 @@ jobs:
           store-cache: save
 
       # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
-      # API and hid the errors — see tools/scripts/nx-set-shas.ts.
+      # API and hid the errors — see tools/scripts/ci/nx-set-shas.ts.
       - name: Set SHAs for Nx Commands
         if: env.IS_TAG != 'true'
         env:
@@ -115,7 +115,7 @@ jobs:
           # untested commits land, so there a lookup that comes up empty fails
           # the run rather than falling back to the previous commit.
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
-        run: node tools/scripts/nx-set-shas.ts --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
+        run: node tools/scripts/ci/nx-set-shas.ts --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
@@ -158,9 +158,9 @@ jobs:
               - '.claude/**'
               - '.github/workflows/ci.yml'
               - 'package.json'
-              - 'tools/scripts/check-agent-skill-links.ts'
+              - 'tools/scripts/ci/check-agent-skill-links.ts'
               - 'tools/scripts/test/check-agent-skill-links.test.ts'
-              - 'tools/scripts/check-agent-guidance.ts'
+              - 'tools/scripts/ci/check-agent-guidance.ts'
               - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
               - 'ghost/core/server/services/service-inventory.yaml'
@@ -171,7 +171,7 @@ jobs:
               - 'packages/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
-              - 'tools/scripts/check-internal-packages.ts'
+              - 'tools/scripts/ci/check-internal-packages.ts'
               - 'tools/gx/**'
               - 'tools/scripts/lib/constants.ts'
               - 'tools/scripts/test/check-internal-packages.test.ts'
@@ -340,7 +340,7 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
-          PUBLISH_MATRIX=$(node tools/scripts/build-publish-matrix.ts "$PUBLISH_PROJECTS")
+          PUBLISH_MATRIX=$(node tools/scripts/release/build-publish-matrix.ts "$PUBLISH_PROJECTS")
           echo "publish_matrix=$PUBLISH_MATRIX" >> "$GITHUB_OUTPUT"
 
       # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
@@ -426,7 +426,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node tools/scripts/check-app-version-bump.ts
+        run: node tools/scripts/ci/check-app-version-bump.ts
 
       # Fail the PR if a publishable package changed (source or a catalog entry
       # it consumes) but the branch adds no changeset covering it. Prototype of
@@ -436,10 +436,10 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node tools/scripts/change-check.ts
+        run: node tools/scripts/ci/change-check.ts
 
       - name: Check private packages are excluded from versioning
-        run: node tools/scripts/check-versioning-ignore.ts
+        run: node tools/scripts/ci/check-versioning-ignore.ts
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -466,7 +466,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node tools/scripts/check-migration-integrity.ts
+        run: node tools/scripts/ci/check-migration-integrity.ts
 
   job_lint:
     runs-on: ubuntu-latest
@@ -492,6 +492,9 @@ jobs:
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
+
+      - name: Lint with Oxlint
+        run: pnpm lint:oxlint
 
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
@@ -521,8 +524,8 @@ jobs:
       - name: Lint documentation guidance
         run: |
           node --test tools/scripts/test/check-agent-guidance.test.ts
-          node tools/scripts/check-agent-skill-links.ts
-          node tools/scripts/check-agent-guidance.ts
+          node tools/scripts/ci/check-agent-skill-links.ts
+          node tools/scripts/ci/check-agent-guidance.ts
 
   job_service_inventory:
     name: Validate service inventory
@@ -559,7 +562,7 @@ jobs:
           store-cache: 'false'
 
       - name: Check internal package golden path
-        run: node tools/scripts/check-internal-packages.ts
+        run: node tools/scripts/ci/check-internal-packages.ts
 
       - name: Test internal package checker
         run: node --test tools/scripts/test/check-internal-packages.test.ts
@@ -623,10 +626,10 @@ jobs:
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
       # Native modules like sharp cost memory in every process, so they should
-      # load on first use. The list lives in tools/scripts/lib/boot-modules.ts
+      # load on first use. The list lives in tools/scripts/ci/boot-modules.ts
       - name: Check boot skips lazy-loaded modules
         working-directory: ghost
-        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/assert-boot-skips-modules.ts index.js
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/ci/assert-boot-skips-modules.ts index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
@@ -1202,7 +1205,7 @@ jobs:
         # Reporting must not change the test step's result if the report is incomplete.
         continue-on-error: true
         run: |
-          node tools/scripts/summarize-admin-acceptance.ts \
+          node tools/scripts/ci/summarize-admin-acceptance.ts \
             --report=apps/admin/test-results/acceptance.json \
             --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
 
@@ -1471,7 +1474,7 @@ jobs:
           if [ "$GITHUB_REF_TYPE" != "tag" ]; then
             VERSION="${VERSION}+${GITHUB_SHA:0:7}"
           fi
-          node tools/scripts/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
+          node tools/scripts/build/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
 
   job_pack:
     name: Build Ghost-CLI archive
@@ -2138,7 +2141,7 @@ jobs:
             ARGS+=("--baseline=${RUNNER_TEMP}/baseline-report/image-report.json")
           fi
 
-          node tools/scripts/compare-image-report.ts "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
+          node tools/scripts/ci/compare-image-report.ts "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
@@ -2382,7 +2385,7 @@ jobs:
           printf '%s' "$E2E_TIMINGS" > "$RUNNER_TEMP/e2e-timings.json"
           pnpm exec playwright test --list --project=main --reporter=json > "$RUNNER_TEMP/e2e-list.json"
           mkdir -p shard-plan
-          node ../tools/scripts/e2e-shards.ts plan \
+          node ../tools/scripts/ci/e2e-shards.ts plan \
             --list "$RUNNER_TEMP/e2e-list.json" \
             --timings "$RUNNER_TEMP/e2e-timings.json" \
             --shard-index "$SHARD_INDEX" \
@@ -2541,7 +2544,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: tools/scripts/e2e-shards.ts
+          sparse-checkout: tools/scripts/ci/e2e-shards.ts
           sparse-checkout-cone-mode: false
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -2563,7 +2566,7 @@ jobs:
       - name: Record e2e timings
         run: |
           mkdir -p e2e-reports
-          node tools/scripts/e2e-shards.ts record \
+          node tools/scripts/ci/e2e-shards.ts record \
             --reports e2e-reports \
             --timings e2e-timings.json \
             --complete "${{ needs.job_e2e_tests.result == 'success' }}" \
@@ -2708,7 +2711,7 @@ jobs:
         id: compare
         working-directory: ${{ matrix.package_path }}
         run: |
-          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/next-version.ts" --latest .)
+          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/release/next-version.ts" --latest .)
           if [ -z "$LATEST" ]; then
             echo "No release in this version line yet"
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -2717,7 +2720,7 @@ jobs:
 
           npm pkg set version="$LATEST"
           pnpm nx build "${{ matrix.package_name }}"
-          node "$GITHUB_WORKSPACE/tools/scripts/compare-published.ts" --version "$LATEST" .
+          node "$GITHUB_WORKSPACE/tools/scripts/release/compare-published.ts" --version "$LATEST" .
 
       - name: Determine release version
         if: steps.compare.outputs.changed == 'true'
@@ -2727,7 +2730,7 @@ jobs:
           # npm is the source of truth for the moving part of the version (the
           # patch number, or the prerelease counter): see next-version.ts.
           # package.json only pins the line the package lives in.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/next-version.ts" .)
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/release/next-version.ts" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the output
@@ -2945,7 +2948,7 @@ jobs:
         run: |
           PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
           if [ -n "$PREV_TAG" ]; then
-            node tools/scripts/lib/release-notes.ts "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+            node tools/scripts/release/release-notes.ts "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
           else
             echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
           fi

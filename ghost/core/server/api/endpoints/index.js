@@ -352,6 +352,10 @@ module.exports = {
     return apiFramework.pipeline(require('./app-installation-previews'), localUtils);
   },
 
+  get appSessions() {
+    return apiFramework.pipeline(require('./app-sessions'), localUtils);
+  },
+
   get giftLinks() {
     return apiFramework.pipeline(require('./gift-links'), localUtils);
   },

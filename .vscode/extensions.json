@@ -1,3 +1,3 @@
 {
-  "recommendations": ["ms-vscode-remote.remote-containers"]
+  "recommendations": ["oxc.oxc-vscode", "ms-vscode-remote.remote-containers"]
 }

@@ -16,6 +16,7 @@ export const SETTINGS_SECTION_ORDER = [
   'meta-data',
   'x-card',
   'facebook-card',
+  'editor-font',
   'keyboard-shortcuts',
   'editor-help',
   'delete',
@@ -50,4 +51,33 @@ export type SettingsPanelField = keyof typeof SETTINGS_FIELD_SECTIONS;
 
 export function isSettingsPanelField(key: InvalidFieldKey): key is SettingsPanelField {
   return key in SETTINGS_FIELD_SECTIONS;
+}
+
+/**
+ * The tabs of the combined Meta data pane (admin7EditorImprovements), named for
+ * the sections each one stands in for.
+ */
+export const META_DATA_TABS = ['meta-data', 'x-card', 'facebook-card'] as const;
+
+export type MetaDataTab = (typeof META_DATA_TABS)[number];
+
+export function isMetaDataTab(value: string): value is MetaDataTab {
+  return (META_DATA_TABS as readonly string[]).includes(value);
+}
+
+/** The Meta data tab a field is edited in, or null for a field outside the pane. */
+export function metaDataTabFor(field: SettingsPanelField): MetaDataTab | null {
+  const section = SETTINGS_FIELD_SECTIONS[field];
+  return isMetaDataTab(section) ? section : null;
+}
+
+/**
+ * The section a field is edited in. With the cards combined into Meta data, a
+ * card's field lives in Meta data's pane, under its own tab.
+ */
+export function settingsSectionFor(
+  field: SettingsPanelField,
+  { combinedMetaData }: { combinedMetaData: boolean },
+): SettingsSectionId {
+  return combinedMetaData && metaDataTabFor(field) ? 'meta-data' : SETTINGS_FIELD_SECTIONS[field];
 }

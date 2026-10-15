@@ -1,8 +1,0 @@
-{
-  "extends": "../../ghost/tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "incremental": false
-  },
-  "include": ["rebuild-in-development-tables.cts", "../../ghost/types/**/*.d.ts"]
-}

@@ -15,6 +15,10 @@ const { querySimplePath } = get;
 import { endpoints as api } from '../../../../core/server/api';
 
 describe('{{#get}} helper', function () {
+  beforeAll(async function () {
+    await require('../../../../core/server/services/posts-public').default.init();
+  });
+
   let fn: SinonSpy;
   let inverse: SinonSpy;
   let locals: {

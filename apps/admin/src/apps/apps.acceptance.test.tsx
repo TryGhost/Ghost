@@ -142,6 +142,7 @@ describe('Managing apps', () => {
   });
 
   it('calls an app unresponsive when its page doesn’t load in time, and tries again', async () => {
+    fakeInstallations();
     fakeDetails(installation());
     const previous = appFrameTimeouts.ready;
     appFrameTimeouts.ready = 300;
@@ -167,6 +168,7 @@ describe('Managing apps', () => {
   });
 
   it('keeps a loading frame hidden until its page has loaded', async () => {
+    fakeInstallations();
     await fakeAppPage(installation());
     await fakeAppFrame({ delayMs: 600 });
 
@@ -183,6 +185,7 @@ describe('Managing apps', () => {
   });
 
   it('leaves a loaded app alone once the time it had to load is up', async () => {
+    fakeInstallations();
     const previous = appFrameTimeouts.ready;
     // Short, so the spec doesn't wait long for it to pass, but with room for the frame and
     // the probe to finish first on a slow runner.
@@ -206,6 +209,7 @@ describe('Managing apps', () => {
   // TODO(BER-3983): rests on the probe. With the bridge, a server that can't be reached is a
   // handshake that never comes, so this becomes a timeout and the spec changes with it.
   it('calls an app unresponsive straight away when its server can’t be reached', async () => {
+    fakeInstallations();
     fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
       app_installations: [installation()],
     }));
@@ -219,6 +223,7 @@ describe('Managing apps', () => {
   });
 
   it('refuses to frame an app whose page is on Admin’s own address', async () => {
+    fakeInstallations();
     // Accepted before Admin moved here, say. Nothing of it loads: no frame, no page fetch.
     const onAdmin = manifest({
       surfaces: [{ type: 'admin_page', url: `${window.location.origin}/ghost/app/` }],
@@ -234,6 +239,7 @@ describe('Managing apps', () => {
   });
 
   it('refuses to frame an app whose page is on the site’s address', async () => {
+    fakeInstallations();
     // Admin isn't necessarily served from the site's address, so that one is read.
     const site = siteResponse();
     site.site.url = 'https://blog.example.com/';
@@ -279,6 +285,7 @@ describe('Managing apps', () => {
   });
 
   it('doesn’t load an uninstalled app', async () => {
+    fakeInstallations();
     fakeDetails(installation({ status: 'uninstalled' }));
 
     await renderAdminApp(APP_ROUTE, { labs });
@@ -288,6 +295,7 @@ describe('Managing apps', () => {
   });
 
   it('says when an app page doesn’t exist', async () => {
+    fakeInstallations();
     const id = 'abcdefabcdefabcdefabcdef';
     fakeAdminEndpoint(
       'GET',
@@ -305,6 +313,7 @@ describe('Managing apps', () => {
   });
 
   it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
+    fakeInstallations();
     fakeAdminEndpoint(
       'GET',
       readPath('missing'),
@@ -321,6 +330,7 @@ describe('Managing apps', () => {
   });
 
   it('says an app page couldn’t load in its own words, not the API’s', async () => {
+    fakeInstallations();
     fakeAdminEndpoint(
       'GET',
       readPath('installation-1'),
@@ -359,6 +369,7 @@ describe('Managing apps', () => {
   });
 
   it('shows who made the app, where it runs, who installed it, and its history', async () => {
+    fakeInstallations();
     const moved = manifest({
       surfaces: [{ type: 'admin_page', url: 'https://podcast.example.net/admin' }],
     });
@@ -541,6 +552,7 @@ describe('Managing apps', () => {
   });
 
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {
+    fakeInstallations();
     fakeDetails(
       installation({
         status: 'uninstalled',
@@ -561,6 +573,7 @@ describe('Managing apps', () => {
   });
 
   it('says when an app doesn’t exist', async () => {
+    fakeInstallations();
     const id = 'abcdefabcdefabcdefabcdef';
     fakeAdminEndpoint(
       'GET',
@@ -578,6 +591,7 @@ describe('Managing apps', () => {
   });
 
   it('says an address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
+    fakeInstallations();
     fakeAdminEndpoint(
       'GET',
       readPath('missing'),

@@ -15,7 +15,7 @@ import {
   canManageMembers,
   canManageTags,
 } from '@tryghost/admin-x-framework/api/users';
-import { canManageApps } from '@/apps/api';
+import { NavGroup } from './nav-group';
 import { NavMenuItem } from './nav-menu-item';
 import { useNavigationExpanded } from './hooks/use-navigation-preferences';
 import { NavSavedViews } from './nav-saved-views';
@@ -100,7 +100,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const showTags = currentUser && canManageTags(currentUser);
   const showMembers = currentUser && canManageMembers(currentUser);
   const showAutomations = currentUser && canManageAutomations(currentUser);
-  const showApps = appsEnabled && currentUser && canManageApps(currentUser);
   const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
   const showComments = !!showMembers && commentsEnabled !== 'off';
   const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
@@ -113,114 +112,136 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     : isMemberActivityActive;
   const postsRoute = postNavigation.mainUrl;
   const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
+  const hasAudienceItems = Boolean(showMembers) || Boolean(showAutomations && automationsEnabled);
+
+  const contentItems = (
+    <>
+      <NavMenuItem.Collapsible
+        expanded={postsExpanded}
+        id="posts-submenu"
+        onExpandedChange={setPostsExpanded}
+      >
+        <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+          <PostsNavItemContent isActive={postsNavActive} to={postsRoute} />
+        </NavMenuItem.CollapsibleItem>
+
+        <NavMenuItem.CollapsibleMenu>
+          <NavSavedViews views={postViews} />
+        </NavMenuItem.CollapsibleMenu>
+      </NavMenuItem.Collapsible>
+
+      <NavMenuItem>
+        <NavMenuItem.Link isActive={pageNavigation.isMainActive} to={pageNavigation.mainUrl}>
+          <LucideIcon.File />
+          <NavMenuItem.Label>Pages</NavMenuItem.Label>
+        </NavMenuItem.Link>
+      </NavMenuItem>
+
+      {showTags && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="tags" activeOnSubpath>
+            <LucideIcon.Tag />
+            <NavMenuItem.Label>Tags</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+    </>
+  );
+
+  const audienceItems = (
+    <>
+      {showMembers && (
+        <>
+          {hasMemberViews ? (
+            <NavMenuItem.Collapsible
+              expanded={membersExpanded}
+              id="members-submenu"
+              onExpandedChange={setMembersExpanded}
+            >
+              <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
+                <MembersNavItemContent
+                  collapsible={true}
+                  count={memberCount}
+                  isActive={membersNavActive}
+                  to="members"
+                />
+              </NavMenuItem.CollapsibleItem>
+
+              <NavMenuItem.CollapsibleMenu>
+                <NavMemberViews />
+              </NavMenuItem.CollapsibleMenu>
+            </NavMenuItem.Collapsible>
+          ) : (
+            <NavMenuItem>
+              <MembersNavItemContent
+                collapsible={false}
+                count={memberCount}
+                isActive={membersNavActive}
+                to="members"
+              />
+            </NavMenuItem>
+          )}
+        </>
+      )}
+
+      {showComments && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="comments" activeOnSubpath>
+            <LucideIcon.MessagesSquare />
+            <NavMenuItem.Label>Comments</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+
+      {/* Recording mode (the prototype's ⌘⇧.) shows the prototype as the
+          product for screen recordings: the real item steps aside, and the
+          prototype's item below takes its name and icon. */}
+      {showAutomations && automationsEnabled && !recordingMode && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="automations" activeOnSubpath>
+            <LucideIcon.Zap />
+            <NavMenuItem.Label>Automations</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+
+      {showAutomations && automationsEnabled && (
+        <NavMenuItem>
+          <NavMenuItem.Link isActive={isProtoRouteActive} to="automations-proto/phase-1">
+            {recordingMode ? <LucideIcon.Zap /> : <LucideIcon.FlaskConical />}
+            <NavMenuItem.Label>
+              {recordingMode ? 'Automations' : 'Automations (Proto)'}
+            </NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+    </>
+  );
+
+  // With Apps on, eyebrows group the nav: Content and Audience here, Apps below.
+  if (appsEnabled) {
+    return (
+      <>
+        <NavGroup {...props}>
+          <NavGroup.Label>Content</NavGroup.Label>
+          <NavGroup.Menu>{contentItems}</NavGroup.Menu>
+        </NavGroup>
+        {hasAudienceItems && (
+          <NavGroup {...props}>
+            <NavGroup.Label>Audience</NavGroup.Label>
+            <NavGroup.Menu>{audienceItems}</NavGroup.Menu>
+          </NavGroup>
+        )}
+      </>
+    );
+  }
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          <NavMenuItem.Collapsible
-            expanded={postsExpanded}
-            id="posts-submenu"
-            onExpandedChange={setPostsExpanded}
-          >
-            <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
-              <PostsNavItemContent isActive={postsNavActive} to={postsRoute} />
-            </NavMenuItem.CollapsibleItem>
-
-            <NavMenuItem.CollapsibleMenu>
-              <NavSavedViews views={postViews} />
-            </NavMenuItem.CollapsibleMenu>
-          </NavMenuItem.Collapsible>
-
-          <NavMenuItem>
-            <NavMenuItem.Link isActive={pageNavigation.isMainActive} to={pageNavigation.mainUrl}>
-              <LucideIcon.File />
-              <NavMenuItem.Label>Pages</NavMenuItem.Label>
-            </NavMenuItem.Link>
-          </NavMenuItem>
-
-          {showTags && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="tags" activeOnSubpath>
-                <LucideIcon.Tag />
-                <NavMenuItem.Label>Tags</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {showMembers && (
-            <>
-              {hasMemberViews ? (
-                <NavMenuItem.Collapsible
-                  expanded={membersExpanded}
-                  id="members-submenu"
-                  onExpandedChange={setMembersExpanded}
-                >
-                  <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
-                    <MembersNavItemContent
-                      collapsible={true}
-                      count={memberCount}
-                      isActive={membersNavActive}
-                      to="members"
-                    />
-                  </NavMenuItem.CollapsibleItem>
-
-                  <NavMenuItem.CollapsibleMenu>
-                    <NavMemberViews />
-                  </NavMenuItem.CollapsibleMenu>
-                </NavMenuItem.Collapsible>
-              ) : (
-                <NavMenuItem>
-                  <MembersNavItemContent
-                    collapsible={false}
-                    count={memberCount}
-                    isActive={membersNavActive}
-                    to="members"
-                  />
-                </NavMenuItem>
-              )}
-            </>
-          )}
-
-          {showComments && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="comments" activeOnSubpath>
-                <LucideIcon.MessagesSquare />
-                <NavMenuItem.Label>Comments</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {/* Recording mode (the prototype's ⌘⇧.) shows the prototype as the
-              product for screen recordings: the real item steps aside, and the
-              prototype's item below takes its name and icon. */}
-          {showAutomations && automationsEnabled && !recordingMode && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="automations" activeOnSubpath>
-                <LucideIcon.Zap />
-                <NavMenuItem.Label>Automations</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {showAutomations && automationsEnabled && (
-            <NavMenuItem>
-              <NavMenuItem.Link isActive={isProtoRouteActive} to="automations-proto/phase-1">
-                {recordingMode ? <LucideIcon.Zap /> : <LucideIcon.FlaskConical />}
-                <NavMenuItem.Label>
-                  {recordingMode ? 'Automations' : 'Automations (Proto)'}
-                </NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {showApps && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="apps" activeOnSubpath>
-                <LucideIcon.LayoutGrid />
-                <NavMenuItem.Label>Apps</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
+          {contentItems}
+          {audienceItems}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

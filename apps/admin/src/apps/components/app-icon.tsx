@@ -56,6 +56,27 @@ export const AppIcon: React.FC<AppIconProps> = ({ manifest, size = 'md', classNa
   );
 };
 
+/**
+ * An app's icon at the size of a sidebar item's. A named icon is drawn bare, so
+ * the sidebar colours it like its own. An SVG the app serves is drawn for its
+ * accent colour, so it keeps a small tile of it.
+ */
+export const AppNavIcon: React.FC<AppIconProps['manifest']> = ({ icon, accent_color: color }) => {
+  if ('url' in icon) {
+    return (
+      <span
+        aria-hidden="true"
+        className="flex size-4 shrink-0 items-center justify-center rounded-[4px]"
+        style={{ backgroundColor: color }}
+      >
+        <img alt="" className="size-3" src={icon.url} />
+      </span>
+    );
+  }
+  const Glyph = namedIcon(icon.name) ?? LucideIcon.AppWindow;
+  return <Glyph aria-hidden="true" />;
+};
+
 /** The band an app's icon sits into at the top of the install screen, in its accent color. */
 export const AppBanner: React.FC<{ className?: string; color: string }> = ({
   className,

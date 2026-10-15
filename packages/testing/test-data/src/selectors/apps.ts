@@ -28,6 +28,9 @@ export const appNeedsApproval = 'app-needs-approval';
 export const appHistoryEntry = 'app-history-entry';
 export const appUninstallDialog = 'app-uninstall-dialog';
 export const appUninstallIntegrationKeyNote = 'app-uninstall-integration-key-note';
+export const navApps = 'nav-apps';
+export const navApp = 'nav-app';
+export const navAppNeedsApproval = 'nav-app-needs-approval';
 
 // accessible names
 export const installButton = 'Install';

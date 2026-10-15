@@ -27,7 +27,7 @@ installs easy to manage.
 
 The monorepo publishes packages to npm through two lanes. Which lane a package
 is on is the one piece of hand-maintained state:
-[`tools/scripts/publish-manifest.json`](../../tools/scripts/publish-manifest.json)
+[`tools/scripts/release/publish-manifest.json`](../../tools/scripts/release/publish-manifest.json)
 lists the continuous lane; every other publishable package is on the changeset
 lane.
 
@@ -41,7 +41,8 @@ pins the line the package lives in, and npm holds the moving part.
   line. The public apps use this.
 - `versioning: prerelease` pins `X.Y.Z-<tag>.0`. Each publish is the next
   `X.Y.Z-<tag>.N`, under the `distTag` the entry names, never `latest`. Alpha
-  packages use this until they graduate to the changeset lane.
+  packages use this until they graduate to the changeset lane. Shade publishes
+  this way under `alpha`.
 
 CI publishes only when the package really changed. The affected graph selects
 candidates; the job then builds each one at the live version, packs it, and

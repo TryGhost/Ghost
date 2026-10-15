@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, renameSync, rmSync, symlinkSync, writeFileSync 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import { hashViteEnv } from '../hash-vite-env.ts';
+import { hashViteEnv } from '../build/hash-vite-env.ts';
 
 describe('Vite dotenv cache input', () => {
   let directory: string;

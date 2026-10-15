@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { automationsScreen } from './automations.screen';
 import { page } from 'vitest/browser';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationStatus,
+} from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
 import {
   automation,
@@ -16,7 +19,7 @@ import {
   read as readAutomation,
 } from './run-list.test-utils';
 
-const read = (id: string, status: 'active' | 'inactive' = 'active') => {
+const read = (id: string, status: AutomationStatus = 'active') => {
   fakeAdminEndpoint('GET', new RegExp(`/automations/${id}/runs/\\?`), {
     meta: { pagination: { limit: 50, next_cursor: null } },
     automation_runs: [],
@@ -25,7 +28,7 @@ const read = (id: string, status: 'active' | 'inactive' = 'active') => {
 };
 const statsUrl = (id: string) =>
   `/automations/${id}/performance-stats/?${new URLSearchParams({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}`;
-const prepare = (id = 'first', status: 'active' | 'inactive' = 'active') => {
+const prepare = (id = 'first', status: AutomationStatus = 'active') => {
   read(id, status);
   return fakeAdminEndpoint('GET', statsUrl(id), response(id));
 };

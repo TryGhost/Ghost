@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
 import {
   Badge,
   tokenFieldClasses,
@@ -18,12 +19,9 @@ import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { canCreateLabel } from './can-create-label';
 
 // What the list used to be capped at (max-h-64), and the least worth showing rather than
-// collapsing to a sliver. Between them it takes whatever room is below the field.
+// collapsing to a sliver. Between them it takes whatever room there is next to the field.
 const PREFERRED_HEIGHT = 256;
 const MIN_HEIGHT = 120;
-// Between the field and the scrollable list: the dropdown's mt-1 offset and its border. The
-// space is measured from the field, so this is spent before the list gets any of it.
-const DROPDOWN_CHROME = 6;
 // Kept clear of the viewport edge so the list never sits flush against it.
 const GUTTER = 16;
 
@@ -67,12 +65,19 @@ const LabelRow: React.FC<LabelRowProps> = ({
   onToggle,
   onEditClick,
 }) => (
-  <CommandItem className="group" value={label.slug} onSelect={() => onToggle(label.slug)}>
-    <span className="flex-1 truncate">{label.name}</span>
+  <CommandItem
+    className="group"
+    // Names are not unique; the slug, on hover, is what tells two of them apart.
+    title={label.slug}
+    value={label.slug}
+    onSelect={() => onToggle(label.slug)}
+  >
+    {/* Wraps rather than truncates, so a long name reads whole. */}
+    <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{label.name}</span>
     {showEdit ? (
       <button
         aria-label={`Edit label ${label.name}`}
-        className="relative ml-1 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+        className="relative ml-1 flex size-5 shrink-0 items-center justify-center self-start rounded text-muted-foreground hover:text-foreground"
         type="button"
         onClick={(e) => {
           e.stopPropagation();
@@ -86,7 +91,7 @@ const LabelRow: React.FC<LabelRowProps> = ({
         <LucideIcon.Pencil className="absolute size-3 translate-x-2 opacity-0 transition-all duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
       </button>
     ) : (
-      isSelected && <LucideIcon.Check className="size-4 shrink-0 text-primary" />
+      isSelected && <LucideIcon.Check className="mt-0.5 size-4 shrink-0 self-start text-primary" />
     )}
   </CommandItem>
 );
@@ -191,8 +196,10 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
       {showCreate && (
         <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
-            <LucideIcon.Plus className="size-4" />
-            {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
+            <LucideIcon.Plus className="mt-0.5 size-4 self-start" />
+            <span className="min-w-0 [overflow-wrap:anywhere]">
+              {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
+            </span>
           </CommandItem>
         </CommandGroup>
       )}
@@ -216,13 +223,20 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
           key={label.id}
           className={cn(
             'cursor-pointer gap-1 pr-1',
-            isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
+            // Wraps rather than truncates, as the editor's chips do: one line still
+            // reads as a pill, and a taller chip keeps soft corners.
+            isAdmin7 &&
+              cn(
+                tokenFieldClasses.chip,
+                'h-auto rounded-[12px] bg-secondary py-1 text-left leading-4 whitespace-normal',
+              ),
           )}
           variant="outline"
           asChild
         >
           <button
             aria-label={`Remove ${label.name}`}
+            title={label.slug}
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -230,8 +244,8 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
             }}
             onKeyDown={(event) => event.stopPropagation()}
           >
-            {label.name}
-            <LucideIcon.X className="size-3" />
+            <span className={cn(isAdmin7 && 'min-w-0 [overflow-wrap:anywhere]')}>{label.name}</span>
+            <LucideIcon.X className={cn('size-3', isAdmin7 && 'mt-0.5 shrink-0 self-start')} />
           </button>
         </Badge>
       ))}
@@ -307,23 +321,34 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [maxHeight, setMaxHeight] = useState(PREFERRED_HEIGHT);
 
-  // No portal here (see the click-outside note below), so nothing anchors this for us: at a
-  // fixed height the list runs off-screen when the field sits low in a tall dialog. Opens
-  // downward as it always has and takes whatever room is below, scrolling inside it.
-  // Selecting labels wraps the field to another row and moves it, so that counts too.
-  useLayoutEffect(() => {
-    if (!open || !containerRef.current) {
-      return;
-    }
-    const spaceBelow =
-      window.innerHeight -
-      containerRef.current.getBoundingClientRect().bottom -
-      DROPDOWN_CHROME -
-      GUTTER;
-    setMaxHeight(Math.max(MIN_HEIGHT, Math.min(PREFERRED_HEIGHT, spaceBelow)));
-  }, [open, selectedSlugs.length]);
+  // Fixed rather than absolute, so a list wider than the field is not clipped by an
+  // overflow-hidden ancestor. No portal (see the click-outside note below): it stays in
+  // the Dialog's subtree. It flips above the field when it doesn't fit below, and follows
+  // the field as selecting labels wraps it to new rows.
+  const { refs, floatingStyles } = useFloating({
+    open,
+    placement: 'bottom-start',
+    strategy: 'fixed',
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(4),
+      flip({ padding: GUTTER }),
+      shift({ padding: GUTTER }),
+      size({
+        padding: GUTTER,
+        apply({ availableHeight, elements, rects }) {
+          // Never narrower than the field, unless the field outgrows the viewport:
+          // min-width beats the class's max-width, so it carries the gutter too.
+          elements.floating.style.minWidth = `min(${rects.reference.width}px, calc(100vw - ${GUTTER * 2}px))`;
+          elements.floating.style.setProperty(
+            '--label-list-max-height',
+            `${Math.max(MIN_HEIGHT, Math.min(PREFERRED_HEIGHT, availableHeight))}px`,
+          );
+        },
+      }),
+    ],
+  });
 
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -383,6 +408,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         shouldFilter={false}
       >
         <div
+          ref={refs.setReference}
           className={cn(
             isAdmin7
               ? tokenFieldClasses.field
@@ -430,18 +456,22 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
           />
         </div>
         {open && (
+          // As wide as its longest row, from the field's width up to 480px, past which a
+          // row wraps: a long name reads whole rather than cut short.
           <div
+            ref={refs.setFloating}
             className={cn(
-              'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
+              'z-50 w-max max-w-[min(480px,calc(100vw-32px))] border bg-white shadow-md dark:bg-gray-950',
               isAdmin7 ? 'rounded-menu' : 'rounded-md',
             )}
+            style={floatingStyles}
           >
             {optionSource.isInitialLoad ? (
               <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                 Loading labels...
               </div>
             ) : (
-              <CommandList className="overflow-y-auto" style={{ maxHeight }}>
+              <CommandList className="max-h-(--label-list-max-height) overflow-y-auto">
                 <LabelListItems
                   isCreating={isCreating}
                   labels={labels}

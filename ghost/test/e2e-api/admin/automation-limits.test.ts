@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import * as db from '../../../core/server/data/db';
 const labs: { isSet(name: string): boolean } = require('../../../core/shared/labs');
 import type { AddAutomationData } from '../../../core/server/services/automations/automations-api';
+import type { AutomationStatus } from '../../../core/server/services/automations/automations-repository';
 
 const {
   createDatabaseAutomationsRepository,
@@ -11,7 +12,7 @@ const {
 
 const { agentProvider, fixtureManager, hostLimits } = require('../../utils/e2e-framework');
 
-const payload = (status: 'active' | 'inactive' = 'active'): AddAutomationData => ({
+const payload = (status: AutomationStatus = 'active'): AddAutomationData => ({
   name: `Limit test ${ObjectId().toHexString()}`,
   description: '',
   status,

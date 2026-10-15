@@ -3,9 +3,8 @@ import { z } from 'zod';
 import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
-import logging from '@tryghost/logging';
-import { dequal } from 'dequal';
 import { type Knex } from 'knex';
 import { DefaultMap } from '../../../shared/default-map';
 // @ts-expect-error This module currently lacks type definitions.
@@ -30,12 +29,12 @@ import type {
   AutomationRunHistoryAction,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
-  AutomationTriggerTierScope,
   AutomationsRepository,
   BrowseOptions,
   EditAutomationData,
   Page,
 } from './automations-repository';
+import type { AutomationTriggerTierScope } from './automations-repository-2';
 import {
   DbDate,
   fromDatabaseDate,
@@ -80,10 +79,6 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
     trigger_tier_scope: 'all_paid',
   },
 ] as const;
-const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
-  free: 'free',
-  paid: 'all_paid',
-} as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
 
 const messages = {
   duplicateAutomationName: 'An automation with this name already exists.',
@@ -185,15 +180,6 @@ type EdgeRow = {
   target_action_id: string;
 };
 
-type RunToInsert = {
-  id: string;
-  created_at: DatabaseDate;
-  updated_at: DatabaseDate;
-  automation_id: string;
-  member_id: string;
-  member_email: string;
-};
-
 type StepToInsert = {
   id: string;
   created_at: DatabaseDate;
@@ -217,7 +203,7 @@ type StepToRunRow = {
   automation_run_id: string;
   automation_id: string;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
-  automation_status: 'inactive' | 'active';
+  automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
   action_id: string;
@@ -539,22 +525,6 @@ export function createDatabaseAutomationsRepository({
 
         return await buildAutomation(trx, updatedAutomation);
       });
-    },
-
-    async trigger(
-      options: ReadonlyDeep<{
-        memberEmail: string;
-        memberId: string;
-        memberStatus: 'free' | 'paid';
-        memberTierIds: string[];
-      }>,
-    ): Promise<void> {
-      return await knex.transaction((trx) =>
-        trigger(trx, {
-          ...options,
-          fakeWaitHoursMultiplier,
-        }),
-      );
     },
 
     async fetchAndLockSteps(limit: number): Promise<{
@@ -1074,88 +1044,6 @@ async function ensureWelcomeEmailAction(
   ]);
 }
 
-async function lockMemberForTriggering(trx: Knex.Transaction, memberId: string): Promise<void> {
-  await trx('members').where('id', memberId).forUpdate().first('id');
-}
-
-async function hasMemberAlreadyEnteredAutomation(
-  trx: Knex.Transaction,
-  automationId: string,
-  memberId: string,
-): Promise<boolean> {
-  const [{ hasAlreadyEntered }] = await trx.select<{ hasAlreadyEntered: number }[]>(
-    trx.raw('EXISTS ? AS hasAlreadyEntered', [
-      trx('automation_runs')
-        .select('id')
-        .where({ automation_id: automationId, member_id: memberId }),
-    ]),
-  );
-  return Boolean(hasAlreadyEntered);
-}
-
-async function trigger(
-  trx: Knex.Transaction,
-  options: ReadonlyDeep<{
-    memberEmail: string;
-    memberId: string;
-    memberStatus: 'free' | 'paid';
-    memberTierIds: string[];
-    fakeWaitHoursMultiplier: number | null;
-  }>,
-): Promise<void> {
-  const { memberEmail, memberId, memberStatus, memberTierIds, fakeWaitHoursMultiplier } = options;
-
-  await lockMemberForTriggering(trx, memberId);
-
-  const firstActions = await findFirstActionRevisions(trx, memberStatus, memberTierIds);
-
-  const runsToInsert: RunToInsert[] = [];
-  const stepsToInsert: StepToInsert[] = [];
-
-  await Promise.all(
-    firstActions.map(async (firstAction) => {
-      const automationId = firstAction.automation_id;
-
-      if (await hasMemberAlreadyEnteredAutomation(trx, automationId, memberId)) {
-        logging.info(
-          `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
-        );
-        return;
-      }
-
-      const now = new Date();
-      const nowString = toDatabaseDate(now);
-
-      const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
-
-      const run = {
-        id: ObjectId().toHexString(),
-        created_at: nowString,
-        updated_at: nowString,
-        automation_id: automationId,
-        member_id: memberId,
-        member_email: memberEmail,
-      };
-      runsToInsert.push(run);
-
-      const step = createRunStep({
-        automationRunId: run.id,
-        automationActionRevisionId: firstAction.automation_action_revision_id,
-        now,
-        readyAt,
-      });
-      stepsToInsert.push(step);
-    }),
-  );
-
-  if (runsToInsert.length > 0) {
-    await Promise.all([
-      trx('automation_runs').insert(runsToInsert),
-      trx('automation_run_steps').insert(stepsToInsert),
-    ]);
-  }
-}
-
 async function insertRunStep(
   trx: Knex.Transaction,
   options: ReadonlyDeep<{
@@ -1376,61 +1264,6 @@ function buildStepToRun(
         message: `Unexpected action type from database: ${row.type}`,
       });
   }
-}
-
-async function findFirstActionRevisions(
-  trx: Knex.Transaction,
-  memberStatus: 'free' | 'paid',
-  memberTierIds: readonly string[],
-): Promise<NextActionRevisionRow[]> {
-  return await trx('automations as automation')
-    .select(
-      'automation.id as automation_id',
-      'actions.id as action_id',
-      'revisions.id as automation_action_revision_id',
-      'actions.type as type',
-      'revisions.wait_hours as wait_hours',
-    )
-    .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
-    .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-    .where((builder) => {
-      builder.where(
-        'automation.trigger_tier_scope',
-        TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus],
-      );
-      if (memberStatus === 'paid' && memberTierIds.length > 0) {
-        builder.orWhere((selected) => {
-          selected
-            .where('automation.trigger_tier_scope', 'selected_paid')
-            .whereExists(
-              trx('automation_trigger_tiers as trigger_tier')
-                .select('trigger_tier.automation_id')
-                .where('trigger_tier.automation_id', trx.ref('automation.id'))
-                .whereIn('trigger_tier.product_id', memberTierIds),
-            );
-        });
-      }
-    })
-    .where('automation.status', 'active')
-    .whereNull('actions.deleted_at')
-    .whereNotExists(
-      trx('automation_action_edges as edge')
-        .select('edge.target_action_id')
-        .innerJoin(
-          'automation_actions as source_actions',
-          'source_actions.id',
-          'edge.source_action_id',
-        )
-        .whereNull('source_actions.deleted_at')
-        .where('edge.target_action_id', trx.ref('actions.id')),
-    )
-    .where(
-      'revisions.created_at',
-      trx('automation_action_revisions')
-        .max('created_at')
-        .where('action_id', trx.ref('actions.id')),
-    )
-    .orderBy(['actions.created_at', 'actions.id']);
 }
 
 async function finishStepAndEnqueueNext(
@@ -1921,7 +1754,7 @@ function shouldInsertActionRevision(
     return true;
   }
 
-  return !dequal(buildRevisionActionData(action, latestRevision), action.data);
+  return !isDeepStrictEqual(buildRevisionActionData(action, latestRevision), action.data);
 }
 
 function buildRevisionActionData(

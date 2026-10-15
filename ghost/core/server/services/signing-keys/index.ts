@@ -9,25 +9,31 @@ export type { SigningKeyProvider, SigningKeyPurpose } from './signing-key-servic
 let jobs: JobsService | undefined;
 let scheduled = false;
 
+const extras = { scheduleCheckJob };
+
 // Runs after settings init so the key rows exist; advances any rotation that's due before
 // anything signs or publishes a key.
-const signingKeys = defineService('Signing keys', async () => {
-  const settingsCache = require('../../../shared/settings-cache');
-  const models = require('../../models');
-  const instance = new SigningKeyService({
-    settingsCache,
-    Settings: models.Settings,
-    transaction: (fn) => models.Base.transaction(fn),
-    logging,
-    onRotationStarted: schedule,
-  });
-  await instance.check();
-  return instance;
-});
+const signingKeys = defineService(
+  'Signing keys',
+  async () => {
+    const settingsCache = require('../../../shared/settings-cache');
+    const models = require('../../models');
+    const instance = new SigningKeyService({
+      settingsCache,
+      Settings: models.Settings,
+      transaction: (fn) => models.Base.transaction(fn),
+      logging,
+      onRotationStarted: schedule,
+    });
+    await instance.check();
+    return instance;
+  },
+  extras,
+);
 
 export default signingKeys;
 
-export async function scheduleCheckJob(jobsService: JobsService): Promise<void> {
+async function scheduleCheckJob(jobsService: JobsService): Promise<void> {
   jobs = jobsService;
 
   // Nothing to advance until a key is rotated

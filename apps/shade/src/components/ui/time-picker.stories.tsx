@@ -9,7 +9,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A native time input with a clock icon and optional timezone suffix. Supports keyboard segment editing and standard input events.',
+          'A native time input with a clock icon, or a leading timezone in its place. Supports keyboard segment editing and standard input events.',
       },
     },
   },
@@ -35,11 +35,17 @@ export const Default: Story = {
   },
 };
 export const WithTimezone: Story = {
-  args: { suffix: 'UTC' },
-  parameters: { docs: { description: { story: 'Keep timezone context inside the field.' } } },
+  args: { prefix: 'AEDT' },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Lead with the timezone in place of the icon, so AM/PM keeps its room.',
+      },
+    },
+  },
 };
 export const Disabled: Story = {
-  args: { disabled: true, suffix: 'UTC' },
+  args: { disabled: true, prefix: 'UTC' },
   parameters: {
     docs: { description: { story: 'Display a time that cannot currently be edited.' } },
   },

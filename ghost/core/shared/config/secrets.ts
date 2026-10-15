@@ -46,7 +46,7 @@ function loadSecretsFromEnv(
 
     if (env[varName] !== undefined) {
       // new Error is allowed here, as we do not want config to depend on @tryghost/error
-      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
       throw new Error(`Cannot set both ${varName} and ${name} - use one or the other.`);
     }
 
@@ -56,7 +56,7 @@ function loadSecretsFromEnv(
       // env var names are case-sensitive on POSIX, so the same key can be set twice —
       // only a conflict if they disagree about which file to read
       if (duplicate.filePath !== filePath) {
-        // eslint-disable-next-line ghost/ghost-custom/no-native-error
+        // oxlint-disable-next-line ghost/ghost-custom/no-native-error
         throw new Error(
           `Cannot set both ${duplicate.name} and ${name} to different files - they resolve to the same config key.`,
         );
@@ -72,7 +72,7 @@ function loadSecretsFromEnv(
     try {
       contents = fs.readFileSync(filePath, 'utf8');
     } catch (err) {
-      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
       throw new Error(`Could not read the secret file referenced by ${name}: ${filePath}`, {
         cause: err,
       });

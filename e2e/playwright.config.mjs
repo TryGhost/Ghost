@@ -31,7 +31,7 @@ const config = {
     ? [
         ['list', { printSteps: true }],
         ['blob'],
-        // Per-file durations for CI shard balancing (tools/scripts/e2e-shards.ts).
+        // Per-file durations for CI shard balancing (tools/scripts/ci/e2e-shards.ts).
         ['json', { outputFile: 'json-report/report.json' }],
       ]
     : [

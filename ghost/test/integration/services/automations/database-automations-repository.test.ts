@@ -7,7 +7,9 @@ import type { Knex } from 'knex';
 import testUtils from '../../../utils';
 import { toDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
-import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository';
+import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
+import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
+import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository-2';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 const dbUtils = require('../../../utils/db-utils');
 
@@ -16,6 +18,14 @@ describe('database automations repository', function () {
   const automationId = ObjectId().toHexString();
 
   const selectedTierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+
+  const createApi = () =>
+    createAutomationsApi2({
+      repository: createDatabaseAutomationsRepository2({ knex }),
+      fakeWaitHoursMultiplier: null,
+      labs: { isSet: () => true },
+      domainEvents: { dispatch: () => {} },
+    });
 
   async function insertAutomation({
     id = ObjectId().toHexString(),
@@ -219,9 +229,10 @@ describe('database automations repository', function () {
   describe('trigger', function () {
     it('excludes paid members whose tier is not selected', async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
-      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const api = createApi();
       const memberId = ObjectId().toHexString();
-      await repo.trigger({
+      await api.trigger({
+        event: 'member_sign_up',
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
@@ -236,9 +247,10 @@ describe('database automations repository', function () {
 
     it('creates one run and step when two distinct selected tiers match', async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
-      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const api = createApi();
       const memberId = ObjectId().toHexString();
-      await repo.trigger({
+      await api.trigger({
+        event: 'member_sign_up',
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
@@ -281,17 +293,15 @@ describe('database automations repository', function () {
         knex.on('query', onKnexQuery);
 
         // Actually do the triggers.
-        const repo = createDatabaseAutomationsRepository({
-          knex,
-          fakeWaitHoursMultiplier: null,
-        });
+        const api = createApi();
         const triggerOptions = {
+          event: 'member_sign_up' as const,
           memberId,
           memberEmail,
           memberStatus: 'free' as const,
           memberTierIds: [],
         };
-        const triggers = Promise.all([repo.trigger(triggerOptions), repo.trigger(triggerOptions)]);
+        const triggers = Promise.all([api.trigger(triggerOptions), api.trigger(triggerOptions)]);
         triggers.catch(bothMemberLocksRequested.reject);
 
         try {
@@ -316,10 +326,7 @@ describe('database automations repository', function () {
     it('enrolls different members concurrently without deadlocking', async function () {
       const memberIds = [ObjectId().toHexString(), ObjectId().toHexString()];
       const memberEmails = await Promise.all(memberIds.map(insertMember));
-      const repo = createDatabaseAutomationsRepository({
-        knex,
-        fakeWaitHoursMultiplier: null,
-      });
+      const api = createApi();
 
       // Hold the referenced automation row so both triggers reach the run lookup
       // before either can insert its run.
@@ -344,7 +351,8 @@ describe('database automations repository', function () {
       knex.on('query-response', onKnexQueryResponse);
 
       const triggers = memberIds.map((memberId, index) =>
-        repo.trigger({
+        api.trigger({
+          event: 'member_sign_up',
           memberId,
           memberEmail: memberEmails[index],
           memberStatus: 'free',
@@ -379,8 +387,10 @@ describe('database automations repository', function () {
     it("returns each step once with the automation's current selected tiers", async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
-        await repo.trigger({
+        await api.trigger({
+          event: 'member_sign_up',
           memberId,
           memberEmail: await insertMember(memberId),
           memberStatus: 'paid',

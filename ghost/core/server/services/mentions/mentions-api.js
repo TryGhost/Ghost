@@ -244,7 +244,7 @@ module.exports = class MentionsAPI {
           source: webmention.source,
           target: webmention.target,
           timestamp: new Date(),
-          payload: webmention.payload,
+          payload: {},
           resourceId: resourceInfo.id ? resourceInfo.id.toHexString() : null,
           resourceType: resourceInfo.type,
           sourceTitle: metadata.title,
@@ -316,7 +316,6 @@ module.exports = class MentionsAPI {
    * @param {object} webmention
    * @param {URL} webmention.source
    * @param {URL} webmention.target
-   * @param {Object<string, any>} webmention.payload
    *
    * @returns {Promise<Mention>}
    */

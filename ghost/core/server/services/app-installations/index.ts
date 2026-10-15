@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
@@ -6,14 +7,17 @@ import {
   isInDevelopmentTable,
   shouldCreateInDevelopmentTables,
 } from '../../data/schema/in-development';
-import { recordAppInstallationAction, type RecordAppInstallationAction } from './actions';
-import { createManifestFetcher } from './fetch-manifest';
+import {
+  actingContext,
+  recordAppInstallationAction,
+  type RecordAppInstallationAction,
+} from './actions';
+import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
-export { actingContext } from './actions';
 export type { AppInstallation } from './codec';
-export type { AppInstallationPreview } from './service';
+export type { AppInstallationPreview, AppSession } from './service';
 
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.
@@ -22,36 +26,46 @@ export type { AppInstallationPreview } from './service';
  */
 const AppsConfig = z.object({ localhostAlias: z.string().min(1).nullable().default(null) });
 
+// Localhost manifest URLs, and the alias they are fetched through, are for development only.
+const isDevelopment = () => config.get('env') === 'development';
+
 function localhostAlias(): string | null {
-  if (config.get('env') !== 'development') {
+  if (!isDevelopment()) {
     return null;
   }
   return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
 }
 
+const extras = { actingContext, isAvailable };
+
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-export default defineService('App Installations', () => {
-  const { knex } = require('../../data/db');
-  const models = require('../../models');
-  const externalRequest = require('../../lib/request-external');
+export default defineService(
+  'App Installations',
+  () => {
+    const { knex } = require('../../data/db');
+    const models = require('../../models');
+    const externalRequest = require('../../lib/request-external');
 
-  const recordAction: RecordAppInstallationAction = (input) =>
-    recordAppInstallationAction({ Action: models.Action, ...input });
+    const recordAction: RecordAppInstallationAction = (input) =>
+      recordAppInstallationAction({ Action: models.Action, logging, ...input });
 
-  return new AppInstallationsService({
-    knex,
-    recordAction,
-    // Read per install, not once at boot: both are config, which tests change.
-    getManifestRules: () => ({
-      ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-      allowLocalhost: config.get('env') === 'development',
-    }),
-    fetchManifest: createManifestFetcher({
-      request: externalRequest,
-      getLocalhostAlias: localhostAlias,
-    }),
-  });
-});
+    return new AppInstallationsService({
+      knex,
+      recordAction,
+      loadManifest: createManifestLoader({
+        request: externalRequest,
+        logging,
+        // Read per load, not once at boot: both are config, which tests change.
+        getManifestRules: () => ({
+          ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
+          allowLocalhost: isDevelopment(),
+        }),
+        getLocalhostAlias: localhostAlias,
+      }),
+    });
+  },
+  extras,
+);
 
 /**
  * Whether this database has the installations table.
@@ -60,6 +74,6 @@ export default defineService('App Installations', () => {
  * databases. Once it is finalised and has a migration it exists everywhere, and this is
  * always true.
  */
-export function isAvailable(): boolean {
+function isAvailable(): boolean {
   return !isInDevelopmentTable('app_installations') || shouldCreateInDevelopmentTables();
 }

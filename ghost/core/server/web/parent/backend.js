@@ -17,7 +17,7 @@ module.exports = () => {
 
   backendApp.use(
     '/ghost',
-    require('../../services/auth/session').createSessionFromToken(),
+    require('../../auth/session').createSessionFromToken(),
     require('../admin')(),
   );
 

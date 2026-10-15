@@ -5,7 +5,7 @@ const supertest = require('supertest');
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
 const configUtils = require('../utils/config-utils');
-const postsPublicApi = require('../../core/server/api/endpoints/posts-public');
+let postsPublicApi;
 
 /**
  * The source test theme's post.hbs contains a {{#get "posts"}} block. When that
@@ -19,6 +19,7 @@ describe('Degraded render caching', function () {
 
   beforeAll(async function () {
     await testUtils.startGhost();
+    postsPublicApi = require('../../core/server/api/endpoints/posts-public');
     request = supertest.agent(config.get('url'));
   });
 

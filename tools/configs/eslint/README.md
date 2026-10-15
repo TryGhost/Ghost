@@ -28,7 +28,7 @@ temporary migration exceptions rather than defaults for new work.
 
 Ghost Core keeps a standalone configuration because its rule set does not fit
 a shared factory. Read that file directly. It can still import shared atoms such as `correctnessRules`, `nodeLibRules`,
-`localFilenamesPlugin`, and `strictLinterOptions` from `@internal/cfg-eslint`.
+and `strictLinterOptions` from `@internal/cfg-eslint`.
 
 ## Plugin dependencies
 
@@ -44,3 +44,46 @@ A workspace must declare every ESLint plugin that its configuration resolves.
 
 Run the workspace's `pnpm lint` target after changing its config. Run the root
 lint when changing shared rule atoms or either factory.
+
+## Custom rules in Oxlint
+
+`pnpm lint:oxlint` owns the eight `ghost-custom` rules and the three local rules
+(filename matching, Admin paths and E2E reset safety). Their standalone
+implementations live in `../oxlint/rules/`; they do not load ESLint plugins.
+The TypeScript plugins run directly on the pinned Node version. Their strict
+type check runs as part of `pnpm test`, or separately with
+`pnpm --filter @internal/cfg-oxlint test:types`. Oxlint API types come from
+`@oxlint/plugins` through type-only imports.
+
+The ESLint entries are removed, except for overrides that disable rules inherited
+from presets. `eslint-plugin-ghost` still supplies other checks, including import
+sorting, filename conventions and Mocha rules, so it remains installed.
+
+The root `.oxlintrc.json` preserves the previous workspace scopes, options and
+exceptions. API line limits, assertion-method checks and assertion-parameter
+checks were already disabled and remain off. All built-in Oxlint categories
+are off; enable further rules individually as `error` or `off`.
+`--deny-warnings` rejects accidental warnings.
+
+The `ghost/service-root-shape` rule checks only the migrated service roots listed
+in `.oxlintrc.json`. Its standalone implementation is
+`../oxlint/rules/service-root-shape.ts`. Update the configured paths when marking
+a root migrated; a tooling test compares them with the service inventory.
+Catalogue metadata validation remains separate from linting.
+
+The Oxlint-only `ghost/no-injected-service-libraries` rule checks migrated
+service roots for allowlisted libraries passed into local constructors. It
+reuses the service dependency policy in `.dependency-cruiser.cjs`; see the
+[services guide](../../../ghost/core/server/services/README.md#dependency-boundaries)
+for its scope and limits. There is no ESLint equivalent enabled.
+
+Run `pnpm lint` from the repository root to run both linters. CI does the same
+checks. When adding a workspace or changing a source/test scope, update the
+Oxlint overrides as well as the workspace's ESLint config. Use `oxlint-disable`
+comments for custom-rule exceptions so ESLint does not report unused directives.
+
+Run the rule and scope regression tests with
+`pnpm --filter @internal/scripts exec node --test test/oxlint.test.ts`.
+
+Run service-root compatibility and migration-scope tests with
+`pnpm --filter @internal/scripts exec node --test test/service-root-shape.test.ts`.

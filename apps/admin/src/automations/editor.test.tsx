@@ -6,6 +6,7 @@ import type {
   AutomationDetail,
   AutomationDetailResponseType,
   AutomationEmailStats,
+  AutomationStatus,
   EditAutomationPayload,
 } from '@tryghost/admin-x-framework/api/automations';
 import { RouterProvider, createMemoryRouter } from 'react-router';
@@ -179,7 +180,7 @@ const mockUseBrowseAutomationActionLinks = vi.fn<
 const mockEditMutation = {
   mutate: vi.fn<(payload: EditAutomationPayload, options: MockEditMutationOptions) => void>(),
   isLoading: false,
-  variables: undefined as { id: string; status: 'active' | 'inactive' } | undefined,
+  variables: undefined as { id: string; status: AutomationStatus } | undefined,
 };
 const mockReactFlow = {
   fitView: vi.fn(),
