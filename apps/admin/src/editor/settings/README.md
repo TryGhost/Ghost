@@ -78,8 +78,9 @@ with `data-settings-field`, and `SETTINGS_FIELD_SECTIONS` in `sections.ts` names
 the section each field the save checks lives in.
 
 Returning to the section list and reopening the same social-card pane keeps an
-in-progress image upload pending. Its file picker and Unsplash button stay
-disabled until the upload succeeds or fails.
+in-progress image upload pending, as does switching between Meta data's tabs.
+Its file picker and Unsplash button stay disabled until the upload succeeds or
+fails.
 
 ## Escape
 
@@ -88,7 +89,9 @@ it closes the list and keeps the term that was typed. In a code injection editor
 it frees the editor's Tab and closes nothing. In a dialog, a select or an
 uploader it closes that control. In the Unsplash search it closes the search and
 leaves the field it was opened from. With none of those open it closes the pane,
-and with no pane open the sidebar answers Escape with nothing.
+and with no pane open the sidebar answers Escape with nothing. The Editor font
+row's choices are not a layer: Escape leaves them shown, and only the row folds
+them away.
 
 The Unsplash search traps focus and loops Tab navigation in both directions.
 Closing it returns focus to the picker button when that field is still present.
@@ -415,6 +418,11 @@ carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
 
+Under `admin7EditorImprovements` the X and Facebook cards are tabs of this pane
+rather than panes of their own: Search, X card and Facebook card, with no rows of
+their own in the section list. The pane opens on Search every time, unless the
+panel is taking the writer to a card's field, when it opens on that card's tab.
+
 ## X and Facebook cards
 
 The card each network renders for the post is a pane of its own, and every role
@@ -445,6 +453,18 @@ address without its scheme. The two previews differ only in shape: X stacks the
 title, the description and the domain and shows the title whole, while Facebook
 stacks the domain, the title and the description and truncates both to the 140
 characters the description is held to.
+
+## Editor font
+
+Under `admin7EditorImprovements`, a row before Keyboard shortcuts chooses the font
+the writer reads the post in while editing, which the editor's footer offered
+before (see the [editor README](../README.md#editor-font)). Unlike the rows
+around it, it opens no pane: its chevron turns down and the three fonts slide
+open beneath it, each as a sample in its own font, and fold away the same way.
+Folded, they stay mounted but take no focus. A pick applies to the canvas at
+once and is saved as it is made. The row starts folded whenever the section
+list is shown again. Every role sees it, and it reaches every screen size,
+where the footer picker was hidden below `sm`.
 
 ## Keyboard shortcuts
 

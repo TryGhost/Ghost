@@ -153,9 +153,9 @@ export const editorScreen = {
   emailSizeWarning: () => page.getByTestId(editorEmailSizeWarning),
   emailSizeDetails: () => page.getByTestId(editorEmailSizeDetails),
   helpLink: () => page.getByRole('link', { name: editorHelpLink }),
-  /** The footer's [Aa] button (admin7EditorImprovements). */
+  /** The settings panel's Editor font row (admin7EditorImprovements). */
   fontToggle: () => page.getByTestId(editorFontToggle),
-  /** One of the open font picker's choices; `aria-checked` says whether it is the one in use. */
+  /** One of the expanded Editor font row's choices; `aria-checked` says whether it is the one in use. */
   fontOption: (label: 'Serif' | 'Sans' | 'Mono') =>
     page
       .getByRole('radiogroup', { name: editorFontPickerLabel })

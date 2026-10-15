@@ -32,14 +32,14 @@ function writingFocusOf(control: Locator) {
   return control.element().closest('[data-writing-focus]')?.getAttribute('data-writing-focus');
 }
 
-/** The footer's font picker takes the help link's place under the flag. */
+/** The footer's help link leaves for the settings panel under the flag. */
 function chrome({ flag = true }: { flag?: boolean } = {}) {
   return [
     editorScreen.backLink('post'),
     editorScreen.publishButton(),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
-    flag ? editorScreen.fontToggle() : editorScreen.helpLink(),
+    ...(flag ? [] : [editorScreen.helpLink()]),
     editorScreen.featureImageInput(),
   ];
 }

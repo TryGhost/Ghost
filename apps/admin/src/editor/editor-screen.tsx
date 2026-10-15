@@ -51,7 +51,6 @@ import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
-import { EditorFontPicker } from './editor-font-picker';
 import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
@@ -93,10 +92,13 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 function EditorHeader({
   postType,
   analyticsReturn,
+  iconOnlyBack,
   children,
 }: {
   postType: PostType;
   analyticsReturn?: string;
+  /** The back link shows its arrow alone, its destination named only to assistive tech. */
+  iconOnlyBack: boolean;
   children?: ReactNode;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
@@ -112,20 +114,22 @@ function EditorHeader({
     >
       <PageHeader.Action
         className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
-        fallbackSize="sm"
+        fallbackSize={iconOnlyBack ? 'icon-sm' : 'sm'}
         fallbackVariant="ghost"
+        iconOnly={iconOnlyBack}
         label={backLabel}
+        tooltip={false}
         asChild
       >
         {analyticsReturn ? (
           <AdminLink to={analyticsReturn}>
             <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
+            {!iconOnlyBack && <span className="max-[500px]:sr-only">{backLabel}</span>}
           </AdminLink>
         ) : (
           <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
             <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
+            {!iconOnlyBack && <span className="max-[500px]:sr-only">{backLabel}</span>}
           </AdminLink>
         )}
       </PageHeader.Action>
@@ -372,17 +376,11 @@ function EditorContent({
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const editorFont = useEditorFont(editorImprovements);
-  const [fontPickerOpen, setFontPickerOpen] = useState(false);
-  // The chrome stays while the settings panel is out, the font picker is open, or
-  // the status line reports a failed save or a failed newsletter.
+  // The chrome stays while the settings panel is out, or the status line reports
+  // a failed save or a failed newsletter.
   const writingFocus = useWritingFocus({
     enabled: editorImprovements,
-    blocked:
-      settingsOpen ||
-      settingsMoving ||
-      fontPickerOpen ||
-      session.state.kind === 'error' ||
-      didEmailFail,
+    blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
     writingAreaRef,
   });
   const leaveGuard = useEditorLeaveGuard(session, postType);
@@ -465,7 +463,11 @@ function EditorContent({
             )}
             data-writing-focus={writingFocus}
           >
-            <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+            <EditorHeader
+              analyticsReturn={analyticsReturn}
+              iconOnlyBack={editorImprovements}
+              postType={postType}
+            >
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
                 <EditorStatus
                   isDirty={session.isDirty()}
@@ -511,20 +513,11 @@ function EditorContent({
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
                 font={editorFont.font}
-                fontPicker={
-                  editorImprovements ? (
-                    <EditorFontPicker
-                      className="max-sm:hidden"
-                      control={editorFont}
-                      open={fontPickerOpen}
-                      onOpenChange={setFontPickerOpen}
-                    />
-                  ) : undefined
-                }
                 handleRef={postEditorRef}
                 postType={postType}
                 settingsMoving={settingsMoving}
                 showExcerpt={showExcerpt}
+                showHelpLink={!editorImprovements}
                 titleAndFeatureImageHidden={
                   postType === 'page' && liveShowTitleAndFeatureImage === false
                 }
@@ -550,6 +543,8 @@ function EditorContent({
           <PostSettingsSidebar
             cardConfig={currentCardConfig}
             currentUser={currentUser}
+            editorFont={editorImprovements ? editorFont : undefined}
+            editorImprovements={editorImprovements}
             featureImage={featureImage.featureImage}
             frameRef={settingsFrameRef}
             hasInlineExcerpt={showExcerpt}
@@ -557,7 +552,6 @@ function EditorContent({
             postType={postType}
             reveal={settingsReveal}
             session={session}
-            showEditorHelp={editorImprovements}
             siteUrl={cardConfig.siteUrl}
           />
         ) : null}
