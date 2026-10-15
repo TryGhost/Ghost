@@ -198,10 +198,11 @@ what a page sends does, and those schemas build on the same rules, so both
 sides read a path, a header or a refusal the same way.
 
 `fetch` takes an Admin API path, never a URL. Admin checks it with
-`checkAdminApiPath(path, apiRoot)`, which resolves it against the Admin API root
-and returns the URL to request, or `invalid_path` for anything that leaves the
-root and `blocked` for what the blocklist covers. `ADMIN_API_BLOCKLIST` lists
-those routes by category, each with its reason, and its header comment lists
+`checkAdminApiPath(path, method, apiRoot)`, which resolves it against the Admin
+API root and returns the URL to request, or `invalid_path` for anything that
+leaves the root and `blocked` for what the blocklist covers for that method.
+`ADMIN_API_BLOCKLIST` lists those routes by category, each with its reason, and
+its header comment lists
 what it leaves open until the security review (BER-3992). It is a stopgap until
 apps have their own token.
 
@@ -209,9 +210,10 @@ apps have their own token.
 import { checkAdminApiPath } from '@tryghost/app-contracts/bridge';
 
 const root = new URL('https://site.example/ghost/api/admin/');
-checkAdminApiPath('/posts/?limit=5', root); // { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/' }
-checkAdminApiPath('/../content/', root); // { problem: 'invalid_path' }
-checkAdminApiPath('/db/', root); // { problem: 'blocked', pathname: '/db/' }
+checkAdminApiPath('/posts/?limit=5', 'GET', root); // { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/' }
+checkAdminApiPath('/../content/', 'GET', root); // { problem: 'invalid_path' }
+checkAdminApiPath('/db/', 'GET', root); // { problem: 'blocked', pathname: '/db/' }
+checkAdminApiPath('/posts/?filter=tag:news', 'DELETE', root); // { problem: 'blocked', pathname: '/posts/' }
 ```
 
 ## Develop

@@ -7,7 +7,7 @@ const root = new URL('https://site.example/ghost/api/admin/');
 // The URL a path resolves to, or null when it is not an Admin API path. Every path in these
 // tests is open to apps, except in the tests about the blocklist.
 function resolved(path: string, apiRoot = root) {
-  const check = checkAdminApiPath(path, apiRoot);
+  const check = checkAdminApiPath(path, 'GET', apiRoot);
   expect(check.problem, path).not.toBe('blocked');
   return check.problem ? null : check.url.href;
 }
@@ -29,15 +29,17 @@ describe('checking an Admin API path', () => {
   });
 
   it('returns a new URL, leaving the root alone', () => {
-    const check = checkAdminApiPath('/posts/', root);
+    const check = checkAdminApiPath('/posts/', 'GET', root);
     expect(check.problem).toBeUndefined();
     expect((check as { url: URL }).url).not.toBe(root);
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
   });
 
   it('names the path within the API, as the blocklist read it', () => {
-    expect(checkAdminApiPath('/posts/?limit=5', root)).toMatchObject({ pathname: '/posts/' });
-    expect(checkAdminApiPath('/', root)).toMatchObject({ pathname: '/' });
+    expect(checkAdminApiPath('/posts/?limit=5', 'GET', root)).toMatchObject({
+      pathname: '/posts/',
+    });
+    expect(checkAdminApiPath('/', 'GET', root)).toMatchObject({ pathname: '/' });
   });
 
   it('works with a root written without its trailing slash, a query or a fragment', () => {
@@ -111,20 +113,30 @@ describe('checking an Admin API path', () => {
 
   it('allows .. that stays within the root, so the blocklist sees where it lands', () => {
     expect(resolved('/posts/%2e%2e/tags/')).toBe('https://site.example/ghost/api/admin/tags/');
-    expect(checkAdminApiPath('/posts/%2e%2e/users/password/', root)).toEqual({
+    expect(checkAdminApiPath('/posts/%2e%2e/users/password/', 'GET', root)).toEqual({
       problem: 'blocked',
       pathname: '/users/password/',
     });
   });
 
   it('blocks what the blocklist closes, naming the path within the API', () => {
-    expect(checkAdminApiPath('/db/?include=all', root)).toEqual({
+    expect(checkAdminApiPath('/db/?include=all', 'GET', root)).toEqual({
       problem: 'blocked',
       pathname: '/db/',
     });
-    expect(checkAdminApiPath('/members/abc/signin_urls/', root)).toEqual({
+    expect(checkAdminApiPath('/members/abc/signin_urls/', 'GET', root)).toEqual({
       problem: 'blocked',
       pathname: '/members/abc/signin_urls/',
+    });
+  });
+
+  it('checks the blocklist for the method of the request', () => {
+    expect(checkAdminApiPath('/posts/?filter=tag:news', 'DELETE', root)).toEqual({
+      problem: 'blocked',
+      pathname: '/posts/',
+    });
+    expect(checkAdminApiPath('/posts/?filter=tag:news', 'GET', root)).toMatchObject({
+      pathname: '/posts/',
     });
   });
 
@@ -136,13 +148,15 @@ describe('checking an Admin API path', () => {
       'https://site.example/',
       'https://site.example',
     ]) {
-      expect(checkAdminApiPath('/db/', new URL(apiRoot)), apiRoot).toEqual({
+      expect(checkAdminApiPath('/db/', 'GET', new URL(apiRoot)), apiRoot).toEqual({
         problem: 'blocked',
         pathname: '/db/',
       });
-      expect(checkAdminApiPath('/users/abc/token', new URL(apiRoot)), apiRoot).toMatchObject({
-        problem: 'blocked',
-      });
+      expect(checkAdminApiPath('/users/abc/token', 'GET', new URL(apiRoot)), apiRoot).toMatchObject(
+        {
+          problem: 'blocked',
+        },
+      );
     }
   });
 

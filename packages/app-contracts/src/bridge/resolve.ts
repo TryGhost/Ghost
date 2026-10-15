@@ -1,6 +1,6 @@
 import { isBlockedAdminApiPath } from './blocklist.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
-import { isContainedPath } from './rules.ts';
+import { isContainedPath, type FetchMethod } from './rules.ts';
 
 // The URL parser reads an escaped separator as part of one segment, but whatever decodes the
 // path next may read it as two segments.
@@ -26,11 +26,16 @@ export type AdminApiPathCheck =
  * The result is `invalid_path` unless the path stays under the root, on the root's origin.
  * Absolute and protocol-relative URLs, paths that don't start with `/`, backslashes, `..` in
  * any spelling the URL parser understands, and escaped separators are all `invalid_path`. A
- * path that stays under the root is `blocked` if the blocklist covers where it resolves to.
+ * path that stays under the root is `blocked` if the blocklist covers where it resolves to,
+ * for `method`.
  * The blocklist checks it as `pathname`: relative to the root, with its leading `/`, and
  * without the query.
  */
-export function checkAdminApiPath(path: string, apiRoot: URL): AdminApiPathCheck {
+export function checkAdminApiPath(
+  path: string,
+  method: FetchMethod,
+  apiRoot: URL,
+): AdminApiPathCheck {
   if (typeof path !== 'string' || path.length > FETCH_PATH_MAX_LENGTH || !isContainedPath(path)) {
     return { problem: 'invalid_path' };
   }
@@ -58,7 +63,7 @@ export function checkAdminApiPath(path: string, apiRoot: URL): AdminApiPathCheck
   // Slice against the root as normalised above, so a root written without its trailing `/`
   // can't shift the slice and let a path slip past the blocklist.
   const pathname = url.pathname.slice(root.pathname.length - 1);
-  if (isBlockedAdminApiPath(pathname)) {
+  if (isBlockedAdminApiPath(pathname, method)) {
     return { problem: 'blocked', pathname };
   }
   return { url, pathname };

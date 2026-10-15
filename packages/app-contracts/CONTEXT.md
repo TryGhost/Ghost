@@ -145,7 +145,9 @@ permissions, and takes an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 
 **Blocklist**:
-The Admin API routes the fetch escape hatch refuses whatever the method, listed
-by category with a reason for each in `ADMIN_API_BLOCKLIST`. It is a stopgap,
-not a complete list, and will be removed once apps have their own token.
+The Admin API routes the fetch escape hatch refuses, listed by category with a
+reason for each in `ADMIN_API_BLOCKLIST`. A route is refused for every method,
+except bulk deletes, which share their path with listing and are refused for
+`DELETE` only. It is a stopgap, not a complete list, and will be removed once
+apps have their own token.
 _Avoid_: permissions, scopes, denylist

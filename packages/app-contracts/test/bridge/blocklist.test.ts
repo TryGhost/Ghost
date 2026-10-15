@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ADMIN_API_BLOCKLIST, isBlockedAdminApiPath } from '../../src/bridge/blocklist.ts';
+import { FETCH_METHODS } from '../../src/bridge/rules.ts';
 
 describe('the Admin API blocklist', () => {
   it('gives every category a name, a reason and paths', () => {
@@ -9,10 +10,12 @@ describe('the Admin API blocklist', () => {
       'integrations',
       'identity_tokens',
       'sessions',
-      'member_sign_in',
+      'members',
+      'member_details',
       'gift_links',
       'settings',
       'uploads',
+      'bulk_deletes',
       'invites',
       'webhooks',
       'database',
@@ -50,7 +53,30 @@ describe('the Admin API blocklist', () => {
       '/authentication/invitation/',
       '/authentication',
     ],
-    member_sign_in: ['/members/5ddc9141c35e7700383b2937/signin_urls/'],
+    members: [
+      '/members/',
+      '/members/?filter=status:paid',
+      '/members/5ddc9141c35e7700383b2937/',
+      '/members/5ddc9141c35e7700383b2937/signin_urls/',
+      '/members/5ddc9141c35e7700383b2937/sessions/',
+      '/members/bulk/',
+      '/members/upload/',
+      '/members/stats/count/',
+      '/members/events/',
+      '/members/stripe_connect/',
+      '/members/metafields/custom/',
+      '/labels/',
+      '/labels/slug/vip/',
+    ],
+    member_details: [
+      '/comments/',
+      '/comments/abc/replies/',
+      '/comments/post/abc/',
+      '/feedback/abc/',
+      '/emails/abc/recipient-failures/',
+      '/automations/abc/runs/',
+      '/automations/abc/runs/def/',
+    ],
     gift_links: [
       '/posts/5ddc9141c35e7700383b2937/gift_links/',
       '/pages/5ddc9141c35e7700383b2937/gift_links/',
@@ -73,9 +99,8 @@ describe('the Admin API blocklist', () => {
       '/themes/upload/',
       '/redirects/upload/',
       '/posts/upload/',
-      '/members/upload/',
-      '/members/upload/?limit=all',
     ],
+    bulk_deletes: ['/posts/', '/posts/?filter=tag:news', '/pages/', '/PAGES'],
     invites: ['/invites/', '/invites/abc/'],
     webhooks: ['/webhooks/', '/webhooks/abc/'],
     database: ['/db/', '/db/backup/', '/db/media/inline/', '/exports/', '/exports/download/'],
@@ -94,12 +119,29 @@ describe('the Admin API blocklist', () => {
   });
 
   for (const [name, paths] of Object.entries(blocked)) {
-    it(`blocks ${name}`, () => {
+    const { methods = FETCH_METHODS } = ADMIN_API_BLOCKLIST.find(
+      (category) => category.name === name,
+    )!;
+    it(`blocks ${name} for ${methods.length === FETCH_METHODS.length ? 'every method' : methods.join(', ')}`, () => {
       for (const path of paths) {
-        expect(isBlockedAdminApiPath(path), path).toBe(true);
+        for (const method of methods) {
+          expect(isBlockedAdminApiPath(path, method), `${method} ${path}`).toBe(true);
+        }
       }
     });
   }
+
+  it('leaves listing posts and pages, and deleting one at a time, open', () => {
+    for (const [method, path] of [
+      ['GET', '/posts/'],
+      ['GET', '/pages/?filter=status:draft'],
+      ['POST', '/posts/'],
+      ['DELETE', '/posts/5ddc9141c35e7700383b2937/'],
+      ['DELETE', '/pages/5ddc9141c35e7700383b2937/'],
+    ] as const) {
+      expect(isBlockedAdminApiPath(path, method), `${method} ${path}`).toBe(false);
+    }
+  });
 
   it('leaves the rest of the Admin API open', () => {
     for (const path of [
@@ -107,7 +149,6 @@ describe('the Admin API blocklist', () => {
       '',
       '/posts/',
       '/posts/abc/',
-      '/members/',
       '/users/',
       '/users/?filter=id:abc',
       '/users/?filter=id:abc&include=roles',
@@ -121,9 +162,6 @@ describe('the Admin API blocklist', () => {
       '/sessions/',
       '/application/',
       '/posts/db/',
-      '/members/abc/sessions/',
-      '/members/abc/',
-      '/members/signin_urls/',
       '/custom_theme_settings/',
       '/posts/settings/',
       '/images/',
@@ -133,23 +171,33 @@ describe('the Admin API blocklist', () => {
       '/redirects/download/',
       '/posts/export/',
       '/posts/gift_links/',
+      '/tags/',
+      '/tiers/',
+      '/offers/',
+      '/newsletters/',
+      '/stats/member_count/',
+      '/emails/abc/',
+      '/emails/abc/batches/',
+      '/automations/',
+      '/automations/abc/',
+      '/posts/abc/comments/',
     ]) {
-      expect(isBlockedAdminApiPath(path), path).toBe(false);
+      expect(isBlockedAdminApiPath(path, 'GET'), path).toBe(false);
     }
   });
 
   it('reads paths the way the router does: any case, with or without a trailing slash', () => {
     for (const path of ['/db', '/db/', '/DB/', '/Db', '/USERS/abc/TOKEN', '/Apps/Installations/']) {
-      expect(isBlockedAdminApiPath(path), path).toBe(true);
+      expect(isBlockedAdminApiPath(path, 'GET'), path).toBe(true);
     }
   });
 
   it('ignores a query string or fragment', () => {
-    expect(isBlockedAdminApiPath('/db/?include=all')).toBe(true);
-    expect(isBlockedAdminApiPath('/db?x=1')).toBe(true);
-    expect(isBlockedAdminApiPath('/db#x')).toBe(true);
-    expect(isBlockedAdminApiPath('/posts/?path=/db/')).toBe(false);
-    expect(isBlockedAdminApiPath('/posts/#/db/')).toBe(false);
+    expect(isBlockedAdminApiPath('/db/?include=all', 'GET')).toBe(true);
+    expect(isBlockedAdminApiPath('/db?x=1', 'GET')).toBe(true);
+    expect(isBlockedAdminApiPath('/db#x', 'GET')).toBe(true);
+    expect(isBlockedAdminApiPath('/posts/?path=/db/', 'GET')).toBe(false);
+    expect(isBlockedAdminApiPath('/posts/#/db/', 'GET')).toBe(false);
   });
 
   it('blocks paths that only reach a route once decoded or collapsed', () => {
@@ -161,7 +209,7 @@ describe('the Admin API blocklist', () => {
       '//db',
       '/apps%2Finstallations',
     ]) {
-      expect(isBlockedAdminApiPath(path), path).toBe(true);
+      expect(isBlockedAdminApiPath(path, 'GET'), path).toBe(true);
     }
   });
 
@@ -175,7 +223,7 @@ describe('the Admin API blocklist', () => {
       '/posts/%zz/',
       '/posts/%E0%A4%A/',
     ]) {
-      expect(isBlockedAdminApiPath(path), path).toBe(true);
+      expect(isBlockedAdminApiPath(path, 'GET'), path).toBe(true);
     }
   });
 });

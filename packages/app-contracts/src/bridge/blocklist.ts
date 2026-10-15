@@ -1,30 +1,28 @@
+import type { FetchMethod } from './rules.ts';
+
 /**
  * The Admin API routes that apps can't reach through the fetch escape hatch.
  *
  * Apps call the Admin API with the staff user's own session. This stands in for an app-scoped
  * token with permissions, and the blocklist will be removed once that token exists. Until then,
  * it blocks the routes that hand out a credential that outlives the app's session, change who
- * can sign in or who the staff users are, change the site's settings, send site events to other
- * services, upload a file, import, export or delete the whole site, or install and approve apps.
+ * can sign in or who the staff users are, read or change members or their personal details,
+ * change the site's settings, send site events to other services, upload a file, delete in
+ * bulk, import, export or delete the whole site, or install and approve apps.
  *
  * The list is not complete. These routes stay open until the security review that comes before
  * opening apps to external developers decides on them (BER-3992):
  *
- * - Changing a member's email through `PUT /members/:id`, which lets whoever owns the new
- *   address sign in as that member. Blocking it would block every member edit.
- * - Connecting Stripe through `/members/stripe_connect`.
  * - Writes that leave code on the site: installing a theme from GitHub
  *   (`POST /themes/install?source=github`), and posts and pages, whose HTML cards are served
  *   unchanged, so any script in them runs on the site's own origin.
- * - Bulk deletes, edits and exports: `DELETE /members?all=true`, `PUT /members/bulk`,
- *   `GET /posts/export`, `DELETE /posts`, `DELETE /pages` and the bulk edits of posts and
- *   pages.
+ * - Bulk edits and exports of posts and pages: `PUT /posts/bulk`, `PUT /pages/bulk` and
+ *   `GET /posts/export`.
  *
- * Blocking only the bulk routes would gain little: an app acts with the staff user's own
- * authority, so it could make the same changes one request at a time.
- *
- * A route is blocked for every method. Separating harmless reads from dangerous writes per
- * route would mean more rules to get wrong, and apps don't need to read any of these routes.
+ * A route is blocked for every method, unless its category names the methods it blocks. Only
+ * bulk deletes do, because they share their path with listing: `DELETE /posts/` deletes
+ * every post a filter matches, while `GET /posts/` lists them. Deleting one post or page at a
+ * time stays open.
  *
  * Patterns are written in path segments: `:id` matches any one segment, and a final `*`
  * matches one or more further segments, so `/db` and `/db/*` together cover `/db` and
@@ -38,6 +36,8 @@ export interface BlockedAdminApiCategory {
   readonly reason: string;
   /** Paths relative to the Admin API root, in the form Ghost core's `routes.js` uses. */
   readonly paths: readonly string[];
+  /** The methods blocked on these paths. Every method is blocked when this is left out. */
+  readonly methods?: readonly FetchMethod[];
 }
 
 export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
@@ -64,10 +64,23 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
     paths: ['/session', '/session/*', '/authentication', '/authentication/*'],
   },
   {
-    name: 'member_sign_in',
+    name: 'members',
     reason:
-      "A member's sign-in link signs in as that member until the link expires, even after the app's session ends. This covers sign-in links only: changing a member's email has the same effect but stays open until BER-3992.",
-    paths: ['/members/:id/signin_urls'],
+      "Members are the publisher's audience, and their records hold personal data: names, emails, subscriptions and payments. Apps can't read or change members, their labels, or anything else under `/members` (sign-in links, imports and exports, Stripe, stats and events).",
+    paths: ['/members', '/members/*', '/labels', '/labels/*'],
+  },
+  {
+    name: 'member_details',
+    reason:
+      "These routes return members' names and emails along with other records: comments and their moderation, post feedback, an email's delivery failures and automation runs.",
+    paths: [
+      '/comments',
+      '/comments/*',
+      '/feedback/*',
+      '/emails/:id/recipient-failures',
+      '/automations/:id/runs',
+      '/automations/:id/runs/*',
+    ],
   },
   {
     name: 'gift_links',
@@ -84,7 +97,7 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
   {
     name: 'uploads',
     reason:
-      "Files stay out of the bridge for now. An uploaded file is served from the site's own origin, where an HTML file or a theme runs as the site, and a CSV import adds posts or members in bulk. The members export uses the same URL as the import, so it's blocked too.",
+      "Files stay out of the bridge for now. An uploaded file is served from the site's own origin, where an HTML file or a theme runs as the site, and a CSV import adds posts in bulk.",
     paths: [
       '/images/upload',
       '/media/upload',
@@ -93,8 +106,14 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
       '/themes/upload',
       '/redirects/upload',
       '/posts/upload',
-      '/members/upload',
     ],
+  },
+  {
+    name: 'bulk_deletes',
+    reason:
+      'Deleting every post or page a filter matches can wipe the site in one request. Deleting one at a time stays open.',
+    paths: ['/posts', '/pages'],
+    methods: ['DELETE'],
   },
   {
     name: 'invites',
@@ -126,14 +145,16 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
 const ANY_SEGMENT = ':';
 const ANY_REST = '*';
 
-// Each pattern split into segments, with every `:name` replaced by the same wildcard marker.
+// Each pattern split into segments, with every `:name` replaced by the same wildcard marker,
+// and the methods it blocks (every method when there are none).
 const PATTERNS = ADMIN_API_BLOCKLIST.flatMap((category) =>
-  category.paths.map((path) =>
-    path
+  category.paths.map((path) => ({
+    segments: path
       .split('/')
       .filter(Boolean)
       .map((segment) => (segment.startsWith(':') ? ANY_SEGMENT : segment)),
-  ),
+    methods: category.methods,
+  })),
 );
 
 function matches(pattern: readonly string[], segments: readonly string[]): boolean {
@@ -150,8 +171,8 @@ function matches(pattern: readonly string[], segments: readonly string[]): boole
 }
 
 /**
- * Whether apps are blocked from an Admin API path. Takes a pathname relative to the Admin API
- * root, such as `/users/abc/token/`. Everything from the first `?` or `#` is ignored, so a
+ * Whether apps are blocked from a request to an Admin API path with this method. Takes a
+ * pathname relative to the Admin API root, such as `/users/abc/token/`. Everything from the first `?` or `#` is ignored, so a
  * query can't be mistaken for part of the path.
  *
  * When a path could be interpreted more than one way, this blocks it. Ghost's router ignores
@@ -160,7 +181,7 @@ function matches(pattern: readonly string[], segments: readonly string[]): boole
  * decoded, or that still contains `.` or `..` after decoding, because where such a path leads
  * depends on which parser reads it.
  */
-export function isBlockedAdminApiPath(pathname: string): boolean {
+export function isBlockedAdminApiPath(pathname: string, method: FetchMethod): boolean {
   const path = pathname.split(/[?#]/, 1)[0] as string;
   let decoded: string;
   try {
@@ -172,5 +193,8 @@ export function isBlockedAdminApiPath(pathname: string): boolean {
   if (segments.some((segment) => segment === '.' || segment === '..')) {
     return true;
   }
-  return PATTERNS.some((pattern) => matches(pattern, segments));
+  return PATTERNS.some(
+    (pattern) =>
+      (!pattern.methods || pattern.methods.includes(method)) && matches(pattern.segments, segments),
+  );
 }
