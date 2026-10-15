@@ -26,7 +26,7 @@ const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
-const { exportRequestsService } = require('../../services/export-requests/export-requests-service');
+const exportRequests = require('../../services/export-requests').default;
 
 const postsService = getPostServiceInstance();
 
@@ -192,7 +192,7 @@ const controller = {
         components[key] = frame.data.components[key] === true;
       }
 
-      await exportRequestsService.requestExport({
+      await exportRequests.service.requestExport({
         components,
         requestedByUserId: frame.options.context.user,
       });

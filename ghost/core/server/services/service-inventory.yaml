@@ -3395,36 +3395,42 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Move the eager singleton from the implementation module to a boot-owned default root
-        and update the exports endpoint to read its ready instance. The constructor only
-        captures dependencies; configuration, signing and delivery happen per request.
-        Preserve current validation, timeout and zero-retry behavior without turning the
-        remote export operation into startup work.
+        The boot-owned default root constructs one ExportRequestsService with explicit config,
+        logging and request dependencies. The exports endpoint reads its ready instance per
+        request. Configuration, signing and delivery stay per operation, retaining validation,
+        timeout and zero-retry behavior without startup network work.
       reviewedAt: 44e8807320c51ab2b5cb67d3b50eafc252f72cb2
       sources:
+        - core/server/services/export-requests/index.ts
+        - core/boot.js
         - core/server/services/export-requests/export-requests-service.ts
         - core/server/api/endpoints/exports.js
         - core/server/lib/signed-webhook.ts
         - test/unit/server/services/export-requests/export-requests-service.test.ts
     entryPoints:
-      - export-requests/export-requests-service.ts
+      - export-requests/index.ts
     notes: >-
-      Move the eager deep-module singleton to the common composition pattern while preserving
-      per-request configuration and zero retries.
+      The prior auditedAt records the pre-migration baseline. This migration adds a boot-owned
+      root and explicit dependencies; request signing, live configuration and zero retries are
+      unchanged. Current root and boot contracts are recorded below; broader delivery and
+      transport lifecycle questions remain in blockers.
     contracts:
       exports:
         summary: >-
-          The TypeScript module exports named ExportRequestsService and exportRequestsService;
-          there is no index, init or shutdown API. The constructor accepts config, logging and
-          request overrides. requestExport requires its receiver and resolves undefined after
-          delivery; it does not return a job ID or inspect the response body. Unit tests use
-          constructed instances; the HTTP tests exercise the named singleton through the endpoint.
+          The TypeScript root default-exports a defineService initializer with init and a
+          guarded service getter; there are no extras. The implementation exports its
+          ExportRequestsService class, whose constructor requires config, logging and request.
+          requestExport requires its receiver and resolves undefined after delivery; it does
+          not return a job ID or inspect the response body. Class units use explicit dependencies;
+          root and HTTP tests exercise the shared ready instance through the endpoint.
         sources:
+          - core/server/services/export-requests/index.ts
           - core/server/services/export-requests/export-requests-service.ts
           - core/server/api/endpoints/exports.js
         tests:
@@ -3432,14 +3438,15 @@ services:
           - test/e2e-api/admin/exports-request.test.ts
       construction:
         summary: >-
-          Module evaluation eagerly constructs one instance with shared config, logger and
-          request dependencies, retaining those dependency objects without sending a request.
-          The exports endpoint destructures and retains that singleton. Repository searches
-          found no other runtime constructor or direct consumer; tests construct isolated
-          instances with overrides. Root units load the real endpoint, prove shared singleton
-          identity and no export-config reads/delivery during construction, then use that
-          retained endpoint with changed configuration. Lazy router timing remains source-only.
+          Import declares the initializer without constructing an application instance. Boot
+          awaits init, whose factory captures the shared config, logger and request objects
+          without reading export settings or sending a request. The endpoint retains the root
+          and reads service when handling a request. No other runtime constructor was found;
+          tests construct isolated class instances with explicit dependencies. Root units load
+          the real endpoint, observe calls on the ready instance, assert idle construction and
+          use the retained endpoint with changed configuration.
         sources:
+          - core/server/services/export-requests/index.ts
           - core/server/services/export-requests/export-requests-service.ts
           - core/server/api/endpoints/exports.js
         tests:
@@ -3465,14 +3472,14 @@ services:
           - test/unit/server/services/export-requests/root.test.ts
       startup:
         summary: >-
-          Boot does not initialize this root explicitly. Its normal import occurs while the
-          lazy Admin API router builds, potentially on the first Admin API request after boot;
-          building the route imports the singleton. Core config, authentication and permissions
-          must already be usable for the HTTP path.
-          Direct class use has no readiness guard and validates export configuration only on
-          requestExport. The HTTP suite uses completed boot; it does not pin lazy construction
-          timing or initialization failure.
+          Boot awaits the default root's init in initCore before frontend and API setup.
+          The factory only captures dependencies; missing export configuration does not block
+          boot. Consumers read service after readiness, and the kernel rejects earlier access.
+          The HTTP suite boots Ghost and reaches the real endpoint; no separate service-specific
+          boot harness is needed. Generic readiness/retry semantics are covered by kernel tests;
+          service-specific injected construction failure and repeated actual boot are untested.
         sources:
+          - core/server/services/export-requests/index.ts
           - core/boot.js
           - core/shared/express.js
           - core/server/web/parent/backend.js
@@ -3483,22 +3490,25 @@ services:
           - core/server/services/export-requests/export-requests-service.ts
           - package.json
         tests:
+          - test/unit/kernel/define-service.test.ts
           - test/e2e-api/admin/exports-request.test.ts
       lifetime:
         summary: >-
-          The module cache owns singleton identity and the endpoint keeps its imported reference;
-          replacing an export does not update that reference. There is no reset, reinit or
-          disposal hook and no mutable job state. Every call builds its own signed payload;
-          overlapping or repeated calls can send independently with no deduplication, pending
-          promise, local persistence or completion tracking. These lifetime boundaries are
-          partly source-derived: root units assert shared identity and held endpoint delivery;
-          concurrency, deduplication and repeated boot remain outside their coverage.
+          The initializer retains one process-lifetime instance across successful init calls;
+          the endpoint reads that same instance through the retained root. There is no reset,
+          reinit or disposal hook and no mutable job state. Every request builds its own signed
+          payload; overlapping or repeated calls can send independently with no deduplication,
+          local persistence or completion tracking. Root tests observe shared instance use and
+          hold endpoint delivery. Kernel tests protect generic retention; concurrent deliveries
+          and repeated actual boot remain outside this service's coverage.
         sources:
+          - core/server/services/export-requests/index.ts
           - core/server/services/export-requests/export-requests-service.ts
           - core/server/api/endpoints/exports.js
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
+          - test/unit/kernel/define-service.test.ts
           - test/unit/server/services/export-requests/root.test.ts
       configuration:
         summary: >-
@@ -3559,10 +3569,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin singleton publication, lazy Admin-router construction and retained endpoint identity
-        across repeated boot before changing composition. Root tests now pin import identity,
-        idle construction and retained endpoint delivery; HTTP tests use completed boot.
-        An introduced boot readiness boundary still needs cold-boot validation during migration.
+        Root units observe the ready instance through the retained endpoint and pin idle
+        construction and delivery. The HTTP suite exercises boot-owned readiness through the
+        real route. Repeated actual boot and service-specific construction-failure injection
+        remain outside this coverage; do not add reset/replacement behavior without tests.
       - >-
         Root tests now pin same-instance configuration replacement between completed requests.
         Changes during pending delivery and production hot reload remain separate questions.
