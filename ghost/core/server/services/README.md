@@ -38,6 +38,9 @@ and provider adapters as private implementation details.
   Caller-constructed archive builders belong there with their component definitions.
 - Put HTTP routing and middleware in the appropriate part of `server/web/`.
 - Keep API-specific support with its API owner rather than making it a service.
+- Keep the existing authentication subsystem together in
+  [`server/auth/`](../auth/README.md) while its longer-term ownership is settled.
+  Relocation preserves its current composition and does not complete lifecycle work.
 
 For example:
 

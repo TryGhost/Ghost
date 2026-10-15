@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 // @ts-expect-error This module lacks type definitions.
-import signinEmail from '../../../../../../core/server/services/auth/session/emails/signin';
+import signinEmail from '../../../../../core/server/auth/session/emails/signin';
 
 const t = (s: string) => s;
 

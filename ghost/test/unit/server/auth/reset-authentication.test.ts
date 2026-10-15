@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import resetAuthentication from '../../../../../core/server/services/auth/reset-authentication';
-import { AutoFillingMap } from '../../../../../core/server/lib/auto-filling-map';
+import resetAuthentication from '../../../../core/server/auth/reset-authentication';
+import { AutoFillingMap } from '../../../../core/server/lib/auto-filling-map';
 import type {
   InternalApiKey,
   InternalIntegrationSlug,
-} from '../../../../../core/server/services/internal-keys';
+} from '../../../../core/server/services/internal-keys';
 
 interface ActionRow {
   event: string;

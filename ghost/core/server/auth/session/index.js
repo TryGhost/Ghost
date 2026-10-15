@@ -1,17 +1,17 @@
-const adapterManager = require('../../adapter-manager').default;
+const adapterManager = require('../../services/adapter-manager').default;
 const createSessionService = require('./session-service');
 const { sessionFromToken } = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
-const settingsCache = require('../../../../shared/settings-cache');
-const { GhostMailer } = require('../../../lib/mail');
-const { t } = require('../../i18n');
+const settingsCache = require('../../../shared/settings-cache');
+const { GhostMailer } = require('../../lib/mail');
+const { t } = require('../../services/i18n');
 
 const expressSession = require('./express-session');
 
-const models = require('../../../models');
-const urlUtils = require('../../../../shared/url-utils').default;
-const config = require('../../../../shared/config');
-const { blogIcon } = require('../../../lib/image');
+const models = require('../../models');
+const urlUtils = require('../../../shared/url-utils').default;
+const config = require('../../../shared/config');
+const { blogIcon } = require('../../lib/image');
 const url = require('url');
 
 // TODO: We have too many lines here, should move functions out into a utils module

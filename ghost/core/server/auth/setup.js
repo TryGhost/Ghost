@@ -1,11 +1,11 @@
 const _ = require('lodash');
-const config = require('../../../shared/config');
+const config = require('../../shared/config');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const moment = require('moment');
-const models = require('../../models');
-const mail = require('../../lib/mail');
+const models = require('../models');
+const mail = require('../lib/mail');
 
 const messages = {
   setupAlreadyCompleted: 'Setup has already been completed.',

@@ -60,6 +60,10 @@ a nearby README says otherwise.
 For conventions used when adding a Ghost Core service, see the
 [services README](../../ghost/core/server/services/README.md).
 
+The [authentication subsystem](../../ghost/core/server/auth/README.md) lives in
+`ghost/core/server/auth/`. It keeps the existing authentication middleware and
+account workflows together while their longer-term ownership is settled.
+
 ## Koenig
 
 `koenig/` contains the Lexical editor UI and the `kg-*` packages used to store,

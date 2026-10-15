@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
-import type { InternalApiKey, InternalKeys } from '../internal-keys';
-import internalKeysDefault from '../internal-keys';
-const modelsDefault = require('../../models');
+import type { InternalApiKey, InternalKeys } from '../services/internal-keys';
+import internalKeysDefault from '../services/internal-keys';
+const modelsDefault = require('../models');
 const { deleteAllSessions: deleteAllSessionsDefault } = require('./session');
 
 interface ResetAuthenticationArgs {

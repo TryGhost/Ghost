@@ -1,10 +1,8 @@
 const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const {
-  authenticateContentApiKey,
-} = require('../../../../../../core/server/services/auth/api-key/content');
-const { ApiKey } = require('../../../../../../core/server/models/api-key');
+const { authenticateContentApiKey } = require('../../../../../core/server/auth/api-key/content');
+const { ApiKey } = require('../../../../../core/server/models/api-key');
 const sinon = require('sinon');
 
 describe('Content API Key Auth', function () {

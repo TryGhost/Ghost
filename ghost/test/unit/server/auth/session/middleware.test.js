@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
-const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
-const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
-const models = require('../../../../../../core/server/models');
+const sessionMiddleware = require('../../../../../core/server/auth').session;
+const SessionMiddlware = require('../../../../../core/server/auth/session/middleware');
+const models = require('../../../../../core/server/models');
 const sinon = require('sinon');
-const labs = require('../../../../../../core/shared/labs');
-const urlUtils = require('../../../../../../core/shared/url-utils').default;
+const labs = require('../../../../../core/shared/labs');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 describe('Session Service', function () {
   // A session can only be created for the admin panel's own origin, so these
