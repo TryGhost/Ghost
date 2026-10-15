@@ -16,7 +16,7 @@ import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
 export type { AppInstallation } from './codec';
-export type { AppInstallationPreview } from './service';
+export type { AppInstallationPreview, AppSession } from './service';
 
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.

@@ -11,51 +11,50 @@ import {
 import { createManifestFetcher } from './fetch-manifest';
 import { StoredManifest } from './schema';
 
-/** What the manifest is checked against: where Ghost is served from, and in which mode. */
+/** The rules a manifest is checked against: the site's URL and the environment. */
 export type ManifestRules = Omit<ParseManifestOptions, 'manifestUrl'>;
 
 /**
- * A manifest Ghost has fetched from its manifest URL itself and parsed, ready to preview,
- * compare or keep.
+ * A manifest fetched server-side from its manifest URL and parsed, ready to preview,
+ * compare or store.
  */
 export interface LoadedManifest {
   /**
-   * The manifest URL it was loaded from, as the URL parser reads it and before any
-   * redirect: what is stored, and loaded again later.
+   * The manifest URL as parsed, before any redirect. This is what's stored and fetched
+   * again later.
    */
   manifestUrl: string;
-  /** Parsed, with its URLs resolved against where it was read from after any redirects. */
+  /** Parsed, with relative URLs resolved against the final URL after redirects. */
   manifest: AppManifest;
   /** Exactly the text that is stored and digested. */
   serialised: string;
-  /** Stored with the manifest, and what a publisher confirms. */
+  /** Stored with the manifest, and sent back when a publisher confirms. */
   digest: string;
 }
 
 export type LoadManifest = (manifestUrl: string) => Promise<LoadedManifest>;
 
 /**
- * The address is part of the digest because two addresses can serve the same manifest once
- * every URL in it is absolute: a review of one would otherwise confirm the other, and that
- * other address would then decide every future update.
+ * The digest includes the manifest URL because two URLs can serve identical manifests
+ * once every URL in them is absolute. Without it, reviewing one URL would also confirm the
+ * other, and that other URL would then be used for every future re-check.
  *
- * Encoding builds the manifest in the schema's key order, so the same manifest always
- * serialises the same way. The newline between address and manifest cannot be mistaken
- * for part of either: the URL parser strips newlines, and the encoded JSON has none.
+ * Encoding writes keys in the schema's order, so the same manifest always serialises the
+ * same way. The newline separator can't appear in either part: the URL parser strips
+ * newlines, and the encoded JSON has none.
  */
 function digestOf(manifestUrl: string, serialisedManifest: string): string {
   return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
 }
 
 /**
- * Checks a manifest URL before anything is fetched from it, fetches the manifest through
- * `request`, and parses it against where it was finally read from. A redirect is judged
- * only by whether it stays on the same host (or moves it from HTTP to HTTPS); the manifest
- * rules apply to where it ends, when parsing checks that address.
+ * Checks a manifest URL, fetches the manifest through `request`, and parses it against
+ * the final URL. Redirects are only checked for staying on the same host (or upgrading
+ * HTTP to HTTPS); the manifest rules apply to the final URL when it's parsed.
  *
  * Every problem is thrown as a Ghost error with an `APP_MANIFEST_*` code, which Admin
- * explains to the publisher. `getManifestRules` and `getLocalhostAlias` are asked on every
- * load, as both come from config.
+ * explains to the publisher. `getManifestRules` and `getLocalhostAlias` are called on
+ * every load because both read config.
  */
 export function createManifestLoader({
   request,
@@ -89,7 +88,7 @@ export function createManifestLoader({
         context: parsed.errors
           .map(({ path, message }) => (path ? `${path}: ${message}` : message))
           .join('; '),
-        // The same problems one by one, so Admin can list them for the app's developer.
+        // Each problem separately, so Admin can list them for the app's developer.
         errorDetails: parsed.errors,
       });
     }

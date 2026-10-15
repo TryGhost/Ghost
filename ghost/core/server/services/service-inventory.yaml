@@ -586,16 +586,21 @@ services:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        The guarded boot factory still composes one resource-free instance after database
-        readiness. Return that instance through the initializer and update endpoint access,
-        preserving schema gating and live manifest/configuration callbacks. The new history,
-        detail and uninstall behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 3754ca3a35265ab51ae2b0513ea13496c6918e23
+        The guarded boot factory still composes one instance after database readiness. It
+        holds no resources, but it keeps the manifest re-checks in flight, which starting
+        app sessions together relies on to share one fetch, so it must stay the one retained
+        instance rather than be composed per request. Return that instance through the
+        initializer and update endpoint access, preserving schema gating and live
+        manifest/configuration callbacks. The new history, detail, uninstall and app session
+        behavior is per operation and adds no startup lifecycle.
+      reviewedAt: 3c94513eb28f32663409d7990c74cccfb9528523
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
+        - core/server/services/app-installations/decide-on-manifest.ts
         - core/server/services/app-installations/history.ts
         - core/server/api/endpoints/app-installations.ts
+        - core/server/api/endpoints/app-sessions.ts
         - core/boot.js
     entryPoints:
       - app-installations/index.ts
@@ -624,17 +629,22 @@ services:
           from the outbound request guard, a manifest-rules getter and the localhost alias;
           successful initialization retains that ready instance. Root units prove no connection
           access on import, one retained instance without queries/delivery, and no publication after
-          a failed connection acquisition followed by a successful retry.
+          a failed connection acquisition followed by a successful retry. The retained
+          instance also holds the in-flight re-check per installation that app sessions
+          starting together share; e2e tests cover two sessions making one fetch.
         sources:
           - core/server/services/app-installations/index.ts
+          - core/server/services/app-installations/service.ts
           - core/server/services/app-installations/load-manifest.ts
           - core/boot.js
         tests:
+          - test/e2e-api/admin/app-installations.test.ts
           - test/unit/server/services/app-installations/index.test.ts
       configuration:
         summary: >-
           The site and Admin URLs and the development flag are read every time a manifest
-          is loaded (preview, install and approval), not captured at construction. Root units
+          is loaded (preview, install, approval and the re-check at app session start), not
+          captured at construction. Root units
           change development aliases, environment and publication URLs on one instance and
           assert current preview routing/validation. Availability is read per request from
           config and has separate HTTP coverage.

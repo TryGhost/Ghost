@@ -27,7 +27,7 @@ export const StoredManifest = DbJson(AppManifestSchema, {
 });
 
 // Mirrors schema.js's `isIn` on the column, which is static config and cannot import this.
-export const AppInstallationManifestSource = z.enum(['install', 'approval', 'update']);
+export const AppInstallationManifestSource = z.enum(['install', 'approval', 'update', 'resume']);
 
 /** A manifest an installation has run or been asked to approve, as the table holds it. */
 export const DbAppInstallationManifest = z.object({
@@ -51,8 +51,8 @@ type AppInstallationInsert = Omit<
 > &
   Partial<Pick<z.input<typeof DbAppInstallation>, 'revision' | 'pending_manifest_id'>>;
 
-// `revision` is only ever moved on in the database itself, as a raw expression, so two
-// changes at once cannot both write the same number.
+// `revision` is only incremented in SQL (`revision + 1`), so two concurrent changes can't
+// write the same number.
 type AppInstallationUpdate = Partial<
   Omit<z.input<typeof DbAppInstallation>, 'revision'> & { revision: Knex.Raw<number> }
 >;

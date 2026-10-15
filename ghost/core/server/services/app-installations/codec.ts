@@ -2,15 +2,15 @@ import { z } from 'zod';
 import { DbAppInstallation, DbAppInstallationManifest } from './schema';
 
 /**
- * An installation joined with the approved manifest it runs, as the read query returns it
- * and as the Admin API returns it. The columns keep their names; decoding is what turns
- * the dates, the status and the manifest text into what the rest of Ghost works with.
+ * An installation joined with its approved manifest. The read query and the Admin API use
+ * the same field names; decoding converts the dates, the status and the manifest JSON.
  */
 export const AppInstallationRow = z.object({
   ...DbAppInstallation.pick({
     id: true,
     app_id: true,
     status: true,
+    revision: true,
     created_at: true,
     updated_at: true,
   }).shape,
@@ -24,12 +24,12 @@ export interface HistoryActor {
 }
 
 /**
- * `actor` is null when Ghost made the change itself.
- * It's also null when there's no record of who installed the app.
+ * `actor` is null for changes the re-check made, and when there's no record of who
+ * installed the app.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
-  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  event: 'installed' | 'updated' | 'suspended' | 'resumed' | 'changes_approved' | 'uninstalled';
   actor: HistoryActor | null;
   created_at: Date;
   /** The host the app moved to. Only set when an approval moved the app. */
@@ -43,12 +43,13 @@ export type AppInstallation = z.output<typeof AppInstallationRow> & {
 };
 
 /**
- * The current installation of an app, with the manifest it was approved with: what a
- * newer manifest is compared against, and what approving one replaces.
+ * An app's installation that hasn't been uninstalled, with its approved manifest. Loaded
+ * manifests are compared against it.
  */
 export const CurrentInstallationRow = z.object({
   ...DbAppInstallation.pick({
     id: true,
+    app_id: true,
     status: true,
     manifest_id: true,
     pending_manifest_id: true,
@@ -60,7 +61,7 @@ export const CurrentInstallationRow = z.object({
 export type CurrentInstallation = z.output<typeof CurrentInstallationRow>;
 
 /**
- * What tells a manifest waiting for approval apart from the one just reviewed: its digest
- * covers the manifest and the address it is read from.
+ * The pending manifest's digest, which covers the manifest and its URL. A loaded manifest
+ * is the pending one when the digests match.
  */
 export const PendingManifestRow = DbAppInstallationManifest.pick({ id: true, digest: true });

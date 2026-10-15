@@ -31,9 +31,9 @@ function statusOf(err: unknown): number | undefined {
   return typeof response.statusCode === 'number' ? response.statusCode : undefined;
 }
 
-// Says only that the app answered with an error, never why a request failed otherwise, so
-// the preview cannot be used to map the network Ghost runs in. The reason is logged, so an
-// operator can still tell a timeout from a certificate problem.
+// Says only that the app answered with an error status, never why any other request
+// failed, so the preview can't be used to probe the server's network. The reason is
+// logged, so an operator can still tell a timeout from a certificate problem.
 function unreachable(manifestUrl: string, err: unknown) {
   const status = statusOf(err);
   logging.warn(`Could not load the app manifest at ${manifestUrl}`);
@@ -60,18 +60,18 @@ function staysOnHost(from: URL, to: URL): boolean {
 }
 
 /**
- * Fetches an app's manifest on the server, through the outbound request guard, so a
- * manifest Ghost acts on never comes from the browser.
+ * Fetches an app's manifest server-side, through the outbound request guard, so a
+ * manifest is never taken from the browser.
  *
- * A redirect to another host is refused: the publisher reviews an app by where its
- * install link points, and the manifest must come from there. Each hop is judged against
- * the one before it, so an upgrade to HTTPS cannot be followed by a step back down.
+ * Redirects to another host are refused: the publisher reviews an app by its install
+ * link's URL, so the manifest must come from that host. Each hop is checked against the
+ * previous one, so an upgrade to HTTPS can't be followed by a downgrade.
  *
- * `getLocalhostAlias` is for Ghost running in a container in development. There `localhost`
- * is the container, not the developer's machine where the app runs, so a localhost address
- * (by the same rule the manifest uses) is fetched through the alias (e.g.
- * `host.docker.internal`) with the original Host header. The manifest keeps its own URLs,
- * which the browser still uses as they are.
+ * `getLocalhostAlias` is for running Ghost in a container in development, where
+ * `localhost` is the container rather than the developer's machine. Localhost URLs (by
+ * the manifest's rule) are fetched through the alias (e.g. `host.docker.internal`) with
+ * the original Host header. The manifest's own URLs aren't changed, since the browser
+ * uses them as they are.
  */
 export function createManifestFetcher({
   request,
@@ -82,7 +82,7 @@ export function createManifestFetcher({
 }): FetchManifest {
   return async function fetchManifest(manifestUrl) {
     const alias = getLocalhostAlias();
-    // Where the manifest is being read from now, by the address the browser would use.
+    // The URL being fetched now, as the browser would see it (without the alias).
     let current = new URL(manifestUrl);
 
     const isAliased = (url: URL) => alias !== null && isLocalhost(url.hostname);
@@ -96,8 +96,8 @@ export function createManifestFetcher({
     };
     const hostHeader = (url: URL) => (isAliased(url) ? { host: url.host } : {});
 
-    // Where a response's Location header points, by the address the browser would use:
-    // undefined without one, null when it is not a URL.
+    // A response's Location as the browser would see it: undefined if there's none, null
+    // if it isn't a URL.
     const locationOf = (response: PlainResponse): URL | null | undefined => {
       const rawLocation = response.headers.location;
       if (!rawLocation) {
@@ -105,7 +105,7 @@ export function createManifestFetcher({
       }
       // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
       const target = URL.parse(Buffer.from(rawLocation, 'binary').toString('utf8'), response.url);
-      // Undo the alias, so the redirect is judged by where the browser would go.
+      // Undo the alias, so the redirect is checked against the URL the browser would use.
       if (target && isAliased(current) && target.hostname === alias) {
         target.hostname = current.hostname;
       }
@@ -120,19 +120,18 @@ export function createManifestFetcher({
       headers: { accept: 'application/json', ...hostHeader(current) },
       retry: { limit: 0 },
       maxRedirects: MAX_REDIRECTS,
-      // One deadline for the whole fetch, redirects included: got's own timeout starts
-      // over on every hop, which would let a slow app hold a preview for several times
-      // as long.
+      // One deadline for the whole fetch, redirects included. got's own timeout restarts
+      // on every hop, which would let a slow app stall a preview several times over.
       signal: AbortSignal.any([abort.signal, AbortSignal.timeout(TIMEOUT_MS)]),
-      // Decided here rather than in a redirect hook: got asks this before any hook runs,
-      // so a redirect to another host is refused before the outbound guard looks its
-      // target up, and Ghost never resolves a host it was always going to refuse.
+      // Checked here rather than in a redirect hook, because got calls this before any
+      // hook. A redirect to another host is refused before the outbound guard resolves
+      // it, so that host is never looked up.
       //
-      // got asks about every response, a 200 included, and more than once about the same
-      // one, so this only judges; `current` moves in beforeRedirect. A Location off the
-      // host, or one that is not a URL, is refused whatever the status, so the rule holds
-      // whichever statuses got follows, but only a refused 3xx is reported: a Location on
-      // a manifest or an error page is ignored.
+      // got calls this for every response, a 200 included, sometimes more than once for
+      // the same one, so it has no side effects; `current` is updated in beforeRedirect. A
+      // Location on another host, or one that isn't a URL, is never followed at any
+      // status, so the rule holds whichever statuses got follows. Only a 3xx is reported
+      // as a refused redirect; a Location on a manifest or an error page is ignored.
       followRedirect: (response) => {
         const target = locationOf(response);
         if (target === undefined || (target && staysOnHost(current, target))) {
@@ -146,16 +145,16 @@ export function createManifestFetcher({
       hooks: {
         beforeRedirect: [
           (options, response) => {
-            // got runs this once for each redirect it follows, after followRedirect has let
-            // it through, so its Location is a URL on the same host.
+            // got runs this once per redirect it follows, after followRedirect allowed it,
+            // so the Location is a URL on the same host.
             const target = locationOf(response)!;
-            // got follows a Location without the credentials it carries, as a browser
-            // would, so the manifest is not read from an address with them either.
+            // got drops credentials from a Location, as browsers do, so the tracked URL
+            // drops them too.
             target.username = '';
             target.password = '';
             current = target;
-            // Only an aliased hop needs its address rewritten; everywhere else got's own
-            // reading of the redirect stands.
+            // Only an aliased hop needs its URL rewritten; otherwise got's own redirect
+            // URL is used.
             if (isAliased(current)) {
               options.url = fetchUrl(current);
               Object.assign(options.headers, hostHeader(current));
@@ -171,9 +170,9 @@ export function createManifestFetcher({
       }
     });
 
-    // got decodes the body as UTF-8 whatever the response says, which is what JSON is
-    // expected in. The size limit above still applies, as it watches the download rather
-    // than the result.
+    // got decodes the body as UTF-8 whatever charset the response names, which is what
+    // JSON should use. The size limit above still applies, because it counts downloaded
+    // bytes.
     let text: string;
     try {
       text = await pending.text();
@@ -181,9 +180,9 @@ export function createManifestFetcher({
       if (refusedRedirect) {
         throw refused(manifestUrl, refusedRedirect);
       }
-      // Only a manifest is held to the limit: a large error page is still an error page,
-      // reported with its status. The status is only known once the headers are in, so
-      // the download is stopped first and told apart here.
+      // Only a manifest is held to the size limit; a large error page is still reported
+      // with its status. The status isn't known until the headers arrive, so the download
+      // is stopped first and the two cases are told apart here.
       const status = statusOf(err);
       if (tooLarge && (status === undefined || (status >= 200 && status < 300))) {
         throw new errors.ValidationError({
