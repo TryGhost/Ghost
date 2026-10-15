@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { useDocsBot } from './use-docsbot';
 import { SupportRequestModal } from '@/support-request-modal';
-import {
-  DOCSBOT_SUPPORT_REQUEST_THANKS_MESSAGE,
-  toSupportRequestDraft,
-} from './docsbot-support-ticket';
+
+const THANKS_MESSAGE =
+  'Thanks — your support request has been sent. Our team will follow up by email.';
 
 export function DocsBotWidgetHost() {
   const {
@@ -31,7 +30,7 @@ export function DocsBotWidgetHost() {
 
   const onSent = async () => {
     try {
-      await addBotMessage(DOCSBOT_SUPPORT_REQUEST_THANKS_MESSAGE);
+      await addBotMessage(THANKS_MESSAGE);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('[DocsBot] Failed to add confirmation message:', error);
@@ -41,7 +40,7 @@ export function DocsBotWidgetHost() {
 
   return (
     <SupportRequestModal
-      draft={toSupportRequestDraft(supportRequest)}
+      draft={supportRequest}
       open
       onOpenChange={(open) => {
         if (!open) {
