@@ -1,10 +1,10 @@
 import { type DocsBotSupportRequest, formatDocsBotHistory } from '@tryghost/admin-x-framework';
-import type { SupportTicketDraft } from './support-ticket';
+import type { SupportRequestDraft } from './support-request';
 
-export const DOCSBOT_SUPPORT_TICKET_THANKS_MESSAGE =
-  'Thanks — your support ticket has been sent. Our team will follow up by email.';
+export const DOCSBOT_SUPPORT_REQUEST_THANKS_MESSAGE =
+  'Thanks — your support request has been sent. Our team will follow up by email.';
 
-export function toSupportTicketDraft(supportRequest: DocsBotSupportRequest): SupportTicketDraft {
+export function toSupportRequestDraft(supportRequest: DocsBotSupportRequest): SupportRequestDraft {
   return {
     name: supportRequest.metadata.name,
     email: supportRequest.metadata.email,

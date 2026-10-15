@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SupportTicketModal } from './support-ticket-modal';
-import type { SupportTicketDraft } from './support-ticket';
+import { SupportRequestModal } from './support-request-modal';
+import type { SupportRequestDraft } from './support-request';
 
 const { mockSubmit, mockHandleError, mockUseBrowseSite, mockUseCurrentUser } = vi.hoisted(() => ({
   mockSubmit: vi.fn(),
@@ -11,11 +11,11 @@ const { mockSubmit, mockHandleError, mockUseBrowseSite, mockUseCurrentUser } = v
   mockUseCurrentUser: vi.fn(),
 }));
 
-vi.mock('./support-ticket', async () => {
-  const actual = await vi.importActual<typeof import('./support-ticket')>('./support-ticket');
+vi.mock('./support-request', async () => {
+  const actual = await vi.importActual<typeof import('./support-request')>('./support-request');
   return {
     ...actual,
-    submitSupportTicket: mockSubmit,
+    submitSupportRequest: mockSubmit,
   };
 });
 
@@ -49,7 +49,7 @@ vi.mock('@tryghost/admin-x-framework/api/current-user', async () => {
   };
 });
 
-const draft: SupportTicketDraft = {
+const draft: SupportRequestDraft = {
   name: 'Ada Lovelace',
   email: 'ada@example.com',
   subject: 'Cannot publish a post',
@@ -60,12 +60,12 @@ const draft: SupportTicketDraft = {
   transcript: '**User**\nI cannot publish a post',
 };
 
-function renderModal(overrides: Partial<ComponentProps<typeof SupportTicketModal>> = {}) {
+function renderModal(overrides: Partial<ComponentProps<typeof SupportRequestModal>> = {}) {
   const onSent = vi.fn();
   const onOpenChange = vi.fn();
 
   render(
-    <SupportTicketModal
+    <SupportRequestModal
       draft={draft}
       open
       onOpenChange={onOpenChange}
@@ -77,7 +77,7 @@ function renderModal(overrides: Partial<ComponentProps<typeof SupportTicketModal
   return { onSent, onOpenChange };
 }
 
-describe('SupportTicketModal', () => {
+describe('SupportRequestModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSubmit.mockResolvedValue(undefined);
@@ -124,7 +124,7 @@ describe('SupportTicketModal', () => {
       draft: { source: 'chat-provider', pageUrl: draft.pageUrl },
     });
 
-    fireEvent.click(screen.getByTestId('support-ticket-send'));
+    fireEvent.click(screen.getByTestId('support-request-send'));
 
     expect(await screen.findByText('Enter your name')).toBeInTheDocument();
     expect(screen.getByText('Enter your email')).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('SupportTicketModal', () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'not-an-email' } });
     fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'Help' } });
     fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Please help' } });
-    fireEvent.click(screen.getByTestId('support-ticket-send'));
+    fireEvent.click(screen.getByTestId('support-request-send'));
 
     expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
     expect(mockSubmit).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('SupportTicketModal', () => {
     fireEvent.change(screen.getByLabelText('Message'), {
       target: { value: 'I still cannot publish after checking permissions.\n\nUsing Chrome.' },
     });
-    fireEvent.click(screen.getByTestId('support-ticket-send'));
+    fireEvent.click(screen.getByTestId('support-request-send'));
 
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalledTimes(1);
@@ -173,7 +173,7 @@ describe('SupportTicketModal', () => {
     mockSubmit.mockRejectedValue(new Error('Something went wrong'));
     const { onSent, onOpenChange } = renderModal();
 
-    fireEvent.click(screen.getByTestId('support-ticket-send'));
+    fireEvent.click(screen.getByTestId('support-request-send'));
 
     await waitFor(() => {
       expect(mockHandleError).toHaveBeenCalledTimes(1);

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { submitSupportTicket } from './support-ticket';
+import { submitSupportRequest } from './support-request';
 
-describe('submitSupportTicket', () => {
+describe('submitSupportRequest', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -20,9 +20,9 @@ describe('submitSupportTicket', () => {
       transcript: '**User**\nhi',
     };
 
-    await expect(submitSupportTicket(payload)).rejects.toThrow(
-      'Support ticket webhook is not configured',
+    await expect(submitSupportRequest(payload)).rejects.toThrow(
+      'Support request webhook is not configured',
     );
-    expect(info).toHaveBeenCalledWith('[Support ticket] Webhook is not configured', payload);
+    expect(info).toHaveBeenCalledWith('[Support request] Webhook is not configured', payload);
   });
 });

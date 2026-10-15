@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toSupportTicketDraft } from './docsbot-support-ticket';
+import { toSupportRequestDraft } from './docsbot-support-ticket';
 
-describe('toSupportTicketDraft', () => {
-  it('maps a DocsBot support request to a support ticket draft', () => {
-    const draft = toSupportTicketDraft({
+describe('toSupportRequestDraft', () => {
+  it('maps a DocsBot support request to a support request draft', () => {
+    const draft = toSupportRequestDraft({
       history: [
         { Human: 'I cannot publish a post', timestamp: '2025-05-08T22:56:28.514357' },
         { AI: 'Have you checked your permissions?', timestamp: '2025-05-08T22:56:30.645700' },
@@ -40,7 +40,7 @@ describe('toSupportTicketDraft', () => {
   });
 
   it('leaves identity and ticket fields empty when DocsBot does not provide them', () => {
-    const draft = toSupportTicketDraft({
+    const draft = toSupportRequestDraft({
       history: [],
       metadata: {},
       ticket: null,
