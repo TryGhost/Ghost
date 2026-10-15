@@ -197,23 +197,28 @@ What Admin sends has no schema, because Admin builds it and never parses it;
 what a page sends does, and those schemas build on the same rules, so both
 sides read a path, a header or a refusal the same way.
 
-`fetch` takes an Admin API path, never a URL. Admin checks it with
-`checkAdminApiPath(path, method, apiRoot)`, which resolves it against the Admin
-API root and returns the URL to request, or `invalid_path` for anything that
-leaves the root and `blocked` for what the blocklist covers for that method.
-`ADMIN_API_BLOCKLIST` lists those routes by category, each with its reason, and
-its header comment lists
-what it leaves open until the security review (BER-3992). It is a stopgap until
-apps have their own token.
+`fetch` takes an Admin API path, never a URL. Admin checks the request with
+`checkAdminApiRequest({ path, method, body }, apiRoot)`, which resolves the path
+against the Admin API root and returns the URL to request and the scope that
+allows it, or `invalid_path` for anything that leaves the root and `blocked`
+for anything else it refuses, with a `detail` naming the method and path or
+what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can reach, by
+method, under the scope names Permissions and auth will use; its header
+comment says what the security review (BER-3992) must look at. Writes of
+posts, pages and tags are also checked for script (`content.ts`). It all stands
+in for apps' own token.
 
 ```ts
-import { checkAdminApiPath } from '@tryghost/app-contracts/bridge';
+import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 
 const root = new URL('https://site.example/ghost/api/admin/');
-checkAdminApiPath('/posts/?limit=5', 'GET', root); // { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/' }
-checkAdminApiPath('/../content/', 'GET', root); // { problem: 'invalid_path' }
-checkAdminApiPath('/db/', 'GET', root); // { problem: 'blocked', pathname: '/db/' }
-checkAdminApiPath('/posts/?filter=tag:news', 'DELETE', root); // { problem: 'blocked', pathname: '/posts/' }
+checkAdminApiRequest({ path: '/posts/?limit=5' }, root);
+// { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/', scope: { name: 'posts:read', … } }
+checkAdminApiRequest({ path: '/../content/' }, root); // { problem: 'invalid_path' }
+checkAdminApiRequest({ path: '/db/' }, root);
+// { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }
+checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root);
+// { problem: 'blocked', …, detail: "Apps can't send codeinjection_head to POST /posts/" }
 ```
 
 ## Develop
