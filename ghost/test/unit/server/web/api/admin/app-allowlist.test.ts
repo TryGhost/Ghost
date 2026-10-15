@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { ADMIN_API_ALLOWLIST } from '@tryghost/app-contracts/bridge';
 import type { Router } from 'express';
 
+// @ts-expect-error This module lacks type definitions.
 import apiRoutes from '../../../../../../core/server/web/api/endpoints/admin/routes';
 
 interface RouteLayer {
