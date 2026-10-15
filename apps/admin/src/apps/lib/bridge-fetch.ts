@@ -1,7 +1,7 @@
 import {
   type FetchRequest,
   type FetchResponse,
-  checkAdminApiPath,
+  checkAdminApiRequest,
   isReservedRequestHeader,
 } from '@tryghost/app-contracts/bridge';
 import { ghostApiRequestHeaders, handleSessionExpiry } from '@tryghost/admin-x-framework/helpers';
@@ -11,9 +11,10 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
 
 /**
  * Sends the requests an app asks for, only to the Admin API under `apiRoot`. `request` is already
- * validated. This function checks where its path leads, and refuses a path that leaves the API or
- * that the blocklist blocks before anything reaches the network. It also drops headers that only
- * Admin sets, so none of the app's headers can replace Admin's, whatever reaches this function.
+ * validated. This function checks where its path leads and what it sends, and refuses a path that
+ * leaves the API, or a request the allowlist doesn't allow, before anything reaches the network.
+ * It also drops headers that only Admin sets, so none of the app's headers can replace Admin's,
+ * whatever reaches this function.
  */
 export function createAdminApiFetch({
   apiRoot,
@@ -25,12 +26,12 @@ export function createAdminApiFetch({
 }): AdminApiFetch {
   return async (request, signal) => {
     const method = request.method ?? 'GET';
-    const check = checkAdminApiPath(request.path, method, apiRoot);
+    const check = checkAdminApiRequest(request, apiRoot);
     if (check.problem === 'invalid_path') {
       throw new BridgeError('invalid_path', 'Expected an Admin API path within the Admin API');
     }
     if (check.problem === 'blocked') {
-      throw new BridgeError('blocked', `Apps can’t use ${check.pathname}`);
+      throw new BridgeError('blocked', check.detail);
     }
     const { url } = check;
 
@@ -55,8 +56,8 @@ export function createAdminApiFetch({
         headers: { ...ghostApiRequestHeaders({ ghostVersion, body: request.body }), ...appHeaders },
         body: request.body,
         // The request carries the staff user's own session. That stands in for the app-scoped token
-        // that comes with Permissions and auth, and the blocklist above goes away along with it.
-        // Until then, the blocklist is what keeps the session's keys away from the app.
+        // that comes with Permissions and auth, and the allowlist above goes away along with it.
+        // Until then, the allowlist is what keeps the rest of the session's reach from the app.
         credentials: 'include',
         // A redirect could lead off the API, where the app's path would no longer show where the
         // request went, so no redirect is followed. Most Admin API redirects are for a path missing
@@ -69,8 +70,7 @@ export function createAdminApiFetch({
     }
 
     if (response.type === 'opaqueredirect') {
-      // A path that ends in `/` is correct, so the redirect is intentional, as with Stripe's
-      // connect.
+      // A path that ends in `/` is correct, so the redirect is intentional.
       throw new BridgeError(
         'invalid_path',
         check.pathname.endsWith('/')

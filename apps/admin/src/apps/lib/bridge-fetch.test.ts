@@ -75,13 +75,28 @@ describe('createAdminApiFetch', () => {
     });
   });
 
-  it('refuses a blocked path, or one that leaves the API, without sending it', async () => {
+  it('refuses a request the allowlist doesn’t allow, or a path that leaves the API, without sending it', async () => {
     await expect(adminApiFetch({ path: '/db/' }, session.signal)).rejects.toThrow(
-      'blocked: Apps can’t use /db/',
+      "blocked: Apps can't use GET /db/",
     );
     await expect(
       adminApiFetch({ path: '/posts/?filter=tag:news', method: 'DELETE' }, session.signal),
-    ).rejects.toThrow('blocked: Apps can’t use /posts/');
+    ).rejects.toThrow("blocked: Apps can't use DELETE /posts/");
+    await expect(
+      adminApiFetch({ path: '/v4/db/?x=ghost/api/v4/admin/' }, session.signal),
+    ).rejects.toThrow(/^blocked: /);
+    await expect(
+      adminApiFetch(
+        {
+          path: '/posts/',
+          method: 'POST',
+          body: JSON.stringify({
+            posts: [{ title: 'x', codeinjection_foot: '<script></script>' }],
+          }),
+        },
+        session.signal,
+      ),
+    ).rejects.toThrow("blocked: Apps can't send codeinjection_foot to POST /posts/");
     await expect(adminApiFetch({ path: '/../content/' }, session.signal)).rejects.toThrow(
       /^invalid_path: /,
     );
@@ -100,8 +115,8 @@ describe('createAdminApiFetch', () => {
   it('refuses a route that redirects on purpose, without blaming the path', async () => {
     fetchMock.mockResolvedValue(opaqueRedirect());
 
-    await expect(adminApiFetch({ path: '/oembed/?url=x' }, session.signal)).rejects.toThrow(
-      'invalid_path: The Admin API answers /oembed/ with a redirect, which apps can’t follow',
+    await expect(adminApiFetch({ path: '/tags/?limit=5' }, session.signal)).rejects.toThrow(
+      'invalid_path: The Admin API answers /tags/ with a redirect, which apps can’t follow',
     );
   });
 
