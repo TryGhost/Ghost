@@ -4,7 +4,7 @@ import {
   ARGUMENT_MESSAGES,
   FETCH_METHODS,
   isContainedPath,
-  isMultipartContentType,
+  isJsonContentType,
   isReservedRequestHeader,
   methodAllowsBody,
 } from './rules.ts';
@@ -12,7 +12,7 @@ import {
 /** The same limit as an app path. An Admin API path with its query fits easily within it. */
 export const FETCH_PATH_MAX_LENGTH = 2048;
 
-/** 1 MiB, in UTF-8 bytes. Bodies are JSON and text; a multipart content type is refused. */
+/** 1 MiB, in UTF-8 bytes. Bodies are JSON. */
 export const FETCH_BODY_MAX_BYTES = 1024 * 1024;
 
 const FETCH_HEADERS_MAX_COUNT = 50;
@@ -28,6 +28,15 @@ const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9a-z-]+$/i;
 const HEADER_VALUE = /^[\t\x20-\x7e\x80-\xff]*$/;
 
 const utf8 = new TextEncoder();
+
+function isJson(body: string): boolean {
+  try {
+    JSON.parse(body);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * A request that an app asks Admin to make to the Admin API on its behalf. The path is never a
@@ -82,8 +91,12 @@ export const FetchRequestSchema = z
               message: ARGUMENT_MESSAGES.reservedHeader(name),
               path: [name],
             });
-          } else if (name.toLowerCase() === 'content-type' && isMultipartContentType(value)) {
-            ctx.addIssue({ code: 'custom', message: ARGUMENT_MESSAGES.multipart, path: [name] });
+          } else if (name.toLowerCase() === 'content-type' && !isJsonContentType(value)) {
+            ctx.addIssue({
+              code: 'custom',
+              message: ARGUMENT_MESSAGES.jsonContentType,
+              path: [name],
+            });
           }
         }
       })
@@ -93,10 +106,11 @@ export const FetchRequestSchema = z
       // Every UTF-16 code unit is at least one UTF-8 byte, so checking the character count first
       // avoids encoding a huge body only to refuse it.
       .max(FETCH_BODY_MAX_BYTES, { message: 'Expected a body of at most 1 MiB', abort: true })
-      .refine(
-        (body) => utf8.encode(body).byteLength <= FETCH_BODY_MAX_BYTES,
-        'Expected a body of at most 1 MiB',
-      )
+      .refine((body) => utf8.encode(body).byteLength <= FETCH_BODY_MAX_BYTES, {
+        message: 'Expected a body of at most 1 MiB',
+        abort: true,
+      })
+      .refine(isJson, ARGUMENT_MESSAGES.jsonBody)
       .optional(),
   })
   .refine(({ method = 'GET', body }) => body === undefined || methodAllowsBody(method), {

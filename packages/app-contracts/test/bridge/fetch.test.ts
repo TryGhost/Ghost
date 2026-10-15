@@ -122,34 +122,57 @@ describe('a fetch request', () => {
         },
       ]);
     }
-    for (const name of ['Accept', 'Content-Type', 'If-None-Match', 'X-Ghostly', 'X-Request-Id']) {
+    for (const name of ['Accept', 'If-None-Match', 'X-Ghostly', 'X-Request-Id']) {
       expect(
         FetchRequestSchema.safeParse({ path: '/posts/', headers: { [name]: 'x' } }).success,
       ).toBe(true);
     }
   });
 
-  it('refuses a multipart content type, as uploads are not for apps yet', () => {
-    for (const name of ['Content-Type', 'content-type']) {
+  it('refuses a content type other than JSON, as the Admin API also reads forms and uploads', () => {
+    for (const [name, value] of [
+      ['Content-Type', 'multipart/form-data; boundary=x'],
+      ['content-type', 'application/x-www-form-urlencoded'],
+      ['Content-Type', 'text/plain'],
+    ]) {
       expect(
         requestErrors({
-          path: '/files/upload/',
+          path: '/posts/',
           method: 'POST',
-          headers: { [name]: 'multipart/form-data; boundary=x' },
-          body: '--x\r\n',
+          headers: { [name as string]: value as string },
+          body: '{}',
         }),
       ).toEqual([
         {
           path: ['headers', name],
-          message: "Expected a content type other than multipart/*: apps can't upload files yet",
+          message: 'Expected no content type, or application/json: apps send the Admin API JSON',
         },
       ]);
+    }
+    for (const value of ['application/json', 'Application/JSON; charset=utf-8']) {
+      expect(
+        FetchRequestSchema.safeParse({
+          path: '/posts/',
+          method: 'POST',
+          headers: { 'Content-Type': value },
+          body: '{}',
+        }).success,
+        value,
+      ).toBe(true);
     }
     // Only the content type says what the body is.
     expect(
       FetchRequestSchema.safeParse({ path: '/posts/', headers: { Accept: 'multipart/mixed' } })
         .success,
     ).toBe(true);
+  });
+
+  it('refuses a body that is not JSON', () => {
+    for (const body of ['posts[0][title]=x', '', '{']) {
+      expect(requestErrors({ path: '/posts/', method: 'POST', body }), body).toEqual([
+        { path: ['body'], message: 'Expected the body as JSON text' },
+      ]);
+    }
   });
 
   it('refuses too many headers', () => {
@@ -165,18 +188,19 @@ describe('a fetch request', () => {
 
   it('refuses a body on a GET or HEAD request', () => {
     for (const method of [undefined, 'GET', 'HEAD']) {
-      expect(requestErrors({ path: '/posts/', method, body: '' })).toEqual([
+      expect(requestErrors({ path: '/posts/', method, body: '{}' })).toEqual([
         { path: ['body'], message: 'Expected no body on a GET or HEAD request' },
       ]);
     }
   });
 
   it('measures the body in bytes', () => {
-    const ascii = 'a'.repeat(FETCH_BODY_MAX_BYTES);
+    // A JSON string of exactly 1 MiB.
+    const ascii = `"${'a'.repeat(FETCH_BODY_MAX_BYTES - 2)}"`;
     expect(
       FetchRequestSchema.safeParse({ path: '/db/', method: 'POST', body: ascii }).success,
     ).toBe(true);
-    const tooLong = { path: '/posts/', method: 'POST', body: `${ascii}a` };
+    const tooLong = { path: '/posts/', method: 'POST', body: `${ascii} ` };
     expect(requestErrors(tooLong)).toEqual([
       { path: ['body'], message: 'Expected a body of at most 1 MiB' },
     ]);

@@ -14,7 +14,7 @@ import {
   isContainedPath,
   isFetchResponse,
   isRecord,
-  isMultipartContentType,
+  isJsonContentType,
   isReservedRequestHeader,
   isStartContext,
   isTheme,
@@ -307,26 +307,28 @@ describe('the messages for a refused argument', () => {
   });
 });
 
-describe('a multipart content type', () => {
-  it('matches any multipart type, in any case', () => {
+describe('a JSON content type', () => {
+  it('matches application/json with any parameters, in any case', () => {
     for (const value of [
-      'multipart/form-data; boundary=x',
-      'Multipart/Mixed',
-      ' multipart/related',
-      'MULTIPART/FORM-DATA',
+      'application/json',
+      'application/json; charset=utf-8',
+      'Application/JSON',
+      ' application/json ',
     ]) {
-      expect(isMultipartContentType(value), value).toBe(true);
+      expect(isJsonContentType(value), value).toBe(true);
     }
   });
 
   it('matches nothing else', () => {
     for (const value of [
-      'application/json',
-      'text/plain; x=multipart/form-data',
-      'multipart',
+      'multipart/form-data; boundary=x',
+      'application/x-www-form-urlencoded',
+      'text/plain; x=application/json',
+      'application/jsonx',
+      'application/vnd.api+json',
       '',
     ]) {
-      expect(isMultipartContentType(value), value).toBe(false);
+      expect(isJsonContentType(value), value).toBe(false);
     }
   });
 });

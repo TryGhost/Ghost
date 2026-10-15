@@ -92,22 +92,27 @@ describe('fetch', () => {
     const { ghost, host } = await started();
     await ghost.fetch('/posts/', {
       method: 'PUT',
-      headers: [['Content-Type', 'text/plain']],
-      body: 'hello',
+      headers: [['Content-Type', 'application/json']],
+      body: '{"posts":[]}',
     });
     await ghost.fetch('/posts/', {
       method: 'PUT',
-      headers: new Headers({ 'Content-Type': 'application/vnd.api+json' }),
+      headers: new Headers({ 'Content-Type': 'application/json; charset=utf-8' }),
       body: [1, 2],
     });
     await ghost.fetch('/posts/', { method: 'DELETE', body: null });
 
     expect(host.fetch.mock.calls.map(([request]) => request)).toEqual([
-      { path: '/posts/', method: 'PUT', headers: { 'content-type': 'text/plain' }, body: 'hello' },
       {
         path: '/posts/',
         method: 'PUT',
-        headers: { 'content-type': 'application/vnd.api+json' },
+        headers: { 'content-type': 'application/json' },
+        body: '{"posts":[]}',
+      },
+      {
+        path: '/posts/',
+        method: 'PUT',
+        headers: { 'content-type': 'application/json; charset=utf-8' },
         body: '[1,2]',
       },
       { path: '/posts/', method: 'DELETE' },
@@ -196,12 +201,12 @@ describe('fetch', () => {
       'invalid_argument',
     ],
     [
-      'a multipart body',
-      '/files/upload/',
+      'a form body',
+      '/posts/',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'multipart/form-data; boundary=x' },
-        body: '--x--',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'posts[0][title]=x',
       },
       'invalid_argument',
     ],
@@ -260,12 +265,12 @@ describe('a refused argument', () => {
         ARGUMENT_MESSAGES.reservedHeader('Authorization'),
       ],
       [
-        ghost.fetch('/files/upload/', {
+        ghost.fetch('/posts/', {
           method: 'POST',
           headers: { 'content-type': 'multipart/form-data' },
           body: '',
         }),
-        ARGUMENT_MESSAGES.multipart,
+        ARGUMENT_MESSAGES.jsonContentType,
       ],
       [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
       [ghost.open('/posts' as never), ARGUMENT_MESSAGES.place],

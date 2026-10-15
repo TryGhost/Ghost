@@ -180,7 +180,7 @@ the root entry point exports them as well:
   form both sides store an app path in, with `..` resolved within the app
   (`AppPathSchema` already returns it, so Admin doesn't need to call it);
 - `isReservedRequestHeader` for the headers only Admin sets,
-  `isMultipartContentType` for the uploads apps can't make yet,
+  `isJsonContentType` for the one content type a body may have,
   `methodAllowsBody`, and the messages both sides refuse an argument with
   (`ARGUMENT_MESSAGES`);
 - the codes a refused call carries, written and read as `code: detail` by

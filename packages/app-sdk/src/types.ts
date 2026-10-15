@@ -32,7 +32,7 @@ export interface GhostFetchInit {
   /** Any case; sent in uppercase. Defaults to `GET`. */
   method?: string;
   headers?: HeadersInit;
-  /** Text is sent as it is; an object or array is sent as JSON. */
+  /** Always JSON: text is sent as it is, and an object or array is sent as JSON. */
   body?: string | JsonBody | null;
 }
 

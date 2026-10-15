@@ -32,7 +32,7 @@ describe('the bridge entry point', () => {
       'isConnectMessage',
       'isContainedPath',
       'isFetchResponse',
-      'isMultipartContentType',
+      'isJsonContentType',
       'isRecord',
       'isReservedRequestHeader',
       'isStartContext',

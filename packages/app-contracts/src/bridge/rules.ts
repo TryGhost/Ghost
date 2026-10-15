@@ -56,15 +56,13 @@ export function isReservedRequestHeader(name: string): boolean {
   return RESERVED_REQUEST_HEADER.test(name);
 }
 
-const MULTIPART = /^\s*multipart\//i;
-
 /**
- * Whether a request's content type is multipart, as an upload's is. The bridge doesn't carry
- * files yet, and a body is always text. But an app could write a multipart body as text and
- * reach an upload route, so a multipart content type is refused whatever the body holds.
+ * Whether a request's content type is JSON: `application/json`, with any parameters. The Admin
+ * API also reads form and multipart bodies. A form body would carry a post past the checks on
+ * what a write may contain, and a multipart body is an upload, so an app's body is always JSON.
  */
-export function isMultipartContentType(value: string): boolean {
-  return MULTIPART.test(value);
+export function isJsonContentType(value: string): boolean {
+  return (value.split(';', 1)[0] as string).trim().toLowerCase() === 'application/json';
 }
 
 /**
@@ -80,7 +78,8 @@ export const ARGUMENT_MESSAGES = {
   // name is lowercased here too and both sides produce the same message.
   reservedHeader: (name: string) =>
     `Expected no ${name.toLowerCase()} header, which only Admin sets`,
-  multipart: "Expected a content type other than multipart/*: apps can't upload files yet",
+  jsonContentType: 'Expected no content type, or application/json: apps send the Admin API JSON',
+  jsonBody: 'Expected the body as JSON text',
   appPath: 'Expected a path within the app, starting with a single /',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
