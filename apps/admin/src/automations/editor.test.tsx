@@ -1780,16 +1780,55 @@ describe('AutomationEditor', () => {
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
   });
 
-  it('disables the publish button when the automation has no actions', () => {
+  it.each(['inactive', 'archived'] as const)(
+    'allows empty %s automations to be saved, but not published',
+    (status) => {
+      mockLabs.current = { automationsPerTier: true };
+      mockStats.current = undefined;
+      mockUseReadAutomation.mockReturnValue({
+        data: { automations: [{ ...automationDetail, status, actions: [], edges: [] }] },
+        isLoading: false,
+        isError: false,
+      });
+
+      renderEditor();
+
+      expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+      fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+      fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+        target: { value: 'Empty automation' },
+      });
+      expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Empty automation', status, actions: [], edges: [] }),
+        expect.any(Object),
+      );
+    },
+  );
+
+  it('disables publishing and hides save for an active automation with no actions', () => {
+    mockLabs.current = { automationsPerTier: true };
+    mockStats.current = undefined;
     mockUseReadAutomation.mockReturnValue({
-      data: { automations: [{ ...automationDetail, status: 'inactive', actions: [], edges: [] }] },
+      data: { automations: [{ ...automationDetail, status: 'active', actions: [], edges: [] }] },
       isLoading: false,
       isError: false,
     });
 
     renderEditor();
 
-    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+      target: { value: 'Empty active automation' },
+    });
+    expect(screen.getByRole('button', { name: 'Publish changes' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(mockEditMutation.mutate).not.toHaveBeenCalled();
   });
 
   it('confirms before publishing an inactive automation', async () => {
