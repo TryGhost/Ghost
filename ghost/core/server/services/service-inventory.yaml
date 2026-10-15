@@ -10145,14 +10145,14 @@ services:
         complexity: complex
         reason: >-
           canThis and its providers load the model registry directly while User.permissible calls
-          back into permissions through a deliberately deferred import. The action map and
-          parity-report state are module globals. Dependency injection needs an explicit shared
+          back into permissions through a deliberately deferred import. The action map is a
+          module global. Dependency injection needs an explicit shared
           authorization graph without turning the existing model/permissions cycle into eager
           construction.
         preparation:
           - >-
-            Create providers and canThis from injected models, model-rule helpers and logging,
-            sharing one owned action map and parity-report set.
+            Create providers and canThis from injected models and model-rule helpers, sharing one
+            owned action map.
           - >-
             Keep the User model callback deferred until authorization runs; cover both model-first
             and permission-first loading before switching consumers to a guarded service getter.
