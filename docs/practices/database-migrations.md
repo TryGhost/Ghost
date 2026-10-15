@@ -7,7 +7,6 @@ For example, a migration may:
 
 - Add a table.
 - Add a column to a table.
-- Add user permissions.
 - Manipulate existing data.
 
 > Migrations are dangerous and need to be treated with a great deal of care.
