@@ -1,7 +1,6 @@
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
-import type { Got } from 'got';
-import { createAppFetcher, type AppFetchFailure } from './fetch-from-app';
+import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
 const MANIFEST_MAX_BYTES = 64 * 1024;
@@ -73,16 +72,12 @@ function manifestError(
  * `createAppFetcher` describes the redirect, alias, time and size rules it is read with.
  */
 export function createManifestFetcher({
-  request,
+  fetchFromApp,
   logging,
-  getLocalhostAlias,
 }: {
-  request: Got;
+  fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
-  getLocalhostAlias: () => string | null;
 }): FetchManifest {
-  const fetchFromApp = createAppFetcher({ request, getLocalhostAlias });
-
   return async function fetchManifest(manifestUrl) {
     // The text is decoded as UTF-8, which is what JSON should use.
     const fetched = await fetchFromApp(manifestUrl, {

@@ -7,10 +7,10 @@ const MAX_REDIRECTS = 3;
 /**
  * Why an app's URL could not be read.
  *
- * - `unreachable`: the app answered with an error status, or didn't answer. `status` is
- *   the only part that may be shown, so a review can't be used to probe the server's
- *   network; `cause` is for the logs, so an operator can still tell a timeout from a
- *   certificate problem.
+ * - `unreachable`: the app answered with an error status, didn't answer, or the URL isn't
+ *   one. `status` is the only part that may be shown, so a review can't be used to probe
+ *   the server's network; `cause` is for the logs, so an operator can still tell a timeout
+ *   from a certificate problem.
  * - `location_not_url`: a redirect whose Location isn't a URL.
  * - `redirected`: a redirect to another host, which is never followed.
  * - `too_large`: a successful response larger than `maxBytes`. A large error page is
@@ -73,7 +73,7 @@ function staysOnHost(from: URL, to: URL): boolean {
  * `localhost` is the container rather than the developer's machine. Localhost URLs (by
  * the manifest's rule) are fetched through the alias (e.g. `host.docker.internal`) with
  * the original Host header. The final URL is reported without the alias, as the browser
- * would see it.
+ * would see it. It is called on every fetch because it reads config.
  */
 export function createAppFetcher({
   request,
@@ -83,9 +83,16 @@ export function createAppFetcher({
   getLocalhostAlias: () => string | null;
 }): FetchFromApp {
   return async function fetchFromApp(url, { accept, maxBytes }) {
+    const start = URL.parse(url);
+    if (!start) {
+      return {
+        success: false,
+        failure: { reason: 'unreachable', cause: `${url} is not a URL` },
+      };
+    }
     const alias = getLocalhostAlias();
     // The URL being fetched now, as the browser would see it (without the alias).
-    let current = new URL(url);
+    let current = start;
 
     const isAliased = (target: URL) => alias !== null && isLocalhost(target.hostname);
     const fetchUrl = (target: URL) => {
@@ -114,7 +121,7 @@ export function createAppFetcher({
       return target;
     };
 
-    let refusedRedirect: { status: number; target: URL | null } | undefined;
+    let refusedRedirect: AppFetchFailure | undefined;
     let tooLarge = false;
     const abort = new AbortController();
 
@@ -141,7 +148,9 @@ export function createAppFetcher({
           return true;
         }
         if (response.statusCode >= 300 && response.statusCode < 400) {
-          refusedRedirect = { status: response.statusCode, target };
+          refusedRedirect = target
+            ? { reason: 'redirected', host: target.host }
+            : { reason: 'location_not_url', status: response.statusCode };
         }
         return false;
       },
@@ -180,7 +189,7 @@ export function createAppFetcher({
       text = await pending.text();
     } catch (err) {
       if (refusedRedirect) {
-        return { success: false, failure: refused(refusedRedirect) };
+        return { success: false, failure: refusedRedirect };
       }
       // Only a successful response is held to the size limit; a large error page is still
       // reported with its status. The status isn't known until the headers arrive, so the
@@ -192,14 +201,8 @@ export function createAppFetcher({
       return { success: false, failure: { reason: 'unreachable', status, cause: err } };
     }
     if (refusedRedirect) {
-      return { success: false, failure: refused(refusedRedirect) };
+      return { success: false, failure: refusedRedirect };
     }
     return { success: true, url: current.href, text };
   };
-}
-
-function refused({ status, target }: { status: number; target: URL | null }): AppFetchFailure {
-  return target
-    ? { reason: 'redirected', host: target.host }
-    : { reason: 'location_not_url', status };
 }
