@@ -52,6 +52,35 @@ to reflect the popup state.
 See the [Portal settings documentation](https://ghost.org/help/setup-members/#customize-portal-settings)
 for ways to customize Portal for your site.
 
+### Bot challenges from a CDN or WAF
+
+A CDN or WAF in front of Ghost can challenge the signup endpoints,
+`/members/api/integrity-token/` and `/members/api/send-magic-link/`. When it
+does, Portal (and `data-members-form` forms) solves the challenge in a
+same-origin frame and retries the request once. The frame stays hidden unless
+the visitor has to do something; a visitor who closes it sees "Unable to verify
+your request, please try again". A block from the edge shows the same message.
+
+Supported edges, in `src/utils/edge-challenge/`:
+
+- **Fastly Next-Gen WAF**: client challenges (detected by their `/_fs-ch-`
+  assets) and blocks (406, 449).
+- **Cloudflare**: managed, JavaScript and interactive challenges (detected by
+  the `cf-mitigated: challenge` header) and block or rate limiting pages (403,
+  429 with `cf-ray` and an HTML body). The frame loads the challenged URL with a
+  GET, so the WAF rule has to match the endpoint's path, not only `POST`
+  requests, for example:
+
+  ```txt
+  http.request.uri.path in {"/members/api/send-magic-link/" "/members/api/integrity-token/"}
+  ```
+
+  The clearance lasts as long as the zone's Challenge Passage (30 minutes by
+  default).
+
+Challenges can only be solved for the site the page is on. A request to another
+site, such as subscribing to a recommendation, fails with the same message.
+
 ## Develop
 
 Run Portal's build watcher with the other public apps from the monorepo root:
