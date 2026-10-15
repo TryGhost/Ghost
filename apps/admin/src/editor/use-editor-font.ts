@@ -7,16 +7,14 @@ import { EDITOR_REQUEST_OPTIONS } from './request-options';
 export interface EditorFontControl {
   /** The font the editor is set in now. */
   font: EditorFont;
-  /** Sets the editor in a font at once; `save` keeps it. */
+  /** Sets the editor in a font at once and saves it to the writer's preferences. */
   choose: (font: EditorFont) => void;
-  /** Saves the last choice to the writer's preferences, unless it is the saved one. */
-  save: () => void;
 }
 
 /**
- * The writer's editor font. A choice shows at once and is saved when the picker
- * closes, or when the editor does, so trying each font saves once. A failed save
- * keeps the choice for this visit and says so.
+ * The writer's editor font. A choice shows at once and is saved as it is made,
+ * as the settings panel's other pickers are; the editor closing saves anything
+ * still unsaved. A failed save keeps the choice for this visit and says so.
  *
  * The choice is local, so use this once (the editor screen) and hand it down.
  */
@@ -38,8 +36,9 @@ export function useEditorFont(enabled: boolean): EditorFontControl {
   // so once it lands the preference holds this font.
   const sending = useRef<EditorFont | null>(null);
 
-  const save = useCallback(() => {
-    const { chosen: choice, saved: stored, editPreferences: edit } = latest.current;
+  // Saves the given choice, or the latest one, unless the preference already holds it.
+  const save = useCallback((choice: EditorFont | null = latest.current.chosen) => {
+    const { saved: stored, editPreferences: edit } = latest.current;
     const next = editorFontToSave({ chosen: choice, saved: stored, pending: sending.current });
     if (!next) {
       return;
@@ -56,7 +55,16 @@ export function useEditorFont(enabled: boolean): EditorFontControl {
       });
   }, []);
 
-  useEffect(() => save, [save]);
+  // Runs as the editor unmounts; a choice already on its way sends nothing more.
+  useEffect(() => () => save(), [save]);
 
-  return { font, choose: setChosen, save };
+  const choose = useCallback(
+    (next: EditorFont) => {
+      setChosen(next);
+      save(next);
+    },
+    [save],
+  );
+
+  return { font, choose };
 }

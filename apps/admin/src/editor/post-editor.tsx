@@ -78,8 +78,8 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
-  /** Takes the help link's place in the footer (admin7EditorImprovements). */
-  fontPicker?: React.ReactNode;
+  /** The footer's help link, which moves to the settings panel under admin7EditorImprovements. */
+  showHelpLink?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -212,7 +212,7 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
-  fontPicker,
+  showHelpLink = true,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -625,7 +625,7 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          {fontPicker ?? (
+          {showHelpLink && (
             <Button
               className={cn(
                 'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',

@@ -51,7 +51,6 @@ import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
-import { EditorFontPicker } from './editor-font-picker';
 import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
@@ -377,17 +376,11 @@ function EditorContent({
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const editorFont = useEditorFont(editorImprovements);
-  const [fontPickerOpen, setFontPickerOpen] = useState(false);
-  // The chrome stays while the settings panel is out, the font picker is open, or
-  // the status line reports a failed save or a failed newsletter.
+  // The chrome stays while the settings panel is out, or the status line reports
+  // a failed save or a failed newsletter.
   const writingFocus = useWritingFocus({
     enabled: editorImprovements,
-    blocked:
-      settingsOpen ||
-      settingsMoving ||
-      fontPickerOpen ||
-      session.state.kind === 'error' ||
-      didEmailFail,
+    blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
     writingAreaRef,
   });
   const leaveGuard = useEditorLeaveGuard(session, postType);
@@ -490,7 +483,6 @@ function EditorContent({
                 <EditorHeaderActions
                   bottomBar={bottomBar}
                   currentUser={currentUser}
-                  editorImprovements={editorImprovements}
                   offersEmailRetry={offersEmailRetry}
                   openFlow={openFlow}
                   post={publishPost}
@@ -521,20 +513,11 @@ function EditorContent({
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
                 font={editorFont.font}
-                fontPicker={
-                  editorImprovements ? (
-                    <EditorFontPicker
-                      className="max-sm:hidden"
-                      control={editorFont}
-                      open={fontPickerOpen}
-                      onOpenChange={setFontPickerOpen}
-                    />
-                  ) : undefined
-                }
                 handleRef={postEditorRef}
                 postType={postType}
                 settingsMoving={settingsMoving}
                 showExcerpt={showExcerpt}
+                showHelpLink={!editorImprovements}
                 titleAndFeatureImageHidden={
                   postType === 'page' && liveShowTitleAndFeatureImage === false
                 }
@@ -560,6 +543,8 @@ function EditorContent({
           <PostSettingsSidebar
             cardConfig={currentCardConfig}
             currentUser={currentUser}
+            editorFont={editorImprovements ? editorFont : undefined}
+            editorImprovements={editorImprovements}
             featureImage={featureImage.featureImage}
             frameRef={settingsFrameRef}
             hasInlineExcerpt={showExcerpt}

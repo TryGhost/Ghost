@@ -89,7 +89,9 @@ it closes the list and keeps the term that was typed. In a code injection editor
 it frees the editor's Tab and closes nothing. In a dialog, a select or an
 uploader it closes that control. In the Unsplash search it closes the search and
 leaves the field it was opened from. With none of those open it closes the pane,
-and with no pane open the sidebar answers Escape with nothing.
+and with no pane open the sidebar answers Escape with nothing. The Editor font
+row's choices are not a layer: Escape leaves them shown, and only the row folds
+them away.
 
 The Unsplash search traps focus and loops Tab navigation in both directions.
 Closing it returns focus to the picker button when that field is still present.
@@ -451,6 +453,18 @@ address without its scheme. The two previews differ only in shape: X stacks the
 title, the description and the domain and shows the title whole, while Facebook
 stacks the domain, the title and the description and truncates both to the 140
 characters the description is held to.
+
+## Editor font
+
+Under `admin7EditorImprovements`, a row before Keyboard shortcuts chooses the font
+the writer reads the post in while editing, which the editor's footer offered
+before (see the [editor README](../README.md#editor-font)). Unlike the rows
+around it, it opens no pane: its chevron turns down and the three fonts slide
+open beneath it, each as a sample in its own font, and fold away the same way.
+Folded, they stay mounted but take no focus. A pick applies to the canvas at
+once and is saved as it is made. The row starts folded whenever the section
+list is shown again. Every role sees it, and it reaches every screen size,
+where the footer picker was hidden below `sm`.
 
 ## Keyboard shortcuts
 

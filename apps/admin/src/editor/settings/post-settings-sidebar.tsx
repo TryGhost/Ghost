@@ -40,6 +40,8 @@ import { SettingsLinkRow } from './settings-navigation-row';
 import { EDITOR_HELP_URL } from '@/editor/editor-help';
 import { MetaDataSection } from './meta-data-section';
 import { MetaDataTabsSection } from './meta-data-tabs-section';
+import { EditorFontSection } from './editor-font-section';
+import type { EditorFontControl } from '@/editor/use-editor-font';
 import { PostHistorySection } from './post-history-section';
 import { focusSettingsField } from './focus-settings-field';
 import {
@@ -155,6 +157,8 @@ export interface PostSettingsSidebarProps {
    * the footer, and Meta data's pane holding the X and Facebook cards as tabs.
    */
   editorImprovements?: boolean;
+  /** The editor font's choice, which leaves the footer for the panel under admin7EditorImprovements. */
+  editorFont?: EditorFontControl;
 }
 
 /**
@@ -173,6 +177,7 @@ export function PostSettingsSidebar({
   frameRef,
   opensInPlace = false,
   editorImprovements = false,
+  editorFont,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -241,6 +246,7 @@ export function PostSettingsSidebar({
     ) : (
       <MemoMetaDataSection session={session} siteUrl={siteUrl} />
     ),
+    'editor-font': editorFont ? <EditorFontSection control={editorFont} /> : null,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
     'editor-help': editorImprovements ? (
       <SettingsLinkRow href={EDITOR_HELP_URL} icon={<LucideIcon.CircleHelp />}>
