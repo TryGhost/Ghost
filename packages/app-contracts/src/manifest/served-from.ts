@@ -7,7 +7,7 @@ function pageUrl(manifest: AppManifest): URL {
   if (!page) {
     // Parsing rejects manifests without surfaces, so this only happens on a bug.
     // It's a plain Error because this entry point can't have dependencies.
-    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error('The manifest has no surfaces');
   }
   return new URL(page.url);

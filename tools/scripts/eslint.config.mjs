@@ -9,9 +9,6 @@ const cliRules = {
   // consumers like ghost. Nothing requires these files — they are run
   // directly by node — so the hazard doesn't exist here.
   'no-restricted-syntax': 'off',
-  // @tryghost/errors is a server-runtime concern; scripts throw native
-  // Errors and let node print the stack.
-  'ghost/ghost-custom/no-native-error': 'off',
 };
 
 export default [

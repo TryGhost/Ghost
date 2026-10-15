@@ -52,7 +52,9 @@
       ],
       "oxlintContracts": [
         "{workspaceRoot}/.oxlintrc.json",
-        "{workspaceRoot}/tools/configs/oxlint/**/*"
+        "{workspaceRoot}/tools/configs/oxlint/**/*",
+        "{workspaceRoot}/**/eslint.config.*",
+        "{workspaceRoot}/tools/configs/eslint*/**/*.mjs"
       ]
     },
     "targets": {

@@ -53,7 +53,7 @@ function doesContentPathExist(contentPath: unknown): void {
   if (typeof contentPath !== 'string' || !fs.existsSync(contentPath)) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
     // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error(
       'Your content path does not exist! Please double check `paths.contentPath` in your custom config file e.g. config.production.json.',
     );
@@ -71,7 +71,7 @@ function checkUrlProtocol(url: unknown): void {
   if (typeof url !== 'string' || !url.match(/^https?:\/\//i)) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
     // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"');
   }
 }

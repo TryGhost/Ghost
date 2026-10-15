@@ -70,7 +70,7 @@ class RecommendationServiceWrapper {
     const mentions = require('../mentions');
 
     if (!mentions.sendingService || !mentions.api) {
-      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
       throw new Error(
         'MentionSendingService not intialized, but this is a dependency of RecommendationServiceWrapper. Check boot order.',
       );
