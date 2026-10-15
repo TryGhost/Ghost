@@ -4,20 +4,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupportRequestModal } from './support-request-modal';
 import type { SupportRequestDraft } from './support-request';
 
-const { mockSubmit, mockHandleError, mockUseBrowseSite, mockUseCurrentUser } = vi.hoisted(() => ({
+const { mockSubmit, mockHandleError, mockUseCurrentUser } = vi.hoisted(() => ({
   mockSubmit: vi.fn(),
   mockHandleError: vi.fn(),
-  mockUseBrowseSite: vi.fn(),
   mockUseCurrentUser: vi.fn(),
 }));
 
-vi.mock('./support-request', async () => {
-  const actual = await vi.importActual<typeof import('./support-request')>('./support-request');
-  return {
-    ...actual,
-    submitSupportRequest: mockSubmit,
-  };
-});
+vi.mock('@tryghost/admin-x-framework/api/support-requests', () => ({
+  useSendSupportRequest: () => ({ mutateAsync: mockSubmit }),
+}));
 
 vi.mock('@tryghost/admin-x-framework/hooks', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
@@ -26,16 +21,6 @@ vi.mock('@tryghost/admin-x-framework/hooks', async () => {
   return {
     ...actual,
     useHandleError: () => mockHandleError,
-  };
-});
-
-vi.mock('@tryghost/admin-x-framework/api/site', async () => {
-  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/site')>(
-    '@tryghost/admin-x-framework/api/site',
-  );
-  return {
-    ...actual,
-    useBrowseSite: () => mockUseBrowseSite() as { data?: { site: { url: string } } },
   };
 });
 
@@ -81,9 +66,6 @@ describe('SupportRequestModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSubmit.mockResolvedValue(undefined);
-    mockUseBrowseSite.mockReturnValue({
-      data: { site: { url: 'https://example.com/' } },
-    });
     mockUseCurrentUser.mockReturnValue({
       data: { name: 'Fallback Name', email: 'fallback@example.com' },
     });
@@ -160,7 +142,6 @@ describe('SupportRequestModal', () => {
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.\n\nUsing Chrome.',
       source: 'chat-provider',
-      siteUrl: 'https://example.com/',
       pageUrl: 'http://localhost:2368/ghost/#/posts',
       conversationUrl: 'https://chat.example.com/conversation/conv-1',
       transcript: '**User**\nI cannot publish a post',
