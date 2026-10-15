@@ -1,4 +1,8 @@
-import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
+import {
+  buildSignedWebhookRequest,
+  describeWebhookError,
+  sanitizeWebhookUrl,
+} from '../../lib/signed-webhook';
 const errors = require('@tryghost/errors');
 
 export interface SupportRequest {
@@ -106,7 +110,7 @@ export class SupportRequestsService {
     try {
       await this.#request(webhookUrl, requestOptions);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeWebhookError(error);
       this.#logging.error(`Failed to send support request to "${sanitizedUrl}": ${message}`);
       throw new errors.InternalServerError({
         statusCode: 502,
