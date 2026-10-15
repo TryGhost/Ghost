@@ -57,6 +57,15 @@
     },
     "targets": {
       "test:unit": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "ghost"
+            ],
+            "target": "build:tsc"
+          }
+        ],
         "inputs": [
           "default",
           "^default",
