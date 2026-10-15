@@ -57,16 +57,19 @@ describe('Support requests API', function () {
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
+
     await fixtureManager.init('users');
   });
 
   beforeEach(async function () {
     await dbUtils.truncate('brute');
+
     resetRateLimits();
   });
 
   afterEach(async function () {
     nock.cleanAll();
+
     await configUtils.restore();
   });
 
@@ -88,6 +91,7 @@ describe('Support requests API', function () {
 
     it('Sends a signed support request with the signed-in user as the requester', async function () {
       configureHost();
+
       const captured = mockHost();
 
       await agent
@@ -106,6 +110,7 @@ describe('Support requests API', function () {
         .expectStatus(202);
 
       const owner = fixtureManager.get('users', 0);
+
       assert.deepEqual(captured.body, {
         type: 'support_request',
         siteId: SITE_ID,
@@ -119,10 +124,13 @@ describe('Support requests API', function () {
       });
 
       assert.ok(captured.headers, 'Expected the outbound request headers to be captured');
+
       const timestamp = captured.headers['x-ghost-request-timestamp'];
+
       // nock hands us the parsed body; the service signs the raw
       // JSON.stringify output, which re-stringifying reproduces exactly
       const rawBody = JSON.stringify(captured.body);
+
       assert.equal(
         captured.headers['x-ghost-signature'],
         crypto
@@ -134,6 +142,7 @@ describe('Support requests API', function () {
 
     it('Sends null for optional fields that were not provided', async function () {
       configureHost();
+
       const captured = mockHost();
 
       await agent
@@ -150,6 +159,7 @@ describe('Support requests API', function () {
 
     it('Rejects requester fields supplied in the request body', async function () {
       configureHost();
+
       const captured = mockHost();
 
       await agent
@@ -172,6 +182,7 @@ describe('Support requests API', function () {
     it('Refuses to send when the secret is missing while the host is configured', async function () {
       configUtils.set('hostSettings:supportRequest:webhookUrl', `${HOST_ORIGIN}${HOST_PATH}`);
       configUtils.set('hostSettings:siteId', SITE_ID);
+
       const captured = mockHost();
 
       await agent
@@ -184,6 +195,7 @@ describe('Support requests API', function () {
 
     it('Returns 502 when the host rejects the request', async function () {
       configureHost();
+
       mockHost({ status: 500 });
 
       await agent
@@ -222,6 +234,7 @@ describe('Support requests API', function () {
     ] as const) {
       it(`Returns 422 when ${description}`, async function () {
         configureHost();
+
         const captured = mockHost();
         const body =
           override === null ? {} : { support_requests: [{ ...SUPPORT_REQUEST, ...override }] };
@@ -234,11 +247,13 @@ describe('Support requests API', function () {
 
     it('Limits how many support requests a site can send', async function () {
       configureHost();
+
       const { freeRetries } = configUtils.config.get('spam:support_request_block');
 
       // express-brute lets the first request through, then freeRetries more
       for (let i = 0; i < freeRetries + 1; i += 1) {
         mockHost();
+
         await agent
           .post('/support_requests/')
           .body({ support_requests: [SUPPORT_REQUEST] })
@@ -259,6 +274,7 @@ describe('Support requests API', function () {
 
     it('Can send a support request', async function () {
       configureHost();
+
       const captured = mockHost();
 
       await agent

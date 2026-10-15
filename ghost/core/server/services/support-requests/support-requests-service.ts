@@ -73,6 +73,7 @@ export class SupportRequestsService {
       this.#logging.error(
         'Support request is misconfigured: hostSettings:supportRequest:webhookSecret is missing while hostSettings:supportRequest:webhookUrl is set.',
       );
+
       throw new errors.IncorrectUsageError({
         message: 'Support requests are not configured correctly on this site',
       });
@@ -85,6 +86,7 @@ export class SupportRequestsService {
       this.#logging.error(
         'Support request is misconfigured: hostSettings:siteId is missing while hostSettings:supportRequest:webhookUrl is set.',
       );
+
       throw new errors.IncorrectUsageError({
         message: 'Support requests are not configured correctly on this site',
       });
@@ -105,13 +107,16 @@ export class SupportRequestsService {
     });
 
     const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);
+
     this.#logging.info(`Sending support request to "${sanitizedUrl}"`);
 
     try {
       await this.#request(webhookUrl, requestOptions);
     } catch (error) {
       const message = describeWebhookError(error);
+
       this.#logging.error(`Failed to send support request to "${sanitizedUrl}": ${message}`);
+
       throw new errors.InternalServerError({
         statusCode: 502,
         message: 'Failed to send the support request. Please try again later.',

@@ -53,15 +53,19 @@ describe('SupportRequestsService', function () {
       },
       request,
     });
+
     return { service, errorMessages, infoMessages };
   }
 
   function captureRequests() {
     const captured: CapturedRequest[] = [];
+
     const request = async (url: string, options: RequestOptions) => {
       captured.push({ url, options });
+
       return null;
     };
+
     return { captured, request };
   }
 
@@ -85,6 +89,7 @@ describe('SupportRequestsService', function () {
     });
 
     await assert.rejects(service.send(supportRequest), { errorType: 'IncorrectUsageError' });
+
     assert.deepEqual(errorMessages, [
       'Support request is misconfigured: hostSettings:supportRequest:webhookSecret is missing while hostSettings:supportRequest:webhookUrl is set.',
     ]);
@@ -99,6 +104,7 @@ describe('SupportRequestsService', function () {
     });
 
     await assert.rejects(service.send(supportRequest), { errorType: 'IncorrectUsageError' });
+
     assert.deepEqual(errorMessages, [
       'Support request is misconfigured: hostSettings:siteId is missing while hostSettings:supportRequest:webhookUrl is set.',
     ]);
@@ -123,7 +129,9 @@ describe('SupportRequestsService', function () {
     await service.send(supportRequest);
 
     assert.equal(captured.length, 1);
+
     const [{ url, options }] = captured;
+
     assert.equal(url, webhookUrl);
     assert.equal(options.method, 'POST');
     assert.deepEqual(infoMessages, ['Sending support request to "https://support.example.com"']);
@@ -134,6 +142,7 @@ describe('SupportRequestsService', function () {
     });
 
     const timestamp = options.headers['X-Ghost-Request-Timestamp'];
+
     assert.equal(
       options.headers['X-Ghost-Signature'],
       crypto
@@ -141,6 +150,7 @@ describe('SupportRequestsService', function () {
         .update(`${timestamp}:${options.body}`)
         .digest('base64'),
     );
+
     // A repeated delivery would duplicate the support request, so it must never retry.
     assert.deepEqual(options.retry, { limit: 0 });
   });
@@ -161,6 +171,7 @@ describe('SupportRequestsService', function () {
       statusCode: 502,
       message: 'Failed to send the support request. Please try again later.',
     });
+
     assert.deepEqual(errorMessages, [
       'Failed to send support request to "https://support.example.com": HTTP 500',
     ]);
