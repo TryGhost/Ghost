@@ -41,6 +41,15 @@ describe('Permissions', function () {
 
         assert.equal(rolePermissions.all().length, length);
       });
+
+      it('returns frozen permissions', function () {
+        const [perm] = rolePermissions.all();
+
+        assert.throws(() => {
+          (perm as { action_type: string }).action_type = 'changed';
+        }, TypeError);
+        assert.notEqual(rolePermissions.all()[0].action_type, 'changed');
+      });
     });
 
     describe('roleNames', function () {
@@ -96,6 +105,16 @@ describe('Permissions', function () {
 
       it('returns an empty array for no roles', function () {
         assert.deepEqual(rolePermissions.forRoles([]), []);
+      });
+
+      it('returns frozen permissions, so one caller cannot change them for another', function () {
+        const [perm] = rolePermissions.forRoles(['Contributor']);
+
+        assert.throws(() => {
+          (perm as { action_type: string }).action_type = 'changed';
+        }, TypeError);
+        assert.notEqual(rolePermissions.forRoles(['Contributor'])[0].action_type, 'changed');
+        assert(rolePermissions.forRoles(['Administrator']).every(Object.isFrozen));
       });
 
       it('unions permissions across roles without duplicates', function () {
