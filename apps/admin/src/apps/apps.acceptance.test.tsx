@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import type {
   AppInstallation,
@@ -148,8 +148,12 @@ const fakeUninstall = (id = 'installation-1') =>
   );
 
 describe('Managing apps', () => {
-  it('adds Apps to the sidebar for Administrators, only with the apps flag', async () => {
+  // The sidebar lists the installed apps on every screen; specs that need some fake their own.
+  beforeEach(() => {
     fakeInstallations();
+  });
+
+  it('adds Apps to the sidebar for Administrators, only with the apps flag', async () => {
     await renderAdminApp('/apps', { labs });
     await expect.element(appsScreen.sidebarLink()).toBeVisible();
   });
@@ -310,7 +314,6 @@ describe('Managing apps', () => {
   });
 
   it('refuses to frame an app whose page is on Admin’s own address', async () => {
-    fakeInstallations();
     // Accepted before Admin moved here, say. Nothing of it loads: no frame, no page fetch.
     const onAdmin = manifest({
       surfaces: [{ type: 'admin_page', url: `${window.location.origin}/ghost/app/` }],
@@ -324,7 +327,6 @@ describe('Managing apps', () => {
   });
 
   it('refuses to frame an app whose page is on the site’s address', async () => {
-    fakeInstallations();
     // Admin isn't necessarily served from the site's address, so that one is read.
     const site = siteResponse();
     site.site.url = 'https://blog.example.com/';
@@ -1013,7 +1015,6 @@ describe('Managing apps', () => {
   });
 
   it('shows who made the app, where it runs, who installed it, and its history', async () => {
-    fakeInstallations();
     const moved = manifest({
       surfaces: [{ type: 'admin_page', url: 'https://podcast.example.net/admin' }],
     });
@@ -1196,7 +1197,6 @@ describe('Managing apps', () => {
   });
 
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {
-    fakeInstallations();
     fakeDetails(
       installation({
         status: 'uninstalled',
@@ -1217,7 +1217,6 @@ describe('Managing apps', () => {
   });
 
   it('says when an app doesn’t exist', async () => {
-    fakeInstallations();
     const id = 'abcdefabcdefabcdefabcdef';
     fakeAdminEndpoint(
       'GET',
@@ -1235,7 +1234,6 @@ describe('Managing apps', () => {
   });
 
   it('says an address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
-    fakeInstallations();
     fakeAdminEndpoint(
       'GET',
       readPath('missing'),
