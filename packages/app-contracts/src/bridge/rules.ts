@@ -223,9 +223,10 @@ export type Place =
 export type ConnectMessage = {
   type: typeof CONNECT_MESSAGE_TYPE;
   /**
-   * The names of the calls this Admin exports, from `HostExports`. An older Admin lacks the
-   * newer ones, so the SDK rejects a call missing from this list as `unsupported` without
-   * sending it.
+   * The names of the calls this Admin exports, from `HostExports`, and of any newer argument
+   * fields or places it accepts (see `HostExports` for the rule). An older Admin lacks the
+   * newer ones, so the SDK rejects a call, field or place missing from this list as
+   * `unsupported` without sending it.
    */
   exports: string[];
 };

@@ -6,9 +6,16 @@ import type { FetchResponse, Place, StartContext, Theme } from './rules.ts';
  * because every call crosses a `MessagePort`. No call takes a function, so the channel never
  * has to proxy one back to the caller.
  *
- * The channel is unversioned: Admin only ever adds exports and optional fields. Admin's connect
- * message lists the names it exports, so the SDK rejects a call this Admin doesn't have as
- * `unsupported`.
+ * The channel is unversioned. It grows by these rules:
+ *
+ * - Admin only ever adds exports and optional fields; it never renames or removes one.
+ * - Admin's connect message lists what it supports: the names of its exports, and a name for
+ *   each newer argument field or place it accepts. Every new argument field, and every new
+ *   place an SDK may send, gets such a name. The SDK refuses to send one as `unsupported`
+ *   unless Admin lists it, so a newer SDK never depends on an older Admin ignoring something.
+ *   Admin's schemas stay strict and refuse anything they don't know.
+ * - In the other direction, a field Admin sends never changes how an existing field is read.
+ *   A new meaning gets a new field, which an older SDK ignores.
  */
 
 /** What Admin exposes to an app's page. Admin validates every argument; the frame is untrusted. */

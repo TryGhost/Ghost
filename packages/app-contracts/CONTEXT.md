@@ -106,8 +106,8 @@ _Avoid_: handshake, ready, init
 **Connect**:
 Admin's answer to a hello that comes from the frame Admin mounted and from the
 surface origin. It hands the page the port that carries the rest of the app
-session, and lists the calls this Admin exports, so the page knows which calls
-an older Admin lacks. Only the first connect counts.
+session, and lists the calls and feature names this Admin supports, so the
+page knows what an older Admin lacks. Only the first connect counts.
 _Avoid_: ack, handshake
 
 **Start**:
@@ -155,3 +155,13 @@ unless its path is shared with a harmless read: bulk deletes are refused for
 `DELETE` only, and test email sends for `POST` and `PUT`. It is a stopgap, not
 a complete list, and will be removed once apps have their own token.
 _Avoid_: permissions, scopes, denylist
+
+**Feature name**:
+A name in the connect message's list for something an Admin supports beyond
+its exports: a newer argument field, or a newer place an app may send. Every
+such addition gets one, and the SDK refuses to send it as `unsupported` unless
+Admin lists it, so a newer SDK never relies on an older Admin ignoring
+something; Admin's schemas stay strict. In the other direction, a field Admin
+sends never changes how an existing field is read: a new meaning gets a new
+field.
+_Avoid_: version, capability flag
