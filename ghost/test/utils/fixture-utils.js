@@ -491,73 +491,6 @@ const fixtures = {
     });
   },
 
-  permissionsFor: function permissionsFor(obj) {
-    let permsToInsert = _.cloneDeep(
-      fixtureManager.findModelFixtures('Permission', { object_type: obj }).entries,
-    );
-    const permsRolesToInsert = fixtureManager.findPermissionRelationsForObject(obj).entries;
-    const actions = [];
-    const permissionsRoles = {};
-
-    const roles = {
-      Administrator: DataGenerator.Content.roles[0].id,
-      Editor: DataGenerator.Content.roles[1].id,
-      Author: DataGenerator.Content.roles[2].id,
-      Owner: DataGenerator.Content.roles[3].id,
-      Contributor: DataGenerator.Content.roles[4].id,
-      'Admin Integration': DataGenerator.Content.roles[5].id,
-      'Super Editor': DataGenerator.Content.roles[6].id,
-    };
-
-    // Avoid an opaque database error from an empty insert.
-    if (_.isEmpty(permsToInsert)) {
-      return Promise.reject(new Error('no permission found:' + obj));
-    }
-
-    permsToInsert = _.map(permsToInsert, function (perms) {
-      perms.id = ObjectId().toHexString();
-
-      actions.push({ type: perms.action_type, permissionId: perms.id });
-      return DataGenerator.forKnex.createBasic(perms);
-    });
-
-    _.each(permsRolesToInsert, function (perms, role) {
-      if (perms[obj]) {
-        if (perms[obj] === 'all') {
-          _.each(actions, function (action) {
-            if (!permissionsRoles[action.permissionId]) {
-              permissionsRoles[action.permissionId] = [];
-            }
-
-            permissionsRoles[action.permissionId].push(
-              _.find(DataGenerator.Content.roles, { id: roles[role] }),
-            );
-          });
-        } else {
-          _.each(perms[obj], function (action) {
-            if (!permissionsRoles[_.find(actions, { type: action }).permissionId]) {
-              permissionsRoles[_.find(actions, { type: action }).permissionId] = [];
-            }
-
-            permissionsRoles[_.find(actions, { type: action }).permissionId].push(
-              _.find(DataGenerator.Content.roles, { id: roles[role] }),
-            );
-          });
-        }
-      }
-    });
-
-    return Promise.all(
-      permsToInsert.map((perm) => {
-        if (!_.isEmpty(permissionsRoles)) {
-          perm.roles = permissionsRoles[perm.id];
-        }
-
-        return models.Permission.add(perm, context.internal);
-      }),
-    );
-  },
-
   insertInvites: function insertInvites() {
     return Promise.all(
       DataGenerator.forKnex.invites.map((invite) => {
@@ -1026,9 +959,6 @@ const toDoList = {
   'perms:init': function initPermissions() {
     return permissions.init();
   },
-  perms: function permissionsFor(obj) {
-    return fixtures.permissionsFor(obj);
-  },
   filter: function createFilterParamFixtures() {
     return filterData(DataGenerator);
   },
@@ -1093,7 +1023,6 @@ const toDoList = {
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialized
  *  * `perms:init` - initialize the permissions object after having added permissions
- *  * `perms:obj` - initialize permissions for a particular object type
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */
@@ -1122,21 +1051,11 @@ const getFixtureOps = (toDos) => {
 
   // Go through our list of things to do, and add them to an array
   _.each(toDos, function (value, toDo) {
-    let tmp;
-
-    if (toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) {
-      tmp = toDo.split(':');
-
-      fixtureOps.push(function addCustomFixture() {
-        return toDoList[tmp[0]](tmp[1]);
-      });
-    } else {
-      if (!toDoList[toDo]) {
-        throw new Error(`The fixture ${toDo} does not exist.`);
-      }
-
-      fixtureOps.push(toDoList[toDo]);
+    if (!toDoList[toDo]) {
+      throw new Error(`The fixture ${toDo} does not exist.`);
     }
+
+    fixtureOps.push(toDoList[toDo]);
   });
 
   fixtureOps.push(() => {
