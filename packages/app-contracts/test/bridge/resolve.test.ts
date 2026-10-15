@@ -185,18 +185,28 @@ describe('checking an Admin API request', () => {
     expect(check('/posts/slug/v4/').problem).toBeUndefined();
   });
 
-  it('blocks the query parameters a scope refuses, however they are written', () => {
+  it('allows only the query parameters a write scope lists, by exact name', () => {
     const id = '5ddc9141c35e7700383b2937';
     for (const [method, path, parameter] of [
       ['PUT', `/posts/${id}/?newsletter=weekly`, 'newsletter'],
-      ['PUT', `/posts/${id}/?newsletter=weekly&email_segment=all`, 'newsletter'],
+      ['PUT', `/posts/${id}/?formats=lexical&email_segment=all`, 'email_segment'],
       ['PUT', `/pages/${id}/?email_segment=status:free`, 'email_segment'],
       ['POST', '/posts/?source=html', 'source'],
-      ['POST', '/pages/?SOURCE=html', 'source'],
+      ['POST', '/pages/?SOURCE=html', 'SOURCE'],
       ['PUT', `/posts/${id}/?news%6cetter=weekly`, 'newsletter'],
-      ['PUT', `/posts/${id}/?newsletter[]=weekly`, 'newsletter'],
-      ['PUT', `/posts/${id}/?newsletter%5Ba%5D=weekly`, 'newsletter'],
+      // Ghost's query parser reads each of these as `newsletter`, `email_segment` or `source`.
+      ['PUT', `/posts/${id}/?[newsletter]=weekly`, '[newsletter]'],
+      ['PUT', `/posts/${id}/?%5Bnewsletter%5D=weekly`, '[newsletter]'],
+      ['PUT', `/posts/${id}/?[email_segment]=all`, '[email_segment]'],
+      ['POST', '/posts/?[source]=html', '[source]'],
+      ['PUT', `/posts/${id}/?newsletter[]=weekly`, 'newsletter[]'],
+      ['PUT', `/posts/${id}/?newsletter%5Ba%5D=weekly`, 'newsletter[a]'],
+      ['PUT', `/posts/${id}/?include[]=tags`, 'include[]'],
       ['PUT', `/posts/${id}/?newsletter`, 'newsletter'],
+      ['PUT', `/posts/${id}/?force_rerender=true`, 'force_rerender'],
+      ['PUT', `/posts/${id}/?anything=else`, 'anything'],
+      ['PUT', `/tags/${id}/?formats=lexical`, 'formats'],
+      ['DELETE', `/posts/${id}/?newsletter=weekly`, 'newsletter'],
     ] as const) {
       const pathname = path.split('?')[0];
       expect(check(path, method), `${method} ${path}`).toEqual({
@@ -205,10 +215,12 @@ describe('checking an Admin API request', () => {
         detail: `Apps can't use the ${parameter} parameter on ${method} ${pathname}`,
       });
     }
-    expect(check(`/posts/${id}/?formats=lexical`, 'PUT').problem).toBeUndefined();
-    expect(check('/posts/?filter=newsletter:weekly').problem).toBeUndefined();
-    // Only writes refuse them.
-    expect(check('/posts/?source=html').problem).toBeUndefined();
+    expect(
+      check(`/posts/${id}/?formats=lexical&include=tags&save_revision=true`, 'PUT').problem,
+    ).toBeUndefined();
+    expect(check(`/tags/${id}/?include=count.posts`, 'PUT').problem).toBeUndefined();
+    // A read takes any parameter.
+    expect(check('/posts/?filter=newsletter:weekly&source=html').problem).toBeUndefined();
   });
 
   it('checks the content a write sends', () => {

@@ -19,9 +19,12 @@ import type { FetchMethod } from './rules.ts';
  * - The search index of posts, pages and tags, and slug generation, which Admin's own editor
  *   uses to pick a slug before saving.
  *
- * Writes of posts, pages and tags are checked further (`refusedContent`), so they can't send
- * email or carry script, and a post or page write refuses the `newsletter`, `email_segment` and
- * `source` parameters.
+ * Writes of posts, pages and tags are checked further, so an app can't ask Ghost to email a post
+ * or put script on the site: a write may carry only the query parameters its scope lists, which
+ * leaves out `newsletter`, `email_segment` and `source`, and `refusedContent` checks its body.
+ * These checks are a stopgap for the private beta behind a flag. The security review re-reviews
+ * them before anyone outside the team gets access (BER-3992), and Permissions and auth replaces
+ * them with checks on the server.
  *
  * What the security review before opening apps to outside developers (BER-3992) must look at
  * in this set:
@@ -46,15 +49,20 @@ export interface AdminApiScope {
   readonly description: string;
   /** Each route as `METHOD /path`, relative to the Admin API root. */
   readonly routes: readonly string[];
-  /** Query parameters a request in this scope must not carry, whatever their value. */
-  readonly refusedParameters?: readonly string[];
+  /**
+   * The only query parameters a request in this scope may carry, by exact name. Any other name
+   * is refused, so a spelling Ghost's query parser reads differently, such as `[newsletter]`,
+   * can't slip a parameter past the check. A scope without this list allows any parameter.
+   */
+  readonly allowedParameters?: readonly string[];
   /** The kind of content a write in this scope sends, which `refusedContent` checks. */
   readonly content?: 'posts' | 'pages' | 'tags';
 }
 
-// `newsletter` and `email_segment` send a post as email, and `source=html` turns HTML into the
-// post's content as it is.
-const POST_WRITE_PARAMETERS = ['newsletter', 'email_segment', 'source'] as const;
+// What Ghost reads on a post or page write, minus `newsletter` and `email_segment`, which send
+// the post as email, `source=html`, which turns HTML into the post's content as it is, and the
+// rest of what only Admin's editor needs.
+const POST_WRITE_PARAMETERS = ['include', 'formats', 'save_revision'] as const;
 
 export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
   {
@@ -66,7 +74,7 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     name: 'posts:write',
     description: 'Create, edit and delete posts, one at a time, without email or script.',
     routes: ['POST /posts', 'PUT /posts/:id', 'DELETE /posts/:id'],
-    refusedParameters: POST_WRITE_PARAMETERS,
+    allowedParameters: POST_WRITE_PARAMETERS,
     content: 'posts',
   },
   {
@@ -78,7 +86,7 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     name: 'pages:write',
     description: 'Create, edit and delete pages, one at a time, without script.',
     routes: ['POST /pages', 'PUT /pages/:id', 'DELETE /pages/:id'],
-    refusedParameters: POST_WRITE_PARAMETERS,
+    allowedParameters: POST_WRITE_PARAMETERS,
     content: 'pages',
   },
   {
@@ -90,6 +98,7 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     name: 'tags:write',
     description: 'Create, edit and delete tags, one at a time, without script.',
     routes: ['POST /tags', 'PUT /tags/:id', 'DELETE /tags/:id'],
+    allowedParameters: ['include'],
     content: 'tags',
   },
   {

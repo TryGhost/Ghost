@@ -23,7 +23,7 @@ describe('a fetch request', () => {
     const request = {
       path: '/posts/',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Request-Id': 'abc' },
+      headers: { 'X-Request-Id': 'abc' },
       body: JSON.stringify({ posts: [{ title: 'Hello' }] }),
     };
     expect(FetchRequestSchema.parse(request)).toEqual(request);
@@ -129,36 +129,26 @@ describe('a fetch request', () => {
     }
   });
 
-  it('refuses a content type other than JSON, as the Admin API also reads forms and uploads', () => {
+  it('refuses a content type or encoding, which only Admin sets, with any value', () => {
     for (const [name, value] of [
-      ['Content-Type', 'multipart/form-data; boundary=x'],
+      // UTF-7 would carry a body Admin reads as harmless past its checks.
+      ['Content-Type', 'application/json; charset=utf-7'],
+      ['content-type', 'application/json; charset="utf-7"'],
+      ['Content-Type', 'application/json; charset=utf-8; charset=utf-7'],
+      ['Content-Type', 'application/json'],
       ['content-type', 'application/x-www-form-urlencoded'],
-      ['Content-Type', 'text/plain'],
-    ]) {
+      ['Content-Type', 'multipart/form-data; boundary=x'],
+      ['Content-Encoding', 'gzip'],
+    ] as const) {
       expect(
-        requestErrors({
-          path: '/posts/',
-          method: 'POST',
-          headers: { [name as string]: value as string },
-          body: '{}',
-        }),
+        requestErrors({ path: '/posts/', method: 'POST', headers: { [name]: value }, body: '{}' }),
+        value,
       ).toEqual([
         {
           path: ['headers', name],
-          message: 'Expected no content type, or application/json: apps send the Admin API JSON',
+          message: `Expected no ${name.toLowerCase()} header, which only Admin sets`,
         },
       ]);
-    }
-    for (const value of ['application/json', 'Application/JSON; charset=utf-8']) {
-      expect(
-        FetchRequestSchema.safeParse({
-          path: '/posts/',
-          method: 'POST',
-          headers: { 'Content-Type': value },
-          body: '{}',
-        }).success,
-        value,
-      ).toBe(true);
     }
     // Only the content type says what the body is.
     expect(

@@ -72,7 +72,7 @@ describe('fetch', () => {
     expect(host.fetch).toHaveBeenCalledWith({
       path: '/posts/',
       method: 'POST',
-      headers: { 'x-thing': 'yes', 'content-type': 'application/json' },
+      headers: { 'x-thing': 'yes' },
       body: '{"posts":[{"title":"Hello"}]}',
     });
     expect(response).toBeInstanceOf(Response);
@@ -88,33 +88,15 @@ describe('fetch', () => {
     expect(host.fetch).toHaveBeenCalledWith({ path: '/posts/?limit=5', method: 'GET' });
   });
 
-  it('sends text unchanged, and keeps a content type the app set', async () => {
+  it('sends text unchanged, and an object or array as JSON, leaving the content type to Admin', async () => {
     const { ghost, host } = await started();
-    await ghost.fetch('/posts/', {
-      method: 'PUT',
-      headers: [['Content-Type', 'application/json']],
-      body: '{"posts":[]}',
-    });
-    await ghost.fetch('/posts/', {
-      method: 'PUT',
-      headers: new Headers({ 'Content-Type': 'application/json; charset=utf-8' }),
-      body: [1, 2],
-    });
+    await ghost.fetch('/posts/', { method: 'PUT', body: '{"posts":[]}' });
+    await ghost.fetch('/posts/', { method: 'PUT', body: [1, 2] });
     await ghost.fetch('/posts/', { method: 'DELETE', body: null });
 
     expect(host.fetch.mock.calls.map(([request]) => request)).toEqual([
-      {
-        path: '/posts/',
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: '{"posts":[]}',
-      },
-      {
-        path: '/posts/',
-        method: 'PUT',
-        headers: { 'content-type': 'application/json; charset=utf-8' },
-        body: '[1,2]',
-      },
+      { path: '/posts/', method: 'PUT', body: '{"posts":[]}' },
+      { path: '/posts/', method: 'PUT', body: '[1,2]' },
       { path: '/posts/', method: 'DELETE' },
     ]);
   });
@@ -201,12 +183,12 @@ describe('fetch', () => {
       'invalid_argument',
     ],
     [
-      'a form body',
+      'a content type, which only Admin sets',
       '/posts/',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'posts[0][title]=x',
+        headers: { 'Content-Type': 'application/json; charset=utf-7' },
+        body: '{"posts":[{"codeinjection_head":"+ADw-script+AD4-"}]}',
       },
       'invalid_argument',
     ],
@@ -270,7 +252,7 @@ describe('a refused argument', () => {
           headers: { 'content-type': 'multipart/form-data' },
           body: '',
         }),
-        ARGUMENT_MESSAGES.jsonContentType,
+        ARGUMENT_MESSAGES.reservedHeader('content-type'),
       ],
       [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
       [ghost.open('/posts' as never), ARGUMENT_MESSAGES.place],

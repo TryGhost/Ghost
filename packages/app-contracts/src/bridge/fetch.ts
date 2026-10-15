@@ -4,7 +4,6 @@ import {
   ARGUMENT_MESSAGES,
   FETCH_METHODS,
   isContainedPath,
-  isJsonContentType,
   isReservedRequestHeader,
   methodAllowsBody,
 } from './rules.ts';
@@ -78,7 +77,7 @@ export const FetchRequestSchema = z
             message: `Expected at most ${FETCH_HEADERS_MAX_COUNT} headers`,
           });
         }
-        for (const [name, value] of entries) {
+        for (const [name] of entries) {
           if (!HEADER_NAME.test(name)) {
             ctx.addIssue({
               code: 'custom',
@@ -89,12 +88,6 @@ export const FetchRequestSchema = z
             ctx.addIssue({
               code: 'custom',
               message: ARGUMENT_MESSAGES.reservedHeader(name),
-              path: [name],
-            });
-          } else if (name.toLowerCase() === 'content-type' && !isJsonContentType(value)) {
-            ctx.addIssue({
-              code: 'custom',
-              message: ARGUMENT_MESSAGES.jsonContentType,
               path: [name],
             });
           }

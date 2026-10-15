@@ -50,7 +50,6 @@ export {
   isConnectMessage,
   isContainedPath,
   isFetchResponse,
-  isJsonContentType,
   isRecord,
   isReservedRequestHeader,
   isStartContext,

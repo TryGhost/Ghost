@@ -136,6 +136,18 @@ describe('what a write of content may contain', () => {
     expect(refusedContent('posts', post({ type: 'paragraph', children: [null] }))).toBe(
       'lexical with a "paragraph" node whose children aren\'t nodes',
     );
+    expect(refusedContent('posts', post({ type: 'paragraph', children: 'text' }))).toBe(
+      'lexical with a "paragraph" node whose children aren\'t nodes',
+    );
+  });
+
+  it('copes with a node with more children than a call can take as arguments', () => {
+    const children = Array.from({ length: 340_000 }, () => text('x'));
+    expect(refusedContent('posts', post({ type: 'paragraph', children }))).toBeUndefined();
+    children.push({ type: 'html' } as never);
+    expect(refusedContent('posts', post({ type: 'paragraph', children }))).toBe(
+      'lexical with a "html" node',
+    );
   });
 
   it('copes with Lexical nested deeper than a recursive walk could go', () => {

@@ -14,7 +14,6 @@ import {
   isContainedPath,
   isFetchResponse,
   isRecord,
-  isJsonContentType,
   isReservedRequestHeader,
   isStartContext,
   isTheme,
@@ -307,32 +306,6 @@ describe('the messages for a refused argument', () => {
   });
 });
 
-describe('a JSON content type', () => {
-  it('matches application/json with any parameters, in any case', () => {
-    for (const value of [
-      'application/json',
-      'application/json; charset=utf-8',
-      'Application/JSON',
-      ' application/json ',
-    ]) {
-      expect(isJsonContentType(value), value).toBe(true);
-    }
-  });
-
-  it('matches nothing else', () => {
-    for (const value of [
-      'multipart/form-data; boundary=x',
-      'application/x-www-form-urlencoded',
-      'text/plain; x=application/json',
-      'application/jsonx',
-      'application/vnd.api+json',
-      '',
-    ]) {
-      expect(isJsonContentType(value), value).toBe(false);
-    }
-  });
-});
-
 describe('a reserved request header', () => {
   it('matches a header only Admin sets, in any case', () => {
     for (const name of [
@@ -341,13 +314,15 @@ describe('a reserved request header', () => {
       'Authorization',
       'x-ghost-anything',
       'x-forwarded-host',
+      'Content-Type',
+      'content-encoding',
     ]) {
       expect(isReservedRequestHeader(name), name).toBe(true);
     }
   });
 
   it('matches nothing else', () => {
-    for (const name of ['content-type', 'accept', 'x-ghost', 'x-ghostly', 'cookies', 'hosts']) {
+    for (const name of ['content-language', 'accept', 'x-ghost', 'x-ghostly', 'cookies', 'hosts']) {
       expect(isReservedRequestHeader(name), name).toBe(false);
     }
   });

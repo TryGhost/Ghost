@@ -55,7 +55,7 @@ export type AdminApiRequestCheck =
  * A path that stays under the root is `blocked` unless the allowlist has a route for where it
  * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
  * or its first segment is an old API version (`v4`), whatever the allowlist says; when it carries
- * a query parameter its scope refuses; or when its body is content its scope refuses.
+ * a query parameter its scope doesn't list; or when its body is content its scope refuses.
  */
 export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): AdminApiRequestCheck {
   const { path, method = 'GET', body } = request;
@@ -104,11 +104,14 @@ export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): Ad
   }
   const { scope } = allowed;
 
-  for (const name of url.searchParams.keys()) {
-    // `newsletter[]` and `newsletter[a]` are read as `newsletter` too.
-    const parameter = (name.split('[', 1)[0] as string).toLowerCase();
-    if (scope.refusedParameters?.includes(parameter)) {
-      return blocked(`Apps can't use the ${parameter} parameter on ${method} ${pathname}`);
+  // Names are compared once decoded, by exact match, so `%5Bnewsletter%5D` is `[newsletter]`,
+  // which isn't on any list, although Ghost's query parser reads it as `newsletter`.
+  const { allowedParameters } = scope;
+  if (allowedParameters) {
+    for (const name of url.searchParams.keys()) {
+      if (!allowedParameters.includes(name)) {
+        return blocked(`Apps can't use the ${name} parameter on ${method} ${pathname}`);
+      }
     }
   }
 

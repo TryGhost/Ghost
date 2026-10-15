@@ -41,10 +41,13 @@ export function methodAllowsBody(method: string): boolean {
 }
 
 // The headers Admin sets itself on a request it makes for an app: the credentials, which only
-// Admin may send; Admin's own markers, which Ghost core treats as coming from Admin; and the
-// headers that describe the connection, or the proxies along the way, rather than the request.
+// Admin may send; Admin's own markers, which Ghost core treats as coming from Admin; the headers
+// that describe the connection, or the proxies along the way, rather than the request; and the
+// ones that say how to read the body. A body is always JSON, which Admin labels itself: the Admin
+// API also reads forms and uploads, and decodes JSON in any charset it's told, so a content type
+// of the app's choosing could carry a write past the checks on what it contains.
 const RESERVED_REQUEST_HEADER =
-  /^(?:cookie|authorization|x-ghost-.*|app-pragma|host|origin|referer|content-length|x-forwarded-.*|forwarded|x-real-ip|via)$/i;
+  /^(?:cookie|authorization|x-ghost-.*|app-pragma|host|origin|referer|content-length|content-type|content-encoding|x-forwarded-.*|forwarded|x-real-ip|via)$/i;
 
 /**
  * Whether a request header is one that apps may not set, in any case. Admin refuses a request
@@ -54,15 +57,6 @@ const RESERVED_REQUEST_HEADER =
  */
 export function isReservedRequestHeader(name: string): boolean {
   return RESERVED_REQUEST_HEADER.test(name);
-}
-
-/**
- * Whether a request's content type is JSON: `application/json`, with any parameters. The Admin
- * API also reads form and multipart bodies. A form body would carry a post past the checks on
- * what a write may contain, and a multipart body is an upload, so an app's body is always JSON.
- */
-export function isJsonContentType(value: string): boolean {
-  return (value.split(';', 1)[0] as string).trim().toLowerCase() === 'application/json';
 }
 
 /**
@@ -78,7 +72,6 @@ export const ARGUMENT_MESSAGES = {
   // name is lowercased here too and both sides produce the same message.
   reservedHeader: (name: string) =>
     `Expected no ${name.toLowerCase()} header, which only Admin sets`,
-  jsonContentType: 'Expected no content type, or application/json: apps send the Admin API JSON',
   jsonBody: 'Expected the body as JSON text',
   appPath: 'Expected a path within the app, starting with a single /',
   place:

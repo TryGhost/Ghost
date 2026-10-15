@@ -121,10 +121,16 @@ function refusedLexical(lexical: unknown): string | undefined {
     if (children === undefined) {
       continue;
     }
-    if (!Array.isArray(children) || !children.every(isRecord)) {
+    if (!Array.isArray(children)) {
       return `lexical with a "${String(node.type)}" node whose children aren't nodes`;
     }
-    nodes.push(...children);
+    // One at a time: spreading a very wide list into `push` would overflow the call stack.
+    for (const child of children) {
+      if (!isRecord(child)) {
+        return `lexical with a "${String(node.type)}" node whose children aren't nodes`;
+      }
+      nodes.push(child);
+    }
   }
   return undefined;
 }

@@ -3,7 +3,6 @@ import {
   FETCH_METHODS,
   isContainedPath,
   isFetchResponse,
-  isJsonContentType,
   isRecord,
   isReservedRequestHeader,
   methodAllowsBody,
@@ -54,15 +53,11 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
       cause: error,
     });
   }
-  // `Headers` lowercases the names, so a content type the app set is found in any case.
+  // `Headers` lowercases the names, so a reserved header the app set is found in any case.
   const entries = [...headers.entries()];
   const reserved = entries.find(([name]) => isReservedRequestHeader(name));
   if (reserved) {
     throw invalidArgument(ARGUMENT_MESSAGES.reservedHeader(reserved[0]));
-  }
-  const contentType = headers.get('content-type');
-  if (contentType !== null && !isJsonContentType(contentType)) {
-    throw invalidArgument(ARGUMENT_MESSAGES.jsonContentType);
   }
   return Object.fromEntries(entries);
 }
@@ -97,7 +92,6 @@ export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRe
       request.body = init.body;
     } else if (isJsonBody(init.body)) {
       request.body = toJson(init.body);
-      headers['content-type'] ??= 'application/json';
     } else {
       // Binary and streamed bodies cannot cross the channel as text.
       throw invalidArgument('Expected the body as text, or as an object or array to send as JSON');
