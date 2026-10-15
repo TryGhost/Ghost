@@ -21,6 +21,12 @@ import { useSendSupportRequest } from '@tryghost/admin-x-framework/api/support-r
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { SupportRequestDraft } from './support-request';
 
+// The support requests endpoint rejects anything longer
+const NAME_MAX = 191;
+const EMAIL_MAX = 191;
+const SUBJECT_MAX = 255;
+const MESSAGE_MAX = 10_000;
+
 interface FormState {
   name: string;
   email: string;
@@ -77,20 +83,28 @@ export function SupportRequestModal({
 
       if (!state.name.trim()) {
         newErrors.name = 'Enter your name';
+      } else if (state.name.trim().length > NAME_MAX) {
+        newErrors.name = `Name cannot be longer than ${NAME_MAX} characters`;
       }
 
       if (!state.email.trim()) {
         newErrors.email = 'Enter your email';
+      } else if (state.email.trim().length > EMAIL_MAX) {
+        newErrors.email = `Email cannot be longer than ${EMAIL_MAX} characters`;
       } else if (!validator.isEmail(state.email.trim())) {
         newErrors.email = 'Enter a valid email address';
       }
 
       if (!state.subject.trim()) {
         newErrors.subject = 'Enter a subject';
+      } else if (state.subject.trim().length > SUBJECT_MAX) {
+        newErrors.subject = `Subject cannot be longer than ${SUBJECT_MAX} characters`;
       }
 
       if (!state.message.trim()) {
         newErrors.message = 'Enter a message';
+      } else if (state.message.trim().length > MESSAGE_MAX) {
+        newErrors.message = `Message cannot be longer than ${MESSAGE_MAX.toLocaleString('en-US')} characters`;
       }
 
       return newErrors;
