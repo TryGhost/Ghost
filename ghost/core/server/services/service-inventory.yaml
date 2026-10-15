@@ -575,7 +575,7 @@ services:
         initializer and update endpoint access, preserving schema gating and live
         manifest/configuration callbacks. The new history, detail, uninstall and app session
         behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 99f7c637abd6bb1565dafe5acc7b8755dc5d9233
+      reviewedAt: 3c94513eb28f32663409d7990c74cccfb9528523
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
