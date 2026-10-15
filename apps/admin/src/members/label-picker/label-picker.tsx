@@ -228,7 +228,7 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
             isAdmin7 &&
               cn(
                 tokenFieldClasses.chip,
-                'h-auto min-h-6 rounded-[12px] bg-secondary py-0.5 text-left whitespace-normal',
+                'h-auto rounded-[12px] bg-secondary py-1 text-left leading-4 whitespace-normal',
               ),
           )}
           variant="outline"
@@ -245,7 +245,7 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
             onKeyDown={(event) => event.stopPropagation()}
           >
             <span className={cn(isAdmin7 && 'min-w-0 [overflow-wrap:anywhere]')}>{label.name}</span>
-            <LucideIcon.X className={cn('size-3', isAdmin7 && 'mt-1 shrink-0 self-start')} />
+            <LucideIcon.X className={cn('size-3', isAdmin7 && 'mt-0.5 shrink-0 self-start')} />
           </button>
         </Badge>
       ))}

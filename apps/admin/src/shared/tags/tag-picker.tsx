@@ -102,7 +102,6 @@ export function TagPicker({
           chipClassName,
         ) || undefined
       }
-      chipVariant={(tag) => (isInternalTag(tag) ? 'outline' : 'secondary')}
       createRow={{
         offer: (typed, offered) => searchSettled && canCreateTag(typed, offered, selected),
         render: (typed) => (

@@ -59,6 +59,7 @@ export interface ChipPickerProps<TOption, TChip> {
   getOptionTitle?: (option: TOption) => string | undefined;
   /** Heads runs of rows that share a group; options should already be ordered by it. */
   getGroup?: (option: TOption) => string | undefined;
+  /** Outline on the secondary fill unless the caller picks another. */
   chipVariant?: (chip: TChip) => BadgeProps['variant'];
   chipClassName?: (chip: TChip) => string | undefined;
   /** Shown on hovering a chip, for a detail the chip leaves out. */
@@ -447,7 +448,7 @@ export function ChipPicker<TOption, TChip>({
                 label={getLabel(chip)}
                 testId={testIds?.chip}
                 title={getChipTitle?.(chip)}
-                variant={chipVariant?.(chip) ?? 'default'}
+                variant={chipVariant?.(chip) ?? 'outline'}
                 onRemove={() => onRemove(getKey(chip))}
               />
             ))}
@@ -460,7 +461,7 @@ export function ChipPicker<TOption, TChip>({
               label={getLabel(chip)}
               testId={testIds?.chip}
               title={getChipTitle?.(chip)}
-              variant={chipVariant?.(chip) ?? 'default'}
+              variant={chipVariant?.(chip) ?? 'outline'}
               onRemove={() => onRemove(getKey(chip))}
             />
           ))
@@ -528,7 +529,7 @@ export function ChipPicker<TOption, TChip>({
                     key={row.key}
                     aria-selected={chosen}
                     className={cn(
-                      'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                      'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-(length:--text-control) leading-5',
                       isHighlighted && 'bg-accent text-accent-foreground',
                     )}
                     data-highlighted={isHighlighted}
@@ -611,11 +612,12 @@ function Chip({
   return (
     // Wraps rather than truncates, so a long name stays whole once it is picked.
     // The fixed radius is half a one-line chip's height: one line still reads as
-    // a pill, and a taller chip keeps soft corners rather than turning oval.
+    // a pill, and a taller chip keeps soft corners rather than turning oval. The
+    // fixed leading is what levels the × with the first line.
     <Badge
       className={cn(
         tokenFieldClasses.chip,
-        'h-auto min-h-6 rounded-[12px] py-0.5 text-left whitespace-normal',
+        'h-auto rounded-[12px] bg-secondary py-1 text-left leading-4 whitespace-normal',
         className,
       )}
       variant={variant}
@@ -636,7 +638,7 @@ function Chip({
       >
         <span className="min-w-0 [overflow-wrap:anywhere]">{label}</span>
         {/* Level with the first line rather than the middle of a wrapped chip. */}
-        <LucideIcon.X className="mt-1 size-3 shrink-0 self-start" />
+        <LucideIcon.X className="mt-0.5 size-3 shrink-0 self-start" />
       </button>
     </Badge>
   );

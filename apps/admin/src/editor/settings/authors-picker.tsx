@@ -58,8 +58,6 @@ export function AuthorsPicker({
 
   return (
     <ChipPicker<User, AuthorOption>
-      chipClassName={() => 'text-(length:--text-control)'}
-      chipVariant={() => 'secondary'}
       describedBy={describedBy}
       emptyMessage={loading ? 'Loading authors...' : 'No authors found'}
       // Names are not unique; the email, on hover, tells two people apart.
