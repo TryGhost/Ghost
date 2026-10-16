@@ -1325,6 +1325,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
+      '@tryghost/adapter-base-upgrade':
+        specifier: workspace:*
+        version: link:../../packages/adapters/upgrade-base
       '@tryghost/app-contracts':
         specifier: workspace:*
         version: link:../../packages/app-contracts
