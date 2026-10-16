@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import request from 'supertest';
 
-import { checkVersionMatch as versionMatch } from '../../../../../../core/server/web/api/middleware/version-match';
+import { checkVersionMatch } from '../../../../../../core/server/web/api/middleware/check-version-match';
 
 const app = (serverVersion: string) => {
   const result = express();
@@ -12,7 +12,7 @@ const app = (serverVersion: string) => {
     next();
   });
 
-  result.use(versionMatch);
+  result.use(checkVersionMatch);
 
   result.get('/', (_req, res) => {
     res.status(204);
@@ -47,7 +47,7 @@ const expectNotOk = async (
   expect(body.errorType).toBe(expectedErrorType);
 };
 
-describe('Version Mismatch', function () {
+describe('version match middleware', function () {
   it('allows request if request does not include a version', async function () {
     const server = '1.5.1';
 
