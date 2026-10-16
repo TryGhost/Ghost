@@ -27,12 +27,43 @@ const MAX_RESPONSE_BYTES = 1024 * 1024;
 // Protocol answers are immediate; anything slower is a stuck or missing host.
 const DEFAULT_TIMEOUT_MS = 5000;
 
-const configSchema = z.object({
-  /** The Unix socket the host serves the API on, such as ghost-docker's supervisor. */
-  socketPath: z
-    .string({ error: 'HttpUpgradeAdapter requires socketPath.' })
-    .refine(path.isAbsolute, { error: 'HttpUpgradeAdapter socketPath must be absolute.' }),
-});
+// Unset is development, as Ghost's entry point and config loader treat it.
+function isDevelopmentOrTest(): boolean {
+  const env = process.env.NODE_ENV || 'development';
+  return env === 'development' || env.startsWith('test');
+}
+
+const configSchema = z
+  .object({
+    /** The Unix socket the host serves the API on, such as ghost-docker's supervisor. */
+    socketPath: z
+      .string()
+      .refine(path.isAbsolute, { error: 'HttpUpgradeAdapter socketPath must be absolute.' })
+      .optional(),
+    /** Another host's API; requests go to its origin. */
+    url: z
+      .url({
+        protocol: /^https?$/,
+        error: 'HttpUpgradeAdapter url must be an http or https URL.',
+      })
+      .optional(),
+    /** Sent as a bearer token; only over https. */
+    token: z.string().min(1, { error: 'HttpUpgradeAdapter token must not be empty.' }).optional(),
+  })
+  .superRefine((config, ctx) => {
+    const fail = (message: string) => ctx.addIssue({ code: 'custom', message });
+    const scheme = config.url && URL.parse(config.url)?.protocol;
+    if ((config.socketPath === undefined) === (config.url === undefined)) {
+      fail('HttpUpgradeAdapter requires exactly one of socketPath or url.');
+    }
+    if (config.token !== undefined && scheme !== 'https:') {
+      fail('HttpUpgradeAdapter token requires an https url.');
+    }
+    // Plain http would let anything that reaches the port trigger an update.
+    if (scheme === 'http:' && !isDevelopmentOrTest()) {
+      fail('HttpUpgradeAdapter url must use https outside development and tests.');
+    }
+  });
 
 export const handshakeSchema = z.object({ protocol: z.literal(PROTOCOL) });
 
@@ -55,6 +86,11 @@ class Unreachable extends Error {
 const unreachableCodes = new Set([
   'ENOENT',
   'ECONNREFUSED',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'ETIMEDOUT',
   'ECONNRESET',
   'EPIPE',
   'UND_ERR_SOCKET',
@@ -89,10 +125,12 @@ function diagnostic(code: string, message: string): UpgradeDiagnostic {
   return { source: 'ghost', code, severity: 'error', message };
 }
 
-/** Talks to a host's upgrade API (HTTP protocol 1) over a Unix socket. */
+/** Talks to a host's upgrade API (HTTP protocol 1) over a Unix socket or a URL. */
 export default class HttpUpgradeAdapter extends UpgradeBase {
   readonly #timeoutMs: number;
   readonly #dispatcher: Agent;
+  readonly #origin: string;
+  readonly #token: string | undefined;
 
   /** Called by the adapter manager at boot, so a misconfigured host fails early. */
   static validate(config: unknown): void {
@@ -107,13 +145,16 @@ export default class HttpUpgradeAdapter extends UpgradeBase {
   constructor(config: unknown) {
     super();
     HttpUpgradeAdapter.validate(config);
-    const { socketPath } = configSchema.parse(config);
+    const { socketPath, url, token } = configSchema.parse(config);
+    // With a socket the host name is unused; the agent connects to socketPath.
+    this.#origin = url ? new URL(url).origin : 'http://localhost';
+    this.#token = token;
     // A test-only seam, read outside the schema so it is not configuration.
     this.#timeoutMs = (config as { timeoutMs?: number }).timeoutMs ?? DEFAULT_TIMEOUT_MS;
     // Creating the agent opens no connection, so Ghost boots whether or not the host is up.
     this.#dispatcher = new Agent({
       maxResponseSize: MAX_RESPONSE_BYTES,
-      connect: { socketPath, timeout: this.#timeoutMs },
+      connect: { ...(socketPath && { socketPath }), timeout: this.#timeoutMs },
     });
   }
 
@@ -205,8 +246,7 @@ export default class HttpUpgradeAdapter extends UpgradeBase {
   }
 
   async #request(method: string, route: string, body?: object): Promise<Response> {
-    // The host name is unused; the agent connects to socketPath.
-    const target = new URL(route, 'http://localhost');
+    const target = new URL(route, this.#origin);
 
     try {
       const response = await send(target, {
@@ -218,6 +258,7 @@ export default class HttpUpgradeAdapter extends UpgradeBase {
         signal: AbortSignal.timeout(this.#timeoutMs),
         headers: {
           accept: 'application/json',
+          ...(this.#token && { authorization: `Bearer ${this.#token}` }),
           ...(body && { 'content-type': 'application/json' }),
         },
         body: body && JSON.stringify(body),

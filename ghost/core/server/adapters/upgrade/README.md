@@ -6,7 +6,7 @@ contract.
 
 - `NoopUpgradeAdapter` is the default. It reports updates as not configured.
 - `HttpUpgradeAdapter` talks to a host's upgrade API over a Unix socket, such
-  as ghost-docker's upgrade supervisor.
+  as ghost-docker's upgrade supervisor, or at a URL.
 
 ## HttpUpgradeAdapter
 
@@ -19,8 +19,21 @@ adapters__upgrade__active=HttpUpgradeAdapter
 adapters__upgrade__HttpUpgradeAdapter__socketPath=/run/ghost-upgrade/supervisor.sock
 ```
 
-The socket's directory permissions are the authentication. Ghost refuses to
-boot when the adapter is active without an absolute `socketPath`.
+The socket's directory permissions are the authentication.
+
+Another host can instead be reached at a `url`, such as a fake host in tests. Requests go to its origin, so any path is ignored. A `token` is sent as
+`Authorization: Bearer <token>`:
+
+```
+adapters__upgrade__HttpUpgradeAdapter__url=https://upgrades.example
+adapters__upgrade__HttpUpgradeAdapter__token=<secret>
+```
+
+Ghost refuses to boot when the adapter is active unless its options are
+exactly one of an absolute `socketPath` or an `http`/`https` `url`. A `token`
+needs an `https` `url`. An `http` `url` is allowed only when `NODE_ENV`
+is `development` (or unset) or starts with `test`, since anything that reaches
+the port could trigger an update.
 Construction makes no requests, so Ghost boots whether or not the host is up.
 
 | Request             | Answer                                                                      |
@@ -31,8 +44,8 @@ Construction makes no requests, so Ghost boots whether or not the host is up.
 | `GET /v1/jobs/:id`  | The job, or `{id, state: 'unknown' \| 'expired'}`                           |
 
 Rejections are `{error: {code, diagnostics?}}` with the base error codes. A
-missing socket, a refused connection, a 5xx or no complete answer within five
-seconds is reported as `unavailable`.
+missing socket, an unresolvable or unreachable host, a refused connection, a
+5xx or no complete answer within five seconds is reported as `unavailable`.
 Responses over 1 MiB are refused. Job IDs come from the host; a replay with
 the same idempotency key (already a per-user sha256) returns the original job.
 ghost-docker uses the key itself as the job ID.
