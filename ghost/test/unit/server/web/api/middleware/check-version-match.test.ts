@@ -44,6 +44,7 @@ const expectNotOk = async (
     .set('X-Ghost-Version', clientVersion)
     .expect(500);
   expect(body.errorType).toBe(expectedErrorType);
+  expect(body.statusCode).toBe(400);
 };
 
 describe('version match middleware', function () {
