@@ -179,10 +179,11 @@ export class FakeMailgunServer extends FakeServer {
       const replyToAddresses: MailPitAddress[] = [];
 
       for (const [key, value] of Object.entries(message.headers)) {
+        const personalizedValue = this.resolveRecipientVariables(value, recipientVars);
         if (key === 'Reply-To' && value) {
-          replyToAddresses.push(this.parseEmailAddress(value));
+          replyToAddresses.push(this.parseEmailAddress(personalizedValue));
         } else if (!reservedHeaders.has(key)) {
-          filteredHeaders[key] = value;
+          filteredHeaders[key] = personalizedValue;
         }
       }
 
