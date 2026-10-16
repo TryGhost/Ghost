@@ -19,14 +19,17 @@ export interface UpgradeRequestInput {
 }
 
 type RejectionSpec = {
-  Error: typeof errors.MaintenanceError;
+  Error: typeof errors.InternalServerError;
+  statusCode?: number;
   code: string;
   message: string;
   help: string;
 };
 
+// 502, not 503: Admin reads any 503 as Ghost itself being under maintenance.
 const unavailable = {
-  Error: errors.MaintenanceError,
+  Error: errors.InternalServerError,
+  statusCode: 502,
   code: 'UPGRADE_UNAVAILABLE',
   message: 'The update service is temporarily unavailable.',
   help: 'Retry later. Reuse the same idempotency_key if an update request lost its response.',

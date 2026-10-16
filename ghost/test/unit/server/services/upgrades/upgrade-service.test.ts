@@ -110,7 +110,7 @@ describe('UpgradeService', function () {
 
     const rejections = [
       ['unsupported', 'DisabledFeatureError', 'UPGRADE_UNSUPPORTED'],
-      ['unavailable', 'MaintenanceError', 'UPGRADE_UNAVAILABLE'],
+      ['unavailable', 'InternalServerError', 'UPGRADE_UNAVAILABLE'],
       ['busy', 'ConflictError', 'UPGRADE_BUSY'],
       ['target-unapproved', 'ValidationError', 'UPGRADE_TARGET_UNAPPROVED'],
       ['idempotency-conflict', 'ConflictError', 'UPGRADE_IDEMPOTENCY_CONFLICT'],

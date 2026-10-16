@@ -241,6 +241,19 @@ describe('Upgrades API', function () {
     });
   });
 
+  it('answers an unreachable host with 502, never the 503 Admin reads as maintenance', async function () {
+    useAdapter({
+      createRequest: sinon.stub().rejects(new UpgradeAdapterError({ code: 'unavailable' })),
+      getJob: sinon.stub().rejects(new Error('ECONNREFUSED')),
+    });
+
+    const request = await post({ upgrades: [input] }).expectStatus(502);
+    assert.equal(request.body.errors[0].code, 'UPGRADE_UNAVAILABLE');
+
+    const lookup = await agent.get(`upgrades/${id}/`).expectStatus(502);
+    assert.equal(lookup.body.errors[0].code, 'UPGRADE_UNAVAILABLE');
+  });
+
   it('shares an IP budget across all upgrade routes, enforced before authentication', async function () {
     const limiter = spamPrevention.upgradeApiBlock();
     sinon.stub(limiter, 'options').value({ ...limiter.options, freeRetries: 2 });
