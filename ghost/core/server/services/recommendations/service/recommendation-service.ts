@@ -53,9 +53,6 @@ export class RecommendationService {
   }
 
   async init() {
-    const recommendations = await this.#listRecommendations();
-    await this.updateWellknown(recommendations);
-
     // Do a slow update of all the recommendation metadata (keeping logo up to date, one-click-subscribe, etc.)
     // We better move this to a job in the future
     if (this.recommendationEnablerService.getSetting() !== 'true') {
@@ -94,10 +91,6 @@ export class RecommendationService {
         );
       }
     }
-  }
-
-  async updateWellknown(recommendations: Recommendation[]) {
-    await this.wellknownService.set(recommendations);
   }
 
   async getWellknownJson(): Promise<string> {
@@ -152,7 +145,6 @@ export class RecommendationService {
     await this.repository.save(recommendation);
 
     const recommendations = await this.#listRecommendations();
-    await this.updateWellknown(recommendations);
     await this.updateRecommendationsEnabledSetting(recommendations);
 
     // Only send an update for the mentioned URL
@@ -234,9 +226,6 @@ export class RecommendationService {
     await this._updateRecommendationMetadata(existing);
     await this.repository.save(existing);
 
-    const recommendations = await this.#listRecommendations();
-    await this.updateWellknown(recommendations);
-
     this.sendMentionToRecommendation(existing);
     return existing.plain;
   }
@@ -253,7 +242,6 @@ export class RecommendationService {
     await this.repository.save(existing);
 
     const recommendations = await this.#listRecommendations();
-    await this.updateWellknown(recommendations);
     await this.updateRecommendationsEnabledSetting(recommendations);
 
     // Send a mention (because it was deleted, according to the webmentions spec)
