@@ -30,6 +30,10 @@ export class WellknownService {
     };
   }
 
+  serialize(recommendations: Recommendation[]): string {
+    return JSON.stringify(recommendations.map((r) => this.#formatRecommendation(r)));
+  }
+
   getPath() {
     return _path.join(this.dir, '/.well-known/recommendations.json');
   }
