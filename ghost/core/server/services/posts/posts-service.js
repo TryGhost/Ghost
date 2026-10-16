@@ -345,6 +345,18 @@ class PostsService {
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
 
+    const sortOrderRows = postIds.length
+      ? await options
+          .transacting('posts_tags')
+          .whereIn('post_id', postIds)
+          .groupBy('post_id')
+          .select('post_id')
+          .max('sort_order as max_sort_order')
+      : [];
+    const nextSortOrders = new Map(
+      sortOrderRows.map((row) => [row.post_id, row.max_sort_order + 1]),
+    );
+
     const postTags = [];
     for (const tagId of tagIds) {
       for (const postId of postIds) {
@@ -352,11 +364,14 @@ class PostsService {
           continue;
         }
 
+        const sortOrder = nextSortOrders.get(postId) ?? 0;
+        nextSortOrders.set(postId, sortOrder + 1);
+
         postTags.push({
           id: new ObjectId().toHexString(),
           post_id: postId,
           tag_id: tagId,
-          sort_order: 0,
+          sort_order: sortOrder,
         });
       }
     }
