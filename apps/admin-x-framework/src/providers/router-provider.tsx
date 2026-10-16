@@ -9,6 +9,7 @@ import {
   type RelativeRoutingType,
   resolvePath,
   RouteObject,
+  RouterProvider as ReactRouterProvider,
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
   useLocation,
@@ -16,8 +17,7 @@ import {
   useResolvedPath,
   Navigate as ReactRouterNavigate,
 } from 'react-router';
-// The DOM build honors a navigation's `flushSync` option.
-import { RouterProvider as ReactRouterProvider } from 'react-router/dom';
+import { flushSync } from 'react-dom';
 import { useFramework } from './framework-provider';
 import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';
@@ -130,6 +130,10 @@ const reportRouteError: ClientOnErrorFunction = (error, { errorInfo }) => {
   }
 };
 
+// Lets a navigation that asks for `flushSync` commit synchronously, as `react-router/dom`'s
+// RouterProvider does (importing that entry gives Node a second copy of the router context).
+const routerFlushSync = (fn: () => unknown) => void flushSync(fn);
+
 export function RouterProvider({
   routes,
   prefix,
@@ -171,7 +175,7 @@ export function RouterProvider({
     [recoverFromError],
   );
 
-  return <ReactRouterProvider router={router} onError={onError} />;
+  return <ReactRouterProvider flushSync={routerFlushSync} router={router} onError={onError} />;
 }
 
 export type NavigateOptions = ReactRouterNavigateOptions;
