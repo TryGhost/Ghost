@@ -18,6 +18,7 @@ import {
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
+import { FakeUpgradeHost } from '@/helpers/services/upgrade';
 import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
@@ -112,6 +113,9 @@ export interface GhostInstanceFixture {
   mailgunEnabled?: boolean;
   mailgunServer?: FakeMailgunServer;
   mailgun?: MailgunTestService;
+  // Forces per-test isolation because Ghost boots against a per-test fake upgrade host.
+  upgradeHostEnabled?: boolean;
+  upgradeHost?: FakeUpgradeHost;
   emailClient: EmailClient;
   ghostAccountOwner: User;
   ghostAccountAuthor: StaffAccount;
@@ -353,15 +357,25 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   ],
 
   _testEnvironmentContext: async (
-    { config, isolation, labs, stripeEnabled, stripeServer, mailgunEnabled, mailgunServer },
+    {
+      config,
+      isolation,
+      labs,
+      stripeEnabled,
+      stripeServer,
+      mailgunEnabled,
+      mailgunServer,
+      upgradeHostEnabled,
+      upgradeHost,
+    },
     use,
     testInfo: TestInfo,
   ) => {
     const environmentManager = await getEnvironmentManager();
     const requestedIsolation = getResolvedIsolation(testInfo, isolation);
-    // Stripe-enabled tests boot Ghost against a per-test fake Stripe server,
+    // Stripe and upgrade host tests boot Ghost against a per-test fake server,
     // so they cannot safely participate in per-file environment reuse.
-    const resolvedIsolation = stripeEnabled ? 'per-test' : requestedIsolation;
+    const resolvedIsolation = stripeEnabled || upgradeHostEnabled ? 'per-test' : requestedIsolation;
     const suiteKey = getSuiteKey(testInfo);
     const stripeConfig =
       stripeEnabled && stripeServer
@@ -379,7 +393,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             bulkEmail__mailgun__baseUrl: `http://host.docker.internal:${mailgunServer.port}/v3`,
           }
         : {};
-    const mergedConfig = { ...(config || {}), ...stripeConfig, ...mailgunConfig };
+    const upgradeHostConfig =
+      upgradeHostEnabled && upgradeHost
+        ? {
+            adapters__upgrade__active: 'HttpUpgradeAdapter',
+            adapters__upgrade__HttpUpgradeAdapter__url: `http://host.docker.internal:${upgradeHost.port}`,
+          }
+        : {};
+    const mergedConfig = {
+      ...(config || {}),
+      ...stripeConfig,
+      ...mailgunConfig,
+      ...upgradeHostConfig,
+    };
     const stripe = stripeServer
       ? {
           secretKey: STRIPE_SECRET_KEY,
@@ -491,6 +517,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   labs: [undefined, { option: true }],
   stripeEnabled: [false, { option: true }],
   mailgunEnabled: [false, { option: true }],
+  upgradeHostEnabled: [false, { option: true }],
 
   stripeServer: async ({ stripeEnabled }, use) => {
     if (!stripeEnabled) {
@@ -522,6 +549,25 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
     await server.stop();
     debug('Fake Mailgun server stopped');
+  },
+
+  upgradeHost: async ({ upgradeHostEnabled }, use) => {
+    if (!upgradeHostEnabled) {
+      await use(undefined);
+      return;
+    }
+
+    const server = new FakeUpgradeHost();
+    await server.start();
+    debug('Fake upgrade host started on port', server.port);
+
+    await use(server);
+
+    await server.stop();
+    debug('Fake upgrade host stopped');
+    if (server.violations.length > 0) {
+      throw new Error(server.violations.join('\n'));
+    }
   },
 
   mailgun: async ({ mailgunEnabled, mailgunServer }, use) => {

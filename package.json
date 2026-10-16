@@ -13,6 +13,7 @@
     "dev:docker": "export pnpm_config_enable_global_virtual_store=false GHOST_DEV_LISTEN=0.0.0.0 && pnpm install && pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:dev:host",
     "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' nx run ghost-monorepo:dev:host",
+    "dev:fake-upgrades": "DEV_COMPOSE_FILES='-f compose.dev.fake-upgrades.yaml' nx run ghost-monorepo:dev:host",
     "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 nx run ghost-monorepo:dev:host:lexical",
     "dev:public": "nx run ghost-monorepo:dev:host:public",
     "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host:public",

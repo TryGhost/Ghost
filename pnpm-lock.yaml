@@ -2025,6 +2025,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.64.0
+      '@tryghost/adapter-base-upgrade':
+        specifier: workspace:*
+        version: link:../packages/adapters/upgrade-base
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../packages/checkout
