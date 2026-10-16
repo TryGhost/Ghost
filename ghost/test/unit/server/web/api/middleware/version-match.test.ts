@@ -1,13 +1,11 @@
-const { expect } = require('vitest');
-const express = require('express');
-const request = require('supertest');
+import { expect } from 'vitest';
+import express, { NextFunction, Request, Response } from 'express';
+import request from 'supertest';
 
-const versionMatch = require('../../../../../../core/server/web/api/middleware/version-match');
+// @ts-expect-error This module lacks type definitions.
+import versionMatch from '../../../../../../core/server/web/api/middleware/version-match';
 
-/**
- * @param {string} serverVersion
- */
-const app = (serverVersion) => {
+const app = (serverVersion: string) => {
   const result = express();
 
   result.use((_req, res, next) => {
@@ -22,7 +20,7 @@ const app = (serverVersion) => {
     res.end();
   });
 
-  result.use((err, _req, res, _next) => {
+  result.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     void _next;
     res.status(500).json(err);
   });
@@ -30,11 +28,7 @@ const app = (serverVersion) => {
   return result;
 };
 
-/**
- * @param {string} serverVersion
- * @param {string} [clientVersion]
- */
-const expectOk = async (serverVersion, clientVersion) => {
+const expectOk = async (serverVersion: string, clientVersion?: string) => {
   const req = request(app(serverVersion)).get('/');
   if (clientVersion) {
     req.set('X-Ghost-Version', clientVersion);
@@ -42,12 +36,11 @@ const expectOk = async (serverVersion, clientVersion) => {
   await req.expect(204);
 };
 
-/**
- * @param {string} serverVersion
- * @param {string} clientVersion
- * @param {string} expectedErrorType
- */
-const expectNotOk = async (serverVersion, clientVersion, expectedErrorType) => {
+const expectNotOk = async (
+  serverVersion: string,
+  clientVersion: string,
+  expectedErrorType: string,
+) => {
   const { body } = await request(app(serverVersion))
     .get('/')
     .set('X-Ghost-Version', clientVersion)
