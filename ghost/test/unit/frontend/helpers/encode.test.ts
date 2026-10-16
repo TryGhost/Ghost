@@ -12,4 +12,19 @@ describe('{{encode}} helper', function () {
     assertExists(escaped);
     assert.equal(String(escaped), expected);
   });
+
+  it('returns an empty string for empty values', function () {
+    assert.equal(String(encode('')), '');
+    assert.equal(String(encode(undefined)), '');
+    assert.equal(String(encode(null)), '');
+    assert.equal(String(encode(undefined, { hash: {} })), '');
+  });
+
+  it('returns an empty string when called without a value', function () {
+    assert.equal(String(encode({ hash: {} })), '');
+  });
+
+  it('encodes 0 as "0"', function () {
+    assert.equal(String(encode(0)), '0');
+  });
 });
