@@ -1,7 +1,6 @@
-import { expect } from 'vitest';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import request from 'supertest';
-
+import { expect } from 'vitest';
 import { checkVersionMatch } from '../../../../../../core/server/web/api/middleware/check-version-match';
 
 const app = (serverVersion: string) => {

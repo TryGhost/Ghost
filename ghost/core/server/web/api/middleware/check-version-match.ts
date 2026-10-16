@@ -1,7 +1,7 @@
-import semver from 'semver';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { RequestHandler } from 'express';
+import semver from 'semver';
 
 const messages = {
   invalidClientVersionRange: 'Client request for {clientVersion} is invalid.',
