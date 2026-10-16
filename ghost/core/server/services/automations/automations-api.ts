@@ -180,7 +180,6 @@ function getTinybirdClient() {
     }
     return createTinybirdClient({
       config,
-      // Fall back to MySQL after the first failed attempt.
       request: requestExternal.extend({ retry: { limit: 0 } }),
       settingsCache,
       tinybirdService,
@@ -193,16 +192,12 @@ function getTinybirdClient() {
 
 export async function browse() {
   const tinybirdClient = getTinybirdClient();
-  if (!tinybirdClient) {
-    return await repository.browse({ includeStats: true });
-  }
-
   const [browseResult, stats] = await Promise.all([
-    repository.browse({ includeStats: false }),
-    fetchAutomationStats(tinybirdClient),
+    repository.browse(),
+    tinybirdClient ? fetchAutomationStats(tinybirdClient) : null,
   ]);
   if (stats === null) {
-    return await repository.browse({ includeStats: true });
+    return browseResult;
   }
 
   return {

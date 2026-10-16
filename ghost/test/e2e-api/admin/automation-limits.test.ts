@@ -114,7 +114,7 @@ describe('Automation host limits', () => {
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    await repository.browse({ includeStats: false });
+    await repository.browse();
     for (const { id } of [free, paid]) {
       assert.equal((await db.knex('automations').where('id', id).first()).status, 'inactive');
     }
@@ -136,7 +136,7 @@ describe('Automation host limits', () => {
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    await repository.browse({ includeStats: false });
+    await repository.browse();
     assert.equal(await countActiveAutomations(), 1);
     for (const { id } of [free, paid]) {
       assert.equal((await db.knex('automations').where('id', id).first()).status, 'inactive');
@@ -206,7 +206,7 @@ describe('Automation host limits', () => {
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    await repository.browse({ includeStats: false });
+    await repository.browse();
     const blocked = await agent
       .put(`automated_emails/${free.id}`)
       .body({ automated_emails: [{ name: free.name, status: 'active' }] })
@@ -231,7 +231,7 @@ describe('Automation host limits', () => {
       agent
         .put(`automated_emails/${free.id}`)
         .body({ automated_emails: [{ name: free.name, status: 'active' }] }),
-      repository.browse({ includeStats: false }),
+      repository.browse(),
     ]);
     assert.ok([200, 422].includes(legacy.statusCode));
     assert.equal((await db.knex('automations').where('id', free.id).first()).status, 'inactive');
@@ -261,7 +261,7 @@ describe('Automation host limits', () => {
         .put(`automated_emails/${free.id}`)
         .body({ automated_emails: [{ name: free.name, status: 'active' }] })
         .expectStatus(200);
-      await Promise.all([repository.add(payload()), repository.browse({ includeStats: false })]);
+      await Promise.all([repository.add(payload()), repository.browse()]);
       const automation = await repository.getById(free.id);
       assert.ok(automation);
       assert.equal(automation.status, 'active');
@@ -286,10 +286,7 @@ describe('Automation host limits', () => {
         knex: db.knex,
         fakeWaitHoursMultiplier: null,
       });
-      await Promise.all([
-        repository.browse({ includeStats: false }),
-        repository.browse({ includeStats: false }),
-      ]);
+      await Promise.all([repository.browse(), repository.browse()]);
       assert.equal(
         (await db.knex('automations').where('id', existing.body.automations[0].id).first()).status,
         'active',
@@ -309,7 +306,7 @@ describe('Automation host limits', () => {
         2,
       );
       await capAtCurrentCount(2);
-      await repository.browse({ includeStats: false });
+      await repository.browse();
       assert.deepEqual(await statuses(), [
         slots > 0 ? 'active' : 'inactive',
         slots > 1 ? 'active' : 'inactive',
@@ -327,7 +324,7 @@ describe('Automation host limits', () => {
     });
     const [activation, conversion] = await Promise.allSettled([
       repository.add(payload()),
-      repository.browse({ includeStats: false }),
+      repository.browse(),
     ]);
     assert.equal(conversion.status, 'fulfilled');
     assert.equal(await countActiveAutomations(), 1);
