@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import {
   automation,
@@ -106,6 +106,37 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => create.requests.length).toBe(2);
     expect(edit.requests).toHaveLength(0);
+  });
+
+  it('starts a fresh creation session when new opens as the saved route lands', async () => {
+    fakeAutomations([]);
+    const create = serveCreation();
+    await renderAdminApp('/automations/new', { labs });
+    await addWait();
+    // Open new in the same task as the save's redirect, before React renders the saved route.
+    const originalReplaceState = window.history.replaceState.bind(window.history);
+    let redirected = false;
+    const replaceState = vi.spyOn(window.history, 'replaceState').mockImplementation((...args) => {
+      originalReplaceState(...args);
+      if (!redirected && String(args[2]).endsWith('#/automations/created')) {
+        redirected = true;
+        queueMicrotask(() => {
+          window.location.hash = '#/automations/new';
+        });
+      }
+    });
+    try {
+      await button('Save').click();
+      await expect.poll(() => redirected).toBe(true);
+    } finally {
+      replaceState.mockRestore();
+    }
+    await expect
+      .element(page.getByRole('textbox', { name: 'Wait for', exact: true }))
+      .not.toBeInTheDocument();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(currentRoute()).toBe('/automations/new');
+    expect(create.requests).toHaveLength(1);
   });
 
   it('loads the saved automation when returning after visiting another automation', async () => {
