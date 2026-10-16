@@ -1,5 +1,4 @@
 import { clsx, type ClassValue } from 'clsx';
-import moment from 'moment-timezone';
 import { twMerge } from 'tailwind-merge';
 
 /* Generic helper functions
@@ -67,6 +66,89 @@ export const kebabToPascalCase = (str: string): string => {
   return processed.charAt(0).toUpperCase() + processed.slice(1);
 };
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+interface DateTimeParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+}
+
+const zonedFormatters = new Map<string, Intl.DateTimeFormat>();
+
+const getZonedFormatter = (timeZone: string): Intl.DateTimeFormat => {
+  let formatter = zonedFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+    zonedFormatters.set(timeZone, formatter);
+  }
+  return formatter;
+};
+
+// Without a time zone, the parts are in the browser's local time
+const getDateTimeParts = (date: Date, timeZone?: string): DateTimeParts => {
+  if (!timeZone) {
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth(),
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+    };
+  }
+
+  const parts = getZonedFormatter(timeZone).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+
+  return {
+    year: get('year'),
+    month: get('month') - 1,
+    day: get('day'),
+    hour: get('hour'),
+    minute: get('minute'),
+  };
+};
+
+const WALL_CLOCK_DATE_TIME =
+  /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?)?$/;
+
+// An ISO 8601 date or date-time without an offset is wall-clock time in the display time zone,
+// as moment reads it. `new Date()` alone would read a date-only string as UTC midnight.
+const parseDateTimeParts = (value: string, timeZone?: string): DateTimeParts | null => {
+  const wallClock = WALL_CLOCK_DATE_TIME.exec(value);
+  if (wallClock) {
+    const [, year, month, day, hour = '0', minute = '0'] = wallClock;
+    return {
+      year: Number(year),
+      month: Number(month) - 1,
+      day: Number(day),
+      hour: Number(hour),
+      minute: Number(minute),
+    };
+  }
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+  return getDateTimeParts(date, timeZone);
+};
+
+// Result is in the format of `7:09pm`
+const formatTime = ({ hour, minute }: DateTimeParts): string =>
+  `${hour % 12 || 12}:${String(minute).padStart(2, '0')}${hour < 12 ? 'am' : 'pm'}`;
+
 // Format date for UI, result is in the format of `12 Jun 2025`
 // When timezone is provided, the date will be converted to that timezone before formatting
 export const formatDisplayDate = (dateString: string, timezone?: string): string => {
@@ -86,16 +168,19 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
 
   let day, month, year, isToday, isCurrentYear;
 
-  // If timezone is provided and this is an ISO format date, use moment-timezone to convert
+  // If timezone is provided and this is an ISO format date, convert it to that timezone
   if (timezone && isISOFormat) {
-    const dateMoment = moment.tz(dateString, timezone);
-    const todayMoment = moment.tz(timezone);
+    const date = parseDateTimeParts(dateString, timezone);
+    if (!date) {
+      return '';
+    }
+    const today = getDateTimeParts(new Date(), timezone);
 
-    day = dateMoment.date();
-    month = dateMoment.month();
-    year = dateMoment.year();
-    isToday = dateMoment.isSame(todayMoment, 'day');
-    isCurrentYear = year === todayMoment.year();
+    day = date.day;
+    month = date.month;
+    year = date.year;
+    isToday = year === today.year && month === today.month && day === today.day;
+    isCurrentYear = year === today.year;
   } else {
     const date = new Date(dateString);
     const today = new Date();
@@ -119,21 +204,7 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
     }
   }
 
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  const monthName = months[month];
+  const monthName = MONTHS[month];
 
   if (isToday) {
     return `${day} ${monthName}`;
@@ -149,8 +220,10 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
  * formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos')
  * // 7:09pm
  */
-export const formatDisplayTime = (dateString: string, timezone: string): string =>
-  moment(dateString).tz(timezone).format('h:mma');
+export const formatDisplayTime = (dateString: string, timezone: string): string => {
+  const parts = parseDateTimeParts(dateString, timezone);
+  return parts ? formatTime(parts) : '';
+};
 
 // Helper function to format timestamp
 export const formatTimestamp = (timestamp: string) => {
@@ -317,12 +390,17 @@ export const formatDisplayDateWithRange = (
   showHours: boolean = false,
   hoursOnly: boolean = false,
 ): string => {
+  const parts = parseDateTimeParts(date);
+  if (!parts) {
+    return '';
+  }
+
   if (range === 1 && hoursOnly) {
-    return moment(date).format('h:mma');
+    return formatTime(parts);
   } else if (range === 1 && showHours) {
-    return moment(date).format('MMM D, h:mma');
+    return `${MONTHS[parts.month]} ${parts.day}, ${formatTime(parts)}`;
   } else if (range > 365) {
-    return moment(date).format('MMM YYYY');
+    return `${MONTHS[parts.month]} ${parts.year}`;
   } else if (range >= 91) {
     return `Week of ${formatDisplayDate(date)}`;
   }

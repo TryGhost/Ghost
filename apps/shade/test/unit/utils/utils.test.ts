@@ -4,6 +4,7 @@ import {
   debounce,
   kebabToPascalCase,
   formatDisplayDate,
+  formatDisplayDateWithRange,
   formatDisplayTime,
   formatNumber,
   abbreviateNumber,
@@ -168,6 +169,31 @@ describe('utils', function () {
       const formatted = formatDisplayDate('2023-07-31T00:00:00Z');
       assert.equal(formatted, '31 Jul 2023');
     });
+
+    it('reads an ISO date-time without an offset as site time when timezone is provided', function () {
+      const formatted = formatDisplayDate('2023-07-31T00:30:00', 'Pacific/Kiritimati');
+      assert.equal(formatted, '31 Jul 2023');
+    });
+
+    it('compares against the current year in the site timezone', function () {
+      vi.useFakeTimers({ now: new Date('2025-12-31T23:30:00Z') });
+
+      try {
+        // Already 1 Jan 2026 in Kiritimati (UTC+14), so the year is omitted
+        assert.equal(formatDisplayDate('2025-12-31T23:30:00Z', 'Pacific/Kiritimati'), '1 Jan');
+        assert.equal(
+          formatDisplayDate('2025-12-31T09:00:00Z', 'Pacific/Kiritimati'),
+          '31 Dec 2025',
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('returns an empty string for an unparseable date when timezone is provided', function () {
+      const formatted = formatDisplayDate('Tomorrow', 'Europe/Berlin');
+      assert.equal(formatted, '');
+    });
   });
 
   describe('formatDisplayTime function', function () {
@@ -184,6 +210,72 @@ describe('utils', function () {
     it('handles times that cross a date boundary', function () {
       const formatted = formatDisplayTime('2020-04-20T00:30:00.000Z', 'America/Los_Angeles');
       assert.equal(formatted, '5:30pm');
+    });
+
+    it('formats midnight and noon in 12-hour time', function () {
+      assert.equal(formatDisplayTime('2020-04-20T00:05:00Z', 'Etc/UTC'), '12:05am');
+      assert.equal(formatDisplayTime('2020-04-20T12:00:00Z', 'Etc/UTC'), '12:00pm');
+    });
+
+    it('handles timezones with non-hour offsets', function () {
+      assert.equal(formatDisplayTime('2020-04-20T18:09:00Z', 'Asia/Kolkata'), '11:39pm');
+      assert.equal(formatDisplayTime('2020-04-20T18:09:00Z', 'Pacific/Chatham'), '6:54am');
+    });
+
+    it('reads an ISO date-time without an offset as site time', function () {
+      const formatted = formatDisplayTime('2023-07-31T00:30:00', 'Pacific/Kiritimati');
+      assert.equal(formatted, '12:30am');
+    });
+
+    it('returns an empty string for an unparseable date', function () {
+      const formatted = formatDisplayTime('not a date', 'Europe/Berlin');
+      assert.equal(formatted, '');
+    });
+  });
+
+  describe('formatDisplayDateWithRange function', function () {
+    // West of UTC, so reading a date-only string as UTC midnight would land on the previous day
+    beforeEach(function () {
+      vi.stubEnv('TZ', 'America/Los_Angeles');
+    });
+
+    afterEach(function () {
+      vi.unstubAllEnvs();
+    });
+
+    it('formats the hour for a single-day range when only hours are requested', function () {
+      assert.equal(formatDisplayDateWithRange('2025-04-15 13:05:00', 1, true, true), '1:05pm');
+      assert.equal(formatDisplayDateWithRange('2025-04-15T00:30:00', 1, true, true), '12:30am');
+    });
+
+    it('formats the day and hour for a single-day range with hours', function () {
+      const formatted = formatDisplayDateWithRange('2025-04-15 13:05:00', 1, true);
+      assert.equal(formatted, 'Apr 15, 1:05pm');
+    });
+
+    it('formats the month and year for ranges over a year', function () {
+      assert.equal(formatDisplayDateWithRange('2025-04-01', 366), 'Apr 2025');
+      assert.equal(formatDisplayDateWithRange('2025-01-01', 366), 'Jan 2025');
+    });
+
+    it('converts timestamps with an offset to local time', function () {
+      assert.equal(formatDisplayDateWithRange('2025-04-15T20:05:00Z', 1, true), 'Apr 15, 1:05pm');
+      assert.equal(formatDisplayDateWithRange('2025-04-01T03:00:00Z', 366), 'Mar 2025');
+    });
+
+    it('formats the week start for ranges of 91 days or more', function () {
+      const formatted = formatDisplayDateWithRange('2025-04-14', 91);
+      assert.equal(formatted, 'Week of 14 Apr 2025');
+    });
+
+    it('formats a plain date for shorter ranges', function () {
+      assert.equal(formatDisplayDateWithRange('2025-04-15', 30), '15 Apr 2025');
+      assert.equal(formatDisplayDateWithRange('2025-04-15', 1), '15 Apr 2025');
+    });
+
+    it('returns an empty string for an unparseable date', function () {
+      assert.equal(formatDisplayDateWithRange('undefined', 366), '');
+      assert.equal(formatDisplayDateWithRange('undefined', 30), '');
     });
   });
 
