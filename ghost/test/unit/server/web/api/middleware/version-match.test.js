@@ -36,7 +36,7 @@ describe('Version Mismatch', function () {
     versionMatch(req, res, nextStub);
   }
 
-  it('should call next if request does not include a version', async function () {
+  it('allows request if request does not include a version', async function () {
     const server = '1.5.1';
 
     testVersionMatch(server);
@@ -44,7 +44,7 @@ describe('Version Mismatch', function () {
     sinon.assert.calledOnceWithExactly(nextStub);
   });
 
-  it('should call next if versions are an exact match', async function () {
+  it('allows request if versions are an exact match', async function () {
     const server = '1.5.0';
     const client = '1.5';
 
@@ -53,7 +53,7 @@ describe('Version Mismatch', function () {
     sinon.assert.calledOnceWithExactly(nextStub);
   });
 
-  it('should call next if client version is earlier than server', async function () {
+  it('allows request if client version is earlier than server', async function () {
     const server = '1.5.0';
     const client = '1.3';
 
@@ -62,7 +62,7 @@ describe('Version Mismatch', function () {
     sinon.assert.calledOnceWithExactly(nextStub);
   });
 
-  it('should throw BadRequestError if client version is invalid', async function () {
+  it('disallows request with BadRequestError if client version is invalid', async function () {
     const server = '1.5.0';
     const client = 'bananarama';
 
@@ -77,7 +77,7 @@ describe('Version Mismatch', function () {
     );
   });
 
-  it('should throw VersionMismatchError if client version is earlier by a major version', async function () {
+  it('disallows request with VersionMismatchError if client version is earlier by a major version', async function () {
     const server = '2.5.0';
     const client = '1.3';
 
@@ -92,7 +92,7 @@ describe('Version Mismatch', function () {
     );
   });
 
-  it('should throw VersionMismatchError if client version is later than server', async function () {
+  it('disallows request with VersionMismatchError if client version is later than server', async function () {
     const server = '1.3.0';
     const client = '1.5';
 
@@ -107,7 +107,7 @@ describe('Version Mismatch', function () {
     );
   });
 
-  it('should throw VersionMismatchError if client version is later by a major version', async function () {
+  it('disallows request with VersionMismatchError if client version is later by a major version', async function () {
     const server = '1.5.0';
     const client = '2.3';
 
@@ -122,7 +122,7 @@ describe('Version Mismatch', function () {
     );
   });
 
-  it('should call next if pre-release is allowed', async function () {
+  it('allows request if pre-release is allowed', async function () {
     const server = '1.5.0-pre';
     const client = '1.4';
 
@@ -131,7 +131,7 @@ describe('Version Mismatch', function () {
     sinon.assert.calledOnceWithExactly(nextStub);
   });
 
-  it('throws error if server is a pre-release, but later by major version', async function () {
+  it('disallows request if server is a pre-release, but later by major version', async function () {
     const server = '2.0.0-alpha';
     const client = '1.5';
 
