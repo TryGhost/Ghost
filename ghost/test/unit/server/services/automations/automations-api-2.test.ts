@@ -103,7 +103,7 @@ describe('automations API', function () {
       steps = [];
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
       trigger = {
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
