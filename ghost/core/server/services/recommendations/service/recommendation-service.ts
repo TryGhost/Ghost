@@ -100,6 +100,10 @@ export class RecommendationService {
     await this.wellknownService.set(recommendations);
   }
 
+  async getWellknownJson(): Promise<string> {
+    return this.wellknownService.serialize(await this.#listRecommendations());
+  }
+
   async updateRecommendationsEnabledSetting(recommendations: Recommendation[]) {
     const expectedSetting = (recommendations.length > 0).toString();
     const currentSetting = this.recommendationEnablerService.getSetting();

@@ -24,6 +24,11 @@ class RecommendationServiceWrapper {
   controller;
 
   /**
+   * @type {import('./service').WellknownController}
+   */
+  wellknownController;
+
+  /**
    * @type {import('./service').RecommendationService}
    */
   service;
@@ -60,6 +65,7 @@ class RecommendationServiceWrapper {
       RecommendationService,
       RecommendationController,
       WellknownService,
+      WellknownController,
       BookshelfClickEventRepository,
       IncomingRecommendationController,
       IncomingRecommendationService,
@@ -148,6 +154,10 @@ class RecommendationServiceWrapper {
     });
 
     this.controller = new RecommendationController({
+      service: this.service,
+    });
+
+    this.wellknownController = new WellknownController({
       service: this.service,
     });
 
