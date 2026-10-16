@@ -771,6 +771,25 @@ describe('automations repository', function () {
       );
     });
 
+    it.each(['inactive', 'archived'] as const)(
+      'persists %s automations without actions',
+      async function (status) {
+        const saved = await repo.add({
+          name: 'Empty draft',
+          description: '',
+          status,
+          actions: [],
+          edges: [],
+          trigger_tier_scope: 'free',
+        });
+        assert.deepEqual(await repo.getById(saved.id), saved);
+        assert.deepEqual(saved.actions, []);
+        assert.deepEqual(saved.edges, []);
+        const browse = await repo.browse({ includeStats: true });
+        assert(browse.data.some((automation) => automation.id === saved.id));
+      },
+    );
+
     it('rejects actions that belong to another automation', async function () {
       const existingId = await insertAutomation({ slug: null, triggerTierScope: 'free' });
       const existing = await repo.getById(existingId);
@@ -909,6 +928,45 @@ describe('automations repository', function () {
         assert.equal(action.data.email_design_setting_id, emailDesignSettingId);
       }
     };
+
+    it.each(['inactive', 'archived'] as const)(
+      'keeps cleared legacy welcome automation in the %s state after browsing',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        await deleteActionsForAutomationIds([automation.id]);
+        assert(automation.slug);
+        await createWelcomeEmailsForAutomations([{ id: automation.id, slug: automation.slug }]);
+
+        await repo.browse({ includeStats: false });
+
+        const converted = await repo.getById(automation.id);
+        assert(converted);
+        assert.equal(converted.actions.length, 1);
+        const revision = await knex('automation_action_revisions')
+          .where('action_id', converted.actions[0].id)
+          .first();
+        assert(revision);
+
+        await repo.edit(automation.id, { status, actions: [], edges: [] });
+
+        for (const includeStats of [false, true]) {
+          await repo.browse({ includeStats });
+          const cleared = await repo.getById(automation.id);
+          assert(cleared);
+          assert.equal(cleared.status, status);
+          assert.deepEqual(cleared.actions, []);
+          assert.deepEqual(cleared.edges, []);
+        }
+        assert.deepEqual(
+          await knex('automation_action_revisions').where('id', revision.id).first(),
+          revision,
+        );
+        assert(
+          (await knex('automation_actions').where('id', converted.actions[0].id).first())
+            .deleted_at,
+        );
+      },
+    );
 
     for (const includeStats of [false, true]) {
       it(`returns newest automations first with includeStats=${includeStats}`, async function () {
