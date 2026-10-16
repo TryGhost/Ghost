@@ -194,6 +194,11 @@ describe('utils', function () {
       const formatted = formatDisplayDate('Tomorrow', 'Europe/Berlin');
       assert.equal(formatted, '');
     });
+
+    it('returns an empty string for an impossible date when timezone is provided', function () {
+      const formatted = formatDisplayDate('2025-02-30T10:00:00', 'Europe/Berlin');
+      assert.equal(formatted, '');
+    });
   });
 
   describe('formatDisplayTime function', function () {
@@ -230,6 +235,12 @@ describe('utils', function () {
     it('returns an empty string for an unparseable date', function () {
       const formatted = formatDisplayTime('not a date', 'Europe/Berlin');
       assert.equal(formatted, '');
+    });
+
+    it('returns an empty string for an impossible date or time', function () {
+      assert.equal(formatDisplayTime('2025-02-30T10:00:00', 'Europe/Berlin'), '');
+      assert.equal(formatDisplayTime('2025-04-15T25:99:00', 'Europe/Berlin'), '');
+      assert.equal(formatDisplayTime('2025-04-15T23:59:60', 'Europe/Berlin'), '');
     });
   });
 
@@ -276,6 +287,11 @@ describe('utils', function () {
     it('returns an empty string for an unparseable date', function () {
       assert.equal(formatDisplayDateWithRange('undefined', 366), '');
       assert.equal(formatDisplayDateWithRange('undefined', 30), '');
+    });
+
+    it('returns an empty string for an impossible date or time', function () {
+      assert.equal(formatDisplayDateWithRange('2025-13-01', 366), '');
+      assert.equal(formatDisplayDateWithRange('2025-04-15 24:00:00', 1, true, true), '');
     });
   });
 

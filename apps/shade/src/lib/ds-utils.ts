@@ -121,21 +121,34 @@ const getDateTimeParts = (date: Date, timeZone?: string): DateTimeParts => {
 };
 
 const WALL_CLOCK_DATE_TIME =
-  /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?)?$/;
+  /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?$/;
 
 // An ISO 8601 date or date-time without an offset is wall-clock time in the display time zone,
 // as moment reads it. `new Date()` alone would read a date-only string as UTC midnight.
 const parseDateTimeParts = (value: string, timeZone?: string): DateTimeParts | null => {
   const wallClock = WALL_CLOCK_DATE_TIME.exec(value);
   if (wallClock) {
-    const [, year, month, day, hour = '0', minute = '0'] = wallClock;
-    return {
+    const [, year, month, day, hour = '0', minute = '0', second = '0'] = wallClock;
+    const parts = {
       year: Number(year),
       month: Number(month) - 1,
       day: Number(day),
       hour: Number(hour),
       minute: Number(minute),
     };
+
+    // The pattern only checks the shape, so reject fields that would roll over, such as 30 February or 25:00
+    const utc = new Date(
+      Date.UTC(parts.year, parts.month, parts.day, parts.hour, parts.minute, Number(second)),
+    );
+    const isValid =
+      utc.getUTCMonth() === parts.month &&
+      utc.getUTCDate() === parts.day &&
+      utc.getUTCHours() === parts.hour &&
+      utc.getUTCMinutes() === parts.minute &&
+      utc.getUTCSeconds() === Number(second);
+
+    return isValid ? parts : null;
   }
 
   const date = new Date(value);
