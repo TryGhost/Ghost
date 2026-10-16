@@ -68,28 +68,40 @@ export const kebabToPascalCase = (str: string): string => {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 interface DateTimeParts {
   year: number;
   month: number;
   day: number;
   hour: number;
   minute: number;
+  second: number;
 }
 
 const zonedFormatters = new Map<string, Intl.DateTimeFormat>();
 
+// A time zone the browser doesn't know falls back to UTC, as it did with moment-timezone
 const getZonedFormatter = (timeZone: string): Intl.DateTimeFormat => {
   let formatter = zonedFormatters.get(timeZone);
   if (!formatter) {
-    formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hourCycle: 'h23',
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-    });
+    try {
+      formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hourCycle: 'h23',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+      });
+    } catch (error) {
+      if (!(error instanceof RangeError)) {
+        throw error;
+      }
+      formatter = getZonedFormatter('UTC');
+    }
     zonedFormatters.set(timeZone, formatter);
   }
   return formatter;
@@ -104,6 +116,7 @@ const getDateTimeParts = (date: Date, timeZone?: string): DateTimeParts => {
       day: date.getDate(),
       hour: date.getHours(),
       minute: date.getMinutes(),
+      second: date.getSeconds(),
     };
   }
 
@@ -117,53 +130,116 @@ const getDateTimeParts = (date: Date, timeZone?: string): DateTimeParts => {
     day: get('day'),
     hour: get('hour'),
     minute: get('minute'),
+    second: get('second'),
   };
 };
 
-const WALL_CLOCK_DATE_TIME =
-  /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?$/;
+// Unlike Date.UTC(), this doesn't read years 0-99 as 1900-1999
+const toUTCTime = ({ year, month, day, hour, minute, second }: DateTimeParts): number => {
+  const date = new Date(0);
+  date.setUTCFullYear(year, month, day);
+  date.setUTCHours(hour, minute, second);
+  return date.getTime();
+};
 
-// An ISO 8601 date or date-time without an offset is wall-clock time in the display time zone,
-// as moment reads it. `new Date()` alone would read a date-only string as UTC midnight.
-const parseDateTimeParts = (value: string, timeZone?: string): DateTimeParts | null => {
-  const wallClock = WALL_CLOCK_DATE_TIME.exec(value);
-  if (wallClock) {
-    const [, year, month, day, hour = '0', minute = '0', second = '0'] = wallClock;
-    const parts = {
-      year: Number(year),
-      month: Number(month) - 1,
-      day: Number(day),
-      hour: Number(hour),
-      minute: Number(minute),
-    };
-
-    // The pattern only checks the shape, so reject fields that would roll over, such as 30 February or 25:00
-    const utc = new Date(
-      Date.UTC(parts.year, parts.month, parts.day, parts.hour, parts.minute, Number(second)),
-    );
-    const isValid =
-      utc.getUTCMonth() === parts.month &&
-      utc.getUTCDate() === parts.day &&
-      utc.getUTCHours() === parts.hour &&
-      utc.getUTCMinutes() === parts.minute &&
-      utc.getUTCSeconds() === Number(second);
-
-    return isValid ? parts : null;
+// Wall-clock time that a time zone skips, such as 2:30am when clocks go forward, moves forward by
+// the gap. Wall-clock time that it repeats reads as the first occurrence. Both match moment-timezone.
+const fromWallClockTime = (parts: DateTimeParts, timeZone?: string): Date => {
+  if (!timeZone) {
+    // Local Date setters resolve skipped and repeated times the same way
+    const date = new Date(0);
+    date.setFullYear(parts.year, parts.month, parts.day);
+    date.setHours(parts.hour, parts.minute, parts.second, 0);
+    return date;
   }
 
-  const date = new Date(value);
-  if (isNaN(date.getTime())) {
+  const wallClockTime = toUTCTime(parts);
+  const readWallClockTime = (time: number) => toUTCTime(getDateTimeParts(new Date(time), timeZone));
+  const getOffset = (time: number) => readWallClockTime(time) - time;
+
+  // The offsets a day either side are the ones in use on each side of any change at this time
+  const withOffsetBefore = wallClockTime - getOffset(wallClockTime - DAY_MS);
+  const withOffsetAfter = wallClockTime - getOffset(wallClockTime + DAY_MS);
+  if (withOffsetBefore === withOffsetAfter) {
+    return new Date(withOffsetBefore);
+  }
+
+  const occurrences = [withOffsetBefore, withOffsetAfter]
+    .filter((time) => readWallClockTime(time) === wallClockTime)
+    .sort((a, b) => a - b);
+  return new Date(occurrences[0] ?? withOffsetBefore);
+};
+
+// ISO 8601 dates and date-times in the forms moment reads, in the extended
+// (`2025-04-15T13:05:00+01:00`) and basic (`20250415T130500+0100`) formats
+const ISO_EXTENDED_DATE_TIME =
+  /^(?<year>\d{4})-(?<month>\d{2})(?:-(?<day>\d{2})(?:[T ](?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,]\d+)?)?)?(?<offset>Z|(?<offsetSign>[+-])(?<offsetHours>\d{2}):?(?<offsetMinutes>\d{2})?)?)?)?$/;
+const ISO_BASIC_DATE_TIME =
+  /^(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:[T ](?<hour>\d{2})(?:(?<minute>\d{2})(?:(?<second>\d{2})(?:[.,]\d+)?)?)?(?<offset>Z|(?<offsetSign>[+-])(?<offsetHours>\d{2}):?(?<offsetMinutes>\d{2})?)?)?$/;
+
+// An ISO 8601 date or date-time without an offset is wall-clock time in the time zone, as moment
+// reads it. `new Date()` alone would read a date-only string as UTC midnight.
+const parseDate = (value: string, timeZone?: string): Date | null => {
+  const match = ISO_EXTENDED_DATE_TIME.exec(value) ?? ISO_BASIC_DATE_TIME.exec(value);
+  if (!match?.groups) {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  const {
+    year,
+    month,
+    day = '1',
+    hour = '0',
+    minute = '0',
+    second = '0',
+    offset,
+    offsetSign,
+    offsetHours = '0',
+    offsetMinutes = '0',
+  } = match.groups;
+  const parts = {
+    year: Number(year),
+    month: Number(month) - 1,
+    day: Number(day),
+    hour: Number(hour),
+    minute: Number(minute),
+    second: Number(second),
+  };
+
+  // The formats only check the shape, so reject fields that would roll over, such as 30 February or 24:00
+  const utc = new Date(toUTCTime(parts));
+  const isValid =
+    utc.getUTCMonth() === parts.month &&
+    utc.getUTCDate() === parts.day &&
+    utc.getUTCHours() === parts.hour &&
+    utc.getUTCMinutes() === parts.minute &&
+    utc.getUTCSeconds() === parts.second &&
+    Number(offsetHours) < 24 &&
+    Number(offsetMinutes) < 60;
+  if (!isValid) {
     return null;
   }
-  return getDateTimeParts(date, timeZone);
+
+  if (!offset) {
+    return fromWallClockTime(parts, timeZone);
+  }
+  const offsetMs = (Number(offsetHours) * 60 + Number(offsetMinutes)) * 60 * 1000;
+  return new Date(utc.getTime() - (offsetSign === '-' ? -offsetMs : offsetMs));
 };
 
 // Result is in the format of `7:09pm`
 const formatTime = ({ hour, minute }: DateTimeParts): string =>
   `${hour % 12 || 12}:${String(minute).padStart(2, '0')}${hour < 12 ? 'am' : 'pm'}`;
 
+// Result is in the format of `12 Jun 2025`, without the year when it's the current year
+const formatDate = ({ year, month, day }: DateTimeParts, timeZone?: string): string => {
+  const date = `${day} ${MONTHS[month]}`;
+  return year === getDateTimeParts(new Date(), timeZone).year ? date : `${date} ${year}`;
+};
+
 // Format date for UI, result is in the format of `12 Jun 2025`
-// When timezone is provided, the date will be converted to that timezone before formatting
+// Timestamps with an offset are shown in the given time zone, or in UTC without one
 export const formatDisplayDate = (dateString: string, timezone?: string): string => {
   // If the date is a Date object, convert it to a string
   // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
@@ -175,55 +251,9 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
     return '';
   }
 
-  // Check if this is a datetime string (contains time) or just a date
-  const hasTime = dateString.includes(':');
-  const isISOFormat = dateString.includes('T') || dateString.includes('Z');
-
-  let day, month, year, isToday, isCurrentYear;
-
-  // If timezone is provided and this is an ISO format date, convert it to that timezone
-  if (timezone && isISOFormat) {
-    const date = parseDateTimeParts(dateString, timezone);
-    if (!date) {
-      return '';
-    }
-    const today = getDateTimeParts(new Date(), timezone);
-
-    day = date.day;
-    month = date.month;
-    year = date.year;
-    isToday = year === today.year && month === today.month && day === today.day;
-    isCurrentYear = year === today.year;
-  } else {
-    const date = new Date(dateString);
-    const today = new Date();
-
-    if (hasTime && !isISOFormat) {
-      // This is a localized datetime string like "2025-07-29 19:00:00"
-      // Use local date methods to avoid timezone conversion
-      day = date.getDate();
-      month = date.getMonth();
-      year = date.getFullYear();
-      isToday = date.toDateString() === today.toDateString();
-      isCurrentYear = year === today.getFullYear();
-    } else {
-      // This is either a date-only string or an ISO format with timezone (without explicit timezone param)
-      // Use UTC methods as before
-      day = date.getUTCDate();
-      month = date.getUTCMonth();
-      year = date.getUTCFullYear();
-      isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-      isCurrentYear = year === today.getUTCFullYear();
-    }
-  }
-
-  const monthName = MONTHS[month];
-
-  if (isToday) {
-    return `${day} ${monthName}`;
-  }
-
-  return isCurrentYear ? `${day} ${monthName}` : `${day} ${monthName} ${year}`;
+  const timeZone = timezone || 'UTC';
+  const date = parseDate(dateString, timeZone);
+  return date ? formatDate(getDateTimeParts(date, timeZone), timeZone) : '';
 };
 
 /**
@@ -234,8 +264,8 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
  * // 7:09pm
  */
 export const formatDisplayTime = (dateString: string, timezone: string): string => {
-  const parts = parseDateTimeParts(dateString, timezone);
-  return parts ? formatTime(parts) : '';
+  const date = parseDate(dateString, timezone);
+  return date ? formatTime(getDateTimeParts(date, timezone)) : '';
 };
 
 // Helper function to format timestamp
@@ -392,10 +422,10 @@ export const stringToHslColor = (str: string, saturation: string, lightness: str
 /* -------------------------------------------------------------------------- */
 
 /**
- * Formats a date based on the range
+ * Formats a date based on the range, in the browser's time zone
  * - For ranges above 365 days: shows month and year (e.g. "Apr 2025")
- * - For ranges above 91 days: shows "Week of [date]"
- * - For other ranges: uses the default formatDisplayDate
+ * - For ranges of 91 days or more: shows "Week of [date]"
+ * - For other ranges: shows the date in the same format as formatDisplayDate
  */
 export const formatDisplayDateWithRange = (
   date: string,
@@ -403,10 +433,11 @@ export const formatDisplayDateWithRange = (
   showHours: boolean = false,
   hoursOnly: boolean = false,
 ): string => {
-  const parts = parseDateTimeParts(date);
-  if (!parts) {
+  const parsed = parseDate(date);
+  if (!parsed) {
     return '';
   }
+  const parts = getDateTimeParts(parsed);
 
   if (range === 1 && hoursOnly) {
     return formatTime(parts);
@@ -415,9 +446,9 @@ export const formatDisplayDateWithRange = (
   } else if (range > 365) {
     return `${MONTHS[parts.month]} ${parts.year}`;
   } else if (range >= 91) {
-    return `Week of ${formatDisplayDate(date)}`;
+    return `Week of ${formatDate(parts)}`;
   }
-  return formatDisplayDate(date);
+  return formatDate(parts);
 };
 
 export const getYRange = (data: { value: number }[]): { min: number; max: number } => {

@@ -199,6 +199,32 @@ describe('utils', function () {
       const formatted = formatDisplayDate('2025-02-30T10:00:00', 'Europe/Berlin');
       assert.equal(formatted, '');
     });
+
+    it('returns an empty string for an unparseable date', function () {
+      assert.equal(formatDisplayDate('yesterday'), '');
+      assert.equal(formatDisplayDate('yesterday', 'Europe/Berlin'), '');
+      assert.equal(formatDisplayDate('2025-13-01T00:00:00'), '');
+    });
+
+    it('reads a date-time without an offset as wall-clock time when no timezone is provided', function () {
+      // East of UTC, so reading it as browser time and formatting in UTC would land on the previous day
+      vi.stubEnv('TZ', 'Asia/Tokyo');
+
+      try {
+        assert.equal(formatDisplayDate('2023-07-31T05:00:00'), '31 Jul 2023');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it('falls back to UTC for a timezone the browser does not know', function () {
+      assert.equal(formatDisplayDate('2020-04-20T23:30:00Z', 'Not/A_Zone'), '20 Apr 2020');
+    });
+
+    it('moves a date skipped by a timezone change forward', function () {
+      // Samoa skipped 30 Dec 2011 when it moved across the International Date Line
+      assert.equal(formatDisplayDate('2011-12-30T12:00:00', 'Pacific/Apia'), '31 Dec 2011');
+    });
   });
 
   describe('formatDisplayTime function', function () {
@@ -241,6 +267,22 @@ describe('utils', function () {
       assert.equal(formatDisplayTime('2025-02-30T10:00:00', 'Europe/Berlin'), '');
       assert.equal(formatDisplayTime('2025-04-15T25:99:00', 'Europe/Berlin'), '');
       assert.equal(formatDisplayTime('2025-04-15T23:59:60', 'Europe/Berlin'), '');
+      assert.equal(formatDisplayTime('2025-04-15T10:00:00+24:00', 'Europe/Berlin'), '');
+    });
+
+    it('reads the ISO 8601 forms moment reads', function () {
+      assert.equal(formatDisplayTime('2020-04-20T18Z', 'Africa/Lagos'), '7:00pm');
+      assert.equal(formatDisplayTime('2020-04-20T18:09+0100', 'Africa/Lagos'), '6:09pm');
+      assert.equal(formatDisplayTime('2020-04-20 18:09:00,5-05:00', 'Africa/Lagos'), '12:09am');
+      assert.equal(formatDisplayTime('20200420T180900Z', 'Africa/Lagos'), '7:09pm');
+    });
+
+    it('moves a time skipped by a daylight saving change forward', function () {
+      assert.equal(formatDisplayTime('2025-03-09T02:30:00', 'America/New_York'), '3:30am');
+    });
+
+    it('falls back to UTC for a timezone the browser does not know', function () {
+      assert.equal(formatDisplayTime('2020-04-20T18:09:00Z', 'Not/A_Zone'), '6:09pm');
     });
   });
 
@@ -272,6 +314,13 @@ describe('utils', function () {
     it('converts timestamps with an offset to local time', function () {
       assert.equal(formatDisplayDateWithRange('2025-04-15T20:05:00Z', 1, true), 'Apr 15, 1:05pm');
       assert.equal(formatDisplayDateWithRange('2025-04-01T03:00:00Z', 366), 'Mar 2025');
+      assert.equal(formatDisplayDateWithRange('2025-04-01T03:00:00Z', 91), 'Week of 31 Mar 2025');
+      assert.equal(formatDisplayDateWithRange('2025-04-01T03:00:00Z', 30), '31 Mar 2025');
+    });
+
+    it('reads year-month and basic ISO 8601 dates as local dates', function () {
+      assert.equal(formatDisplayDateWithRange('2025-04', 366), 'Apr 2025');
+      assert.equal(formatDisplayDateWithRange('20250415', 366), 'Apr 2025');
     });
 
     it('formats the week start for ranges of 91 days or more', function () {
