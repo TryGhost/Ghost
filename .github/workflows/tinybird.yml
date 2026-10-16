@@ -87,7 +87,7 @@ jobs:
       - name: Install Tinybird CLI
         env:
           # renovate: datasource=pypi depName=tinybird versioning=pep440
-          TINYBIRD_VERSION: 4.6.13
+          TINYBIRD_VERSION: 4.6.23
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           export PATH="$HOME/.local/bin:$PATH"

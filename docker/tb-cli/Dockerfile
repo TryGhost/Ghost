@@ -18,7 +18,7 @@ WORKDIR /home/tinybird
 # ClickHouse Tuple syntax instead of raw JSON, so JSONExtractString on
 # `analytics_events.payload` returns '' (see .github/workflows/tinybird.yml).
 # renovate: datasource=pypi depName=tinybird versioning=pep440
-ARG TINYBIRD_VERSION=4.6.13
+ARG TINYBIRD_VERSION=4.6.23
 
 RUN uv tool install tinybird@${TINYBIRD_VERSION} --python 3.13 --force
 
