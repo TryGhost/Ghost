@@ -1,6 +1,7 @@
-const semver = require('semver');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
+import semver from 'semver';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import type { RequestHandler } from 'express';
 
 const messages = {
   invalidClientVersionRange: 'Client request for {clientVersion} is invalid.',
@@ -8,7 +9,7 @@ const messages = {
     'Client request for {clientVersion} does not match server version {serverVersion}.',
 };
 
-module.exports = function checkVersionMatch(req, res, next) {
+export const checkVersionMatch: RequestHandler = (req, res, next) => {
   const clientVersion = req.get('X-Ghost-Version');
   // can contain pre-release suffix, you should be able to use e.g. 1.19.0-pre [server] with 1.18.0 [client]
   const serverVersion = res.locals.version.match(/^(\d+\.)?(\d+\.)?(\d+)/)[0];

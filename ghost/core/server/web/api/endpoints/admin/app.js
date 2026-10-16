@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('web:endpoints:admin:app');
 const bodyParser = require('body-parser');
 const errorHandler = require('@tryghost/mw-error-handler');
 
-const versionMatch = require('../../middleware/version-match');
+const { versionMatch } = require('../../middleware/version-match');
 const { parseQueryBooleans } = require('../../middleware/parse-query-booleans');
 const shared = require('../../../shared');
 const express = require('../../../../../shared/express');

@@ -1,9 +1,8 @@
 import { expect } from 'vitest';
-import express, { NextFunction, Request, Response } from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import request from 'supertest';
 
-// @ts-expect-error This module lacks type definitions.
-import versionMatch from '../../../../../../core/server/web/api/middleware/version-match';
+import { checkVersionMatch as versionMatch } from '../../../../../../core/server/web/api/middleware/version-match';
 
 const app = (serverVersion: string) => {
   const result = express();
