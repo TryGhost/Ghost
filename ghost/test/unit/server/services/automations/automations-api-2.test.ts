@@ -103,7 +103,7 @@ describe('automations API', function () {
       steps = [];
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
       trigger = {
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
@@ -132,7 +132,7 @@ describe('automations API', function () {
       const withTransaction = vi.fn();
       const api = createApi({ repository: { ...repository, withTransaction } });
 
-      const events = [undefined, 'invalid', 'member_signed_up'];
+      const events = [undefined, 'invalid', 'member_sign_up', 'membership_did_start'];
       await Promise.all(
         events.map(async (event) => {
           await expect(() =>
