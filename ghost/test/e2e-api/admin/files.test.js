@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const os = require('os');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -20,7 +20,7 @@ describe('Files API', function () {
 
   afterAll(function () {
     files.forEach(function (file) {
-      fs.removeSync(config.get('paths').appRoot + file);
+      fs.rmSync(config.get('paths').appRoot + file, { recursive: true, force: true });
     });
   });
 
@@ -139,7 +139,7 @@ describe('Files API', function () {
       assert.ok(res.body.errors, 'Response should contain errors');
       assert.match(res.body.errors[0].message, /not supported/i);
     } finally {
-      fs.removeSync(tmpDir);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
@@ -173,7 +173,7 @@ describe('Files API', function () {
         'Non-browser-renderable files should be stored as application/octet-stream',
       );
     } finally {
-      fs.removeSync(tmpDir);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
@@ -207,7 +207,7 @@ describe('Files API', function () {
         );
       }
     } finally {
-      fs.removeSync(tmpDir);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
@@ -241,7 +241,7 @@ describe('Files API', function () {
         'HTML files should be stored as text/plain to prevent browser execution',
       );
     } finally {
-      fs.removeSync(tmpDir);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 });

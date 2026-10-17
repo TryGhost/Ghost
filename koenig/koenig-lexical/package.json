@@ -116,7 +116,6 @@
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "eventemitter3": "5.0.4",
     "fast-average-color": "9.5.2",
-    "fs-extra": "catalog:",
     "globals": "catalog:",
     "highlight.js": "10.7.3",
     "jsdom": "catalog:",

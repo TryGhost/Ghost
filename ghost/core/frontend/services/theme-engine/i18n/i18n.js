@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
 const MessageFormat = require('intl-messageformat');
 const isString = require('lodash/isString');

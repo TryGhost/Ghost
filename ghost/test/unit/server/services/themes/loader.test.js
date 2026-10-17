@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const tmp = require('tmp');
 const join = require('path').join;
 const config = require('../../../../../core/shared/config');

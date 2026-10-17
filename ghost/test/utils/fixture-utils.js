@@ -1,7 +1,7 @@
 // Utility Packages
 const _ = require('lodash');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
