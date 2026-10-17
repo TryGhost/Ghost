@@ -70,7 +70,10 @@ that app.
 **Loaded manifest**:
 A manifest fetched server-side from its manifest URL and parsed, ready to
 preview, compare or store. A manifest is only ever used in this form, never as
-the browser sent it.
+the browser sent it. When a manifest version with an SVG icon is stored, the
+icon is fetched too, and a sanitized copy is kept with that version; Admin
+only ever shows that copy. A preview shows the copy approving it would keep,
+so it only fetches the icon when that would be a new copy.
 _Avoid_: intake, fetched manifest, raw manifest
 
 **Preview**:
@@ -80,8 +83,9 @@ _Avoid_: dry run
 
 **Digest**:
 The fingerprint of a manifest together with its manifest URL. Confirming sends
-it back, so only what the publisher reviewed is installed or approved. It also
-identifies the pending manifest.
+it back, so only the manifest the publisher reviewed is installed or approved.
+It doesn't cover the icon, which confirming fetches again. It also identifies
+the pending manifest.
 _Avoid_: hash, checksum, token
 
 **Install**:
@@ -104,9 +108,14 @@ _Avoid_: login, token, connection
 
 **Re-check**:
 Fetching an installed app's manifest again from its approved manifest URL when
-an app session starts, and storing what changed. A manifest that can't be
-loaded, or one for another app, makes the app unavailable: the session fails
-and nothing is stored, so the app opens again once its manifest is back.
+an app session starts, and storing what changed. The icon is only fetched for
+a manifest version that will be stored, so a stored copy never changes. Each
+version stored takes a fresh copy, even at the same icon URL, so the icon shown
+can change with a silent change or a resume, without approval. A manifest that
+can't be loaded, one for another app, or an icon that can't be loaded for a
+version that would be stored makes the app unavailable, even when the only
+change is a silent one: the session fails and nothing is stored, so the app
+opens again once they load.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:

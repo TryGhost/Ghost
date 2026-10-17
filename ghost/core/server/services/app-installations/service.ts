@@ -3,6 +3,7 @@ import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import type { AppInstallation, CurrentInstallation } from './codec';
+import type { FetchIcon } from './fetch-icon';
 import { changesFrom, transition, type AppManifestChange } from './lifecycle';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
@@ -20,6 +21,7 @@ export interface AppInstallationPreview {
    * ahead if neither changed since the review.
    */
   digest: string;
+  icon_svg: string | null;
   /**
    * The site's existing installation of this app, if any, with its approved manifest and
    * the changes the reviewed manifest would make.
@@ -34,6 +36,7 @@ export interface AppInstallationPreview {
     revision: number;
     manifest_url: string;
     manifest: AppManifest;
+    icon_svg: string | null;
     changes: AppManifestChange[];
   } | null;
 }
@@ -72,6 +75,7 @@ export class AppInstallationsService {
   private store: AppInstallationsStore;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
+  private fetchIcon: FetchIcon;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -79,14 +83,17 @@ export class AppInstallationsService {
     knex,
     recordAction,
     loadManifest,
+    fetchIcon,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
+    fetchIcon: FetchIcon;
   }) {
     this.store = new AppInstallationsStore(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
+    this.fetchIcon = fetchIcon;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -112,24 +119,58 @@ export class AppInstallationsService {
     return installation;
   }
 
+  /**
+   * Shows the icon copy that approving the review would keep. When that's a copy Ghost
+   * already has, the pending manifest's or the approved one's, the icon isn't fetched, as
+   * approving won't fetch it either. Otherwise it's fetched as the app serves it now. The
+   * digest covers only the manifest, and confirming fetches the icon again, so the copy
+   * stored can differ if the app replaced its SVG in between.
+   */
   private async previewOf(incoming: LoadedManifest): Promise<AppInstallationPreview> {
-    const installation = await this.store.current({ appId: incoming.manifest.id });
-    return {
+    const reviewed = {
       manifest_url: incoming.manifestUrl,
       manifest: incoming.manifest,
       digest: incoming.digest,
+    };
+    const installation = await this.store.current({ appId: incoming.manifest.id });
+    if (!installation) {
+      return {
+        ...reviewed,
+        icon_svg: await this.fetchIcon(incoming.manifest.icon),
+        installation: null,
+      };
+    }
+
+    const changes = changesFrom(installation, incoming);
+    const next = transition(installation, { type: 'approve', manifest: incoming });
+    const approvedIcon = this.store.icon(installation.manifest_id);
+    // An approval that writes nothing, or runs the approved row again, keeps the approved
+    // copy.
+    let keptIcon = approvedIcon;
+    if ('stores' in next) {
+      keptIcon = this.fetchIcon(incoming.manifest.icon);
+    } else if (
+      'approvedManifestId' in next &&
+      next.approvedManifestId !== installation.manifest_id
+    ) {
+      keptIcon = this.store.icon(next.approvedManifestId);
+    }
+    // Read together, since fetching the icon can take a while.
+    const [iconSvg, approvedIconSvg] = await Promise.all([keptIcon, approvedIcon]);
+    return {
+      ...reviewed,
+      icon_svg: iconSvg,
       // The approved manifest shown is the one the changes were computed from, so the
       // review matches the list of changes.
-      installation: installation
-        ? {
-            id: installation.id,
-            status: installation.status,
-            revision: installation.revision,
-            manifest_url: installation.manifest_url,
-            manifest: installation.manifest,
-            changes: changesFrom(installation, incoming),
-          }
-        : null,
+      installation: {
+        id: installation.id,
+        status: installation.status,
+        revision: installation.revision,
+        manifest_url: installation.manifest_url,
+        manifest: installation.manifest,
+        icon_svg: approvedIconSvg,
+        changes,
+      },
     };
   }
 
@@ -162,7 +203,7 @@ export class AppInstallationsService {
   ): Promise<AppInstallation> {
     const reviewed = await this.fetchReviewed(manifestUrl, digest);
     const { manifest } = reviewed;
-    const installation = await this.store.install(reviewed);
+    const installation = await this.store.install(reviewed, await this.fetchIcon(manifest.icon));
     await this.recordAction({
       context,
       event: 'installed',
@@ -190,7 +231,7 @@ export class AppInstallationsService {
   ): Promise<AppInstallation> {
     const installation = await this.store.current({ id });
     // No need to fetch for an uninstalled installation. Applying the transition at the
-    // revision read here covers an uninstall or a change that happens during the fetch.
+    // revision read here covers an uninstall or a change that happens during the fetches.
     if (!installation) {
       throw (await this.store.find(id)) ? uninstalled() : notFound();
     }
@@ -231,9 +272,9 @@ export class AppInstallationsService {
   /**
    * Applies the transition an incoming manifest makes for the installation, as it was read
    * before the manifest was fetched. Approval and the re-check at session start both use it,
-   * so they always store a manifest the same way. The transition is decided from the
-   * installation as it was read, and only written while the installation is still at that
-   * revision, so it still holds when it's written.
+   * so they always store a manifest the same way. The transition is decided, and the icon
+   * fetched if it stores a new row, before the transaction that writes it, so the icon is
+   * never fetched inside one.
    */
   private async applyIncoming(
     installation: CurrentInstallation,
@@ -244,7 +285,9 @@ export class AppInstallationsService {
     if (!('stores' in next)) {
       return this.store.apply(installation, next);
     }
-    return this.store.apply(installation, next, incoming);
+    // The copy is only ever taken when a manifest version is stored.
+    const iconSvg = await this.fetchIcon(incoming.manifest.icon);
+    return this.store.apply(installation, next, { manifest: incoming, iconSvg });
   }
 
   /** The installation changed since the review, so the error carries a new preview. */
@@ -289,7 +332,9 @@ export class AppInstallationsService {
    *
    * If the manifest can't be loaded, or it's for a different app, the app is broken or its
    * URL now serves someone else. The session then fails as unavailable instead of running
-   * the approved manifest.
+   * the approved manifest. So does an icon that can't be loaded for a manifest that would be
+   * stored, silent changes and resumes included, since each stored version takes a fresh copy;
+   * a re-check that stores nothing never fetches the icon.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation

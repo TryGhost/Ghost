@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { AppInstallationsService } from '../../../../../core/server/services/app-installations/service';
 import type { RecordAppInstallationAction } from '../../../../../core/server/services/app-installations/actions';
+import type { FetchIcon } from '../../../../../core/server/services/app-installations/fetch-icon';
 import type {
   LoadedManifest,
   LoadManifest,
@@ -25,6 +26,7 @@ const loaded: LoadedManifest = {
   serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
 };
+const ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"></path></svg>';
 const deadlock = () => Object.assign(new Error('Deadlock victim'), { code: 'ER_LOCK_DEADLOCK' });
 
 function setup() {
@@ -40,6 +42,7 @@ function setup() {
     knex: { transaction } as unknown as Knex,
     recordAction,
     loadManifest: vi.fn<LoadManifest>().mockResolvedValue(loaded),
+    fetchIcon: vi.fn<FetchIcon>().mockResolvedValue(ICON_SVG),
   });
   const install = () =>
     service.create({ actor: null }, { manifestUrl: loaded.manifestUrl, digest: loaded.digest });
@@ -47,7 +50,7 @@ function setup() {
 }
 
 describe('App installation storage', function () {
-  it('stores the manifest text and digest exactly as the loader produced them', async function () {
+  it('stores the manifest text, digest and icon exactly as the loaders produced them', async function () {
     const { install, insert, trx } = setup();
 
     const installed = await install();
@@ -62,10 +65,12 @@ describe('App installation storage', function () {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      icon_svg: ICON_SVG,
       source: 'install',
       requires_approval: false,
       created_at: insert.mock.calls[0][0].created_at,
     });
+    assert.equal(installed.icon_svg, ICON_SVG);
   });
 });
 

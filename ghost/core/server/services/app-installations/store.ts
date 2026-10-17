@@ -29,6 +29,8 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
+const IconRow = DbAppInstallationManifest.pick({ icon_svg: true });
+
 const HistoryActionRow = z
   .object({
     id: z.string(),
@@ -57,6 +59,12 @@ export type Applied =
 
 /** A transition that stores the incoming manifest as a new row. */
 type StoringTransition = Extract<Transition, { stores: NewManifestRow }>;
+
+/** The incoming manifest a storing transition stores, with the icon copy kept with it. */
+export interface ManifestVersion {
+  manifest: LoadedManifest;
+  iconSvg: string | null;
+}
 
 const MAX_TRANSACTION_ATTEMPTS = 3;
 
@@ -109,7 +117,7 @@ async function writeTransition(
   trx: Knex.Transaction,
   installation: CurrentInstallation,
   next: Transition,
-  incoming: LoadedManifest | undefined,
+  version: ManifestVersion | undefined,
 ): Promise<Applied> {
   if (next.to === 'same') {
     return { outcome: 'unchanged' };
@@ -134,18 +142,19 @@ async function writeTransition(
   if ('approvedManifestId' in next) {
     manifestId = next.approvedManifestId;
   } else {
-    if (!incoming) {
+    if (!version) {
       throw new errors.IncorrectUsageError({
-        message: 'A transition that stores a manifest needs the manifest it stores.',
+        message: 'A transition that stores a manifest needs its version.',
       });
     }
     manifestId = new ObjectId().toHexString();
     await trx(MANIFESTS).insert({
       id: manifestId,
       installation_id: installation.id,
-      manifest_url: incoming.manifestUrl,
-      manifest: incoming.serialised,
-      digest: incoming.digest,
+      manifest_url: version.manifest.manifestUrl,
+      manifest: version.manifest.serialised,
+      digest: version.manifest.digest,
+      icon_svg: version.iconSvg,
       source: next.stores.source,
       requires_approval: next.stores.requiresApproval,
       created_at: now,
@@ -262,12 +271,23 @@ export class AppInstallationsStore {
   }
 
   /**
+   * The icon copy stored with a manifest row. Read only where it's shown, so re-checks and
+   * approvals don't load it.
+   */
+  async icon(manifestId: string): Promise<string | null> {
+    const row = await this.knex(MANIFESTS)
+      .where({ id: manifestId })
+      .first<z.input<typeof IconRow> | undefined>('icon_svg');
+    return row ? z.decode(IconRow, row).icon_svg : null;
+  }
+
+  /**
    * Every install creates a new installation with a new ID, reinstalls included; an
    * uninstalled installation is never reused. The unique `current_app_id` column blocks a
    * second installation of the same app, so when two installs race, one succeeds and the
    * other gets `APP_ALREADY_INSTALLED`.
    */
-  async install(incoming: LoadedManifest): Promise<AppInstallation> {
+  async install(incoming: LoadedManifest, iconSvg: string | null): Promise<AppInstallation> {
     const { manifest } = incoming;
     const id = new ObjectId().toHexString();
     const manifestId = new ObjectId().toHexString();
@@ -281,6 +301,7 @@ export class AppInstallationsStore {
       revision: 0,
       manifest_url: incoming.manifestUrl,
       manifest: incoming.serialised,
+      icon_svg: iconSvg,
       created_at: now,
       updated_at: now,
     };
@@ -304,6 +325,7 @@ export class AppInstallationsStore {
           manifest_url: written.manifest_url,
           manifest: incoming.serialised,
           digest: incoming.digest,
+          icon_svg: iconSvg,
           source: 'install',
           requires_approval: false,
           created_at: now,
@@ -325,12 +347,12 @@ export class AppInstallationsStore {
    * Applies `next`, a transition decided from the installation as it was read. Every change
    * moves the revision on, so the transition only goes ahead while the installation is still
    * at `installation.revision`. Uninstalling doesn't depend on what the installation runs, so
-   * it goes ahead at any revision. A transition that stores a row takes the manifest it stores.
+   * it goes ahead at any revision. A transition that stores a row takes the version it stores.
    */
   apply(
     installation: CurrentInstallation,
     next: StoringTransition,
-    incoming: LoadedManifest,
+    version: ManifestVersion,
   ): Promise<Applied>;
   apply(
     installation: CurrentInstallation,
@@ -339,7 +361,7 @@ export class AppInstallationsStore {
   async apply(
     installation: CurrentInstallation,
     next: Transition,
-    incoming?: LoadedManifest,
+    version?: ManifestVersion,
   ): Promise<Applied> {
     return this.knex.transaction(async (trx): Promise<Applied> => {
       const revision = revisionOf(await currentRevision(trx, installation.id).forUpdate());
@@ -349,7 +371,7 @@ export class AppInstallationsStore {
       if (revision !== installation.revision && next.to !== 'uninstalled') {
         return { outcome: 'stale' };
       }
-      return writeTransition(trx, installation, next, incoming);
+      return writeTransition(trx, installation, next, version);
     });
   }
 
@@ -370,6 +392,7 @@ export class AppInstallationsStore {
       'installation.revision',
       'approved.manifest_url',
       'approved.manifest',
+      'approved.icon_svg',
       'installation.created_at',
       'installation.updated_at',
     );
