@@ -93,6 +93,7 @@ export {
   Link,
   RouterProvider,
   useNavigate,
+  useRouterDestination,
   ViewTransitionControllerProvider,
   useRouteHasParams,
   resetScrollPosition,
@@ -100,6 +101,7 @@ export {
   Navigate,
 } from './providers/router-provider';
 export { useNavigationStack } from './providers/navigation-stack-provider';
+export { isAppPagePath } from './utils/feature-flag-overrides';
 export {
   NavigationType,
   Outlet,

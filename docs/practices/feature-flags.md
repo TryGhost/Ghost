@@ -197,6 +197,11 @@ the whole list rather than adding to it. Visit a route with an empty value,
 such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
 parameter does not clear them.
 
+On an installed app's page (`/ghost/#/apps/<installation id>/…`), the query
+belongs to the app, so Admin doesn't read `labs` from it. Overrides that are
+already set stay in effect. Admin's own screens under `/apps/`, such as
+`/apps/install`, read `labs` as usual.
+
 These overrides only force flags on. `useFeatureFlag` honors them even when the
 server-computed value is `false`. There is no force-off syntax; clearing an
 override restores the normal value, which may still be `true`. If session storage is unavailable, the URL
