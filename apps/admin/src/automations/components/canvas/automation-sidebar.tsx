@@ -16,8 +16,6 @@ import {
   Field,
   FieldLabel,
   FieldDescription,
-  FieldError,
-  Input,
   Textarea,
   Tabs,
   TabsList,
@@ -247,10 +245,7 @@ export const AutomationSidebar: React.FC<{
       throw new Error(`Unknown automation metadata mode: ${String(_exhaustive)}`);
     }
   }
-  const nameId = useId();
   const descriptionId = useId();
-  const nameErrorId = useId();
-  const isNameValid = name.trim().length > 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
@@ -424,23 +419,6 @@ export const AutomationSidebar: React.FC<{
             {metadata !== 'hidden' && (
               <TabsContent className="mt-6" value="settings">
                 <Stack gap="xl">
-                  <Field data-invalid={!isNameValid || undefined}>
-                    <FieldLabel htmlFor={nameId}>Name</FieldLabel>
-                    <Input
-                      aria-describedby={!isNameValid ? nameErrorId : undefined}
-                      aria-invalid={!isNameValid || undefined}
-                      disabled={metadata === 'readonly'}
-                      id={nameId}
-                      maxLength={191}
-                      value={name}
-                      onChange={(event) =>
-                        onDetailsChange({ name: event.target.value, description })
-                      }
-                    />
-                    {!isNameValid && (
-                      <FieldError id={nameErrorId}>Add an automation name.</FieldError>
-                    )}
-                  </Field>
                   <Field>
                     <FieldLabel htmlFor={descriptionId}>Description</FieldLabel>
                     <Textarea
