@@ -10,6 +10,11 @@ export type ActionToInsert = {
   type: 'wait' | 'send_email';
 };
 
+export type EdgeRow = {
+  source_action_id: string;
+  target_action_id: string;
+};
+
 export type RunStepToInsert = {
   id: string;
   created_at: Date;
@@ -80,6 +85,9 @@ export type AutomationsRepository2<Connection> = {
 
   /** Is this run's automation active? */
   isRunAutomationActive: (connection: Connection, automationRunId: string) => Promisable<boolean>;
+
+  /** Load the edges connecting (non-deleted) actions. */
+  loadEdgeRows: (connection: Connection, automationId: string) => Promisable<EdgeRow[]>;
 
   /**
    * Lock a member for the lifetime of this transaction. Useful to make sure a
