@@ -97,30 +97,25 @@ const Overview: React.FC = () => {
     timezone: chartTimezone,
   } = getRangeDates(chartRange);
 
-  // Params for KPI data (both chart and totals)
-  const params = useMemo(() => {
-    const baseParams = {
+  // Params for KPI data (both chart and totals). Every query is scoped to the
+  // post, so none runs until it has loaded: without its uuid and published
+  // date they would query the whole site.
+  const params = useMemo(
+    () => ({
       site_uuid: statsConfig?.id || '',
       date_from: formatQueryDate(chartStartDate),
       date_to: formatQueryDate(chartEndDate),
       timezone: chartTimezone,
-      post_uuid: '',
-    };
-
-    if (!isPostLoading && post?.uuid) {
-      return {
-        ...baseParams,
-        post_uuid: post.uuid,
-      };
-    }
-
-    return baseParams;
-  }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
+      post_uuid: post?.uuid || '',
+    }),
+    [post?.uuid, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone],
+  );
 
   const { data: chartData, loading: chartLoading } = useTinybirdQuery({
     endpoint: 'api_kpis',
     statsConfig,
     params: params,
+    enabled: Boolean(post?.uuid),
   });
 
   // Calculate total visitors as a number for WebOverview component
@@ -159,6 +154,7 @@ const Overview: React.FC = () => {
     endpoint: 'api_top_sources',
     statsConfig,
     params: params,
+    enabled: Boolean(post?.uuid),
   });
 
   const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || chartLoading;
