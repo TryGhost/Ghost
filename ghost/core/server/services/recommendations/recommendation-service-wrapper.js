@@ -77,7 +77,6 @@ class RecommendationServiceWrapper {
     }
 
     const wellknownService = new WellknownService({
-      dir: config.getContentPath('public'),
       urlUtils,
     });
 

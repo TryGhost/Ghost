@@ -97,6 +97,11 @@ module.exports = {
     return require('../../server/services/members');
   },
 
+  // Recommendations for the well-known route. Lazy for the same reason as members.
+  get recommendations() {
+    return require('../../server/services/recommendations');
+  },
+
   // TODO: Expose less of the API to make this safe
   api: require('../../server/api').endpoints,
 

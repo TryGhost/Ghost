@@ -29,7 +29,7 @@ function matchCacheKey(req, cache) {
   return true;
 }
 
-function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) {
+function createPublicFileMiddleware(location, file, mime, maxAge) {
   let cache;
   // These files are provided by Ghost, and therefore live inside of the core folder
   const staticFilePath = config.get('paths').publicFilePath;
@@ -50,7 +50,7 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
     }
 
     // send image files directly and let express handle content-length, etag, etc
-    if (mime.match(/^image/) || options.disableServerCache) {
+    if (mime.match(/^image/)) {
       return res.sendFile(filePath, (err) => {
         if (err && err.status === 404) {
           // ensure we're triggering basic asset 404 and not a templated 404
@@ -139,8 +139,8 @@ function createCardAssetMiddleware(type, mime, maxAge) {
 }
 
 // Handles requests to robots.txt and favicon.ico (and caches them)
-function servePublicFile(location, file, type, maxAge, options = {}) {
-  const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
+function servePublicFile(location, file, type, maxAge) {
+  const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge);
 
   return function servePublicFileMiddleware(req, res, next) {
     if (req.path === '/' + file) {
@@ -254,13 +254,28 @@ function servePublicFiles(siteApp) {
   // Recommendations well-known
   siteApp.get(
     '/.well-known/recommendations.json',
-    createPublicFileMiddleware(
-      'built',
-      '.well-known/recommendations.json',
-      'application/json',
-      config.get('caching:publicAssets:maxAge'),
-      { disableServerCache: true },
-    ),
+    async function serveRecommendationsJson(req, res, next) {
+      try {
+        const { service } = require('../../services/proxy').recommendations;
+        if (!service) {
+          return next(
+            new errors.NotFoundError({
+              message: tpl(messages.fileNotFound),
+              code: 'PUBLIC_FILE_NOT_FOUND',
+            }),
+          );
+        }
+
+        const body = await service.getWellknownJson();
+        res.set({
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Cache-Control': 'public, max-age=0',
+        });
+        return res.send(Buffer.from(body));
+      } catch (err) {
+        return next(err);
+      }
+    },
   );
 
   // Serve robots.txt if not found in theme (and blog is not private)

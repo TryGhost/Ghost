@@ -1,24 +1,16 @@
 import { Recommendation } from './recommendation';
-import fs from 'fs/promises';
-import _path from 'path';
 
 type UrlUtils = {
   relativeToAbsolute(url: string): string;
 };
 type Options = {
-  /**
-   * Where to publish the wellknown file
-   */
-  dir: string;
   urlUtils: UrlUtils;
 };
 
 export class WellknownService {
-  dir: string;
   urlUtils: UrlUtils;
 
-  constructor({ dir, urlUtils }: Options) {
-    this.dir = dir;
+  constructor({ urlUtils }: Options) {
     this.urlUtils = urlUtils;
   }
 
@@ -30,18 +22,11 @@ export class WellknownService {
     };
   }
 
-  getPath() {
-    return _path.join(this.dir, '/.well-known/recommendations.json');
+  serialize(recommendations: Recommendation[]): string {
+    return JSON.stringify(recommendations.map((r) => this.#formatRecommendation(r)));
   }
 
   getURL(): URL {
     return new URL(this.urlUtils.relativeToAbsolute('/.well-known/recommendations.json'));
-  }
-
-  async set(recommendations: Recommendation[]) {
-    const content = JSON.stringify(recommendations.map((r) => this.#formatRecommendation(r)));
-    const path = this.getPath();
-    await fs.mkdir(_path.dirname(path), { recursive: true });
-    await fs.writeFile(path, content);
   }
 }
