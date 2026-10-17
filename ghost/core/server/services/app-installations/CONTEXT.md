@@ -10,7 +10,7 @@ changes are defined in [App Contracts](../../../../../packages/app-contracts/CON
    confirms it. The site gets a new installation, active and running that
    manifest as its approved manifest.
 2. **Re-check.** Each time an app session starts, the manifest is fetched
-   again. Silent changes are applied straight away. Any other change becomes
+   again. Silent changes are adopted straight away. Any other change becomes
    the pending manifest and suspends the installation; a re-check that finds
    only silent changes, or the approved manifest, lifts the suspension. A
    manifest that can't be used makes the app unavailable until it can.
@@ -35,7 +35,7 @@ per app ID.
 
 **Approved manifest**:
 The manifest an installation runs: the version the publisher last approved, or
-a newer one the re-check applied because it had only silent changes.
+a newer one the re-check adopted because it had only silent changes.
 _Avoid_: active manifest, current manifest
 
 **Pending manifest**:
@@ -110,7 +110,7 @@ and nothing is stored, so the app opens again once its manifest is back.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:
-A change the re-check applies to the approved manifest straight away, without
+A change the re-check adopts into the approved manifest straight away, without
 the publisher. Any other change makes the newer manifest the pending one and
 suspends the installation.
 _Avoid_: minor change, safe change
@@ -121,7 +121,7 @@ _Avoid_: minor change, safe change
 The timeline of an installation, newest first: installed, updated, suspended,
 resumed, changes approved and uninstalled. Each update, suspension and resume is
 one manifest row the re-check stored. Resumed means the app reverted the pending
-changes, so the re-check lifted the suspension, applying any silent changes.
+changes, so the re-check lifted the suspension, adopting any silent changes.
 _Avoid_: audit log, activity
 
 **Actor**:
