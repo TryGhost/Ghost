@@ -1045,7 +1045,6 @@ describe('AutomationEditor', () => {
     { status: 'active', label: 'Publish changes', nextStatus: 'active' },
     { status: 'active', label: 'Turn off', nextStatus: 'inactive' },
   ] as const)('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status }] },
       isLoading: false,
@@ -1096,7 +1095,6 @@ describe('AutomationEditor', () => {
   });
 
   it.each(['', '   '])('blocks saving blank name %j but allows empty description', (name) => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'inactive' }] },
       isLoading: false,
@@ -1157,7 +1155,6 @@ describe('AutomationEditor', () => {
   });
 
   it('resolves the sidebar after loading and preserves user choices on later updates', async () => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       isLoading: true,
       isError: false,
