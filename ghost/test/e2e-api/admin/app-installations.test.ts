@@ -143,9 +143,8 @@ describe('App installations Admin API', function () {
 
     it('refuses a second installation of an app that is suspended', async function () {
       const suspended = await install();
-      await models.Base.knex('app_installations')
-        .where({ id: suspended.id })
-        .update({ status: 'suspended' });
+      serve(manifest({ name: 'Podcasts' }));
+      await start(suspended.id);
 
       await assert.rejects(install(), { errorType: 'ConflictError' });
       assert.deepEqual(
