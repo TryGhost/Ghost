@@ -999,7 +999,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               onNodesChange={handleNodesChange}
             >
               <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-              <AutomationCanvasControls />
+              <AutomationCanvasControls style={{ bottom: 40, left: 40 }} />
             </ReactFlow>
           </Box>
         </Box>
