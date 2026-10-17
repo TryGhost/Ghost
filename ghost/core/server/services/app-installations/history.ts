@@ -75,7 +75,7 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * Entries for changes the re-check made, one per manifest row: applied a newer manifest
+ * Entries for changes the re-check made, one per manifest row: adopted a newer manifest
  * (`updated`), suspended the app for approval (`suspended`), or lifted a suspension
  * (`resumed`).
  */

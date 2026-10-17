@@ -8,19 +8,19 @@ import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
   AppInstallationRow,
   CurrentInstallationRow,
-  PendingManifestRow,
   type AppInstallation,
   type CurrentInstallation,
 } from './codec';
+import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
 import {
   changesFrom,
-  decideOnManifest,
+  transition,
   type AppManifestChange,
-  type ManifestDecision,
-} from './decide-on-manifest';
-import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
+  type NewManifestRow,
+  type Transition,
+} from './lifecycle';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
-import { DbAppInstallationManifest, type AppInstallationStatus } from './schema';
+import { DbAppInstallation, DbAppInstallationManifest, type AppInstallationStatus } from './schema';
 
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
@@ -53,7 +53,7 @@ const HistoryActionRow = z
   }));
 
 export type { AppInstallation, AppInstallationHistoryEntry } from './codec';
-export type { AppManifestChange } from './decide-on-manifest';
+export type { AppManifestChange } from './lifecycle';
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {
@@ -91,6 +91,11 @@ export interface AppSession {
   installation: AppInstallation;
 }
 
+/** No installation has this ID. */
+function notFound() {
+  return new errors.NotFoundError({ message: 'App installation not found.' });
+}
+
 /** The installation doesn't exist or has been uninstalled. */
 function notInstalled() {
   return new errors.NotFoundError({
@@ -104,26 +109,6 @@ function uninstalled() {
   return new errors.ConflictError({
     message: 'This app has been uninstalled.',
     code: 'APP_INSTALLATION_UNINSTALLED',
-  });
-}
-
-/**
- * The app's manifest URL doesn't serve a usable manifest for this app. Nothing is written,
- * so the app opens again once the URL serves one.
- */
-function unavailable(why: string) {
-  return new errors.ConflictError({
-    message: 'This app is unavailable.',
-    context: why,
-    code: 'APP_UNAVAILABLE',
-  });
-}
-
-/** The reviewed manifest is for a different app than the installed one. */
-function forAnotherApp(appId: string) {
-  return new errors.ValidationError({
-    message: `The reviewed manifest is for ${appId}, not the app that is installed.`,
-    code: 'APP_MANIFEST_OTHER_APP',
   });
 }
 
@@ -144,14 +129,18 @@ function joinApprovedManifest(db: Knex | Knex.Transaction) {
 
 /**
  * Finds an installation that hasn't been uninstalled, by installation ID or app ID, joined
- * with its approved manifest. By ID, uninstalled rows are skipped by status. By app ID, the
- * lookup uses `current_app_id`, which uninstalling clears.
+ * with its approved manifest and the pending one's digest. By ID, uninstalled rows are
+ * skipped by status. By app ID, the lookup uses `current_app_id`, which uninstalling clears.
  */
 async function currentInstallation(
   by: { id: string } | { appId: string },
   db: Knex | Knex.Transaction,
 ): Promise<CurrentInstallation | undefined> {
-  const query = joinApprovedManifest(db);
+  const query = joinApprovedManifest(db).leftJoin(
+    `${MANIFESTS} as pending`,
+    'pending.id',
+    'installation.pending_manifest_id',
+  );
   if ('id' in by) {
     query.where('installation.id', by.id).whereNot('installation.status', 'uninstalled');
   } else {
@@ -166,98 +155,130 @@ async function currentInstallation(
     'installation.revision',
     'approved.manifest_url',
     'approved.manifest',
+    'pending.digest as pending_digest',
   );
   return row ? z.decode(CurrentInstallationRow, row) : undefined;
 }
 
-async function pendingManifest(
-  trx: Knex.Transaction,
-  current: CurrentInstallation,
-): Promise<z.output<typeof PendingManifestRow> | null> {
-  if (current.pending_manifest_id === null) {
-    return null;
-  }
-  const row = await trx(MANIFESTS)
-    .where({ id: current.pending_manifest_id })
-    .first<z.input<typeof PendingManifestRow> | undefined>('id', 'digest');
-  return row ? z.decode(PendingManifestRow, row) : null;
+/**
+ * What applying a transition did. `applied` says the approved manifest ID before and after.
+ * Nothing is written if the transition goes nowhere (`unchanged`), or if the installation has
+ * been uninstalled since it was read (`gone`) or changed (`stale`).
+ */
+type Applied =
+  | { outcome: 'applied'; from: string; to: string }
+  | { outcome: 'unchanged' | 'gone' | 'stale' };
+
+/** A transition that stores the incoming manifest as a new row. */
+type StoringTransition = Extract<Transition, { stores: NewManifestRow }>;
+
+const RevisionRow = DbAppInstallation.pick({ revision: true });
+
+/** Reads the revision of an installation that hasn't been uninstalled. */
+function currentRevision(db: Knex | Knex.Transaction, id: string) {
+  return db(INSTALLATIONS)
+    .where({ id })
+    .whereNot('status', 'uninstalled')
+    .first<z.input<typeof RevisionRow> | undefined>('revision');
 }
 
-/**
- * Writes a manifest decision for an installation. Approval and the re-check at session
- * start both use it, so they always store a manifest the same way.
- *
- * Call it in a transaction that has locked the installation row, with `current` read in
- * that same transaction, since the decision was made from it.
- *
- * `source` is who made the change:
- * - `update`: the re-check. It applies silent changes, and stores changes that need
- *   approval as the pending manifest, which suspends the installation.
- * - `approval`: a publisher. It applies the reviewed manifest, whatever changed.
- *
- * Each new manifest gets its own row, except the pending manifest when it's approved, which
- * already has one. When the re-check lifts a suspension because the app reverted the
- * pending changes, it writes a `resume` row: no person made that change, so the row is the
- * only record of it. Approving the manifest that's already approved writes no row; the
- * staff history records the approval.
- *
- * Every write increments the revision. Returns the approved manifest ID before and after,
- * or null if there was nothing to write.
- */
-export async function keepManifest(
-  trx: Knex.Transaction,
-  current: CurrentInstallation,
-  loaded: LoadedManifest,
-  { kind, changes }: ManifestDecision,
-  source: 'approval' | 'update',
-): Promise<{ from: string; to: string } | null> {
-  if (kind === 'unchanged' || (kind === 'use_pending' && source === 'update')) {
-    return null;
-  }
-  const waits = kind === 'suspend' && source === 'update';
-  // An approval that resolves to `resume` is recorded as an approval, not a resume.
-  const resumes = kind === 'resume' && source === 'update';
-  const now = toDatabaseDate(new Date());
+function revisionOf(row: z.input<typeof RevisionRow> | undefined): number | undefined {
+  return row ? z.decode(RevisionRow, row).revision : undefined;
+}
 
-  let manifestId = current.manifest_id;
-  if (kind === 'use_pending' && current.pending_manifest_id !== null) {
-    manifestId = current.pending_manifest_id;
-  } else if (changes.length > 0 || resumes) {
+/** Writes a transition, in `applyTransition`'s transaction. */
+async function writeTransition(
+  trx: Knex.Transaction,
+  installation: CurrentInstallation,
+  next: Transition,
+  incoming: LoadedManifest | undefined,
+): Promise<Applied> {
+  if (next.to === 'same') {
+    return { outcome: 'unchanged' };
+  }
+  const now = toDatabaseDate(new Date());
+  const changed = { revision: trx.raw('?? + 1', ['revision']), updated_at: now };
+  const unmoved = {
+    outcome: 'applied',
+    from: installation.manifest_id,
+    to: installation.manifest_id,
+  } as const;
+
+  if (next.to === 'uninstalled') {
+    await trx(INSTALLATIONS)
+      .where({ id: installation.id })
+      // In the same update as `status`, so the two always agree.
+      .update({ ...changed, current_app_id: null, status: 'uninstalled' });
+    return unmoved;
+  }
+
+  let manifestId: string;
+  if ('approvedManifestId' in next) {
+    manifestId = next.approvedManifestId;
+  } else {
+    if (!incoming) {
+      throw new errors.IncorrectUsageError({
+        message: 'A transition that stores a manifest needs the manifest it stores.',
+      });
+    }
     manifestId = new ObjectId().toHexString();
     await trx(MANIFESTS).insert({
       id: manifestId,
-      installation_id: current.id,
-      manifest_url: loaded.manifestUrl,
-      manifest: loaded.serialised,
-      digest: loaded.digest,
-      source: resumes ? 'resume' : source,
-      requires_approval: kind === 'suspend',
+      installation_id: installation.id,
+      manifest_url: incoming.manifestUrl,
+      manifest: incoming.serialised,
+      digest: incoming.digest,
+      source: next.stores.source,
+      requires_approval: next.stores.requiresApproval,
       created_at: now,
     });
   }
 
-  if (waits) {
+  if (next.to === 'suspended') {
     await trx(INSTALLATIONS)
-      .where({ id: current.id })
-      .update({
-        status: 'suspended',
-        pending_manifest_id: manifestId,
-        revision: trx.raw('?? + 1', ['revision']),
-        updated_at: now,
-      });
-    return { from: current.manifest_id, to: current.manifest_id };
+      .where({ id: installation.id })
+      .update({ ...changed, status: 'suspended', pending_manifest_id: manifestId });
+    return unmoved;
   }
   await trx(INSTALLATIONS)
-    .where({ id: current.id })
-    .update({
-      // Suspended only means changes are waiting for approval, so with none left it's active.
-      status: 'active',
-      manifest_id: manifestId,
-      pending_manifest_id: null,
-      revision: trx.raw('?? + 1', ['revision']),
-      updated_at: now,
-    });
-  return { from: current.manifest_id, to: manifestId };
+    .where({ id: installation.id })
+    .update({ ...changed, status: 'active', manifest_id: manifestId, pending_manifest_id: null });
+  return { outcome: 'applied', from: installation.manifest_id, to: manifestId };
+}
+
+/**
+ * Applies `next`, a transition decided from the installation as it was read. Every change
+ * moves the revision on, so the transition only goes ahead while the installation is still
+ * at `installation.revision`. Uninstalling doesn't depend on what the installation runs, so
+ * it goes ahead at any revision. A transition that stores a row takes the manifest it stores.
+ */
+function applyTransition(
+  knex: Knex,
+  installation: CurrentInstallation,
+  next: StoringTransition,
+  incoming: LoadedManifest,
+): Promise<Applied>;
+function applyTransition(
+  knex: Knex,
+  installation: CurrentInstallation,
+  next: Exclude<Transition, StoringTransition>,
+): Promise<Applied>;
+async function applyTransition(
+  knex: Knex,
+  installation: CurrentInstallation,
+  next: Transition,
+  incoming?: LoadedManifest,
+): Promise<Applied> {
+  return knex.transaction(async (trx): Promise<Applied> => {
+    const revision = revisionOf(await currentRevision(trx, installation.id).forUpdate());
+    if (revision === undefined) {
+      return { outcome: 'gone' };
+    }
+    if (revision !== installation.revision && next.to !== 'uninstalled') {
+      return { outcome: 'stale' };
+    }
+    return writeTransition(trx, installation, next, incoming);
+  });
 }
 
 export class AppInstallationsService {
@@ -312,15 +333,20 @@ export class AppInstallationsService {
     id: string,
     { withHistory = false }: { withHistory?: boolean } = {},
   ): Promise<AppInstallation> {
-    const [row] = await this.withApprovedManifest().where('installation.id', id);
-    if (!row) {
-      throw new errors.NotFoundError({ message: 'App installation not found.' });
+    const installation = await this.find(id);
+    if (!installation) {
+      throw notFound();
     }
-    const installation: AppInstallation = z.decode(AppInstallationRow, row);
     if (withHistory) {
       installation.history = await this.historyOf(id);
     }
     return installation;
+  }
+
+  /** An installation by ID, uninstalled or not. */
+  private async find(id: string): Promise<AppInstallation | undefined> {
+    const [row] = await this.withApprovedManifest().where('installation.id', id);
+    return row ? z.decode(AppInstallationRow, row) : undefined;
   }
 
   private async historyOf(id: string): Promise<AppInstallation['history']> {
@@ -380,22 +406,22 @@ export class AppInstallationsService {
     return contents;
   }
 
-  private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
-    const current = await currentInstallation({ appId: loaded.manifest.id }, this.knex);
+  private async previewOf(incoming: LoadedManifest): Promise<AppInstallationPreview> {
+    const installation = await currentInstallation({ appId: incoming.manifest.id }, this.knex);
     return {
-      manifest_url: loaded.manifestUrl,
-      manifest: loaded.manifest,
-      digest: loaded.digest,
+      manifest_url: incoming.manifestUrl,
+      manifest: incoming.manifest,
+      digest: incoming.digest,
       // The approved manifest shown is the one the changes were computed from, so the
       // review matches the list of changes.
-      installation: current
+      installation: installation
         ? {
-            id: current.id,
-            status: current.status,
-            revision: current.revision,
-            manifest_url: current.manifest_url,
-            manifest: current.manifest,
-            changes: changesFrom(current, loaded),
+            id: installation.id,
+            status: installation.status,
+            revision: installation.revision,
+            manifest_url: installation.manifest_url,
+            manifest: installation.manifest,
+            changes: changesFrom(installation, incoming),
           }
         : null,
     };
@@ -412,15 +438,15 @@ export class AppInstallationsService {
    * version.
    */
   private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
-    const loaded = await this.loadManifest(manifestUrl);
-    if (loaded.digest !== digest) {
+    const latest = await this.loadManifest(manifestUrl);
+    if (latest.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
-        errorDetails: await this.previewOf(loaded),
+        errorDetails: await this.previewOf(latest),
       });
     }
-    return loaded;
+    return latest;
   }
 
   /** Installs an app after the publisher has reviewed its manifest, as previewed. */
@@ -520,60 +546,72 @@ export class AppInstallationsService {
     id: string,
     { manifestUrl, digest, revision }: { manifestUrl: string; digest: string; revision: number },
   ): Promise<AppInstallation> {
-    const installation = await this.read(id);
-    // No need to fetch for an uninstalled installation. The check in the transaction
-    // covers an uninstall that happens during the fetch.
-    if (installation.status === 'uninstalled') {
+    const installation = await currentInstallation({ id }, this.knex);
+    // No need to fetch for an uninstalled installation. Applying the transition at the
+    // revision read here covers an uninstall or a change that happens during the fetch.
+    if (!installation) {
+      throw (await this.find(id)) ? uninstalled() : notFound();
+    }
+    const reviewed = await this.fetchReviewed(manifestUrl, digest);
+    if (reviewed.manifest.id !== installation.app_id) {
+      throw new errors.ValidationError({
+        message: `The reviewed manifest is for ${reviewed.manifest.id}, not the app that is installed.`,
+        code: 'APP_MANIFEST_OTHER_APP',
+      });
+    }
+    if (installation.revision !== revision) {
+      throw await this.installationChanged(reviewed);
+    }
+
+    const result = await this.applyIncoming(installation, reviewed, 'approve');
+    if (result.outcome === 'gone') {
       throw uninstalled();
     }
-    const loaded = await this.fetchReviewed(manifestUrl, digest);
-
-    const approved = await this.knex.transaction(async (trx) => {
-      await trx(INSTALLATIONS).where({ id }).forUpdate().first();
-      const current = await currentInstallation({ appId: loaded.manifest.id }, trx);
-      // The reviewed manifest must be for this installation, and it must still be
-      // installed. If the app's current installation is missing or a different one,
-      // either this one was uninstalled during the fetch, or the manifest is for a
-      // different app.
-      if (!current || current.id !== id) {
-        throw installation.app_id === loaded.manifest.id
-          ? uninstalled()
-          : forAnotherApp(loaded.manifest.id);
-      }
-      if (current.revision !== revision) {
-        return { stale: true } as const;
-      }
-
-      const decision = decideOnManifest({
-        current,
-        pending: await pendingManifest(trx, current),
-        loaded,
-      });
-      const kept = await keepManifest(trx, current, loaded, decision, 'approval');
-      return kept ? ({ stale: false, ...kept } as const) : null;
-    });
-
-    if (approved?.stale) {
-      throw new errors.ConflictError({
-        message: 'The installation changed while the app was being reviewed.',
-        code: 'APP_INSTALLATION_CHANGED',
-        errorDetails: await this.previewOf(loaded),
-      });
+    if (result.outcome === 'stale') {
+      throw await this.installationChanged(reviewed);
     }
-    if (approved) {
+    if (result.outcome === 'applied') {
       await this.recordAction({
         context,
         event: 'changes_approved',
         subject: id,
         details: {
-          primary_name: loaded.manifest.name,
-          app_id: loaded.manifest.id,
-          from_manifest_id: approved.from,
-          to_manifest_id: approved.to,
+          primary_name: reviewed.manifest.name,
+          app_id: reviewed.manifest.id,
+          from_manifest_id: result.from,
+          to_manifest_id: result.to,
         },
       });
     }
     return this.read(id);
+  }
+
+  /**
+   * Applies the transition an incoming manifest makes for the installation, as it was read
+   * before the manifest was fetched. Approval and the re-check at session start both use it,
+   * so they always store a manifest the same way. The transition is decided from the
+   * installation as it was read, and only written while the installation is still at that
+   * revision, so it still holds when it's written.
+   */
+  private async applyIncoming(
+    installation: CurrentInstallation,
+    incoming: LoadedManifest,
+    type: 'recheck' | 'approve',
+  ): Promise<Applied> {
+    const next = transition(installation, { type, manifest: incoming });
+    if (!('stores' in next)) {
+      return applyTransition(this.knex, installation, next);
+    }
+    return applyTransition(this.knex, installation, next, incoming);
+  }
+
+  /** The installation changed since the review, so the error carries a new preview. */
+  private async installationChanged(reviewed: LoadedManifest) {
+    return new errors.ConflictError({
+      message: 'The installation changed while the app was being reviewed.',
+      code: 'APP_INSTALLATION_CHANGED',
+      errorDetails: await this.previewOf(reviewed),
+    });
   }
 
   /**
@@ -603,7 +641,7 @@ export class AppInstallationsService {
 
   /**
    * Fetches the app's manifest again from its approved manifest URL and stores what
-   * changed. Silent changes are applied. Changes that need approval become the pending
+   * changed. Silent changes are adopted. Changes that need approval become the pending
    * manifest, which suspends the app. No person made these changes, so nothing goes into
    * the staff history; the manifest rows record them.
    *
@@ -614,71 +652,57 @@ export class AppInstallationsService {
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation
    * of the same app. If the installation changed while the manifest was loading, the
-   * re-check does nothing, because the loaded manifest may be older than that change.
+   * re-check does nothing, because the latest manifest may be older than that change.
    */
   private async recheckOnce(id: string): Promise<void> {
-    const before = await currentInstallation({ id }, this.knex);
-    if (!before) {
+    const installation = await currentInstallation({ id }, this.knex);
+    if (!installation) {
       throw notInstalled();
     }
-
-    // Returns the error to fail the session with. Its context says what was wrong, and the
-    // request log records it. Returns null if the installation changed while the manifest
-    // was loading, since it may no longer use that URL; the session then returns the
-    // installation as it is.
-    const unavailableBecause = async (
-      code: string | null,
-      message: string,
-      reason?: string,
-    ): Promise<Error | null> => {
-      const current = await currentInstallation({ id }, this.knex);
-      if (!current) {
-        return notInstalled();
-      }
-      if (current.revision !== before.revision) {
-        return null;
-      }
-      return unavailable(`${code}: ${message}${reason ? ` (${reason})` : ''}`);
-    };
-    let loaded: LoadedManifest;
     try {
-      loaded = await this.loadManifest(before.manifest_url);
+      const latest = await this.loadManifest(installation.manifest_url);
+      if (latest.manifest.id !== installation.app_id) {
+        throw new errors.ValidationError({
+          message: `${installation.manifest_url} now serves ${latest.manifest.id}.`,
+          code: 'APP_MANIFEST_OTHER_APP',
+        });
+      }
+      if ((await this.applyIncoming(installation, latest, 'recheck')).outcome === 'gone') {
+        throw notInstalled();
+      }
     } catch (err) {
+      // A ValidationError means the app served something that can't be used. Anything else
+      // is a fault in Ghost, which fails the session as it is.
       if (!(err instanceof errors.ValidationError)) {
         throw err;
       }
-      const failure = await unavailableBecause(err.code, err.message, err.context);
-      if (failure) {
-        throw failure;
-      }
-      return;
+      await this.unavailableUnlessChanged(installation, err);
     }
-    if (loaded.manifest.id !== before.app_id) {
-      const failure = await unavailableBecause(
-        'APP_MANIFEST_OTHER_APP',
-        `${before.manifest_url} now serves ${loaded.manifest.id}.`,
-      );
-      if (failure) {
-        throw failure;
-      }
-      return;
-    }
+  }
 
-    await this.knex.transaction(async (trx) => {
-      await trx(INSTALLATIONS).where({ id }).forUpdate().first();
-      const current = await currentInstallation({ id }, trx);
-      if (!current) {
-        throw notInstalled();
-      }
-      if (current.revision !== before.revision) {
-        return;
-      }
-      const decision = decideOnManifest({
-        current,
-        pending: await pendingManifest(trx, current),
-        loaded,
-      });
-      await keepManifest(trx, current, loaded, decision, 'update');
+  /**
+   * Fails the session because the app served something that can't be used. Its context
+   * says what was wrong, and the request log records it. Nothing is written, so the app
+   * opens again once it serves something usable.
+   *
+   * If the installation changed while the manifest was loading, it may no longer use that
+   * URL, so the session returns the installation as it is instead.
+   */
+  private async unavailableUnlessChanged(
+    installation: CurrentInstallation,
+    { code, message, context }: InstanceType<typeof errors.ValidationError>,
+  ): Promise<void> {
+    const revision = revisionOf(await currentRevision(this.knex, installation.id));
+    if (revision === undefined) {
+      throw notInstalled();
+    }
+    if (revision !== installation.revision) {
+      return;
+    }
+    throw new errors.ConflictError({
+      message: 'This app is unavailable.',
+      context: `${code}: ${message}${context ? ` (${context})` : ''}`,
+      code: 'APP_UNAVAILABLE',
     });
   }
 
@@ -689,22 +713,17 @@ export class AppInstallationsService {
    * doesn't add a second entry to the history.
    */
   async uninstall(context: RequestContext, id: string): Promise<void> {
-    const installation = await this.read(id);
-
-    const ended = await this.knex(INSTALLATIONS)
-      .where({ id })
-      .whereNot('status', 'uninstalled')
-      .update({
-        // In the same update as `status`, so the two always agree.
-        current_app_id: null,
-        status: 'uninstalled',
-        revision: this.knex.raw('?? + 1', ['revision']),
-        updated_at: toDatabaseDate(new Date()),
-      });
-    if (ended === 0) {
+    const installation = await currentInstallation({ id }, this.knex);
+    if (!installation) {
+      if (!(await this.find(id))) {
+        throw notFound();
+      }
       return;
     }
-
+    const next = transition(installation, { type: 'uninstall' });
+    if ((await applyTransition(this.knex, installation, next)).outcome !== 'applied') {
+      return;
+    }
     await this.recordAction({
       context,
       event: 'uninstalled',

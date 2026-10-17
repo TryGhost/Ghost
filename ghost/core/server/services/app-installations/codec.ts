@@ -42,11 +42,7 @@ export type AppInstallation = z.output<typeof AppInstallationRow> & {
   history?: AppInstallationHistoryEntry[];
 };
 
-/**
- * An app's installation that hasn't been uninstalled, with its approved manifest. Loaded
- * manifests are compared against it.
- */
-export const CurrentInstallationRow = z.object({
+const CurrentInstallationColumns = z.object({
   ...DbAppInstallation.pick({
     id: true,
     app_id: true,
@@ -56,12 +52,47 @@ export const CurrentInstallationRow = z.object({
     revision: true,
   }).shape,
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
+  pending_digest: DbAppInstallationManifest.shape.digest.nullable(),
 });
 
-export type CurrentInstallation = z.output<typeof CurrentInstallationRow>;
+type Installed = Omit<
+  z.output<typeof CurrentInstallationColumns>,
+  'status' | 'pending_manifest_id' | 'pending_digest'
+>;
+
+export type ActiveInstallation = Installed & { status: 'active' };
+
+export type SuspendedInstallation = Installed & {
+  status: 'suspended';
+  pending: { id: string; digest: string };
+};
 
 /**
- * The pending manifest's digest, which covers the manifest and its URL. A loaded manifest
- * is the pending one when the digests match.
+ * An app's installation that hasn't been uninstalled, with its approved manifest and, while
+ * it's suspended, the pending one's ID and digest. Loaded manifests are compared against it.
  */
-export const PendingManifestRow = DbAppInstallationManifest.pick({ id: true, digest: true });
+export type CurrentInstallation = ActiveInstallation | SuspendedInstallation;
+
+/**
+ * An installation is suspended exactly while a manifest is pending, so a row where the two
+ * disagree doesn't decode.
+ */
+export const CurrentInstallationRow = CurrentInstallationColumns.transform(
+  (
+    { status, pending_manifest_id: pendingId, pending_digest: pendingDigest, ...installation },
+    ctx,
+  ): CurrentInstallation => {
+    if (status === 'active' && pendingId === null) {
+      return { ...installation, status };
+    }
+    if (status === 'suspended' && pendingId !== null && pendingDigest !== null) {
+      return { ...installation, status, pending: { id: pendingId, digest: pendingDigest } };
+    }
+    ctx.issues.push({
+      code: 'custom',
+      message: `A ${status} installation can't have pending manifest ${pendingId}.`,
+      input: status,
+    });
+    return z.NEVER;
+  },
+);

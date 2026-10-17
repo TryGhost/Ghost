@@ -658,7 +658,7 @@ services:
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
-        - core/server/services/app-installations/decide-on-manifest.ts
+        - core/server/services/app-installations/lifecycle.ts
         - core/server/services/app-installations/history.ts
         - core/server/api/endpoints/app-installations.ts
         - core/server/api/endpoints/app-sessions.ts

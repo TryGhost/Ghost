@@ -70,8 +70,8 @@ URL included.
 _Avoid_: diff, update
 
 **Silent change**:
-A change that applies without the publisher approving it again. Only the
-description, the accent colour and the name of an icon Admin ships qualify;
+A change an installation adopts without the publisher approving it again. Only
+the description, the accent colour and the name of an icon Admin ships qualify;
 anything that says who the app is, or is a URL Ghost loads or links to, does
 not.
 _Avoid_: minor change, safe change
