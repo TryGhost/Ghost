@@ -15,7 +15,7 @@ import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 import { signInAsMember } from '@/helpers/playwright/flows/sign-in';
 
 /**
- * The Access section of the React post editor's settings sidebar. Each case
+ * The Access section of the post editor's settings sidebar. Each case
  * follows one visibility choice the whole way round: what the writer picks,
  * what the server holds afterwards, and what the site shows an anonymous
  * visitor and a member the choice lets in. The acceptance tier stops at the
@@ -107,7 +107,7 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
   return { editor, postId: await editor.getPostId() };
 }
 
-test.describe('Ghost Admin - Post editor access (React)', () => {
+test.describe('Ghost Admin - Post editor access', () => {
   let memberFactory: MemberFactory;
   let postFactory: PostFactory;
   let tierFactory: TierFactory;

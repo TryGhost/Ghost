@@ -5,7 +5,7 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Legacy Member Detail Flows', () => {
+test.describe('Ghost Admin - Member Detail Flows', () => {
   let memberFactory: MemberFactory;
 
   test.beforeEach(async ({ page }) => {

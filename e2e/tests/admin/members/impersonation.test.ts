@@ -1,4 +1,4 @@
-import { HomePage, MemberDetailsPage, MembersPage, PortalPage } from '@/helpers/pages';
+import { HomePage, MemberDetailsPage, MembersListPage, PortalPage } from '@/helpers/pages';
 import { MemberFactory, createMemberFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 
@@ -12,7 +12,7 @@ test.describe('Ghost Admin - Member Impersonation', () => {
   test('impersonates a member and verifies magic link generation', async ({ page }) => {
     const { name } = await memberFactory.create({ email: 'impersonate@ghost.org' });
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
 
     await membersPage.goto();
     await membersPage.getMemberByName(name!).click();

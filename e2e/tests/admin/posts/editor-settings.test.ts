@@ -16,7 +16,7 @@ import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 import { signInAsMember } from '@/helpers/playwright/flows/sign-in';
 import type { Browser, Page } from '@playwright/test';
 
-// Smoke round trips through the React post editor's settings sidebar
+// Smoke round trips through the post editor's settings sidebar
 
 const POSTS_API = '/ghost/api/admin/posts/';
 const IMAGES_API = '/ghost/api/admin/images/upload/';
@@ -323,7 +323,7 @@ async function readPostAsMember(
   );
 }
 
-test.describe('Ghost Admin - Post editor settings (React)', () => {
+test.describe('Ghost Admin - Post editor settings', () => {
   let memberFactory: MemberFactory;
   let postFactory: PostFactory;
   let tagFactory: TagFactory;
