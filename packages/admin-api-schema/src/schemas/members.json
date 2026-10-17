@@ -48,6 +48,9 @@
         "newsletters": {
           "$ref": "#/definitions/member-newsletters"
         },
+        "enable_updates_and_announcements": {
+          "type": ["boolean", "null"]
+        },
         "can_comment": {
           "type": "boolean"
         },
