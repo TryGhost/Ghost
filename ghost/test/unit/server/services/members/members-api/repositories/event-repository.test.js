@@ -312,6 +312,40 @@ describe('EventRepository', function () {
     });
   });
 
+  describe('subscription creation source', function () {
+    it.each([
+      ['a new member signing up with a subscription', true],
+      ['an existing member starting a subscription', false],
+    ])('returns creation source only for a signup: %s', async function (_scenario, signup) {
+      const memberCreatedEvent = signup
+        ? { id: 'member-event', get: (key) => (key === 'source' ? 'admin' : undefined) }
+        : {};
+      const subscriptionCreatedEvent = {
+        id: 'subscription-event',
+        related: () => memberCreatedEvent,
+      };
+      const model = {
+        relations: {},
+        get: (key) => (key === 'type' ? 'created' : undefined),
+        related: (name) => (name === 'subscriptionCreatedEvent' ? subscriptionCreatedEvent : null),
+        toJSON: () => ({ type: 'created', source: 'stripe' }),
+      };
+      const repository = new EventRepository({
+        MemberPaidSubscriptionEvent: { findPage: async () => ({ data: [model], meta: {} }) },
+        memberAttributionService: { getEventAttribution: () => null },
+        urlService: { getRequiredRelations: () => [] },
+      });
+
+      const {
+        data: [event],
+      } = await repository.getSubscriptionEvents({}, {});
+
+      assert.equal(event.data.signup, signup);
+      assert.equal(event.data.source, 'stripe');
+      assert.equal(event.data.creation_source, signup ? 'admin' : undefined);
+    });
+  });
+
   describe('getEmailFailedEvents', function () {
     let eventRepository;
     let fake;

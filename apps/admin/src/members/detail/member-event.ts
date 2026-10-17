@@ -242,7 +242,19 @@ function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): stri
     event.type === 'signup_event' ||
     (event.type === 'subscription_event' && event.data.type === 'created' && event.data.signup)
   ) {
-    return 'signed up';
+    const source = event.type === 'signup_event' ? event.data.source : event.data.creation_source;
+    switch (source) {
+      case 'admin':
+        return 'signed up via manual entry';
+      case 'api':
+        return 'signed up via API';
+      case 'import':
+        return 'signed up via import';
+      case 'system':
+        return 'signed up via system';
+      default:
+        return 'signed up';
+    }
   }
   if (event.type === 'login_event') {
     return 'logged in';

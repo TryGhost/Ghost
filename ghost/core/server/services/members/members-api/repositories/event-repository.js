@@ -309,6 +309,9 @@ module.exports = class EventRepository {
             : false,
         tierName,
       };
+      if (d.signup) {
+        d.creation_source = subscriptionCreatedEvent.related('memberCreatedEvent').get('source');
+      }
       delete d.stripeSubscription;
       return {
         type: 'subscription_event',
