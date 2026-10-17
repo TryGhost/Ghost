@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DbAppInstallation, DbAppInstallationManifest } from './schema';
+import { DbAppInstallation, DbAppInstallationManifest, type AppInstallationStatus } from './schema';
 
 /**
  * An installation joined with its approved manifest. The read query and the Admin API use
@@ -73,6 +73,20 @@ export type SuspendedInstallation = Installed & {
  */
 export type CurrentInstallation = ActiveInstallation | SuspendedInstallation;
 
+/** Why a row isn't a current installation, for the log of whoever repairs it. */
+function mismatch(status: AppInstallationStatus, pendingId: string | null): string {
+  switch (status) {
+    case 'active':
+      return `An active installation can't have a pending manifest, but has ${pendingId}.`;
+    case 'suspended':
+      return pendingId === null
+        ? 'A suspended installation needs a pending manifest.'
+        : `The suspended installation's pending manifest ${pendingId} doesn't exist.`;
+    case 'uninstalled':
+      return "An uninstalled installation isn't current.";
+  }
+}
+
 /**
  * An installation is suspended exactly while a manifest is pending, so a row where the two
  * disagree doesn't decode.
@@ -88,11 +102,7 @@ export const CurrentInstallationRow = CurrentInstallationColumns.transform(
     if (status === 'suspended' && pendingId !== null && pendingDigest !== null) {
       return { ...installation, status, pending: { id: pendingId, digest: pendingDigest } };
     }
-    ctx.issues.push({
-      code: 'custom',
-      message: `A ${status} installation can't have pending manifest ${pendingId}.`,
-      input: status,
-    });
+    ctx.issues.push({ code: 'custom', message: mismatch(status, pendingId), input: status });
     return z.NEVER;
   },
 );

@@ -47,13 +47,23 @@ describe('CurrentInstallationRow', function () {
     });
   });
 
-  it('refuses a row whose status and pending manifest disagree', function () {
-    for (const disagreeing of [
-      { ...row, pending_manifest_id: 'pending', pending_digest: 'pending-digest' },
-      { ...row, status: 'suspended' as const },
-      { ...row, status: 'uninstalled' as const },
-    ]) {
-      assert.throws(() => z.decode(CurrentInstallationRow, disagreeing), z.ZodError);
+  it('refuses a row whose status and pending manifest disagree, saying what is wrong', function () {
+    for (const [disagreeing, message] of [
+      [
+        { ...row, pending_manifest_id: 'pending', pending_digest: 'pending-digest' },
+        "An active installation can't have a pending manifest, but has pending.",
+      ],
+      [{ ...row, status: 'suspended' }, 'A suspended installation needs a pending manifest.'],
+      [
+        { ...row, status: 'suspended', pending_manifest_id: 'pending' },
+        "The suspended installation's pending manifest pending doesn't exist.",
+      ],
+      [{ ...row, status: 'uninstalled' }, "An uninstalled installation isn't current."],
+    ] as const) {
+      assert.throws(
+        () => z.decode(CurrentInstallationRow, disagreeing),
+        (err: unknown) => err instanceof z.ZodError && err.issues[0]?.message === message,
+      );
     }
   });
 });
