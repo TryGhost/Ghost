@@ -69,7 +69,9 @@ options and prerequisites. Existing `pnpm reset:data` variants and
 Both reuse the checkout's development-environment runner and Ghost working
 directory. They use the source loader, with the data-generation engine remaining
 in Core. The generator preserves its existing environment permissions and
-options. `node index.js generate-data` now reports its gx replacement.
+options. `node index.js generate-data` now reports its gx replacement. Installed
+trees ship a dependency-light equivalent at
+[`ghost/bin/generate-data.js`](../../ghost/bin/README.md#data-generation).
 
 ## REPL and date shifting
 
