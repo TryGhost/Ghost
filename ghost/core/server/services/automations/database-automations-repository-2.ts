@@ -29,6 +29,13 @@ const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
   paid: 'all_paid',
 } as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
 
+const selectExists = async (connection: Connection, query: Knex.QueryBuilder): Promise<boolean> => {
+  const row = await connection
+    .select<{ exists: boolean | number | string }>(connection.raw('exists ? as `exists`', [query]))
+    .first();
+  return Boolean(Number(row?.exists));
+};
+
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
  * for details on what should (and should not) be in here.
@@ -99,14 +106,10 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const [{ hasEntered }] = await connection.select<{ hasEntered: number }[]>(
-        connection.raw('EXISTS ? AS hasEntered', [
-          connection('automation_runs')
-            .select('id')
-            .where({ automation_id: automationId, member_id: memberId }),
-        ]),
-      );
-      return Boolean(hasEntered);
+      const query = connection('automation_runs')
+        .select(connection.raw('1'))
+        .where({ automation_id: automationId, member_id: memberId });
+      return await selectExists(connection, query);
     },
 
     async insertRunSteps(connection, toInsert) {
@@ -132,6 +135,16 @@ export const createDatabaseAutomationsRepository2 = ({
           })),
         );
       }
+    },
+
+    async isAutomationActiveForRunStep(connection, runStepId) {
+      const query = connection('automation_run_steps as step')
+        .select(connection.raw('1'))
+        .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('step.id', runStepId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
     },
 
     async lockMember(connection, memberId) {
