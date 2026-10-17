@@ -100,7 +100,9 @@ trigger. Retain fallback props while legacy surfaces still require them.
 ## Tooltips and focus
 
 Icon-only actions and actions with keyboard shortcuts have tooltips. Static labelled
-buttons omit them: repeating the visible label adds no information. Set `tooltip`
+buttons omit them: repeating the visible label adds no information. For the same
+reason a labelled action with a shortcut shows only its keys, while an icon-only
+action names itself before its keys. Set `tooltip`
 on a labelled action when its text shows a changing value and the tooltip explains
 the action. Primary actions never have tooltips.
 `PageHeader.SelectTrigger` also accepts `tooltip={false}` when its visible value

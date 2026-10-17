@@ -336,7 +336,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.listItems().first().click({ button: 'right' });
       await postsListScreen.contextMenuItem('Add a tag').click();
       await postsListScreen.tagPickerField().click();
-      await postsListScreen.tagOption(/broaf-2/).click();
+      // The rows read the same; the second is the other tag, in the order the site holds them.
+      await postsListScreen.tagOption('broaf').nth(1).click();
       await postsListScreen.dialogHeading('Add tags').click();
       await postsListScreen.dialogButton('Add').click();
 

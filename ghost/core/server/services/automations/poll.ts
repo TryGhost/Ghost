@@ -1,8 +1,5 @@
-import type {
-  AutomationStepToRun,
-  AutomationTriggerTierScope,
-  AutomationsRepository,
-} from './automations-repository';
+import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
+import type { AutomationTriggerTierScope } from './automations-repository-2';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';

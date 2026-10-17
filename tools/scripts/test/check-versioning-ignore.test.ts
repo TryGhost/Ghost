@@ -5,7 +5,7 @@ import {
   checkVersioningIgnore,
   loadManifests,
   type NamedManifest,
-} from '../check-versioning-ignore.ts';
+} from '../ci/check-versioning-ignore.ts';
 import { getWorkspace as loadWorkspace, type WorkspaceManifest } from '../lib/pnpm.ts';
 
 async function getWorkspace(): Promise<WorkspaceManifest> {
@@ -36,18 +36,18 @@ describe('checkVersioningIgnore (against the live workspace)', () => {
 
   it('flags a private package carrying a semver version', async () => {
     const workspace = await getWorkspace();
-    const manifests = await manifestsWith('@tryghost/shade', { version: '0.0.0' });
+    const manifests = await manifestsWith('@tryghost/admin', { version: '0.0.0' });
 
     assert.deepStrictEqual(await checkVersioningIgnore(workspace, manifests), [
-      '@tryghost/shade: private, so its version must be "private" (found "0.0.0")',
+      '@tryghost/admin: private, so its version must be "private" (found "0.0.0")',
     ]);
   });
 
   it('flags a private package listed in the ignore list', async () => {
-    const workspace = await workspaceWithIgnore((ignore) => [...ignore, '@tryghost/shade']);
+    const workspace = await workspaceWithIgnore((ignore) => [...ignore, '@tryghost/admin']);
 
     assert.deepStrictEqual(await checkVersioningIgnore(workspace), [
-      '@tryghost/shade: private, so it needs no versioning.ignore entry',
+      '@tryghost/admin: private, so it needs no versioning.ignore entry',
     ]);
   });
 

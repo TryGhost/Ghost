@@ -7,7 +7,7 @@ import {
   type RunsClient,
   type RunsQuery,
   type WorkflowRun,
-} from '../nx-set-shas.ts';
+} from '../ci/nx-set-shas.ts';
 
 const HEAD = 'head0000000000000000000000000000000000000';
 const GREEN = 'green000000000000000000000000000000000000';

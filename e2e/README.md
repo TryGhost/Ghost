@@ -156,7 +156,7 @@ e2e/
 │   │   ├── base-page.ts        # Base class for all page objects
 │   │   └── admin/              # e.g. login-page.ts, admin-page.ts
 │   ├── environment/            # Ghost container/database lifecycle
-│   ├── services/               # Test doubles (fake Stripe, Mailgun, etc.)
+│   ├── services/               # Test doubles (fake Stripe, Mailgun, upgrade host, etc.)
 │   └── utils/                  # Shared utilities
 ├── data-factory/               # Test data factories (see its own README)
 ├── visual-regression/          # Screenshot baseline suite (separate config)
@@ -221,12 +221,14 @@ Environment identity for per-file reuse:
 - `labs` participates in the environment identity.
 - If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
 - `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+- `upgradeHostEnabled` forces per-test isolation for the same reason, with a per-test fake upgrade host.
 
 Fixture option behavior:
 
 - `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
 - `labs`: use for labs flags that should get a fresh environment when they change.
 - `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
+- `upgradeHostEnabled`: use for Ghost update tests; see [Testing Ghost updates](../docs/contributing/testing-ghost-updates.md).
 
 Escape hatch:
 
@@ -269,7 +271,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`tools/scripts/e2e-shards.ts`)
+5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`tools/scripts/ci/e2e-shards.ts`)
 6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 7. **Artifacts**: Upload Playwright traces and reports on failure
 
@@ -295,7 +297,8 @@ pnpm preflight:build
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true pnpm test
 
-# Check the fake Stripe server against captured Stripe responses (no infra, ~1s)
+# Check the fake Stripe server against captured Stripe responses, and the fake
+# upgrade host against the upgrade protocol fixtures (no infra, ~1s)
 pnpm test:fixtures
 
 # Put a Stripe test account into the state fixtures are captured from

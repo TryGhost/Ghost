@@ -32,13 +32,15 @@ describe('Labs Service', function () {
     await configUtils.restore();
   });
 
-  it.each([{}, { automationRunAnalytics: false }])(
-    'enables automation run analytics regardless of stored Labs settings: %j',
+  it.each([{}, { automationsArchive: false, automationsPerTier: false }])(
+    'enables automation archiving and per-tier settings regardless of stored Labs settings: %j',
     function (storedLabs) {
       sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
 
-      assert.equal(labs.isSet('automationRunAnalytics'), true);
-      assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('automationRunAnalytics'), false);
+      for (const flag of ['automationsArchive', 'automationsPerTier']) {
+        assert.equal(labs.isSet(flag), true);
+        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes(flag), false);
+      }
     },
   );
 

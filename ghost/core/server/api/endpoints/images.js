@@ -1,4 +1,4 @@
-/* eslint-disable ghost/ghost-custom/max-api-complexity */
+/* oxlint-disable ghost/ghost-custom/max-api-complexity */
 const path = require('path');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');

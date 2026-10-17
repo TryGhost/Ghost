@@ -20,10 +20,9 @@
     "@sentry/bundler-plugin-core": "catalog:",
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
-    "js-yaml": "catalog:",
-    "picomatch": "4.0.7",
     "semver": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
@@ -33,10 +32,16 @@
     "@types/node": "catalog:",
     "@types/picomatch": "catalog:",
     "@types/semver": "catalog:",
-    "eslint": "catalog:"
+    "dependency-cruiser": "catalog:",
+    "eslint": "catalog:",
+    "js-yaml": "catalog:",
+    "picomatch": "4.0.7"
   },
   "nx": {
     "namedInputs": {
+      "serviceDependencyContracts": [
+        "{workspaceRoot}/.dependency-cruiser.cjs"
+      ],
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",
         "{workspaceRoot}/.github/workflows/ci.yml"
@@ -48,6 +53,13 @@
         "{workspaceRoot}/apps/admin/vitest.acceptance.config.ts",
         "{workspaceRoot}/apps/admin/tsconfig*.json",
         "{workspaceRoot}/apps/shade/tsconfig.json"
+      ],
+      "oxlintContracts": [
+        "{workspaceRoot}/.oxlintrc.json",
+        "{workspaceRoot}/tools/configs/oxlint/**/*",
+        "{workspaceRoot}/**/eslint.config.*",
+        "{workspaceRoot}/tools/configs/eslint*/**/*.mjs",
+        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
       ]
     },
     "targets": {
@@ -57,9 +69,11 @@
           "^default",
           "adminTestContracts",
           "adminSourceContracts",
+          "serviceDependencyContracts",
           {
             "runtime": "node -v"
-          }
+          },
+          "oxlintContracts"
         ]
       },
       "test:unit": {
@@ -68,9 +82,11 @@
           "^default",
           "adminTestContracts",
           "adminSourceContracts",
+          "serviceDependencyContracts",
           {
             "runtime": "node -v"
-          }
+          },
+          "oxlintContracts"
         ]
       }
     }

@@ -19,7 +19,11 @@ reviews:
       - dependabot[bot]
   path_filters:
     - '!**/dist/**'
-    - '!**/build/**'
+    - '!apps/**/build/**'
+    - '!ghost/**/build/**'
+    - '!koenig/**/build/**'
+    - '!packages/**/build/**'
+    - '!e2e/build/**'
     - '!**/built/**'
     - '!**/umd/**'
     - '!**/coverage/**'

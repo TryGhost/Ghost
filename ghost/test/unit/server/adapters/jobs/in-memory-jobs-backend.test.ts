@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
-import type { JobEnvelope } from '@tryghost/adapter-base-jobs';
+import type { JobEnvelope, DispatchEnvelope } from '@tryghost/adapter-base-jobs';
 import { runJobsBackendContractTests } from '@tryghost/adapter-base-jobs/contract-test-suite';
 import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemoryJobsBackend';
 
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const later = require('@breejs/later');
+
+function dispatch(job: JobEnvelope, queue?: string): DispatchEnvelope {
+  return { version: 1, payload: queue === undefined ? { job } : { job, routing: { queue } } };
+}
 
 runJobsBackendContractTests(() => new InMemoryJobsBackend(), { describe, it });
 
@@ -21,7 +25,7 @@ describe('InMemoryJobsBackend', function () {
   it('throws on an enqueue before start instead of silently losing the job', function () {
     const backend = new InMemoryJobsBackend();
     assert.throws(
-      () => backend.enqueue({ type: 'early', payload: '{}' }),
+      () => backend.enqueue('d1', dispatch({ type: 'early', payload: '{}' })),
       /before the jobs backend is started/,
     );
   });
@@ -32,7 +36,10 @@ describe('InMemoryJobsBackend', function () {
   it('throws on a recurring schedule before start instead of arming a delayed crash', function () {
     const backend = new InMemoryJobsBackend();
     assert.throws(
-      () => backend.scheduleRecurring({ type: 'early', payload: '{}' }, { cron: '0 0 3 * * *' }),
+      () =>
+        backend.scheduleRecurring(dispatch({ type: 'early', payload: '{}' }), {
+          cron: '0 0 3 * * *',
+        }),
       /before the jobs backend is started/,
     );
   });
@@ -59,7 +66,7 @@ describe('InMemoryJobsBackend', function () {
       }),
     );
     assert.throws(
-      () => backend.enqueue({ type: 'early', payload: '{}' }),
+      () => backend.enqueue('d1', dispatch({ type: 'early', payload: '{}' })),
       /before the jobs backend is started/,
     );
   });
@@ -82,7 +89,7 @@ describe('InMemoryJobsBackend', function () {
     });
 
     for (let i = 0; i < 8; i = i + 1) {
-      backend.enqueue({ type: 'work', payload: `{"i":${i}}` });
+      backend.enqueue(`d${i}`, dispatch({ type: 'work', payload: `{"i":${i}}` }));
     }
 
     await new Promise((resolve) => {
@@ -116,7 +123,7 @@ describe('InMemoryJobsBackend', function () {
     });
 
     for (let i = 0; i < 8; i = i + 1) {
-      backend.enqueue({ type: 'work', payload: `{"i":${i}}` });
+      backend.enqueue(`d${i}`, dispatch({ type: 'work', payload: `{"i":${i}}` }));
     }
 
     await new Promise((resolve) => {
@@ -158,8 +165,8 @@ describe('InMemoryJobsBackend', function () {
         },
       });
 
-      backend.enqueue({ type: 'boom', payload: '{}' });
-      backend.enqueue({ type: 'next', payload: '{}' });
+      backend.enqueue('d1', dispatch({ type: 'boom', payload: '{}' }));
+      backend.enqueue('d2', dispatch({ type: 'next', payload: '{}' }));
 
       await new Promise((resolve) => {
         setTimeout(resolve, 20);
@@ -189,7 +196,7 @@ describe('InMemoryJobsBackend', function () {
     });
 
     for (let i = 0; i < 6; i = i + 1) {
-      backend.enqueue({ type: `job-${i}`, payload: '{}' });
+      backend.enqueue(`d${i}`, dispatch({ type: `job-${i}`, payload: '{}' }));
     }
     await new Promise((resolve) => {
       setTimeout(resolve, 20);
@@ -214,7 +221,7 @@ describe('InMemoryJobsBackend', function () {
     });
     await backend.shutdown({ timeoutMs: 1000 });
 
-    backend.enqueue({ type: 'late', payload: '{}' });
+    backend.enqueue('d1', dispatch({ type: 'late', payload: '{}' }));
 
     backend.start({
       processor: async (env) => {
@@ -234,7 +241,7 @@ describe('InMemoryJobsBackend', function () {
 
     backend.start({ processor: () => new Promise<void>(() => {}) });
     for (let i = 0; i < 3; i = i + 1) {
-      backend.enqueue({ type: `hung-${i}`, payload: '{}' });
+      backend.enqueue(`d${i}`, dispatch({ type: `hung-${i}`, payload: '{}' }));
     }
     await new Promise((resolve) => {
       setTimeout(resolve, 20);
@@ -248,7 +255,7 @@ describe('InMemoryJobsBackend', function () {
         received.push(env.type);
       },
     });
-    backend.enqueue({ type: 'fresh', payload: '{}' });
+    backend.enqueue('fresh', dispatch({ type: 'fresh', payload: '{}' }));
     await new Promise((resolve) => {
       setTimeout(resolve, 20);
     });
@@ -269,7 +276,7 @@ describe('InMemoryJobsBackend', function () {
       clock = sinon.useFakeTimers();
       const backend = new InMemoryJobsBackend();
       backend.start({ processor: () => new Promise<void>(() => {}) });
-      backend.enqueue({ type: 'hung', payload: '{}' });
+      backend.enqueue('d1', dispatch({ type: 'hung', payload: '{}' }));
 
       let finished = false;
       const stopping = backend.shutdown().then(() => {
@@ -296,7 +303,7 @@ describe('InMemoryJobsBackend', function () {
           completed.resolve();
         },
       });
-      backend.enqueue({ type: 'slow', payload: '{}' });
+      backend.enqueue('d1', dispatch({ type: 'slow', payload: '{}' }));
 
       const stopping = backend.shutdown({ timeoutMs: 10 });
       await clock.tickAsync(10);
@@ -314,7 +321,7 @@ describe('InMemoryJobsBackend', function () {
       const backend = new InMemoryJobsBackend();
       const release = Promise.withResolvers<void>();
       backend.start({ processor: () => release.promise });
-      backend.enqueue({ type: 'quick', payload: '{}' });
+      backend.enqueue('d1', dispatch({ type: 'quick', payload: '{}' }));
 
       const stopping = backend.shutdown({ timeoutMs: 5000 });
       release.resolve();
@@ -362,10 +369,10 @@ describe('InMemoryJobsBackend', function () {
 
       for (let i = 0; i < 4; i = i + 1) {
         backend.enqueue(
-          { type: 'webmention', payload: '{"lane":"webmentions"}' },
-          { queue: 'webmentions' },
+          `w${i}`,
+          dispatch({ type: 'webmention', payload: '{"lane":"webmentions"}' }, 'webmentions'),
         );
-        backend.enqueue({ type: 'work', payload: '{"lane":"default"}' });
+        backend.enqueue(`d${i}`, dispatch({ type: 'work', payload: '{"lane":"default"}' }));
       }
       await new Promise((resolve) => {
         setTimeout(resolve, 20);
@@ -391,8 +398,8 @@ describe('InMemoryJobsBackend', function () {
         queues: { webmentions: { concurrency: 1 } },
       });
 
-      backend.enqueue({ type: 'webmention', payload: '{}' }, { queue: 'webmentions' });
-      backend.enqueue({ type: 'work', payload: '{}' });
+      backend.enqueue('w1', dispatch({ type: 'webmention', payload: '{}' }, 'webmentions'));
+      backend.enqueue('d1', dispatch({ type: 'work', payload: '{}' }));
       await new Promise((resolve) => {
         setTimeout(resolve, 5);
       });
@@ -422,7 +429,9 @@ describe('InMemoryJobsBackend', function () {
         },
       });
 
-      backend.scheduleRecurring({ type: 'tick', payload: '{}' }, { cron: '*/1 * * * * *' });
+      backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
+        cron: '*/1 * * * * *',
+      });
       await clock!.tickAsync(3000);
 
       assert.ok(received.length >= 2, `expected at least 2 ticks, got ${received.length}`);
@@ -439,8 +448,12 @@ describe('InMemoryJobsBackend', function () {
         },
       });
 
-      backend.scheduleRecurring({ type: 'tick', payload: '"first"' }, { cron: '*/1 * * * * *' });
-      backend.scheduleRecurring({ type: 'tick', payload: '"second"' }, { cron: '*/1 * * * * *' });
+      backend.scheduleRecurring(dispatch({ type: 'tick', payload: '"first"' }), {
+        cron: '*/1 * * * * *',
+      });
+      backend.scheduleRecurring(dispatch({ type: 'tick', payload: '"second"' }), {
+        cron: '*/1 * * * * *',
+      });
 
       await clock!.tickAsync(2000);
 
@@ -460,7 +473,9 @@ describe('InMemoryJobsBackend', function () {
         const failure = new Error('enqueue failed');
         const enqueue = sinon.stub(backend, 'enqueue').throws(failure);
 
-        backend.scheduleRecurring({ type: 'tick', payload: '{}' }, { cron: '*/1 * * * * *' });
+        backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
+          cron: '*/1 * * * * *',
+        });
         await clock!.tickAsync(2500);
 
         assert.ok(enqueue.callCount >= 2, `expected repeated ticks, got ${enqueue.callCount}`);
@@ -492,7 +507,7 @@ describe('InMemoryJobsBackend', function () {
         },
       });
 
-      backend.scheduleRecurring({ type: 'weekly', payload: '{}' }, { cron: '0 0 * * 0' });
+      backend.scheduleRecurring(dispatch({ type: 'weekly', payload: '{}' }), { cron: '0 0 * * 0' });
       await clock!.tickAsync(14 * 24 * 60 * 60 * 1000);
       await backend.shutdown({ timeoutMs: 100 });
 
@@ -513,7 +528,9 @@ describe('InMemoryJobsBackend', function () {
         },
       });
 
-      backend.scheduleRecurring({ type: 'tick', payload: '{}' }, { cron: '*/1 * * * * *' });
+      backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
+        cron: '*/1 * * * * *',
+      });
       await clock!.tickAsync(1500);
       await backend.shutdown({ timeoutMs: 100 });
       const countAtShutdown = received.length;
@@ -533,7 +550,9 @@ describe('InMemoryJobsBackend', function () {
       });
       await backend.shutdown({ timeoutMs: 100 });
 
-      backend.scheduleRecurring({ type: 'tick', payload: '{}' }, { cron: '*/1 * * * * *' });
+      backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
+        cron: '*/1 * * * * *',
+      });
 
       backend.start({
         processor: async (env) => {

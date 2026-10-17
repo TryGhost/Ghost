@@ -10,38 +10,15 @@ describe('SendWebmentionsJob', function () {
   it('survives the round trip through the queue', function () {
     const job = new SendWebmentionsJob({
       sourceUrl: 'https://site.com/post/',
-      html: '<a href="https://example.com/">link</a>',
-      previousHtml: '<a href="https://old.example.com/">old link</a>',
+      links: ['https://example.com/', 'https://old.example.com/'],
     });
 
-    const revived = new SendWebmentionsJob(JSON.parse(JSON.stringify(job)));
+    const payload = JSON.parse(JSON.stringify(job));
 
-    assert.deepEqual(revived, job);
-  });
-
-  it('round-trips a first publish, where there is no previous html', function () {
-    const job = new SendWebmentionsJob({
+    assert.deepEqual(payload, {
       sourceUrl: 'https://site.com/post/',
-      html: '<a href="https://example.com/">link</a>',
-      previousHtml: null,
+      links: ['https://example.com/', 'https://old.example.com/'],
     });
-
-    const revived = new SendWebmentionsJob(JSON.parse(JSON.stringify(job)));
-
-    assert.deepEqual(revived, job);
-    assert.equal(revived.previousHtml, null);
-  });
-
-  it('round-trips an unpublish, where there is no current html', function () {
-    const job = new SendWebmentionsJob({
-      sourceUrl: 'https://site.com/post/',
-      html: null,
-      previousHtml: '<a href="https://example.com/">link</a>',
-    });
-
-    const revived = new SendWebmentionsJob(JSON.parse(JSON.stringify(job)));
-
-    assert.deepEqual(revived, job);
-    assert.equal(revived.html, null);
+    assert.deepEqual(new SendWebmentionsJob(payload), job);
   });
 });

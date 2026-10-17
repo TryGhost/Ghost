@@ -31,7 +31,7 @@ and `unschedule`, and inherit a registry of reschedulers from
 ## Queue rebuilds
 
 Consumers `register()` themselves so the adapter can rebuild every queue after
-the internal scheduler key rotates. `services/auth/reset-authentication.ts`
+the internal scheduler key rotates. `auth/reset-authentication.ts`
 starts this rebuild with the previous key. Post scheduling and
 `SignedFlushScheduler` replace jobs signed under that key; automations starts a
 fresh poll chain and lets the old callback fail authentication.

@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 import type { AutomationTrigger } from '@tryghost/admin-x-framework/api/automations';
-import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
   Label,
@@ -16,6 +16,7 @@ import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 
 export type TriggerData = {
+  tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
   scope: AutomationTrigger['trigger_tier_scope'];
   tierIds: readonly string[];
   savedTierIds: readonly string[];
@@ -27,10 +28,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
   errorMessage,
 }) => {
   const id = useId();
-  const { data, isLoading, isError, refetch } = useBrowseTiers({
-    searchParams: { filter: 'type:paid', limit: 'all' },
-    defaultErrorHandler: false,
-  });
+  const { data, isLoading, isError, refetch } = trigger.tierQuery;
   const tiers = (data?.tiers ?? []).filter(
     (tier) =>
       tier.type === 'paid' &&
@@ -71,13 +69,11 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
         </SelectTrigger>
         <SelectContent className="nodrag nopan nowheel">
           <SelectItem value="all_paid">Any paid tier</SelectItem>
-          <SelectItem value="selected_paid">Selected tier(s)</SelectItem>
+          <SelectItem value="selected_paid">Specific tier(s)</SelectItem>
         </SelectContent>
       </Select>
       {trigger.scope === 'selected_paid' && (
         <ChipPicker
-          chipClassName={() => 'text-(length:--text-control)'}
-          chipVariant={() => 'secondary'}
           describedBy={errorMessage ? `${id}-error` : undefined}
           emptyMessage={tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found'}
           getKey={(tier) => tier.id}
@@ -169,7 +165,7 @@ export const TriggerCard: React.FC<
         <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />
       ) : (
         <Text as="p" size="md" tone="secondary">
-          Triggered when someone signs up as a free member.
+          Triggered when someone signs up as a free member
         </Text>
       )}
       {children}

@@ -144,13 +144,16 @@ desktop. It has its own flag because it may ship apart from Admin 7.
 The `admin7EditorImprovements` milestone collects improvements to the post and
 page editor, independent of `admin7Design`. While the writer types in the title,
 excerpt or body, the editor's chrome fades out: the header, the settings toggle,
-the word count, email size warning and help link, and the empty feature image
-bar. An existing feature image stays. Moving the pointer more than a few pixels,
+the word count and email size warning, and the empty feature image bar. An
+existing feature image stays. Moving the pointer more than a few pixels,
 scrolling with a wheel or trackpad, focusing anything outside the writing area
 or an unused Esc brings it back.
 Nothing hides while the settings panel is open or moving, while the status line
 reports a failed save or newsletter, or on touch and small screens. The chrome
 keeps its place, stays focusable and takes no pointer input while hidden.
+The milestone also trims the chrome itself: the back link shows its arrow alone,
+the editor font and the guide to the editor leave the footer for the settings
+panel, and the meta data and social cards share one pane with a tab each.
 
 ## How values are resolved
 

@@ -14,12 +14,15 @@ import { canvasBackground } from './components/canvas/canvas-background';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+import { ScreenEntranceContext } from '@/layout/screen-transition';
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
-  onPick: (scope: 'free' | 'all_paid') => void;
+  // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
+  onPick: (scope: 'free' | 'all_paid', cardTop: number) => void;
 }> = ({ automation, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
+  const cardRef = React.useRef<HTMLDivElement>(null);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
       <AutomationHeader
@@ -50,8 +53,11 @@ const TriggerPicker: React.FC<{
           <Background {...canvasBackground} />
           <AutomationCanvasControls />
         </ReactFlow>
-        <Stack align="center" className="pointer-events-none absolute inset-0" justify="center">
+        {/* Slightly above center: 40% of the spare height above the card, 60% below. */}
+        <Stack align="center" className="pointer-events-none absolute inset-0" gap="none">
+          <Box className="min-h-12 flex-[2]" />
           <Stack
+            ref={cardRef}
             className="pointer-events-auto w-[400px] max-w-[calc(100%-32px)] rounded-xl border border-border-default bg-surface-elevated p-6 shadow-sm"
             gap="xl"
           >
@@ -62,13 +68,13 @@ const TriggerPicker: React.FC<{
                   'free',
                   LucideIcon.UserPlus,
                   'Free member signed up',
-                  'When someone signs up as a free member.',
+                  'When someone signs up as a free member',
                 ],
                 [
                   'all_paid',
                   LucideIcon.CreditCard,
                   'Paid subscription started',
-                  'When a new or free member starts a paid subscription.',
+                  'When a new or free member starts a paid subscription',
                 ],
               ] as const
             ).map(([scope, Icon, title, description]) => (
@@ -77,7 +83,7 @@ const TriggerPicker: React.FC<{
                 className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
                 shape="rounded"
                 variant="ghost"
-                onClick={() => onPick(scope)}
+                onClick={() => onPick(scope, cardRef.current?.offsetTop ?? 0)}
               >
                 <Inline gap="md">
                   <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
@@ -93,6 +99,7 @@ const TriggerPicker: React.FC<{
               </Button>
             ))}
           </Stack>
+          <Box className="min-h-12 flex-[3]" />
         </Stack>
       </Box>
       <DirtyConfirmDialog {...dialogProps} />
@@ -109,7 +116,8 @@ const NewAutomationLoading: React.FC = () => {
 };
 
 type NewAutomationProps = {
-  children: (automation: AutomationDetail) => React.ReactNode;
+  // `triggerTop`: where the picker's card was, when a trigger was picked on it.
+  children: (automation: AutomationDetail, triggerTop?: number) => React.ReactNode;
 };
 
 const NewAutomationSession: React.FC<
@@ -120,6 +128,8 @@ const NewAutomationSession: React.FC<
   }
 > = ({ children, automations, stripeEnabled, isStripeReady }) => {
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
+  // Where the trigger was picked, once it has been.
+  const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -141,16 +151,25 @@ const NewAutomationSession: React.FC<
     return (
       <TriggerPicker
         automation={initialAutomation}
-        onPick={(scope) =>
+        onPick={(scope, cardTop) => {
+          setTriggerTop(cardTop);
           setInitialAutomation({
             ...initialAutomation,
             trigger_tier_scope: scope,
-          })
-        }
+          });
+        }}
       />
     );
   }
-  return children(initialAutomation);
+  // The picker's header already played the screen's entrance; the editor's
+  // header replacing it shouldn't play it a second time in the same visit.
+  return triggerTop !== null ? (
+    <ScreenEntranceContext.Provider value={false}>
+      {children(initialAutomation, triggerTop)}
+    </ScreenEntranceContext.Provider>
+  ) : (
+    children(initialAutomation)
+  );
 };
 
 const NewAutomation: React.FC<NewAutomationProps> = ({ children }) => {

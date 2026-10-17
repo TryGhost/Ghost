@@ -5,8 +5,8 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const web = require('../../web');
 const models = require('../../models');
-const auth = require('../../services/auth');
-const acceptInvitation = require('../../services/invites/accept');
+const auth = require('../../auth');
+const invites = require('../../services/invites');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
@@ -215,7 +215,7 @@ const controller = {
     permissions: false,
     async query(frame) {
       await auth.setup.assertSetupCompleted(true)();
-      return acceptInvitation(frame.data);
+      return invites.accept(frame.data);
     },
   },
 

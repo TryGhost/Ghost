@@ -84,7 +84,10 @@ describe('DB controller', function () {
     let dispatch;
 
     beforeEach(function () {
-      const service = jobsService.init();
+      const service = jobsService.init({
+        knex: { client: { config: { client: 'sqlite3' } } },
+        config: { get: () => undefined },
+      });
       jobsServiceInitialised = true;
       dispatch = sinon.stub(service, 'dispatch').resolves();
     });

@@ -9,16 +9,18 @@ const cliRules = {
   // consumers like ghost. Nothing requires these files — they are run
   // directly by node — so the hazard doesn't exist here.
   'no-restricted-syntax': 'off',
-  // @tryghost/errors is a server-runtime concern; scripts throw native
-  // Errors and let node print the stack.
-  'ghost/ghost-custom/no-native-error': 'off',
 };
 
 export default [
   ...nodeLibConfig({
-    srcGlobs: ['*.ts', 'lib/**/*.ts'],
+    srcGlobs: ['*.ts', 'ci/**/*.ts', 'build/**/*.ts', 'release/**/*.ts', 'lib/**/*.ts'],
     testGlobs: ['test/**/*.test.ts'],
     extraSrcRules: cliRules,
     extraTestRules: cliRules,
+  }),
+  ...nodeLibConfig({
+    typescript: false,
+    srcGlobs: ['ci/**/*.mjs'],
+    extraSrcRules: cliRules,
   }),
 ];

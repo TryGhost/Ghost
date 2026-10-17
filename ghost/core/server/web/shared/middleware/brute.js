@@ -6,6 +6,23 @@ const spamPrevention = require('./api/spam-prevention');
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {
+  // Limit authentication work across all upgrade routes, before staff identity
+  // is available. This is separate from the stricter per-user POST budget.
+  upgradeApiLimiter(req, res, next) {
+    return spamPrevention.upgradeApiBlock().prevent(req, res, next);
+  },
+
+  // A staff user has one budget across IP addresses and Ghost instances.
+  // Denied users cannot consume the owner or administrator budget.
+  upgradeLimiter(req, res, next) {
+    return spamPrevention.upgradeBlock().getMiddleware({
+      ignoreIP: true,
+      key(_req, _res, done) {
+        done(`upgrade_requests:${req.user.id}`);
+      },
+    })(req, res, next);
+  },
+
   /**
    * block per route per ip
    */

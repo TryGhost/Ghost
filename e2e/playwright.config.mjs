@@ -31,7 +31,7 @@ const config = {
     ? [
         ['list', { printSteps: true }],
         ['blob'],
-        // Per-file durations for CI shard balancing (tools/scripts/e2e-shards.ts).
+        // Per-file durations for CI shard balancing (tools/scripts/ci/e2e-shards.ts).
         ['json', { outputFile: 'json-report/report.json' }],
       ]
     : [
@@ -65,6 +65,7 @@ const config = {
         '**/*.teardown.ts',
         'analytics/**/*.test.ts',
         'stripe-fixtures/**/*.test.ts',
+        'fake-services/**/*.test.ts',
       ],
       testDir: './tests',
       use: {
@@ -75,7 +76,7 @@ const config = {
     {
       name: 'fixtures',
       testDir: './tests',
-      testMatch: ['stripe-fixtures/**/*.test.ts'],
+      testMatch: ['stripe-fixtures/**/*.test.ts', 'fake-services/**/*.test.ts'],
     },
     {
       name: 'analytics',

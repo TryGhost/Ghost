@@ -38,6 +38,8 @@ import { Box, Inline } from '@tryghost/shade/primitives';
 import { RunHistory } from './run-history';
 import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
+import type { TriggerData } from './trigger-card';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { isEmptyEmailLexical } from '@/automations/utils';
@@ -167,8 +169,11 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 
 type BuildGraphParams = {
   actionErrors: Record<string, string>;
+  // Draw the line to the exit card and bring the card in, for a flow just created.
+  connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
   newEmailWithoutWarningsId: string | null;
@@ -188,8 +193,10 @@ type BuildGraphParams = {
 
 const buildGraph = ({
   actionErrors,
+  connectIn,
   automation,
   savedTriggerTierIds,
+  tierQuery,
   onChange,
   nodeSizes,
   newEmailWithoutWarningsId,
@@ -237,6 +244,7 @@ const buildGraph = ({
       },
       data: {
         trigger: {
+          tierQuery,
           scope: automation.trigger_tier_scope,
           tierIds: automation.trigger_tier_ids ?? [],
           savedTierIds: savedTriggerTierIds,
@@ -312,7 +320,7 @@ const buildGraph = ({
       x: nodeX,
       y: cursorY,
     },
-    data: {},
+    data: { connectIn },
     ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
@@ -360,6 +368,7 @@ const buildGraph = ({
       disabledReason,
       onPick,
       label: 'Add step',
+      connectIn,
     } satisfies AddStepEdgeData,
     focusable: false,
     style: { stroke: DEFAULT_EDGE_STROKE },
@@ -374,14 +383,20 @@ const buildGraph = ({
   return { nodes: measuredNodes, edges, contentBounds };
 };
 
-const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
+const getInitialViewport = (
+  canvasWidth: number,
+  triggerTop = INITIAL_VIEWPORT_Y,
+): { x: number; y: number; zoom: number } => ({
   x: Math.round(canvasWidth / 2 - NODE_COLUMN_CENTER_X),
-  y: INITIAL_VIEWPORT_Y + HEADER_UNDERLAP_Y,
+  y: triggerTop + HEADER_UNDERLAP_Y,
   zoom: 1,
 });
 
 type AutomationCanvasProps = {
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
+  // Set when a trigger was just picked: the canvas opens with the trigger where the
+  // picker's card was, and the flow below it plays in.
+  initialTriggerTop?: number;
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
@@ -414,6 +429,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
+  initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
   onWaitValidityChange,
@@ -458,6 +474,37 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const triggerTierScope = automation?.trigger_tier_scope;
+  let tiersEnabled: boolean;
+  switch (triggerTierScope) {
+    case 'all_paid':
+    case 'selected_paid':
+      tiersEnabled = true;
+      break;
+    case 'free':
+    case null:
+    case undefined:
+      tiersEnabled = false;
+      break;
+    default: {
+      const _exhaustive: never = triggerTierScope;
+      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+    }
+  }
+  const {
+    data: tierData,
+    isLoading: tiersLoading,
+    isError: tiersError,
+    refetch: refetchTiers,
+  } = useBrowseTiers({
+    searchParams: { filter: 'type:paid', limit: 'all' },
+    defaultErrorHandler: false,
+    enabled: tiersEnabled,
+  });
+  const tierQuery = useMemo(
+    () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
+    [tierData, tiersLoading, tiersError, refetchTiers],
+  );
   const selectedStepId = selectedStep?.id ?? null;
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
@@ -628,7 +675,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     null,
   );
   const configQuery = useBrowseConfig();
-  const isPerformanceEnabled = Boolean(automation?.id) && Boolean(configQuery.data?.config.stats);
+  const isPerformanceEnabled = Boolean(configQuery.data?.config.stats);
   const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   const [sidebar, setSidebar] = useState<{
     open: boolean;
@@ -640,7 +687,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       open: initialSidebar !== 'closed',
       tab:
         initialSidebar === 'closed'
-          ? isPerformanceEnabled
+          ? isPerformanceEnabled && automation?.id
             ? 'performance'
             : 'settings'
           : initialSidebar,
@@ -655,6 +702,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
+    initialTriggerTop,
   );
   const isHistoryOpen = selectedRunId !== null;
 
@@ -679,14 +727,26 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     requestAnimationFrame(() => editingCanvasRef.current?.focus());
   };
 
+  // Only for the edges and card that first appear; later ones arrive as usual.
+  const [connecting, setConnecting] = useState(initialTriggerTop !== undefined);
+  useEffect(() => {
+    if (!connecting) {
+      return;
+    }
+    const timer = setTimeout(() => setConnecting(false), 500);
+    return () => clearTimeout(timer);
+  }, [connecting]);
+
   const graph = useMemo(() => {
     if (!automation) {
       return null;
     }
     return buildGraph({
       actionErrors,
+      connectIn: connecting,
       automation,
       savedTriggerTierIds,
+      tierQuery,
       onChange,
       nodeSizes,
       newEmailWithoutWarningsId,
@@ -709,7 +769,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     });
   }, [
     actionErrors,
+    connecting,
     savedTriggerTierIds,
+    tierQuery,
     onChange,
     automation,
     nodeSizes,
@@ -863,6 +925,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           performanceEnabled={isPerformanceEnabled}
           selectedRunId={selectedRunId}
           selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
+          tiers={tierData?.tiers ?? []}
+          triggerTierIds={automation.trigger_tier_ids ?? []}
           triggerTierScope={automation.trigger_tier_scope}
           onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {

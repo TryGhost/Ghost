@@ -27,11 +27,10 @@
     "lint:code": "eslint src test --cache",
     "lint:types": "pnpm test:types",
     "preship": "pnpm lint",
-    "ship": "node ../../tools/scripts/release-apps.ts",
+    "ship": "node ../../tools/scripts/release/release-apps.ts",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@tryghost/i18n": "workspace:*",
     "flexsearch": "0.8.212",
     "preact": "catalog:"
   },
@@ -40,6 +39,7 @@
     "@internal/cfg-vite-public-app": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/preact": "catalog:",
+    "@tryghost/i18n": "workspace:*",
     "@typescript/native": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-v8": "catalog:",

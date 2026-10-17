@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { JobsBackendBase, JobEnvelope } from './base.ts';
+import { JobsBackendBase, JobEnvelope, DispatchEnvelope } from './base.ts';
 
 export type BackendFactory = () => JobsBackendBase;
 
@@ -31,7 +31,20 @@ export function runJobsBackendContractTests(
   makeBackend: BackendFactory,
   { describe, it }: JobsContractTestFramework,
 ): void {
-  const envelope: JobEnvelope = { type: 'test-job', payload: '{"value":1}' };
+  function pack(jobEnvelope: JobEnvelope, queue?: string): DispatchEnvelope {
+    return {
+      version: 1,
+      payload:
+        queue === undefined ? { job: jobEnvelope } : { job: jobEnvelope, routing: { queue } },
+    };
+  }
+
+  const job: JobEnvelope = { type: 'test-job', payload: '{"value":1}' };
+  const envelope: DispatchEnvelope = pack(job);
+
+  function routed(queue: string): DispatchEnvelope {
+    return pack(job, queue);
+  }
 
   describe('jobs backend contract', function () {
     it('delivers an enqueued envelope to the processor', async function () {
@@ -43,10 +56,10 @@ export function runJobsBackendContractTests(
         },
       });
 
-      await backend.enqueue(envelope);
+      await backend.enqueue('dispatch-1', envelope);
       await backend.shutdown({ timeoutMs: 1000 });
 
-      assert.deepEqual(received, [envelope]);
+      assert.deepEqual(received, [job]);
     });
 
     it('resolves enqueue on acceptance, not on completion', async function () {
@@ -63,7 +76,7 @@ export function runJobsBackendContractTests(
         },
       });
 
-      await backend.enqueue(envelope);
+      await backend.enqueue('dispatch-1', envelope);
 
       await started.promise;
       assert.equal(completed, false);
@@ -83,7 +96,7 @@ export function runJobsBackendContractTests(
         },
       });
 
-      await backend.enqueue(envelope);
+      await backend.enqueue('dispatch-1', envelope);
       await backend.shutdown({ timeoutMs: 1000 });
 
       assert.equal(completed, true);
@@ -99,7 +112,7 @@ export function runJobsBackendContractTests(
           }),
       });
 
-      await backend.enqueue(envelope);
+      await backend.enqueue('dispatch-1', envelope);
       await started.promise;
 
       const raced = await Promise.race([
@@ -123,10 +136,10 @@ export function runJobsBackendContractTests(
         queues: { isolated: { concurrency: 1 } },
       });
 
-      await backend.enqueue(envelope, { queue: 'isolated' });
+      await backend.enqueue('dispatch-1', routed('isolated'));
       await backend.shutdown({ timeoutMs: 1000 });
 
-      assert.deepEqual(received, [envelope]);
+      assert.deepEqual(received, [job]);
     });
 
     it('delivers an envelope routed to a queue no handler declared', async function () {
@@ -138,10 +151,10 @@ export function runJobsBackendContractTests(
         },
       });
 
-      await backend.enqueue(envelope, { queue: 'undeclared' });
+      await backend.enqueue('dispatch-1', routed('undeclared'));
       await backend.shutdown({ timeoutMs: 1000 });
 
-      assert.deepEqual(received, [envelope]);
+      assert.deepEqual(received, [job]);
     });
 
     it('tolerates start after a prior shutdown', async function () {
@@ -156,10 +169,63 @@ export function runJobsBackendContractTests(
           received.push(env);
         },
       });
-      await backend.enqueue(envelope);
+      await backend.enqueue('dispatch-1', envelope);
       await backend.shutdown({ timeoutMs: 1000 });
 
-      assert.deepEqual(received, [envelope]);
+      assert.deepEqual(received, [job]);
+    });
+
+    it('delivers the unwrapped job on each recurring tick', async function () {
+      const received: JobEnvelope[] = [];
+      const backend = makeBackend();
+      await backend.start({
+        processor: async (env) => {
+          received.push(env);
+        },
+      });
+
+      await backend.scheduleRecurring(envelope, { cron: '*/1 * * * * *' });
+      const deadline = Date.now() + 2500;
+      while (received.length === 0 && Date.now() < deadline) {
+        await delay(50);
+      }
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.ok(received.length >= 1, 'the recurring schedule fired at least once');
+      assert.deepEqual(received[0], job);
+    });
+
+    it('keeps the first recurring schedule for a job type', async function () {
+      const received: JobEnvelope[] = [];
+      const backend = makeBackend();
+      await backend.start({
+        processor: async (env) => {
+          received.push(env);
+        },
+      });
+
+      const first: DispatchEnvelope = {
+        version: 1,
+        payload: { job: { type: 'recurring-job', payload: '"first"' } },
+      };
+      const second: DispatchEnvelope = {
+        version: 1,
+        payload: { job: { type: 'recurring-job', payload: '"second"' } },
+      };
+      await backend.scheduleRecurring(first, { cron: '*/1 * * * * *' });
+      await backend.scheduleRecurring(second, { cron: '*/1 * * * * *' });
+
+      const deadline = Date.now() + 2500;
+      while (received.length === 0 && Date.now() < deadline) {
+        await delay(50);
+      }
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.ok(received.length >= 1, 'the recurring schedule fired at least once');
+      assert.ok(
+        received.every((env) => env.payload === '"first"'),
+        're-registering a type must not replace the running schedule',
+      );
     });
   });
 }

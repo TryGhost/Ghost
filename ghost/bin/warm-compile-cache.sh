@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 # Warms Node's on-disk V8 compile cache by booting Ghost once, so the modules don't
-# have to be compiled again on every boot. Run at image build time: Ghost's own
-# Dockerfile does it, and images built on top should re-run it after adding code
-# (custom adapters, patches) so those modules land in the cache too.
+# have to be compiled again on every boot. Image builds can run this after adding
+# code (custom adapters, patches) so those modules land in the cache too.
 #
 # Cache entries are keyed by absolute module path, Node version and arch, so the
 # warming build must use the same app directory and base image as the runtime.

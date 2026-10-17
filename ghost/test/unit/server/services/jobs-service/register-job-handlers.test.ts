@@ -298,7 +298,6 @@ describe('register-job-handlers', function () {
     const job = new ProcessWebmentionJob({
       source: 'https://source.com/post/',
       target: 'https://target.com/post/',
-      payload: {},
     });
 
     await processWebmentionHandler(job);
@@ -319,8 +318,7 @@ describe('register-job-handlers', function () {
     const sendWebmentionsHandler = handlerFor('send-webmentions');
     const job = new SendWebmentionsJob({
       sourceUrl: 'https://site.com/post/',
-      html: '<a href="https://example.com/">link</a>',
-      previousHtml: null,
+      links: ['https://example.com/'],
     });
 
     await sendWebmentionsHandler(job);

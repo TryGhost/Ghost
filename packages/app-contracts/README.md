@@ -75,11 +75,14 @@ const result = parseManifest(json, {
 
 if (result.success) {
   result.manifest.surfaces[0].url; // https://podcast.example.com/admin
-  result.manifestUrl; // the manifest's URL as it was checked, which is the one to keep
 } else {
   result.errors; // [{ path: 'surfaces[0].url', message: '…' }]
 }
 ```
+
+`manifestUrl` is where the manifest was fetched from, after any redirects, so its
+relative URLs resolve as they would in a browser. It is checked by the same rules as
+the URLs inside the manifest.
 
 `parseManifest` is for a manifest as an app serves it. A manifest it has accepted is
 read back, from a database say, with `AppManifestSchema`: the same shape, with every
@@ -104,8 +107,26 @@ There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
 derive it where it is used, with `new URL(surface.url).origin`.
 
-`checkManifestUrl(url, allowLocalhost)` applies the same rules to the address a
-manifest is read from, so it can run before anything is fetched.
+### The manifest URL
+
+`parseManifestUrl(input, allowLocalhost)` applies the same rules to the address a
+manifest is read from, so it can run before anything is fetched. It hands back the
+address to keep, as the URL parser reads it and without a fragment, which never reaches
+the server. The parser settles most differences in spelling, but a trailing dot on the
+host or the case of a percent-encoding stays as given, so such an address reads as a
+change of manifest URL.
+
+```ts
+import { parseManifestUrl } from '@tryghost/app-contracts/manifest';
+
+const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json#install ', false);
+
+if (result.success) {
+  result.manifestUrl; // https://podcast.example.com/ghost-app.json
+} else {
+  result.error; // 'Expected an https URL for the manifest itself'
+}
+```
 
 ### Comparing manifests
 

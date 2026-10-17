@@ -7,11 +7,9 @@ import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
-import {
-  type AppInstallation,
-  useBrowseAppInstallations,
-} from '@tryghost/admin-x-framework/api/app-installations';
+import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { useInstalledApps } from './lib/use-app-pins';
 
 /** Fills the page with what it's given in the middle: a state the list can't show yet. */
 const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -20,8 +18,7 @@ const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 /** The site's apps, and where the install flow lands. */
 export const AppsListing: React.FC = () => {
-  const { data, isLoading, error } = useBrowseAppInstallations({ defaultErrorHandler: false });
-  const installations = data?.app_installations ?? [];
+  const { installations, isLoading, error, pins } = useInstalledApps();
   const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
 
   let body: React.ReactNode;
@@ -43,7 +40,13 @@ export const AppsListing: React.FC = () => {
       </Centered>
     );
   } else if (installations.length) {
-    body = <AppsList installations={installations} onUninstall={setUninstalling} />;
+    body = (
+      <AppsList
+        installations={installations}
+        pins={pins.isLoaded ? pins : undefined}
+        onUninstall={setUninstalling}
+      />
+    );
   } else {
     body = (
       <Centered>

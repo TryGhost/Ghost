@@ -20,7 +20,8 @@ describe('with-ghost-dev-env', { skip: process.platform === 'win32' }, () => {
 
     const nx = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
     t.after(() => nx.kill('SIGKILL'));
-    const command = 'console.log(process.pid); setInterval(() => {}, 1000)';
+    const command =
+      'process.stdout.write(String(process.pid) + "\\n"); setInterval(() => {}, 1000)';
     const wrapper = spawn(
       process.execPath,
       [join(root, 'tools/scripts/with-ghost-dev-env.ts'), process.execPath, '-e', command],

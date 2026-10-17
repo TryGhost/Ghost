@@ -34,15 +34,12 @@ running processes do not retain state from the old dataset.
 
 ## Generate a Custom Dataset
 
-Run the generator from `ghost/` when the prepared datasets do not cover the
-scenario. `tools/scripts/with-ghost-dev-env.ts` points it at the checkout's database,
-as it does for the `reset:data` commands:
+Run the generator from the repository root when the prepared datasets do not
+cover the scenario. gx uses the same checkout database configuration as the
+`reset:data` shortcuts:
 
 ```bash
-cd ghost
-node ../tools/scripts/with-ghost-dev-env.ts \
-  node --conditions=source --import=tsx index.js generate-data \
-  --clear-database --quantities members:10000,posts:500 --seed 123
+pnpm gx data generate --clear-database --quantities members:10000,posts:500 --seed 123
 ```
 
 The generator supports:
@@ -67,3 +64,31 @@ dependencies automatically and rejects unknown table names.
 
 For the implementation and instructions for adding an importer, see the
 [data generator README](../../ghost/core/server/data/seeders/README.md).
+
+## Multi-subscription scenarios
+
+Run `pnpm gx data multi-sub-scenarios` to create the named subscription-resolution
+scenarios for manual verification. This uses the same development-environment
+runner but writes its scenario records directly, independently of the general
+data generator. It requires an existing paid tier, Stripe product and recurring
+price; `pnpm reset:data` can create those prerequisites.
+
+Re-running replaces the scenario members and their subscriptions. The script
+prints expected and actual resolved subscriptions. It can also seed before the
+lookup-table migration, skipping that table until it exists. The legacy
+`pnpm seed:multi-sub-scenarios` shortcut forwards to gx.
+
+## Shift Dates
+
+Run `pnpm gx data shift-dates` to shift all dateTime fields forward based on the
+last member login, or use `--offset=<days>` to specify the shift. Negative
+values shift dates backwards. This is destructive and is restricted to the
+`development` and `local` environments. The command asks for confirmation;
+`--force` skips that prompt.
+
+## REPL
+
+Run `pnpm gx repl` to open a shell with the checkout's configured database and
+Ghost models. `knex`/`k` refer to the connection and `models`/`m` to the models.
+`.clear` restores those bindings and `.exit` closes the database connection.
+This command is also restricted to `development` and `local`.

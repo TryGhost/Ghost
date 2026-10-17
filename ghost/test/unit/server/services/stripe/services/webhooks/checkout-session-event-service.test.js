@@ -1034,6 +1034,7 @@ describe('CheckoutSessionEventService', function () {
     it('should update member if found', async function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(member);
+      session.metadata.ghostSignupContext = 'already_authenticated';
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
@@ -1047,6 +1048,7 @@ describe('CheckoutSessionEventService', function () {
     it('should update member with payerName if it exists', async function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(member);
+      session.metadata.ghostSignupContext = 'already_authenticated';
       session.metadata.name = 'Session Name';
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
@@ -1061,6 +1063,7 @@ describe('CheckoutSessionEventService', function () {
     it('should update member with newsletters if metadata newsletters is not valid JSON', async function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(member);
+      session.metadata.ghostSignupContext = 'already_authenticated';
       session.metadata.newsletters = 'invalid';
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
@@ -1070,6 +1073,34 @@ describe('CheckoutSessionEventService', function () {
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
       assert.equal(memberData.newsletters, undefined);
+    });
+
+    it('does not update an existing member from an unverified checkout', async function () {
+      api.getCustomer.resolves(customer);
+      memberRepository.get.resolves(member);
+      session.metadata.ghostSignupContext = 'needs_magic_link_email';
+
+      await service.handleSubscriptionEvent(session);
+
+      sinon.assert.notCalled(memberRepository.update);
+      sinon.assert.calledOnce(memberRepository.linkSubscription);
+    });
+
+    it('updates a member created by this checkout from an unverified checkout', async function () {
+      api.getCustomer.resolves(customer);
+      session.created = 1000;
+      session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
+      member.get.withArgs('created_at').returns(2000 * 1000);
+      member.get.withArgs('id').returns('member_123');
+      memberRepository.get.resolves(member);
+
+      await service.handleSubscriptionEvent(session);
+
+      sinon.assert.calledOnceWithExactly(
+        memberRepository.update,
+        { name: 'Customer Name' },
+        { id: 'member_123' },
+      );
     });
 
     describe('signup email logic', function () {

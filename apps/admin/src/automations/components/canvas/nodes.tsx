@@ -11,6 +11,7 @@ import { formatRate } from './format-stats';
 import { EditableWaitCard, type EditableWaitData } from './editable-wait-card';
 import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
 import { OffValue } from './off-value';
+import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -55,7 +56,7 @@ type TriggerNodeData = {
 
 type StepFlowNode = Node<StepNodeData, 'step'>;
 type TriggerFlowNode = Node<TriggerNodeData, 'trigger'>;
-type TailFlowNode = Node<Record<string, never>, 'tail'>;
+type TailFlowNode = Node<{ connectIn?: boolean }, 'tail'>;
 export type AutomationFlowNode = StepFlowNode | TriggerFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
@@ -153,18 +154,34 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
 });
 StepNode.displayName = 'StepNode';
 
-const TailNode: React.FC<NodeProps<TailFlowNode>> = () => (
-  <Inline className="w-[400px]" justify="center">
-    <HiddenHandle position={Position.Top} type="target" />
-    <AutomationCard aria-label="Exit automation" className="w-auto p-4 text-muted-foreground">
-      <Inline gap="md">
-        <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
-        <Text size="md" tone="secondary" weight="medium">
-          Exit automation
-        </Text>
-      </Inline>
-    </AutomationCard>
-  </Inline>
-);
+// Rises and fades in as the connector reaches it — a transition from a state flipped
+// after mount rather than a keyframe, which would start while React Flow still has
+// the node hidden for measuring.
+const CONNECT_IN_CLASS = `transition-[opacity,translate] duration-180 [transition-delay:120ms] ${ENTRANCE_EASE} motion-reduce:transition-none`;
+
+const TailNode: React.FC<NodeProps<TailFlowNode>> = ({ data }) => {
+  const [connectIn] = React.useState(Boolean(data.connectIn));
+  const shown = useRevealAfterMount(connectIn);
+  return (
+    <Inline className="w-[400px]" justify="center">
+      <HiddenHandle position={Position.Top} type="target" />
+      <AutomationCard
+        aria-label="Exit automation"
+        className={cn(
+          'w-auto p-4 text-muted-foreground',
+          connectIn && CONNECT_IN_CLASS,
+          !shown && 'translate-y-2 opacity-0',
+        )}
+      >
+        <Inline gap="md">
+          <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+          <Text size="md" tone="secondary" weight="medium">
+            Exit automation
+          </Text>
+        </Inline>
+      </AutomationCard>
+    </Inline>
+  );
+};
 
 export { TriggerNode, StepNode, TailNode };

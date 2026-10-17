@@ -58,6 +58,16 @@ export const NavigationPreferencesSchema = z.looseObject({
     // useSidebarMode falls back to "full".
     mode: z.enum(['full', 'compact']).optional().catch(undefined),
   }),
+  // Installation ids of the apps this user pinned to, or unpinned from, the
+  // sidebar. Apps in neither are pinned while there's room (see
+  // resolvePinnedApps). Optional, like menu.mode.
+  apps: z
+    .object({
+      pinned: z.array(z.string()).catch([]),
+      unpinned: z.array(z.string()).catch([]),
+    })
+    .optional()
+    .catch(undefined),
 });
 
 export const EDITOR_BODY_FONTS = ['serif', 'sans', 'mono'] as const;
@@ -148,12 +158,20 @@ export function useUserPreferences<TData = Preferences>({
   });
 }
 
+/**
+ * The preferences to change, or a function that works them out from the
+ * preferences as they are when the edit runs, after any edits queued ahead of it.
+ */
+export type PreferencesUpdate =
+  | DeepPartial<Preferences>
+  | ((current: Preferences) => DeepPartial<Preferences>);
+
 export const useEditUserPreferences = ({
   requestOptions,
 }: { requestOptions?: PreferencesRequestOptions } = {}): UseMutationResult<
   void,
   Error,
-  DeepPartial<Preferences>,
+  PreferencesUpdate,
   unknown
 > => {
   const queryClient = useQueryClient();
@@ -165,7 +183,7 @@ export const useEditUserPreferences = ({
     // the current state; the shared scope serializes concurrent edits so
     // the later one merges on top of the earlier write instead of racing.
     scope: { id: 'user-preferences' },
-    mutationFn: async (updatedPreferences: DeepPartial<Preferences>) => {
+    mutationFn: async (update: PreferencesUpdate) => {
       // Read the user at run time (not from the render closure): a
       // serialized mutation must merge on top of the previous write.
       const latestUser =
@@ -175,7 +193,11 @@ export const useEditUserPreferences = ({
         throw new Error('User is not loaded');
       }
 
-      const newPreferences = deepMerge(parsePreferences(latestUser), updatedPreferences);
+      const current = parsePreferences(latestUser);
+      const newPreferences = deepMerge(
+        current,
+        typeof update === 'function' ? update(current) : update,
+      );
 
       const encodedForStorage = PreferencesSchema.encode(newPreferences);
 
