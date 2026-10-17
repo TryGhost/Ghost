@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import { readFrameIdentity } from '../../lib/frame-identity';
 
 export interface Actor {
   id: string;
@@ -7,6 +8,24 @@ export interface Actor {
 
 export interface RequestContext {
   actor: Actor | null;
+}
+
+/**
+ * Who is acting, narrowed from the shared reading of an API frame's context.
+ *
+ * An integration and a user are both actors, and an integration's key names the
+ * integration before any user. Whether a user came by session or staff token makes no
+ * difference to a gift link's history, so that is not recorded.
+ */
+export function actingContext(context: unknown): RequestContext {
+  const { userId, integrationId } = readFrameIdentity(context);
+  if (integrationId) {
+    return { actor: { id: integrationId, type: 'integration' } };
+  }
+  if (userId) {
+    return { actor: { id: userId, type: 'user' } };
+  }
+  return { actor: null };
 }
 
 export interface ActionRecorder {
