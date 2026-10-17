@@ -29,6 +29,8 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
+const IconRow = DbAppInstallationManifest.pick({ icon_svg: true });
+
 const HistoryActionRow = z
   .object({
     id: z.string(),
@@ -273,8 +275,10 @@ export class AppInstallationsStore {
    * approvals don't load it.
    */
   async icon(manifestId: string): Promise<string | null> {
-    const row = await this.knex(MANIFESTS).where({ id: manifestId }).first('icon_svg');
-    return row?.icon_svg ?? null;
+    const row = await this.knex(MANIFESTS)
+      .where({ id: manifestId })
+      .first<z.input<typeof IconRow> | undefined>('icon_svg');
+    return row ? z.decode(IconRow, row).icon_svg : null;
   }
 
   /**
