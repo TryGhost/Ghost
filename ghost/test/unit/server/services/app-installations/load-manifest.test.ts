@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import got from 'got';
 import nock from 'nock';
 import sinon from 'sinon';
+import { createAppFetcher } from '../../../../../core/server/services/app-installations/fetch-from-app';
 import {
   createManifestLoader,
   type ManifestRules,
@@ -64,10 +65,9 @@ describe('createManifestLoader', function () {
     logging?: { warn(value: unknown): void };
   } = {}) =>
     createManifestLoader({
-      request: got,
+      fetchFromApp: createAppFetcher({ request: got, getLocalhostAlias: () => alias }),
       logging,
       getManifestRules: () => rules,
-      getLocalhostAlias: () => alias,
     });
 
   describe('the manifest URL', function () {
