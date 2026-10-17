@@ -24,12 +24,23 @@ export const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => (
   ...overrides,
 });
 
+export const ICON_URL = 'https://podcast.example.com/icon.svg';
+export const ICON_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 2h20v20H2z"></path></svg>';
+/** The stored copy of `ICON_SVG`, as Admin draws it. */
+export const STORED_ICON = `data:image/svg+xml,${encodeURIComponent(ICON_SVG)}`;
+
+/** The `src` of every image in `container`. */
+export const imageSources = (container: Element) =>
+  [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'));
+
 export const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation => ({
   id: 'installation-1',
   app_id: 'com.example.podcast',
   status: 'active',
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
+  icon_svg: null,
   created_at: '2026-10-01T10:00:00.000Z',
   updated_at: '2026-10-01T10:00:00.000Z',
   ...overrides,

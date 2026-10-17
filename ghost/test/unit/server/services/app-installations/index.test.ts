@@ -150,6 +150,27 @@ describe('App installations composition root', function () {
     sinon.assert.calledWithExactly(warn.secondCall, failure);
   });
 
+  it('wires the icon loader to keep a self-contained, sanitized copy of the app’s SVG', async function () {
+    request.callsFake((url: URL) => ({
+      on: () => {},
+      text: async () =>
+        url.pathname === '/icon.svg'
+          ? `<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)">
+              <image href="https://tracker.example/pixel.png"/><path d="M0 0h1v1H0z"/>
+            </svg>`
+          : JSON.stringify({ ...manifest, icon: { url: '/icon.svg' } }),
+    }));
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const preview = await root.service.preview('https://podcast.example/manifest.json');
+
+    assert.equal(request.lastCall.args[0].href, 'https://podcast.example/icon.svg');
+    assert.match(preview.icon_svg!, /<path d="M0 0h1v1H0z"\/>/);
+    assert.doesNotMatch(preview.icon_svg!, /onload|<image|tracker/);
+  });
+
   it('logs action recording failures without failing the installation', async function () {
     const failure = new Error('History write failed');
     const error = sandbox.stub(logging, 'error');

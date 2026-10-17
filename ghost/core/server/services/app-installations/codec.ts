@@ -14,7 +14,7 @@ export const AppInstallationRow = z.object({
     created_at: true,
     updated_at: true,
   }).shape,
-  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
+  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true, icon_svg: true }).shape,
 });
 
 export interface HistoryActor {

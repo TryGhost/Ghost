@@ -7,12 +7,14 @@ import {
   isInDevelopmentTable,
   shouldCreateInDevelopmentTables,
 } from '../../data/schema/in-development';
+import { sanitizeSvgContent } from '../../lib/image/svg-sanitizer';
 import {
   actingContext,
   recordAppInstallationAction,
   type RecordAppInstallationAction,
 } from './actions';
 import { createAppFetcher } from './fetch-from-app';
+import { createIconFetcher } from './fetch-icon';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
@@ -66,6 +68,11 @@ export default defineService(
           ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
           allowLocalhost: isDevelopment(),
         }),
+      }),
+      fetchIcon: createIconFetcher({
+        fetchFromApp,
+        logging,
+        sanitizeSvg: (svg) => sanitizeSvgContent(svg, { selfContained: true }),
       }),
     });
   },
