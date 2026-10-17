@@ -3,12 +3,12 @@ import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import { onTestFinished } from 'vitest';
 import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
-import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import type {
   ActionToInsert,
   EdgeRow,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
+import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
 // @ts-expect-error This module lacks type definitions.
