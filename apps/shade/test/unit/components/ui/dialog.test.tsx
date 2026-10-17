@@ -36,6 +36,40 @@ describe('Dialog Components', () => {
     assert.equal(trigger.textContent, 'Open Dialog', 'Trigger should have correct text');
   });
 
+  it('pins the dialog to the window by default', () => {
+    render(
+      <Dialog open>
+        <DialogContent data-testid="dialog-content">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByTestId('dialog-content');
+    assert.ok(content.className.includes('fixed'), 'Should be fixed in the window');
+  });
+
+  it('scrolls the whole dialog with the backdrop when scroll is overlay', () => {
+    render(
+      <Dialog open>
+        <DialogContent data-testid="dialog-content" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByTestId('dialog-content');
+    assert.ok(!content.className.includes('fixed'), 'Should sit in the backdrop, not the window');
+    const overlay = content.parentElement?.parentElement;
+    assert.ok(
+      overlay?.className.includes('overflow-y-auto'),
+      'The backdrop should be the scroll container',
+    );
+    assert.ok(overlay?.className.includes('fixed'), 'The backdrop should cover the window');
+  });
+
   it('applies custom className to DialogHeader correctly', () => {
     render(
       <Dialog open>

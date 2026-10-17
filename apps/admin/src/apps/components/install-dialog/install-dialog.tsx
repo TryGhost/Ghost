@@ -129,10 +129,11 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
         }
       }}
     >
-      {/* The review is long enough to need its own scroll on short screens. */}
+      {/* The review can be taller than a short screen; the backdrop then scrolls the whole dialog. */}
       <DialogContent
-        className="max-h-[calc(100dvh-2rem)] max-w-md overflow-x-hidden overflow-y-auto"
+        className="max-w-md overflow-x-hidden"
         data-testid="app-install-dialog"
+        scroll="overlay"
       >
         {content}
       </DialogContent>
