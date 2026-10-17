@@ -1,50 +1,12 @@
 import errors from '@tryghost/errors';
-import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
-import { z } from 'zod';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
-import {
-  AppInstallationRow,
-  CurrentInstallationRow,
-  type AppInstallation,
-  type CurrentInstallation,
-} from './codec';
-import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
-import { changesFrom, transition, type AppManifestChange, type Transition } from './lifecycle';
+import type { AppInstallation, CurrentInstallation } from './codec';
+import { changesFrom, transition, type AppManifestChange } from './lifecycle';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
-import { DbAppInstallation, DbAppInstallationManifest, type AppInstallationStatus } from './schema';
-
-const INSTALLATIONS = 'app_installations';
-const MANIFESTS = 'app_installation_manifests';
-
-const HistoryManifestRow = DbAppInstallationManifest.pick({
-  id: true,
-  manifest_url: true,
-  source: true,
-  requires_approval: true,
-  created_at: true,
-});
-
-const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
-
-const HistoryActionRow = z
-  .object({
-    id: z.string(),
-    event: z.string(),
-    actor_id: z.string(),
-    actor_name: z.string().nullable(),
-    context: z.string().nullable(),
-    created_at: DbDate,
-  })
-  .transform((row): HistoryAction => ({
-    id: row.id,
-    event: row.event,
-    context: row.context,
-    created_at: row.created_at,
-    actor: { id: row.actor_id, name: row.actor_name },
-  }));
+import type { AppInstallationStatus } from './schema';
+import { AppInstallationsStore, type Applied } from './store';
 
 export type { AppInstallation, AppInstallationHistoryEntry } from './codec';
 export type { AppManifestChange } from './lifecycle';
@@ -106,158 +68,8 @@ function uninstalled() {
   });
 }
 
-function isUniqueViolation(err: unknown): boolean {
-  const code = (err as { code?: unknown } | null)?.code;
-  return (
-    code === 'ER_DUP_ENTRY' || (typeof code === 'string' && code.startsWith('SQLITE_CONSTRAINT'))
-  );
-}
-
-function joinApprovedManifest(db: Knex | Knex.Transaction) {
-  return db(`${INSTALLATIONS} as installation`).join(
-    `${MANIFESTS} as approved`,
-    'approved.id',
-    'installation.manifest_id',
-  );
-}
-
-/**
- * Finds an installation that hasn't been uninstalled, by installation ID or app ID, joined
- * with its approved manifest and the pending one's digest. By ID, uninstalled rows are
- * skipped by status. By app ID, the lookup uses `current_app_id`, which uninstalling clears.
- */
-async function currentInstallation(
-  by: { id: string } | { appId: string },
-  db: Knex | Knex.Transaction,
-): Promise<CurrentInstallation | undefined> {
-  const query = joinApprovedManifest(db).leftJoin(
-    `${MANIFESTS} as pending`,
-    'pending.id',
-    'installation.pending_manifest_id',
-  );
-  if ('id' in by) {
-    query.where('installation.id', by.id).whereNot('installation.status', 'uninstalled');
-  } else {
-    query.where('installation.current_app_id', by.appId);
-  }
-  const row = await query.first<z.input<typeof CurrentInstallationRow> | undefined>(
-    'installation.id',
-    'installation.app_id',
-    'installation.status',
-    'installation.manifest_id',
-    'installation.pending_manifest_id',
-    'installation.revision',
-    'approved.manifest_url',
-    'approved.manifest',
-    'pending.digest as pending_digest',
-  );
-  return row ? z.decode(CurrentInstallationRow, row) : undefined;
-}
-
-/**
- * What applying a transition did. `applied` says the approved manifest ID before and after.
- * Nothing is written if the transition goes nowhere (`unchanged`), or if the installation has
- * been uninstalled since it was read (`gone`) or changed (`stale`).
- */
-type Applied =
-  | { outcome: 'applied'; from: string; to: string }
-  | { outcome: 'unchanged' | 'gone' | 'stale' };
-
-const RevisionRow = DbAppInstallation.pick({ revision: true });
-
-/** Reads the revision of an installation that hasn't been uninstalled. */
-function currentRevision(db: Knex | Knex.Transaction, id: string) {
-  return db(INSTALLATIONS)
-    .where({ id })
-    .whereNot('status', 'uninstalled')
-    .first<z.input<typeof RevisionRow> | undefined>('revision');
-}
-
-function revisionOf(row: z.input<typeof RevisionRow> | undefined): number | undefined {
-  return row ? z.decode(RevisionRow, row).revision : undefined;
-}
-
-/** Writes a transition, in `applyTransition`'s transaction. */
-async function writeTransition(
-  trx: Knex.Transaction,
-  installation: CurrentInstallation,
-  next: Transition,
-): Promise<Applied> {
-  if (next.to === 'same') {
-    return { outcome: 'unchanged' };
-  }
-  const now = toDatabaseDate(new Date());
-  const changed = { revision: trx.raw('?? + 1', ['revision']), updated_at: now };
-  const unmoved = {
-    outcome: 'applied',
-    from: installation.manifest_id,
-    to: installation.manifest_id,
-  } as const;
-
-  if (next.to === 'uninstalled') {
-    await trx(INSTALLATIONS)
-      .where({ id: installation.id })
-      // In the same update as `status`, so the two always agree.
-      .update({ ...changed, current_app_id: null, status: 'uninstalled' });
-    return unmoved;
-  }
-
-  let manifestId: string;
-  if ('approvedManifestId' in next) {
-    manifestId = next.approvedManifestId;
-  } else {
-    const { manifest, source, requiresApproval } = next.stores;
-    manifestId = new ObjectId().toHexString();
-    await trx(MANIFESTS).insert({
-      id: manifestId,
-      installation_id: installation.id,
-      manifest_url: manifest.manifestUrl,
-      manifest: manifest.serialised,
-      digest: manifest.digest,
-      source,
-      requires_approval: requiresApproval,
-      created_at: now,
-    });
-  }
-
-  if (next.to === 'suspended') {
-    await trx(INSTALLATIONS)
-      .where({ id: installation.id })
-      .update({ ...changed, status: 'suspended', pending_manifest_id: manifestId });
-    return unmoved;
-  }
-  await trx(INSTALLATIONS)
-    .where({ id: installation.id })
-    .update({ ...changed, status: 'active', manifest_id: manifestId, pending_manifest_id: null });
-  return { outcome: 'applied', from: installation.manifest_id, to: manifestId };
-}
-
-/**
- * Applies `next`, a transition decided from the installation as it was read. Every change
- * moves the revision on, so the transition only goes ahead while the installation is still
- * at `installation.revision`. A transition that doesn't depend on what the installation runs
- * can go ahead `atAnyRevision`.
- */
-async function applyTransition(
-  knex: Knex,
-  installation: CurrentInstallation,
-  next: Transition,
-  { atAnyRevision = false }: { atAnyRevision?: boolean } = {},
-): Promise<Applied> {
-  return knex.transaction(async (trx): Promise<Applied> => {
-    const revision = revisionOf(await currentRevision(trx, installation.id).forUpdate());
-    if (revision === undefined) {
-      return { outcome: 'gone' };
-    }
-    if (revision !== installation.revision && !atAnyRevision) {
-      return { outcome: 'stale' };
-    }
-    return writeTransition(trx, installation, next);
-  });
-}
-
 export class AppInstallationsService {
-  private knex: Knex;
+  private store: AppInstallationsStore;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
@@ -272,32 +84,14 @@ export class AppInstallationsService {
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
   }) {
-    this.knex = knex;
+    this.store = new AppInstallationsStore(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
   }
 
-  /** Installations joined with their approved manifests, in the shape the Admin API returns. */
-  private withApprovedManifest() {
-    return joinApprovedManifest(this.knex).select<z.input<typeof AppInstallationRow>[]>(
-      'installation.id',
-      'installation.app_id',
-      'installation.status',
-      'installation.revision',
-      'approved.manifest_url',
-      'approved.manifest',
-      'installation.created_at',
-      'installation.updated_at',
-    );
-  }
-
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
-  async browse(): Promise<AppInstallation[]> {
-    const rows = await this.withApprovedManifest()
-      .whereNot('installation.status', 'uninstalled')
-      .orderBy('installation.created_at', 'asc')
-      .orderBy('installation.id', 'asc');
-    return rows.map((row) => z.decode(AppInstallationRow, row));
+  browse(): Promise<AppInstallation[]> {
+    return this.store.list();
   }
 
   /**
@@ -308,81 +102,18 @@ export class AppInstallationsService {
     id: string,
     { withHistory = false }: { withHistory?: boolean } = {},
   ): Promise<AppInstallation> {
-    const installation = await this.find(id);
+    const installation = await this.store.find(id);
     if (!installation) {
       throw notFound();
     }
     if (withHistory) {
-      installation.history = await this.historyOf(id);
+      installation.history = await this.store.history(id);
     }
     return installation;
   }
 
-  /** An installation by ID, uninstalled or not. */
-  private async find(id: string): Promise<AppInstallation | undefined> {
-    const [row] = await this.withApprovedManifest().where('installation.id', id);
-    return row ? z.decode(AppInstallationRow, row) : undefined;
-  }
-
-  private async historyOf(id: string): Promise<AppInstallation['history']> {
-    const manifestRows = this.knex(MANIFESTS)
-      .where({ installation_id: id })
-      .orderBy('created_at', 'asc')
-      .orderBy('id', 'asc')
-      .select<z.input<typeof HistoryManifestRow>[]>(
-        'id',
-        'manifest_url',
-        'source',
-        'requires_approval',
-        'created_at',
-      );
-    const actionRows = this.knex('actions as action')
-      // Left join, so actions by deleted users still show, just without a name.
-      .leftJoin('users as actor', 'actor.id', 'action.actor_id')
-      .where({ 'action.resource_type': 'app_installation', 'action.resource_id': id })
-      .orderBy('action.created_at', 'asc')
-      .orderBy('action.id', 'asc')
-      .select<z.input<typeof HistoryActionRow>[]>(
-        'action.id',
-        'action.event',
-        'action.actor_id',
-        'action.context',
-        'action.created_at',
-        'actor.name as actor_name',
-      );
-    const [manifestData, actionData] = await Promise.all([manifestRows, actionRows]);
-    const manifests = manifestData.map((row) => z.decode(HistoryManifestRow, row));
-    const actions = actionData.map((row) => z.decode(HistoryActionRow, row));
-    return buildHistory(
-      manifests,
-      actions,
-      await this.loadManifestContents(approvalManifestIds(actions)),
-    );
-  }
-
-  /**
-   * Loads the contents of these manifests, by id.
-   * A row that no longer decodes is skipped, so one bad row can't break the page.
-   */
-  private async loadManifestContents(ids: string[]): Promise<Map<string, AppManifest>> {
-    if (ids.length === 0) {
-      return new Map();
-    }
-    const rows = await this.knex(MANIFESTS)
-      .whereIn('id', ids)
-      .select<z.input<typeof ManifestContentRow>[]>('id', 'manifest');
-    const contents = new Map<string, AppManifest>();
-    for (const row of rows) {
-      const decoded = ManifestContentRow.safeDecode(row);
-      if (decoded.success) {
-        contents.set(decoded.data.id, decoded.data.manifest);
-      }
-    }
-    return contents;
-  }
-
   private async previewOf(incoming: LoadedManifest): Promise<AppInstallationPreview> {
-    const installation = await currentInstallation({ appId: incoming.manifest.id }, this.knex);
+    const installation = await this.store.current({ appId: incoming.manifest.id });
     return {
       manifest_url: incoming.manifestUrl,
       manifest: incoming.manifest,
@@ -429,80 +160,16 @@ export class AppInstallationsService {
     context: RequestContext,
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<AppInstallation> {
-    return this.insert(context, await this.fetchReviewed(manifestUrl, digest));
-  }
-
-  /**
-   * Every install creates a new installation with a new ID, reinstalls included; an
-   * uninstalled installation is never reused. The unique `current_app_id` column blocks a
-   * second installation of the same app, so when two installs race, one succeeds and the
-   * other gets `APP_ALREADY_INSTALLED`.
-   */
-  private async insert(context: RequestContext, loaded: LoadedManifest): Promise<AppInstallation> {
-    const { manifest } = loaded;
-    const id = new ObjectId().toHexString();
-    const manifestId = new ObjectId().toHexString();
-    const now = toDatabaseDate(new Date());
-    // The row as the read query would return it. Decoding it with the same codec gives the
-    // result without reading the row back.
-    const written: z.input<typeof AppInstallationRow> = {
-      id,
-      app_id: manifest.id,
-      status: 'active',
-      revision: 0,
-      manifest_url: loaded.manifestUrl,
-      manifest: loaded.serialised,
-      created_at: now,
-      updated_at: now,
-    };
-    for (let attempt = 0; ; attempt += 1) {
-      try {
-        await this.knex.transaction(async (trx) => {
-          await trx(INSTALLATIONS).insert({
-            id,
-            app_id: written.app_id,
-            current_app_id: written.app_id,
-            status: written.status,
-            manifest_id: manifestId,
-            created_at: now,
-            updated_at: now,
-          });
-          await trx(MANIFESTS).insert({
-            id: manifestId,
-            installation_id: id,
-            manifest_url: written.manifest_url,
-            manifest: loaded.serialised,
-            digest: loaded.digest,
-            source: 'install',
-            requires_approval: false,
-            created_at: now,
-          });
-        });
-        break;
-      } catch (err) {
-        // Duplicate inserts can deadlock when several confirmations compete for
-        // the unique current_app_id. MySQL rolls back the victim's transaction;
-        // retry the whole write so it either commits or sees the winning install.
-        if ((err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK' && attempt < 2) {
-          continue;
-        }
-        if (isUniqueViolation(err)) {
-          throw new errors.ConflictError({
-            message: `The app ${manifest.id} is already installed.`,
-            code: 'APP_ALREADY_INSTALLED',
-          });
-        }
-        throw err;
-      }
-    }
-
+    const reviewed = await this.fetchReviewed(manifestUrl, digest);
+    const { manifest } = reviewed;
+    const installation = await this.store.install(reviewed);
     await this.recordAction({
       context,
       event: 'installed',
-      subject: id,
+      subject: installation.id,
       details: { primary_name: manifest.name, app_id: manifest.id },
     });
-    return z.decode(AppInstallationRow, written);
+    return installation;
   }
 
   /**
@@ -521,11 +188,11 @@ export class AppInstallationsService {
     id: string,
     { manifestUrl, digest, revision }: { manifestUrl: string; digest: string; revision: number },
   ): Promise<AppInstallation> {
-    const installation = await currentInstallation({ id }, this.knex);
+    const installation = await this.store.current({ id });
     // No need to fetch for an uninstalled installation. Applying the transition at the
     // revision read here covers an uninstall or a change that happens during the fetch.
     if (!installation) {
-      throw (await this.find(id)) ? uninstalled() : notFound();
+      throw (await this.store.find(id)) ? uninstalled() : notFound();
     }
     const reviewed = await this.fetchReviewed(manifestUrl, digest);
     if (reviewed.manifest.id !== installation.app_id) {
@@ -573,11 +240,7 @@ export class AppInstallationsService {
     incoming: LoadedManifest,
     type: 'recheck' | 'approve',
   ): Promise<Applied> {
-    return applyTransition(
-      this.knex,
-      installation,
-      transition(installation, { type, manifest: incoming }),
-    );
+    return this.store.apply(installation, transition(installation, { type, manifest: incoming }));
   }
 
   /** The installation changed since the review, so the error carries a new preview. */
@@ -630,7 +293,7 @@ export class AppInstallationsService {
    * re-check does nothing, because the latest manifest may be older than that change.
    */
   private async recheckOnce(id: string): Promise<void> {
-    const installation = await currentInstallation({ id }, this.knex);
+    const installation = await this.store.current({ id });
     if (!installation) {
       throw notInstalled();
     }
@@ -667,7 +330,7 @@ export class AppInstallationsService {
     installation: CurrentInstallation,
     { code, message, context }: InstanceType<typeof errors.ValidationError>,
   ): Promise<void> {
-    const revision = revisionOf(await currentRevision(this.knex, installation.id));
+    const revision = await this.store.revision(installation.id);
     if (revision === undefined) {
       throw notInstalled();
     }
@@ -688,9 +351,9 @@ export class AppInstallationsService {
    * doesn't add a second entry to the history.
    */
   async uninstall(context: RequestContext, id: string): Promise<void> {
-    const installation = await currentInstallation({ id }, this.knex);
+    const installation = await this.store.current({ id });
     if (!installation) {
-      if (!(await this.find(id))) {
+      if (!(await this.store.find(id))) {
         throw notFound();
       }
       return;
@@ -698,9 +361,7 @@ export class AppInstallationsService {
     // Uninstalling doesn't depend on what the installation runs, so it goes ahead at any
     // revision.
     const next = transition(installation, { type: 'uninstall' });
-    const { outcome } = await applyTransition(this.knex, installation, next, {
-      atAnyRevision: true,
-    });
+    const { outcome } = await this.store.apply(installation, next, { atAnyRevision: true });
     if (outcome !== 'applied') {
       return;
     }
