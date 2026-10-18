@@ -57,15 +57,15 @@ export type Applied =
 
 const MAX_TRANSACTION_ATTEMPTS = 3;
 
-function errorCode(err: unknown): unknown {
-  return (err as { code?: unknown } | null)?.code;
+const DatabaseError = z.object({ code: z.string() });
+
+function errorCode(err: unknown): string | undefined {
+  return DatabaseError.safeParse(err).data?.code;
 }
 
 function isUniqueViolation(err: unknown): boolean {
   const code = errorCode(err);
-  return (
-    code === 'ER_DUP_ENTRY' || (typeof code === 'string' && code.startsWith('SQLITE_CONSTRAINT'))
-  );
+  return code === 'ER_DUP_ENTRY' || code?.startsWith('SQLITE_CONSTRAINT') === true;
 }
 
 /**
