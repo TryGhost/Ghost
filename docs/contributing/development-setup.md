@@ -106,7 +106,7 @@ credentials.
 As a quick health check, confirm that the site and Admin load.
 
 Admin's development server proxies `/.ghost/activitypub/*` and
-`/.well-known/webfinger|nodeinfo` to the
+`/.well-known/webfinger|nodeinfo|atproto-did` to the
 [ActivityPub](https://github.com/TryGhost/ActivityPub) project's local service
 at `127.0.0.1:8080` by default. Override the target with
 `ACTIVITYPUB_PROXY_TARGET` if needed. When nothing is listening, those routes

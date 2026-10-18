@@ -24,13 +24,84 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import {
   useAccountForUser,
+  useClaimBlueskyDomainHandleMutationForUser,
   useConfirmBlueskyHandleMutationForUser,
   useDisableBlueskyMutationForUser,
   useEnableBlueskyMutationForUser,
+  useResetBlueskyHandleMutationForUser,
 } from '@hooks/use-activity-pub-queries';
+import type { BlueskyDomainHandle } from '@src/api/activitypub';
 
 const CONFIRMATION_INTERVAL = 5000;
 const MAX_CONFIRMATION_RETRIES = 12;
+// Bridgy Fed usually switches the handle within a minute
+const MAX_DOMAIN_HANDLE_CHECKS = 24;
+const DOMAIN_HANDLE_HELP_URL = 'https://ghost.org/help/social-web/';
+
+const LearnMore: React.FC = () => (
+  <a
+    className="text-purple hover:text-purple-600"
+    href={DOMAIN_HANDLE_HELP_URL}
+    rel="noreferrer"
+    target="_blank"
+  >
+    Learn more
+  </a>
+);
+
+const DomainHandleStatus: React.FC<{
+  domainHandle: BlueskyDomainHandle;
+  busy: boolean;
+  onClaim: () => void;
+  onReset: () => void;
+}> = ({ domainHandle, busy, onClaim, onReset }) => {
+  const domain = `@${domainHandle.domain}`;
+
+  switch (domainHandle.status) {
+    case 'claiming':
+      return (
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-700 dark:text-gray-600">
+          <LoadingIndicator size="sm" />
+          <span>Switching your Bluesky handle to {domain}...</span>
+        </div>
+      );
+    case 'active':
+      return (
+        <p className="text-center text-sm text-gray-700 dark:text-gray-600">
+          Your site&apos;s domain is your Bluesky handle.{' '}
+          <Button className="h-auto p-0 text-sm" disabled={busy} variant="link" onClick={onReset}>
+            Use the default handle instead
+          </Button>
+        </p>
+      );
+    case 'unavailable':
+      return (
+        <div className="flex flex-col items-center gap-2 text-center text-sm text-gray-700 dark:text-gray-600">
+          <p>
+            {domainHandle.reason === 'taken'
+              ? `${domain} is already used by another Bluesky account, so Bridgy Fed's default handle is used instead.`
+              : domainHandle.reason === 'not_reachable'
+                ? `Your site isn't set up to use ${domain} as your Bluesky handle yet, so Bridgy Fed's default handle is used instead.`
+                : `${domain} couldn't be set up as your Bluesky handle, so Bridgy Fed's default handle is used instead.`}{' '}
+            <LearnMore />
+          </p>
+          <Button disabled={busy} size="sm" variant="outline" onClick={onClaim}>
+            {busy ? <LoadingIndicator size="sm" /> : 'Try again'}
+          </Button>
+        </div>
+      );
+    case 'opted_out':
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <Button disabled={busy} size="sm" variant="outline" onClick={onClaim}>
+            {busy ? <LoadingIndicator size="sm" /> : `Use ${domain} as your handle`}
+          </Button>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
 const BlueskySharing: React.FC = () => {
   const { data: account, isLoading: isLoadingAccount } = useAccountForUser('index', 'me');
@@ -41,10 +112,18 @@ const BlueskySharing: React.FC = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [handleConfirmed, setHandleConfirmed] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const retryCountRef = useRef(0);
   const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
   const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
   const confirmBlueskyHandleMutation = useConfirmBlueskyHandleMutationForUser('index');
+  const claimBlueskyDomainHandleMutation = useClaimBlueskyDomainHandleMutationForUser('index');
+  const resetBlueskyHandleMutation = useResetBlueskyHandleMutationForUser('index');
+  const domainHandle = account?.blueskyDomainHandle ?? null;
+  const domainHandleStatus = domainHandle?.status ?? null;
+  const siteDomain = account?.handle?.split('@').pop() || 'your domain';
+  const isUpdatingDomainHandle =
+    claimBlueskyDomainHandleMutation.isPending || resetBlueskyHandleMutation.isPending;
 
   const handleCopy = async () => {
     setCopied(true);
@@ -78,12 +157,34 @@ const BlueskySharing: React.FC = () => {
   };
 
   const confirmHandle = useCallback(() => {
-    confirmBlueskyHandleMutation.mutateAsync().then((handle) => {
-      if (handle) {
-        setHandleConfirmed(true);
-      }
-    });
+    confirmBlueskyHandleMutation
+      .mutateAsync()
+      .then(({ handle }) => {
+        if (handle) {
+          setHandleConfirmed(true);
+        }
+      })
+      .catch(() => {
+        // Errors are handled by the mutation, the next check retries
+      });
   }, []); // Empty deps - mutations are stable in practice
+
+  const handleClaimDomainHandle = async () => {
+    try {
+      await claimBlueskyDomainHandleMutation.mutateAsync();
+    } catch {
+      toast.error('Something went wrong, please try again.');
+    }
+  };
+
+  const handleResetHandle = async () => {
+    try {
+      await resetBlueskyHandleMutation.mutateAsync();
+      setShowResetConfirm(false);
+    } catch {
+      toast.error('Something went wrong, please try again.');
+    }
+  };
 
   useEffect(() => {
     if (!account?.blueskyEnabled) {
@@ -130,6 +231,44 @@ const BlueskySharing: React.FC = () => {
 
     return () => clearInterval(confirmHandleInterval);
   }, [account?.blueskyEnabled, account?.blueskyHandleConfirmed, confirmHandle]); // disableBlueskyMutation is stable
+
+  // Once the handle is confirmed, the domain handle is set up on the next
+  // check - this also switches accounts that were connected before domain
+  // handles existed. Keep checking while it's being switched
+  const shouldCheckDomainHandle =
+    !!account?.blueskyEnabled &&
+    !!account?.blueskyHandleConfirmed &&
+    (domainHandleStatus === null ||
+      domainHandleStatus === 'claiming' ||
+      domainHandleStatus === 'released');
+
+  useEffect(() => {
+    if (!shouldCheckDomainHandle) {
+      return;
+    }
+
+    confirmHandle();
+
+    if (domainHandleStatus !== 'claiming') {
+      return;
+    }
+
+    let checks = 0;
+
+    const domainHandleInterval = setInterval(() => {
+      checks += 1;
+
+      if (checks > MAX_DOMAIN_HANDLE_CHECKS) {
+        clearInterval(domainHandleInterval);
+
+        return;
+      }
+
+      confirmHandle();
+    }, CONFIRMATION_INTERVAL);
+
+    return () => clearInterval(domainHandleInterval);
+  }, [shouldCheckDomainHandle, domainHandleStatus, confirmHandle]);
 
   if (isLoadingAccount) {
     return (
@@ -188,8 +327,8 @@ const BlueskySharing: React.FC = () => {
               )}
             </p>
             <p className="-mt-2 text-base">
-              You can&apos;t change your Bluesky username, so make sure you&apos;re happy with your
-              current social web handle before connecting.
+              Your Bluesky handle will be @{siteDomain}, unless another Bluesky account already uses
+              it. <LearnMore />
             </p>
             {!account?.avatarUrl ? (
               <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
@@ -317,6 +456,14 @@ const BlueskySharing: React.FC = () => {
                     <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
                   </a>
                 </Button>
+                {domainHandle && (
+                  <DomainHandleStatus
+                    busy={isUpdatingDomainHandle}
+                    domainHandle={domainHandle}
+                    onClaim={handleClaimDomainHandle}
+                    onReset={() => setShowResetConfirm(true)}
+                  />
+                )}
               </div>
             )}
           </>
@@ -343,6 +490,35 @@ const BlueskySharing: React.FC = () => {
               }}
             >
               {loading ? <LoadingIndicator color="light" size="sm" /> : 'Disable'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Use the default Bluesky handle?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your Bluesky handle will change to the one Bridgy Fed creates from your social web
+              handle. Your followers and posts stay the same, and you can switch back to your domain
+              at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isUpdatingDomainHandle}
+              onClick={(e) => {
+                e.preventDefault();
+                handleResetHandle();
+              }}
+            >
+              {isUpdatingDomainHandle ? (
+                <LoadingIndicator color="light" size="sm" />
+              ) : (
+                'Use default handle'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

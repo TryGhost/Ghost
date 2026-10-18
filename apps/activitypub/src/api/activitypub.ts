@@ -29,6 +29,34 @@ export interface Account {
   blueskyEnabled?: boolean;
   blueskyHandleConfirmed?: boolean;
   blueskyHandle?: string | null;
+  blueskyDomainHandle?: BlueskyDomainHandle | null;
+}
+
+export type BlueskyDomainHandleStatus =
+  | 'claiming'
+  | 'active'
+  | 'unavailable'
+  | 'opted_out'
+  | 'released';
+
+export type BlueskyDomainHandleReason = 'taken' | 'not_reachable' | 'dns_error' | 'rejected';
+
+/**
+ * Whether the site's domain is (or is becoming) the Bluesky handle, or why it
+ * can't be
+ */
+export interface BlueskyDomainHandle {
+  domain: string;
+  status: BlueskyDomainHandleStatus;
+  reason: BlueskyDomainHandleReason | null;
+}
+
+export interface BlueskyHandleDetails {
+  /**
+   * The confirmed Bluesky handle, or an empty string if it isn't confirmed yet
+   */
+  handle: string;
+  domainHandle: BlueskyDomainHandle | null;
 }
 
 export type AccountSearchResult = Pick<
@@ -957,15 +985,50 @@ export class ActivityPubAPI {
     await this.fetchJSON(url, 'POST');
   }
 
-  async confirmBlueskyHandle(): Promise<string> {
+  async confirmBlueskyHandle(): Promise<BlueskyHandleDetails> {
     const url = new URL('.ghost/activitypub/v2/actions/bluesky/confirm-handle', this.apiUrl);
 
-    const json = await this.fetchJSON(url, 'POST');
+    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'POST'));
+  }
 
-    if (json === null || !('handle' in json) || typeof json.handle !== 'string') {
-      return '';
+  async claimBlueskyDomainHandle(): Promise<BlueskyHandleDetails> {
+    const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
+
+    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'POST'));
+  }
+
+  async resetBlueskyHandle(): Promise<BlueskyHandleDetails> {
+    const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
+
+    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'DELETE'));
+  }
+
+  private parseBlueskyHandleDetails(json: object | null): BlueskyHandleDetails {
+    const handle =
+      json !== null && 'handle' in json && typeof json.handle === 'string' ? json.handle : '';
+
+    let domainHandle: BlueskyDomainHandle | null = null;
+
+    if (
+      json !== null &&
+      'domainHandle' in json &&
+      json.domainHandle !== null &&
+      typeof json.domainHandle === 'object' &&
+      'domain' in json.domainHandle &&
+      typeof json.domainHandle.domain === 'string' &&
+      'status' in json.domainHandle &&
+      typeof json.domainHandle.status === 'string'
+    ) {
+      domainHandle = {
+        domain: json.domainHandle.domain,
+        status: json.domainHandle.status as BlueskyDomainHandleStatus,
+        reason:
+          'reason' in json.domainHandle && typeof json.domainHandle.reason === 'string'
+            ? (json.domainHandle.reason as BlueskyDomainHandleReason)
+            : null,
+      };
     }
 
-    return String(json.handle);
+    return { handle, domainHandle };
   }
 }
