@@ -83,8 +83,28 @@ describe('lib/image: svg-sanitizer', function () {
       assert.match(svg, /fill="url\(https:\/\/tracker\.example\.net\/paint\.svg#a\)"/);
     });
 
+    it('refuses content that is not an SVG with something in it', function () {
+      for (const content of ['<html><body>Not found</body></html>', 'GIF89a', '<svg></svg>']) {
+        assert.equal(sanitizeSvgContent(content), null, content);
+        assert.equal(sanitizeSvgContent(content, { selfContained: true }), null, content);
+      }
+    });
+
     describe('self-contained', function () {
       const selfContained = (svg: string) => sanitizeSvgContent(svg, { selfContained: true });
+
+      it('removes anything that could run', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24" onload="alert(1)">
+          <script>alert(2)</script>
+          <foreignObject><img src="x" onerror="alert(3)"/></foreignObject>
+          <path d="M0 0h24v24H0z"/>
+        </svg>`)!;
+
+        assert.doesNotMatch(svg, /script|alert|onload|onerror|foreignObject|<img/i);
+        assert.match(svg, /^<svg [^>]*viewBox="0 0 24 24">/);
+        assert.match(svg, /<path d="M0 0h24v24H0z"\/>/);
+      });
 
       it('removes every reference to another document', function () {
         const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg"

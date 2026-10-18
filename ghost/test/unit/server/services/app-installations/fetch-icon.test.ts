@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
-import got from 'got';
-import nock from 'nock';
-import sinon from 'sinon';
-import { sanitizeSvgContent } from '../../../../../core/server/lib/image/svg-sanitizer';
-import { createAppFetcher } from '../../../../../core/server/services/app-installations/fetch-from-app';
+import { vi } from 'vitest';
+import type {
+  AppFetchFailure,
+  AppFetchResult,
+  FetchFromApp,
+} from '../../../../../core/server/services/app-installations/fetch-from-app';
 import {
   createIconFetcher,
   type SanitizeSvg,
 } from '../../../../../core/server/services/app-installations/fetch-icon';
 
-const ICON_HOST = 'https://podcast.example.com';
-const ICON_URL = `${ICON_HOST}/icon.svg`;
+const ICON_URL = 'https://podcast.example.com/icon.svg';
 const ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></svg>';
 
@@ -38,180 +38,122 @@ function assertRefused(err: Refusal, message: string) {
   assert.deepEqual(err.errorDetails, [{ path: 'icon.url', message }]);
 }
 
+const failing = (failure: AppFetchFailure): AppFetchResult => ({ success: false, failure });
+
+function setup({
+  fetched = { success: true, url: ICON_URL, text: ICON },
+  sanitized = ICON,
+}: { fetched?: AppFetchResult; sanitized?: string | null } = {}) {
+  const fetchFromApp = vi.fn<FetchFromApp>(async () => fetched);
+  const sanitizeSvg = vi.fn<SanitizeSvg>(() => sanitized);
+  const warn = vi.fn();
+  const fetchIcon = createIconFetcher({ fetchFromApp, logging: { warn }, sanitizeSvg });
+  return { fetchIcon, fetchFromApp, sanitizeSvg, warn };
+}
+
 describe('createIconFetcher', function () {
-  beforeAll(function () {
-    nock.disableNetConnect();
+  it('keeps nothing for an icon Admin ships, without fetching it', async function () {
+    const { fetchIcon, fetchFromApp } = setup();
+
+    assert.equal(await fetchIcon({ name: 'audio-lines' }), null);
+    assert.equal(fetchFromApp.mock.calls.length, 0);
   });
 
-  afterEach(function () {
-    nock.cleanAll();
+  it('asks the app for an SVG of at most 16 KB', async function () {
+    const { fetchIcon, fetchFromApp } = setup();
+
+    await fetchIcon({ url: ICON_URL });
+
+    assert.deepEqual(fetchFromApp.mock.calls, [
+      [ICON_URL, { accept: 'image/svg+xml', maxBytes: 16 * 1024 }],
+    ]);
   });
 
-  afterAll(function () {
-    nock.enableNetConnect();
-  });
+  it('keeps the sanitized copy of the SVG the app serves', async function () {
+    const sanitized = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg>';
+    const { fetchIcon, sanitizeSvg } = setup({ sanitized });
 
-  const selfContained: SanitizeSvg = (svg) => sanitizeSvgContent(svg, { selfContained: true });
-
-  const fetcher = ({
-    alias = null,
-    logging = { warn: sinon.stub() },
-    sanitizeSvg = selfContained,
-  }: {
-    alias?: string | null;
-    logging?: { warn(value: unknown): void };
-    sanitizeSvg?: SanitizeSvg;
-  } = {}) =>
-    createIconFetcher({
-      fetchFromApp: createAppFetcher({ request: got, getLocalhostAlias: () => alias }),
-      logging,
-      sanitizeSvg,
-    });
-
-  it('keeps nothing for an icon Admin ships, without any request', async function () {
-    assert.equal(await fetcher()({ name: 'audio-lines' }), null);
-  });
-
-  it('keeps a sanitized copy of an SVG the app serves', async function () {
-    nock(ICON_HOST, { reqheaders: { accept: 'image/svg+xml' } })
-      .get('/icon.svg')
-      .reply(200, ICON);
-
-    assert.equal(await fetcher()({ url: ICON_URL }), ICON);
-  });
-
-  it('keeps nothing that could run, or load anything, when the copy is drawn', async function () {
-    nock(ICON_HOST)
-      .get('/icon.svg')
-      .reply(
-        200,
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" onload="alert(1)">
-          <script>alert(2)</script>
-          <image href="https://tracker.example.net/pixel.png" width="1" height="1"/>
-          <foreignObject><img src="x" onerror="alert(3)"/></foreignObject>
-          <path d="M0 0h24v24H0z"/>
-        </svg>`,
-      );
-
-    const svg = (await fetcher()({ url: ICON_URL }))!;
-
-    assert.doesNotMatch(svg, /script|alert|onload|onerror|<image|foreignObject|<img|tracker/i);
-    assert.match(svg, /^<svg [^>]*viewBox="0 0 24 24">/);
-    assert.match(svg, /<path d="M0 0h24v24H0z"\/>/);
-  });
-
-  it('reads a localhost icon through the alias, with its own host', async function () {
-    nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
-      .get('/icon.svg')
-      .reply(200, ICON);
-
-    assert.equal(
-      await fetcher({ alias: 'host.docker.internal' })({ url: 'http://localhost:8787/icon.svg' }),
-      ICON,
-    );
-  });
-
-  it('follows a redirect on the same host', async function () {
-    nock(ICON_HOST)
-      .get('/icon.svg')
-      .reply(302, '', { location: '/v2/icon.svg' })
-      .get('/v2/icon.svg')
-      .reply(200, ICON);
-
-    assert.equal(await fetcher()({ url: ICON_URL }), ICON);
-  });
-
-  it('refuses an icon that redirects to another host, without following it', async function () {
-    nock(ICON_HOST)
-      .get('/icon.svg')
-      .reply(302, '', { location: 'https://elsewhere.example.net/icon.svg' });
-    const elsewhere = nock('https://elsewhere.example.net').get('/icon.svg').reply(200, ICON);
-
-    const err = await refusal(fetcher()({ url: ICON_URL }));
-
-    assertRefused(err, 'Expected an icon on its own host, not a redirect to elsewhere.example.net');
-    assert.equal(elsewhere.isDone(), false);
-  });
-
-  it('refuses an icon that does not load, saying only how the app answered', async function () {
-    const warn = sinon.stub();
-    nock(ICON_HOST).get('/icon.svg').reply(404);
-
-    const err = await refusal(fetcher({ logging: { warn } })({ url: ICON_URL }));
-
-    assertRefused(err, 'Expected an icon that loads, not HTTP 404');
-    sinon.assert.calledWith(warn, `Could not load the app icon at ${ICON_URL}`);
-  });
-
-  it('logs why an icon could not be reached, without saying so to the caller', async function () {
-    const warn = sinon.stub();
-    nock(ICON_HOST)
-      .get('/icon.svg')
-      .replyWithError('Connection failed at a private upstream address');
-
-    const err = await refusal(fetcher({ logging: { warn } })({ url: ICON_URL }));
-
-    assertRefused(err, 'Expected an icon that loads');
-    sinon.assert.calledTwice(warn);
-    sinon.assert.calledWithExactly(warn.firstCall, `Could not load the app icon at ${ICON_URL}`);
-    const failure = warn.secondCall.args[0];
-    assert.ok(failure instanceof Error);
-    assert.equal(failure.message, 'Connection failed at a private upstream address');
-  });
-
-  it('refuses a redirect to a Location that is not a URL as an icon that does not load', async function () {
-    const warn = sinon.stub();
-    nock(ICON_HOST).get('/icon.svg').reply(302, '', { location: 'http://[bad' });
-
-    const err = await refusal(fetcher({ logging: { warn } })({ url: ICON_URL }));
-
-    assertRefused(err, 'Expected an icon that loads, not HTTP 302');
-    sinon.assert.calledWith(warn, `Could not load the app icon at ${ICON_URL}`);
-    sinon.assert.calledWith(
-      warn,
-      `${ICON_URL} answered with HTTP 302 and a Location that is not a URL`,
-    );
-  });
-
-  it('refuses an icon larger than 16 KB', async function () {
-    nock(ICON_HOST)
-      .get('/icon.svg')
-      .reply(200, ICON.replace('</svg>', `<desc>${'x'.repeat(16 * 1024)}</desc></svg>`));
-
-    assertRefused(await refusal(fetcher()({ url: ICON_URL })), 'Expected an icon of at most 16 KB');
-  });
-
-  it('takes an icon of exactly 16 KB', async function () {
-    const padded = ICON.replace(
-      '</svg>',
-      `<desc>${'x'.repeat(16 * 1024 - ICON.length - '<desc></desc>'.length)}</desc></svg>`,
-    );
-    assert.equal(Buffer.byteLength(padded), 16 * 1024);
-    nock(ICON_HOST).get('/icon.svg').reply(200, padded);
-
-    assert.equal(await fetcher()({ url: ICON_URL }), padded);
-  });
-
-  // Sanitizing escapes text, so an icon can grow past the limit.
-  it('refuses an icon that is larger than 16 KB once sanitized', async function () {
-    const icon = `<svg xmlns="http://www.w3.org/2000/svg"><desc>${'>'.repeat(9000)}</desc></svg>`;
-    assert.ok(Buffer.byteLength(icon) < 16 * 1024);
-    nock(ICON_HOST).get('/icon.svg').reply(200, icon);
-
-    assertRefused(await refusal(fetcher()({ url: ICON_URL })), 'Expected an icon of at most 16 KB');
+    assert.equal(await fetchIcon({ url: ICON_URL }), sanitized);
+    assert.deepEqual(sanitizeSvg.mock.calls, [[ICON]]);
   });
 
   it('refuses an icon that is not an SVG image', async function () {
-    for (const body of [
-      '<html><body>Not found</body></html>',
-      'GIF89a',
-      '<svg></svg>',
-      // An app's own page, served for any path, with its logo in it.
-      `<!doctype html><html><body><header>${ICON} Podcast</header></body></html>`,
-    ]) {
-      nock(ICON_HOST).get('/icon.svg').reply(200, body);
+    const { fetchIcon } = setup({ sanitized: null });
 
-      assertRefused(await refusal(fetcher()({ url: ICON_URL })), 'Expected an SVG image');
-    }
+    assertRefused(await refusal(fetchIcon({ url: ICON_URL })), 'Expected an SVG image');
+  });
+
+  it('takes a sanitized copy of exactly 16 KB', async function () {
+    const sanitized = 'x'.repeat(16 * 1024);
+    const { fetchIcon } = setup({ sanitized });
+
+    assert.equal(await fetchIcon({ url: ICON_URL }), sanitized);
+  });
+
+  // Sanitizing escapes text, so the copy can be larger than the download it came from.
+  it('refuses a sanitized copy larger than 16 KB, counted in bytes', async function () {
+    const sanitized = 'é'.repeat(8 * 1024 + 1);
+    assert.ok(sanitized.length < 16 * 1024);
+    const { fetchIcon } = setup({ sanitized });
+
+    assertRefused(await refusal(fetchIcon({ url: ICON_URL })), 'Expected an icon of at most 16 KB');
+  });
+
+  describe('when the app can’t be read', function () {
+    it('refuses an icon that does not load, saying only the status and logging why', async function () {
+      const cause = new Error('Response code 404 (Not Found)');
+      const { fetchIcon, warn } = setup({
+        fetched: failing({ reason: 'unreachable', status: 404, cause }),
+      });
+
+      const err = await refusal(fetchIcon({ url: ICON_URL }));
+
+      assertRefused(err, 'Expected an icon that loads, not HTTP 404');
+      assert.deepEqual(warn.mock.calls, [[`Could not load the app icon at ${ICON_URL}`], [cause]]);
+    });
+
+    it('refuses an icon that can’t be reached, logging why without saying it', async function () {
+      const cause = new Error('Connection failed at a private upstream address');
+      const { fetchIcon, warn } = setup({ fetched: failing({ reason: 'unreachable', cause }) });
+
+      const err = await refusal(fetchIcon({ url: ICON_URL }));
+
+      assertRefused(err, 'Expected an icon that loads');
+      assert.deepEqual(warn.mock.calls, [[`Could not load the app icon at ${ICON_URL}`], [cause]]);
+    });
+
+    it('refuses a redirect to a Location that is not a URL as an icon that does not load', async function () {
+      const { fetchIcon, warn } = setup({
+        fetched: failing({ reason: 'location_not_url', status: 302 }),
+      });
+
+      const err = await refusal(fetchIcon({ url: ICON_URL }));
+
+      assertRefused(err, 'Expected an icon that loads, not HTTP 302');
+      assert.deepEqual(warn.mock.calls, [
+        [`Could not load the app icon at ${ICON_URL}`],
+        [`${ICON_URL} answered with HTTP 302 and a Location that is not a URL`],
+      ]);
+    });
+
+    it('refuses an icon that redirects to another host', async function () {
+      const { fetchIcon } = setup({
+        fetched: failing({ reason: 'redirected', host: 'elsewhere.example.net' }),
+      });
+
+      assertRefused(
+        await refusal(fetchIcon({ url: ICON_URL })),
+        'Expected an icon on its own host, not a redirect to elsewhere.example.net',
+      );
+    });
+
+    it('refuses an icon larger than 16 KB', async function () {
+      const { fetchIcon } = setup({ fetched: failing({ reason: 'too_large' }) });
+
+      assertRefused(
+        await refusal(fetchIcon({ url: ICON_URL })),
+        'Expected an icon of at most 16 KB',
+      );
+    });
   });
 });
