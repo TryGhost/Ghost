@@ -1,5 +1,6 @@
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
 import type { Got, PlainResponse } from 'got';
+import { z } from 'zod';
 
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
@@ -36,16 +37,11 @@ export type FetchFromApp = (
   options: { accept: string; maxBytes: number },
 ) => Promise<AppFetchResult>;
 
+const ErrorResponse = z.object({ response: z.object({ statusCode: z.number() }) });
+
 /** The HTTP status the app answered with, if it answered at all. */
 function statusOf(err: unknown): number | undefined {
-  if (typeof err !== 'object' || err === null || !('response' in err)) {
-    return undefined;
-  }
-  const { response } = err;
-  if (typeof response !== 'object' || response === null || !('statusCode' in response)) {
-    return undefined;
-  }
-  return typeof response.statusCode === 'number' ? response.statusCode : undefined;
+  return ErrorResponse.safeParse(err).data?.response.statusCode;
 }
 
 /** A redirect may stay on the host it started on, or move it from HTTP to HTTPS. */
