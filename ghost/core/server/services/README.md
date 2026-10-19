@@ -125,33 +125,61 @@ The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
 
-To inspect the remaining work across **all** entries:
+To inspect dependency violations across **all** entries:
 
 ```bash
-pnpm audit:services
-pnpm --silent audit:services:summary
-pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
+pnpm gx services audit
+pnpm gx services dependencies
+pnpm gx services audit --output-type json --output-to /tmp/service-dependencies.json
 ```
 
-The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
+The audit enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
 all entries, including those absent from the inventory. It uses Dependency
-Cruiser's built-in terminal report, with Markdown and JSON also available.
-The audit returns success even when it finds violations; the normal lint
-command fails on violations in migrated services. Reports list source files and
-dependency targets, without custom inventory grouping. Legacy root `index.js`
-files are treated as wiring
-candidates; imports there do not prove readiness for migration.
+Cruiser's built-in reports and returns success when it finds violations; the
+normal lint command fails on violations in migrated services. Legacy root
+`index.js` files are treated as wiring candidates; imports there do not prove
+readiness for migration.
 
-The optional summary requires `jq`. It groups `service-dependencies` findings
-by dependency and counts distinct importing implementation files, largest first.
-Multiple imports of the same target in one file count once. It does not include
-unresolved-import or own-root findings; use the detailed audit for those.
+`services dependencies` groups `service-dependencies` findings by dependency and
+counts distinct importing implementation files, largest first. Multiple imports
+of the same target in one file count once. It excludes unresolved-import and
+own-root findings; use `services audit` for those.
 
-Counts in the detailed report describe rule violations; one import can appear
+Counts in the native report describe rule violations; one import can appear
 under more than one rule. Review whether each dependency needs injection, a
-library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
-by this static check and are not separately scanned. Unresolved imports,
-globals, runtime state and initialization behavior still need tests and review.
+library allowance or an ownership change. Computed paths such as `require(name)`
+cannot be resolved by this static check and are not separately scanned.
+Unresolved imports, globals, runtime state and initialization behavior still
+need tests and review.
+
+### Migration reports
+
+`pnpm gx services report` shows migration totals. `pnpm gx services list` lists
+entries with their category and number of distinct disallowed dependency
+targets. Importing the same dependency from several files counts as one target.
+Unresolved imports and own-root imports have separate columns.
+`pnpm gx services report <entry>` shows the recorded reasons, assessment
+revisions, preparation and blockers alongside current offending imports.
+
+Categories come from the inventory, not dependency counts:
+
+- **Migrated:** marked `migrated: true`.
+- **Relocation candidate:** marked `disposition: relocate`.
+- **Ownership undecided:** marked `disposition: review`.
+- **Needs preparation:** either migration assessment is complex, or the overall
+  assessment identifies a possible model change.
+- **Straightforward:** both migration and dependency assessments are
+  straightforward, and the existing model fits. The list distinguishes entries
+  with disallowed dependencies from those with no dependency violations.
+
+Migration and ownership categories take precedence over complexity. Supporting
+code awaiting relocation is included in the catalogue total, separately from
+entries marked to remain as services. Malformed or incomplete assessments fail
+the report. Entries found by the audit but absent from the inventory are labelled
+**Not inventoried**; entries absent from the dependency graph have unknown counts.
+No dependency violations does not mean ready to migrate: recorded blockers,
+lifecycle behavior and test gaps still apply.
+See [gx](../../../../tools/gx/README.md#service-migration-reports) for commands.
 
 ### Migration assessment
 

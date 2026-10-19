@@ -96,6 +96,30 @@ Its database user needs permission to create and drop databases. It prints JSON
 metrics for preparing all members, rebuilding interrupted preparation and
 preparing a label segment. See [performance testing](../../docs/contributing/performance-testing.md).
 
+## Service migration reports
+
+These temporary commands combine the service inventory with the current
+Dependency Cruiser audit. Run them from the repository root:
+
+| Command                                 | Output                                                               |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| `pnpm gx services report`               | Migration totals and categories                                      |
+| `pnpm gx services list`                 | Entries, migration categories and dependency counts                  |
+| `pnpm gx services report email-address` | One entry's assessments, preparation, blockers and offending imports |
+| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files           |
+| `pnpm gx services audit`                | Dependency Cruiser's full native report                              |
+
+`report`, `list` and `dependencies` accept `--json` for structured output.
+`services audit` accepts the formatter's options, including
+`--output-type markdown` and `--output-type json --output-to /tmp/service-dependencies.json`.
+It replaces `pnpm audit:services`; `services dependencies` replaces
+`pnpm audit:services:summary` without requiring `jq`.
+
+Counts are calculated from the checkout, not stored in the inventory. The
+[services guide](../../ghost/core/server/services/README.md#migration-reports)
+explains the categories, counting rules and limits. The dependency policy,
+source resolver and CI enforcement remain shared with `pnpm lint:boundaries`.
+
 ## Validation
 
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly

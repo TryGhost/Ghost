@@ -149,13 +149,13 @@ boundary; see [its README](../../.github/scripts/i18n-review/README.md).
 
 ## Service dependency audit
 
-`pnpm audit:services` uses Dependency Cruiser's native reports. Pass
-`--output-type markdown` or `--output-type json` for saved output;
-`pnpm --silent audit:services:summary` uses local `jq` to summarise implementation
-violations. Rules and the allowlist live in `.dependency-cruiser.cjs`; the
+Contributor reports live in [gx](../gx/README.md#service-migration-reports):
+`pnpm gx services audit` provides Dependency Cruiser's native reports and
+`pnpm gx services dependencies` summarises disallowed dependencies. Rules and
+the allowlist remain in `.dependency-cruiser.cjs`; the resolver adapter in
+`ci/` supports both reporting and boundary lint. The
 [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
-defines their meaning. The resolver adapter in `ci/` supports that analysis;
-it does not implement a separate service CLI.
+defines the policy.
 
 ## TypeScript inventory
 
