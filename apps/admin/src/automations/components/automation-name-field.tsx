@@ -59,6 +59,10 @@ const AutomationNameField: React.FC<AutomationNameFieldProps> = ({ value, onChan
           selectOnRelease.current = true;
         }}
         onKeyDown={(event) => {
+          // Enter and Escape also confirm or cancel an IME candidate
+          if (event.nativeEvent.isComposing) {
+            return;
+          }
           if (event.key === 'Enter') {
             event.preventDefault();
             inputRef.current?.blur();

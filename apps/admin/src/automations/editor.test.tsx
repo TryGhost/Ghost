@@ -1126,6 +1126,27 @@ describe('AutomationEditor', () => {
     },
   );
 
+  it('leaves IME composition keys to the input method when renaming', () => {
+    mockLabs.current = { automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status: 'inactive' }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    const input = screen.getByRole('textbox', { name: 'Automation name' });
+    input.focus();
+    fireEvent.change(input, { target: { value: 'Draft name' } });
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue('Draft name');
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(input).not.toHaveFocus();
+    expect(input).toHaveValue(automationDetail.name);
+  });
+
   it.each([false, true])(
     'keeps editing without performance when stats are unavailable (config loaded: %s)',
     (loaded) => {
