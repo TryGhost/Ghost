@@ -125,68 +125,12 @@ The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
 
-To inspect dependency violations across **all** entries:
-
-```bash
-pnpm gx services audit
-pnpm gx services dependencies
-pnpm gx services audit --output-type json --output-to /tmp/service-dependencies.json
-```
-
-The audit enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
-all entries, including those absent from the inventory. It uses Dependency
-Cruiser's built-in reports and returns success when it finds violations; the
-normal lint command fails on violations in migrated services. Legacy root
-`index.js` files are treated as wiring candidates; imports there do not prove
-readiness for migration.
-
-`services dependencies` groups `service-dependencies` findings by dependency and
-counts distinct importing implementation files, largest first. Multiple imports
-of the same target in one file count once. It excludes unresolved-import and
-own-root findings; use `services audit` for those.
-
-Counts in the native report describe rule violations; one import can appear
-under more than one rule. Review whether each dependency needs injection, a
-library allowance or an ownership change. Computed paths such as `require(name)`
-cannot be resolved by this static check and are not separately scanned.
-Unresolved imports, globals, runtime state and initialization behavior still
-need tests and review.
-
 ### Migration reports
 
-`pnpm gx services report` shows migration totals. `pnpm gx services list` lists
-entries with their category and number of distinct disallowed dependency
-targets. Importing the same dependency from several files counts as one target.
-Unresolved imports and own-root imports have separate columns.
-`pnpm gx services report <entry>` shows the recorded reasons, assessment
-revisions, preparation and blockers alongside current offending imports.
-
-Each summary row includes a group ID. Use `pnpm gx services list --group <group>`
-to list exactly the entries counted in that row, or `list --help` to see all groups.
-For example, `pnpm gx services list --group straightforward-clear` lists
-straightforward migrations with no dependency violations. Add `--json` for
-structured output. Groups can overlap: a retained service can also be unmigrated
-and need preparation.
-
-Categories come from the inventory, not dependency counts:
-
-- **Migrated:** marked `migrated: true`.
-- **Relocation candidate:** marked `disposition: relocate`.
-- **Ownership undecided:** marked `disposition: review`.
-- **Needs preparation:** either migration assessment is complex, or the overall
-  assessment identifies a possible model change.
-- **Straightforward:** both migration and dependency assessments are
-  straightforward, and the existing model fits. The list distinguishes entries
-  with disallowed dependencies from those with no dependency violations.
-
-Migration and ownership categories take precedence over complexity. Supporting
-code awaiting relocation is included in the catalogue total, separately from
-entries marked to remain as services. Malformed or incomplete assessments fail
-the report. Entries found by the audit but absent from the inventory are labelled
-**Not inventoried**; entries absent from the dependency graph have unknown counts.
-No dependency violations does not mean ready to migrate: recorded blockers,
-lifecycle behavior and test gaps still apply.
-See [gx](../../../../tools/gx/README.md#service-migration-reports) for commands.
+Tools for inspecting progress of the active service migration are available
+under `pnpm gx services`. Start with `pnpm gx services report`; see the
+[gx guide](../../../../tools/gx/README.md#service-migration-reports) for lists,
+per-service details and dependency audits.
 
 ### Migration assessment
 

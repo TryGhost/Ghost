@@ -124,10 +124,40 @@ pnpm gx services list --group migrated --json
 It replaces `pnpm audit:services`; `services dependencies` replaces
 `pnpm audit:services:summary` without requiring `jq`.
 
-Counts are calculated from the checkout, not stored in the inventory. The
-[services guide](../../ghost/core/server/services/README.md#migration-reports)
-explains the categories, counting rules and limits. The dependency policy,
-source resolver and CI enforcement remain shared with `pnpm lint:boundaries`.
+### Interpreting the reports
+
+Counts are calculated from the checkout, not stored in the inventory. Categories
+come from the inventory's ownership and migration assessments:
+
+- **Migrated:** marked `migrated: true`.
+- **Relocation candidate:** marked `disposition: relocate`.
+- **Ownership undecided:** marked `disposition: review`.
+- **Needs preparation:** either assessment is complex, or the overall assessment
+  identifies a possible model change.
+- **Straightforward:** both assessments are straightforward and the existing
+  model fits. This can still include dependency violations.
+
+Migration and ownership categories take precedence over complexity. Supporting
+code awaiting relocation is counted separately from retained services. Groups
+can overlap: a retained service can also be unmigrated and need preparation.
+Entries found by the audit but absent from the inventory are **Not inventoried**;
+entries absent from the dependency graph have unknown counts. Malformed or
+incomplete assessments fail the report.
+
+`list` counts distinct disallowed dependency targets per entry, with unresolved
+and own-root imports in separate columns. `dependencies` counts distinct
+importing implementation files per target, largest first; it excludes unresolved
+and own-root findings. The native `audit` counts rule violations, so one import
+can appear under more than one rule.
+
+The audit checks all entries and returns success when it finds violations.
+`pnpm lint:boundaries` enforces the same rules for migrated services in CI.
+Legacy root `index.js` files are treated as wiring candidates. Computed paths
+such as `require(name)` cannot be resolved by the static audit. No violations
+does not mean ready to migrate: recorded blockers, runtime behavior and test
+gaps still need review. See the
+[services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
+for the dependency policy.
 
 ## Validation
 
