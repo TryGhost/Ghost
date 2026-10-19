@@ -4,6 +4,7 @@
  */
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
+const config = require('../../../shared/config');
 const { applyLimitCap } = require('../../../shared/max-limit-cap');
 const { resolveApiCall, resolveRouteData } = require('../routing/api-adapter');
 
@@ -60,6 +61,11 @@ function getListingLimit(limit, routerOptions) {
         },
         `Listing page limit ${limit} from ${source} is over the max limit of ${cappedLimit}`,
       );
+    }
+
+    // Opt-in, because capping by default would break themes that show every post
+    if (config.get('optimization:capListingLimit')) {
+      return cappedLimit;
     }
   }
 

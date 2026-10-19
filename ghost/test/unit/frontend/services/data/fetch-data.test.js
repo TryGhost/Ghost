@@ -7,6 +7,7 @@ const logging = require('@tryghost/logging');
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
 const testUtils = require('../../../../utils');
+const configUtils = require('../../../../utils/config-utils');
 
 describe('Unit - frontend/data/fetch-data', function () {
   let posts;
@@ -54,8 +55,9 @@ describe('Unit - frontend/data/fetch-data', function () {
     locals = {};
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
   });
 
   it('should handle no options', async function () {
@@ -122,6 +124,23 @@ describe('Unit - frontend/data/fetch-data', function () {
     await data.fetchData({ limit: 100 }, {}, locals);
 
     sinon.assert.notCalled(logStub);
+  });
+
+  it('should cap a listing limit over the max limit when capListingLimit is enabled', async function () {
+    sinon.stub(logging, 'info');
+    configUtils.set('optimization:capListingLimit', true);
+
+    await data.fetchData({ limit: 10000 }, {}, locals);
+
+    assert.equal(browsePostsStub.firstCall.args[0].limit, 100);
+  });
+
+  it('should not change a listing limit within the max limit when capListingLimit is enabled', async function () {
+    configUtils.set('optimization:capListingLimit', true);
+
+    await data.fetchData({ limit: 50 }, {}, locals);
+
+    assert.equal(browsePostsStub.firstCall.args[0].limit, 50);
   });
 
   it('should handle multiple queries', async function () {
