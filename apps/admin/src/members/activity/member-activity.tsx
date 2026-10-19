@@ -141,7 +141,7 @@ function ActivityPage() {
           <ListPage.Header
             className={cn(
               memberHeader &&
-                'top-(--list-page-header-top) z-60 gap-1 bg-background bg-none! pt-(--large-title-space)! pb-8 backdrop-blur-none!',
+                'top-(--list-page-header-top) z-40 gap-1 bg-background bg-none! pt-(--large-title-space)! pb-8 backdrop-blur-none!',
             )}
           >
             <PageHeader blurredBackground={false} sticky={false}>
