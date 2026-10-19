@@ -158,11 +158,11 @@ export function createAppFetcher({
       // it, so that host is never looked up.
       //
       // got calls this for every response, a 200 included, sometimes more than once for
-      // the same one, so it has no side effects; `current` is updated in beforeRedirect. A
-      // Location on another host, or one that isn't a URL, is never followed at any
-      // status, so the rule holds whichever statuses got follows. Only a 3xx is reported
-      // as a refused redirect; a Location on a successful response or an error page is
-      // ignored.
+      // the same one, so all it records is a refusal, which is the same each time; `current`
+      // is updated in beforeRedirect. A Location on another host, or one that isn't a URL,
+      // is never followed at any status, so the rule holds whichever statuses got follows.
+      // Only a 3xx is reported as a refused redirect; a Location on a successful response
+      // or an error page is ignored.
       followRedirect: (response) => {
         const target = locationOf(response);
         if (target === undefined || (target && staysOnHost(current, target))) {
