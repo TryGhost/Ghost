@@ -220,8 +220,6 @@ const mockStats = vi.hoisted(
   }),
 );
 
-const mockLabs = vi.hoisted((): { current: Record<string, boolean> } => ({ current: {} }));
-
 vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/config')>(
     '@tryghost/admin-x-framework/api/config',
@@ -229,9 +227,7 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   return {
     ...actual,
     useBrowseConfig: () => ({
-      data: mockStats.loaded
-        ? { config: { labs: mockLabs.current, stats: mockStats.current } }
-        : undefined,
+      data: mockStats.loaded ? { config: { stats: mockStats.current } } : undefined,
     }),
   };
 });
@@ -533,7 +529,6 @@ describe('AutomationEditor', () => {
     mockEditMutation.isLoading = false;
     mockEditMutation.variables = undefined;
     mockToastError.mockReset();
-    mockLabs.current = {};
     mockStats.current = { endpoint: 'https://api.tinybird.test' };
     mockStats.loaded = true;
     mockEmailTracking.emailTrackOpens = true;
