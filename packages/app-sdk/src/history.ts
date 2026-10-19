@@ -9,6 +9,14 @@ export function currentRoute(): string {
   return normaliseAppPath(`${pathname}${search}${hash}`);
 }
 
+/** Whether a node is an HTML or SVG link, which the browser follows when it's clicked. */
+function isLink(node: EventTarget): node is Element {
+  return (
+    (node instanceof HTMLAnchorElement || (node instanceof SVGElement && node.localName === 'a')) &&
+    node.hasAttribute('href')
+  );
+}
+
 export interface HistoryWatch {
   /**
    * Puts the page at `path` without adding a history entry, because Admin moved it there, and
@@ -80,15 +88,14 @@ export function watchHistory(
     ) {
       return;
     }
-    const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
-    if (
-      !(link instanceof HTMLAnchorElement) ||
-      link.hasAttribute('download') ||
-      (link.target !== '' && link.target !== '_self')
-    ) {
+    // Found through the event's path, which reaches into shadow roots, and read through its
+    // attributes, because an SVG link has none of `HTMLAnchorElement`'s properties.
+    const link = event.composedPath().find(isLink);
+    const target = link?.getAttribute('target') ?? '';
+    if (!link || link.hasAttribute('download') || (target !== '' && target !== '_self')) {
       return;
     }
-    const url = new URL(link.href);
+    const url = new URL(link.getAttribute('href') as string, document.baseURI);
     if (url.origin !== window.location.origin) {
       return;
     }

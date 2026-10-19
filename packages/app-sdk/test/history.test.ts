@@ -98,6 +98,43 @@ describe('the page’s history, once Admin owns it', () => {
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('http://localhost:3000/episodes/12'));
   });
 
+  it('finds a link inside a shadow root, and an SVG link', async () => {
+    const SVG = 'http://www.w3.org/2000/svg';
+    const host = document.createElement('div');
+    const shadowLink = document.createElement('a');
+    shadowLink.setAttribute('href', '/episodes/12');
+    shadowLink.append(document.createElement('span'));
+    host.attachShadow({ mode: 'open' }).append(shadowLink);
+    const svg = document.createElementNS(SVG, 'svg');
+    const svgLink = document.createElementNS(SVG, 'a');
+    svgLink.setAttribute('href', '/episodes/13');
+    svgLink.append(document.createElementNS(SVG, 'text'));
+    svg.append(svgLink);
+    document.body.append(host, svg);
+
+    for (const link of [shadowLink, svgLink]) {
+      const label = link.firstElementChild as Element;
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        button: 0,
+      });
+      expect(label.dispatchEvent(event)).toBe(false);
+    }
+
+    expect(moved.mock.calls).toEqual([
+      ['/episodes/12', 'push'],
+      ['/episodes/13', 'push'],
+    ]);
+    await vi.waitFor(() =>
+      expect(load.mock.calls).toEqual([
+        ['http://localhost:3000/episodes/12'],
+        ['http://localhost:3000/episodes/13'],
+      ]),
+    );
+  });
+
   it('loads the link even when Admin refuses the move', async () => {
     moved.mockRejectedValueOnce(new Error('session_ended'));
 
