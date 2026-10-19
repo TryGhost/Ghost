@@ -5,6 +5,9 @@ const logging = require('@tryghost/logging');
 const stripe = require('stripe');
 const i18n = require('../../../../../core/server/services/i18n');
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
+const {
+  collectionParams,
+} = require('../../../../../core/server/services/stripe-checkout-config/models');
 
 i18n.init();
 
@@ -322,10 +325,10 @@ describe('StripeAPI', function () {
       fontFamily: 'roboto',
     };
 
-    function configured(read) {
+    function configured(readForCheckout) {
       const designed = new StripeAPI({
         labs: { isSet: (flag) => flag === 'stripeCheckoutDesign' },
-        stripeCheckoutConfig: { service: { read } },
+        stripeCheckoutConfig: { service: { readForCheckout } },
       });
       designed.configure({
         checkoutSessionSuccessUrl: '/success',
@@ -419,20 +422,14 @@ describe('StripeAPI', function () {
       });
       mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
       mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_address' });
-      const shipping = {
-        tierIds: null,
-        allowedCountries: ['XX'],
-        addressCustomFieldKey: 'delivery_address',
-        nameCustomFieldKey: null,
-        collectable: true,
-      };
+      const shipping = { tierIds: null, allowedCountries: ['XX'], collectable: true };
       const shippingApi = new StripeAPI({
         labs: {
           isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
         },
         stripeCheckoutConfig: {
-          service: { read: async () => ({ design: null, shipping }) },
-          shippingCountriesFor: () => shipping.allowedCountries,
+          service: { readForCheckout: async () => ({ design: null, shipping }) },
+          collectionParams,
         },
       });
       shippingApi.configure({

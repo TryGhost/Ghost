@@ -31,15 +31,19 @@ export const StripeCheckoutDesign = z.object({
 });
 export type StripeCheckoutDesign = z.infer<typeof StripeCheckoutDesign>;
 
+/** What every collected part is set with: the paid tiers whose checkouts ask for it. */
+const CollectedPart = z.object({
+  /** Null covers every paid tier, including tiers added later. */
+  tierIds: z.array(z.string()).nullable(),
+});
+
 /**
  * Collecting a shipping address at checkout, as the publisher set it.
  *
  * Stripe returns the recipient's name beside the address rather than as part of it, and an
  * address custom field has no name part, so the name lands in a field of its own.
  */
-export const ShippingSettings = z.object({
-  /** Null covers every paid tier, including tiers added later. */
-  tierIds: z.array(z.string()).nullable(),
+export const ShippingSettings = CollectedPart.extend({
   /** ISO 3166-1 alpha-2 codes, or null for everywhere Stripe ships. */
   allowedCountries: z.array(z.string()).nullable(),
   addressCustomFieldKey: z.string(),
@@ -47,20 +51,10 @@ export const ShippingSettings = z.object({
 });
 export type ShippingSettings = z.infer<typeof ShippingSettings>;
 
-/** The shipping settings as saved, and whether checkouts can ask for an address right now. */
-export const ShippingCollection = ShippingSettings.extend({
-  /**
-   * False while the address field is archived, so checkouts stop asking until it's restored.
-   * An archived name field doesn't stop them; the name just isn't kept.
-   */
-  collectable: z.boolean(),
-});
-export type ShippingCollection = z.infer<typeof ShippingCollection>;
-
 /** Each collected part of the config as saved. */
 const COLLECTED_PARTS = {
   /** Null means checkout doesn't ask for a shipping address. */
-  shipping: ShippingCollection.nullable(),
+  shipping: ShippingSettings.nullable(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 /** The site-wide Stripe Checkout config. */
@@ -90,41 +84,89 @@ export const COLLECTED_NOUNS = {
  */
 export const COLLECTION_FLAG = 'stripeCheckoutCollection';
 
-/** Whether a checkout for this paid tier asks for what a collected part collects. */
-export function collectsFor<Part extends { tierIds: string[] | null; collectable: boolean }>(
-  part: Part | null,
+/** What a checkout needs to know about every collected part to ask for it. */
+interface AskedPart extends z.infer<typeof CollectedPart> {
+  /**
+   * Whether checkouts can ask for it right now. A saved part can't while a field it can't do
+   * without is archived or no longer holds what it collects, as the answer would have nowhere
+   * to go, so checkouts stop asking until the field is restored.
+   */
+  collectable: boolean;
+}
+
+/**
+ * What a checkout needs to know about each collected part to ask for it: which tiers ask and
+ * how, without where the answers land.
+ */
+interface AskedParts {
+  shipping: AskedPart & Pick<ShippingSettings, 'allowedCountries'>;
+}
+
+/**
+ * The collected parts as a checkout asks for them, each null while it asks for nothing. A
+ * preview gives unsaved parts in place of the saved ones.
+ */
+export type CheckoutCollection = { [Section in CollectedSection]: AskedParts[Section] | null };
+
+/** The config as checkouts use it: the design, and what each collected part asks for. */
+export type CheckoutSessionConfig = Pick<StripeCheckoutConfig, 'design'> & CheckoutCollection;
+
+/** The Checkout session parameters that ask the buyer for something. */
+export interface CollectionParams {
+  shipping_address_collection?: { allowed_countries: string[] };
+}
+
+/** The Checkout session parameters that ask for each collected part. */
+const ASK: { [Section in CollectedSection]: (part: AskedParts[Section]) => CollectionParams } = {
+  shipping: (shipping) => ({
+    shipping_address_collection: {
+      // Stripe has no way to say everywhere, and a checkout without countries collects no
+      // address, so everywhere is every country Stripe accepts.
+      allowed_countries: shipping.allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES],
+    },
+  }),
+};
+
+/**
+ * The Checkout session parameters that ask for what the collected parts collect on a checkout
+ * for this paid tier: as saved, except for the parts a preview replaces. A part asks for
+ * nothing on a tier it doesn't cover, or while it has nowhere to keep the answer.
+ */
+export function collectionParams(
+  saved: CheckoutCollection | null,
   tierId: string,
-): part is Part {
-  return (
-    part !== null && part.collectable && (part.tierIds === null || part.tierIds.includes(tierId))
+  previewed: Partial<CheckoutCollection> = {},
+): CollectionParams {
+  const collection = withPreviewed(saved, previewed);
+  const ask = <Section extends CollectedSection>(section: Section): CollectionParams => {
+    const part = collection[section];
+    return collectsFor(part, tierId) ? ASK[section](part) : {};
+  };
+  return COLLECTED_SECTIONS.reduce<CollectionParams>(
+    (params, section) => ({ ...params, ...ask(section) }),
+    {},
   );
 }
 
 /**
- * The countries a checkout for this paid tier offers to ship to, or null when it doesn't ask
- * for an address. Stripe has no way to say everywhere, and a checkout without countries
- * collects no address, so everywhere is every country Stripe accepts.
+ * The collected parts as saved, with the parts a preview gives in their place. A part the
+ * preview gives as undefined asks as saved, like one it leaves out.
  */
-export function shippingCountriesFor(
-  shipping: ShippingCollection | null,
-  tierId: string,
-): string[] | null {
-  if (!collectsFor(shipping, tierId)) {
-    return null;
-  }
-  return countriesToAsk(shipping.allowedCountries);
+function withPreviewed(
+  saved: CheckoutCollection | null,
+  previewed: Partial<CheckoutCollection>,
+): CheckoutCollection {
+  return {
+    shipping: previewed.shipping !== undefined ? previewed.shipping : (saved?.shipping ?? null),
+  };
 }
 
-/** Every country Stripe accepts when none are named, as Stripe has no way to say everywhere. */
-export function countriesToAsk(allowedCountries: string[] | null): string[] {
-  return allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES];
+/** Whether a checkout for this paid tier asks for what a collected part collects. */
+function collectsFor<Part extends AskedPart>(part: Part | null, tierId: string): part is Part {
+  return (
+    part !== null && part.collectable && (part.tierIds === null || part.tierIds.includes(tierId))
+  );
 }
-
-/**
- * How a preview asks for a shipping address, in place of the saved settings: null asks for
- * none, and null countries are everywhere Stripe ships.
- */
-export type PreviewShipping = { allowedCountries: string[] | null } | null;
 
 /**
  * How Stripe Checkout looks without a design from Ghost, as set in the Stripe dashboard. The

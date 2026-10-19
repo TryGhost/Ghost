@@ -100,7 +100,7 @@ module.exports = class StripeAPI {
    * The saved design, or null while its flag is off.
    *
    * @private
-   * @param {import('../stripe-checkout-config').StripeCheckoutConfig | null} [config] The config
+   * @param {import('../stripe-checkout-config').CheckoutSessionConfig | null} [config] The config
    *   if it has already been read for this checkout.
    * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutDesign | null>}
    */
@@ -113,56 +113,17 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * Asks for a shipping address when the site collects one for this tier, or nothing while
-   * its flag is off.
-   *
-   * @private
-   * @param {import('../stripe-checkout-config').StripeCheckoutConfig | null} config
-   * @param {string} [tierId]
-   * @returns {{shipping_address_collection?: {allowed_countries: string[]}}}
-   */
-  _shippingCollection(config, tierId) {
-    if (!tierId || !this.labs.isSet(COLLECTION_FLAG)) {
-      return {};
-    }
-    const countries = this._stripeCheckoutConfig.shippingCountriesFor(
-      config?.shipping ?? null,
-      tierId,
-    );
-    return countries ? { shipping_address_collection: { allowed_countries: countries } } : {};
-  }
-
-  /**
-   * Asks for a shipping address as a preview of unsaved settings says, or nothing while its
-   * flag is off.
-   *
-   * @private
-   * @param {import('../stripe-checkout-config').PreviewShipping} shipping
-   * @returns {{shipping_address_collection?: {allowed_countries: string[]}}}
-   */
-  _previewedShipping(shipping) {
-    if (!shipping || !this.labs.isSet(COLLECTION_FLAG)) {
-      return {};
-    }
-    return {
-      shipping_address_collection: {
-        allowed_countries: this._stripeCheckoutConfig.countriesToAsk(shipping.allowedCountries),
-      },
-    };
-  }
-
-  /**
-   * Reads the site's Stripe Checkout config.
+   * Reads the site's Stripe Checkout config as checkouts use it.
    *
    * If reading it fails, this logs the error and returns null. A checkout without the config
    * still takes payment, while a failed checkout doesn't.
    *
    * @private
-   * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutConfig | null>}
+   * @returns {Promise<import('../stripe-checkout-config').CheckoutSessionConfig | null>}
    */
   async _readCheckoutConfig() {
     try {
-      return await this._stripeCheckoutConfig.service.read();
+      return await this._stripeCheckoutConfig.service.readForCheckout();
     } catch (err) {
       logging.error(
         { event: { name: 'stripe_checkout.config.read_failed' }, err },
@@ -174,8 +135,7 @@ module.exports = class StripeAPI {
 
   /**
    * Creates a Checkout session with the saved design as its `branding_settings`, and the
-   * shipping address collection it is given. Every Checkout session Ghost creates goes through
-   * here.
+   * collection parameters it is given. Every Checkout session Ghost creates goes through here.
    *
    * If Stripe refuses the saved design or the shipping countries, the session is created again
    * without them, as a checkout that looks plainer or asks for no address still takes payment.
@@ -190,17 +150,21 @@ module.exports = class StripeAPI {
    * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
    *   A design to use instead of the saved one, such as an unsaved design being previewed.
    *   Null sends no design; undefined uses the saved one.
-   * @param {import('../stripe-checkout-config').StripeCheckoutConfig | null} [options.config]
+   * @param {import('../stripe-checkout-config').CheckoutSessionConfig | null} [options.config]
    *   The config if it has already been read for this checkout.
-   * @param {{shipping_address_collection?: {allowed_countries: string[]}}} [options.shipping]
+   * @param {import('../stripe-checkout-config').CollectionParams} [options.collection] What the
+   *   checkout asks the buyer for.
    */
   async _createCheckoutSession(
     params,
     requestOptions,
-    { design: previewed, config, shipping = {} } = {},
+    { design: previewed, config, collection = {} } = {},
   ) {
     const design = previewed !== undefined ? previewed : await this._savedDesign(config);
-    const optional = { ...(design ? { branding_settings: snakeKeys(design) } : {}), ...shipping };
+    const optional = {
+      ...(design ? { branding_settings: snakeKeys(design) } : {}),
+      ...collection,
+    };
     return this._createWithFallback(params, requestOptions, optional, previewed !== undefined);
   }
 
@@ -739,10 +703,10 @@ module.exports = class StripeAPI {
    *   Replaces the saved design, for a preview of an unsaved one. Null sends no design.
    * @param {number} [options.expiresInSeconds] How long the checkout takes payment for, counted
    *   from when it's created, instead of Stripe's default of a day.
-   * @param {string} [options.tierId] The tier being bought, which decides whether the checkout
-   *   asks for a shipping address.
-   * @param {import('../stripe-checkout-config').PreviewShipping} [options.shipping] Replaces
-   *   the saved shipping settings, for a preview of ones not saved yet.
+   * @param {string} [options.tierId] The tier being bought, which decides what the checkout
+   *   asks the buyer for.
+   * @param {Partial<import('../stripe-checkout-config').CheckoutCollection>} [options.collection]
+   *   Replaces the saved collected parts it names, for a preview of ones not saved yet.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -826,8 +790,8 @@ module.exports = class StripeAPI {
       hasCustomer: Boolean(customerId),
     });
 
-    // Read once for both the design and shipping. Shipping only releases after the design, so
-    // nothing is read while the design flag is off.
+    // Read once for both the design and the collected parts. Collection only releases after
+    // the design, so nothing is read while the design flag is off.
     const config = this.labs.isSet('stripeCheckoutDesign')
       ? await this._readCheckoutConfig()
       : null;
@@ -835,10 +799,10 @@ module.exports = class StripeAPI {
     const session = await this._createCheckoutSession(stripeSessionOptions, undefined, {
       design: options.design,
       config,
-      shipping:
-        options.shipping === undefined
-          ? this._shippingCollection(config, options.tierId)
-          : this._previewedShipping(options.shipping),
+      collection:
+        options.tierId && this.labs.isSet(COLLECTION_FLAG)
+          ? this._stripeCheckoutConfig.collectionParams(config, options.tierId, options.collection)
+          : {},
     });
 
     return session;
