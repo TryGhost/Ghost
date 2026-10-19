@@ -373,46 +373,25 @@ export class AppInstallationsService {
       throw notInstalled();
     }
 
-    // Returns the error to fail the session with. Its context says what was wrong, and the
-    // request log records it. Returns null if the installation changed while the manifest
-    // was loading, since it may no longer use that URL; the session then returns the
-    // installation as it is.
-    const unavailableBecause = async (
-      code: string | null,
-      message: string,
-      reason?: string,
-    ): Promise<Error | null> => {
-      const current = await this.currentInstallation(id);
-      if (!current) {
-        return notInstalled();
-      }
-      if (current.revision !== before.revision) {
-        return null;
-      }
-      return unavailable(`${code}: ${message}${reason ? ` (${reason})` : ''}`);
-    };
     let loaded: LoadedManifest;
     try {
       loaded = await this.loadManifest(before.manifest_url);
+      if (loaded.manifest.id !== before.app_id) {
+        throw new errors.ValidationError({
+          message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
+          code: 'APP_MANIFEST_OTHER_APP',
+        });
+      }
     } catch (err) {
+      // A ValidationError means the app served something that can't be used. Anything else
+      // is a fault in Ghost, which fails the session as it is.
       if (!(err instanceof errors.ValidationError)) {
         throw err;
       }
-      const failure = await unavailableBecause(err.code, err.message, err.context);
-      if (failure) {
-        throw failure;
-      }
-      return;
-    }
-    if (loaded.manifest.id !== before.app_id) {
-      const failure = await unavailableBecause(
-        'APP_MANIFEST_OTHER_APP',
-        `${before.manifest_url} now serves ${loaded.manifest.id}.`,
+      return this.unavailableUnlessChanged(
+        before,
+        `${err.code}: ${err.message}${err.context ? ` (${err.context})` : ''}`,
       );
-      if (failure) {
-        throw failure;
-      }
-      return;
     }
 
     const decision = decideOnManifest({
@@ -467,6 +446,22 @@ export class AppInstallationsService {
         }
       }
     });
+  }
+
+  /**
+   * Fails the session as unavailable, saying `why` in the error's context, which the request
+   * log records. If the installation changed while the manifest was loading, it may no
+   * longer use that URL, so the session returns the installation as it is instead.
+   */
+  private async unavailableUnlessChanged(before: Installation, why: string): Promise<void> {
+    const current = await this.currentInstallation(before.id);
+    if (!current) {
+      throw notInstalled();
+    }
+    if (current.revision !== before.revision) {
+      return;
+    }
+    throw unavailable(why);
   }
 
   /**
