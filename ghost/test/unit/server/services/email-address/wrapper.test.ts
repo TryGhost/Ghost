@@ -4,6 +4,8 @@ import sinon from 'sinon';
 const config = require('../../../../../core/shared/config');
 const settingsHelpers = require('../../../../../core/server/services/settings-helpers');
 const EmailAddressServiceWrapper = require('../../../../../core/server/services/email-address/email-address-service-wrapper');
+const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
+const SendingService = require('../../../../../core/server/services/email-service/sending-service');
 
 // How consumers choose addresses from these values is covered by the
 // EmailAddressService, EmailRenderer and SendingService tests. This file covers
@@ -107,5 +109,59 @@ describe('EmailAddressServiceWrapper', function () {
     });
     assert.equal(service.getMembersSupportAddress(), 'support@second.example');
     assert.equal(wrapper.service, service);
+  });
+
+  it('keeps newsletter rendering and delivery on the same policy with live fallback settings', async function () {
+    const wrapper = new EmailAddressServiceWrapper();
+    wrapper.init();
+    const policy = wrapper.service;
+    getConfig.withArgs('hostSettings:managedEmail:enabled').returns(true);
+    getConfig.withArgs('hostSettings:managedEmail:fallbackDomain').returns('first.example');
+    getConfig.withArgs('hostSettings:managedEmail:fallbackAddress').returns('first@first.example');
+    const renderer = new EmailRenderer({
+      settingsCache: { get: () => 'Site' },
+      settingsHelpers: { getNoReplyAddress: () => 'noreply@first.example' },
+      emailAddressService: policy,
+    });
+    sandbox.stub(renderer, 'renderBody').resolves({
+      html: '<p>Hello</p>',
+      plaintext: 'Hello',
+      replacements: [],
+    });
+    sandbox.stub(renderer, 'getSubject').returns('Hello');
+    const send = sandbox.stub().resolves({ id: 'message-id' });
+    const sender = new SendingService({
+      emailRenderer: renderer,
+      emailProvider: { send },
+      emailAddressService: policy,
+    });
+    const fields: Record<string, string> = {
+      sender_name: 'Newsletter',
+      sender_email: 'editor@newsletter.example',
+      sender_reply_to: 'newsletter',
+    };
+    const message = {
+      post: {},
+      newsletter: { get: (key: string) => fields[key] },
+      members: [{ email: 'reader@example.com', name: 'Reader' }],
+      emailId: 'email-id',
+    };
+
+    await sender.send(message, { useFallbackAddress: true });
+    assert.equal(send.firstCall.args[0].from, '"Newsletter" <first@first.example>');
+    assert.equal(send.firstCall.args[0].replyTo, '"Newsletter" <editor@newsletter.example>');
+    assert.equal(send.firstCall.args[0].domainOverride, 'first.example');
+
+    getConfig.withArgs('hostSettings:managedEmail:fallbackDomain').returns('second.example');
+    getConfig
+      .withArgs('hostSettings:managedEmail:fallbackAddress')
+      .returns('second@second.example');
+    wrapper.init();
+    await sender.send(message, { useFallbackAddress: true });
+
+    assert.equal(wrapper.service, policy);
+    assert.equal(send.secondCall.args[0].from, '"Newsletter" <second@second.example>');
+    assert.equal(send.secondCall.args[0].replyTo, '"Newsletter" <editor@newsletter.example>');
+    assert.equal(send.secondCall.args[0].domainOverride, 'second.example');
   });
 });

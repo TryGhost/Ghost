@@ -5,6 +5,7 @@ import { loadBootFunction } from './harness';
 
 function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const stripe = sinon.stub().resolves();
+  const emailAddress = sinon.stub();
   // These initializers are synchronous in production.
   const gifts = sinon.stub();
   const analytics = sinon.stub();
@@ -38,6 +39,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './shared/url-utils': { default: { urlFor: () => 'https://example.com/ghost/api/admin' } },
       './shared/settings-cache': { get: () => 'site-id' },
       './server/services/stripe': { init: stripe },
+      './server/services/email-address': { init: emailAddress },
       './server/services/gifts': {
         init: gifts,
         deliveryService: {},
@@ -70,6 +72,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     initServices: (): Promise<void> =>
       initServices({ config: {}, prometheusClient: null, jobsService }),
     stripe,
+    emailAddress,
     gifts,
     mentions,
     analytics,
@@ -82,6 +85,26 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     reschedule,
   };
 }
+
+it('initializes email address policy before constructing its dependent services', async function () {
+  const boot = createServicesHarness();
+  await boot.initServices();
+
+  sinon.assert.calledOnce(boot.emailAddress);
+  sinon.assert.callOrder(boot.emailAddress, boot.stripe, boot.gifts, boot.email);
+});
+
+it('propagates email address construction failure before initializing dependent services', async function () {
+  const boot = createServicesHarness();
+  const failure = new Error('email address construction failed');
+  boot.emailAddress.throws(failure);
+
+  await assert.rejects(boot.initServices(), (error) => error === failure);
+
+  for (const dependency of [boot.stripe, boot.gifts, boot.email, boot.register, boot.start]) {
+    sinon.assert.notCalled(dependency);
+  }
+});
 
 it('initializes dependencies and starts jobs before calling automations init', async function () {
   const boot = createServicesHarness();

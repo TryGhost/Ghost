@@ -2337,6 +2337,37 @@ describe('RouterController', function () {
         sinon.assert.calledWith(res.end, JSON.stringify({ otc_ref: 'test-token-123' }));
       });
 
+      it('uses the retained real sender policy and live defaults in inbox links', async function () {
+        const {
+          EmailAddressService,
+        } = require('../../../../../../../core/server/services/email-address/email-address-service');
+        let defaultAddress = 'noreply@first.example';
+        const policy = new EmailAddressService({
+          getManagedEmailEnabled: () => true,
+          getSendingDomain: () => null,
+          getFallbackDomain: () => null,
+          getDefaultEmail: () => ({ address: defaultAddress }),
+          getFallbackEmail: () => null,
+          getMembersSupportAddress: () => 'support@other.example',
+          isValidEmailAddress: () => true,
+        });
+        routerController = new RouterController({ emailAddressService: policy });
+        routerController._handleSignin = handleSigninStub;
+        req.body.email = 'reader@gmail.com';
+        handleSigninStub.resolves({});
+
+        await routerController.sendMagicLink(req, res);
+        const first = JSON.parse(res.end.firstCall.args[0]);
+        assert.equal(first.inboxLinks.provider, 'gmail');
+        assert.ok(first.inboxLinks.desktop.includes('from%3A(noreply%40first.example)'));
+
+        defaultAddress = 'noreply@second.example';
+        await routerController.sendMagicLink(req, res);
+        const second = JSON.parse(res.end.secondCall.args[0]);
+        assert.ok(second.inboxLinks.desktop.includes('from%3A(noreply%40second.example)'));
+        assert.equal(routerController._emailAddressService, policy);
+      });
+
       it('should not return otc_ref when no otcRef', async function () {
         handleSigninStub.resolves({ otcRef: null });
 
