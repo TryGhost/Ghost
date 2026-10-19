@@ -2,7 +2,11 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
-import { AppInstallationsRepository, type WriteOutcome } from './app-installations-repository';
+import {
+  AppInstallationsRepository,
+  type AddedRow,
+  type WriteOutcome,
+} from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import {
   approvalWrite,
@@ -11,6 +15,7 @@ import {
   type AppManifestChange,
   type ManifestWrite,
 } from './decide-on-manifest';
+import type { FetchIcon } from './fetch-icon';
 import { approvalManifestIds, buildHistory } from './history';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
@@ -27,6 +32,7 @@ export interface AppInstallationPreview {
    * ahead if neither changed since the review.
    */
   digest: string;
+  icon_svg: string | null;
   /**
    * The site's existing installation of this app, if any, with its approved manifest and
    * the changes the reviewed manifest would make.
@@ -41,6 +47,7 @@ export interface AppInstallationPreview {
     revision: number;
     manifest_url: string;
     manifest: AppManifest;
+    icon_svg: string | null;
     changes: AppManifestChange[];
   } | null;
 }
@@ -94,10 +101,31 @@ function forAnotherApp(appId: string) {
   });
 }
 
+/**
+ * The icon copy the installation has once `write` is stored: the new row's, or otherwise the
+ * copy of the row that is or becomes the approved one.
+ */
+function iconCopyKeptBy(
+  write: ManifestWrite<AddedRow>,
+  current: Installation,
+  pending: { id: string; icon_svg: string | null } | null,
+): string | null {
+  switch (write.kind) {
+    case 'nothing':
+      return current.icon_svg;
+    case 'approve_existing':
+      return write.manifestId === pending?.id ? pending.icon_svg : current.icon_svg;
+    case 'add_approved':
+    case 'add_pending':
+      return write.row.iconSvg;
+  }
+}
+
 export class AppInstallationsService {
   private repository: AppInstallationsRepository;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
+  private fetchIcon: FetchIcon;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -105,14 +133,17 @@ export class AppInstallationsService {
     knex,
     recordAction,
     loadManifest,
+    fetchIcon,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
+    fetchIcon: FetchIcon;
   }) {
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
+    this.fetchIcon = fetchIcon;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -149,7 +180,10 @@ export class AppInstallationsService {
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<Installation> {
     const loaded = await this.fetchReviewed(manifestUrl, digest);
-    const installation = await this.repository.insert(loaded);
+    const installation = await this.repository.insert(
+      loaded,
+      await this.fetchIcon(loaded.manifest.icon),
+    );
     await this.recordAction({
       context,
       event: 'installed',
@@ -181,7 +215,7 @@ export class AppInstallationsService {
     }
     // No need to fetch for an uninstalled installation. The approval is only written
     // while the installation is as it was read here, which covers an uninstall or a change
-    // that happens during the fetch.
+    // that happens during the fetches.
     if (current.status === 'uninstalled') {
       throw uninstalled();
     }
@@ -197,11 +231,9 @@ export class AppInstallationsService {
         : uninstalled();
     }
 
-    const write = approvalWrite({
-      current,
-      pending: await this.pendingManifestOf(current),
-      loaded,
-    });
+    const write = await this.withIconCopy(
+      approvalWrite({ current, pending: await this.pendingManifestOf(current), loaded }),
+    );
     const stored = await this.store(current, write);
     if (stored.status === 'uninstalled') {
       throw uninstalled();
@@ -272,25 +304,64 @@ export class AppInstallationsService {
     );
   }
 
+  /**
+   * Shows the icon copy that approving the review would keep. When that's a copy Ghost
+   * already has, the pending manifest's or the approved one's, the icon isn't fetched, as
+   * approving won't fetch it either. Otherwise it's fetched as the app serves it now. The
+   * digest covers only the manifest, and confirming fetches the icon again, so the copy
+   * stored can differ if the app replaced its SVG in between.
+   */
   private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
-    const current = await this.repository.currentInstallationOf(loaded.manifest.id);
-    return {
+    const reviewed = {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
       digest: loaded.digest,
+    };
+    const current = await this.repository.currentInstallationOf(loaded.manifest.id);
+    if (!current) {
+      return {
+        ...reviewed,
+        icon_svg: await this.fetchIcon(loaded.manifest.icon),
+        installation: null,
+      };
+    }
+
+    const pending = await this.pendingManifestOf(current);
+    const write = await this.withIconCopy(approvalWrite({ current, pending, loaded }));
+    return {
+      ...reviewed,
+      icon_svg: iconCopyKeptBy(write, current, pending),
       // The approved manifest shown is the one the changes were computed from, so the
       // review matches the list of changes.
-      installation: current
-        ? {
-            id: current.id,
-            status: current.status,
-            revision: current.revision,
-            manifest_url: current.manifest_url,
-            manifest: current.manifest,
-            changes: changesFrom(current, loaded),
-          }
-        : null,
+      installation: {
+        id: current.id,
+        status: current.status,
+        revision: current.revision,
+        manifest_url: current.manifest_url,
+        manifest: current.manifest,
+        icon_svg: current.icon_svg,
+        changes: changesFrom(current, loaded),
+      },
     };
+  }
+
+  /**
+   * Fetches the icon copy for the row a write adds, so the write's transaction never waits on
+   * the app. Each new row takes a fresh copy, and a write that adds none doesn't fetch it, so
+   * a stored copy never changes and a re-check that stores nothing never contacts the icon's
+   * URL.
+   */
+  private async withIconCopy(write: ManifestWrite): Promise<ManifestWrite<AddedRow>> {
+    switch (write.kind) {
+      case 'nothing':
+      case 'approve_existing':
+        return write;
+      case 'add_approved':
+      case 'add_pending': {
+        const iconSvg = await this.fetchIcon(write.row.loaded.manifest.icon);
+        return { kind: write.kind, row: { ...write.row, iconSvg } };
+      }
+    }
   }
 
   /**
@@ -319,21 +390,24 @@ export class AppInstallationsService {
     });
   }
 
-  /** The installation's pending manifest, by its ID and digest, if it has one. */
+  /** The installation's pending manifest, by its ID, digest and icon copy, if it has one. */
   private async pendingManifestOf(installation: Installation) {
     const id = installation.pending_manifest_id;
     if (id === null) {
       return null;
     }
-    const digest = await this.repository.findDigest(id);
-    return digest === undefined ? null : { id, digest };
+    const pending = await this.repository.findDigestAndIcon(id);
+    return pending ? { id, ...pending } : null;
   }
 
   /**
    * Applies a write planned from `current`, unless the installation changed since. Returns
    * the newly approved or pending manifest's ID, or null for `nothing`.
    */
-  private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
+  private store(
+    current: Installation,
+    write: ManifestWrite<AddedRow>,
+  ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
       switch (write.kind) {
         case 'nothing':
@@ -379,7 +453,9 @@ export class AppInstallationsService {
    *
    * If the manifest can't be loaded, or it's for a different app, the app is broken or its
    * URL now serves someone else. The session then fails as unavailable instead of running
-   * the approved manifest.
+   * the approved manifest. So does an icon that can't be loaded for a manifest that would be
+   * stored, silent changes and resumes included, since each stored version takes a fresh copy;
+   * a re-check that stores nothing never fetches the icon.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation
@@ -392,15 +468,18 @@ export class AppInstallationsService {
       throw notInstalled();
     }
 
-    let loaded: LoadedManifest;
+    let write: ManifestWrite<AddedRow>;
     try {
-      loaded = await this.loadManifest(before.manifest_url);
+      const loaded = await this.loadManifest(before.manifest_url);
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
           code: 'APP_MANIFEST_OTHER_APP',
         });
       }
+      write = await this.withIconCopy(
+        recheckWrite({ current: before, pending: await this.pendingManifestOf(before), loaded }),
+      );
     } catch (err) {
       // A ValidationError means the app served something that can't be used. Anything else
       // is a fault in Ghost, which fails the session as it is.
@@ -413,11 +492,6 @@ export class AppInstallationsService {
       );
     }
 
-    const write = recheckWrite({
-      current: before,
-      pending: await this.pendingManifestOf(before),
-      loaded,
-    });
     const stored = await this.store(before, write);
     if (stored.status === 'uninstalled') {
       throw notInstalled();

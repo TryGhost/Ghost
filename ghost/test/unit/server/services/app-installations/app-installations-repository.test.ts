@@ -22,6 +22,7 @@ const loaded: LoadedManifest = {
   serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
 };
+const ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"></path></svg>';
 const installation: Installation = {
   id: 'installation',
   app_id: manifest.id,
@@ -31,6 +32,7 @@ const installation: Installation = {
   revision: 3,
   manifest_url: 'https://podcast.example.com/ghost-app.json',
   manifest,
+  icon_svg: null,
   created_at: new Date(),
   updated_at: new Date(),
 };
@@ -69,10 +71,10 @@ function inserting() {
 }
 
 describe('AppInstallationsRepository insert', function () {
-  it('stores the manifest text and digest exactly as the loader produced them', async function () {
+  it('stores the manifest text, digest and icon exactly as they were given', async function () {
     const { repository, insert, trx } = inserting();
 
-    const installed = await repository.insert(loaded);
+    const installed = await repository.insert(loaded, ICON_SVG);
 
     assert.deepEqual(
       trx.mock.calls.map(([table]) => table),
@@ -84,17 +86,19 @@ describe('AppInstallationsRepository insert', function () {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      icon_svg: ICON_SVG,
       source: 'install',
       requires_approval: false,
       created_at: insert.mock.calls[0][0].created_at,
     });
+    assert.equal(installed.icon_svg, ICON_SVG);
   });
 
   it('restarts the whole transaction when its manifest insert deadlocks', async function () {
     const { repository, insert, trx, transaction } = inserting();
     insert.mockResolvedValueOnce([]).mockRejectedValueOnce(deadlock());
 
-    const installed = await repository.insert(loaded);
+    const installed = await repository.insert(loaded, null);
 
     assert.equal(transaction.mock.calls.length, 2);
     assert.deepEqual(
@@ -117,7 +121,7 @@ describe('AppInstallationsRepository insert', function () {
       .mockRejectedValueOnce(deadlock())
       .mockRejectedValueOnce(Object.assign(new Error('Duplicate app'), { code: 'ER_DUP_ENTRY' }));
 
-    await assert.rejects(repository.insert(loaded), {
+    await assert.rejects(repository.insert(loaded, null), {
       errorType: 'ConflictError',
       code: 'APP_ALREADY_INSTALLED',
     });
@@ -128,7 +132,7 @@ describe('AppInstallationsRepository insert', function () {
     const { repository, transaction } = inserting();
     transaction.mockRejectedValueOnce(deadlock()).mockRejectedValueOnce(deadlock());
 
-    await repository.insert(loaded);
+    await repository.insert(loaded, null);
 
     assert.equal(transaction.mock.calls.length, 3);
   });
@@ -138,7 +142,7 @@ describe('AppInstallationsRepository insert', function () {
     const error = deadlock();
     transaction.mockRejectedValue(error);
 
-    await assert.rejects(repository.insert(loaded), (reason) => reason === error);
+    await assert.rejects(repository.insert(loaded, null), (reason) => reason === error);
 
     assert.equal(transaction.mock.calls.length, 3);
   });
@@ -148,7 +152,7 @@ describe('AppInstallationsRepository insert', function () {
     const error = Object.assign(new Error('Connection lost'), { code: 'ECONNRESET' });
     transaction.mockRejectedValue(error);
 
-    await assert.rejects(repository.insert(loaded), (reason) => reason === error);
+    await assert.rejects(repository.insert(loaded, null), (reason) => reason === error);
 
     assert.equal(transaction.mock.calls.length, 1);
   });

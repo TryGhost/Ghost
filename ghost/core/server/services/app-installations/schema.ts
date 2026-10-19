@@ -36,6 +36,7 @@ export const DbAppInstallationManifest = z.object({
   manifest_url: z.string(),
   manifest: StoredManifest,
   digest: z.string(),
+  icon_svg: z.string().nullable(),
   source: AppInstallationManifestSource,
   requires_approval: DbBoolean,
   created_at: DbDate,

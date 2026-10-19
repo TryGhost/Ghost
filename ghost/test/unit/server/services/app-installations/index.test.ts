@@ -30,6 +30,10 @@ const manifest = {
   surfaces: [{ type: 'admin_page', url: '/admin' }],
 };
 
+/** What the outbound transport answers with: a 200 serving `text`. */
+const answering = (text: string) =>
+  Object.assign(Promise.resolve({ statusCode: 200 }), { on: () => {}, text: async () => text });
+
 describe('App installations composition root', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeJS.Module | undefined>;
@@ -55,12 +59,7 @@ describe('App installations composition root', function () {
     sandbox.stub(db, 'knex').get(readKnex);
     // Substitute only the outbound transport; keep the real fetcher and manifest validation.
     require(requestPath);
-    request = sandbox.stub().callsFake(() =>
-      Object.assign(Promise.resolve({ statusCode: 200 }), {
-        on: () => {},
-        text: async () => JSON.stringify(manifest),
-      }),
-    );
+    request = sandbox.stub().callsFake(() => answering(JSON.stringify(manifest)));
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
     root = require(rootPath).default;
   });
@@ -149,6 +148,27 @@ describe('App installations composition root', function () {
       `Could not load the app manifest at ${manifestUrl}`,
     );
     sinon.assert.calledWithExactly(warn.secondCall, failure);
+  });
+
+  it('wires the icon loader to keep a self-contained, sanitized copy of the app’s SVG', async function () {
+    request.callsFake((url: URL) =>
+      answering(
+        url.pathname === '/icon.svg'
+          ? `<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)">
+              <image href="https://tracker.example/pixel.png"/><path d="M0 0h1v1H0z"/>
+            </svg>`
+          : JSON.stringify({ ...manifest, icon: { url: '/icon.svg' } }),
+      ),
+    );
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const preview = await root.service.preview('https://podcast.example/manifest.json');
+
+    assert.equal(request.lastCall.args[0].href, 'https://podcast.example/icon.svg');
+    assert.match(preview.icon_svg!, /<path d="M0 0h1v1H0z"\/>/);
+    assert.doesNotMatch(preview.icon_svg!, /onload|<image|tracker/);
   });
 
   it('logs action recording failures without failing the installation', async function () {
