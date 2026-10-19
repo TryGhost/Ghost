@@ -815,7 +815,7 @@ describe('App installations Admin API', function () {
       assert.equal((await installationRow(installed.id)).revision, 0);
     });
 
-    it('applies changes that need no approval, as a new manifest row', async function () {
+    it('adopts changes that need no approval, as a new manifest row', async function () {
       const installed = await install();
       serve(manifest({ description: 'Episodes and players.', accent_color: '#00ff00' }));
 
@@ -829,9 +829,9 @@ describe('App installations Admin API', function () {
       const rows = await manifestRows();
       assert.equal(rows.length, 2);
       const row = await installationRow(installed.id);
-      const applied = rows.find((stored: any) => stored.id === row.manifest_id);
-      assert.equal(applied.source, 'update');
-      assert.equal(Boolean(applied.requires_approval), false);
+      const adopted = rows.find((stored: any) => stored.id === row.manifest_id);
+      assert.equal(adopted.source, 'update');
+      assert.equal(Boolean(adopted.requires_approval), false);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 1);
       // No person made this change, so there's no staff history entry.
@@ -921,7 +921,7 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('applies a silent change while other changes are pending, clearing them', async function () {
+    it('adopts a silent change while other changes are pending, clearing them', async function () {
       const installed = await install();
       serve(manifest({ name: 'Podcasts' }));
       await start(installed.id);

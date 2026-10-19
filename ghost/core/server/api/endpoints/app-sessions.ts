@@ -10,7 +10,7 @@ const controller = {
   // fetches the approved manifest URL, never one from the request. So this needs the same
   // permission as reading the installation, unlike previewing, which fetches a URL from the
   // request and needs `add`. Anyone with `read` can trigger a re-check, which can suspend
-  // the app or apply silent changes.
+  // the app or adopt silent changes.
   start: {
     headers: { cacheInvalidate: false },
     options: ['id'],
