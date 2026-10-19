@@ -31,7 +31,7 @@ allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
   # sentry-cli's postinstall only downloads a fallback binary; CI's sourcemap
-  # upload (tools/scripts/upload-sentry-sourcemaps.ts) uses the one from its platform
+  # upload (tools/scripts/build/upload-sentry-sourcemaps.ts) uses the one from its platform
   # optionalDependency.
   '@sentry/cli': false
   'better-sqlite3@12.11.1': true
@@ -205,10 +205,11 @@ catalog:
   sharp: 0.35.5
   sinon: 22.1.0
   sirv: 3.0.2
+  snakecase-keys: 9.0.2
   sonner: 2.0.8
   storybook: 10.4.6
   stylelint: 17.14.1
-  supertest: 7.2.2
+  supertest: 7.3.1
   tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
   tldts: ^7.4.4
@@ -225,6 +226,7 @@ catalog:
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
   typescript-eslint: 8.71.1
+  undici: 8.11.0
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 5.2.0
@@ -263,6 +265,7 @@ catalog:
   fastq: ^1.20.1
   cron-validate: 1.4.5
   '@types/stoppable': 1.1.3
+  '@types/supertest': 7.2.1
   '@types/express-brute': 1.0.6
   '@tryghost/validator': 3.2.19
   '@types/probability-distributions': 0.1.3
@@ -440,6 +443,7 @@ versioning:
     # ghost is versioned by the release scripts
     - ghost
     # continuous-lane packages are versioned from npm by the publish job
+    - '@tryghost/adapter-base-upgrade'
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'

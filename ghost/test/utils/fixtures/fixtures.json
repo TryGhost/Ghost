@@ -850,6 +850,21 @@
                     "name": "Delete app installations",
                     "action_type": "destroy",
                     "object_type": "app_installation"
+                },
+                {
+                    "name": "Browse upgrades",
+                    "action_type": "browse",
+                    "object_type": "upgrade"
+                },
+                {
+                    "name": "Read upgrades",
+                    "action_type": "read",
+                    "object_type": "upgrade"
+                },
+                {
+                    "name": "Add upgrades",
+                    "action_type": "add",
+                    "object_type": "upgrade"
                 }
             ]
         },
@@ -1168,7 +1183,8 @@
                     "gift_link": "all",
                     "app_installation": "all",
                     "automation": ["browse", "read", "edit", "add"],
-                    "identity": "read"
+                    "identity": "read",
+                    "upgrade": ["browse", "read", "add"]
                 },
                 "DB Backup Integration": {
                     "db": "all",

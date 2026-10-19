@@ -54,13 +54,13 @@ describe('Unit: services/invites/accept', function () {
   });
 
   it('runs inside a transaction', async function () {
-    await accept(invitation);
+    await accept(invitation, models);
 
     sinon.assert.calledOnce(transactionStub);
   });
 
   it('passes internal context, the same transaction and row locking to all model calls', async function () {
-    await accept(invitation);
+    await accept(invitation, models);
 
     const options = [
       findOneInviteStub.firstCall.args[1],
@@ -83,13 +83,13 @@ describe('Unit: services/invites/accept', function () {
       callOrder.push('addUser');
     });
 
-    await accept(invitation);
+    await accept(invitation, models);
 
     assert.deepEqual(callOrder, ['destroy', 'addUser']);
   });
 
   it('looks up only sent invitations using the decoded URL-safe token', async function () {
-    await accept(invitation);
+    await accept(invitation, models);
 
     sinon.assert.calledOnceWithExactly(
       findOneInviteStub,
@@ -103,7 +103,7 @@ describe('Unit: services/invites/accept', function () {
   });
 
   it('takes email and role from the stored invite and name and password from the request', async function () {
-    await accept(invitation);
+    await accept(invitation, models);
 
     sinon.assert.calledOnceWithExactly(
       findOneUserStub,
@@ -133,7 +133,7 @@ describe('Unit: services/invites/accept', function () {
   it('rejects a missing sent invite without looking up or creating a user', async function () {
     findOneInviteStub.resolves(null);
 
-    await assert.rejects(accept(invitation), {
+    await assert.rejects(accept(invitation, models), {
       errorType: 'NotFoundError',
       message: 'Invite not found.',
     });
@@ -146,7 +146,7 @@ describe('Unit: services/invites/accept', function () {
   it('rejects an invite expired by one millisecond without consuming it', async function () {
     inviteAttributes.expires = now - 1;
 
-    await assert.rejects(accept(invitation), {
+    await assert.rejects(accept(invitation, models), {
       errorType: 'NotFoundError',
       message: 'Invite is expired.',
     });
@@ -159,7 +159,7 @@ describe('Unit: services/invites/accept', function () {
   it('accepts an invite at the exact expiry boundary', async function () {
     inviteAttributes.expires = now;
 
-    await accept(invitation);
+    await accept(invitation, models);
 
     sinon.assert.calledOnce(destroyStub);
     sinon.assert.calledOnce(addUserStub);
@@ -168,7 +168,7 @@ describe('Unit: services/invites/accept', function () {
   it('rejects an existing stored email without consuming the invite or creating a user', async function () {
     findOneUserStub.resolves({ id: 'existing-user' });
 
-    await assert.rejects(accept(invitation), {
+    await assert.rejects(accept(invitation, models), {
       errorType: 'ValidationError',
       message: 'Could not create an account, email is already in use.',
       context: 'Attempting to create an account with existing email address.',
@@ -186,7 +186,7 @@ describe('Unit: services/invites/accept', function () {
       started.resolve();
       return deletion.promise;
     });
-    const result = accept(invitation);
+    const result = accept(invitation, models);
 
     try {
       await Promise.race([started.promise, result]);
@@ -210,7 +210,7 @@ describe('Unit: services/invites/accept', function () {
       started.resolve();
       return creation.promise;
     });
-    const result = accept(invitation).finally(() => {
+    const result = accept(invitation, models).finally(() => {
       settled = true;
     });
 
@@ -236,7 +236,7 @@ describe('Unit: services/invites/accept', function () {
       const failure = new Error(`${stage} failed`);
       steps[index].rejects(failure);
 
-      await assert.rejects(accept(invitation), (error) => error === failure);
+      await assert.rejects(accept(invitation, models), (error) => error === failure);
 
       sinon.assert.calledOnce(steps[index]);
       for (const later of steps.slice(index + 1)) {
@@ -249,7 +249,7 @@ describe('Unit: services/invites/accept', function () {
     const failure = new Error('Transaction unavailable');
     transactionStub.rejects(failure);
 
-    await assert.rejects(accept(invitation), (error) => error === failure);
+    await assert.rejects(accept(invitation, models), (error) => error === failure);
 
     sinon.assert.notCalled(findOneInviteStub);
     sinon.assert.notCalled(findOneUserStub);
@@ -264,7 +264,7 @@ describe('Unit: services/invites/accept', function () {
       throw failure;
     });
 
-    await assert.rejects(accept(invitation), (error) => error === failure);
+    await assert.rejects(accept(invitation, models), (error) => error === failure);
 
     sinon.assert.calledOnce(addUserStub);
   });

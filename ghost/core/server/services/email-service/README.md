@@ -268,8 +268,14 @@ another observation of the same problem, not additional lost recipients.
 
 Successful accounted batches emit `email.batch.submitted` at info level with
 `email_id`, `batch_id`, `recipient_count`, `submitted_count`,
-`submission_excluded_count`, and `mailgun_message_id` for provider correlation.
-An all-excluded batch has zero submitted and a null message ID. Final verified
+`submission_excluded_count`, and `mailgun_message_id`. With Mailgun the message
+ID is null, because each recipient gets their own Message-Id and Mailgun returns
+no single ID for the batch. A recipient's Message-Id is
+`<email_id>.<hash>@<sending domain>`, where `<hash>` is the first 32 hex
+characters of the SHA-256 of `<email_id>:<recipient address>` and the domain is
+the Mailgun domain the batch was sent from, so a send can be found in Mailgun by
+that ID or by the recipient's address. An all-excluded batch has zero
+submitted. Final verified
 emails emit `email.submission.verified` with candidate, submitted, and exclusion
 totals. Preparation-era batches with unknown submission counts instead emit
 `email.submission.unverified` at info level, naming `unverified_batch_ids`;
@@ -357,8 +363,9 @@ retry, for both the retry endpoint and post saves. Admin requires an explicit
 requiring access to the batch-browsing endpoint.
 
 Orphaned `submitting` batches have no automatic recovery path: an operator must
-inspect the batch's Mailgun message ID, provider delivery records, and Ghost's
-submission logs to reconcile its outcome before a retry can be considered safe.
+inspect the provider delivery records for the batch's recipients, found by
+their per-recipient Message-Ids or addresses, and Ghost's submission logs to
+reconcile its outcome before a retry can be considered safe.
 
 Eligibility never blocks a post save. Republishing a post whose failed email is
 not retryable saves the post and leaves the email failed, without queuing a

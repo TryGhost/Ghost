@@ -130,7 +130,7 @@ conditions are removed when packing.
 ## Publishing
 
 Shade is on the continuous publish lane as a `prerelease` entry in
-[`tools/scripts/publish-manifest.json`](../../tools/scripts/publish-manifest.json).
+[`tools/scripts/release/publish-manifest.json`](../../tools/scripts/release/publish-manifest.json).
 When a merge to `main` changes what Shade ships, CI publishes the next
 `0.1.0-alpha.N` under npm's `alpha` tag. The committed version selects the alpha
 series and npm holds the counter, so no release commits or Git tags are created.

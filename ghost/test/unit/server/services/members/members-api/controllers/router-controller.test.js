@@ -332,42 +332,50 @@ describe('RouterController', function () {
     });
 
     describe('existing member subscription restrictions', function () {
-      it.each([
-        ['paid', true],
-        ['paid', false],
-        ['free', false],
-        ['comped', false],
-        ['gift', false],
-      ])('blocks a %s member when authenticated is %s', async function (status, isAuthenticated) {
-        const sendEmailWithMagicLink = sinon.stub().resolves();
-        const routerController = new RouterController({ paymentsService, sendEmailWithMagicLink });
-
-        await assert.rejects(
-          routerController._createSubscriptionCheckoutSession({
-            tier: { id: 'tier_123' },
-            cadence: 'month',
-            member: { get: (key) => (key === 'status' ? status : undefined) },
-            email: 'member@example.com',
-            isAuthenticated,
-            metadata: {},
-          }),
-          { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
-        );
-
-        sinon.assert.notCalled(getPaymentLinkSpy);
-        if (isAuthenticated) {
-          sinon.assert.notCalled(sendEmailWithMagicLink);
-        } else {
-          sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
-            email: 'member@example.com',
-            requestedType: 'signin',
+      it.each([true, false])(
+        'blocks a paid member when authenticated is %s',
+        async function (isAuthenticated) {
+          const status = 'paid';
+          const sendEmailWithMagicLink = sinon.stub().resolves();
+          const routerController = new RouterController({
+            paymentsService,
+            sendEmailWithMagicLink,
           });
-        }
-      });
 
-      it.each(['free', 'comped', 'gift'])(
-        'allows an authenticated %s member to subscribe',
-        async function (status) {
+          await assert.rejects(
+            routerController._createSubscriptionCheckoutSession({
+              tier: { id: 'tier_123' },
+              cadence: 'month',
+              member: { get: (key) => (key === 'status' ? status : undefined) },
+              email: 'member@example.com',
+              isAuthenticated,
+              metadata: {},
+            }),
+            { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
+          );
+
+          sinon.assert.notCalled(getPaymentLinkSpy);
+          if (isAuthenticated) {
+            sinon.assert.notCalled(sendEmailWithMagicLink);
+          } else {
+            sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
+              email: 'member@example.com',
+              requestedType: 'signin',
+            });
+          }
+        },
+      );
+
+      it.each([
+        ['free', true],
+        ['free', false],
+        ['comped', true],
+        ['comped', false],
+        ['gift', true],
+        ['gift', false],
+      ])(
+        'allows a %s member to subscribe when authenticated is %s',
+        async function (status, isAuthenticated) {
           const sendEmailWithMagicLink = sinon.stub().resolves();
           const routerController = new RouterController({
             paymentsService,
@@ -378,7 +386,8 @@ describe('RouterController', function () {
             tier: { id: 'tier_123' },
             cadence: 'month',
             member: { get: (key) => (key === 'status' ? status : undefined) },
-            isAuthenticated: true,
+            email: 'member@example.com',
+            isAuthenticated,
             metadata: {},
           });
 

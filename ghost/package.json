@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.71.1-rc.0",
+  "version": "6.72.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -89,6 +89,7 @@
     "@tryghost/adapter-base-route-settings": "workspace:*",
     "@tryghost/adapter-base-scheduling": "workspace:*",
     "@tryghost/adapter-base-sso": "workspace:*",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/admin-api-schema": "workspace:*",
     "@tryghost/api-framework": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
@@ -223,6 +224,7 @@
     "sanitize-html": "2.17.7",
     "semver": "catalog:",
     "simple-dom": "1.4.0",
+    "snakecase-keys": "catalog:",
     "stoppable": "1.1.0",
     "stripe": "8.222.0",
     "temporal-polyfill": "catalog:",
@@ -230,6 +232,7 @@
     "tldts": "catalog:",
     "type-fest": "catalog:",
     "ua-parser-js": "1.0.41",
+    "undici": "catalog:",
     "unidecode": "catalog:",
     "zod": "catalog:"
   },
@@ -261,7 +264,7 @@
     "@types/semver": "catalog:",
     "@types/sinon": "catalog:",
     "@types/stoppable": "catalog:",
-    "@types/supertest": "6.0.3",
+    "@types/supertest": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "chai": "catalog:",

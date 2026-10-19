@@ -5541,19 +5541,26 @@ services:
       main 4509d04ab76c837343d12faa6dc269895bc9bba5 without changing production; the historical
       audit provenance remains unchanged. These units control models and the transaction,
       so they do not prove persisted rollback, row-lock behavior or committed model events.
+      Dependency preparation against main b96cf86e5068863ae624183f1cf24eb1b97aa947 now wires
+      models and logging in the existing root and exposes acceptance on that retained instance.
+      The action receives models explicitly; its transaction remains invocation-local. The exact
+      @tryghost/security package is allowed as library primitives, so its codecs stay directly
+      imported rather than injected as the older dependency assessment proposed. This is
+      preparation only: eager construction and the add API remain; no boot initializer is added.
     contracts:
       exports:
         summary: >-
           CommonJS exports one Invites instance. Its add method needs its receiver; the
-          constructor also exposes mutable settingsCache, settingsHelpers, mailService and
-          urlUtils fields. The deep invites.js module exports the constructor. There is no
-          init, shutdown or reset; add resolves the edited Invite model.
-          Acceptance is a separate CommonJS function in accept.js, resolving undefined on
-          success; the API serializer supplies the success message. It adds no application
-          instance, init or shutdown. Its former lazy barrel is preserved at
+          constructor also exposes mutable settingsCache, settingsHelpers, mailService,
+          urlUtils, models and logging fields. The deep invites.js module exports the constructor.
+          There is no init, shutdown or reset; add resolves the edited Invite model.
+          The same instance now exposes accept, delegating to the CommonJS accept.js action
+          with its injected models. It resolves undefined on success; the API serializer
+          supplies the success message. The action adds no application instance, init or
+          shutdown. Its former lazy barrel is preserved at
           https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/invitations/index.js.
-          The authentication endpoint now imports the action directly; the Invites root's
-          instance and export shape are unchanged.
+          The authentication endpoint imports the Invites root and calls its accept method;
+          sending callers retain the existing add API and receiver.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
@@ -5564,10 +5571,13 @@ services:
       construction:
         summary: >-
           The root is the only production constructor found. Import creates Invites with
-          shared settings, helpers, mail library and URL utilities. Importing mail constructs
+          shared settings, helpers, mail library, URL utilities, models and logging. The
+          constructor stores these dependencies without starting invitation work. Importing mail
+          constructs
           a reusable content generator, not a GhostMailer. Each add receives API facade,
           Invite model, data, options and inviter; it does not own a transport directly.
-          Acceptance imports shared models and security helpers. Each call decodes the first
+          Acceptance receives models explicitly from the retained instance; token codecs stay
+          directly imported from the security library. Each call decodes the first
           invitation token, opens a transaction, locks a sent invite, checks expiry and existing
           user, deletes the invite and creates the user in that order. Email and role come from
           the stored invite; name and password come from the request. No invocation state is
@@ -5595,9 +5605,11 @@ services:
           stubbing GhostMailer.send; they assert send invocation, not rendered message contents.
           Root units separately assert staff/integration template data and the exact API-mail
           payload, with controlled model and rendering collaborators.
-          The authentication endpoint calls accept.js after input validation and setup checks.
+          The authentication endpoint calls the retained root's accept method after input
+          validation and setup checks; that method forwards to accept.js with the same models.
           Its GET invitation lookup queries models directly. Acceptance units import the
-          function; legacy HTTP cases exercise it through the real endpoint, asserting
+          function with explicit models; legacy HTTP cases exercise the root's delegation
+          through the real endpoint, asserting
           missing-invite 404, duplicate-user 422 and successful 200 responses.
         sources:
           - core/server/api/endpoints/invites.js
@@ -5620,7 +5632,7 @@ services:
           email-address service. The API mail handler lazily constructs its own shared mailer
           on first send. Real HTTP tests run after Ghost boot and replace send entirely, so
           do not establish the email-address/transport boundary or direct pre-boot invocation.
-          Acceptance has no explicit boot initialization and needs shared database/models
+          Acceptance shares the eager root and has no explicit boot initialization. It needs database/models
           readiness. HTTP requires completed setup and nonempty token, password and name; direct
           callers bypass those API checks. Existing HTTP cases boot Ghost, without establishing
           direct pre-boot or setup-disabled acceptance behavior.
@@ -8736,7 +8748,7 @@ services:
           per use, but the shared URL helper freezes site/subdirectory/admin URLs at
           import; this is not a URL hot-reload contract. Privacy is read from settings
           cache before enqueueing post events, not rechecked by sendWebmentions/sendAll.
-          Source URL and current/previous HTML are captured before dispatch. Helper
+          Source URL and changed links are captured before dispatch. Helper
           units assert missing-relation loading and post/page serializer selection;
           sender units assert fixed enablement gates, captured payload fields and
           destroyed-post previous data. Discovery/send/metadata request 15-second
@@ -8849,9 +8861,9 @@ services:
       - >-
         Characterize configuration timing through the real wrapper if callbacks or
         dependency capture change: frozen shared URLs, routing's init snapshot, current
-        privacy before enqueue, and source/HTML captured for jobs. Fixed fake getters and
-        test configuration replacement do not prove production hot reload or privacy
-        changes while jobs are pending.
+        privacy before enqueue, and source URL/changed links captured for jobs. Fixed
+        fake getters and test configuration replacement do not prove production hot
+        reload or privacy changes while jobs are pending.
       - >-
         Before changing repository or transport composition, add focused assertions for
         persisted revalidation counts and write/event failure ordering.
@@ -15312,6 +15324,67 @@ services:
         work, including shutdown timeout and late completion. Existing tests do not prove
         transport release or cancellation, and the one-second request option is not evidence
         of an overall deadline or of dependency-level retry/socket cleanup behavior.
+  upgrades:
+    kind: directory
+    disposition: retain
+    status: auditing
+    migrated: true
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Added on the shared initializer. The factory composes one resource-free service that
+        resolves the configured upgrade adapter per call, so boot never contacts the host.
+      reviewedAt: 1b10a390b8a23a60509e1a118da6186c3d584846
+      sources:
+        - core/server/services/upgrades/index.ts
+        - core/server/services/upgrades/upgrade-service.ts
+        - core/server/api/endpoints/upgrades.ts
+        - core/boot.js
+    entryPoints:
+      - upgrades/index.ts
+    notes: >-
+      Composition-only boundary between the Admin API and a host-owned upgrade adapter.
+      Ghost validates adapter output and maps adapter rejections; it never executes updates.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript default export is a defineService root with async init and a guarded
+          service getter. The implementation exports UpgradeService for direct construction.
+        sources:
+          - core/server/services/upgrades/index.ts
+          - core/server/services/upgrades/upgrade-service.ts
+        tests:
+          - test/unit/server/services/upgrades/index.test.ts
+          - test/unit/server/services/upgrades/upgrade-service.test.ts
+      construction:
+        summary: >-
+          Boot awaits init in its required service Promise.all. The factory constructs one
+          UpgradeService from an adapter getter and a logger, without adapter or host I/O.
+        sources:
+          - core/server/services/upgrades/index.ts
+          - core/boot.js
+        tests:
+          - test/unit/server/services/upgrades/index.test.ts
+      configuration:
+        summary: >-
+          Every call asks the adapter manager for the active adapters.upgrade adapter, so
+          switching adapters applies without re-initializing. The manager caches each
+          instance with its construction-time options, so option changes apply only after
+          its cache is cleared.
+        sources:
+          - core/server/services/upgrades/index.ts
+          - core/server/services/adapter-manager/index.ts
+        tests:
+          - test/unit/server/services/adapter-manager/upgrade-wiring.test.ts
+          - test/e2e-api/admin/upgrades.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers: []
   url:
     kind: directory
     disposition: retain
