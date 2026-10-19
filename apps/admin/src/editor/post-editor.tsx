@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import {
-  Button,
   FieldError,
   Tooltip,
   TooltipContent,
@@ -39,7 +38,6 @@ import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 import type { WritingFocus } from './writing-focus';
 import type { EditorFont } from './editor-font';
-import { EDITOR_HELP_URL } from './editor-help';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -78,8 +76,6 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
-  /** The footer's help link, which moves to the settings panel under admin7EditorImprovements. */
-  showHelpLink?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -212,7 +208,6 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
-  showHelpLink = true,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -582,8 +577,8 @@ export function PostEditor({
         </Stack>
       </div>
       {/* Below the small breakpoint the footer spans the screen: the word count at
-          the left, the header's actions at the right, and no help link. Only its
-          controls take pointer input, so the document between them stays reachable.
+          the left and the header's actions at the right. Only its controls take
+          pointer input, so the document between them stays reachable.
           Actions that wrap grow upward, leaving the word count in the corner. The
           footer moves with the settings panel and its contents fade while the
           writer types, each on a transition of its own. */}
@@ -625,27 +620,6 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          {showHelpLink && (
-            <Button
-              className={cn(
-                'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-                isAdmin7 && '[&_svg]:stroke-2!',
-              )}
-              shape="pill"
-              size={isAdmin7 ? 'icon' : 'icon-sm'}
-              variant="ghost"
-              asChild
-            >
-              <a
-                aria-label="Editor help"
-                href={EDITOR_HELP_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <LucideIcon.CircleHelp />
-              </a>
-            </Button>
-          )}
         </Inline>
       </Inline>
     </div>

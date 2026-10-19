@@ -1,11 +1,9 @@
 import { Field, FieldError, FieldLabel, Input, Textarea } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import BrandIcon from '@/shared/brand-icon/brand-icon';
 import type { PostCardConfig } from '@/editor/card-config';
 import { ImageField } from '@/editor/image-field';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { truncate } from './meta-data-fields';
-import { SettingsSubview } from './settings-subview';
 import {
   SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH,
   SOCIAL_PREVIEW_LENGTH,
@@ -17,10 +15,10 @@ import {
 } from './social-card-fields';
 import type { SocialCardNetwork, SocialPreviewRow } from './social-card-networks';
 import { useSettingsField } from './use-settings-field';
-import { type SocialCardImage, useSocialCardImage } from './use-social-card-image';
+import type { SocialCardImage } from './use-social-card-image';
 
-export interface SocialCardSectionProps {
-  /** Which network's card this pane edits (see `social-card-networks.ts`). */
+export interface SocialCardFieldsProps {
+  /** Which network's card this edits (see `social-card-networks.ts`). */
   network: SocialCardNetwork;
   session: EditorSettingsPort;
   /** The site's homepage URL, which the card previews the post under. */
@@ -35,24 +33,6 @@ export interface SocialCardSectionProps {
  * The card a network renders for the post: an image, a title and a description
  * that stand in for the post's own, and the result they produce.
  */
-export function SocialCardSection(props: SocialCardSectionProps) {
-  const { network } = props;
-  const image = useSocialCardImage(props.session, network);
-
-  return (
-    <SettingsSubview
-      closeLabel={`Close ${network.name} card panel`}
-      icon={<BrandIcon className="size-4" name={network.icon} />}
-      id={network.id}
-      label={`${network.name} card`}
-      title={`${network.name} card`}
-    >
-      <SocialCardFields {...props} image={image} />
-    </SettingsSubview>
-  );
-}
-
-/** A card's fields and preview, without the pane around them. */
 export function SocialCardFields({
   network,
   session,
@@ -60,7 +40,7 @@ export function SocialCardFields({
   featureImage,
   cardConfig,
   image: { src: image, edit: editImage, upload },
-}: SocialCardSectionProps & { image: SocialCardImage }) {
+}: SocialCardFieldsProps & { image: SocialCardImage }) {
   const title = useSettingsField(session, network.titleKey);
   const description = useSettingsField(session, network.descriptionKey);
 

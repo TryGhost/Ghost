@@ -99,9 +99,8 @@ Closing it returns focus to the picker button when that field is still present.
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every
-editor entry unless it is restored open as described below. Under
-`admin7EditorImprovements`, Cmd/Ctrl+. toggles it too, and Keyboard shortcuts
-lists it. The shortcut leaves focus where the writer is typing; closing the
+editor entry unless it is restored open as described below. Cmd/Ctrl+. toggles
+it too, and Keyboard shortcuts lists it. The shortcut leaves focus where the writer is typing; closing the
 panel while focus is inside it moves focus to the toggle, as a click does. It
 does nothing while the publish flow or a modal dialog is open.
 
@@ -111,8 +110,7 @@ sits in the flow beside the editor at a fixed 350px, including while a subview
 is open, and wide and full cards in the document keep fitting the narrowed
 writing area throughout the panel's motion.
 
-Under `admin7EditorImprovements`, the editor opens with the panel as the writer
-last left it with the toggle, one state for every post and page held in this
+The editor opens with the panel as the writer last left it with the toggle, one state for every post and page held in this
 browser's `localStorage` (`settings-open.ts`, `use-settings-open.ts`). A panel
 restored open is in place from the first paint, without sliding in. When a
 save is refused and the editor opens the panel to show the field, that open is
@@ -418,15 +416,14 @@ carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
 
-Under `admin7EditorImprovements` the X and Facebook cards are tabs of this pane
-rather than panes of their own: Search, X card and Facebook card, with no rows of
-their own in the section list. The pane opens on Search every time, unless the
+The X and Facebook cards are tabs of this pane rather than panes of their own:
+Search, X card and Facebook card, with no rows of their own in the section list. The pane opens on Search every time, unless the
 panel is taking the writer to a card's field, when it opens on that card's tab.
 
 ## X and Facebook cards
 
-The card each network renders for the post is a pane of its own, and every role
-that can open the panel can open either. Their image, title and description are
+The card each network renders for the post is a tab of the Meta data pane, and
+every role that can open the panel can open either. Their image, title and description are
 the post's `twitter_` and `og_` fields: the title and description are staged as
 the writer types and committed on the blur that ends the edit, and an uploaded
 or removed image is committed as it lands rather than waiting for a blur. A
@@ -456,15 +453,13 @@ characters the description is held to.
 
 ## Editor font
 
-Under `admin7EditorImprovements`, a row before Keyboard shortcuts chooses the font
-the writer reads the post in while editing, which the editor's footer offered
-before (see the [editor README](../README.md#editor-font)). Unlike the rows
+A row before Keyboard shortcuts chooses the font the writer reads the post in
+while editing (see the [editor README](../README.md#editor-font)). Unlike the rows
 around it, it opens no pane: its chevron turns down and the three fonts slide
 open beneath it, each as a sample in its own font, and fold away the same way.
 Folded, they stay mounted but take no focus. A pick applies to the canvas at
 once and is saved as it is made. The row starts folded whenever the section
-list is shown again. Every role sees it, and it reaches every screen size,
-where the footer picker was hidden below `sm`.
+list is shown again. Every role sees it, at every screen size.
 
 ## Keyboard shortcuts
 
@@ -485,9 +480,7 @@ The caps use `variant="contrast"` to stand out against the sidebar background.
 
 ## Using the editor
 
-Under `admin7EditorImprovements`, a row after Keyboard shortcuts links to
-Ghost's guide to the editor, which the editor's footer linked to before the font
-picker took its place. Unlike the rows around it, it opens no pane: it opens the
+A row after Keyboard shortcuts links to Ghost's guide to the editor. Unlike the rows around it, it opens no pane: it opens the
 guide in a new tab, and ends in an outward arrow instead of a chevron to say so.
 Every role sees it.
 

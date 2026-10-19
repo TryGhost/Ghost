@@ -38,23 +38,20 @@ import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './edi
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { SettingsLinkRow } from './settings-navigation-row';
 import { EDITOR_HELP_URL } from '@/editor/editor-help';
-import { MetaDataSection } from './meta-data-section';
 import { MetaDataTabsSection } from './meta-data-tabs-section';
 import { EditorFontSection } from './editor-font-section';
 import type { EditorFontControl } from '@/editor/use-editor-font';
 import { PostHistorySection } from './post-history-section';
 import { focusSettingsField } from './focus-settings-field';
 import {
+  SETTINGS_FIELD_SECTIONS,
   SETTINGS_SECTION_ORDER,
-  settingsSectionFor,
   type SettingsPanelField,
   type SettingsSectionId,
 } from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
-import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
-import { SocialCardSection } from './social-card-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
@@ -64,12 +61,10 @@ const MemoAuthorsSection = memo(AuthorsSection);
 const MemoCodeInjectionSection = memo(CodeInjectionSection);
 const MemoDeleteSection = memo(DeleteSection);
 const MemoKeyboardShortcutsSection = memo(KeyboardShortcutsSection);
-const MemoMetaDataSection = memo(MetaDataSection);
 const MemoMetaDataTabsSection = memo(MetaDataTabsSection);
 const MemoPostHistorySection = memo(PostHistorySection);
 const MemoPublishDateSection = memo(PublishDateSection);
 const MemoShowTitleSection = memo(ShowTitleSection);
-const MemoSocialCardSection = memo(SocialCardSection);
 const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
@@ -152,12 +147,7 @@ export interface PostSettingsSidebarProps {
    * already open rather than sliding in. Read only as the panel mounts.
    */
   opensInPlace?: boolean;
-  /**
-   * admin7EditorImprovements: the link to Ghost's guide to the editor, which leaves
-   * the footer, and Meta data's pane holding the X and Facebook cards as tabs.
-   */
-  editorImprovements?: boolean;
-  /** The editor font's choice, which leaves the footer for the panel under admin7EditorImprovements. */
+  /** The writer's editor font, chosen in the panel. */
   editorFont?: EditorFontControl;
 }
 
@@ -176,7 +166,6 @@ export function PostSettingsSidebar({
   reveal,
   frameRef,
   opensInPlace = false,
-  editorImprovements = false,
   editorFont,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
@@ -205,7 +194,7 @@ export function PostSettingsSidebar({
   // Only a new request reveals: closing the pane afterwards must not reopen it.
   useEffect(() => {
     if (reveal) {
-      subviews.reveal(settingsSectionFor(reveal.field, { combinedMetaData: editorImprovements }));
+      subviews.reveal(SETTINGS_FIELD_SECTIONS[reveal.field]);
       setFocusing(reveal);
     }
   }, [reveal]);
@@ -235,7 +224,7 @@ export function PostSettingsSidebar({
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
-    'meta-data': editorImprovements ? (
+    'meta-data': (
       <MemoMetaDataTabsSection
         cardConfig={cardConfig}
         featureImage={featureImage}
@@ -243,16 +232,14 @@ export function PostSettingsSidebar({
         session={session}
         siteUrl={siteUrl}
       />
-    ) : (
-      <MemoMetaDataSection session={session} siteUrl={siteUrl} />
     ),
     'editor-font': editorFont ? <EditorFontSection control={editorFont} /> : null,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
-    'editor-help': editorImprovements ? (
+    'editor-help': (
       <SettingsLinkRow href={EDITOR_HELP_URL} icon={<LucideIcon.CircleHelp />}>
         {settingsEditorHelpRow}
       </SettingsLinkRow>
-    ) : null,
+    ),
     // The list's last entry, pushed to the panel's foot while the list is
     // shorter than the panel. A post with nothing to delete yet gets nothing,
     // not an empty wrapper.
@@ -260,25 +247,6 @@ export function PostSettingsSidebar({
       <Box className="mt-auto">
         <MemoDeleteSection postType={postType} session={session} />
       </Box>
-    ),
-    // Under admin7EditorImprovements the cards are tabs of Meta data's pane.
-    'x-card': editorImprovements ? null : (
-      <MemoSocialCardSection
-        cardConfig={cardConfig}
-        featureImage={featureImage}
-        network={X_CARD_NETWORK}
-        session={session}
-        siteUrl={siteUrl}
-      />
-    ),
-    'facebook-card': editorImprovements ? null : (
-      <MemoSocialCardSection
-        cardConfig={cardConfig}
-        featureImage={featureImage}
-        network={FACEBOOK_CARD_NETWORK}
-        session={session}
-        siteUrl={siteUrl}
-      />
     ),
     'post-history': (
       <MemoPostHistorySection

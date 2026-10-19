@@ -21,11 +21,7 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
-import {
-  DRAFT_NEWSLETTERS_KEY,
-  readDraftNewsletter,
-  writeDraftNewsletter,
-} from '@/editor/publish/draft-newsletter';
+import { readDraftNewsletter, writeDraftNewsletter } from '@/editor/publish/draft-newsletter';
 import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
@@ -77,10 +73,9 @@ function fakeEmailDraft() {
   });
 }
 
-function editorOptions(flag: boolean) {
+function editorOptions() {
   return {
     ...withoutAutosave(),
-    labs: { admin7EditorImprovements: flag },
     boot: {
       browseSettings: {
         response: settingsResponse({
@@ -112,10 +107,10 @@ afterEach(() => {
   localStorage.removeItem('ghost-last-published-post');
 });
 
-describe('Remembered draft newsletter (admin7EditorImprovements)', () => {
+describe('Remembered draft newsletter', () => {
   it('remembers the newsletter picked in the publish flow for the draft', async () => {
     fakeEmailDraft();
-    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(true));
+    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions());
     await openFlowNewsletters();
     await publishScreen.newsletterSelect().click();
     await page.getByRole('option', { name: /^Monthly roundup/ }).click();
@@ -131,7 +126,7 @@ describe('Remembered draft newsletter (admin7EditorImprovements)', () => {
     // As left by an earlier visit, so this one reads it from storage.
     writeDraftNewsletter(localStorage, POST_ID, 'monthly-roundup');
     const saveApi = fakeEmailDraft();
-    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(true));
+    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions());
     await openFlowNewsletters();
     await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
 
@@ -143,7 +138,7 @@ describe('Remembered draft newsletter (admin7EditorImprovements)', () => {
 
   it('opens the publish flow on the newsletter picked in the preview', async () => {
     fakeEmailDraft();
-    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(true));
+    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions());
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.previewButton().click();
     await pickPreviewNewsletter('Daily brief');
@@ -155,7 +150,7 @@ describe('Remembered draft newsletter (admin7EditorImprovements)', () => {
 
   it('switches the open flow to a newsletter picked in the preview over it', async () => {
     fakeEmailDraft();
-    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(true));
+    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions());
     await openFlowNewsletters();
     await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Weekly');
     await publishScreen.previewButton().click();
@@ -163,40 +158,5 @@ describe('Remembered draft newsletter (admin7EditorImprovements)', () => {
     await previewScreen.publishButton().click();
 
     await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
-  });
-
-  it('remembers nothing while the flag is off', async () => {
-    fakeEmailDraft();
-    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(false));
-    await expect.element(editorScreen.publishButton()).toBeEnabled();
-    await editorScreen.previewButton().click();
-    await pickPreviewNewsletter('Daily brief');
-    await previewScreen.publishButton().click();
-
-    await publishScreen.setting('email-recipients').click();
-    await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Weekly');
-    expect(localStorage.getItem(DRAFT_NEWSLETTERS_KEY)).toBeNull();
-  });
-
-  it('neither reads, moves nor forgets a remembered newsletter while the flag is off', async () => {
-    writeDraftNewsletter(localStorage, POST_ID, 'daily-brief', 1);
-    const remembered = localStorage.getItem(DRAFT_NEWSLETTERS_KEY);
-    const saveApi = fakeEmailDraft();
-    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(false));
-    await openFlowNewsletters();
-    await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Weekly');
-
-    await publishScreen.newsletterSelect().click();
-    await page.getByRole('option', { name: /^Monthly roundup/ }).click();
-    // A pick in the preview over the flow leaves the flow where it was, as before the flag.
-    await publishScreen.previewButton().click();
-    await pickPreviewNewsletter('Weekly');
-    await previewScreen.publishButton().click();
-    await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-    await expect.poll(() => saveApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
-    expect(localStorage.getItem(DRAFT_NEWSLETTERS_KEY)).toBe(remembered);
   });
 });

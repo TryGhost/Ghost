@@ -3,7 +3,6 @@ import { page, userEvent } from 'vitest/browser';
 import {
   settingsMetaDataBackButton,
   settingsMetaDataRow,
-  settingsXCardRow,
 } from '@tryghost/test-data/selectors/editor';
 
 import {
@@ -369,9 +368,8 @@ describe('Post settings meta data', () => {
       .toHaveTextContent('Meta title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
 
-    // Publish is refused too, and swaps another open pane for the field's own.
-    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
-    await editorScreen.settingsSubviewRow(settingsXCardRow).click();
+    // Publish is refused too, and swaps another open tab for the field's own.
+    await editorScreen.settingsMetaDataTab('X card').click();
     await expect.element(editorScreen.settingsXTitle()).toBeVisible();
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.publishButton().click();

@@ -1,7 +1,7 @@
 /**
  * Writing focus: while the writer types, the editor's chrome (header, settings
- * toggle, word count, help and the empty feature image bar) fades away, and
- * moving the mouse brings it back. Behind admin7EditorImprovements.
+ * toggle, word count and the empty feature image bar) fades away, and moving
+ * the mouse brings it back.
  */
 
 /** How the chrome stands: rendered as `data-writing-focus` on each piece of it. */
@@ -27,7 +27,15 @@ export interface WritingFocusState {
 
 export type WritingFocusEvent =
   | { type: 'edit' }
-  | { type: 'pointer-move'; point: Point }
+  | {
+      type: 'pointer-move';
+      point: Point;
+      /**
+       * How far the browser reports the pointer moved to get here. A scroll under
+       * a still pointer reports none.
+       */
+      movement?: Point;
+    }
   /** A wheel scroll, focus landing on the chrome or outside the writing area, or an unused Esc. */
   | { type: 'reveal' };
 
@@ -45,6 +53,12 @@ export function nextWritingFocus(
         return state;
       }
       if (!state.anchor) {
+        // A pointer that arrives in one jump, as automation and some devices
+        // move it, has already travelled far enough.
+        const { movement } = event;
+        if (movement && Math.hypot(movement.x, movement.y) > POINTER_TRAVEL_TO_REVEAL) {
+          return CHROME_SHOWN;
+        }
         return { ...state, anchor: event.point };
       }
       const travel = Math.hypot(event.point.x - state.anchor.x, event.point.y - state.anchor.y);

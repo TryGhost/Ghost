@@ -32,25 +32,24 @@ export interface SettingsOpenMemory {
 }
 
 /**
- * The settings panel's remembered open state. The editor mounts once its config
- * has loaded, so the flag is known in the first render, as the screen width is;
- * the start is decided there and never revisited, so nothing moves on its own
- * after the editor has opened.
+ * The settings panel's remembered open state. The start is decided from the
+ * screen width in the first render and never revisited, so nothing moves on its
+ * own after the editor has opened.
  *
  * The start is local, so use this once (the editor screen).
  */
-export function useSettingsOpen(enabled: boolean): SettingsOpenMemory {
+export function useSettingsOpen(): SettingsOpenMemory {
   const overlay = useOverlayScreen();
   const [openAtStart] = useState(() =>
-    settingsOpenAtStart({ enabled, overlay, stored: enabled && readSettingsOpen() }),
+    settingsOpenAtStart({ overlay, stored: readSettingsOpen() }),
   );
   const [restored, setRestored] = useState(openAtStart);
 
-  // Read when the writer toggles, against the flag and the width at that moment.
-  const latest = useRef({ enabled, overlay });
+  // Read when the writer toggles, against the width at that moment.
+  const latest = useRef({ overlay });
   useEffect(() => {
-    latest.current = { enabled, overlay };
-  }, [enabled, overlay]);
+    latest.current = { overlay };
+  }, [overlay]);
 
   const toggled = useCallback((open: boolean) => {
     setRestored(false);

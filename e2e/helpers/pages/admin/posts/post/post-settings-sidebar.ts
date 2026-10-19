@@ -30,8 +30,6 @@ import {
   settingsDeleteDialog,
   settingsDeleteError,
   settingsExcerptInput,
-  settingsFacebookCardBackButton,
-  settingsFacebookCardRow,
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
@@ -68,8 +66,6 @@ import {
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
-  settingsXCardBackButton,
-  settingsXCardRow,
   settingsXDescriptionInput,
   settingsXImage,
   settingsXPreview,
@@ -79,7 +75,10 @@ import {
   xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The sidebar's sections, in the order it renders them. */
+/**
+ * The sidebar's sections, in the order it renders them. The X and Facebook
+ * cards are tabs of the Meta data pane, opened through it.
+ */
 export type PostSettingsSectionId =
   | 'url'
   | 'publish-date'
@@ -733,9 +732,8 @@ class MetaDataPane extends PaneSection {
 }
 
 interface SocialCardSelectors {
-  id: PostSettingsSectionId;
-  rowLabel: string;
-  backLabel: string;
+  /** The card's tab in the Meta data pane. */
+  tabName: 'X card' | 'Facebook card';
   titleInput: string;
   descriptionInput: string;
   preview: string;
@@ -745,7 +743,10 @@ interface SocialCardSelectors {
   removeImageButton: string;
 }
 
-class SocialCardPane extends PaneSection {
+/** A card's tab of the Meta data pane. Opening it opens the pane on that tab. */
+class SocialCardPane implements SettingsSectionObject {
+  readonly tab: Locator;
+  readonly pane: Locator;
   readonly titleInput: Locator;
   readonly descriptionInput: Locator;
   readonly preview: Locator;
@@ -754,11 +755,17 @@ class SocialCardPane extends PaneSection {
   readonly unsplashButton: Locator;
   readonly removeImageButton: Locator;
 
-  constructor(page: Page, sidebar: PostSettingsSidebar, selectors: SocialCardSelectors) {
-    super(page, sidebar, selectors.id, {
-      rowLabel: selectors.rowLabel,
-      backLabel: selectors.backLabel,
-    });
+  private readonly metaData: MetaDataPane;
+
+  constructor(
+    page: Page,
+    sidebar: PostSettingsSidebar,
+    metaData: MetaDataPane,
+    selectors: SocialCardSelectors,
+  ) {
+    this.metaData = metaData;
+    this.tab = sidebar.root.getByRole('tab', { name: selectors.tabName, exact: true });
+    this.pane = page.getByTestId(settingsSubviewPane);
     this.titleInput = page.getByTestId(selectors.titleInput);
     this.descriptionInput = page.getByTestId(selectors.descriptionInput);
     this.preview = page.getByTestId(selectors.preview);
@@ -787,16 +794,24 @@ class SocialCardPane extends PaneSection {
   async uploadImage(filePath: string): Promise<void> {
     await this.imageInput.setInputFiles(filePath);
   }
+
+  async open(): Promise<void> {
+    await this.metaData.open();
+    await this.tab.click();
+    await this.titleInput.waitFor({ state: 'visible' });
+  }
+
+  async close(): Promise<void> {
+    await this.metaData.close();
+  }
 }
 
 class XCardPane extends SocialCardPane {
   readonly image: Locator;
 
-  constructor(page: Page, sidebar: PostSettingsSidebar) {
-    super(page, sidebar, {
-      id: 'x-card',
-      rowLabel: settingsXCardRow,
-      backLabel: settingsXCardBackButton,
+  constructor(page: Page, sidebar: PostSettingsSidebar, metaData: MetaDataPane) {
+    super(page, sidebar, metaData, {
+      tabName: 'X card',
       titleInput: settingsXTitleInput,
       descriptionInput: settingsXDescriptionInput,
       preview: settingsXPreview,
@@ -899,11 +914,9 @@ export class PostSettingsSidebar {
     this.postHistory = new PostHistorySection(page, this);
     this.codeInjection = new CodeInjectionPane(page, this);
     this.metaData = new MetaDataPane(page, this);
-    this.xCard = new XCardPane(page, this);
-    this.facebookCard = new SocialCardPane(page, this, {
-      id: 'facebook-card',
-      rowLabel: settingsFacebookCardRow,
-      backLabel: settingsFacebookCardBackButton,
+    this.xCard = new XCardPane(page, this, this.metaData);
+    this.facebookCard = new SocialCardPane(page, this, this.metaData, {
+      tabName: 'Facebook card',
       titleInput: settingsFacebookTitleInput,
       descriptionInput: settingsFacebookDescriptionInput,
       preview: settingsFacebookPreview,
@@ -933,13 +946,7 @@ export class PostSettingsSidebar {
       'keyboard-shortcuts': this.keyboardShortcuts,
       delete: this.delete,
     };
-    this.panes = [
-      this.codeInjection,
-      this.metaData,
-      this.xCard,
-      this.facebookCard,
-      this.keyboardShortcuts,
-    ];
+    this.panes = [this.codeInjection, this.metaData, this.keyboardShortcuts];
   }
 
   async open(): Promise<void> {

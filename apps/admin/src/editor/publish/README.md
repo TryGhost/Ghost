@@ -173,7 +173,7 @@ The flow is a four-way branch, taken in this order:
 
 ## Remembering a draft's newsletter
 
-Behind `admin7EditorImprovements`, a draft remembers the newsletter last picked for it, since Core stores none until the post is sent or scheduled. `draft-newsletter.ts` holds the rules and `useDraftNewsletter()` the editor's copy; they keep one `ghost-editor-draft-newsletters` map of post id to slug in `localStorage`, capped at the 100 most recently written entries. Blocked, full or corrupt storage reads as nothing remembered.
+A draft remembers the newsletter last picked for it, since Core stores none until the post is sent or scheduled. `draft-newsletter.ts` holds the rules and `useDraftNewsletter()` the editor's copy; they keep one `ghost-editor-draft-newsletters` map of post id to slug in `localStorage`, capped at the 100 most recently written entries. Blocked, full or corrupt storage reads as nothing remembered.
 
 - Picking a newsletter in the options step or the preview's email tab remembers it at once, even if the flow then closes. Picking the default forgets it, so the draft follows the site's newsletter order again.
 - The flow and the preview start on the post's own newsletter, then the remembered one, then the default. An entry for a newsletter since archived or deleted is ignored and dropped. Only drafts read entries.
