@@ -103,5 +103,28 @@ test.describe('Smart quotes', async () => {
             await pasteHtml(page, '<p>"Don\'t <strong>panic</strong>"</p>');
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">“Don’t </span><strong data-lexical-text="true">panic</strong><span data-lexical-text="true">”</span></p>`);
         });
+
+        test('leaves existing quotes beside pasted text alone', async function () {
+            // existing content keeps its straight quotes, only what's pasted is converted
+            await page.evaluate(() => {
+                const editor = window.lexicalEditor;
+                editor.setEditorState(editor.parseEditorState({
+                    root: {
+                        children: [{
+                            children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'say "hi" ', type: 'extended-text', version: 1}],
+                            direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1
+                        }],
+                        direction: 'ltr', format: '', indent: 0, type: 'root', version: 1
+                    }
+                }));
+            });
+            await focusEditor(page);
+            await page.evaluate(() => {
+                const textNode = document.querySelector('[data-lexical-text="true"]').firstChild;
+                window.getSelection().collapse(textNode, textNode.textContent.length);
+            });
+            await pasteText(page, 'and "bye"');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">say "hi" and “bye”</span></p>`);
+        });
     });
 });
