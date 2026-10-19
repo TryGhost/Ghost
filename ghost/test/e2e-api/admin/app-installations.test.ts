@@ -800,6 +800,40 @@ describe('App installations Admin API', function () {
       assert.equal(JSON.parse(action.context).to_manifest_id, row.manifest_id);
     });
 
+    it('approves silent changes the app kept after going back on the pending ones, as an approval row', async function () {
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ description: 'Episodes and players.' }));
+      const reviewed = await preview();
+      assert.deepEqual(reviewed.installation.changes, [
+        { path: 'description', requires_approval: false },
+      ]);
+      serve(manifest({ description: 'Episodes and players.' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcast');
+      assert.equal(body.app_installations[0].manifest.description, 'Episodes and players.');
+      const [first, waited, approved] = await manifestRows();
+      assert.equal(waited.id, pendingId);
+      assert.equal(approved.source, 'approval');
+      assert.equal(Boolean(approved.requires_approval), false);
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, approved.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+      const [, action] = await actions();
+      assert.equal(JSON.parse(action.context).from_manifest_id, first.id);
+      assert.equal(JSON.parse(action.context).to_manifest_id, approved.id);
+    });
+
     it('refuses a manifest for a different app', async function () {
       const installed = await install();
       serve(manifest({ id: 'com.example.other' }), NEW_URL);
