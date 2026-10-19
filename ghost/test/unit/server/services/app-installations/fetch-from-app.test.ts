@@ -73,6 +73,26 @@ describe('createAppFetcher', function () {
       assert.equal(failure.status, 404);
     });
 
+    // got resolves a 304 rather than rejecting it, but it is no more a read than a 404.
+    it('reports a 304 as unreachable, with the status', async function () {
+      nock('https://podcast.example.com').get('/ghost-app.json').reply(304);
+
+      const failure = unreachable(await fetcher()(APP_URL, OPTIONS));
+
+      assert.equal(failure.status, 304);
+    });
+
+    it('reports a successful response it can’t read in full as unreachable, without its status', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(200, 'Hel', { 'content-length': '5' });
+
+      const failure = unreachable(await fetcher()(APP_URL, OPTIONS));
+
+      assert.equal(failure.status, undefined);
+      assert.ok(failure.cause instanceof Error);
+    });
+
     it('reports a request that gets no answer as unreachable, with why for the logs', async function () {
       nock('https://podcast.example.com')
         .get('/ghost-app.json')
@@ -83,6 +103,33 @@ describe('createAppFetcher', function () {
       assert.equal(failure.status, undefined);
       assert.ok(failure.cause instanceof Error);
       assert.equal(failure.cause.message, 'Connection failed at a private upstream address');
+    });
+  });
+
+  describe('the deadline', function () {
+    afterEach(function () {
+      vi.restoreAllMocks();
+    });
+
+    // The timer behind AbortSignal.timeout can't be faked, so the test stands in for it.
+    it('gives up at one deadline for the whole fetch, redirects included', async function () {
+      const deadline = new AbortController();
+      const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(deadline.signal);
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location: '/v2/ghost-app.json' })
+        .get('/v2/ghost-app.json')
+        .delay(1000)
+        .reply(() => {
+          deadline.abort(new DOMException('The operation timed out', 'TimeoutError'));
+          return [200, 'Hello'];
+        });
+
+      const failure = unreachable(await fetcher()(APP_URL, OPTIONS));
+
+      assert.deepEqual(timeout.mock.calls, [[5000]]);
+      assert.equal(failure.status, undefined);
+      assert.ok(failure.cause instanceof Error);
     });
   });
 

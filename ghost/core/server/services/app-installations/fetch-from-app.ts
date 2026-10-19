@@ -8,14 +8,14 @@ const MAX_REDIRECTS = 3;
 /**
  * Why an app's URL could not be read.
  *
- * - `unreachable`: the app answered with an error status, didn't answer, or the URL isn't
- *   one. `status` is the only part that may be shown, so a review can't be used to probe
- *   the server's network; `cause` is for the logs, so an operator can still tell a timeout
- *   from a certificate problem.
+ * - `unreachable`: the app answered with a status other than 2xx, didn't answer in full, or
+ *   the URL isn't one. `status` is the status it answered with, and the only part that may
+ *   be shown, so a review can't be used to probe the server's network; `cause` is for the
+ *   logs, so an operator can still tell a timeout from a certificate problem.
  * - `location_not_url`: a redirect whose Location isn't a URL.
  * - `redirected`: a redirect to another host, which is never followed.
- * - `too_large`: a successful response larger than `maxBytes`. A large error page is
- *   `unreachable` instead, with its status.
+ * - `too_large`: a 2xx response larger than `maxBytes`. A large error page is `unreachable`
+ *   instead, with its status.
  */
 export type AppFetchFailure =
   | { reason: 'unreachable'; status?: number; cause: unknown }
@@ -37,12 +37,33 @@ export type FetchFromApp = (
   options: { accept: string; maxBytes: number },
 ) => Promise<AppFetchResult>;
 
-const ErrorResponse = z.object({ response: z.object({ statusCode: z.number() }) });
+const FailedRequest = z.object({
+  code: z.unknown(),
+  response: z.object({ statusCode: z.number() }),
+});
 
-/** The HTTP status the app answered with, if it answered at all. */
-function statusOf(err: unknown): number | undefined {
-  return ErrorResponse.safeParse(err).data?.response.statusCode;
+// The errors got fails a request with when it won't take the response it got: a status
+// other than 2xx, or a redirect past the limit.
+const REFUSED_RESPONSE_CODES: ReadonlySet<unknown> = new Set([
+  'ERR_NON_2XX_3XX_RESPONSE',
+  'ERR_TOO_MANY_REDIRECTS',
+]);
+
+/**
+ * The HTTP status a failed request ended on, if it ended on the app's answer. got attaches
+ * the last response it saw to any error, which may be a redirect it was following when
+ * the request failed, so that response only counts when got refused it, or when its
+ * download was stopped for its size.
+ */
+function statusOf(err: unknown, { stoppedDownload }: { stoppedDownload: boolean }) {
+  const failed = FailedRequest.safeParse(err).data;
+  if (!failed || !(stoppedDownload || REFUSED_RESPONSE_CODES.has(failed.code))) {
+    return undefined;
+  }
+  return failed.response.statusCode;
 }
+
+const isSuccess = (status: number) => status >= 200 && status < 300;
 
 /** A redirect may stay on the host it started on, or move it from HTTP to HTTPS. */
 function staysOnHost(from: URL, to: URL): boolean {
@@ -180,24 +201,38 @@ export function createAppFetcher({
 
     // got decodes the body as UTF-8 whatever charset the response names. The size limit
     // above still applies, because it counts downloaded bytes.
+    let status: number;
     let text: string;
     try {
+      status = (await pending).statusCode;
+      // Decodes the response just read, as fetch's text() does; nothing is fetched again.
       text = await pending.text();
     } catch (err) {
       if (refusedRedirect) {
         return { success: false, failure: refusedRedirect };
       }
-      // Only a successful response is held to the size limit; a large error page is still
+      // Only a 2xx response is held to the size limit; a large error page is still
       // reported with its status. The status isn't known until the headers arrive, so the
       // download is stopped first and the two cases are told apart here.
-      const status = statusOf(err);
-      if (tooLarge && (status === undefined || (status >= 200 && status < 300))) {
+      const answered = statusOf(err, { stoppedDownload: tooLarge });
+      if (tooLarge && (answered === undefined || isSuccess(answered))) {
         return { success: false, failure: { reason: 'too_large' } };
       }
-      return { success: false, failure: { reason: 'unreachable', status, cause: err } };
+      return { success: false, failure: { reason: 'unreachable', status: answered, cause: err } };
     }
     if (refusedRedirect) {
       return { success: false, failure: refusedRedirect };
+    }
+    // got resolves a 304 rather than failing it, but it is no more a read than a 404.
+    if (!isSuccess(status)) {
+      return {
+        success: false,
+        failure: {
+          reason: 'unreachable',
+          status,
+          cause: `${current.href} answered with HTTP ${status}`,
+        },
+      };
     }
     return { success: true, url: current.href, text };
   };
