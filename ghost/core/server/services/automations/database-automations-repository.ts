@@ -81,7 +81,6 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
 ] as const;
 
 const messages = {
-  duplicateAutomationName: 'An automation with this name already exists.',
   invalidAutomationActionRevision:
     'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
   conflictingAutomationActionId:
@@ -408,22 +407,7 @@ export function createDatabaseAutomationsRepository({
           updated_at: now,
         };
 
-        try {
-          await trx('automations').insert(automation);
-        } catch (error) {
-          if (
-            error instanceof Error &&
-            'code' in error &&
-            error.code === 'ER_DUP_ENTRY' &&
-            /automations_name_unique/.test(error.message)
-          ) {
-            throw new errors.ValidationError({
-              message: 'An automation with this name already exists.',
-              property: 'name',
-            });
-          }
-          throw error;
-        }
+        await trx('automations').insert(automation);
 
         if (tierIds.length > 0) {
           await trx('automation_trigger_tiers').insert(
@@ -1548,25 +1532,15 @@ async function updateAutomation(
   trx: Knex.Transaction,
   automation: AutomationRow,
 ): Promise<AutomationRow> {
-  try {
-    await trx('automations')
-      .update({
-        name: automation.name,
-        description: automation.description,
-        status: automation.status,
-        trigger_tier_scope: automation.trigger_tier_scope,
-        updated_at: automation.updated_at,
-      })
-      .where('id', automation.id);
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ER_DUP_ENTRY') {
-      throw new errors.ValidationError({
-        message: tpl(messages.duplicateAutomationName),
-        property: 'name',
-      });
-    }
-    throw error;
-  }
+  await trx('automations')
+    .update({
+      name: automation.name,
+      description: automation.description,
+      status: automation.status,
+      trigger_tier_scope: automation.trigger_tier_scope,
+      updated_at: automation.updated_at,
+    })
+    .where('id', automation.id);
 
   return requireAutomation(await loadAutomation(trx, automation.id), automation.id);
 }
