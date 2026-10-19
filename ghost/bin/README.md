@@ -10,6 +10,7 @@ an executable here.
 | [validate-adapters.ts](validate-adapters.ts)   | TypeScript, compiled to CommonJS `.js` | Load explicitly named adapters and validate their base-class contract; optionally check duplicated dependencies |
 | [lib/duplicate-deps.ts](lib/duplicate-deps.ts) | TypeScript, compiled to CommonJS `.js` | Private installed-tree dependency inspection used by adapter validation                                         |
 | [warm-compile-cache.sh](warm-compile-cache.sh) | Bash                                   | Boot Ghost once to populate Node's on-disk compile cache during an image build                                  |
+| [generate-data.ts](generate-data.ts)           | TypeScript, compiled to CommonJS `.js` | Populate the configured database with generated data                                                            |
 
 The [Ghost manifest](../package.json) ships `bin/`; [Core's compiler configuration](../tsconfig.json)
 includes its TypeScript sources. Invoke compiled files in the installed tree,
@@ -29,6 +30,24 @@ configuration may not be present during an image build. The checker uses Core's
 adapter loader and base-class definitions. The optional duplicate check compares
 packages actually loaded from the adapter and Ghost dependency trees; a workspace
 checkout with linked packages is not an equivalent installed-tree test.
+
+## Data generation
+
+From the installed Ghost directory, configured for a disposable database:
+
+```sh
+node bin/generate-data.js --quantities=members:10000 --seed=123
+```
+
+This runs Core's data generator with the same options as `pnpm gx data generate`
+(see [working with test data](../../docs/contributing/test-data.md)). It has no
+environment gate and writes into whatever database the tree is configured for,
+so never point it at a site with data you need to keep. Outside `development`, MySQL needs
+`ALLOW_INFILE_STREAM=1` to permit the infile streaming the generator uses.
+Contributors in a checkout use the gx command instead.
+
+Hosting and image tooling outside this repository runs it to seed installed
+images, where there is no gx and Core internals should not be required directly.
 
 ## Compile-cache warming
 
