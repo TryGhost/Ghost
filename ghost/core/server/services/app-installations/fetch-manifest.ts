@@ -16,17 +16,23 @@ interface FetchedManifest {
 
 type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
-// Says only that the app answered with an error status, never why any other request
-// failed, so the preview can't be used to probe the server's network. The reason is
-// logged, so an operator can still tell a timeout from a certificate problem.
+// Says only how the app answered, never why any other request failed, so the preview
+// can't be used to probe the server's network. The reason is logged, so an operator can
+// still tell a timeout from a certificate problem.
 function unreachable(
   manifestUrl: string,
-  context: string,
-  logged: unknown,
+  failure: Extract<AppFetchFailure, { reason: 'unreachable' | 'location_not_url' }>,
   logging: Pick<GhostLogger, 'warn'>,
-) {
+): errors.ValidationError {
+  let context = manifestUrl;
+  if (failure.reason === 'location_not_url') {
+    context = `${manifestUrl} answered with HTTP ${failure.status} and a Location that is not a URL`;
+  } else if (failure.status) {
+    context = `${manifestUrl} answered with HTTP ${failure.status}`;
+  }
   logging.warn(`Could not load the app manifest at ${manifestUrl}`);
-  logging.warn(logged);
+  // A Location that isn't a URL has no cause beyond the answer, so the answer is logged.
+  logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
     message: 'Could not load the app’s manifest.',
     code: 'APP_MANIFEST_UNREACHABLE',
@@ -38,20 +44,11 @@ function manifestError(
   manifestUrl: string,
   failure: AppFetchFailure,
   logging: Pick<GhostLogger, 'warn'>,
-) {
+): errors.ValidationError {
   switch (failure.reason) {
     case 'unreachable':
-      return unreachable(
-        manifestUrl,
-        failure.status ? `${manifestUrl} answered with HTTP ${failure.status}` : manifestUrl,
-        failure.cause,
-        logging,
-      );
-    case 'location_not_url': {
-      // Reported as unreachable, so logged like every other unreachable manifest.
-      const context = `${manifestUrl} answered with HTTP ${failure.status} and a Location that is not a URL`;
-      return unreachable(manifestUrl, context, context, logging);
-    }
+    case 'location_not_url':
+      return unreachable(manifestUrl, failure, logging);
     case 'redirected':
       return new errors.ValidationError({
         message: 'The app’s manifest redirects to another host.',
