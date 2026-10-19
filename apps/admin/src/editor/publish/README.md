@@ -182,8 +182,6 @@ A draft remembers the newsletter last picked for it, since Core stores none unti
 - Unscheduling a post that had a newsletter and no email yet remembers that newsletter, so republishing offers it again.
 - Deleting the post from the settings panel forgets its entry.
 
-With the flag off nothing is read or written, and entries stay where they are.
-
 ## Gates
 
 Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. They never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.

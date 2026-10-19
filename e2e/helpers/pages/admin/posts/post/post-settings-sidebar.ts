@@ -706,6 +706,7 @@ async function replaceCode(field: Locator, code: string): Promise<void> {
 }
 
 class MetaDataPane extends PaneSection {
+  readonly searchTab: Locator;
   readonly titleInput: Locator;
   readonly descriptionInput: Locator;
   readonly searchPreview: Locator;
@@ -715,9 +716,17 @@ class MetaDataPane extends PaneSection {
       rowLabel: settingsMetaDataRow,
       backLabel: settingsMetaDataBackButton,
     });
+    this.searchTab = sidebar.root.getByRole('tab', { name: 'Search', exact: true });
     this.titleInput = page.getByTestId(settingsMetaTitleInput);
     this.descriptionInput = page.getByTestId(settingsMetaDescriptionInput);
     this.searchPreview = page.getByTestId(settingsSerpPreview);
+  }
+
+  /** Lands on the Search tab, even when the pane is already open on a card's tab. */
+  async open(): Promise<void> {
+    await super.open();
+    await this.searchTab.click();
+    await this.titleInput.waitFor({ state: 'visible' });
   }
 
   async setTitle(title: string): Promise<void> {

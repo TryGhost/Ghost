@@ -227,9 +227,9 @@ made, as `editor.bodyFont` in the user's preferences, so it follows the writer
 between browsers. Saves run one after another, so the last choice is the one
 that holds, and the editor closing sends any choice still unsaved. A failed save
 keeps the choice for the visit and says so. A writer who never chose reads
-serif, and so does everyone with the flag off, whatever they saved.
+serif.
 
-With the flag or without, the editor lets Inter choose its optical size wherever
+The editor lets Inter choose its optical size wherever
 it sets text in Inter: the title, the excerpt and headings always, and the body
 in sans. Admin pins Inter to its text design. In the editor, Inter follows the
 font size instead, from its text design at 14px to its finer display one at
