@@ -15,6 +15,9 @@ const FRAGMENT = /^\s*#/;
 // CSS that can load another document: a url() of anything but a fragment, the other
 // functions that take a URL, an import, or an escape, which could spell any of them.
 const LOADS_CSS = /\\|@import|(?:image|image-set|src)\s*\(|url\s*\(\s*(?!['"]?\s*#)/i;
+// A doctype that declares entities, as Adobe Illustrator writes. Parsed as HTML, it ends at
+// the first `>`, inside the declarations, and leaves the rest of them as text.
+const DOCTYPE_WITH_DECLARATIONS = /<!DOCTYPE[^[>]*\[[^\]]*\]\s*>/i;
 
 /**
  * The sanitized SVG as a document of its own, written as XML so it can be drawn as an
@@ -63,11 +66,16 @@ export function sanitizeSvgContent(
     });
   }
 
-  const body = DOMPurify.sanitize(content, {
-    USE_PROFILES: { svg: true, svgFilters: true },
-    FORBID_TAGS: selfContained ? ['image', 'feImage'] : [],
-    RETURN_DOM: true,
-  }) as HTMLElement;
+  const body = DOMPurify.sanitize(
+    selfContained ? content.replace(DOCTYPE_WITH_DECLARATIONS, '') : content,
+    {
+      USE_PROFILES: { svg: true, svgFilters: true },
+      FORBID_TAGS: selfContained ? ['image', 'feImage'] : [],
+      // DOMPurify leaves it out for its reference, which can only be a fragment here.
+      ADD_TAGS: selfContained ? ['use'] : [],
+      RETURN_DOM: true,
+    },
+  ) as HTMLElement;
   if (selfContained) {
     // Checked once DOMPurify is done: removing an element it doesn't allow removes the
     // element's text too, which joins the text either side of it.

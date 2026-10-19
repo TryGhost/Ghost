@@ -120,6 +120,8 @@ describe('lib/image: svg-sanitizer', function () {
           <path d="M0 0h24v24H0z" style="filter: url(https://tracker.example.net/8.svg#f)"/>
           <path d="M0 0h24v24H0z" style="fill: \\75rl(https://tracker.example.net/9.svg#a)"/>
           <path d="M0 0h24v24H0z" style="cursor: image-set('https://tracker.example.net/10.png' 1x)"/>
+          <use href="https://tracker.example.net/11.svg#a"/>
+          <use xlink:href="https://tracker.example.net/12.svg#a"/>
         </svg>`)!;
 
         assert.doesNotMatch(svg, /tracker|data:|<image|<feImage|\\/i);
@@ -133,11 +135,14 @@ describe('lib/image: svg-sanitizer', function () {
           <defs>
             <linearGradient id="base"><stop offset="0" stop-color="#fff"/></linearGradient>
             <linearGradient id="g" href="#base"/>
+            <path id="shape" d="M0 0h24v24H0z"/>
           </defs>
           <path d="M0 0h24v24H0z" fill="url(#g)" style="stroke: url('#g')"/>
+          <use href="#shape" fill="url(#g)"/>
         </svg>`)!;
 
         assert.match(svg, /<linearGradient id="g" href="#base"\/>/);
+        assert.match(svg, /<use href="#shape" fill="url\(#g\)"\/>/);
         assert.match(svg, /fill="url\(#g\)"/);
         assert.match(svg, /style="stroke: url\('#g'\)"/);
       });
@@ -180,6 +185,22 @@ describe('lib/image: svg-sanitizer', function () {
         const root = asImage(svg);
         assert.equal(root.namespaceURI, 'http://www.w3.org/2000/svg');
         assert.equal(root.querySelector('text')!.textContent, 'a\u00a0b & c');
+      });
+
+      // As Adobe Illustrator's Save As writes it. Parsed as HTML, the doctype ends at the
+      // first `>`, which is inside the entity declarations.
+      it('keeps an SVG whose doctype declares entities', function () {
+        const svg = selfContained(`<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+]>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></svg>
+`)!;
+
+        assert.match(svg, /^<svg [^>]*viewBox="0 0 24 24"><path d="M0 0h24v24H0z"\/><\/svg>$/);
+        assert.equal(asImage(svg).namespaceURI, 'http://www.w3.org/2000/svg');
       });
 
       it('refuses anything but a single SVG', function () {
