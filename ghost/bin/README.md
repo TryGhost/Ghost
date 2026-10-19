@@ -56,6 +56,10 @@ Contributor-only generators and database experimentation belong in
 [gx](../../tools/gx/README.md). Build/archive helpers belong in
 [ghost/scripts](../scripts/README.md), including the shipped prune helper.
 
-Keep private helpers in `lib/`. Verify the emitted entrypoint and package contents
+Keep private helpers in `lib/`. Top-level entrypoints are a downstream contract:
+hosting and image tooling outside this repository runs them from installed trees.
+[entrypoints.test.ts](../test/unit/bin/entrypoints.test.ts) pins the list, and
+changes to this folder need code-owner review. Confirm those consumers before
+removing, renaming or moving an entrypoint. Verify the emitted entrypoint and package contents
 in a disposable installed tree, including resolution of Core and adapter imports;
 a source-checkout test alone does not establish the installation contract.
