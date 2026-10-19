@@ -1,6 +1,5 @@
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
 import type { AutomationTriggerTierScope } from './automations-repository-2';
-import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
@@ -8,8 +7,6 @@ import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
-
-const settingsCache = require('../../../shared/settings-cache');
 
 type MemberWelcomeEmailService = {
   init: () => unknown;
@@ -66,17 +63,6 @@ const MEMBER_STATUS_BY_TRIGGER_TIER_SCOPE = new Map<AutomationTriggerTierScope, 
   ['selected_paid', 'paid'],
 ]);
 
-const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
-  const preference = member.get('enable_updates_and_announcements');
-
-  if (preference !== null) {
-    return preference;
-  }
-
-  const isSubscribedToAnyNewsletters = member.related('newsletters').models.length > 0;
-  return isSubscribedToAnyNewsletters;
-};
-
 const markMaxAttemptsExceeded = async (
   automationsApi: PollOptions['automationsApi'],
   step: AutomationStepToRun,
@@ -128,8 +114,6 @@ const handleStepExecutionFailure = async ({
 
 const processStep = async ({
   automationsApi,
-  memberWelcomeEmailService,
-  scheduleAutomationEmailAnalyticsJob,
   step,
 }: Readonly<
   Pick<
@@ -232,79 +216,9 @@ const processStep = async ({
     switch (step.type) {
       case 'wait':
         break;
-      case 'send_email': {
-        if (!hasUpdatesAndAnnouncementsEnabled(member)) {
-          await automationsApi.markStepTerminal(step, 'member unsubscribed');
-          return null;
-        }
-        memberWelcomeEmailService.init();
-        const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
-        const trackOpens = Boolean(settingsCache.get('email_track_opens'));
-        const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
-          email: {
-            designSettingId: step.email_design_setting_id,
-            lexical: step.email_lexical,
-            subject: step.email_subject,
-          },
-          member: {
-            // Note that we don't use `automation_run.member_email` here. That's only for the historical record, not for functionality.
-            email: member.get('email'),
-            name: member.get('name'),
-            uuid: member.get('uuid'),
-          },
-          memberStatus,
-          trackOpens,
-          trackClicks,
-          automationActionRevisionId: step.automation_action_revision_id,
-          automationRunStepId: step.id,
-        });
-        const mailgunMessageId = getMailgunMessageId(sendResult);
-        // Only Mailgun sends can produce open events for automation emails
-        const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
-        try {
-          await automationsApi.recordEmailSent({
-            automationActionRevisionId: step.automation_action_revision_id,
-            automationRunStepId: step.id,
-            ...(mailgunMessageId ? { mailgunMessageId } : {}),
-            memberEmail: member.get('email'),
-            memberId: step.member_id,
-            memberName: member.get('name'),
-            memberUuid: member.get('uuid'),
-            trackClicks,
-            trackOpens: trackOpensForRecipient,
-          });
-        } catch (err) {
-          logging.error(
-            {
-              err,
-              system: {
-                event: 'automations.poll.recipient_persistence_failed',
-                member_id: step.member_id,
-                step_id: step.id,
-              },
-            },
-            `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`,
-          );
-        }
-        if (mailgunMessageId) {
-          try {
-            await scheduleAutomationEmailAnalyticsJob();
-          } catch (err) {
-            logging.error(
-              {
-                err,
-                system: {
-                  event: 'automations.poll.analytics_scheduling_failed',
-                  member_id: step.member_id,
-                  step_id: step.id,
-                },
-              },
-              `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`,
-            );
-          }
-        }
+      case 'send_email':
+        // EXPERIMENT: sending is a noop so we can measure the cost of the rest of the pipeline.
         break;
-      }
       default: {
         const _exhaustive: never = step;
         throw new errors.InternalServerError({
