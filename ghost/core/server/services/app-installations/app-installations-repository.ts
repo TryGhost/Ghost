@@ -4,7 +4,12 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
-import { InstallationRow, type Installation } from './codec';
+import {
+  ApprovedManifestFields,
+  InstallationFields,
+  InstallationRow,
+  type Installation,
+} from './codec';
 import type { HistoryAction, HistoryManifest } from './history';
 import type { LoadedManifest } from './load-manifest';
 import {
@@ -45,17 +50,10 @@ const HistoryActionRow = z
     actor: { id: row.actor_id, name: row.actor_name },
   }));
 
+// Both tables have `id` and `created_at`, so each column names the table it's read from.
 const INSTALLATION_COLUMNS = [
-  'installation.id',
-  'installation.app_id',
-  'installation.status',
-  'installation.manifest_id',
-  'installation.pending_manifest_id',
-  'installation.revision',
-  'approved.manifest_url',
-  'approved.manifest',
-  'installation.created_at',
-  'installation.updated_at',
+  ...Object.keys(InstallationFields.shape).map((column) => `installation.${column}`),
+  ...Object.keys(ApprovedManifestFields.shape).map((column) => `approved.${column}`),
 ];
 
 const LockedRow = DbAppInstallation.pick({ status: true, revision: true });

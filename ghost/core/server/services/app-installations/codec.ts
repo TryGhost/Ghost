@@ -1,22 +1,31 @@
 import { z } from 'zod';
 import { DbAppInstallation, DbAppInstallationManifest } from './schema';
 
+/** The installation's own columns that it's read with. */
+export const InstallationFields = DbAppInstallation.pick({
+  id: true,
+  app_id: true,
+  status: true,
+  manifest_id: true,
+  pending_manifest_id: true,
+  revision: true,
+  created_at: true,
+  updated_at: true,
+});
+
+/** The approved manifest's columns that an installation is read with. */
+export const ApprovedManifestFields = DbAppInstallationManifest.pick({
+  manifest_url: true,
+  manifest: true,
+});
+
 /**
  * An installation joined with its approved manifest, as the repository reads it. Decoding
  * converts the dates, the status and the manifest JSON.
  */
 export const InstallationRow = z.object({
-  ...DbAppInstallation.pick({
-    id: true,
-    app_id: true,
-    status: true,
-    manifest_id: true,
-    pending_manifest_id: true,
-    revision: true,
-    created_at: true,
-    updated_at: true,
-  }).shape,
-  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
+  ...InstallationFields.shape,
+  ...ApprovedManifestFields.shape,
 });
 
 /** An installation with its approved manifest. Loaded manifests are compared against it. */
