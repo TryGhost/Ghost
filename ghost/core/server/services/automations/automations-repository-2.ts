@@ -1,6 +1,10 @@
 import type { Promisable } from 'type-fest';
+import type { z } from 'zod';
+import { addAutomationDataSchema } from './automations-schemas';
 
 export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
+
+export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
 export type RunStepToInsert = {
   id: string;
