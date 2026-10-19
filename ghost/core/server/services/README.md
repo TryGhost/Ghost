@@ -125,33 +125,12 @@ The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
 
-To inspect the remaining work across **all** entries:
+### Migration reports
 
-```bash
-pnpm audit:services
-pnpm --silent audit:services:summary
-pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
-```
-
-The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
-all entries, including those absent from the inventory. It uses Dependency
-Cruiser's built-in terminal report, with Markdown and JSON also available.
-The audit returns success even when it finds violations; the normal lint
-command fails on violations in migrated services. Reports list source files and
-dependency targets, without custom inventory grouping. Legacy root `index.js`
-files are treated as wiring
-candidates; imports there do not prove readiness for migration.
-
-The optional summary requires `jq`. It groups `service-dependencies` findings
-by dependency and counts distinct importing implementation files, largest first.
-Multiple imports of the same target in one file count once. It does not include
-unresolved-import or own-root findings; use the detailed audit for those.
-
-Counts in the detailed report describe rule violations; one import can appear
-under more than one rule. Review whether each dependency needs injection, a
-library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
-by this static check and are not separately scanned. Unresolved imports,
-globals, runtime state and initialization behavior still need tests and review.
+Tools for inspecting progress of the active service migration are available
+under `pnpm gx services`. Start with `pnpm gx services report`; see the
+[gx guide](../../../../tools/gx/README.md#service-migration-reports) for lists,
+per-service details and dependency audits.
 
 ### Migration assessment
 

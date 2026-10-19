@@ -82,6 +82,28 @@ cli.command({
 });
 
 cli.command({
+  flags: 'services',
+  desc: 'Inspect service migration and dependency work.',
+  setup(group: CommandGroup) {
+    for (const command of [
+      { flags: 'list', desc: 'List services with migration categories and dependency counts.' },
+      { flags: 'report', desc: 'Show migration totals or details for one service.' },
+      { flags: 'dependencies', desc: 'Rank disallowed dependencies by importing files.' },
+      { flags: 'audit', desc: 'Use Dependency Cruiser’s native dependency reports.' },
+    ]) {
+      group.command({
+        ...command,
+        async run() {
+          commandRun = true;
+          const { runServices } = await import('./services.ts');
+          runServices(command.flags, args.slice(2));
+        },
+      });
+    }
+  },
+});
+
+cli.command({
   flags: 'db',
   desc: 'Development database tools.',
   setup(group: CommandGroup) {

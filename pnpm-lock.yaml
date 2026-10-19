@@ -4499,9 +4499,15 @@ importers:
       cli-progress:
         specifier: 'catalog:'
         version: 3.12.0
+      dependency-cruiser:
+        specifier: 'catalog:'
+        version: 18.1.1
       inquirer:
         specifier: 'catalog:'
         version: 8.2.7(@types/node@22.20.1)
+      js-yaml:
+        specifier: 'catalog:'
+        version: 4.3.2
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
@@ -4530,6 +4536,9 @@ importers:
       '@internal/cfg-typescript':
         specifier: workspace:*
         version: link:../configs/typescript
+      '@types/js-yaml':
+        specifier: 'catalog:'
+        version: 4.0.9
       '@types/jsonwebtoken':
         specifier: 'catalog:'
         version: 9.0.10
