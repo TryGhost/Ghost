@@ -1,24 +1,39 @@
-import React, { useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import {
   Button,
-  Checkbox,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   Field,
-  FieldDescription,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { ShadeApp } from '@tryghost/shade/app';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { readFakeStripe, resetMockData, switchFakeStripe, switchMocks } from './mode';
+import {
+  readFakeStripe,
+  readFakeTracking,
+  resetMockData,
+  switchFakeStripe,
+  switchFakeTracking,
+  switchMocks,
+} from './mode';
+import {
+  EMAIL_CARD_VARIANTS,
+  type EmailCardVariant,
+  setEmailCardVariant,
+  useEmailCardVariant,
+} from './variants';
 
 // The prototype menu: the old prototype's hot corner, carried over. A 64px
 // square in the bottom-right corner is the hover target; the beaker inside it
@@ -41,6 +56,25 @@ export const ShapingMenu: React.FC<{ mocked: boolean }> = ({ mocked }) => {
   const [open, setOpen] = useState(false);
   const dark = useSyncExternalStore(subscribeToTheme, isDark);
   const fakeStripe = readFakeStripe();
+  const emailCardVariant = useEmailCardVariant();
+
+  // Close on a press anywhere else. Radix listens for that on the document,
+  // but the canvas stops pointer events before they get there, so listen in
+  // the capture phase. Presses inside the panel or its menus (portalled into
+  // their own popper wrappers) don't count.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (!target?.closest('[data-radix-popper-content-wrapper], [data-shaping-menu]')) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [open]);
 
   return (
     <ShadeApp className="shade-admin" darkMode={dark} isAdmin7>
@@ -86,41 +120,67 @@ export const ShapingMenu: React.FC<{ mocked: boolean }> = ({ mocked }) => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </Inline>
-              <FieldSet className="gap-3">
-                <FieldLegend variant="label">Data</FieldLegend>
-                <Field orientation="horizontal">
-                  <Checkbox
-                    checked={mocked}
-                    id="shaping-mock-data"
-                    onCheckedChange={(checked) => switchMocks(checked === true ? 'on' : 'off')}
-                  />
-                  <FieldLabel htmlFor="shaping-mock-data">Mock data</FieldLabel>
-                </Field>
-                <FieldDescription>
-                  {mocked
-                    ? 'Automations come from demo data in this browser. Everything else is your real site.'
-                    : 'Everything is your real site.'}
-                </FieldDescription>
-              </FieldSet>
-              {/* Site conditions the screens react to. Each fakes the site
-                  setting it names, and needs mock data on. */}
-              <FieldSet className="gap-3">
-                <FieldLegend variant="label">Conditions</FieldLegend>
-                <Field data-disabled={!mocked || undefined} orientation="horizontal">
-                  <Checkbox
-                    checked={mocked && fakeStripe}
+              <Field className="justify-between" orientation="horizontal">
+                <FieldLabel htmlFor="shaping-mock-data">Mock data</FieldLabel>
+                <Switch
+                  checked={mocked}
+                  id="shaping-mock-data"
+                  onCheckedChange={(checked) => switchMocks(checked ? 'on' : 'off')}
+                />
+              </Field>
+              {/* A fake, so it needs mock data on. */}
+              <Field
+                className="justify-between"
+                data-disabled={!mocked || undefined}
+                orientation="horizontal"
+              >
+                <FieldLabel htmlFor="shaping-fake-stripe">Stripe connected</FieldLabel>
+                <Switch
+                  checked={mocked && fakeStripe}
+                  disabled={!mocked}
+                  id="shaping-fake-stripe"
+                  onCheckedChange={switchFakeStripe}
+                />
+              </Field>
+              {(
+                [
+                  ['opens', 'Email opens'],
+                  ['clicks', 'Email clicks'],
+                ] as const
+              ).map(([setting, label]) => (
+                <Field
+                  key={setting}
+                  className="justify-between"
+                  data-disabled={!mocked || undefined}
+                  orientation="horizontal"
+                >
+                  <FieldLabel htmlFor={`shaping-track-${setting}`}>{label}</FieldLabel>
+                  <Switch
+                    checked={mocked ? readFakeTracking(setting) : false}
                     disabled={!mocked}
-                    id="shaping-fake-stripe"
-                    onCheckedChange={(checked) => switchFakeStripe(checked === true)}
+                    id={`shaping-track-${setting}`}
+                    onCheckedChange={(checked) => switchFakeTracking(setting, checked)}
                   />
-                  <FieldLabel htmlFor="shaping-fake-stripe">Stripe connected</FieldLabel>
                 </Field>
-                <FieldDescription>
-                  {mocked
-                    ? 'Fakes a Stripe connection. Off uses your site’s real Stripe setting.'
-                    : 'Turn mock data on to fake site conditions.'}
-                </FieldDescription>
-              </FieldSet>
+              ))}
+              <Field>
+                <FieldLabel htmlFor="shaping-email-card">Email card</FieldLabel>
+                <Select
+                  value={emailCardVariant}
+                  onValueChange={(value) => setEmailCardVariant(value as EmailCardVariant)}
+                >
+                  <SelectTrigger id="shaping-email-card">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EMAIL_CARD_VARIANTS.map((variant) => (
+                      <SelectItem key={variant.id} value={variant.id}>
+                        {variant.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
             </Stack>
           </PopoverContent>
         </Popover>

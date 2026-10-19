@@ -8,7 +8,7 @@ import type {
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { API_ROOT, fetchReal } from './real-fetch';
 import { type MockRun, getDb, newId, saveDb } from './db';
-import { readFakeStripe } from './mode';
+import { readFakeStripe, readFakeTracking } from './mode';
 
 // The fake backend. Each handler answers one real endpoint in the shape the
 // real API uses (see admin-x-framework/src/api/automations.ts), so the real
@@ -172,11 +172,20 @@ const FAKE_STRIPE: Record<string, string | boolean> = {
 
 type SettingsBody = { settings: { key: string; value: unknown }[] };
 
-const withFakeStripe = (body: SettingsBody): SettingsBody => {
+// Everything the prototype menu fakes in the site settings: email tracking
+// always (its switches default to on), Stripe when switched on.
+const fakeSettings = (): Record<string, string | boolean> => ({
+  email_track_opens: readFakeTracking('opens'),
+  email_track_clicks: readFakeTracking('clicks'),
+  ...(readFakeStripe() ? FAKE_STRIPE : {}),
+});
+
+const withFakeSettings = (body: SettingsBody): SettingsBody => {
+  const fakes = fakeSettings();
   const settings = body.settings.map((setting) =>
-    setting.key in FAKE_STRIPE ? { ...setting, value: FAKE_STRIPE[setting.key] } : setting,
+    setting.key in fakes ? { ...setting, value: fakes[setting.key] } : setting,
   );
-  for (const [key, value] of Object.entries(FAKE_STRIPE)) {
+  for (const [key, value] of Object.entries(fakes)) {
     if (!settings.some((setting) => setting.key === key)) {
       settings.push({ key, value });
     }
@@ -194,25 +203,19 @@ export const handlers = [
     return HttpResponse.json(json, { status: response.status });
   }),
 
-  // Settings pass through to Ghost; with the fake Stripe on, the answer gains
-  // the fake keys. Returning nothing lets a request through untouched.
+  // Settings pass through to Ghost, and the answer carries the faked values.
   http.get(api('/settings/'), async ({ request }) => {
-    if (!readFakeStripe()) {
-      return undefined;
-    }
     const response = await fetchReal(request.url, { credentials: 'include' });
     const json = (await response.json()) as SettingsBody;
-    return HttpResponse.json(response.ok ? withFakeStripe(json) : json, {
+    return HttpResponse.json(response.ok ? withFakeSettings(json) : json, {
       status: response.status,
     });
   }),
 
-  // A save from Settings would send the fake keys back; strip them so they're
-  // never written to the real database, and keep the answer faked.
+  // A save from Settings would send the faked values back; strip them so
+  // they're never written to the real database, and keep the answer faked.
   http.put(api('/settings/'), async ({ request }) => {
-    if (!readFakeStripe()) {
-      return undefined;
-    }
+    const fakes = fakeSettings();
     const body = (await request.json()) as SettingsBody;
     const response = await fetchReal(request.url, {
       method: 'PUT',
@@ -220,11 +223,11 @@ export const handlers = [
       headers: request.headers,
       body: JSON.stringify({
         ...body,
-        settings: body.settings.filter((setting) => !(setting.key in FAKE_STRIPE)),
+        settings: body.settings.filter((setting) => !(setting.key in fakes)),
       }),
     });
     const json = (await response.json()) as SettingsBody;
-    return HttpResponse.json(response.ok ? withFakeStripe(json) : json, {
+    return HttpResponse.json(response.ok ? withFakeSettings(json) : json, {
       status: response.status,
     });
   }),

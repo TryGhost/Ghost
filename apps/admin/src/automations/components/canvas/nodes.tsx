@@ -12,6 +12,9 @@ import { EditableWaitCard, type EditableWaitData } from './editable-wait-card';
 import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
 import { OffValue } from './off-value';
 import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
+// SHAPING PROTOTYPE ONLY — never merge.
+import { ContentSwitchEmailCard } from '@/shaping/email-card-content-switch';
+import { useEmailCardVariant } from '@/shaping/variants';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -117,7 +120,24 @@ const TriggerNode = React.memo<NodeProps<TriggerFlowNode>>(({ data }) => (
 ));
 TriggerNode.displayName = 'TriggerNode';
 
-const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
+const StepNode = React.memo<NodeProps<StepFlowNode>>(({ id, data }) => {
+  // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
+  const emailCardVariant = useEmailCardVariant();
+  if (data.email && emailCardVariant === 'content-switch') {
+    return (
+      <ContentSwitchEmailCard
+        actionId={id}
+        email={data.email}
+        errorMessage={data.errorMessage}
+        isNew={data.isNew}
+        menuItems={data.contextMenuItems}
+        stats={data.stats}
+      >
+        <HiddenHandle position={Position.Top} type="target" />
+        <HiddenHandle position={Position.Bottom} type="source" />
+      </ContentSwitchEmailCard>
+    );
+  }
   if (data.email) {
     return (
       <EditableEmailCard

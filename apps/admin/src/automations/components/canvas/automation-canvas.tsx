@@ -49,6 +49,8 @@ import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-fra
 import type { EmailModalMode } from '@/automations/components/types';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
+// SHAPING PROTOTYPE ONLY — never merge.
+import { useEmailCardVariant } from '@/shaping/variants';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -506,6 +508,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     [tierData, tiersLoading, tiersError, refetchTiers],
   );
   const selectedStepId = selectedStep?.id ?? null;
+  // SHAPING PROTOTYPE ONLY — never merge: with an in-card analytics option, the
+  // right-hand email panel stays closed and doesn't compete with the sidebar.
+  const analyticsInCard = useEmailCardVariant() !== 'current';
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
     hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
@@ -762,7 +767,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       onSelectStep: (id) => {
         showWarningsForOtherSteps(id);
         setSelectedStep((current) => (current?.id === id ? null : { id }));
-        setAutomationSidebarOpen(false);
+        if (!analyticsInCard) {
+          setAutomationSidebarOpen(false);
+        }
       },
       newStepId,
       selectedStepId,
@@ -786,6 +793,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     handleRequestDelete,
     newStepId,
     selectedStepId,
+    analyticsInCard,
   ]);
 
   const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
@@ -931,7 +939,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {
             setAutomationSidebarOpen(open);
-            if (open) {
+            if (open && !analyticsInCard) {
               clearDetail();
             }
           }}
@@ -1019,10 +1027,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         {!isHistoryOpen && (
           <EmailPerformanceSidebar
             automationId={automation.id}
-            email={automation.actions.find(
-              (action): action is AutomationSendEmailAction =>
-                action.id === selectedStepId && action.type === 'send_email',
-            )}
+            email={
+              analyticsInCard
+                ? undefined
+                : automation.actions.find(
+                    (action): action is AutomationSendEmailAction =>
+                      action.id === selectedStepId && action.type === 'send_email',
+                  )
+            }
             onClose={handleCloseEmailPerformance}
           />
         )}

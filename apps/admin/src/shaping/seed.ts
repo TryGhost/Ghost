@@ -161,6 +161,41 @@ const readPaidTierIds = async (): Promise<string[]> => {
   }
 };
 
+const LINK_PATHS = [
+  'start-here/',
+  'archive/',
+  'account/',
+  'about/',
+  'the-best-of-2026/',
+  'membership/',
+  'tag/guides/',
+  'how-we-report/',
+  'newsletter-faq/',
+  'community/',
+  'podcast/',
+  'contact/',
+];
+
+// Every link in the email, as the API returns them: clicks spread unevenly
+// across the clicked ones, most-clicked first, then the never-clicked ones at
+// 0, in URL order.
+const buildLinks = (count: number, unclicked: number, clicked: number): MockDb['links'][string] => {
+  const clickedLinks = count - unclicked;
+  const weights = Array.from({ length: clickedLinks }, (_, index) => 1 / (index + 1));
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const url = (index: number) => `https://example.com/${LINK_PATHS[index]}`;
+  return [
+    ...weights.map((weight, index) => ({
+      url: url(index),
+      clicked_count: Math.max(1, Math.round((clicked * weight) / total)),
+    })),
+    ...Array.from({ length: unclicked }, (_, index) => ({
+      url: url(clickedLinks + index),
+      clicked_count: 0,
+    })).sort((a, b) => a.url.localeCompare(b.url)),
+  ];
+};
+
 export const seedDb = async () => {
   const now = Date.now();
   const paidTierIds = await readPaidTierIds();
@@ -200,6 +235,15 @@ export const seedDb = async () => {
         email: {
           subject: 'A few of our favourite posts',
           body: ['To get you started, here are the posts readers love most.'],
+        },
+      },
+      { waitHours: 72 },
+      {
+        email: {
+          subject: 'Thanks for being here',
+          body: [
+            'Just a quick note to say we’re glad you’re here. Reply any time — we read every one.',
+          ],
         },
       },
     ],
@@ -248,21 +292,33 @@ export const seedDb = async () => {
   const runs = [...buildRuns(free.id, 160, 120, now), ...buildRuns(paid.id, 70, 90, now)];
 
   // Email stats and clicked links for the live flows' emails, from their runs.
+  // Link counts span the range a card has to handle: many, a couple, none, one.
+  // Some links never get clicked; the API still lists them, at 0.
+  // Free member welcome holds every state in one flow (many links over two
+  // pages, a couple, none); Paid member welcome keeps none and one.
+  const linkCounts = [
+    { links: 12, unclicked: 4 },
+    { links: 2, unclicked: 1 },
+    { links: 0, unclicked: 0 },
+    { links: 0, unclicked: 0 },
+    { links: 1, unclicked: 0 },
+  ];
   const links: MockDb['links'] = {};
   for (const flow of [free, paid]) {
     const reached = runs.filter((run) => run.automation_id === flow.id).length;
-    flow.actions = flow.actions.map((action, index) => {
+    let emailIndex = 0;
+    flow.actions = flow.actions.map((action) => {
       if (action.type !== 'send_email') {
         return action;
       }
-      const sent = index === 0 ? reached : Math.round(reached * 0.82);
+      // Each later email in a flow reaches fewer members.
+      const sent = Math.round(reached * 0.82 ** emailIndex);
+      emailIndex += 1;
       const opened = Math.round(sent * (0.48 + random() * 0.2));
-      const clicked = Math.round(opened * (0.18 + random() * 0.15));
-      links[action.id] = [
-        { url: 'https://example.com/start-here/', clicked_count: Math.round(clicked * 0.6) },
-        { url: 'https://example.com/archive/', clicked_count: Math.round(clicked * 0.3) },
-        { url: 'https://example.com/account/', clicked_count: Math.round(clicked * 0.1) },
-      ];
+      const { links: linkCount, unclicked } = linkCounts.shift() ?? { links: 0, unclicked: 0 };
+      // An email without clickable links can't be clicked.
+      const clicked = linkCount > unclicked ? Math.round(opened * (0.18 + random() * 0.15)) : 0;
+      links[action.id] = buildLinks(linkCount, unclicked, clicked);
       return {
         ...action,
         stats: {

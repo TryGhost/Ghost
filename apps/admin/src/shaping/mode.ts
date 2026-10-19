@@ -54,3 +54,25 @@ export const switchFakeStripe = (on: boolean) => {
   }
   window.location.reload();
 };
+
+// Faked email tracking settings (Settings → Analytics: Email opens / Email
+// clicks). On by default; see handlers.ts.
+export type TrackingSetting = 'opens' | 'clicks';
+const trackingKey = (setting: TrackingSetting) => `shaping.mock.track.${setting}`;
+
+export const readFakeTracking = (setting: TrackingSetting): boolean => {
+  try {
+    return localStorage.getItem(trackingKey(setting)) !== 'off';
+  } catch {
+    return true;
+  }
+};
+
+export const switchFakeTracking = (setting: TrackingSetting, on: boolean) => {
+  try {
+    localStorage.setItem(trackingKey(setting), on ? 'on' : 'off');
+  } catch {
+    // Storage blocked: the reload keeps the current setting.
+  }
+  window.location.reload();
+};

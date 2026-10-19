@@ -173,7 +173,8 @@ const MIDDLE_TRUNCATE_TAIL = 14;
 
 const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '');
 
-const TopClickedLinksContent: React.FC<{
+// Exported for the shaping prototype's in-card analytics (src/shaping).
+export const TopClickedLinksContent: React.FC<{
   clickedCount: number;
   isError: boolean;
   isLoading: boolean;
