@@ -696,9 +696,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       tab: current.tab === 'unknown' ? 'settings' : current.tab,
     }));
   }, []);
-  const isAutomationSidebarOpen = sidebar.open;
   const initialViewport = getInitialViewport(
-    window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
+    window.innerWidth - (sidebar.open && window.innerWidth >= 960 ? 480 : 0),
     initialTriggerTop,
   );
   const isHistoryOpen = selectedRunId !== null;
@@ -802,16 +801,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   }, [clearDetail]);
 
   useEffect(() => {
-    if (
-      emailModalAction ||
-      deleteConfirmationAction ||
-      (!isAutomationSidebarOpen && !selectedStepId)
-    ) {
+    if (emailModalAction || deleteConfirmationAction || (!sidebar.open && !selectedStepId)) {
       return;
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (isAutomationSidebarOpen) {
+        if (sidebar.open) {
           setAutomationSidebarOpen(false);
         } else {
           handleCloseEmailPerformance();
@@ -825,7 +820,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     handleCloseEmailPerformance,
     deleteConfirmationAction,
     emailModalAction,
-    isAutomationSidebarOpen,
+    sidebar.open,
     selectedStepId,
   ]);
 
@@ -914,7 +909,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       <AutomationSidebar
         automationId={automation.id}
         description={automation.description}
-        isOpen={isAutomationSidebarOpen}
+        isOpen={sidebar.open}
         isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
         metadata={isHistoryOpen ? 'readonly' : 'editable'}
         name={automation.name}
@@ -938,7 +933,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         ref={viewport.measureCanvas}
         className={cn(
           'relative min-w-0 flex-1',
-          isAutomationSidebarOpen && '@max-[960px]/automation:invisible',
+          sidebar.open && '@max-[960px]/automation:invisible',
         )}
       >
         <Box
@@ -1003,7 +998,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             key={selectedRunId}
             automationId={automation.id}
             automationSlug={automation.slug}
-            isAutomationSidebarOpen={isAutomationSidebarOpen}
+            isAutomationSidebarOpen={sidebar.open}
             memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
             runId={selectedRunId}
             onClose={handleCloseHistory}

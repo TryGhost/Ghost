@@ -67,11 +67,16 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
             }
           >
             {automation.status === 'archived' ? (
-              <LucideIcon.ArchiveRestore className="size-4" />
+              <>
+                <LucideIcon.ArchiveRestore className="size-4" />
+                Unarchive
+              </>
             ) : (
-              <LucideIcon.Archive className="size-4" />
+              <>
+                <LucideIcon.Archive className="size-4" />
+                Archive
+              </>
             )}
-            {automation.status === 'archived' ? 'Unarchive' : 'Archive'}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

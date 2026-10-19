@@ -1780,7 +1780,6 @@ describe('AutomationEditor', () => {
   it.each(['inactive', 'archived'] as const)(
     'allows empty %s automations to be saved, but not published',
     (status) => {
-      mockLabs.current = { automationsPerTier: true };
       mockStats.current = undefined;
       mockUseReadAutomation.mockReturnValue({
         data: { automations: [{ ...automationDetail, status, actions: [], edges: [] }] },
@@ -1807,7 +1806,6 @@ describe('AutomationEditor', () => {
   );
 
   it('disables publishing and hides save for an active automation with no actions', () => {
-    mockLabs.current = { automationsPerTier: true };
     mockStats.current = undefined;
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'active', actions: [], edges: [] }] },
