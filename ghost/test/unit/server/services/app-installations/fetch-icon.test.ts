@@ -83,6 +83,31 @@ describe('createIconFetcher', function () {
     assertRefused(await refusal(fetchIcon({ url: ICON_URL })), 'Expected an SVG image');
   });
 
+  describe('with as many elements as an icon can have', function () {
+    const withElements = (count: number): AppFetchResult => ({
+      success: true,
+      url: ICON_URL,
+      text: `<svg xmlns="http://www.w3.org/2000/svg">${'<g>'.repeat(count - 1)}</svg>`,
+    });
+
+    it('takes an icon of 500 elements', async function () {
+      const { fetchIcon, sanitizeSvg } = setup({ fetched: withElements(500) });
+
+      assert.equal(await fetchIcon({ url: ICON_URL }), ICON);
+      assert.equal(sanitizeSvg.mock.calls.length, 1);
+    });
+
+    it('refuses an icon of more than 500 elements without sanitizing it', async function () {
+      const { fetchIcon, sanitizeSvg } = setup({ fetched: withElements(501) });
+
+      assertRefused(
+        await refusal(fetchIcon({ url: ICON_URL })),
+        'Expected an icon of at most 500 elements',
+      );
+      assert.equal(sanitizeSvg.mock.calls.length, 0);
+    });
+  });
+
   it('takes a sanitized copy of exactly 16 KB', async function () {
     const sanitized = 'x'.repeat(16 * 1024);
     const { fetchIcon } = setup({ sanitized });

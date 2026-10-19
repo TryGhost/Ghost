@@ -1466,6 +1466,10 @@ describe('App installations Admin API', function () {
           'Expected an icon of at most 16 KB',
         ],
         [() => serveIcon('<html><body>Not found</body></html>'), 'Expected an SVG image'],
+        [
+          () => serveIcon(`<svg xmlns="http://www.w3.org/2000/svg">${'<g>'.repeat(500)}</svg>`),
+          'Expected an icon of at most 500 elements',
+        ],
       ];
       for (const [serveBadIcon, message] of cases) {
         serve(manifest(servedIcon));

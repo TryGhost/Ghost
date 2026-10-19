@@ -7,6 +7,12 @@ import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 // copy goes to Admin with the installations list, so this bounds that per app. Applied to
 // the download and to the sanitized copy, since sanitizing can make an SVG larger.
 const ICON_MAX_BYTES = 16 * 1024;
+// Parsing an SVG slows with the square of how deeply it nests, and a few thousand levels,
+// which fit in the download, overflow the stack. Every element needs a start tag, so
+// counting them bounds the nesting before the SVG is parsed, whatever the parser makes of
+// the markup. Icons rarely have more than a few dozen.
+const ICON_MAX_ELEMENTS = 500;
+const START_TAG = /<[a-z]/gi;
 
 /** Returns the SVG with nothing that can run or load anything, or null if it isn't one. */
 export type SanitizeSvg = (svg: string) => string | null;
@@ -82,6 +88,9 @@ export function createIconFetcher({
     });
     if (!fetched.success) {
       throw iconError(icon.url, fetched.failure, logging);
+    }
+    if ((fetched.text.match(START_TAG)?.length ?? 0) > ICON_MAX_ELEMENTS) {
+      throw invalidIcon(`Expected an icon of at most ${ICON_MAX_ELEMENTS} elements`);
     }
     const svg = sanitizeSvg(fetched.text);
     if (svg === null) {
