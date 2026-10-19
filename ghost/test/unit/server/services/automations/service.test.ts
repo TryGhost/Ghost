@@ -75,7 +75,7 @@ describe('automations service', function () {
       automations.init(initOptions);
       automations.init(initOptions);
       automations.init(initOptions);
-      sinon.assert.calledTwice(domainEvents.subscribe);
+      sinon.assert.calledThrice(domainEvents.subscribe);
     });
   });
 

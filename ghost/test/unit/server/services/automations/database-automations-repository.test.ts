@@ -95,6 +95,23 @@ const createDatabase = async (): Promise<Knex> => {
     table.unique(['automation_id', 'product_id']);
   });
 
+  await database.schema.createTable('labels', (table) => {
+    table.text('id').primary();
+  });
+
+  await database.schema.createTable('automation_trigger_labels', (table) => {
+    table
+      .text('automation_id')
+      .notNullable()
+      .references('id')
+      .inTable('automations')
+      .onDelete('CASCADE');
+    table.text('label_id').notNullable().references('id').inTable('labels').onDelete('CASCADE');
+    table.text('starts_at').notNullable();
+    table.text('checked_until');
+    table.unique(['automation_id', 'label_id']);
+  });
+
   await database.schema.createTable('automation_actions', (table) => {
     table.text('id').primary();
     table.text('created_at').notNullable();
@@ -1604,6 +1621,8 @@ describe('automations repository', function () {
       );
       const edited = await repo.edit(initial.id, {
         ...initial,
+        trigger_type: 'membership_started',
+        trigger_label_ids: null,
         trigger_tier_scope: 'selected_paid',
         trigger_tier_ids: tierIds,
       });
@@ -1659,6 +1678,8 @@ describe('automations repository', function () {
           () =>
             repo.edit(initial.id, {
               ...initial,
+              trigger_type: 'membership_started',
+              trigger_label_ids: null,
               name: 'Should not change',
               trigger_tier_scope: 'selected_paid',
               trigger_tier_ids: [tierId],
@@ -2073,8 +2094,10 @@ describe('automations repository', function () {
           locked_by: assertSingleBatchLock(steps),
           automation_run_id: run.id,
           automation_id: automation.id,
+          automation_trigger_type: 'membership_started',
           automation_trigger_tier_scope: 'free',
           automation_trigger_tier_ids: [],
+          automation_trigger_label_ids: [],
           automation_status: 'active',
           member_id: run.member_id,
           member_email: run.member_email,

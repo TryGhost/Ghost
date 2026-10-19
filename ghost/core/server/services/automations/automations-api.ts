@@ -315,7 +315,9 @@ export async function add(data: unknown) {
     );
   }
   await validateAutomationData(result.data);
-  return await repository.add(result.data);
+  const automation = await repository.add(result.data);
+  requestPollIfLabelAddedAutomationIsActive(automation);
+  return automation;
 }
 
 export async function edit(automationId: string, data: unknown) {
@@ -329,7 +331,19 @@ export async function edit(automationId: string, data: unknown) {
     });
   }
 
+  requestPollIfLabelAddedAutomationIsActive(automation);
+
   return automation;
+}
+
+/**
+ * "Label added" automations are checked periodically, as part of polling. Make
+ * sure that's happening.
+ */
+function requestPollIfLabelAddedAutomationIsActive(automation: Automation): void {
+  if (automation.trigger_type === 'label_added' && automation.status === 'active') {
+    automationsApi2.requestPoll();
+  }
 }
 
 async function validateEditData(data: unknown): Promise<EditAutomationData> {
@@ -577,6 +591,8 @@ export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
 export const trigger = automationsApi2.trigger.bind(automationsApi2);
 
+export const enqueueLabelAddedRuns = automationsApi2.enqueueLabelAddedRuns.bind(automationsApi2);
+
 export async function fetchAndLockSteps(
   ...args: Parameters<AutomationsRepository['fetchAndLockSteps']>
 ) {
@@ -588,6 +604,20 @@ export async function finishStepAndEnqueueNext(
 ) {
   return await repository.finishStepAndEnqueueNext(...args);
 }
+
+export async function finishStepsAndEnqueueNext(
+  ...args: Parameters<AutomationsRepository['finishStepsAndEnqueueNext']>
+) {
+  return await repository.finishStepsAndEnqueueNext(...args);
+}
+
+export async function markStepsTerminal(
+  ...args: Parameters<AutomationsRepository['markStepsTerminal']>
+) {
+  return await repository.markStepsTerminal(...args);
+}
+
+export const findMembers = automationsApi2.findMembers.bind(automationsApi2);
 
 export async function markStepTerminal(
   ...args: Parameters<AutomationsRepository['markStepTerminal']>

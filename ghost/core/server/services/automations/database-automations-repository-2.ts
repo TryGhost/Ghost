@@ -1,6 +1,6 @@
 import { type Knex } from 'knex';
 import { z } from 'zod';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-types/date';
 import type {
   AutomationsRepository2,
   AutomationTriggerTierScope,
@@ -24,6 +24,9 @@ const nextActionRevisionRowSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
+// Keep each insert's bindings well under database limits.
+const INSERT_CHUNK_SIZE = 1000;
+
 const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
   free: 'free',
   paid: 'all_paid',
@@ -35,6 +38,50 @@ const selectExists = async (connection: Connection, query: Knex.QueryBuilder): P
     .first();
   return Boolean(Number(row?.exists));
 };
+
+const insertInChunks = async (
+  connection: Connection,
+  tableName: string,
+  rows: ReadonlyArray<Record<string, unknown>>,
+): Promise<void> => {
+  for (let i = 0; i < rows.length; i += INSERT_CHUNK_SIZE) {
+    await connection(tableName).insert(rows.slice(i, i + INSERT_CHUNK_SIZE));
+  }
+};
+
+/**
+ * Select the latest revision of each automation's first (non-deleted) action.
+ */
+const selectFirstActionRevisions = (connection: Connection): Knex.QueryBuilder =>
+  connection('automations as automation')
+    .select(
+      'automation.id as automation_id',
+      'actions.id as action_id',
+      'revisions.id as automation_action_revision_id',
+      'actions.type as type',
+      'revisions.wait_hours as wait_hours',
+    )
+    .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
+    .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
+    .whereNull('actions.deleted_at')
+    .whereNotExists(
+      connection('automation_action_edges as edge')
+        .select('edge.target_action_id')
+        .innerJoin(
+          'automation_actions as source_actions',
+          'source_actions.id',
+          'edge.source_action_id',
+        )
+        .whereNull('source_actions.deleted_at')
+        .where('edge.target_action_id', connection.ref('actions.id')),
+    )
+    .where(
+      'revisions.created_at',
+      connection('automation_action_revisions')
+        .max('created_at')
+        .where('action_id', connection.ref('actions.id')),
+    )
+    .orderBy(['actions.created_at', 'actions.id']);
 
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
@@ -48,17 +95,36 @@ export const createDatabaseAutomationsRepository2 = ({
   knex: Knex;
 }>) => {
   return {
-    async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
-      const rows = await connection('automations as automation')
+    async findActiveLabelTriggers(connection) {
+      const rows = await connection('automation_trigger_labels as trigger_label')
         .select(
-          'automation.id as automation_id',
-          'actions.id as action_id',
-          'revisions.id as automation_action_revision_id',
-          'actions.type as type',
-          'revisions.wait_hours as wait_hours',
+          'trigger_label.automation_id',
+          'trigger_label.label_id',
+          'trigger_label.starts_at',
+          'trigger_label.checked_until',
         )
-        .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
-        .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
+        .innerJoin('automations as automation', 'automation.id', 'trigger_label.automation_id')
+        .where('automation.status', 'active')
+        .where('automation.trigger_type', 'label_added')
+        .orderBy(['trigger_label.automation_id', 'trigger_label.label_id']);
+      return rows.map((row) => ({
+        automation_id: row.automation_id,
+        label_id: row.label_id,
+        starts_at: fromDatabaseDate(row.starts_at),
+        checked_until: row.checked_until ? fromDatabaseDate(row.checked_until) : null,
+      }));
+    },
+
+    async findFirstActionRevisionForAutomation(connection, automationId) {
+      const row = await selectFirstActionRevisions(connection)
+        .where('automation.id', automationId)
+        .first();
+      return row ? nextActionRevisionRowSchema.parse(row) : null;
+    },
+
+    async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
+      const rows = await selectFirstActionRevisions(connection)
+        .where('automation.trigger_type', 'membership_started')
         .where((builder) => {
           builder.where(
             'automation.trigger_tier_scope',
@@ -77,27 +143,84 @@ export const createDatabaseAutomationsRepository2 = ({
             });
           }
         })
-        .where('automation.status', 'active')
-        .whereNull('actions.deleted_at')
-        .whereNotExists(
-          connection('automation_action_edges as edge')
-            .select('edge.target_action_id')
-            .innerJoin(
-              'automation_actions as source_actions',
-              'source_actions.id',
-              'edge.source_action_id',
-            )
-            .whereNull('source_actions.deleted_at')
-            .where('edge.target_action_id', connection.ref('actions.id')),
+        .where('automation.status', 'active');
+      return rows.map((row: unknown) => nextActionRevisionRowSchema.parse(row));
+    },
+
+    async findMemberLabels(connection, memberIds) {
+      return await connection('members_labels')
+        .select('member_id', 'label_id as related_id')
+        .whereIn('member_id', [...memberIds]);
+    },
+
+    async findMemberNewsletters(connection, memberIds) {
+      return await connection('members_newsletters')
+        .select('member_id', 'newsletter_id as related_id')
+        .whereIn('member_id', [...memberIds]);
+    },
+
+    async findMemberTiers(connection, memberIds) {
+      return await connection('members_products')
+        .select('member_id', 'product_id as related_id')
+        .whereIn('member_id', [...memberIds]);
+    },
+
+    async findMembers(connection, memberIds) {
+      const rows = await connection('members')
+        .select('id', 'email', 'name', 'uuid', 'status', 'enable_updates_and_announcements')
+        .whereIn('id', [...memberIds]);
+      return rows.map((row) => ({
+        ...row,
+        enable_updates_and_announcements:
+          row.enable_updates_and_announcements === null
+            ? null
+            : Boolean(row.enable_updates_and_announcements),
+      }));
+    },
+
+    async findMembersWithLabelAdded(connection, { automationId, labelId, from, to, after, limit }) {
+      const query = connection('members_labels as member_label')
+        .select(
+          'member_label.id as id',
+          'member_label.created_at as created_at',
+          'member_label.member_id as member_id',
+          'member.email as member_email',
         )
-        .where(
-          'revisions.created_at',
-          connection('automation_action_revisions')
-            .max('created_at')
-            .where('action_id', connection.ref('actions.id')),
-        )
-        .orderBy(['actions.created_at', 'actions.id']);
-      return rows.map((row) => nextActionRevisionRowSchema.parse(row));
+        .innerJoin('members as member', 'member.id', 'member_label.member_id')
+        // This is a `LEFT JOIN ... IS NULL` instead of `NOT EXISTS` because
+        // MySQL materializes every run of the automation for `NOT EXISTS`,
+        // which is slow when paging through lots of members. Without the
+        // index hint, MySQL sometimes scans all of the automation's runs for
+        // every member, which takes minutes for big automations.
+        .hintComment('INDEX(run automation_runs_automation_id_member_id_index)')
+        .leftJoin('automation_runs as run', (join) => {
+          join
+            .on('run.member_id', 'member_label.member_id')
+            .andOnVal('run.automation_id', automationId);
+        })
+        .whereNull('run.id')
+        .where('member_label.label_id', labelId)
+        .where('member_label.created_at', '>=', toDatabaseDate(from))
+        .where('member_label.created_at', '<=', toDatabaseDate(to))
+        .orderBy(['member_label.created_at', 'member_label.id'])
+        .limit(limit);
+      if (after) {
+        const afterCreatedAt = toDatabaseDate(after.created_at);
+        query.where((builder) => {
+          builder.where('member_label.created_at', '>', afterCreatedAt).orWhere((tie) => {
+            tie
+              .where('member_label.created_at', afterCreatedAt)
+              .where('member_label.id', '>', after.id);
+          });
+        });
+      }
+      const rows = await query;
+      return rows.map((row) => ({
+        id: row.id,
+        created_at: fromDatabaseDate(row.created_at),
+        member_id: row.member_id,
+        member_email: row.member_email,
+      }));
     },
 
     async getNumberOfAutomations(connection) {
@@ -119,28 +242,28 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async insertRunSteps(connection, toInsert) {
-      if (toInsert.length > 0) {
-        await connection('automation_run_steps').insert(
-          toInsert.map((step) => ({
-            ...step,
-            created_at: toDatabaseDate(step.created_at),
-            updated_at: toDatabaseDate(step.updated_at),
-            ready_at: toDatabaseDate(step.ready_at),
-          })),
-        );
-      }
+      await insertInChunks(
+        connection,
+        'automation_run_steps',
+        toInsert.map((step) => ({
+          ...step,
+          created_at: toDatabaseDate(step.created_at),
+          updated_at: toDatabaseDate(step.updated_at),
+          ready_at: toDatabaseDate(step.ready_at),
+        })),
+      );
     },
 
     async insertRuns(connection, toInsert) {
-      if (toInsert.length > 0) {
-        await connection('automation_runs').insert(
-          toInsert.map((run) => ({
-            ...run,
-            created_at: toDatabaseDate(run.created_at),
-            updated_at: toDatabaseDate(run.updated_at),
-          })),
-        );
-      }
+      await insertInChunks(
+        connection,
+        'automation_runs',
+        toInsert.map((run) => ({
+          ...run,
+          created_at: toDatabaseDate(run.created_at),
+          updated_at: toDatabaseDate(run.updated_at),
+        })),
+      );
     },
 
     async isAutomationActiveForRun(connection, automationRunId) {
@@ -178,8 +301,22 @@ export const createDatabaseAutomationsRepository2 = ({
         .orderBy(['e.source_action_id', 'e.target_action_id']);
     },
 
+    async lockActiveLabelAddedAutomation(connection, automationId) {
+      const row = await connection('automations')
+        .where({ id: automationId, status: 'active', trigger_type: 'label_added' })
+        .forUpdate()
+        .first('id');
+      return Boolean(row);
+    },
+
     async lockMember(connection, memberId) {
       await connection('members').where('id', memberId).forUpdate().first('id');
+    },
+
+    async setLabelTriggerCheckedUntil(connection, automationId, labelId, checkedUntil) {
+      await connection('automation_trigger_labels')
+        .where({ automation_id: automationId, label_id: labelId })
+        .update({ checked_until: toDatabaseDate(checkedUntil) });
     },
 
     withConnection: (fn) => fn(knex),

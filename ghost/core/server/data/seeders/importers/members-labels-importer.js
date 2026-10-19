@@ -35,6 +35,7 @@ class MembersLabelsImporter extends TableImporter {
           })
         ].id,
       sort_order: 0,
+      created_at: this.model.created_at,
     };
   }
 }

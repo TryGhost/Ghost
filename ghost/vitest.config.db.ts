@@ -216,6 +216,18 @@ export default defineConfig({
         ssr: sharedSsrConfig,
         test: {
           ...sharedDbConfig,
+          name: 'profiling',
+          // Manual performance profiles. They skip unless explicitly configured;
+          // see each file for how to run it.
+          include: ['test/profiling/**/*.profile.{js,ts}'],
+          exclude: ['**/node_modules/**'],
+          testTimeout: 0,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
           name: 'legacy',
           // threads, not the shared 'forks' default. Under forks this
           // project intermittently wedged in CI: every file reported a

@@ -10,6 +10,7 @@ import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-schedu
 import { SoonestTimer } from '../../lib/soonest-timer';
 import * as automationsApi from './automations-api';
 import { poll } from './poll';
+import { createLabelAddedPoll } from './label-added-poll';
 import { getSchedulerPollTime } from './scheduler-poll-time';
 import logging from '@tryghost/logging';
 // @ts-expect-error This module currently lacks type definitions.
@@ -105,6 +106,16 @@ export class AutomationsService {
           automationsApi,
           memberWelcomeEmailService,
           scheduleAutomationEmailAnalyticsJob,
+          enqueueAnotherPollAt: enqueuePollAt,
+        }),
+      ),
+    );
+
+    domainEvents.subscribe(
+      StartAutomationsPollEvent,
+      oneAtATime(
+        createLabelAddedPoll({
+          automationsApi,
           enqueueAnotherPollAt: enqueuePollAt,
         }),
       ),

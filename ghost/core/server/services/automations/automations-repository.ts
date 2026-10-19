@@ -65,6 +65,7 @@ export type AutomationSummary = {
   name: string;
   description: string;
   status: AutomationStatus;
+  trigger_type: AutomationTriggerType;
   created_at: string;
   updated_at: string;
 };
@@ -77,19 +78,32 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
+export type AutomationTriggerType = 'membership_started' | 'label_added';
+
+export type AutomationTrigger =
+  | {
+      trigger_type: 'membership_started';
+      trigger_tier_scope: null | 'free' | 'all_paid';
+      trigger_tier_ids: null;
+      trigger_label_ids: null;
+    }
+  | {
+      trigger_type: 'membership_started';
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+      trigger_label_ids: null;
+    }
+  | {
+      trigger_type: 'label_added';
+      trigger_tier_scope: null;
+      trigger_tier_ids: null;
+      trigger_label_ids: string[];
+    };
+
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & (
-    | {
-        trigger_tier_scope: null | 'free' | 'all_paid';
-        trigger_tier_ids: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+} & AutomationTrigger;
 
 export type EditAutomationData = {
   name?: string;
@@ -101,12 +115,22 @@ export type EditAutomationData = {
 ) &
   (
     | {
+        trigger_type?: 'membership_started';
         trigger_tier_scope?: null | 'free' | 'all_paid';
         trigger_tier_ids?: null;
+        trigger_label_ids?: null;
       }
     | {
+        trigger_type?: 'membership_started';
         trigger_tier_scope: 'selected_paid';
         trigger_tier_ids: string[];
+        trigger_label_ids?: null;
+      }
+    | {
+        trigger_type: 'label_added';
+        trigger_tier_scope?: null;
+        trigger_tier_ids?: null;
+        trigger_label_ids: string[];
       }
   );
 
@@ -139,8 +163,10 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
+  automation_trigger_type: AutomationTriggerType;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_trigger_tier_ids: string[];
+  automation_trigger_label_ids: string[];
   automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
@@ -148,6 +174,19 @@ type AutomationStepBase = {
   automation_action_revision_id: string;
   ready_at: Date;
   step_attempts: number;
+};
+
+/** The member data needed to run an automation step. */
+export type AutomationMember = {
+  id: string;
+  email: string;
+  name: string | null;
+  uuid: string;
+  status: string;
+  enable_updates_and_announcements: boolean | null;
+  is_subscribed_to_any_newsletter: boolean;
+  label_ids: string[];
+  tier_ids: string[];
 };
 
 export type AutomationStepToRun = ReadonlyDeep<
@@ -265,6 +304,17 @@ export type AutomationsRepository = {
     step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
   ): Promise<Date | null>;
   /**
+   * Like `finishStepAndEnqueueNext`, but for many steps at once.
+   *
+   * Returns the earliest next step's ready time, or null if no next steps
+   * were created.
+   */
+  finishStepsAndEnqueueNext(
+    steps: ReadonlyArray<
+      Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
+    >,
+  ): Promise<Date | null>;
+  /**
    * Stop a locked step without continuing the automation, preserving the
    * reason it ended.
    *
@@ -274,6 +324,15 @@ export type AutomationsRepository = {
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     status: AutomationStepTerminalStatus,
   ): Promise<boolean>;
+  /**
+   * Like `markStepTerminal`, but for many steps at once.
+   *
+   * Returns the number of steps that were updated.
+   */
+  markStepsTerminal(
+    steps: ReadonlyArray<Pick<AutomationStepToRun, 'id' | 'locked_by'>>,
+    status: AutomationStepTerminalStatus,
+  ): Promise<number>;
   /**
    * Put a locked step back in the queue for another attempt.
    *

@@ -23,6 +23,7 @@ const {
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const { toDatabaseDate } = require('../../../../lib/db-types/date');
 const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
@@ -1283,11 +1284,13 @@ module.exports = class MemberRepository {
     }
 
     if (data.action === 'addLabel') {
+      const now = toDatabaseDate(new Date());
       const relations = memberIds.map((id) => {
         return {
           member_id: id,
           label_id: data.meta.label.id,
           id: ObjectId().toHexString(),
+          created_at: now,
         };
       });
 

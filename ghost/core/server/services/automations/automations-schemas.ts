@@ -39,24 +39,40 @@ const automationShape = {
   edges: z.array(edgeSchema),
 };
 
+const uniqueObjectIdsSchema = z
+  .array(objectIdSchema)
+  .min(1)
+  .transform((ids) => [...new Set(ids)]);
+
+// `trigger_type` is optional for membership triggers so older clients, which
+// don't know about trigger types, keep working.
 const defaultTriggerShape = {
+  trigger_type: z.literal('membership_started').optional(),
   trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
   trigger_tier_ids: z.null().optional(),
+  trigger_label_ids: z.null().optional(),
 };
 const selectedPaidTriggerShape = {
+  trigger_type: z.literal('membership_started').optional(),
   trigger_tier_scope: z.literal('selected_paid'),
-  trigger_tier_ids: z
-    .array(objectIdSchema)
-    .min(1)
-    .transform((ids) => [...new Set(ids)]),
+  trigger_tier_ids: uniqueObjectIdsSchema,
+  trigger_label_ids: z.null().optional(),
+};
+// Members enter when any of these labels are added. We may support "all of
+// these labels" in the future.
+const labelAddedTriggerShape = {
+  trigger_type: z.literal('label_added'),
+  trigger_tier_scope: z.null().optional(),
+  trigger_tier_ids: z.null().optional(),
+  trigger_label_ids: uniqueObjectIdsSchema,
 };
 
-export const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
-  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
-  z.strictObject({
-    ...automationShape,
-    ...selectedPaidTriggerShape,
-  }),
+export const addAutomationDataSchema = z.discriminatedUnion('trigger_type', [
+  z.discriminatedUnion('trigger_tier_scope', [
+    z.strictObject({ ...automationShape, ...defaultTriggerShape }),
+    z.strictObject({ ...automationShape, ...selectedPaidTriggerShape }),
+  ]),
+  z.strictObject({ ...automationShape, ...labelAddedTriggerShape }),
 ]);
 
 export const editAutomationDataSchema = z
@@ -66,9 +82,12 @@ export const editAutomationDataSchema = z
     description: automationShape.description.optional(),
   })
   .and(
-    z.discriminatedUnion('trigger_tier_scope', [
-      z.object(defaultTriggerShape),
-      z.object(selectedPaidTriggerShape),
+    z.discriminatedUnion('trigger_type', [
+      z.discriminatedUnion('trigger_tier_scope', [
+        z.object(defaultTriggerShape),
+        z.object(selectedPaidTriggerShape),
+      ]),
+      z.object(labelAddedTriggerShape),
     ]),
   );
 

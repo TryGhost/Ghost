@@ -4,9 +4,15 @@ import { noop } from 'lodash';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
 import type {
   AutomationsRepository2,
+  LabelAddedRow,
+  LabelTriggerRow,
   RunStepToInsert,
   RunToInsert,
 } from '../../../../../core/server/services/automations/automations-repository-2';
+import {
+  LABEL_ADDED_BATCH_SIZE,
+  LABEL_ADDED_OVERLAP_MS,
+} from '../../../../../core/server/services/automations/constants';
 import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import {
   createTestAutomationsRepository2,
@@ -46,6 +52,282 @@ describe('automations API', function () {
       const expected = actual.toSorted();
 
       expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('enqueueLabelAddedRuns', function () {
+    const now = new Date('2026-05-01T12:00:00.000Z');
+    const startsAt = new Date('2026-05-01T09:00:00.000Z');
+    const firstAction = {
+      automation_id: 'automation-1',
+      action_id: 'action-1',
+      automation_action_revision_id: 'revision-1',
+      type: 'wait' as const,
+      wait_hours: 2,
+    };
+
+    const buildLabelTrigger = (overrides: Partial<LabelTriggerRow> = {}): LabelTriggerRow => ({
+      automation_id: 'automation-1',
+      label_id: 'label-1',
+      starts_at: startsAt,
+      checked_until: null,
+      ...overrides,
+    });
+
+    const buildLabelAddedRow = (index: number, memberId = `member-${index}`): LabelAddedRow => ({
+      id: `members-label-${index}`,
+      created_at: new Date(startsAt.getTime() + index * 1000),
+      member_id: memberId,
+      member_email: `${memberId}@example.com`,
+    });
+
+    beforeEach(function () {
+      vi.useFakeTimers({ now, toFake: ['Date'] });
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    const createLabelRepository = ({
+      labelTriggers = [buildLabelTrigger()],
+      pages = [[buildLabelAddedRow(1), buildLabelAddedRow(2)]],
+      isActive = true,
+      hasFirstAction = true,
+    }: {
+      labelTriggers?: LabelTriggerRow[];
+      pages?: LabelAddedRow[][];
+      isActive?: boolean;
+      hasFirstAction?: boolean;
+    } = {}) => {
+      const remainingPages = [...pages];
+      return createTestAutomationsRepository2({
+        findActiveLabelTriggers: vi.fn(() => labelTriggers),
+        lockActiveLabelAddedAutomation: vi.fn(() => isActive),
+        findFirstActionRevisionForAutomation: vi.fn(() => (hasFirstAction ? firstAction : null)),
+        findMembersWithLabelAdded: vi.fn(() => remainingPages.shift() ?? []),
+        insertRuns: vi.fn(),
+        insertRunSteps: vi.fn(),
+        setLabelTriggerCheckedUntil: vi.fn(),
+      });
+    };
+
+    it('does nothing if automations are disabled', async function () {
+      const api = createApi({ labs: createFakeLabs(false) });
+
+      await expect(api.enqueueLabelAddedRuns()).resolves.toEqual({ hasLabelTriggers: false });
+    });
+
+    it('reports when there are no label triggers', async function () {
+      const repository = createLabelRepository({ labelTriggers: [] });
+      const api = createApi({ repository });
+
+      await expect(api.enqueueLabelAddedRuns()).resolves.toEqual({ hasLabelTriggers: false });
+      expect(repository.findMembersWithLabelAdded).not.toHaveBeenCalled();
+    });
+
+    it('enters members who had a trigger label added since the automation started', async function () {
+      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
+      const repository = createLabelRepository();
+      const api = createApi({ domainEvents, repository });
+
+      await expect(api.enqueueLabelAddedRuns()).resolves.toEqual({ hasLabelTriggers: true });
+
+      expect(repository.findMembersWithLabelAdded).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        {
+          automationId: 'automation-1',
+          labelId: 'label-1',
+          from: startsAt,
+          to: now,
+          after: null,
+          limit: LABEL_ADDED_BATCH_SIZE,
+        },
+      );
+
+      const runs: RunToInsert[] = vi.mocked(repository.insertRuns).mock
+        .calls[0][1] as RunToInsert[];
+      const steps: RunStepToInsert[] = vi.mocked(repository.insertRunSteps).mock
+        .calls[0][1] as RunStepToInsert[];
+      expect(runs).toEqual([
+        {
+          id: expect.any(String),
+          created_at: now,
+          updated_at: now,
+          automation_id: 'automation-1',
+          member_id: 'member-1',
+          member_email: 'member-1@example.com',
+        },
+        {
+          id: expect.any(String),
+          created_at: now,
+          updated_at: now,
+          automation_id: 'automation-1',
+          member_id: 'member-2',
+          member_email: 'member-2@example.com',
+        },
+      ]);
+      expect(steps).toEqual(
+        runs.map((run) => ({
+          id: expect.any(String),
+          automation_run_id: run.id,
+          automation_action_revision_id: 'revision-1',
+          created_at: now,
+          updated_at: now,
+          ready_at: new Date(now.getTime() + 2 * 60 * 60 * 1000),
+        })),
+      );
+
+      expect(repository.setLabelTriggerCheckedUntil).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        'automation-1',
+        'label-1',
+        now,
+      );
+      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+        expect.any(StartAutomationsPollEvent),
+      );
+    });
+
+    it('re-checks a window before the last check, but not before the automation started', async function () {
+      const lastCheckedUntil = new Date('2026-05-01T11:45:00.000Z');
+      const repository = createLabelRepository({
+        labelTriggers: [
+          buildLabelTrigger({ label_id: 'recently-checked', checked_until: lastCheckedUntil }),
+          buildLabelTrigger({
+            label_id: 'recently-started',
+            starts_at: new Date('2026-05-01T11:30:00.000Z'),
+            checked_until: lastCheckedUntil,
+          }),
+        ],
+        pages: [],
+      });
+      const api = createApi({ repository, domainEvents: { dispatch: noop } });
+
+      await api.enqueueLabelAddedRuns();
+
+      const froms = vi
+        .mocked(repository.findMembersWithLabelAdded)
+        .mock.calls.map((call) => (call[1] as { from: Date }).from);
+      expect(froms).toEqual([
+        new Date(lastCheckedUntil.getTime() - LABEL_ADDED_OVERLAP_MS),
+        new Date('2026-05-01T11:30:00.000Z'),
+      ]);
+    });
+
+    it('pages through label additions in batches', async function () {
+      const firstPage = Array.from({ length: LABEL_ADDED_BATCH_SIZE }, (_, i) =>
+        buildLabelAddedRow(i),
+      );
+      const secondPage = [buildLabelAddedRow(LABEL_ADDED_BATCH_SIZE)];
+      const repository = createLabelRepository({ pages: [firstPage, secondPage] });
+      const api = createApi({ repository, domainEvents: { dispatch: noop } });
+
+      await api.enqueueLabelAddedRuns();
+
+      const calls = vi.mocked(repository.findMembersWithLabelAdded).mock.calls;
+      expect(calls).toHaveLength(2);
+      expect((calls[1][1] as { after: unknown }).after).toEqual(firstPage.at(-1));
+      expect(repository.insertRuns).toHaveBeenCalledTimes(2);
+      expect(repository.setLabelTriggerCheckedUntil).toHaveBeenCalledOnce();
+    });
+
+    it('enters a member once, even if a batch has them twice', async function () {
+      const repository = createLabelRepository({
+        pages: [[buildLabelAddedRow(1, 'member-1'), buildLabelAddedRow(2, 'member-1')]],
+      });
+      const api = createApi({ repository, domainEvents: { dispatch: noop } });
+
+      await api.enqueueLabelAddedRuns();
+
+      const runs = vi.mocked(repository.insertRuns).mock.calls[0][1] as RunToInsert[];
+      expect(runs.map((run) => run.member_id)).toEqual(['member-1']);
+    });
+
+    it.each([
+      { specName: 'the automation is no longer active', isActive: false, hasFirstAction: true },
+      { specName: 'the automation has no actions', isActive: true, hasFirstAction: false },
+    ])('stops without entering members if $specName', async ({ isActive, hasFirstAction }) => {
+      const repository = createLabelRepository({ isActive, hasFirstAction });
+      const api = createApi({ repository });
+
+      await api.enqueueLabelAddedRuns();
+
+      expect(repository.findMembersWithLabelAdded).not.toHaveBeenCalled();
+      expect(repository.insertRuns).not.toHaveBeenCalled();
+      expect(repository.setLabelTriggerCheckedUntil).not.toHaveBeenCalled();
+    });
+
+    it("doesn't request a poll if nobody entered", async function () {
+      const repository = createLabelRepository({ pages: [] });
+      const api = createApi({ repository });
+
+      await api.enqueueLabelAddedRuns();
+
+      expect(repository.setLabelTriggerCheckedUntil).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('findMembers', function () {
+    it('combines members with their labels, newsletters, and tiers', async function () {
+      const repository = createTestAutomationsRepository2({
+        findMembers: () => [
+          {
+            id: 'member-1',
+            email: 'one@example.com',
+            name: 'One',
+            uuid: 'uuid-1',
+            status: 'paid',
+            enable_updates_and_announcements: null,
+          },
+          {
+            id: 'member-2',
+            email: 'two@example.com',
+            name: null,
+            uuid: 'uuid-2',
+            status: 'free',
+            enable_updates_and_announcements: true,
+          },
+        ],
+        findMemberLabels: () => [
+          { member_id: 'member-1', related_id: 'label-1' },
+          { member_id: 'member-1', related_id: 'label-2' },
+          { member_id: 'deleted-member', related_id: 'label-1' },
+        ],
+        findMemberNewsletters: () => [
+          { member_id: 'member-1', related_id: 'newsletter-1' },
+          { member_id: 'member-1', related_id: 'newsletter-2' },
+        ],
+        findMemberTiers: () => [{ member_id: 'member-1', related_id: 'tier-1' }],
+      });
+      const api = createApi({ repository });
+
+      const members = await api.findMembers(['member-1', 'member-2', 'deleted-member']);
+
+      expect(Object.fromEntries(members)).toEqual({
+        'member-1': {
+          id: 'member-1',
+          email: 'one@example.com',
+          name: 'One',
+          uuid: 'uuid-1',
+          status: 'paid',
+          enable_updates_and_announcements: null,
+          is_subscribed_to_any_newsletter: true,
+          label_ids: ['label-1', 'label-2'],
+          tier_ids: ['tier-1'],
+        },
+        'member-2': {
+          id: 'member-2',
+          email: 'two@example.com',
+          name: null,
+          uuid: 'uuid-2',
+          status: 'free',
+          enable_updates_and_announcements: true,
+          is_subscribed_to_any_newsletter: false,
+          label_ids: [],
+          tier_ids: [],
+        },
+      });
     });
   });
 

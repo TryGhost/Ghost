@@ -29,6 +29,8 @@ import type {
   AutomationRunHistoryAction,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
+  AutomationTrigger,
+  AutomationTriggerType,
   AutomationsRepository,
   BrowseOptions,
   EditAutomationData,
@@ -70,6 +72,8 @@ function withSearchTimeout<T extends Knex.QueryBuilder>(knex: Knex, query: T): T
 }
 
 const HOUR_MS = 60 * 60 * 1000;
+// Keep each insert's bindings well under database limits.
+const INSERT_CHUNK_SIZE = 1000;
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
   {
     name: 'Free member welcome flow',
@@ -104,12 +108,12 @@ type AutomationSummaryRow = {
   name: string;
   description: string;
   status: AutomationStatus;
+  trigger_type: AutomationTriggerType;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
 };
 
 type AutomationRow = AutomationSummaryRow & {
-  trigger_type: 'membership_started';
   trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
@@ -203,6 +207,7 @@ type StepToRunRow = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
+  automation_trigger_type: AutomationTriggerType;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_status: AutomationStatus;
   member_id: string | null;
@@ -390,6 +395,11 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
+        const labelIds = data.trigger_label_ids ?? [];
+        if (labelIds.length > 0) {
+          await lockTriggerLabels(trx, labelIds);
+        }
+
         const now = toDatabaseDate(new Date());
         const automation: AutomationRow = {
           id: ObjectId().toHexString(),
@@ -397,7 +407,7 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
-          trigger_type: 'membership_started',
+          trigger_type: data.trigger_type ?? 'membership_started',
           trigger_tier_scope: data.trigger_tier_scope ?? null,
           created_at: now,
           updated_at: now,
@@ -425,6 +435,8 @@ export function createDatabaseAutomationsRepository({
             tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
           );
         }
+
+        await insertTriggerLabels(trx, automation.id, labelIds, now);
 
         await replaceAutomationGraph(repository2, trx, automation.id, data.actions, data.edges);
 
@@ -459,6 +471,18 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
+        // Older clients don't send a trigger type. Keep the existing one.
+        const triggerType = data.trigger_type ?? automation.trigger_type;
+        if (triggerType === 'label_added' && data.trigger_tier_scope) {
+          throw new errors.ValidationError({
+            message: 'Label added automations cannot have a trigger tier scope.',
+            property: 'trigger_tier_scope',
+          });
+        }
+        if (triggerType === 'label_added' && data.trigger_label_ids) {
+          await lockTriggerLabels(trx, data.trigger_label_ids);
+        }
+
         if (data.trigger_tier_scope === 'selected_paid') {
           // Lock the products so they aren't deleted while we're editing.
           const tiers = await trx('products')
@@ -480,14 +504,32 @@ export function createDatabaseAutomationsRepository({
           name: data.name ?? automation.name,
           description: data.description ?? automation.description,
           status: data.status,
+          trigger_type: triggerType,
           trigger_tier_scope:
-            data.trigger_tier_scope === undefined
-              ? automation.trigger_tier_scope
-              : data.trigger_tier_scope,
+            triggerType === 'label_added'
+              ? null
+              : data.trigger_tier_scope === undefined
+                ? automation.trigger_tier_scope
+                : data.trigger_tier_scope,
           updated_at: toDatabaseDate(now),
         });
 
-        if (data.trigger_tier_scope !== undefined) {
+        if (triggerType === 'label_added') {
+          await trx('automation_trigger_tiers').where('automation_id', id).delete();
+          if (data.trigger_label_ids) {
+            await replaceTriggerLabels(trx, id, data.trigger_label_ids, toDatabaseDate(now));
+          }
+          // Only labels added after activation should trigger the automation.
+          if (updatedAutomation.status === 'active' && automation.status !== 'active') {
+            await trx('automation_trigger_labels')
+              .where('automation_id', id)
+              .update({ starts_at: toDatabaseDate(now), checked_until: null });
+          }
+        } else {
+          await trx('automation_trigger_labels').where('automation_id', id).delete();
+        }
+
+        if (triggerType !== 'label_added' && data.trigger_tier_scope !== undefined) {
           await trx('automation_trigger_tiers').where('automation_id', id).delete();
           if (data.trigger_tier_scope === 'selected_paid') {
             await trx('automation_trigger_tiers').insert(
@@ -544,11 +586,26 @@ export function createDatabaseAutomationsRepository({
       );
     },
 
+    async finishStepsAndEnqueueNext(steps): Promise<Date | null> {
+      return await knex.transaction((trx) =>
+        finishStepsAndEnqueueNext(trx, {
+          steps,
+          fakeWaitHoursMultiplier,
+        }),
+      );
+    },
+
     async markStepTerminal(
       step: AutomationStepToRun,
       status: AutomationStepTerminalStatus,
     ): Promise<boolean> {
       return await knex.transaction((trx) => markStepTerminal(trx, step, status));
+    },
+
+    async markStepsTerminal(steps, status): Promise<number> {
+      return await knex.transaction(
+        async (trx) => (await markStepsTerminal(trx, steps, status)).length,
+      );
     },
 
     async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
@@ -1149,6 +1206,7 @@ async function fetchAndLockSteps(
       'step.locked_by as locked_by',
       'step.automation_run_id as automation_run_id',
       'run.automation_id as automation_id',
+      'automation.trigger_type as automation_trigger_type',
       'automation.trigger_tier_scope as automation_trigger_tier_scope',
       'automation.status as automation_status',
       'run.member_id as member_id',
@@ -1176,9 +1234,16 @@ async function fetchAndLockSteps(
     .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
 
   const tierIdsByAutomation = await getTierIdsByAutomation(trx, rows);
+  const labelIdsByAutomation = await getLabelIdsByAutomation(trx, rows);
 
   return {
-    steps: rows.map((row) => buildStepToRun(row, tierIdsByAutomation.get(row.automation_id))),
+    steps: rows.map((row) =>
+      buildStepToRun(
+        row,
+        tierIdsByAutomation.get(row.automation_id),
+        labelIdsByAutomation.get(row.automation_id),
+      ),
+    ),
     nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
   };
 }
@@ -1213,6 +1278,36 @@ async function getTierIdsByAutomation(
   return result;
 }
 
+async function getLabelIdsByAutomation(
+  trx: Knex.Transaction,
+  stepsToRun: ReadonlyDeep<StepToRunRow[]>,
+): Promise<DefaultMap<string, string[]>> {
+  const result = new DefaultMap<string, string[]>(() => []);
+
+  const automationIdsToLookAt = new Set<string>();
+  for (const stepToRun of stepsToRun) {
+    if (stepToRun.automation_trigger_type === 'label_added') {
+      automationIdsToLookAt.add(stepToRun.automation_id);
+    }
+  }
+
+  if (automationIdsToLookAt.size === 0) {
+    return result;
+  }
+
+  const triggerLabels: { automation_id: string; label_id: string }[] = await trx(
+    'automation_trigger_labels',
+  )
+    .select('automation_id', 'label_id')
+    .whereIn('automation_id', [...automationIdsToLookAt]);
+
+  for (const triggerLabel of triggerLabels) {
+    result.get(triggerLabel.automation_id).push(triggerLabel.label_id);
+  }
+
+  return result;
+}
+
 async function findNextPendingReadyAt(
   trx: Knex.Transaction,
   staleLockCutoff: Readonly<Date>,
@@ -1231,6 +1326,7 @@ async function findNextPendingReadyAt(
 function buildStepToRun(
   row: ReadonlyDeep<StepToRunRow>,
   triggerTierIds: string[],
+  triggerLabelIds: string[],
 ): AutomationStepToRun {
   const base = {
     id: row.id,
@@ -1239,8 +1335,10 @@ function buildStepToRun(
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
+    automation_trigger_type: row.automation_trigger_type,
     automation_trigger_tier_scope: row.automation_trigger_tier_scope,
     automation_trigger_tier_ids: triggerTierIds,
+    automation_trigger_label_ids: triggerLabelIds,
     automation_status: row.automation_status,
     member_id: row.member_id,
     member_email: row.member_email,
@@ -1306,6 +1404,118 @@ async function finishStepAndEnqueueNext(
   });
 
   return nextReadyAt;
+}
+
+async function finishStepsAndEnqueueNext(
+  trx: Knex.Transaction,
+  options: Readonly<{
+    steps: ReadonlyArray<
+      Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
+    >;
+    fakeWaitHoursMultiplier: number | null;
+  }>,
+): Promise<Date | null> {
+  const { steps, fakeWaitHoursMultiplier } = options;
+
+  const finishedSteps = await markStepsTerminal(trx, steps, 'finished');
+  if (finishedSteps.length === 0) {
+    return null;
+  }
+
+  const activeRunIds = new Set(
+    await trx('automation_runs as run')
+      .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+      .whereIn(
+        'run.id',
+        finishedSteps.map((step) => step.automation_run_id),
+      )
+      .where('automation.status', 'active')
+      .pluck<string[]>('run.id'),
+  );
+  const stepsToContinue = finishedSteps.filter((step) => activeRunIds.has(step.automation_run_id));
+
+  // Steps in a batch usually share a handful of actions, so look each one up once.
+  const nextByActionId = new Map<string, NextActionRevisionRow | null>();
+  for (const step of stepsToContinue) {
+    if (!nextByActionId.has(step.action_id)) {
+      nextByActionId.set(step.action_id, await findNextActionRevision(trx, step.action_id));
+    }
+  }
+
+  const now = new Date();
+  let earliestReadyAt: Date | null = null;
+  const stepsToInsert: StepToInsert[] = [];
+  for (const step of stepsToContinue) {
+    const next = nextByActionId.get(step.action_id);
+    if (!next) {
+      continue;
+    }
+    const readyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
+    if (!earliestReadyAt || readyAt < earliestReadyAt) {
+      earliestReadyAt = readyAt;
+    }
+    stepsToInsert.push(
+      createRunStep({
+        automationRunId: step.automation_run_id,
+        automationActionRevisionId: next.automation_action_revision_id,
+        now,
+        readyAt,
+      }),
+    );
+  }
+
+  for (let i = 0; i < stepsToInsert.length; i += INSERT_CHUNK_SIZE) {
+    await trx('automation_run_steps').insert(stepsToInsert.slice(i, i + INSERT_CHUNK_SIZE));
+  }
+
+  return earliestReadyAt;
+}
+
+/**
+ * Like `markStepTerminal`, but for many steps. Returns the steps that were updated.
+ */
+async function markStepsTerminal<StepT extends Pick<AutomationStepToRun, 'id' | 'locked_by'>>(
+  trx: Knex.Transaction,
+  steps: ReadonlyArray<StepT>,
+  status: AutomationStepTerminalStatus,
+): Promise<StepT[]> {
+  const stepsByLockedBy = new DefaultMap<string, StepT[]>(() => []);
+  for (const step of steps) {
+    stepsByLockedBy.get(step.locked_by).push(step);
+  }
+
+  const nowString = toDatabaseDate(new Date());
+  const result: StepT[] = [];
+  for (const [lockedBy, lockedSteps] of stepsByLockedBy.entries()) {
+    // See `updateStep` for why we only update steps that are still locked by us.
+    const lockedStepIds = new Set(
+      await trx('automation_run_steps')
+        .whereIn(
+          'id',
+          lockedSteps.map((step) => step.id),
+        )
+        .where('status', 'pending')
+        .where('locked_by', lockedBy)
+        .forUpdate()
+        .pluck<string[]>('id'),
+    );
+    if (lockedStepIds.size === 0) {
+      continue;
+    }
+    await trx('automation_run_steps')
+      .update({
+        status,
+        finished_at: nowString,
+        updated_at: nowString,
+        locked_by: null,
+        locked_at: null,
+      })
+      .whereIn('id', [...lockedStepIds])
+      .where('status', 'pending')
+      .where('locked_by', lockedBy);
+    result.push(...lockedSteps.filter((step) => lockedStepIds.has(step.id)));
+  }
+  return result;
 }
 
 async function findNextActionRevision(
@@ -1488,7 +1698,16 @@ async function loadAutomation(
 
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummaryRow[]> {
   return await trx('automations')
-    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
+    .select(
+      'id',
+      'slug',
+      'name',
+      'description',
+      'status',
+      'trigger_type',
+      'created_at',
+      'updated_at',
+    )
     .orderBy('created_at', 'desc')
     .orderBy('id', 'desc');
 }
@@ -1513,6 +1732,7 @@ async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<Automati
       'automations.name',
       'automations.description',
       'automations.status',
+      'automations.trigger_type',
       'automations.created_at',
       'automations.updated_at',
       'run_stats.last_run_created_at',
@@ -1534,6 +1754,7 @@ async function updateAutomation(
         name: automation.name,
         description: automation.description,
         status: automation.status,
+        trigger_type: automation.trigger_type,
         trigger_tier_scope: automation.trigger_tier_scope,
         updated_at: automation.updated_at,
       })
@@ -1912,27 +2133,7 @@ async function buildAutomation(
   );
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
 
-  let triggerData;
-  switch (automation.trigger_tier_scope) {
-    case null:
-    case 'free':
-    case 'all_paid':
-      triggerData = { trigger_tier_scope: automation.trigger_tier_scope, trigger_tier_ids: null };
-      break;
-    case 'selected_paid':
-      triggerData = {
-        trigger_tier_scope: automation.trigger_tier_scope,
-        trigger_tier_ids: await trx('automation_trigger_tiers')
-          .where('automation_id', automation.id)
-          .orderBy('product_id')
-          .pluck<string[]>('product_id'),
-      };
-      break;
-    default:
-      throw new errors.InternalServerError({
-        message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
-      });
-  }
+  const triggerData = await buildTriggerData(trx, automation);
 
   return {
     ...buildAutomationSummary(automation),
@@ -1942,6 +2143,125 @@ async function buildAutomation(
   };
 }
 
+async function buildTriggerData(
+  trx: Knex.Transaction,
+  automation: AutomationRow,
+): Promise<AutomationTrigger> {
+  switch (automation.trigger_type) {
+    case 'membership_started':
+      break;
+    case 'label_added':
+      return {
+        trigger_type: automation.trigger_type,
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+        trigger_label_ids: await trx('automation_trigger_labels')
+          .where('automation_id', automation.id)
+          .orderBy('label_id')
+          .pluck<string[]>('label_id'),
+      };
+    default: {
+      const _exhaustive: never = automation.trigger_type;
+      throw new errors.InternalServerError({
+        message: `Unexpected trigger_type value from database: ${_exhaustive}`,
+      });
+    }
+  }
+
+  switch (automation.trigger_tier_scope) {
+    case null:
+    case 'free':
+    case 'all_paid':
+      return {
+        trigger_type: automation.trigger_type,
+        trigger_tier_scope: automation.trigger_tier_scope,
+        trigger_tier_ids: null,
+        trigger_label_ids: null,
+      };
+    case 'selected_paid':
+      return {
+        trigger_type: automation.trigger_type,
+        trigger_tier_scope: automation.trigger_tier_scope,
+        trigger_tier_ids: await trx('automation_trigger_tiers')
+          .where('automation_id', automation.id)
+          .orderBy('product_id')
+          .pluck<string[]>('product_id'),
+        trigger_label_ids: null,
+      };
+    default:
+      throw new errors.InternalServerError({
+        message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
+      });
+  }
+}
+
+/**
+ * Lock the labels so they aren't deleted while we're saving, and make sure they all exist.
+ */
+async function lockTriggerLabels(
+  trx: Knex.Transaction,
+  labelIds: ReadonlyArray<string>,
+): Promise<void> {
+  const labels = await trx('labels')
+    .select('id')
+    .whereIn('id', [...labelIds])
+    .orderBy('id')
+    .forUpdate();
+  if (labels.length !== new Set(labelIds).size) {
+    throw new errors.ValidationError({
+      message: 'Trigger labels must all exist.',
+      property: 'trigger_label_ids',
+    });
+  }
+}
+
+async function insertTriggerLabels(
+  trx: Knex.Transaction,
+  automationId: string,
+  labelIds: ReadonlyArray<string>,
+  now: string,
+): Promise<void> {
+  if (labelIds.length === 0) {
+    return;
+  }
+  await trx('automation_trigger_labels').insert(
+    labelIds.map((labelId) => ({
+      automation_id: automationId,
+      label_id: labelId,
+      starts_at: now,
+      checked_until: null,
+    })),
+  );
+}
+
+/**
+ * Replace an automation's trigger labels. Labels that were already there keep
+ * their state, so newly-added trigger labels only consider members labeled from
+ * now on.
+ */
+async function replaceTriggerLabels(
+  trx: Knex.Transaction,
+  automationId: string,
+  labelIds: ReadonlyArray<string>,
+  now: string,
+): Promise<void> {
+  await trx('automation_trigger_labels')
+    .where('automation_id', automationId)
+    .whereNotIn('label_id', [...labelIds])
+    .delete();
+  const existingLabelIds = new Set(
+    await trx('automation_trigger_labels')
+      .where('automation_id', automationId)
+      .pluck<string[]>('label_id'),
+  );
+  await insertTriggerLabels(
+    trx,
+    automationId,
+    labelIds.filter((labelId) => !existingLabelIds.has(labelId)),
+    now,
+  );
+}
+
 function buildAutomationSummary(automation: AutomationSummaryRow): AutomationSummary {
   return {
     id: automation.id,
@@ -1949,6 +2269,7 @@ function buildAutomationSummary(automation: AutomationSummaryRow): AutomationSum
     name: automation.name,
     description: automation.description,
     status: automation.status,
+    trigger_type: automation.trigger_type,
     created_at: serializeDate(automation.created_at),
     updated_at: serializeDate(automation.updated_at),
   };

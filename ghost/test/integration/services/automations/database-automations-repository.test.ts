@@ -45,6 +45,7 @@ describe('database automations repository', function () {
       slug,
       name: `Test automation ${id}`,
       status: 'active',
+      trigger_type: 'membership_started',
       trigger_tier_scope: triggerTierScope,
       created_at: now,
       updated_at: now,
@@ -130,6 +131,8 @@ describe('database automations repository', function () {
           id: automation.id,
           slug: null,
           ...data,
+          trigger_type: 'membership_started',
+          trigger_label_ids: null,
           created_at: automation.created_at,
           updated_at: automation.updated_at,
         });
@@ -199,6 +202,7 @@ describe('database automations repository', function () {
         slug: `duplicate-name-test-${otherId}`,
         name,
         status: 'inactive',
+        trigger_type: 'membership_started',
         created_at: now,
         updated_at: now,
       });

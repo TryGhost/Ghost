@@ -185,6 +185,7 @@ describe('automations API', function () {
           ],
           edges: [],
         };
+        repositoryAdd.mockResolvedValue({ id: ObjectId().toHexString(), ...payload });
         await automationsApi.add(payload);
         expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
         expect(repositoryEdit).not.toHaveBeenCalled();

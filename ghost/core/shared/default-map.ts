@@ -27,6 +27,10 @@ export class DefaultMap<K, V> {
     return this;
   }
 
+  entries(): MapIterator<[K, V]> {
+    return this.#map.entries();
+  }
+
   values(): MapIterator<V> {
     return this.#map.values();
   }

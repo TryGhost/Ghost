@@ -37,7 +37,36 @@ export type RunToInsert = {
   member_email: string;
 };
 
-type NextActionRevisionRow = {
+export type LabelTriggerRow = {
+  automation_id: string;
+  label_id: string;
+  starts_at: Date;
+  checked_until: Date | null;
+};
+
+export type LabelAddedRow = {
+  /** The `members_labels` row ID. */
+  id: string;
+  created_at: Date;
+  member_id: string;
+  member_email: string;
+};
+
+export type MemberRow = {
+  id: string;
+  email: string;
+  name: string | null;
+  uuid: string;
+  status: string;
+  enable_updates_and_announcements: boolean | null;
+};
+
+export type MemberRelationRow = {
+  member_id: string;
+  related_id: string;
+};
+
+export type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
   automation_action_revision_id: string;
@@ -58,6 +87,56 @@ export type AutomationsRepository2<Connection> = {
     memberStatus: 'free' | 'paid',
     memberTierIds: ReadonlyArray<string>,
   ) => Promisable<NextActionRevisionRow[]>;
+
+  /** Find the first action revision for one automation, regardless of its status. */
+  findFirstActionRevisionForAutomation: (
+    connection: Connection,
+    automationId: string,
+  ) => Promisable<null | NextActionRevisionRow>;
+
+  /** Find the trigger labels of all active "label added" automations. */
+  findActiveLabelTriggers: (connection: Connection) => Promisable<LabelTriggerRow[]>;
+
+  /**
+   * Find members who had a label added in a time range and haven't entered
+   * this automation. Results are ordered by when the label was added, then by
+   * `members_labels` ID; pass the last result as `after` to get the next page.
+   */
+  findMembersWithLabelAdded: (
+    connection: Connection,
+    options: Readonly<{
+      automationId: string;
+      labelId: string;
+      from: Readonly<Date>;
+      to: Readonly<Date>;
+      after: null | Readonly<Pick<LabelAddedRow, 'id' | 'created_at'>>;
+      limit: number;
+    }>,
+  ) => Promisable<LabelAddedRow[]>;
+
+  /** Find members by ID. */
+  findMembers: (
+    connection: Connection,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<MemberRow[]>;
+
+  /** Find the labels of these members. */
+  findMemberLabels: (
+    connection: Connection,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<MemberRelationRow[]>;
+
+  /** Find the newsletters these members are subscribed to. */
+  findMemberNewsletters: (
+    connection: Connection,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<MemberRelationRow[]>;
+
+  /** Find the tiers of these members. */
+  findMemberTiers: (
+    connection: Connection,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<MemberRelationRow[]>;
 
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
@@ -97,10 +176,27 @@ export type AutomationsRepository2<Connection> = {
   loadEdgeRows: (connection: Connection, automationId: string) => Promisable<EdgeRow[]>;
 
   /**
+   * Lock an automation for the lifetime of this transaction, returning whether
+   * it's an active "label added" automation.
+   */
+  lockActiveLabelAddedAutomation: (
+    connection: Connection,
+    automationId: string,
+  ) => Promisable<boolean>;
+
+  /**
    * Lock a member for the lifetime of this transaction. Useful to make sure a
    * member doesn't change during an operation.
    */
   lockMember: (connection: Connection, memberId: string) => Promisable<void>;
+
+  /** Record that a trigger label has been checked for label additions up to a time. */
+  setLabelTriggerCheckedUntil: (
+    connection: Connection,
+    automationId: string,
+    labelId: string,
+    checkedUntil: Readonly<Date>,
+  ) => Promisable<void>;
 
   /** Run a function within a repository connection. */
   withConnection: <ReturnT>(fn: (connection: Connection) => ReturnT) => ReturnT;

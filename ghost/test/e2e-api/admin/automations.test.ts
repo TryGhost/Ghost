@@ -54,8 +54,10 @@ type Automation = {
   slug: string;
   status: string;
   description: string | null;
+  trigger_type: string;
   trigger_tier_scope: string;
   trigger_tier_ids: string[];
+  trigger_label_ids: string[] | null;
   edges: { source_action_id: string; target_action_id: string }[];
   actions: AutomationAction[];
   stats: {
@@ -341,6 +343,87 @@ describe('Automations API', function () {
         ).sort(),
         [...tierIds].sort(),
       );
+    });
+
+    describe('label added triggers', function () {
+      const labelIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+      const labelPayload = {
+        ...payload,
+        trigger_type: 'label_added',
+        trigger_tier_scope: null,
+        trigger_label_ids: [...labelIds, labelIds[0]],
+      };
+
+      beforeEach(async function () {
+        await models.Base.knex('labels').insert(
+          labelIds.map((id) => ({ id, name: id, slug: id, created_at: new Date() })),
+        );
+      });
+
+      afterEach(async function () {
+        await models.Base.knex('labels').whereIn('id', labelIds).delete();
+      });
+
+      it('creates, reads, and edits label added automations', async function () {
+        const { body } = await agent
+          .post('automations')
+          .body({ automations: [labelPayload] })
+          .expectStatus(201);
+
+        const created = body.automations[0];
+        assert.equal(created.trigger_type, 'label_added');
+        assert.equal(created.trigger_tier_scope, null);
+        assert.equal(created.trigger_tier_ids, null);
+        assert.deepEqual(created.trigger_label_ids, [...labelIds].sort());
+
+        const { body: readBody } = await agent.get(`automations/${created.id}`).expectStatus(200);
+        assert.deepEqual(readBody.automations[0].trigger_label_ids, [...labelIds].sort());
+
+        const { body: editBody } = await agent
+          .put(`automations/${created.id}`)
+          .body({ automations: [{ ...labelPayload, trigger_label_ids: [labelIds[1]] }] })
+          .expectStatus(200);
+        assert.deepEqual(editBody.automations[0].trigger_label_ids, [labelIds[1]]);
+
+        const { body: browseBody } = await agent.get('automations').expectStatus(200);
+        assert.equal(
+          browseBody.automations.find((automation: { id: string }) => automation.id === created.id)
+            ?.trigger_type,
+          'label_added',
+        );
+      });
+
+      it.each([
+        { ...labelPayload, trigger_label_ids: [] },
+        { ...labelPayload, trigger_label_ids: undefined },
+        { ...labelPayload, trigger_tier_scope: 'free' },
+        { ...payload, trigger_label_ids: labelIds },
+        { ...labelPayload, trigger_type: 'unknown' },
+      ])('rejects malformed label trigger %j', async function (automation) {
+        await agent
+          .post('automations')
+          .body({ automations: [automation] })
+          .expectStatus(422);
+        assert.equal(
+          await models.Base.knex('automations').where({ name: payload.name }).first(),
+          undefined,
+        );
+      });
+
+      it('rejects labels that do not exist', async function () {
+        await agent
+          .post('automations')
+          .body({
+            automations: [
+              { ...labelPayload, trigger_label_ids: [labelIds[0], ObjectId().toHexString()] },
+            ],
+          })
+          .expectStatus(422);
+        assert.equal(
+          await models.Base.knex('automations').where({ name: payload.name }).first(),
+          undefined,
+        );
+      });
     });
 
     it('trims name and description before saving', async function () {

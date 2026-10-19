@@ -4,6 +4,7 @@ const ObjectId = require('bson-objectid').default;
 const plugins = require('@tryghost/bookshelf-plugins');
 
 const db = require('../../data/db');
+const { toDatabaseDate } = require('../../lib/db-types/date');
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
@@ -108,8 +109,13 @@ ghostBookshelf.plugin(require('bookshelf-relations'), {
           }),
         );
       },
-      beforeRelationCreation: function onCreatingRelation(model, data) {
+      beforeRelationCreation: function onCreatingRelation(collection, data) {
         data.id = ObjectId().toHexString();
+
+        // "Label added" automations look for recently-added labels.
+        if (collection.relatedData?.joinTableName === 'members_labels') {
+          data.created_at = toDatabaseDate(new Date());
+        }
       },
     },
   },

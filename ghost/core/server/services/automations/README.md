@@ -1,18 +1,38 @@
 # Automations
 
-Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+Automations run a series of actions for a member. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+
+## Triggers
+
+An automation's `trigger_type` decides who enters it:
+
+- `membership_started`: members enter when they sign up or start a paid subscription, depending on `trigger_tier_scope` (and `automation_trigger_tiers` for specific tiers). The member repository calls `trigger()` when this happens.
+- `label_added`: members enter when any of the automation's labels (`automation_trigger_labels`) is added to them. Only labels added after the automation was activated, or after the label was added to the trigger, count. Members whose labels predate that never enter.
+
+Members never enter the same automation twice.
+
+### How "label added" works
+
+There's no "label added" event. Instead, each automations poll checks for new labels at most every 15 minutes. `members_labels.created_at` records when a label was added; rows from before that column existed are `null` and never trigger anything.
+
+For each active trigger label, the check pages through `members_labels` rows added since the trigger label's `starts_at` (or a little before its `checked_until`, in case rows were committed late), skipping members who already entered. Each page of up to 5,000 members is entered in one transaction that locks the automation, so concurrent checks can't enter a member twice.
+
+A run ends early (`member changed status`) if the member no longer has any of the automation's labels when a step runs.
 
 ## How a run moves forward
 
-The member repository calls `trigger()` after signup.
-
 The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
-Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
+Each check locks up to 500 ready steps and loads all of their members at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop. Finished steps (and the steps that follow them) and stopped steps are written in batches; if a batch write fails, steps are finished one at a time.
+
+> [!WARNING]
+> `send_email` is currently a no-op unless the `automations:sendEmailNoop` config is `false`. This is a temporary measure while email sending is made faster.
 
 ## Where to look
 
 - [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and signup triggers. Edits require one path with no branches or loops.
+- [`automations-api-2.ts`](automations-api-2.ts) enters members into automations.
+- [`label-added-poll.ts`](label-added-poll.ts) decides when to check for new labels.
 - [`database-automations-repository.ts`](database-automations-repository.ts) stores automations, runs, and steps.
 - [`service.ts`](service.ts) starts checks and schedules future ones.
 - [`poll.ts`](poll.ts) runs ready steps.

@@ -38,7 +38,9 @@ describe('Automation run history from the execution', function () {
   };
   let run: { id: string; automation_id: string };
   let pollOptions: {
-    automationsApi: typeof repository;
+    automationsApi: typeof repository & {
+      findMembers: ReturnType<typeof createAutomationsApi2>['findMembers'];
+    };
     enqueueAnotherPollAt: sinon.SinonStub;
     scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     memberWelcomeEmailService: {
@@ -76,7 +78,7 @@ describe('Automation run history from the execution', function () {
       domainEvents: { dispatch: () => {} },
     });
     pollOptions = {
-      automationsApi: repository,
+      automationsApi: { ...repository, findMembers: automationsApi2.findMembers },
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       memberWelcomeEmailService: {
@@ -187,10 +189,13 @@ describe('Automation run history from the execution', function () {
     await db('automation_run_steps')
       .where('id', pendingEmail.id)
       .update({ step_attempts: MAX_ATTEMPTS - 1 });
-    sinon.stub(repository, 'finishStepAndEnqueueNext').callsFake(async () => {
+    const failToAdvance = async () => {
       clock.setSystemTime(new Date('2026-09-16T12:00:06Z'));
       throw new Error('Could not enqueue the next action');
-    });
+    };
+    // Finishing all steps at once fails, and so does the one-at-a-time fallback.
+    sinon.stub(pollOptions.automationsApi, 'finishStepsAndEnqueueNext').callsFake(failToAdvance);
+    sinon.stub(pollOptions.automationsApi, 'finishStepAndEnqueueNext').callsFake(failToAdvance);
 
     await pollAt('2026-09-16T12:00:01Z');
     const history = await readHistory();

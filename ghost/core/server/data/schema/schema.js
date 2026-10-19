@@ -1064,6 +1064,8 @@ module.exports = {
       cascadeDelete: true,
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    created_at: { type: 'dateTime', nullable: true },
+    '@@INDEXES@@': [['label_id', 'created_at']],
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2163,7 +2165,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['membership_started']] },
+      validations: { isIn: [['membership_started', 'label_added']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
@@ -2192,6 +2194,25 @@ module.exports = {
       references: 'products.id',
     },
     '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
+  },
+  automation_trigger_labels: {
+    automation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'automations.id',
+      cascadeDelete: true,
+    },
+    label_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'labels.id',
+      cascadeDelete: true,
+    },
+    starts_at: { type: 'dateTime', nullable: false },
+    checked_until: { type: 'dateTime', nullable: true },
+    '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'label_id']],
   },
   automation_actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2321,7 +2342,11 @@ module.exports = {
       nullable: false,
       validations: { isEmail: true },
     },
-    '@@INDEXES@@': [['automation_id', 'created_at'], ['updated_at']],
+    '@@INDEXES@@': [
+      ['automation_id', 'created_at'],
+      ['automation_id', 'member_id'],
+      ['updated_at'],
+    ],
   },
   automation_run_steps: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

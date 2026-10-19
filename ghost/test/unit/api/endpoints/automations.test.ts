@@ -84,8 +84,10 @@ describe('Automations controller', function () {
         status: 'inactive' as const,
         created_at: '2026-10-01T00:00:00.000Z',
         updated_at: '2026-10-01T00:00:00.000Z',
+        trigger_type: 'membership_started' as const,
         trigger_tier_scope: 'selected_paid' as const,
         trigger_tier_ids: ['64b6f7b7c8f1a2b3c4d5e6f8'],
+        trigger_label_ids: null,
         actions: [],
         edges: [],
       };
@@ -125,7 +127,9 @@ describe('Automations controller', function () {
         status: 'inactive' as const,
         created_at: '2026-10-01T00:00:00.000Z',
         updated_at: '2026-10-01T00:00:00.000Z',
+        trigger_type: 'membership_started' as const,
         trigger_tier_ids: null,
+        trigger_label_ids: null,
         actions: [],
         edges: [],
       };
