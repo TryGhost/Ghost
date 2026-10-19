@@ -5488,6 +5488,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -5500,7 +5501,7 @@ services:
         transaction behavior.
       reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
       sources:
-        - core/server/services/invites/index.js
+        - core/server/services/invites/index.ts
         - core/server/services/invites/invites.js
         - core/server/services/invites/accept.js
         - core/server/api/endpoints/invites.js
@@ -5523,13 +5524,13 @@ services:
             API-mail delegation for sends.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/invites/index.js
+          - core/server/services/invites/index.ts
           - core/server/services/invites/invites.js
           - core/server/services/invites/accept.js
           - core/server/api/endpoints/invites.js
           - core/server/api/endpoints/authentication.js
     entryPoints:
-      - invites/index.js
+      - invites/index.ts
     notes: >-
       Move eager composition to boot while preserving invitation persistence, rendering and
       mail behavior. API-mail delegation and its transport ownership need a separate decision.
@@ -5545,24 +5546,31 @@ services:
       models and logging in the existing root and exposes acceptance on that retained instance.
       The action receives models explicitly; its transaction remains invocation-local. The exact
       @tryghost/security package is allowed as library primitives, so its codecs stay directly
-      imported rather than injected as the older dependency assessment proposed. This is
-      preparation only: eager construction and the add API remain; no boot initializer is added.
+      imported rather than injected as the older dependency assessment proposed.
+      Initializer migration against main fc865173c57abf76bbcefd22691e0c0b58443fac now constructs
+      that same Invites class during initCore, before API loading. The default root exposes init
+      and service, with add and accept on the retained instance and no extras. The implementation,
+      transaction ownership, live settings reads and API-mail delegation are unchanged. Existing
+      tests receive only initializer/import/fixture adaptations; audit provenance is preserved.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one Invites instance. Its add method needs its receiver; the
-          constructor also exposes mutable settingsCache, settingsHelpers, mailService,
-          urlUtils, models and logging fields. The deep invites.js module exports the constructor.
-          There is no init, shutdown or reset; add resolves the edited Invite model.
-          The same instance now exposes accept, delegating to the CommonJS accept.js action
+          The TypeScript root default-exports defineService with init and the guarded service
+          getter, with no extras or other runtime exports. CommonJS callers read default. The
+          ready service is one Invites instance whose add method needs its receiver; it retains
+          mutable settingsCache, settingsHelpers, mailService, urlUtils, models and logging fields.
+          The deep invites.js module still exports the constructor. There is no shutdown or reset;
+          add resolves the edited Invite model. The instance also exposes accept, delegating to
+          the CommonJS accept.js action
           with its injected models. It resolves undefined on success; the API serializer
           supplies the success message. The action adds no application instance, init or
           shutdown. Its former lazy barrel is preserved at
           https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/invitations/index.js.
-          The authentication endpoint imports the Invites root and calls its accept method;
-          sending callers retain the existing add API and receiver.
+          The authentication endpoint imports the default Invites root and calls service.accept;
+          sending callers use service.add, preserving its receiver and operation arguments.
         sources:
-          - core/server/services/invites/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/invites/index.ts
           - core/server/services/invites/invites.js
           - core/server/services/invites/accept.js
           - core/server/api/endpoints/utils/serializers/output/authentication.js
@@ -5570,23 +5578,24 @@ services:
           - test/unit/server/services/invites/index.test.ts
       construction:
         summary: >-
-          The root is the only production constructor found. Import creates Invites with
-          shared settings, helpers, mail library, URL utilities, models and logging. The
-          constructor stores these dependencies without starting invitation work. Importing mail
-          constructs
-          a reusable content generator, not a GhostMailer. Each add receives API facade,
+          The root is the only production constructor found. Import declares the initializer;
+          boot's awaited init call constructs Invites with shared settings, helpers, mail library,
+          URL utilities, models and logging. The constructor stores these dependencies without
+          starting invitation work. Acquiring the mail library constructs a reusable content
+          generator, not a GhostMailer. Each add receives API facade,
           Invite model, data, options and inviter; it does not own a transport directly.
           Acceptance receives models explicitly from the retained instance; token codecs stay
           directly imported from the security library. Each call decodes the first
           invitation token, opens a transaction, locks a sent invite, checks expiry and existing
           user, deletes the invite and creates the user in that order. Email and role come from
           the stored invite; name and password come from the request. No invocation state is
-          retained. Root units assert that import renders and sends nothing, and drive add
+          retained. Root units initialize fresh roots, assert no rendering or sending, and drive add
           through its actual collaborators. Acceptance units stub the transaction and model
           operations, asserting decoded sent-token lookup, shared transaction/internal/locking
           options and the stored email/role as authority for user-creation arguments.
         sources:
-          - core/server/services/invites/index.js
+          - core/boot.js
+          - core/server/services/invites/index.ts
           - core/server/services/invites/invites.js
           - core/server/lib/mail/index.js
           - core/server/services/invites/accept.js
@@ -5598,14 +5607,14 @@ services:
           - test/unit/server/services/invites/index.test.ts
       consumers:
         summary: >-
-          The invites endpoint retains the root
-          and calls add for POST; browse, read and delete use models directly. Validation
+          The invites endpoint retains the default root and reads service.add during POST;
+          browse, read and delete use models directly. Validation
           rejects an existing user and model permissions enforce role and staff limits.
           HTTP tests cover staff and integration-key invitation flows through real composition,
           stubbing GhostMailer.send; they assert send invocation, not rendered message contents.
           Root units separately assert staff/integration template data and the exact API-mail
           payload, with controlled model and rendering collaborators.
-          The authentication endpoint calls the retained root's accept method after input
+          The authentication endpoint reads service.accept from the retained root after input
           validation and setup checks; that method forwards to accept.js with the same models.
           Its GET invitation lookup queries models directly. Acceptance units import the
           function with explicit models; legacy HTTP cases exercise the root's delegation
@@ -5627,29 +5636,34 @@ services:
           - test/unit/server/services/invites/index.test.ts
       startup:
         summary: >-
-          The instance is available at import with no explicit boot initialization. Calls
-          need the database, settings and API pipelines ready; mail sending also needs the
+          Boot awaits init in initCore after settings and database readiness, before API and
+          Express app loading. Consumers import the root early but read service during a request;
+          reading it before successful initialization throws. Construction only captures borrowed
+          collaborators. Calls still need the API pipelines ready; mail sending also needs the
           email-address service. The API mail handler lazily constructs its own shared mailer
           on first send. Real HTTP tests run after Ghost boot and replace send entirely, so
           do not establish the email-address/transport boundary or direct pre-boot invocation.
-          Acceptance shares the eager root and has no explicit boot initialization. It needs database/models
-          readiness. HTTP requires completed setup and nonempty token, password and name; direct
-          callers bypass those API checks. Existing HTTP cases boot Ghost, without establishing
-          direct pre-boot or setup-disabled acceptance behavior.
+          Acceptance shares the same boot-created instance and starts its transaction only when
+          invoked. HTTP requires completed setup and nonempty token, password and name; direct
+          callers bypass those API checks. Existing HTTP cases exercise real boot and acceptance;
+          generic kernel tests cover the readiness guard rather than direct setup-disabled acceptance.
         sources:
+          - core/kernel/define-service.ts
           - core/boot.js
-          - core/server/services/invites/index.js
+          - core/server/services/invites/index.ts
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/services/invites/accept.js
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
+          - test/unit/kernel/define-service.test.ts
           - test/e2e-api/admin/invites.test.js
           - test/legacy/api/admin/authentication.test.js
       lifetime:
         summary: >-
-          The eager instance and dependency references survive in the module cache. Each add
+          Successful init retains one instance and its dependency references; repeated init calls
+          keep it rather than resetting operation state. There is no new shutdown/reset hook. Each add
           keeps its invite and email data local. Resending first destroys the previous invite
           with that email, then creates a replacement; the workflow has no transaction,
           per-email concurrency guard or retry. API mail independently retains its mailer
@@ -5660,10 +5674,12 @@ services:
           replay cache or retry. Existing acceptance cases do not assert concurrent acceptance,
           token reuse or failed creation leaving the invite available.
         sources:
+          - core/kernel/define-service.ts
           - core/server/services/invites/invites.js
           - core/server/api/endpoints/mail.js
           - core/server/services/invites/accept.js
         tests:
+          - test/unit/kernel/define-service.test.ts
           - test/e2e-api/admin/invites.test.js
           - test/unit/server/services/invites/index.test.ts
       configuration:
@@ -5728,13 +5744,17 @@ services:
           synchronously throwing model lookup can fail before the catch. No retry or compensation exists.
           Acceptance rejects missing sent invites and expired invites with NotFoundError, and
           existing users with ValidationError. Decode, database and user-validation errors
-          propagate; transaction failures reject without a catch or retry. HTTP cases assert
+          propagate; transaction failures reject without a catch or retry. Accessing service before
+          initialization throws. The initializer propagates construction failures and allows an
+          explicit retry; it adds no operation retry. Those generic semantics are covered by kernel
+          tests. HTTP cases assert
           missing-invite 404, duplicate-user 422 and successful 200. Acceptance units also
           assert missing/expired/duplicate errors, exact user-creation arguments and original
           rejection propagation from lookup, deletion, creation and transaction start/completion,
           with no subsequent model steps after failure. Malformed input, persisted rollback
           after deletion, emitted events and persisted staff-role assignment remain untested here.
         sources:
+          - core/kernel/define-service.ts
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
           - core/server/api/endpoints/mail.js
@@ -5742,6 +5762,7 @@ services:
           - core/server/models/base/index.js
           - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
+          - test/unit/kernel/define-service.test.ts
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/services/invites/index.test.ts
           - test/unit/server/services/invites/accept.test.js
@@ -12202,7 +12223,7 @@ services:
           - core/server/services/staff/index.js
           - core/server/services/staff/staff-service-emails.js
           - core/server/services/gifts/index.ts
-          - core/server/services/invites/index.js
+          - core/server/services/invites/index.ts
           - core/server/services/invites/invites.js
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/posts/posts-service-instance.js

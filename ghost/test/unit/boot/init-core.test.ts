@@ -27,6 +27,7 @@ function createCoreHarness() {
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
     './server/services/export-requests': { default: { init() {} } },
+    './server/services/invites': { default: { init() {} } },
     './server/services/stripe-checkout-config': { init() {} },
   });
   return {
