@@ -41,18 +41,8 @@ export interface AppInstallationHistoryEntry {
   moved_to?: string;
 }
 
-/** One site's approval of one app, as the Admin API returns it. */
-export type AppInstallation = Pick<
-  Installation,
-  | 'id'
-  | 'app_id'
-  | 'status'
-  | 'revision'
-  | 'manifest_url'
-  | 'manifest'
-  | 'created_at'
-  | 'updated_at'
-> & {
-  /** Newest first. Only included when read with `include=history`. */
+/** An installation, with its history when it's read with it. */
+export type InstallationWithHistory = Installation & {
+  /** Newest first. */
   history?: AppInstallationHistoryEntry[];
 };

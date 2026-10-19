@@ -666,6 +666,7 @@ services:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
         - core/server/services/app-installations/app-installations-repository.ts
+        - core/server/services/app-installations/serializers.ts
         - core/server/services/app-installations/decide-on-manifest.ts
         - core/server/services/app-installations/history.ts
         - core/server/api/endpoints/app-installations.ts

@@ -3,7 +3,7 @@ import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import { AppInstallationsRepository } from './app-installations-repository';
-import type { AppInstallation, Installation } from './codec';
+import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import {
   changesFrom,
   decideOnManifest,
@@ -14,7 +14,7 @@ import { approvalManifestIds, buildHistory } from './history';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
 
-export type { AppInstallation, AppInstallationHistoryEntry } from './codec';
+export type { AppInstallationHistoryEntry } from './codec';
 export type { AppManifestChange } from './decide-on-manifest';
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
@@ -50,7 +50,7 @@ export interface AppInstallationPreview {
  * changes.
  */
 export interface AppSession {
-  installation: AppInstallation;
+  installation: Installation;
 }
 
 function notFound() {
@@ -91,20 +91,6 @@ function forAnotherApp(appId: string) {
     message: `The reviewed manifest is for ${appId}, not the app that is installed.`,
     code: 'APP_MANIFEST_OTHER_APP',
   });
-}
-
-/** The installation as the Admin API returns it. */
-function toAppInstallation(installation: Installation): AppInstallation {
-  return {
-    id: installation.id,
-    app_id: installation.app_id,
-    status: installation.status,
-    revision: installation.revision,
-    manifest_url: installation.manifest_url,
-    manifest: installation.manifest,
-    created_at: installation.created_at,
-    updated_at: installation.updated_at,
-  };
 }
 
 /**
@@ -181,8 +167,8 @@ export class AppInstallationsService {
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
-  async browse(): Promise<AppInstallation[]> {
-    return (await this.repository.list()).map(toAppInstallation);
+  async browse(): Promise<Installation[]> {
+    return this.repository.list();
   }
 
   /**
@@ -192,19 +178,18 @@ export class AppInstallationsService {
   async read(
     id: string,
     { withHistory = false }: { withHistory?: boolean } = {},
-  ): Promise<AppInstallation> {
-    const found = await this.repository.find(id);
-    if (!found) {
+  ): Promise<InstallationWithHistory> {
+    const installation: InstallationWithHistory | undefined = await this.repository.find(id);
+    if (!installation) {
       throw notFound();
     }
-    const installation = toAppInstallation(found);
     if (withHistory) {
       installation.history = await this.historyOf(id);
     }
     return installation;
   }
 
-  private async historyOf(id: string): Promise<AppInstallation['history']> {
+  private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {
     const { manifests, actions } = await this.repository.historyRows(id);
     return buildHistory(
       manifests,
@@ -260,7 +245,7 @@ export class AppInstallationsService {
   async create(
     context: RequestContext,
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
-  ): Promise<AppInstallation> {
+  ): Promise<Installation> {
     const loaded = await this.fetchReviewed(manifestUrl, digest);
     const installation = await this.repository.insert(loaded);
     await this.recordAction({
@@ -269,7 +254,7 @@ export class AppInstallationsService {
       subject: installation.id,
       details: { primary_name: loaded.manifest.name, app_id: loaded.manifest.id },
     });
-    return toAppInstallation(installation);
+    return installation;
   }
 
   /**
@@ -287,7 +272,7 @@ export class AppInstallationsService {
     context: RequestContext,
     id: string,
     { manifestUrl, digest, revision }: { manifestUrl: string; digest: string; revision: number },
-  ): Promise<AppInstallation> {
+  ): Promise<Installation> {
     const current = await this.repository.find(id);
     if (!current) {
       throw notFound();
