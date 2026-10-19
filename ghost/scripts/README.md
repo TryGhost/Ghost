@@ -1,19 +1,19 @@
 # Ghost build and packaging scripts
 
-Ghost-owned asset generation, release archive assembly and pruning. Repository
-builds invoke these through Ghost's package/Nx targets; downstream image builds
-can also use the shipped prune helper. See [tooling ownership](../../tools/README.md)
+Ghost-owned asset generation, release archive assembly, pruning and policy
+exports. Repository builds invoke these through Ghost's package/Nx targets;
+downstream image builds can also use the shipped prune helper. See [tooling ownership](../../tools/README.md)
 for the boundary with repository automation, contributor commands and installed
 tools.
 
-| File                                                                 | Format                             | Purpose and invocation                                                                       | Placement                                |
-| -------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| [build-card-assets.mts](build-card-assets.mts)                       | TypeScript ESM                     | Card CSS/JS manifest; `pnpm --filter ghost build:assets:cards`                               | Keep: Ghost asset build                  |
-| [build-stale-assets.mts](build-stale-assets.mts)                     | TypeScript ESM                     | Rebuild stale browser assets before nodemon starts Ghost                                     | Keep: automatic build lifecycle          |
-| [minify-assets.mts](minify-assets.mts)                               | TypeScript ESM                     | Browser JS bundling/minification; `pnpm --filter ghost build:assets:js`                      | Keep: Ghost asset build                  |
-| [pack.mjs](pack.mjs)                                                 | JavaScript ESM                     | Ghost tarball assembly; root `pnpm archive` via Nx                                           | Keep: Ghost packaging                    |
-| [prune.mts](prune.mts)                                               | TypeScript ESM                     | Prune built image/archive trees; Dockerfile, archive builder and downstream callers          | Keep: shipped build contract             |
-| [export-query-parameter-policy.ts](export-query-parameter-policy.ts) | TypeScript, CommonJS through `tsx` | Validate/export normalized policy JSON; `pnpm query-parameter-policy:export --output <file>` | Open question: consumer/runtime contract |
+| File                                                                 | Format                             | Purpose and invocation                                                                       | Placement                       |
+| -------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------- |
+| [build-card-assets.mts](build-card-assets.mts)                       | TypeScript ESM                     | Card CSS/JS manifest; `pnpm --filter ghost build:assets:cards`                               | Keep: Ghost asset build         |
+| [build-stale-assets.mts](build-stale-assets.mts)                     | TypeScript ESM                     | Rebuild stale browser assets before nodemon starts Ghost                                     | Keep: automatic build lifecycle |
+| [minify-assets.mts](minify-assets.mts)                               | TypeScript ESM                     | Browser JS bundling/minification; `pnpm --filter ghost build:assets:js`                      | Keep: Ghost asset build         |
+| [pack.mjs](pack.mjs)                                                 | JavaScript ESM                     | Ghost tarball assembly; root `pnpm archive` via Nx                                           | Keep: Ghost packaging           |
+| [prune.mts](prune.mts)                                               | TypeScript ESM                     | Prune built image/archive trees; Dockerfile, archive builder and downstream callers          | Keep: shipped build contract    |
+| [export-query-parameter-policy.ts](export-query-parameter-policy.ts) | TypeScript, CommonJS through `tsx` | Validate/export normalized policy JSON; `pnpm query-parameter-policy:export --output <file>` | Keep: Ghost policy export       |
 
 ## Build and distribution
 
@@ -26,8 +26,10 @@ including the production workspace component archives and installation metadata.
 `.mts` files are TypeScript ES modules run directly by Node. This folder is outside
 Core's TypeScript compiler `include`; running a script with type stripping is not
 proof that it has been typechecked. Keep source-format and checker coverage
-explicit when changing it. `pack.mjs` is still JavaScript; conversion is separate
-from deciding where packaging code belongs.
+explicit when changing it. The policy exporter is checked without emitting files
+through `scripts/tsconfig.json`, included in `pnpm --filter ghost test:types`.
+`pack.mjs` is still JavaScript; conversion is separate from deciding where
+packaging code belongs.
 
 The [Ghost manifest](../package.json) ships `scripts/prune.mts`, rather than all of
 `scripts/`. The asset builders, archive builder and policy exporter are checkout
@@ -50,24 +52,27 @@ The production Dockerfile and `pack.mjs` call the same implementation. Preserve
 
 ## Query-parameter policy export
 
-The exporter reads Core's canonical policy, validates it through Core's schema
-and writes normalized JSON. It currently runs through `tsx` from a source checkout
-and is not included in the release's shipped files. The remaining placement
-question is who consumes that JSON and where the export runs.
+The exporter produces validated JSON for external infrastructure integrations.
+It runs through `tsx` from a source checkout and is excluded from installed
+releases. See the
+[policy contract](../core/server/web/query-parameter-policy/README.md) for the
+source, schema and invocation. Tests exercise the exporter itself; middleware
+and policy tests use Core's policy directly.
 
-- Source/build integration: keep it here and connect the actual build consumer.
-- Installed-release integration: use `ghost/bin/` only after establishing compiled
-  output, policy/schema paths and packaging without development dependencies.
-- Contributor workflow: expose a gx command if that workflow is established.
+For another Ghost-owned policy export:
 
-Keep the current path and alias until that consumer contract is known. Running
-something after a build does not alone make it an installed-release tool. A
-repository search cannot rule out external callers; check them before moving or
-removing the exporter.
+- Keep the canonical policy, schema and contract documentation in its owning Core
+  subsystem. Runtime code and the exporter should share that validation.
+- Add a thin exporter here with an explicit output path. Document its command,
+  schema version, consumer expectations and checkout requirements. Tools that
+  must run in an installed release belong in `ghost/bin`.
+- Add it to the appropriate typecheck and test validation, output content and
+  byte-for-byte repeatability. Keep deployment and synchronization with external
+  systems in the consuming integration.
 
 ## Adding a script
 
-Add Ghost asset/archive work here. Use
+Add Ghost asset/archive work and policy exports here. Use
 [tools/scripts](../../tools/scripts/README.md) for repository-wide automation and
 [gx](../../tools/gx/README.md) for contributor commands. Keep domain logic in Core.
 For a move, check package targets, nodemon, Docker/archive callers, tests and the
