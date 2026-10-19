@@ -5514,8 +5514,8 @@ services:
       reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
       sources:
         - core/server/services/invites/index.ts
-        - core/server/services/invites/invites.js
-        - core/server/services/invites/accept.js
+        - core/server/services/invites/invites.ts
+        - core/server/services/invites/accept.ts
         - core/server/api/endpoints/invites.js
         - core/server/api/endpoints/authentication.js
       dependencies:
@@ -5537,8 +5537,8 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/invites/index.ts
-          - core/server/services/invites/invites.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/invites.ts
+          - core/server/services/invites/accept.ts
           - core/server/api/endpoints/invites.js
           - core/server/api/endpoints/authentication.js
     entryPoints:
@@ -5570,10 +5570,10 @@ services:
           The TypeScript root default-exports defineService with init and the guarded service
           getter, with no extras or other runtime exports. CommonJS callers read default. The
           ready service is one Invites instance whose add method needs its receiver; it retains
-          mutable settingsCache, settingsHelpers, mailService, urlUtils, models and logging fields.
-          The deep invites.js module still exports the constructor. There is no shutdown or reset;
+          settingsCache, settingsHelpers, mailService, urlUtils, models and logging facades.
+          The deep invites.ts module exports the named Invites constructor. There is no shutdown or reset;
           add resolves the edited Invite model. The instance also exposes accept, delegating to
-          the CommonJS accept.js action
+          the named accept.ts action
           with its injected models. It resolves undefined on success; the API serializer
           supplies the success message. The action adds no application instance, init or
           shutdown. Its former lazy barrel is preserved at
@@ -5583,8 +5583,8 @@ services:
         sources:
           - core/kernel/define-service.ts
           - core/server/services/invites/index.ts
-          - core/server/services/invites/invites.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/invites.ts
+          - core/server/services/invites/accept.ts
           - core/server/api/endpoints/utils/serializers/output/authentication.js
         tests:
           - test/unit/server/services/invites/index.test.ts
@@ -5608,14 +5608,14 @@ services:
         sources:
           - core/boot.js
           - core/server/services/invites/index.ts
-          - core/server/services/invites/invites.js
+          - core/server/services/invites/invites.ts
           - core/server/lib/mail/index.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/accept.ts
           - core/server/models/base/index.js
           - core/server/models/base/plugins/events.js
           - core/server/models/user.js
         tests:
-          - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/accept.test.ts
           - test/unit/server/services/invites/index.test.ts
       consumers:
         summary: >-
@@ -5627,7 +5627,7 @@ services:
           Root units separately assert staff/integration template data and the exact API-mail
           payload, with controlled model and rendering collaborators.
           The authentication endpoint reads service.accept from the retained root after input
-          validation and setup checks; that method forwards to accept.js with the same models.
+          validation and setup checks; that method forwards to accept.ts with the same models.
           Its GET invitation lookup queries models directly. Acceptance units import the
           function with explicit models; legacy HTTP cases exercise the root's delegation
           through the real endpoint, asserting
@@ -5643,7 +5643,7 @@ services:
           - test/e2e-api/admin/invites.test.js
           - test/e2e-api/admin/host-limits.test.ts
           - test/unit/server/models/invite.test.js
-          - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/accept.test.ts
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/services/invites/index.test.ts
       startup:
@@ -5665,7 +5665,7 @@ services:
           - core/server/services/invites/index.ts
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/accept.ts
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
@@ -5687,9 +5687,9 @@ services:
           token reuse or failed creation leaving the invite available.
         sources:
           - core/kernel/define-service.ts
-          - core/server/services/invites/invites.js
+          - core/server/services/invites/invites.ts
           - core/server/api/endpoints/mail.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/accept.ts
         tests:
           - test/unit/kernel/define-service.test.ts
           - test/e2e-api/admin/invites.test.js
@@ -5708,17 +5708,17 @@ services:
           configuration snapshot. Acceptance units pin URL-safe token decoding, rejection one
           millisecond after expiry and acceptance at the exact expiry boundary using a fixed clock.
         sources:
-          - core/server/services/invites/invites.js
+          - core/server/services/invites/invites.ts
           - core/server/models/invite.js
           - core/server/lib/mail/email-content-generator.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/api/endpoints/mail.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/accept.ts
           - core/server/models/user.js
           - core/server/data/db/index.js
         tests:
           - test/unit/server/services/invites/index.test.ts
-          - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/accept.test.ts
       resources:
         summary: >-
           The root borrows models, template filesystem work and API-mail sending. It awaits
@@ -5734,17 +5734,17 @@ services:
           prove deletion finishes before user creation and acceptance waits for creation.
           They do not test actual rollback, acquired locks or committed event delivery.
         sources:
-          - core/server/services/invites/invites.js
+          - core/server/services/invites/invites.ts
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/lib/mail/email-content-generator.js
           - core/server/ghost-server.ts
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/accept.ts
           - core/server/models/user.js
           - core/server/models/base/bookshelf.js
           - core/server/models/base/plugins/events.js
         tests:
-          - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/accept.test.ts
           - test/unit/server/services/invites/index.test.ts
       failures:
         summary: >-
@@ -5767,17 +5767,17 @@ services:
           after deletion, emitted events and persisted staff-role assignment remain untested here.
         sources:
           - core/kernel/define-service.ts
-          - core/server/services/invites/invites.js
+          - core/server/services/invites/invites.ts
           - core/server/models/invite.js
           - core/server/api/endpoints/mail.js
-          - core/server/services/invites/accept.js
+          - core/server/services/invites/accept.ts
           - core/server/models/base/index.js
           - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/unit/kernel/define-service.test.ts
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/services/invites/index.test.ts
-          - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/accept.test.ts
     unverified: []
     blockers:
       - >-
@@ -12279,7 +12279,7 @@ services:
           - core/server/services/staff/staff-service-emails.js
           - core/server/services/gifts/index.ts
           - core/server/services/invites/index.ts
-          - core/server/services/invites/invites.js
+          - core/server/services/invites/invites.ts
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/posts/posts-service-instance.js
           - core/server/services/posts/posts-exporter.js
