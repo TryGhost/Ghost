@@ -21,11 +21,12 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const newslettersEnabled = useNewslettersEnabled();
   const { site, statsConfig } = useAnalyticsData();
+  const { largeTitles } = usePageChrome();
   const { activeVisitors, isLoading: isActiveVisitorsLoading } = useActiveVisitors({
     statsConfig,
-    enabled: webAnalyticsEnabled,
+    // Under large titles the frame's top bar shows them instead
+    enabled: webAnalyticsEnabled && !largeTitles,
   });
-  const { largeTitles } = usePageChrome();
   const normalizedPath = location.pathname.endsWith('/')
     ? location.pathname
     : `${location.pathname}/`;
@@ -106,7 +107,9 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
   );
 
   // With large titles on (admin7Design), the screen is a list page: the title
-  // large above a sticky header whose rows are the site, then the tabs
+  // large above a sticky header holding the tabs. No site meta: large titles
+  // only show inside the admin frame, whose top bar already has the visitors
+  // online
   if (largeTitles) {
     return (
       <ListPage.Header>
@@ -114,7 +117,6 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
           <PageHeader.Left>
             <PageHeader.Title>Analytics</PageHeader.Title>
           </PageHeader.Left>
-          {siteMeta && <PageHeader.Actions>{siteMeta}</PageHeader.Actions>}
         </PageHeader>
         <Navbar className="mt-4! flex-col items-start gap-y-0 border-none pt-0! pb-4! lg:flex-row lg:items-center">
           {tabs}
