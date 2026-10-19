@@ -84,16 +84,23 @@ export const Destination: React.FC<{
   label: string;
   type: MemberCustomField['type'];
   fields: MemberCustomField[];
+  /**
+   * The fields chosen for every collected value. Another value's field isn't offered, as the
+   * two would overwrite each other on every checkout.
+   */
+  chosen: Array<string | null>;
   value: string | null;
   error?: string;
   onChange: (key: string) => void;
-}> = ({ id, label, type, fields, value, error, onChange }) => (
+}> = ({ id, label, type, fields, chosen, value, error, onChange }) => (
   <SubRow error={error} htmlFor={id} label={label}>
     <CustomFieldPicker
       createTypes={[type]}
       // A field archived after it was chosen stays chosen, so the setting can be saved back.
       fields={fields.filter(
-        (field) => field.type === type && (field.status === 'active' || field.key === value),
+        (field) =>
+          field.key === value ||
+          (field.type === type && field.status === 'active' && !chosen.includes(field.key)),
       )}
       id={id}
       invalid={Boolean(error)}
@@ -122,9 +129,13 @@ export const CollectRow: React.FC<{
   const activeTierIds = tiers.filter((tier) => tier.active).map((tier) => tier.id);
 
   return (
-    <div className="flex flex-col gap-3">
+    // A group named by the part, so its "Collect for" and other settings are told apart from
+    // another part's.
+    <div aria-labelledby={`${id}-label`} className="flex flex-col gap-3" role="group">
       <Field orientation="horizontal">
-        <FieldLabel htmlFor={id}>{label}</FieldLabel>
+        <FieldLabel htmlFor={id} id={`${id}-label`}>
+          {label}
+        </FieldLabel>
         <Switch checked={state.collect} id={id} onCheckedChange={(collect) => set({ collect })} />
       </Field>
       {state.collect && (

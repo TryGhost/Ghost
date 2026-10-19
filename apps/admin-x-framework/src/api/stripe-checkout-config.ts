@@ -30,6 +30,19 @@ export type StripeCheckoutShippingSetting =
       name: { custom_field_key: string };
     };
 
+/**
+ * `collect: false` means checkout doesn't ask for a phone number. `collect: true` names the
+ * custom field it is saved into.
+ */
+export type StripeCheckoutPhoneSetting =
+  | { collect: false }
+  | {
+      collect: true;
+      /** Left out, it covers every paid tier, including tiers added later. */
+      tier_ids?: string[];
+      custom_field_key: string;
+    };
+
 export type StripeCheckoutConfig = {
   design: StripeCheckoutDesignSetting;
   /**
@@ -37,6 +50,11 @@ export type StripeCheckoutConfig = {
    * than the setting.
    */
   shipping?: StripeCheckoutShippingSetting;
+  /**
+   * Missing while a phone number can't be collected: its private flag is off, or Ghost is
+   * older than the setting.
+   */
+  phone?: StripeCheckoutPhoneSetting;
 };
 
 export interface StripeCheckoutConfigResponseType {
@@ -83,18 +101,25 @@ export const useReadStripeCheckoutBranding = createQuery<StripeCheckoutBrandingR
   path: '/stripe/checkout/branding/',
 });
 
-/** A preview of the design on a real Stripe Checkout page for one paid tier. */
 /** Shipping as a preview asks for it. Where the answers are saved doesn't matter there. */
 export type StripeCheckoutPreviewShipping =
   | { collect: false }
   | { collect: true; tier_ids?: string[]; allowed_countries?: string[] };
 
+/** A phone number as a preview asks for it. Where the answer is saved doesn't matter there. */
+export type StripeCheckoutPreviewPhone =
+  | { collect: false }
+  | { collect: true; tier_ids?: string[] };
+
+/** A preview of the design on a real Stripe Checkout page for one paid tier. */
 export type StripeCheckoutPreviewRequest = {
   tier_id: string;
   cadence: 'month' | 'year';
   design: StripeCheckoutDesignSetting;
   /** Left out, the preview asks for an address as the saved settings say. */
   shipping?: StripeCheckoutPreviewShipping;
+  /** Left out, the preview asks for a phone number as the saved settings say. */
+  phone?: StripeCheckoutPreviewPhone;
 };
 
 export interface StripeCheckoutPreviewResponseType {
