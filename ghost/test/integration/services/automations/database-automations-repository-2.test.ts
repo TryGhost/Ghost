@@ -4,7 +4,10 @@ import { randomUUID } from 'node:crypto';
 import { onTestFinished } from 'vitest';
 import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
-import type { RunStepToInsert } from '../../../../core/server/services/automations/automations-repository-2';
+import type {
+  ActionToInsert,
+  RunStepToInsert,
+} from '../../../../core/server/services/automations/automations-repository-2';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
 // @ts-expect-error This module lacks type definitions.
@@ -379,6 +382,63 @@ describe('database automations repository', function () {
       await knex('automations').insert(createAutomation(otherAutomationId));
       await knex('automation_runs').insert(createRun(otherAutomationId, memberId));
       await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
+    });
+  });
+
+  describe('insertActions', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+
+    const createActionToInsert = (type: ActionToInsert['type']): ActionToInsert => ({
+      id: ObjectId().toHexString(),
+      automation_id: automationId,
+      type,
+      created_at: createdAt,
+      updated_at: updatedAt,
+    });
+
+    const findActions = async () => {
+      const rows = await knex('automation_actions')
+        .select('id', 'automation_id', 'type', 'created_at', 'updated_at')
+        .where('automation_id', automationId)
+        .orderBy('id');
+      return rows.map((row) => ({
+        ...row,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+      }));
+    };
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_actions').where('automation_id', automationId).delete();
+      await knex('automations').where('id', automationId).delete();
+    });
+
+    it('inserts multiple actions with their types and timestamps', async function () {
+      const actions = [createActionToInsert('wait'), createActionToInsert('send_email')];
+
+      await repository.withConnection((connection) =>
+        repository.insertActions(connection, actions),
+      );
+
+      await expect(findActions()).resolves.toEqual(
+        actions.toSorted((a, b) => a.id.localeCompare(b.id)),
+      );
+    });
+
+    it('leaves existing actions unchanged when given an empty array', async function () {
+      const action = createActionToInsert('wait');
+
+      await repository.insertActions(knex, [action]);
+      await repository.insertActions(knex, []);
+
+      await expect(findActions()).resolves.toEqual([action]);
     });
   });
 
