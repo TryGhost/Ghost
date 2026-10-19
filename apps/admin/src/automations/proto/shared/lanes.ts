@@ -52,10 +52,10 @@ export interface Lane {
 // phase-5 id and URL, as every renamed lane does.
 export const LANES: Lane[] = [
   { id: 'phase-1', label: 'Automation analytics', status: 'done' },
-  { id: 'phase-2', label: 'Tier-based welcome sequences', status: 'in-progress' },
+  { id: 'phase-2', label: 'Tier-based welcome sequences', status: 'done' },
   // Phase 2's screens, carried on so phase 2 can be locked, with one lifecycle
   // trigger asking From → To (see shared/capabilities). The approved design.
-  { id: 'phase-5', label: 'Lifecycle triggers', status: 'in-progress' },
+  { id: 'phase-5', label: 'Lifecycle triggers', status: 'done' },
   // Formerly "Sandbox: Right panel": the post editor's shape, a fixed header and
   // the pane on the canvas's right, carrying everything on the roadmap to GA.
   { id: 'exploration-2', label: 'Automations 1.0 (GA)', status: 'in-progress' },

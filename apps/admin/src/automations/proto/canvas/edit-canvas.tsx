@@ -1176,6 +1176,11 @@ interface EditCanvasProps {
   // The Change trigger confirm's body, when a lane's messaging spec words it
   // differently. Absent, the canvas's own sentence.
   changeTriggerDescription?: string;
+  // Whether a configured trigger's ⋯ offers "Change trigger". Off for every
+  // lane on this canvas: changing a trigger is GA-only for now, and GA has its
+  // own fork of the canvas (exploration-2/canvas). A trigger is still CHOSEN
+  // on the empty card; this only removes changing it afterwards.
+  allowTriggerChange?: boolean;
   // The create-button variant's pre-create state (see CREATION_SLOT): the
   // empty trigger card's options become SELECTIONS with a Create button
   // beneath, and pressing it hands the chosen config up instead of applying
@@ -1204,6 +1209,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   exitsOnTriggerCard = true,
   faultDisplay = 'alert',
   changeTriggerDescription,
+  allowTriggerChange = false,
   onCreateAutomation,
   hideControls = false,
 }) => {
@@ -1562,7 +1568,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
-        onRequestTriggerChange: requestTriggerChange,
+        onRequestTriggerChange: allowTriggerChange ? requestTriggerChange : undefined,
         savedTierIds,
         onCreateAutomation,
       },
@@ -1781,6 +1787,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     triggerOnly,
     introPhase,
     requestTriggerChange,
+    allowTriggerChange,
     alwaysShowInserts,
     savedTierIds,
     onCreateAutomation,

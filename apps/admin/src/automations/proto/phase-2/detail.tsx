@@ -40,7 +40,6 @@ import {
 } from './dialogs';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
-import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { type PaneTab, SidePanel } from './side-panel';
 import {
   type TriggerConfig,
@@ -770,7 +769,7 @@ const AutomationFloat: React.FC = () => {
     // flex-col in both variants: the docked header is a row above the pane and
     // canvas, and with no header the same column collapses to just that row.
     <div
-      className="fixed inset-0 z-50 flex overflow-hidden bg-background"
+      className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background"
       data-testid="float-detail"
     >
       {/* The header never carries the pane control in either release — its left
@@ -783,290 +782,227 @@ const AutomationFloat: React.FC = () => {
                 The Publish button still refuses via canGoLive (popover at the press),
                 so the header's half of the story is the control refusing, and the
                 card's half is why. */}
-      {/* Everything but the side panel, as one column: the header and the
-          canvas beneath it. The panel is a full-height column to its right, so
-          opening it narrows this one — the header's actions and the canvas slide
-          over together, the way the right-panel concept's chrome moves. */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <HeaderBar
-          actions={chromeActions}
-          paneOpen={!paneCollapsed}
-          status={liveStatus}
-          // The pending name, not the saved one: a rename shows here the moment
-          // it's typed in the Settings tab, the way a canvas edit shows on the
-          // canvas — on screen now, committed by Save.
-          title={draftDetails.name}
-          onBack={goBack}
-        />
-        <div className="relative flex min-h-0 flex-1 overflow-hidden">
-          {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
-                centres within its own region — no left-inset hack needed. Same fill as
-                REACT_FLOW_THEME paints inside it, so the region and the flow's own
-                background can't disagree at the edges. */}
-          <div
-            className={cn(
-              'relative min-w-0 flex-1 overflow-hidden',
-              // This region owns the canvas palette. Everything inside it — both
-              // canvases and the dashed insert buttons — reads the fill, dots and
-              // edge colour from here by inheritance, so the two releases can look
-              // completely different without either canvas knowing which one it is.
-              CANVAS_SLOT_FILL,
-              canvasTheme('phase-1', Boolean(selectedRun)),
-              // Docked chrome: the canvas is one of three abutting surfaces, so it
-              // fills its column flush — no inset, no radius. The inset-window
-              // treatment belongs to the exploration lane.
-            )}
-          >
-            {/* Both canvases stay mounted and crossfade on mode change. No remount
-                    means the incoming flow is already centred — no first-frame node flash.
-                    The inactive one is opacity-0 + pointer-events-none so clicks fall to
-                    the active canvas beneath/above it. */}
-            <div
-              className={cn(
-                'absolute inset-0 transition-opacity duration-150',
-                showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100',
-              )}
-            >
-              <FlowCanvas
-                automation={publishedFlow}
-                selectedRun={selectedRun}
-                triggerConfig={savedTrigger ?? undefined}
-              />
-            </div>
-            {/* One top-left cluster, not two things at the same coordinates: the
-                    pane toggle (future's — phase 1's is anchored to the row below) and
-                    the member button can both be present at once, so they sit in a row
-                    and neither has to know about the other.
-
-                    left-6 with the button pulled back 8px, and top-4: the horizontal
-                    inset is the 24px every column on this screen uses, and the vertical
-                    one is 16px because that is where the row beneath the header starts
-                    — the pane's strip is pt-4, and the invisible twin of the pane toggle
-                    that the "Performance" title aligns against sits at 16. This cluster
-                    was at top-6, which put it 8px below the toggle standing right beside
-                    it; both are size-9, so their centres missed by 8 and the corner read
-                    as broken.
-
-                    16 rather than 24 costs the symmetry with the zoom controls, which
-                    take CANVAS_HUD_INSET (24) in the opposite corner. Worth it here: this
-                    canvas is flush against the header and pane, so its top-left corner
-                    belongs to that horizontal band and has to line up with it. The
-                    exploration lane's canvas is a bounded window instead, inset from the
-                    page — nothing to line up with, so its cluster keeps the symmetric
-                    24. */}
-            {selectedRun && !showEditCanvas && (
-              <div className="absolute top-4 left-6 z-20">
-                <Inline align="center" gap="sm">
-                  {/* Who you're looking at, and the way out, as one control:
-                                clicking the member's name closes their run. This replaced
-                                a bare X in the canvas's top-right, which said nothing
-                                about whose run it was — you could see you were inside
-                                something without being told what, and the only thing
-                                naming the member was a highlighted row in a pane you
-                                might have collapsed.
-
-                                Same outline-on-surface-elevated chrome as the button
-                                beside it, so the two read as one cluster of canvas
-                                controls rather than two kinds of thing. The close icon
-                                leads, because what the control DOES should be read
-                                before whose name it carries.
-
-                                aria-label rather than the bare name, since "Marcus Chen"
-                                doesn't say what pressing it does; it contains the visible
-                                text, so the label-in-name rule still holds. */}
-                  {selectedRun && !showEditCanvas && (
-                    <Button
-                      aria-label={`Close ${selectedRun.member.name}'s run`}
-                      // Same chrome as the maximise toggle beside it, so
-                      // the two read as one set of canvas controls.
-                      className={CANVAS_HUD_BUTTON}
-                      type="button"
-                      variant="outline"
-                      onClick={() => setSelectedMemberId(null)}
-                    >
-                      <LucideIcon.X strokeWidth={2} />
-                      {selectedRun.member.name}
-                    </Button>
-                  )}
-                </Inline>
-              </div>
-            )}
-
-            <div
-              className={cn(
-                'absolute inset-0 transition-opacity duration-150',
-                showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
-              )}
-            >
-              <EditCanvas
-                // Building vs watching: while the automation is off the inserts
-                // stay on screen — choosing a trigger otherwise landed on one
-                // card, one line and no visible next move. Live, they go back to
-                // hover; the flow is being read then, not assembled. (Email
-                // analytics are NOT lifecycle-gated — every email card reports
-                // from the moment it exists, zeros included; see the canvas's
-                // ZERO_EMAIL_STATS.)
-                alwaysShowInserts={liveStatus === 'inactive'}
-                // An email's report expands in place on its card: the header's
-                // analytics button opens the clicked links under the numbers. (It was a
-                // modal before — the side panel owns the right edge, where the
-                // other lanes' sheet slides in — and the modal didn't land.)
-                analyticsSurface="inline"
-                // The messaging spec's wording: the trigger's settings reset, and
-                // the rest of the flow is untouched.
-                changeTriggerDescription="Your settings on this trigger will be reset. All other steps in this automation will remain unchanged."
-                draft={draftFlow}
-                // The exit sentence lives in Settings now, under Stop conditions.
-                exitsOnTriggerCard={false}
-                // Faults show on the fields that have them, in Shade's own
-                // invalid state, with the card's border in a muted version of
-                // the same red — rather than a gold alert in the card's header.
-                faultDisplay="field"
-                // Which triggers this screen may offer — see shared/capabilities.
-                lane={LANE}
-                revealWarningsSignal={revealSignal}
-                // Type-gated: a saved trigger of a different type answered a
-                // different question, so its tiers don't keep archived rows
-                // offered here.
-                savedTierIds={
-                  savedTrigger && savedTrigger.type === triggerConfig?.type
-                    ? savedTrigger.tierIds
-                    : []
-                }
-                triggerConfig={triggerConfig}
-                // The Stripe problem, worn by the card that has it. The message
-                // states the fix rather than the failure — one sentence, the same
-                // one the header Banner carried: "members", not "subscribers",
-                // Ghost's noun throughout.
-                triggerWarning={
-                  stripeMissing
-                    ? { message: 'Connect Stripe to publish automations for paid members.' }
-                    : undefined
-                }
-                // A refused Publish also brings the first fault into view when
-                // it's off screen.
-                revealPansToFirstFault
-                onChange={handleDraftChange}
-                onTriggerConfigChange={handleTriggerConfigChange}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* The side panel, full height at the right edge. Collapsing narrows it
-              to nothing, and the column to its left — header and canvas — grows
-              to fill; the canvas's ResizeObserver re-centres the flow as it does.
-              Always mounted so the transition can animate. */}
-      {/* --surface-elevated, matching the right-hand analytics sheet: both are
-              content panels flanking the canvas, so they're the same step of the
-              ladder. This was on the --sidebar-* family, which is for the app's
-              global nav — it happened to match in dark and diverged in light. */}
-      <aside
-        className={cn(
-          // Collapses by WIDTH, not by sliding out on a negative margin. Both
-          // animate the same 480px, but a slide takes the pane's contents with
-          // it — the title and its controls travelled left and passed under the
-          // toggle on their way out, which read as the pane escaping rather than
-          // closing. Narrowing holds every child exactly where it is and lets
-          // overflow-hidden wipe them from the right as the canvas edge advances,
-          // so nothing moves that isn't supposed to.
-          //
-          // This only works because the child below is pinned to w-[480px]: left
-          // to itself the content would reflow as the pane narrowed, wrapping the
-          // title and crushing the table for the length of the animation. It's
-          // held to the RIGHT edge (items-end), so the panel's left edge sweeps
-          // over it rather than the contents sliding.
-          'relative flex shrink-0 flex-col items-end overflow-hidden',
-          // 300ms on the proto's shared curve. It was 420ms to match the canvas's
-          // creation sequence, which felt slow on a control people press over and
-          // over; the first 150ms/ease-out was the other extreme, a 480px slab
-          // arriving faster than the eye could follow. The header's spacer runs
-          // the same 300ms (see header-bar) so the two move as one.
-          paneAnimated &&
-            `transition-[width] duration-300 ${PROTO_EASE} motion-reduce:transition-none`,
-          // A content panel flanking the canvas, so it takes the same step of
-          // the ladder as the right-hand analytics sheet.
-          'border-l border-border-default bg-surface-elevated',
-          // border-l goes with the width: at w-0 a rule would still paint, a
-          // stray hairline down the right of the screen.
-          paneHidden ? 'w-0 border-l-0' : 'w-[480px]',
-        )}
-      >
-        {/* onCollapse is future only — that release puts the toggle on the
-                  pane, beside its title. Phase 1 drives the same state from the
-                  header bar, so its pane doesn't carry a control of its own. */}
-        {/* Pinned to the pane's full width so it never reflows while the
-                  aside narrows around it — see the note above. */}
-        {/* The contents fade rather than being wiped in by the widening edge.
-                  Width alone made the panel's own text appear to slide out from under
-                  the canvas, because everything inside was arriving sideways at 480px
-                  of travel while standing still relative to its own column.
-                  
-                  Trailing the width on the way in, leading it on the way out: a reveal
-                  wants the space to exist before anything occupies it, and a dismissal
-                  wants the contents gone before the space closes over them. */}
-        <div
+      {/* Phase 1's layout, as the build ships it: the header across the full
+          width, and beneath it the side panel docked at the LEFT with the
+          canvas filling the rest. The panel moving to the right is out of
+          scope for this phase. */}
+      <HeaderBar
+        actions={chromeActions}
+        status={liveStatus}
+        // The pending name, not the saved one: a rename shows here the moment
+        // it's typed in the Settings tab, the way a canvas edit shows on the
+        // canvas — on screen now, committed by Save.
+        title={draftDetails.name}
+        onBack={goBack}
+      />
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
+        {/* Collapses by width, with its contents pinned to 480px so they
+            never reflow mid-animation — see phase 1. paneAnimated holds the
+            transition off for the first paint, so a pane that starts open
+            simply is open rather than wiping in. */}
+        <aside
           className={cn(
-            'flex min-h-0 w-[480px] flex-1 flex-col',
-            paneAnimated && 'transition-opacity motion-reduce:transition-none',
-            paneHidden
-              ? 'opacity-0 duration-100'
-              : 'opacity-100 [transition-delay:100ms] duration-200',
+            'relative flex shrink-0 flex-col overflow-hidden',
+            paneAnimated &&
+              'transition-[width] duration-150 ease-out motion-reduce:transition-none',
+            'border-r border-border-default bg-surface-elevated',
+            // border-r goes with the width: at w-0 a rule would still paint, a
+            // stray hairline down the left of the canvas.
+            paneHidden ? 'w-0 border-r-0' : 'w-[480px]',
           )}
         >
-          <SidePanel
-            query={query}
-            scenario={scenario}
-            selectedMemberId={selectedMemberId}
-            settings={{
-              values: settingsDraft,
-              onChange: handleDetailsChange,
-              nameTaken: nameCollides,
-              // The draft's trigger, so the sentence follows a trigger change
-              // before it's saved, as the card's did.
-              exits: triggerConfig ? exitSentence(triggerConfig) : null,
-            }}
-            tab={paneTab}
-            onQueryChange={setQuery}
-            onSelectMember={setSelectedMemberId}
-            onTabChange={handlePaneTabChange}
-          />
-        </div>
-      </aside>
+          <div className="flex min-h-0 w-[480px] flex-1 flex-col">
+            <SidePanel
+              query={query}
+              scenario={scenario}
+              selectedMemberId={selectedMemberId}
+              settings={{
+                values: settingsDraft,
+                onChange: handleDetailsChange,
+                nameTaken: nameCollides,
+                // The draft's trigger, so the sentence follows a trigger change
+                // before it's saved, as the card's did.
+                exits: triggerConfig ? exitSentence(triggerConfig) : null,
+              }}
+              tab={paneTab}
+              onQueryChange={setQuery}
+              onSelectMember={setSelectedMemberId}
+              onTabChange={handlePaneTabChange}
+            />
+          </div>
+        </aside>
 
-      {/* The side panel's toggle, pinned to the screen's top-right corner and
-          nowhere else — the right-panel concept's arrangement. It's the one
-          control that acts on the layout rather than the automation, so it's the
-          one that holds still while the layout moves under it: closed, it ends
-          the header's row (the header reserves its footprint); open, it ends the
-          panel's top row (the panel reserves it too).
-
-          32px (size-8), the height of every other control in both rows, and
-          top-4 centres that in their 64px. At Shade's size="icon" 36 it sat
-          2px high: the button drew at 32 inside a 36px box, top-aligned. A flex
-          wrapper so there's no line box around it to add height either. */}
-      <div className="absolute top-4 right-6 z-40 flex">
-        <Button
-          aria-label={paneCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-          aria-pressed={!paneCollapsed}
-          className="size-8"
-          size="icon"
-          type="button"
-          variant="ghost"
-          onClick={togglePane}
+        {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
+              centres within its own region — no left-inset hack needed. Same fill as
+              REACT_FLOW_THEME paints inside it, so the region and the flow's own
+              background can't disagree at the edges. */}
+        <div
+          className={cn(
+            'relative min-w-0 flex-1 overflow-hidden',
+            // This region owns the canvas palette. Everything inside it — both
+            // canvases and the dashed insert buttons — reads the fill, dots and
+            // edge colour from here by inheritance, so the two releases can look
+            // completely different without either canvas knowing which one it is.
+            CANVAS_SLOT_FILL,
+            canvasTheme('phase-1', Boolean(selectedRun)),
+            // Docked chrome: the canvas is one of three abutting surfaces, so it
+            // fills its column flush — no inset, no radius. The inset-window
+            // treatment belongs to the exploration lane.
+          )}
         >
-          {/* The post editor's pair: the outline when closed, the same outline
-              with its right-hand strip filled when open (Ember's sidemenu /
-              sidemenu-open). Still Lucide's PanelRight — the icon the React
-              editor's toggle uses — with the strip drawn inside it, so the two
-              states can't drift apart in size or stroke. */}
-          <LucideIcon.PanelRight strokeWidth={2}>
-            {!paneCollapsed && (
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" />
+          {/* Both canvases stay mounted and crossfade on mode change. No remount
+                  means the incoming flow is already centred — no first-frame node flash.
+                  The inactive one is opacity-0 + pointer-events-none so clicks fall to
+                  the active canvas beneath/above it. */}
+          <div
+            className={cn(
+              'absolute inset-0 transition-opacity duration-150',
+              showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100',
             )}
-          </LucideIcon.PanelRight>
-        </Button>
+          >
+            <FlowCanvas
+              automation={publishedFlow}
+              selectedRun={selectedRun}
+              triggerConfig={savedTrigger ?? undefined}
+            />
+          </div>
+          {/* One top-left cluster, not two things at the same coordinates: the
+                  pane toggle (future's — phase 1's is anchored to the row below) and
+                  the member button can both be present at once, so they sit in a row
+                  and neither has to know about the other.
+
+                  left-6 with the button pulled back 8px, and top-4: the horizontal
+                  inset is the 24px every column on this screen uses, and the vertical
+                  one is 16px because that is where the row beneath the header starts
+                  — the pane's strip is pt-4, and the invisible twin of the pane toggle
+                  that the "Performance" title aligns against sits at 16. This cluster
+                  was at top-6, which put it 8px below the toggle standing right beside
+                  it; both are size-9, so their centres missed by 8 and the corner read
+                  as broken.
+
+                  16 rather than 24 costs the symmetry with the zoom controls, which
+                  take CANVAS_HUD_INSET (24) in the opposite corner. Worth it here: this
+                  canvas is flush against the header and pane, so its top-left corner
+                  belongs to that horizontal band and has to line up with it. The
+                  exploration lane's canvas is a bounded window instead, inset from the
+                  page — nothing to line up with, so its cluster keeps the symmetric
+                  24. */}
+          {selectedRun && !showEditCanvas && (
+            <div className="absolute top-4 left-6 z-20">
+              <Inline align="center" gap="sm">
+                {/* The pane toggle stays at 16/16 of the row, so once the pane
+                    collapses it sits where this cluster starts. A box of the
+                    toggle's footprint keeps the member button beside it, as in
+                    phase 1. */}
+                {paneCollapsed && <div className="-ml-2 size-9 shrink-0" aria-hidden />}
+                {/* Who you're looking at, and the way out, as one control:
+                              clicking the member's name closes their run. This replaced
+                              a bare X in the canvas's top-right, which said nothing
+                              about whose run it was — you could see you were inside
+                              something without being told what, and the only thing
+                              naming the member was a highlighted row in a pane you
+                              might have collapsed.
+
+                              Same outline-on-surface-elevated chrome as the button
+                              beside it, so the two read as one cluster of canvas
+                              controls rather than two kinds of thing. The close icon
+                              leads, because what the control DOES should be read
+                              before whose name it carries.
+
+                              aria-label rather than the bare name, since "Marcus Chen"
+                              doesn't say what pressing it does; it contains the visible
+                              text, so the label-in-name rule still holds. */}
+                {selectedRun && !showEditCanvas && (
+                  <Button
+                    aria-label={`Close ${selectedRun.member.name}'s run`}
+                    // Same chrome as the maximise toggle beside it, so
+                    // the two read as one set of canvas controls.
+                    className={CANVAS_HUD_BUTTON}
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSelectedMemberId(null)}
+                  >
+                    <LucideIcon.X strokeWidth={2} />
+                    {selectedRun.member.name}
+                  </Button>
+                )}
+              </Inline>
+            </div>
+          )}
+
+          <div
+            className={cn(
+              'absolute inset-0 transition-opacity duration-150',
+              showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
+            )}
+          >
+            <EditCanvas
+              // Building vs watching: while the automation is off the inserts
+              // stay on screen — choosing a trigger otherwise landed on one
+              // card, one line and no visible next move. Live, they go back to
+              // hover; the flow is being read then, not assembled. (Email
+              // analytics are NOT lifecycle-gated — every email card reports
+              // from the moment it exists, zeros included; see the canvas's
+              // ZERO_EMAIL_STATS.)
+              alwaysShowInserts={liveStatus === 'inactive'}
+              // The messaging spec's wording: the trigger's settings reset, and
+              // the rest of the flow is untouched.
+              changeTriggerDescription="Your settings on this trigger will be reset. All other steps in this automation will remain unchanged."
+              draft={draftFlow}
+              // The exit sentence lives in Settings now, under Stop conditions.
+              exitsOnTriggerCard={false}
+              // Faults show on the fields that have them, in Shade's own
+              // invalid state, with the card's border in a muted version of
+              // the same red — rather than a gold alert in the card's header.
+              faultDisplay="field"
+              // Which triggers this screen may offer — see shared/capabilities.
+              lane={LANE}
+              revealWarningsSignal={revealSignal}
+              // Type-gated: a saved trigger of a different type answered a
+              // different question, so its tiers don't keep archived rows
+              // offered here.
+              savedTierIds={
+                savedTrigger && savedTrigger.type === triggerConfig?.type
+                  ? savedTrigger.tierIds
+                  : []
+              }
+              triggerConfig={triggerConfig}
+              // The Stripe problem, worn by the card that has it. The message
+              // states the fix rather than the failure — one sentence, the same
+              // one the header Banner carried: "members", not "subscribers",
+              // Ghost's noun throughout.
+              triggerWarning={
+                stripeMissing
+                  ? { message: 'Connect Stripe to publish automations for paid members.' }
+                  : undefined
+              }
+              // A refused Publish also brings the first fault into view when
+              // it's off screen.
+              revealPansToFirstFault
+              onChange={handleDraftChange}
+              onTriggerConfigChange={handleTriggerConfigChange}
+            />
+          </div>
+        </div>
+
+        {/* The pane toggle, anchored to the ROW rather than to the pane or the
+            canvas, as in phase 1: the pane collapses out from under a button
+            that never moves. The pane's tab row holds an invisible twin of it
+            (see side-panel) so the tabs start clear of it. z-30 clears the
+            pane's sticky bars. */}
+        <div className="absolute top-4 left-6 z-30">
+          <Button
+            aria-label={paneCollapsed ? 'Show automation sidebar' : 'Hide automation sidebar'}
+            aria-pressed={!paneCollapsed}
+            className="-ml-2"
+            size="icon"
+            type="button"
+            variant="ghost"
+            onClick={togglePane}
+          >
+            <LucideIcon.PanelLeft strokeWidth={2} />
+          </Button>
+        </div>
       </div>
 
       {/* Lifecycle confirms — turning the automation on, and taking it off. */}

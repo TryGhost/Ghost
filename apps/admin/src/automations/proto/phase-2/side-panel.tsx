@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Button,
   Input,
   Label,
   Tabs,
@@ -9,11 +10,13 @@ import {
   Textarea,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { LeftPanelProps } from '@/automations/proto/shared/left-panel-types';
 import { LeftPanel } from './left-panel';
 
-// The side panel: a full-height column at the screen's right edge, two tabs.
+// The side panel: docked at the screen's left under the header, as in phase 1
+// and the shipping editor, with two tabs. (It spent a while as a full-height
+// column at the right edge; that move is out of scope for this phase.)
 //
 // Performance is the pane this lane has always had — the chart, the counts and
 // the members. Settings is new here: it's what the gear beside the title used to
@@ -135,20 +138,30 @@ export const SidePanel: React.FC<SidePanelProps> = ({ tab, onTabChange, settings
           triggers animated the new one in: the shift. Mounted once here, it
           never moves; only the slot's contents change.
 
-          h-9 holds the row at the 36px of Performance's icon buttons even on
-          Settings, where the slot is empty; with py-3.5 that's 64px, centred the
-          way the header centres its row, so the tabs sit on its line and the
-          pinned toggle lines up with both. */}
-      <div className="flex shrink-0 items-center px-6 py-3.5">
+          pt-4 pb-3 around an h-9 row, phase 1's strip: the row's centre lands
+          on the pane toggle's, which is painted outside the pane at 16/16 of
+          the row (see the detail screen). */}
+      <div className="flex shrink-0 items-center px-6 pt-4 pb-3">
         <div className="flex h-9 min-w-0 flex-1 items-center gap-2">
+          {/* An invisible twin of the pane toggle, holding its place so the
+              tabs — and the search field when it takes the row — start clear
+              of it. Kept in both states, as phase 1 does. aria-hidden and out
+              of the tab order; the real button carries both. */}
+          <Button
+            className="invisible -ml-2 shrink-0"
+            size="icon"
+            tabIndex={-1}
+            type="button"
+            variant="ghost"
+            aria-hidden
+          >
+            <LucideIcon.PanelLeft strokeWidth={2} />
+          </Button>
           <TabsList className={cn(searchOpen && tab === 'performance' && 'hidden')}>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           <div ref={setStripSlot} className="flex min-w-0 flex-1 items-center justify-end gap-2" />
-          {/* The pinned sidebar toggle's footprint — it sits over this end of
-              the row while the panel is open (see the detail screen). */}
-          <span className="size-8 shrink-0" aria-hidden />
         </div>
       </div>
       {/* data-[state=inactive]:hidden because `flex` outranks Radix's own

@@ -3,7 +3,6 @@ import { Button } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { StatusBadge } from '@/automations/proto/shared/status-badge';
-import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { EditableTitle } from './editable-title';
 
 // PHASE 2 — the screen's header, docked: its own elevated surface with a rule under
@@ -55,11 +54,6 @@ interface HeaderBarProps {
   // both header variants raise identical controls — a header style shouldn't
   // change what the screen lets you do.
   actions: React.ReactNode;
-  // Whether the side panel is open. The panel's toggle isn't in this header —
-  // it's pinned to the screen's top-right corner (see the detail screen) — but
-  // while the panel is closed it sits over this header's right end, so the
-  // header reserves its footprint then, and gives it up as the panel opens.
-  paneOpen: boolean;
   /**
    * A transient message about the automation as a whole. Currently unused: the
    * Stripe warning that lived here moved onto the trigger card (see triggerWarning
@@ -86,7 +80,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   status,
   onBack,
   actions,
-  paneOpen,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
@@ -162,18 +155,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
       <Inline align="center" className="shrink-0" gap="sm">
         {actions}
-        {/* The pinned toggle's footprint: its 32px plus the row's 8px gap
-            (the gap this Inline already adds, so w-8). Open, the toggle
-            is over the panel instead, so this closes to nothing — on the
-            panel's own width curve, so the actions glide rather than jumping
-            40px when the press lands. */}
-        <span
-          className={cn(
-            `shrink-0 transition-[width,margin] duration-300 ${PROTO_EASE} motion-reduce:transition-none`,
-            paneOpen ? '-ml-2 w-0' : 'w-8',
-          )}
-          aria-hidden
-        />
       </Inline>
     </div>
 
