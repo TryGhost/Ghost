@@ -96,10 +96,7 @@ describe('Stripe Checkout shipping address collection', function () {
   });
 
   it('starts with no shipping address collected', async function () {
-    assert.deepEqual(await readCheckout(), {
-      design: { customize: false },
-      shipping: NO_SHIPPING,
-    });
+    assert.deepEqual((await readCheckout()).shipping, NO_SHIPPING);
   });
 
   it('saves where the address and the name land, and reads them back as saved', async function () {
@@ -207,10 +204,9 @@ describe('Stripe Checkout shipping address collection', function () {
     await setCheckout(shipping());
     await setCheckout({ design: { customize: false } });
 
-    assert.deepEqual(await readCheckout(), {
-      design: { customize: false },
-      shipping: shipping().shipping,
-    });
+    const saved = await readCheckout();
+    assert.deepEqual(saved.design, { customize: false });
+    assert.deepEqual(saved.shipping, shipping().shipping);
     assert.deepEqual(
       (await setCheckout({ design })).checkout_config[0].shipping,
       shipping().shipping,

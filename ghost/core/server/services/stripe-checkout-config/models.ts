@@ -51,10 +51,18 @@ export const ShippingSettings = CollectedPart.extend({
 });
 export type ShippingSettings = z.infer<typeof ShippingSettings>;
 
+/** Collecting a phone number at checkout, as the publisher set it. */
+export const PhoneSettings = CollectedPart.extend({
+  customFieldKey: z.string(),
+});
+export type PhoneSettings = z.infer<typeof PhoneSettings>;
+
 /** Each collected part of the config as saved. */
 const COLLECTED_PARTS = {
   /** Null means checkout doesn't ask for a shipping address. */
   shipping: ShippingSettings.nullable(),
+  /** Null means checkout doesn't ask for a phone number. */
+  phone: PhoneSettings.nullable(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 /** The site-wide Stripe Checkout config. */
@@ -69,12 +77,13 @@ export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
  * The parts of the config that ask the buyer for something, each on every paid tier or only
  * the ones it names.
  */
-export const COLLECTED_SECTIONS = ['shipping'] as const;
+export const COLLECTED_SECTIONS = ['shipping', 'phone'] as const;
 export type CollectedSection = (typeof COLLECTED_SECTIONS)[number];
 
 /** What each collected part asks the buyer for, as messages about it name it. */
 export const COLLECTED_NOUNS = {
   shipping: 'shipping address',
+  phone: 'phone number',
 } as const satisfies Record<CollectedSection, string>;
 
 /**
@@ -100,6 +109,7 @@ interface AskedPart extends z.infer<typeof CollectedPart> {
  */
 interface AskedParts {
   shipping: AskedPart & Pick<ShippingSettings, 'allowedCountries'>;
+  phone: AskedPart;
 }
 
 /**
@@ -114,6 +124,7 @@ export type CheckoutSessionConfig = Pick<StripeCheckoutConfig, 'design'> & Check
 /** The Checkout session parameters that ask the buyer for something. */
 export interface CollectionParams {
   shipping_address_collection?: { allowed_countries: string[] };
+  phone_number_collection?: { enabled: true };
 }
 
 /** The Checkout session parameters that ask for each collected part. */
@@ -125,6 +136,7 @@ const ASK: { [Section in CollectedSection]: (part: AskedParts[Section]) => Colle
       allowed_countries: shipping.allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES],
     },
   }),
+  phone: () => ({ phone_number_collection: { enabled: true } }),
 };
 
 /**
@@ -138,12 +150,12 @@ export function collectionParams(
   previewed: Partial<CheckoutCollection> = {},
 ): CollectionParams {
   const collection = withPreviewed(saved, previewed);
-  const ask = <Section extends CollectedSection>(section: Section): CollectionParams => {
-    const part = collection[section];
-    return collectsFor(part, tierId) ? ASK[section](part) : {};
-  };
+  const ask = <Section extends CollectedSection>(
+    section: Section,
+    part: AskedParts[Section] | null,
+  ): CollectionParams => (part !== null && asksOn(part, tierId) ? ASK[section](part) : {});
   return COLLECTED_SECTIONS.reduce<CollectionParams>(
-    (params, section) => ({ ...params, ...ask(section) }),
+    (params, section) => ({ ...params, ...ask(section, collection[section]) }),
     {},
   );
 }
@@ -158,14 +170,13 @@ function withPreviewed(
 ): CheckoutCollection {
   return {
     shipping: previewed.shipping !== undefined ? previewed.shipping : (saved?.shipping ?? null),
+    phone: previewed.phone !== undefined ? previewed.phone : (saved?.phone ?? null),
   };
 }
 
 /** Whether a checkout for this paid tier asks for what a collected part collects. */
-function collectsFor<Part extends AskedPart>(part: Part | null, tierId: string): part is Part {
-  return (
-    part !== null && part.collectable && (part.tierIds === null || part.tierIds.includes(tierId))
-  );
+function asksOn(part: AskedPart, tierId: string) {
+  return part.collectable && (part.tierIds === null || part.tierIds.includes(tierId));
 }
 
 /**

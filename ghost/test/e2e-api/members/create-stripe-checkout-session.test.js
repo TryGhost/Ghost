@@ -935,4 +935,110 @@ describe('Create Stripe Checkout Session', function () {
       assert.equal((await startCheckout()).shipping_address_collection, undefined);
     });
   });
+
+  describe('Phone number collection', function () {
+    const otherTierId = 'ffffffffffffffffffffffff';
+    let paidTierId;
+
+    beforeEach(async function () {
+      mockManager.mockStripe();
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('membersCustomFields');
+      for (const field of [
+        { name: 'Contact phone', type: 'short_text' },
+        { name: 'Delivery address', type: 'address' },
+        { name: 'Recipient name', type: 'short_text' },
+      ]) {
+        await adminAgent
+          .post('/members/metafields/custom/')
+          .body({ members_metafields: [field] })
+          .expectStatus(201);
+      }
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      paidTierId = tiers.find((tier) => tier.type === 'paid').id;
+      const [existing] = await models.Base.knex('products').where('id', paidTierId);
+      await models.Base.knex('products').insert({
+        ...existing,
+        id: otherTierId,
+        name: 'Other tier',
+        slug: 'other-tier',
+      });
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('stripe_checkout_config_tiers').del();
+      await models.Base.knex('stripe_checkout_config').del();
+      await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('members_metafields').del();
+      await models.Base.knex('products').where('id', otherTierId).del();
+    });
+
+    async function setCheckout(config) {
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({ checkout_config: [config] })
+        .expectStatus(200);
+    }
+
+    const collect = (over = {}) => ({
+      phone: { collect: true, custom_field_key: 'contact_phone', ...over },
+    });
+
+    // Starts a checkout for the paid tier and returns the session Ghost sent to Stripe.
+    async function startCheckout() {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month' })
+        .expectStatus(200);
+
+      return stripeMocker.checkoutSessions.at(-1);
+    }
+
+    it('asks for a phone number once it is switched on, and only then', async function () {
+      assert.equal((await startCheckout()).phone_number_collection, undefined);
+
+      await setCheckout(collect());
+      assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
+
+      await setCheckout({ phone: { collect: false } });
+      assert.equal((await startCheckout()).phone_number_collection, undefined);
+    });
+
+    it('asks on the tiers it names, apart from the tiers shipping names', async function () {
+      await setCheckout({
+        ...collect({ tier_ids: [otherTierId] }),
+        shipping: {
+          collect: true,
+          tier_ids: [paidTierId],
+          address: { custom_field_key: 'delivery_address' },
+          name: { custom_field_key: 'recipient_name' },
+        },
+      });
+      const session = await startCheckout();
+      assert.equal(session.phone_number_collection, undefined);
+      assert.ok(session.shipping_address_collection);
+
+      await setCheckout(collect({ tier_ids: [paidTierId, otherTierId] }));
+      assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
+    });
+
+    it('stops asking while its field is archived', async function () {
+      await setCheckout(collect());
+      await adminAgent
+        .put('/members/metafields/custom/contact_phone/')
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+
+      assert.equal((await startCheckout()).phone_number_collection, undefined);
+    });
+
+    it('asks nothing while its flag is off, even when it is on', async function () {
+      await setCheckout(collect());
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
+
+      assert.equal((await startCheckout()).phone_number_collection, undefined);
+    });
+  });
 });

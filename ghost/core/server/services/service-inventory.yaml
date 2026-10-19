@@ -13895,10 +13895,11 @@ services:
         summary: >-
           Boot calls synchronous init in initCore after the custom fields services, which
           builds the service with knex, its history recorder and the custom field bindings it
-          saves shipping into, and throws if those bindings aren't set up yet. It also builds
-          the preview service with lookups of Stripe, tiers and the members payments service
-          made per preview, and the branding service with lookups of Stripe made per read, as
-          those start later in boot. An existing service makes later calls return.
+          saves the shipping address and phone number into, and throws if those bindings aren't
+          set up yet. It also builds the preview service with lookups of Stripe, tiers and the
+          members payments service made per preview, and the branding service with lookups of
+          Stripe made per read, as those start later in boot. An existing service makes later
+          calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js
