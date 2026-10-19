@@ -10,8 +10,9 @@ import { ConfigRow, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,
   COLLECTED_SECTIONS,
+  type CheckoutSessionConfig,
   type CollectedSection,
-  type ShippingCollection,
+  type ShippingSettings,
   type StripeCheckoutConfig,
 } from './models';
 import { CONFIG_SLUG, CONFIG_TABLE, CONFIG_TIERS_TABLE } from './schema';
@@ -49,6 +50,11 @@ const PARTS: {
     destinations: Array<
       Omit<Destination, 'customFieldKey'> & {
         customFieldKey: (settings: CollectedSettings[Section]) => string;
+        /**
+         * Whether checkouts stop asking for the part while this field can't take a value, as
+         * the answer would have nowhere to go.
+         */
+        essential: boolean;
       }
     >;
   };
@@ -64,12 +70,15 @@ const PARTS: {
         customFieldKey: (shipping) => shipping.addressCustomFieldKey,
         property: 'shipping.address.custom_field_key',
         wrongType: 'Choose an address custom field for the shipping address.',
+        essential: true,
       },
       {
         port: STRIPE_PORT.shippingName,
         customFieldKey: (shipping) => shipping.nameCustomFieldKey,
         property: 'shipping.name.custom_field_key',
         wrongType: "Choose a short text custom field for the recipient's name.",
+        // Without the name, the address is still kept.
+        essential: false,
       },
     ],
   },
@@ -107,10 +116,14 @@ function changeOf<Section extends CollectedSection>(
     section,
     targets: settings && {
       tierIds: settings.tierIds,
-      destinations: PARTS[section].destinations.map(({ customFieldKey, ...destination }) => ({
-        ...destination,
-        customFieldKey: customFieldKey(settings),
-      })),
+      destinations: PARTS[section].destinations.map(
+        ({ port, customFieldKey, property, wrongType }): Destination => ({
+          port,
+          customFieldKey: customFieldKey(settings),
+          property,
+          wrongType,
+        }),
+      ),
     },
   };
 }
@@ -204,10 +217,34 @@ export class StripeCheckoutConfigService {
    *
    * A collected part only counts the named tiers that are paid, and reads as off when it is
    * limited to tiers that have all been deleted, never widening to every tier. Any of its fields
-   * being deleted takes its binding with it, which also reads as off. Checkouts ask for an
-   * address only while the address field is active and still holds addresses.
+   * being deleted takes its binding with it, which also reads as off.
    */
   async read(): Promise<StripeCheckoutConfig> {
+    const { config } = await this.readSaved();
+    return config;
+  }
+
+  /**
+   * Reads the config as checkouts use it: the design, and for each collected part the tiers it
+   * asks on and whether it can ask right now.
+   */
+  async readForCheckout(): Promise<CheckoutSessionConfig> {
+    const { config, bound } = await this.readSaved();
+    return {
+      design: config.design,
+      shipping: config.shipping && {
+        tierIds: config.shipping.tierIds,
+        allowedCountries: config.shipping.allowedCountries,
+        collectable: collectableFrom('shipping', bound),
+      },
+    };
+  }
+
+  /** The config as saved, and the custom field each port is bound to. */
+  private async readSaved(): Promise<{
+    config: StripeCheckoutConfig;
+    bound: Map<StripePort, Bound>;
+  }> {
     const rows = z.array(ReadRow).parse(
       await this.knex(`${CONFIG_TABLE} as config`)
         // Every part's tiers in one join and every port in another, so the rows grow with the
@@ -241,14 +278,17 @@ export class StripeCheckoutConfigService {
     );
 
     const [first] = rows;
+    const bound = boundFields(rows);
     if (!first) {
-      return { design: null, shipping: null };
+      return { config: { design: null, shipping: null }, bound };
     }
     const { design, shipping } = z.decode(ConfigRow, first);
-    const bound = boundFields(rows);
     return {
-      design,
-      shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
+      config: {
+        design,
+        shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
+      },
+      bound,
     };
   }
 
@@ -356,7 +396,7 @@ function shippingFrom(
   stored: StoredPart<'shipping'>,
   tierIds: string[] | null,
   bound: Map<StripePort, Bound>,
-): ShippingCollection | null {
+): ShippingSettings | null {
   const address = bound.get(STRIPE_PORT.shippingAddress);
   const name = bound.get(STRIPE_PORT.shippingName);
   if (!address || !name || tierIds?.length === 0) {
@@ -367,9 +407,14 @@ function shippingFrom(
     allowedCountries: stored.allowed_countries,
     addressCustomFieldKey: address.customFieldKey,
     nameCustomFieldKey: name.customFieldKey,
-    // An archived name field doesn't stop checkouts asking; the name just isn't kept.
-    collectable: address.ready,
   };
+}
+
+/** Whether checkouts can ask for a part: while every field it can't do without can take a value. */
+function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound>): boolean {
+  return PARTS[section].destinations.every(
+    ({ port, essential }) => !essential || bound.get(port)?.ready === true,
+  );
 }
 
 /**
@@ -440,8 +485,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
       });
     }
     // Keeping a field that was archived after it was chosen is allowed, so a client can save
-    // back what it read. Checkouts stop asking while the address field is archived, and an
-    // archived name field just isn't written to.
+    // back what it read. Nothing is written to it while it stays archived.
     if (field.status !== FIELD_STATUS.active && chosen.get(port) !== customFieldKey) {
       throw new errors.ValidationError({
         message: 'An archived custom field cannot receive collected data. Restore it first.',

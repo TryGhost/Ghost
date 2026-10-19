@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
-import type { PreviewShipping, StripeCheckoutDesign } from './models';
+import { pick } from 'lodash';
+import { COLLECTED_SECTIONS, type CheckoutCollection, type StripeCheckoutDesign } from './models';
 import { CheckoutPreviewInput, parseRequest } from './serializers';
 
 // Stripe refuses a checkout that expires sooner than 30 minutes after it's created. The extra
@@ -24,8 +25,8 @@ export interface CheckoutPreviewDeps<Tier extends PreviewableTier> {
     tier: Tier;
     cadence: 'month' | 'year';
     design: StripeCheckoutDesign | null;
-    /** Left out, the checkout asks for an address as the saved settings say. */
-    shipping?: PreviewShipping;
+    /** The collected parts to ask as, in place of the saved ones. */
+    collection: Partial<CheckoutCollection>;
     returnUrl: string;
     expiresInSeconds: number;
   }) => Promise<string | null>;
@@ -47,12 +48,13 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
   /** Creates a checkout for an active paid tier in the requested design, and returns its page. */
   async add(input: unknown): Promise<{ url: string }> {
     const request = parseRequest(CheckoutPreviewInput, input, 'checkout_preview');
+    const { tier_id: tierId, cadence, design } = request;
 
     if (!this.deps.stripeConnected()) {
       throw new errors.ValidationError({ message: 'Connect Stripe to preview checkout.' });
     }
 
-    const tier = await this.deps.readTier(request.tier_id);
+    const tier = await this.deps.readTier(tierId);
     if (!tier || tier.type !== 'paid' || tier.status !== 'active') {
       throw new errors.ValidationError({
         message: 'Choose an active paid tier to preview checkout for.',
@@ -60,17 +62,12 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
       });
     }
 
-    const { shipping } = request;
     const url = await this.deps.createPreviewLink({
       tier,
-      cadence: request.cadence,
-      design: request.design,
-      ...(shipping && {
-        shipping:
-          shipping.collect && (!shipping.tier_ids || shipping.tier_ids.includes(request.tier_id))
-            ? { allowedCountries: shipping.allowed_countries ?? null }
-            : null,
-      }),
+      cadence,
+      design,
+      // Only the collected parts, so nothing else in the request is taken for one.
+      collection: pick(request, COLLECTED_SECTIONS),
       returnUrl: this.deps.siteUrl(),
       expiresInSeconds: PREVIEW_LIFETIME_SECONDS,
     });

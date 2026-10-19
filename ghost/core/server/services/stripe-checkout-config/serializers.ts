@@ -9,7 +9,7 @@ import {
   type CollectedSection,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
-  type ShippingCollection,
+  type CheckoutCollection,
   type ShippingSettings,
   type StripeCheckoutDesign,
 } from './models';
@@ -64,6 +64,15 @@ const Destination = z.strictObject(
   { error: DESTINATION_REQUIRED },
 );
 
+/** Collecting a shipping address, as a request turns it on. */
+const ShippingOn = z.strictObject({
+  collect: z.literal(true),
+  tier_ids: TierIdsInput.optional(),
+  allowed_countries: CountriesInput.optional(),
+  address: Destination,
+  name: Destination,
+});
+
 /**
  * Shipping in a request.
  *
@@ -71,16 +80,7 @@ const Destination = z.strictObject(
  * fields the address and the recipient's name are saved into.
  */
 const ShippingInput = z
-  .discriminatedUnion('collect', [
-    z.strictObject({ collect: z.literal(false) }),
-    z.strictObject({
-      collect: z.literal(true),
-      tier_ids: TierIdsInput.optional(),
-      allowed_countries: CountriesInput.optional(),
-      address: Destination,
-      name: Destination,
-    }),
-  ])
+  .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), ShippingOn])
   .transform((input): ShippingSettings | null =>
     input.collect
       ? {
@@ -104,17 +104,25 @@ export const CheckoutConfigInput = z.strictObject({
 });
 export type CheckoutConfigInput = z.output<typeof CheckoutConfigInput>;
 
-/** Each collected part a preview can carry unsaved. Left out, the checkout asks as saved. */
+/**
+ * Each collected part a preview can carry unsaved, asked as if it had somewhere to keep the
+ * answer. Left out, the checkout asks as the saved settings say.
+ */
 const CollectedPreviews = {
   shipping: z
     .discriminatedUnion('collect', [
       z.strictObject({ collect: z.literal(false) }),
-      z.strictObject({
-        collect: z.literal(true),
-        tier_ids: TierIdsInput.optional(),
-        allowed_countries: CountriesInput.optional(),
-      }),
+      ShippingOn.omit({ address: true, name: true }),
     ])
+    .transform((input): CheckoutCollection['shipping'] =>
+      input.collect
+        ? {
+            tierIds: input.tier_ids ?? null,
+            allowedCountries: input.allowed_countries ?? null,
+            collectable: true,
+          }
+        : null,
+    )
     .optional(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
@@ -172,7 +180,7 @@ const CheckoutConfigResource = z.object({
 });
 
 /** Shipping as the Admin API returns it, in the same shape a request gives it. */
-function shippingResource(shipping: ShippingCollection | null) {
+function shippingResource(shipping: ShippingSettings | null) {
   if (!shipping) {
     return { collect: false as const };
   }
