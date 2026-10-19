@@ -7,17 +7,19 @@ import ShippingSettings from './shipping-settings';
 import {
   SHIPPING_ERRORS,
   type ShippingFormState,
-  shippingAudience,
   previewShippingOf,
   shippingFormStateOf,
   shippingSettingOf,
   validateShipping,
 } from './shipping-form';
+import { audienceOf } from './collect-form';
 import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldGroup,
   FieldLabel,
+  FieldSet,
   FieldTitle,
   Link,
   Select,
@@ -31,7 +33,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PreviewModalContent } from '@/settings/components/preview-modal';
 import { STRIPE_FONTS_CSS, STRIPE_FONT_OPTIONS, fontFamilyOf } from './stripe-fonts';
@@ -382,16 +384,22 @@ const CheckoutEditor: React.FC<{
         </TabsList>
         <TabsContent value="design">{designSettings}</TabsContent>
         <TabsContent className="mt-8" value="fields">
-          <ShippingSettings
-            errors={errors}
-            fields={customFields}
-            state={formState.shipping}
-            tiers={paidTiers}
-            onChange={(shipping) => {
-              SHIPPING_ERRORS.forEach(clearError);
-              updateForm((state) => ({ ...state, shipping }));
-            }}
-          />
+          <FieldSet>
+            <FieldGroup>
+              <Stack gap="lg">
+                <ShippingSettings
+                  errors={errors}
+                  fields={customFields}
+                  state={formState.shipping}
+                  tiers={paidTiers}
+                  onChange={(shipping) => {
+                    SHIPPING_ERRORS.forEach(clearError);
+                    updateForm((state) => ({ ...state, shipping }));
+                  }}
+                />
+              </Stack>
+            </FieldGroup>
+          </FieldSet>
         </TabsContent>
       </Tabs>
     </div>
@@ -412,7 +420,7 @@ const CheckoutEditor: React.FC<{
           displayName={branding.display_name}
           shipping={
             offersShipping && formState.shipping.collect
-              ? { audience: shippingAudience(formState.shipping, paidTiers) }
+              ? { audience: audienceOf(formState.shipping, paidTiers) }
               : undefined
           }
         />
