@@ -64,6 +64,73 @@ test.describe('Bluesky sharing', async () => {
     await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
   });
 
+  test('I see that my domain will be my Bluesky handle before enabling', async ({ page }) => {
+    await mockApi({
+      page,
+      requests: {
+        getMyAccount: getMyAccount({
+          blueskyEnabled: false,
+          blueskyHandleConfirmed: false,
+          blueskyHandle: null,
+          blueskyDomainHandle: null,
+        }),
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/preferences/bluesky-sharing');
+
+    await expect(page.getByText('Your Bluesky handle will be @site.com')).toBeVisible();
+    await expect(page.getByText("You can't change your Bluesky username")).toHaveCount(0);
+  });
+
+  test('I see the current Bluesky handle behaviour with an older ActivityPub service', async ({
+    page,
+  }) => {
+    // Older services leave blueskyDomainHandle out of the account
+    await mockApi({
+      page,
+      requests: {
+        getMyAccount: getMyAccount({
+          blueskyEnabled: false,
+          blueskyHandleConfirmed: false,
+          blueskyHandle: null,
+        }),
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/preferences/bluesky-sharing');
+
+    await expect(page.getByText("You can't change your Bluesky username")).toBeVisible();
+    await expect(page.getByText('Your Bluesky handle will be')).toHaveCount(0);
+  });
+
+  test('My Bluesky handle is not checked again with an older ActivityPub service', async ({
+    page,
+  }) => {
+    const { lastApiRequests } = await mockApi({
+      page,
+      requests: {
+        getMyAccount: getMyAccount({ blueskyHandle: 'index.site.com.ap.brid.gy' }),
+        confirmBlueskyHandle: {
+          method: 'POST',
+          path: '/v2/actions/bluesky/confirm-handle',
+          response: { enabled: true, handleConfirmed: true, handle: 'index.site.com.ap.brid.gy' },
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/preferences/bluesky-sharing');
+
+    await expect(page.getByText('index.site.com.ap.brid.gy')).toBeVisible();
+    await page.waitForTimeout(1000);
+
+    expect(lastApiRequests.confirmBlueskyHandle).toBeUndefined();
+    await expect(page.getByText('Switching your Bluesky handle')).toHaveCount(0);
+  });
+
   test('I can switch back to the default Bluesky handle', async ({ page }) => {
     const { lastApiRequests } = await mockApi({
       page,

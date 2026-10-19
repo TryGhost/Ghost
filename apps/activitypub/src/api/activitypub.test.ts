@@ -1,4 +1,4 @@
-import { ActivityPubAPI } from './activitypub';
+import { ActivityPubAPI, supportsBlueskyDomainHandles } from './activitypub';
 import { describe, expect, test } from 'vitest';
 
 function NotFound() {
@@ -2372,7 +2372,9 @@ describe('ActivityPubAPI', function () {
 
       const result = await api.confirmBlueskyHandle();
 
-      expect(result).toEqual({ handle: 'foo@bar.baz', domainHandle: null });
+      // Older ActivityPub services don't send domainHandle at all
+      expect(result).toEqual({ handle: 'foo@bar.baz' });
+      expect('domainHandle' in result).toBe(false);
     });
 
     test('It returns an empty string if the response is null', async function () {
@@ -2622,5 +2624,21 @@ describe('ActivityPubAPI', function () {
         domainHandle: { domain: 'example.com', status: 'opted_out', reason: null },
       });
     });
+  });
+});
+
+describe('supportsBlueskyDomainHandles', function () {
+  test('It is true when the account includes the domain handle field', function () {
+    expect(supportsBlueskyDomainHandles({ blueskyDomainHandle: null })).toBe(true);
+    expect(
+      supportsBlueskyDomainHandles({
+        blueskyDomainHandle: { domain: 'example.com', status: 'active', reason: null },
+      }),
+    ).toBe(true);
+  });
+
+  test('It is false for older ActivityPub services, which leave the field out', function () {
+    expect(supportsBlueskyDomainHandles({})).toBe(false);
+    expect(supportsBlueskyDomainHandles(undefined)).toBe(false);
   });
 });

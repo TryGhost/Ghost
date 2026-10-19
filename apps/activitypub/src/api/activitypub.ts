@@ -56,7 +56,21 @@ export interface BlueskyHandleDetails {
    * The confirmed Bluesky handle, or an empty string if it isn't confirmed yet
    */
   handle: string;
-  domainHandle: BlueskyDomainHandle | null;
+  /**
+   * Undefined when the ActivityPub service predates domain handles
+   */
+  domainHandle?: BlueskyDomainHandle | null;
+}
+
+/**
+ * Whether the ActivityPub service supports Bluesky domain handles. Services
+ * that predate them leave `blueskyDomainHandle` out of the account entirely,
+ * while newer ones always include it (as null until a domain is tried)
+ */
+export function supportsBlueskyDomainHandles(
+  account: Pick<Account, 'blueskyDomainHandle'> | undefined,
+): boolean {
+  return account?.blueskyDomainHandle !== undefined;
 }
 
 export type AccountSearchResult = Pick<
@@ -1007,11 +1021,13 @@ export class ActivityPubAPI {
     const handle =
       json !== null && 'handle' in json && typeof json.handle === 'string' ? json.handle : '';
 
+    if (json === null || !('domainHandle' in json)) {
+      return { handle };
+    }
+
     let domainHandle: BlueskyDomainHandle | null = null;
 
     if (
-      json !== null &&
-      'domainHandle' in json &&
       json.domainHandle !== null &&
       typeof json.domainHandle === 'object' &&
       'domain' in json.domainHandle &&

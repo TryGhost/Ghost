@@ -19,6 +19,7 @@ import {
   DialogTrigger,
   LoadingIndicator,
 } from '@tryghost/shade/components';
+import { type BlueskyDomainHandle, supportsBlueskyDomainHandles } from '@src/api/activitypub';
 import { H2, H3 } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
@@ -30,7 +31,6 @@ import {
   useEnableBlueskyMutationForUser,
   useResetBlueskyHandleMutationForUser,
 } from '@hooks/use-activity-pub-queries';
-import type { BlueskyDomainHandle } from '@src/api/activitypub';
 
 const CONFIRMATION_INTERVAL = 5000;
 const MAX_CONFIRMATION_RETRIES = 12;
@@ -119,6 +119,8 @@ const BlueskySharing: React.FC = () => {
   const confirmBlueskyHandleMutation = useConfirmBlueskyHandleMutationForUser('index');
   const claimBlueskyDomainHandleMutation = useClaimBlueskyDomainHandleMutationForUser('index');
   const resetBlueskyHandleMutation = useResetBlueskyHandleMutationForUser('index');
+  // Older ActivityPub services keep Bridgy Fed's default handle
+  const domainHandlesSupported = supportsBlueskyDomainHandles(account);
   const domainHandle = account?.blueskyDomainHandle ?? null;
   const domainHandleStatus = domainHandle?.status ?? null;
   const siteDomain = account?.handle?.split('@').pop() || 'your domain';
@@ -236,6 +238,7 @@ const BlueskySharing: React.FC = () => {
   // check - this also switches accounts that were connected before domain
   // handles existed. Keep checking while it's being switched
   const shouldCheckDomainHandle =
+    domainHandlesSupported &&
     !!account?.blueskyEnabled &&
     !!account?.blueskyHandleConfirmed &&
     (domainHandleStatus === null ||
@@ -326,10 +329,17 @@ const BlueskySharing: React.FC = () => {
                 </>
               )}
             </p>
-            <p className="-mt-2 text-base">
-              Your Bluesky handle will be @{siteDomain}, unless another Bluesky account already uses
-              it. <LearnMore />
-            </p>
+            {domainHandlesSupported ? (
+              <p className="-mt-2 text-base">
+                Your Bluesky handle will be @{siteDomain}, unless another Bluesky account already
+                uses it. <LearnMore />
+              </p>
+            ) : (
+              <p className="-mt-2 text-base">
+                You can&apos;t change your Bluesky username, so make sure you&apos;re happy with
+                your current social web handle before connecting.
+              </p>
+            )}
             {!account?.avatarUrl ? (
               <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                 <DialogTrigger>

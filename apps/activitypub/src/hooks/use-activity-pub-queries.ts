@@ -3038,7 +3038,9 @@ function updateConfirmedBlueskyCache(queryClient: QueryClient, details: BlueskyH
     blueskyEnabled: true,
     blueskyHandleConfirmed: true,
     blueskyHandle: details.handle,
-    blueskyDomainHandle: details.domainHandle,
+    // Left out for ActivityPub services that predate domain handles, which
+    // the screen tells apart by the field being absent
+    ...(details.domainHandle !== undefined ? { blueskyDomainHandle: details.domainHandle } : {}),
   });
 }
 
