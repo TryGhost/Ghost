@@ -109,9 +109,10 @@ const TriggerPicker: React.FC<{
 
 const NewAutomationLoading: React.FC = () => {
   return (
-    <div className="delayed-fade-in">
+    <Stack align="center" className="delayed-fade-in fixed inset-0" justify="center" role="status">
       <LoadingIndicator size="lg" />
-    </div>
+      <span className="sr-only">Loading automation</span>
+    </Stack>
   );
 };
 

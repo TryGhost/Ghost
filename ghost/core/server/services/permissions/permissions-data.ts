@@ -54,6 +54,7 @@ export const permissions = {
   gift: ['flushReminders', 'flushDeliveries'],
   gift_link: ['manage', 'removeAll'],
   app_installation: ['browse', 'read', 'add', 'destroy'],
+  upgrade: ['browse', 'read', 'add'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type ObjectType = keyof typeof permissions;
@@ -105,6 +106,7 @@ export const rolePermissions = {
     app_installation: 'all',
     automation: ['browse', 'read', 'edit', 'add'],
     identity: ['read'],
+    upgrade: ['browse', 'read', 'add'],
   },
   'DB Backup Integration': {
     db: 'all',

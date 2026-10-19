@@ -258,6 +258,7 @@ Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 | `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)                    |
 | `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                                     |
 | `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
+| `pnpm dev:fake-upgrades`   | Ghost updates in Settings → About against a fake host; see [testing Ghost updates](testing-ghost-updates.md)    |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an

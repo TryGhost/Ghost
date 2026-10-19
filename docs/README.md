@@ -103,6 +103,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Tooling ownership](../tools/README.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Stripe testing](contributing/testing-stripe.md)
+- [Testing Ghost updates](contributing/testing-ghost-updates.md)
 - [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
 

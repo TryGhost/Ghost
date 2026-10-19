@@ -200,10 +200,12 @@ catalog:
   react-day-picker: 9.14.0
   react-dom: 18.3.1
   react-router: 7.18.4
+  rolldown-plugin-dts: 0.27.11
   semver: 7.8.5
   sharp: 0.35.5
   sinon: 22.1.0
   sirv: 3.0.2
+  snakecase-keys: 9.0.2
   sonner: 2.0.8
   storybook: 10.4.6
   stylelint: 17.14.1
@@ -231,6 +233,7 @@ catalog:
   vitest: 4.1.11
   vitest-browser-react: 2.2.0
   zod: 4.6.5
+  '@quilted/threads': 4.1.0
   form-data: 4.0.6
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2

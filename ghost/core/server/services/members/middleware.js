@@ -103,6 +103,31 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
   }
 };
 
+/**
+ * Whether a referrer URL points at this site, compared on the parsed URL rather
+ * than the raw string so lookalike hosts and userinfo can't pass as the site.
+ */
+const isSiteUrl = function isSiteUrl(referrer) {
+  if (!referrer) {
+    return false;
+  }
+
+  let referrerUrl;
+  try {
+    referrerUrl = new URL(referrer);
+  } catch {
+    return false;
+  }
+
+  const siteUrl = new URL(urlUtils.getSiteUrl());
+  return (
+    referrerUrl.origin === siteUrl.origin &&
+    !referrerUrl.username &&
+    !referrerUrl.password &&
+    referrerUrl.pathname.startsWith(siteUrl.pathname)
+  );
+};
+
 const getRedirectUrl = function getRedirectUrl({ action, referrer, searchParams, success }) {
   const redirectUrl = new URL(referrer);
 
@@ -484,8 +509,7 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     }
 
     const referrer = req.query.r;
-    const siteUrl = urlUtils.getSiteUrl();
-    if (referrer && referrer.startsWith(siteUrl)) {
+    if (isSiteUrl(referrer)) {
       const redirectUrl = getRedirectUrl({ action, referrer, searchParams, success: true });
       return res.redirect(redirectUrl);
     }
@@ -501,8 +525,7 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     }
 
     const referrer = req.query.r;
-    const siteUrl = urlUtils.getSiteUrl();
-    if (referrer && referrer.startsWith(siteUrl)) {
+    if (isSiteUrl(referrer)) {
       const redirectUrl = getRedirectUrl({
         action: req.query.action,
         referrer,

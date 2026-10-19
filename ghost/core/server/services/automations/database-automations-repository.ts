@@ -929,10 +929,7 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
         )
         .where('status', 'active')
         .whereNotExists(
-          trx('automation_actions')
-            .select('id')
-            .whereRaw('automation_id = automations.id')
-            .whereNull('deleted_at'),
+          trx('automation_actions').select('id').whereRaw('automation_id = automations.id'),
         )
         .whereExists(
           trx('welcome_email_automated_emails')
@@ -995,9 +992,10 @@ async function ensureWelcomeEmailAction(
   trx: Knex.Transaction,
   automationId: string,
 ): Promise<void> {
+  // We deliberately include soft-deleted actions here, to cover welcome email
+  // automations that were converted and later edited.
   const hasActions = await trx('automation_actions')
     .where('automation_id', automationId)
-    .whereNull('deleted_at')
     .first('id');
   if (hasActions) {
     return;

@@ -433,7 +433,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     </BreadcrumbList>
                   </Breadcrumb>
                   {mapEnabled && (
-                    <Inline className="mt-3 max-w-full min-w-0" gap="md">
+                    <Inline
+                      // A large name wraps rather than truncates, and stops
+                      // short of the actions above it on wide screens
+                      className={cn('mt-3 max-w-full min-w-0', largeTitles && 'lg:pr-40')}
+                      gap="md"
+                    >
                       <Avatar
                         className="size-10 min-w-10 [&_span]:text-lg"
                         {...memberAvatarProps(headerIdentity)}
@@ -441,11 +446,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                       />
                       <PageHeader.Title
                         className={cn(
-                          'min-w-0 truncate',
+                          'min-w-0',
                           // The size and type of the list pages' large titles, where they show them
                           largeTitles
-                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-medium tracking-[-0.03em]'
-                            : 'text-2xl tracking-tight sm:text-3xl',
+                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-medium tracking-[-0.03em] break-words'
+                            : 'truncate text-2xl tracking-tight sm:text-3xl',
                         )}
                       >
                         {formatMemberName(headerIdentity)}

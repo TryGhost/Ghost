@@ -48,7 +48,7 @@ describe('New automation', () => {
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
     await expect.element(nameField()).toHaveValue('New Automation (2)');
-    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(button('Save')).toBeEnabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
@@ -82,6 +82,25 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => edit.requests.length).toBe(1);
     expect(create.requests).toHaveLength(1);
+  });
+
+  it('saves a new automation without actions while keeping publish disabled', async () => {
+    fakeAutomations([]);
+    const create = serveCreation();
+    await renderAdminApp('/automations/new', { labs });
+
+    await expect.element(button('Save')).toBeEnabled();
+    await expect.element(button('Publish')).toBeDisabled();
+
+    await button('Save').click();
+
+    await expect.poll(currentRoute).toBe('/automations/created');
+    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(button('Publish')).toBeDisabled();
+    expect(create.requests).toHaveLength(1);
+    expect(create.requests[0].body).toMatchObject({
+      automations: [{ status: 'inactive', actions: [], edges: [] }],
+    });
   });
 
   it('starts a fresh creation session when navigating from the saved route to new', async () => {
@@ -427,7 +446,7 @@ describe('New automation', () => {
         .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
         .toBeVisible();
       await button('Hide automation sidebar').click();
-      await expect.element(button('Save')).toBeDisabled();
+      await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
       await addWait();
       await button('Save').click();
