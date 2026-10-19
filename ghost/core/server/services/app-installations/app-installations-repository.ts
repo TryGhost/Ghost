@@ -58,10 +58,7 @@ const INSTALLATION_COLUMNS = [
 
 const LockedRow = DbAppInstallation.pick({ status: true, revision: true });
 
-/**
- * Why a write decided from an installation didn't go ahead: since it was read, it has been
- * uninstalled, or something else changed it.
- */
+/** Why `whileUnchanged` didn't write. */
 export type Refused = 'uninstalled' | 'changed';
 
 function isUniqueViolation(err: unknown): boolean {
@@ -71,7 +68,6 @@ function isUniqueViolation(err: unknown): boolean {
   );
 }
 
-/** Who added a manifest row, and whether its changes need approval. */
 interface AddedManifest {
   source: z.infer<typeof AppInstallationManifestSource>;
   requiresApproval: boolean;
@@ -111,10 +107,7 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
-  /**
-   * The app's installation that hasn't been uninstalled, if any. It's found by
-   * `current_app_id`, which uninstalling clears.
-   */
+  /** The app's current installation, if it has one. */
   async currentInstallationOf(appId: string): Promise<Installation | undefined> {
     const row = await this.withApprovedManifest()
       .where('installation.current_app_id', appId)
@@ -259,9 +252,9 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * Runs `write` in a transaction that has locked the installation, if it's still at the
-   * revision it was read at. Every write moves the revision on, so the installation is then
-   * exactly as it was read, and so is anything decided from it.
+   * Locks the installation and runs `write`, unless it has been uninstalled or changed since
+   * `installation` was read. Every write moves the revision on, so a different revision
+   * means it changed.
    */
   whileUnchanged<T>(
     installation: Installation,
@@ -329,10 +322,7 @@ export class AppInstallationsRepository {
       .update({ status: 'suspended', pending_manifest_id: manifestId, ...nextRevision(trx) });
   }
 
-  /**
-   * Uninstalls an installation, unless it's already uninstalled. Returns whether it was
-   * uninstalled now.
-   */
+  /** Returns false if it was already uninstalled. */
   async uninstall(id: string): Promise<boolean> {
     const ended = await this.knex(INSTALLATIONS)
       .where({ id })
