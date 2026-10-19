@@ -79,6 +79,14 @@ describe('App installations Admin API', function () {
   const installationRow = (id: string) =>
     models.Base.knex('app_installations').where({ id }).first();
   const manifestRows = () => models.Base.knex('app_installation_manifests').orderBy('id', 'asc');
+  /**
+   * Replaces a stored manifest with one the contract rejects, as one stored under an older
+   * contract can be.
+   */
+  const outdate = (manifestId: string) =>
+    models.Base.knex('app_installation_manifests')
+      .where({ id: manifestId })
+      .update({ manifest: JSON.stringify({ id: 'com.example.podcast' }) });
   /** Starts an app session, as Admin does when an app page opens. */
   const start = (id: string, status = 200) =>
     agent.post(`apps/installations/${id}/sessions/`).expectStatus(status);
@@ -719,6 +727,26 @@ describe('App installations Admin API', function () {
       );
     });
 
+    it('approves a newer manifest than a pending one stored under an older contract', async function () {
+      const installed = await install();
+      await outdate(await suspendWithPending(installed.id, manifest({ name: 'Podcasts' })));
+      serve(manifest({ name: 'Podcasts!' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts!' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcasts!');
+      assert.equal((await installationRow(installed.id)).pending_manifest_id, null);
+    });
+
     // A pending manifest is recognised by its digest alone, which covers the address too.
     it('does not approve the pending manifest when the same manifest is approved from another address', async function () {
       const absolute = manifest({
@@ -949,6 +977,21 @@ describe('App installations Admin API', function () {
           ['installed', 'Joe Bloggs'],
         ],
       );
+    });
+
+    it('lifts a suspension whose pending manifest was stored under an older contract', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      await outdate((await pendingOf(installed.id)).id);
+      serve(manifest());
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.status, 'active');
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
     });
 
     it('applies a silent change while other changes are pending, clearing them', async function () {

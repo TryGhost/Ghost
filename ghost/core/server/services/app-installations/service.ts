@@ -313,12 +313,13 @@ export class AppInstallationsService {
     });
   }
 
-  /** The installation's pending manifest, if it has one. */
+  /** The installation's pending manifest, by its digest, if it has one. */
   private async pendingManifestOf(installation: Installation) {
     if (installation.pending_manifest_id === null) {
       return null;
     }
-    return (await this.repository.findManifest(installation.pending_manifest_id)) ?? null;
+    const digest = await this.repository.findDigest(installation.pending_manifest_id);
+    return digest === undefined ? null : { digest };
   }
 
   /**

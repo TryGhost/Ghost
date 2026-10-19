@@ -26,6 +26,8 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
+const ManifestDigestRow = DbAppInstallationManifest.pick({ digest: true });
+
 const HistoryActionRow = z
   .object({
     id: z.string(),
@@ -55,8 +57,6 @@ const INSTALLATION_COLUMNS = [
   'installation.created_at',
   'installation.updated_at',
 ];
-
-const MANIFEST_COLUMNS = Object.keys(DbAppInstallationManifest.shape);
 
 const LockedRow = DbAppInstallation.pick({ status: true, revision: true });
 
@@ -124,12 +124,15 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
-  /** A manifest row by ID. */
-  async findManifest(id: string): Promise<z.output<typeof DbAppInstallationManifest> | undefined> {
+  /**
+   * A manifest row's digest, by ID. The manifest itself isn't read, so a row stored under an
+   * older contract, which may no longer decode, can still be compared against.
+   */
+  async findDigest(id: string): Promise<string | undefined> {
     const row = await this.knex(MANIFESTS)
       .where({ id })
-      .first<z.input<typeof DbAppInstallationManifest> | undefined>(MANIFEST_COLUMNS);
-    return row ? z.decode(DbAppInstallationManifest, row) : undefined;
+      .first<z.input<typeof ManifestDigestRow> | undefined>('digest');
+    return row ? z.decode(ManifestDigestRow, row).digest : undefined;
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
