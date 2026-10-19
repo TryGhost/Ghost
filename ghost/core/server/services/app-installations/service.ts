@@ -137,56 +137,9 @@ export class AppInstallationsService {
     return installation;
   }
 
-  private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {
-    const { manifests, actions } = await this.repository.historyRows(id);
-    return buildHistory(
-      manifests,
-      actions,
-      await this.repository.loadManifestContents(approvalManifestIds(actions)),
-    );
-  }
-
-  private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
-    const current = await this.repository.currentInstallationOf(loaded.manifest.id);
-    return {
-      manifest_url: loaded.manifestUrl,
-      manifest: loaded.manifest,
-      digest: loaded.digest,
-      // The approved manifest shown is the one the changes were computed from, so the
-      // review matches the list of changes.
-      installation: current
-        ? {
-            id: current.id,
-            status: current.status,
-            revision: current.revision,
-            manifest_url: current.manifest_url,
-            manifest: current.manifest,
-            changes: changesFrom(current, loaded),
-          }
-        : null,
-    };
-  }
-
   /** Fetches and checks an app's manifest, for the publisher to review. Stores nothing. */
   async preview(manifestUrl: string): Promise<AppInstallationPreview> {
     return this.previewOf(await this.loadManifest(manifestUrl));
-  }
-
-  /**
-   * Fetches the manifest again and checks its digest matches the one the publisher
-   * reviewed. If it doesn't, the error carries a new preview so they can review the new
-   * version.
-   */
-  private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
-    const loaded = await this.loadManifest(manifestUrl);
-    if (loaded.digest !== digest) {
-      throw new errors.ConflictError({
-        message: 'The app changed while it was being reviewed.',
-        code: 'APP_MANIFEST_CHANGED',
-        errorDetails: await this.previewOf(loaded),
-      });
-    }
-    return loaded;
   }
 
   /** Installs an app after the publisher has reviewed its manifest, as previewed. */
@@ -268,6 +221,107 @@ export class AppInstallationsService {
   }
 
   /**
+   * Starts an app session when Admin opens an app page. Re-checks the manifest, then
+   * returns the installation, which Admin decides what to show from. Nothing about the
+   * session is stored.
+   */
+  async startSession(id: string): Promise<AppSession> {
+    await this.recheck(id);
+    const installation = await this.read(id);
+    // Uninstalled after the re-check, or during a re-check this session shared.
+    if (installation.status === 'uninstalled') {
+      throw notInstalled();
+    }
+    return { installation };
+  }
+
+  /**
+   * Uninstalls an app. The row is kept as a record of what was installed.
+   *
+   * Uninstalling an app that's already uninstalled does nothing, so a repeated request
+   * doesn't add a second entry to the history.
+   */
+  async uninstall(context: RequestContext, id: string): Promise<void> {
+    const installation = await this.read(id);
+
+    const ended = await this.repository.uninstall(id);
+    if (!ended) {
+      return;
+    }
+
+    await this.recordAction({
+      context,
+      event: 'uninstalled',
+      subject: id,
+      details: { primary_name: installation.manifest.name, app_id: installation.app_id },
+    });
+  }
+
+  private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {
+    const { manifests, actions } = await this.repository.historyRows(id);
+    return buildHistory(
+      manifests,
+      actions,
+      await this.repository.loadManifestContents(approvalManifestIds(actions)),
+    );
+  }
+
+  private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
+    const current = await this.repository.currentInstallationOf(loaded.manifest.id);
+    return {
+      manifest_url: loaded.manifestUrl,
+      manifest: loaded.manifest,
+      digest: loaded.digest,
+      // The approved manifest shown is the one the changes were computed from, so the
+      // review matches the list of changes.
+      installation: current
+        ? {
+            id: current.id,
+            status: current.status,
+            revision: current.revision,
+            manifest_url: current.manifest_url,
+            manifest: current.manifest,
+            changes: changesFrom(current, loaded),
+          }
+        : null,
+    };
+  }
+
+  /**
+   * Fetches the manifest again and checks its digest matches the one the publisher
+   * reviewed. If it doesn't, the error carries a new preview so they can review the new
+   * version.
+   */
+  private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
+    const loaded = await this.loadManifest(manifestUrl);
+    if (loaded.digest !== digest) {
+      throw new errors.ConflictError({
+        message: 'The app changed while it was being reviewed.',
+        code: 'APP_MANIFEST_CHANGED',
+        errorDetails: await this.previewOf(loaded),
+      });
+    }
+    return loaded;
+  }
+
+  /** The installation changed since the review, so the error carries a new preview. */
+  private async changedSinceReview(loaded: LoadedManifest) {
+    return new errors.ConflictError({
+      message: 'The installation changed while the app was being reviewed.',
+      code: 'APP_INSTALLATION_CHANGED',
+      errorDetails: await this.previewOf(loaded),
+    });
+  }
+
+  /** The installation's pending manifest, if it has one. */
+  private async pendingManifestOf(installation: Installation) {
+    if (installation.pending_manifest_id === null) {
+      return null;
+    }
+    return (await this.repository.findManifest(installation.pending_manifest_id)) ?? null;
+  }
+
+  /**
    * Stores a publisher's approval of the reviewed manifest, which becomes the approved
    * manifest whatever changed. It's only written while the installation is as `current`,
    * which the approval was decided from.
@@ -302,44 +356,6 @@ export class AppInstallationsService {
       await this.repository.activate(trx, current.id, approved);
       return { from: current.manifest_id, to: approved };
     });
-  }
-
-  /** The installation changed since the review, so the error carries a new preview. */
-  private async changedSinceReview(loaded: LoadedManifest) {
-    return new errors.ConflictError({
-      message: 'The installation changed while the app was being reviewed.',
-      code: 'APP_INSTALLATION_CHANGED',
-      errorDetails: await this.previewOf(loaded),
-    });
-  }
-
-  /**
-   * Starts an app session when Admin opens an app page. Re-checks the manifest, then
-   * returns the installation, which Admin decides what to show from. Nothing about the
-   * session is stored.
-   */
-  async startSession(id: string): Promise<AppSession> {
-    await this.recheck(id);
-    const installation = await this.read(id);
-    // Uninstalled after the re-check, or during a re-check this session shared.
-    if (installation.status === 'uninstalled') {
-      throw notInstalled();
-    }
-    return { installation };
-  }
-
-  /** The installation, unless it doesn't exist or has been uninstalled. */
-  private async currentInstallation(id: string): Promise<Installation | undefined> {
-    const installation = await this.repository.find(id);
-    return installation?.status === 'uninstalled' ? undefined : installation;
-  }
-
-  /** The installation's pending manifest, if it has one. */
-  private async pendingManifestOf(installation: Installation) {
-    if (installation.pending_manifest_id === null) {
-      return null;
-    }
-    return (await this.repository.findManifest(installation.pending_manifest_id)) ?? null;
   }
 
   private recheck(id: string): Promise<void> {
@@ -405,6 +421,28 @@ export class AppInstallationsService {
     }
   }
 
+  /** The installation, unless it doesn't exist or has been uninstalled. */
+  private async currentInstallation(id: string): Promise<Installation | undefined> {
+    const installation = await this.repository.find(id);
+    return installation?.status === 'uninstalled' ? undefined : installation;
+  }
+
+  /**
+   * Fails the session as unavailable, saying `why` in the error's context, which the request
+   * log records. If the installation changed while the manifest was loading, it may no
+   * longer use that URL, so the session returns the installation as it is instead.
+   */
+  private async unavailableUnlessChanged(before: Installation, why: string): Promise<void> {
+    const current = await this.currentInstallation(before.id);
+    if (!current) {
+      throw notInstalled();
+    }
+    if (current.revision !== before.revision) {
+      return;
+    }
+    throw unavailable(why);
+  }
+
   /**
    * Stores what a re-check found. It's only written while the installation is as `current`,
    * which the re-check decided from. No person made these changes, so each gets a manifest
@@ -445,44 +483,6 @@ export class AppInstallationsService {
           return this.repository.suspend(trx, current.id, pending);
         }
       }
-    });
-  }
-
-  /**
-   * Fails the session as unavailable, saying `why` in the error's context, which the request
-   * log records. If the installation changed while the manifest was loading, it may no
-   * longer use that URL, so the session returns the installation as it is instead.
-   */
-  private async unavailableUnlessChanged(before: Installation, why: string): Promise<void> {
-    const current = await this.currentInstallation(before.id);
-    if (!current) {
-      throw notInstalled();
-    }
-    if (current.revision !== before.revision) {
-      return;
-    }
-    throw unavailable(why);
-  }
-
-  /**
-   * Uninstalls an app. The row is kept as a record of what was installed.
-   *
-   * Uninstalling an app that's already uninstalled does nothing, so a repeated request
-   * doesn't add a second entry to the history.
-   */
-  async uninstall(context: RequestContext, id: string): Promise<void> {
-    const installation = await this.read(id);
-
-    const ended = await this.repository.uninstall(id);
-    if (!ended) {
-      return;
-    }
-
-    await this.recordAction({
-      context,
-      event: 'uninstalled',
-      subject: id,
-      details: { primary_name: installation.manifest.name, app_id: installation.app_id },
     });
   }
 }
