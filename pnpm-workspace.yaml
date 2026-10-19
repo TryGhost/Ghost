@@ -105,7 +105,7 @@ catalog:
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/pretty-cli': 3.3.18
+  '@tryghost/pretty-cli': 3.4.0
   '@tryghost/promise': 2.3.18
   '@tryghost/request': 4.0.12
   '@tryghost/string': 0.3.8

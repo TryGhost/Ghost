@@ -369,8 +369,8 @@ catalogs:
       specifier: 0.11.2
       version: 0.11.2
     '@tryghost/pretty-cli':
-      specifier: 3.3.18
-      version: 3.3.18
+      specifier: 3.4.0
+      version: 3.4.0
     '@tryghost/promise':
       specifier: 2.3.18
       version: 2.3.18
@@ -4489,7 +4489,7 @@ importers:
         version: 6.0.1(supports-color@10.2.2)
       '@tryghost/pretty-cli':
         specifier: 'catalog:'
-        version: 3.3.18
+        version: 3.4.0
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -8687,8 +8687,8 @@ packages:
   '@tryghost/nql@0.13.4':
     resolution: {integrity: sha512-XE3lEpkqZM3ueOyKz5suwb2W4muWAM/YfYYpXHrnu0H7r46Xuo7FZm1s6Ga2Cut/STtuax5E6NfZ1AFv017X4w==}
 
-  '@tryghost/pretty-cli@3.3.18':
-    resolution: {integrity: sha512-MC5IhxcETZxPql1IRsP2jAPxBcx9AFazFoT2tscEs7xjTvbaVhLJXm1S+NhbyzSNOtXjeYDHJWoxxJxsLF+B6w==}
+  '@tryghost/pretty-cli@3.4.0':
+    resolution: {integrity: sha512-N19cXnjaHQDnG+bV9U2ipeK2cT2kNECEPtFFsSYBL8RYZuShYqiCbveuyf8J6eowz/Lp3d1j3W0LVMjtOvfHDA==}
 
   '@tryghost/pretty-stream@2.3.18':
     resolution: {integrity: sha512-9TgpyTAd0yHF8NAyuGqOxrT+rCPF2AfsWx6VHK8fndWViJvliuZEu0dEogBsv1UojGD78ladqnUEeoi9jBrlBg==}
@@ -20942,7 +20942,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/pretty-cli@3.3.18':
+  '@tryghost/pretty-cli@3.4.0':
     dependencies:
       chalk: 6.0.0
       sywac: 1.3.0
@@ -24549,7 +24549,7 @@ snapshots:
       '@tryghost/debug': 2.3.18(supports-color@10.2.2)
       '@tryghost/errors': 3.4.4
       '@tryghost/nql': 0.13.4(supports-color@10.2.2)
-      '@tryghost/pretty-cli': 3.3.18
+      '@tryghost/pretty-cli': 3.4.0
       '@tryghost/zip': 3.5.18(supports-color@10.2.2)
       chalk: 6.0.0
       handlebars: 4.7.10
