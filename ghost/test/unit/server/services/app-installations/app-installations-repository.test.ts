@@ -48,7 +48,19 @@ describe('AppInstallationsRepository whileUnchanged', function () {
   it('writes while the installation is at the revision it was read at', async function () {
     const repository = lockingFinds({ status: 'active', revision: 3 });
 
-    assert.equal(await repository.whileUnchanged(installation, async () => 'written'), 'written');
+    assert.deepEqual(await repository.whileUnchanged(installation, async () => 'written'), {
+      status: 'written',
+      value: 'written',
+    });
+  });
+
+  it('tells a write whose result reads like a refusal apart from a refusal', async function () {
+    const repository = lockingFinds({ status: 'active', revision: 3 });
+
+    assert.deepEqual(await repository.whileUnchanged(installation, async () => 'changed'), {
+      status: 'written',
+      value: 'changed',
+    });
   });
 
   it('refuses to write once the installation has been uninstalled or changed', async function () {
@@ -64,7 +76,7 @@ describe('AppInstallationsRepository whileUnchanged', function () {
         wrote = true;
       });
 
-      assert.equal(result, refused);
+      assert.deepEqual(result, { status: refused });
       assert.equal(wrote, false);
     }
   });

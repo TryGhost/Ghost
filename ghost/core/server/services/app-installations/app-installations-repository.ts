@@ -58,8 +58,11 @@ const INSTALLATION_COLUMNS = [
 
 const LockedRow = DbAppInstallation.pick({ status: true, revision: true });
 
-/** Why `whileUnchanged` didn't write. */
-export type Refused = 'uninstalled' | 'changed';
+/** What came of `whileUnchanged`: the write's result, or why it didn't write. */
+export type WriteOutcome<T> =
+  | { status: 'written'; value: T }
+  | { status: 'uninstalled' }
+  | { status: 'changed' };
 
 function isUniqueViolation(err: unknown): boolean {
   const code = (err as { code?: unknown } | null)?.code;
@@ -259,20 +262,20 @@ export class AppInstallationsRepository {
   whileUnchanged<T>(
     installation: Installation,
     write: (trx: Knex.Transaction) => Promise<T>,
-  ): Promise<T | Refused> {
-    return this.knex.transaction(async (trx) => {
+  ): Promise<WriteOutcome<T>> {
+    return this.knex.transaction(async (trx): Promise<WriteOutcome<T>> => {
       const row = await trx(INSTALLATIONS)
         .where({ id: installation.id })
         .forUpdate()
         .first<z.input<typeof LockedRow> | undefined>('status', 'revision');
       const locked = row ? z.decode(LockedRow, row) : undefined;
       if (!locked || locked.status === 'uninstalled') {
-        return 'uninstalled';
+        return { status: 'uninstalled' };
       }
       if (locked.revision !== installation.revision) {
-        return 'changed';
+        return { status: 'changed' };
       }
-      return write(trx);
+      return { status: 'written', value: await write(trx) };
     });
   }
 

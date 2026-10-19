@@ -2,7 +2,7 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
-import { AppInstallationsRepository, type Refused } from './app-installations-repository';
+import { AppInstallationsRepository, type WriteOutcome } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import {
   changesFrom,
@@ -201,13 +201,14 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(current),
       loaded,
     });
-    const approved = await this.storeApproval(current, loaded, decision);
-    if (approved === 'uninstalled') {
+    const stored = await this.storeApproval(current, loaded, decision);
+    if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
-    if (approved === 'changed') {
+    if (stored.status === 'changed') {
       throw await this.changedSinceReview(loaded);
     }
+    const approved = stored.value;
     if (approved) {
       await this.recordAction({
         context,
@@ -342,7 +343,7 @@ export class AppInstallationsService {
     current: Installation,
     loaded: LoadedManifest,
     { kind, changes }: ManifestDecision,
-  ): Promise<{ from: string; to: string } | null | Refused> {
+  ): Promise<WriteOutcome<{ from: string; to: string } | null>> {
     return this.repository.whileUnchanged(current, async (trx) => {
       if (kind === 'unchanged') {
         return null;
@@ -421,7 +422,7 @@ export class AppInstallationsService {
       loaded,
     });
     const stored = await this.storeRecheck(before, loaded, decision);
-    if (stored === 'uninstalled') {
+    if (stored.status === 'uninstalled') {
       throw notInstalled();
     }
   }
@@ -457,7 +458,7 @@ export class AppInstallationsService {
     current: Installation,
     loaded: LoadedManifest,
     { kind }: ManifestDecision,
-  ): Promise<void | Refused> {
+  ): Promise<WriteOutcome<void>> {
     return this.repository.whileUnchanged(current, async (trx) => {
       switch (kind) {
         case 'unchanged':
