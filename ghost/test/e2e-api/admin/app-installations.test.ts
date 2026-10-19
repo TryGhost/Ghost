@@ -845,6 +845,31 @@ describe('App installations Admin API', function () {
         ['installed', 'uninstalled'],
       );
     });
+
+    it('refuses an installation uninstalled while an out-of-date review’s manifest is fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts!' }));
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          return manifest({ name: 'Podcasts' });
+        });
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        409,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await installationRow(installed.id)).status, 'uninstalled');
+      assert.equal((await manifestRows()).length, 2);
+    });
   });
 
   describe('POST /apps/installations/:id/sessions/', function () {

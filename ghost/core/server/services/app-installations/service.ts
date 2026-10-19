@@ -189,7 +189,11 @@ export class AppInstallationsService {
       throw forAnotherApp(loaded.manifest.id);
     }
     if (current.revision !== revision) {
-      throw await this.changedSinceReview(loaded);
+      // The review is out of date, which asks for a new one, unless the app has been
+      // uninstalled during the fetch and there's nothing left to review.
+      throw (await this.currentInstallation(id))
+        ? await this.changedSinceReview(loaded)
+        : uninstalled();
     }
 
     const decision = decideOnManifest({
