@@ -44,6 +44,7 @@ import {
 } from './tinybird-automation-stats';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
+import { buildInvalidAutomationPayloadMessage } from './util/build-invalid-automation-payload-message';
 
 const RUN_PAGE_SIZE = 50;
 
@@ -469,19 +470,6 @@ function isEmptyParsedLexical(parsed: {
   }
 
   return Array.isArray(children[0].children) && children[0].children.length === 0;
-}
-
-function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[], message: string) {
-  if (!issues.length) {
-    return message;
-  }
-
-  const issueSummaries = issues.slice(0, 3).map((issue) => {
-    const path = issue.path.length ? issue.path.join('.') : 'payload';
-    return `${path}: ${issue.message}`;
-  });
-
-  return `${message} ${issueSummaries.join('; ')}.`;
 }
 
 function validateGraph(actions: Automation['actions'], edges: Automation['edges']) {
