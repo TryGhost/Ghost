@@ -142,6 +142,18 @@ await ghost.fetch(`/posts/${id}/`, {
 });
 ```
 
+The tags you send replace the post's tags. The tags you read come back with
+`codeinjection_head` and `codeinjection_foot` too, so send each as `{ id }`, or
+`{ name }` for a new one:
+
+```ts
+const tags = posts[0].tags.map(({ id }) => ({ id }));
+await ghost.fetch(`/posts/${id}/`, {
+  method: 'PUT',
+  body: { posts: [{ updated_at: posts[0].updated_at, tags: [...tags, { name: 'Featured' }] }] },
+});
+```
+
 These checks are a stopgap for the private beta. They're reviewed again before
 anyone outside the team gets access, and app scopes replace them.
 
