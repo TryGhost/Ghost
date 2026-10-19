@@ -49,9 +49,11 @@ const ShippingSettings: React.FC<{
   /** Paid tiers, archived ones included. */
   tiers: Tier[];
   fields: MemberCustomField[];
+  /** The fields chosen for every collected value, which no other value is offered. */
+  chosenFields: Array<string | null>;
   errors: ShippingErrors;
   onChange: (next: ShippingFormState) => void;
-}> = ({ state, tiers, fields, errors, onChange }) => {
+}> = ({ state, tiers, fields, chosenFields, errors, onChange }) => {
   const set = (next: Partial<ShippingFormState>) => onChange({ ...state, ...next });
 
   return (
@@ -86,6 +88,7 @@ const ShippingSettings: React.FC<{
         </SubRow>
       )}
       <Destination
+        chosen={chosenFields}
         error={errors.shippingAddressField}
         fields={fields}
         id="checkout-shipping-address-field"
@@ -95,6 +98,7 @@ const ShippingSettings: React.FC<{
         onChange={(addressFieldKey) => set({ addressFieldKey })}
       />
       <Destination
+        chosen={chosenFields}
         error={errors.shippingNameField}
         fields={fields}
         id="checkout-shipping-name-field"

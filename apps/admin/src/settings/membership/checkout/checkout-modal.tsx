@@ -12,6 +12,15 @@ import {
   shippingSettingOf,
   validateShipping,
 } from './shipping-form';
+import PhoneSettings from './phone-settings';
+import {
+  PHONE_ERRORS,
+  type PhoneFormState,
+  phoneFormStateOf,
+  phoneSettingOf,
+  previewPhoneOf,
+  validatePhone,
+} from './phone-form';
 import { audienceOf } from './collect-form';
 import {
   Field,
@@ -42,7 +51,7 @@ import {
   type StripeCheckoutConfig,
   type StripeCheckoutDesign,
   type StripeCheckoutDesignSetting,
-  type StripeCheckoutPreviewShipping,
+  type StripeCheckoutPreviewRequest,
   useCreateStripeCheckoutPreview,
   useEditStripeCheckoutConfig,
   useReadStripeCheckoutBranding,
@@ -93,7 +102,7 @@ const formStateOf = (
 const designSettingOf = ({ customize, design }: DesignFormState): StripeCheckoutDesignSetting =>
   customize ? { customize: true, ...design } : { customize: false };
 
-type CheckoutFormState = DesignFormState & { shipping: ShippingFormState };
+type CheckoutFormState = DesignFormState & { shipping: ShippingFormState; phone: PhoneFormState };
 
 type SketchBranding = Omit<StripeCheckoutBranding, 'design'> & { design: StripeCheckoutDesign };
 
@@ -123,12 +132,13 @@ function useStripeBranding(): { branding: SketchBranding; loading: boolean } {
 
 /**
  * "Preview in Stripe": one item per active paid tier, each opening a real Stripe Checkout page
- * for that tier in the design and shipping being edited, saved or not. Undefined while there is
- * nothing to preview: Stripe isn't connected, or there are no paid tiers.
+ * for that tier in the design and collected parts being edited, saved or not. Undefined while
+ * there is nothing to preview: Stripe isn't connected, or there are no paid tiers.
  */
 function useStripePreviewMenu(
   design: StripeCheckoutDesignSetting,
-  shipping: StripeCheckoutPreviewShipping | undefined,
+  /** The collected parts being edited. One left out asks as saved. */
+  collection: Pick<StripeCheckoutPreviewRequest, 'shipping' | 'phone'>,
 ) {
   const { settings, config } = useGlobalData();
   const { data: { tiers = [] } = {} } = useBrowseTiers();
@@ -161,7 +171,7 @@ function useStripePreviewMenu(
         tier_id: tier.id,
         cadence: tier.monthly_price ? 'month' : 'year',
         design,
-        ...(shipping ? { shipping } : {}),
+        ...collection,
       });
       const url = response.checkout_preview[0]?.url;
       if (!url) {
@@ -331,13 +341,15 @@ const CheckoutEditor: React.FC<{
 }> = ({ config, branding, onClose }) => {
   const handleError = useHandleError();
   const { mutateAsync: editConfig } = useEditStripeCheckoutConfig();
-  // Only offered while its flag is on and Ghost says what is saved for it, which an older
-  // Ghost doesn't.
-  const offersShipping =
-    useFeatureFlag('stripeCheckoutCollection') && config.shipping !== undefined;
+  // Each part is only offered while the collection flag is on and Ghost says what is saved
+  // for it, which a Ghost older than the part doesn't.
+  const collecting = useFeatureFlag('stripeCheckoutCollection');
+  const offersShipping = collecting && config.shipping !== undefined;
+  const offersPhone = collecting && config.phone !== undefined;
+  const offersFields = offersShipping || offersPhone;
   const { data: { tiers = [] } = {} } = useBrowseTiers();
   const { data: customFields = [] } = useBrowseMemberCustomFieldsIncludingArchived({
-    enabled: offersShipping,
+    enabled: offersFields,
   });
   const [tab, setTab] = useState<'design' | 'fields'>('design');
   const { formState, saveState, updateForm, handleSave, okProps, errors, clearError } =
@@ -345,21 +357,34 @@ const CheckoutEditor: React.FC<{
       initialState: {
         ...formStateOf(config.design, branding.design),
         shipping: shippingFormStateOf(config.shipping),
+        phone: phoneFormStateOf(config.phone),
       },
       savingDelay: 500,
-      onValidate: (state) => (offersShipping ? validateShipping(state.shipping) : {}),
+      onValidate: (state) => ({
+        ...(offersShipping ? validateShipping(state.shipping) : {}),
+        ...(offersPhone ? validatePhone(state.phone) : {}),
+      }),
       onSave: async (state) => {
         await editConfig({
           design: designSettingOf(state),
           ...(offersShipping ? { shipping: shippingSettingOf(state.shipping) } : {}),
+          ...(offersPhone ? { phone: phoneSettingOf(state.phone) } : {}),
         });
       },
       onSaveError: handleError,
     });
-  const previewMenu = useStripePreviewMenu(
-    designSettingOf(formState),
-    offersShipping ? previewShippingOf(formState.shipping) : undefined,
-  );
+  const previewMenu = useStripePreviewMenu(designSettingOf(formState), {
+    ...(offersShipping ? { shipping: previewShippingOf(formState.shipping) } : {}),
+    ...(offersPhone ? { phone: previewPhoneOf(formState.phone) } : {}),
+  });
+  // Every field a collected value has in this form, so no other value is offered it. A part
+  // that is switched off still counts, as switching it back on brings its fields back.
+  const chosenFields = [
+    ...(offersShipping
+      ? [formState.shipping.addressFieldKey, formState.shipping.nameFieldKey]
+      : []),
+    ...(offersPhone ? [formState.phone.fieldKey] : []),
+  ];
   // Cheapest first, like the Preview in Stripe menu.
   const paidTiers = tiers
     .filter((tier) => tier.type === 'paid')
@@ -371,7 +396,7 @@ const CheckoutEditor: React.FC<{
       onChange={(next) => updateForm((state) => ({ ...state, ...next }))}
     />
   );
-  const sidebar = offersShipping ? (
+  const sidebar = offersFields ? (
     <div className="pt-4">
       <Tabs
         value={tab}
@@ -387,16 +412,32 @@ const CheckoutEditor: React.FC<{
           <FieldSet>
             <FieldGroup>
               <Stack gap="lg">
-                <ShippingSettings
-                  errors={errors}
-                  fields={customFields}
-                  state={formState.shipping}
-                  tiers={paidTiers}
-                  onChange={(shipping) => {
-                    SHIPPING_ERRORS.forEach(clearError);
-                    updateForm((state) => ({ ...state, shipping }));
-                  }}
-                />
+                {offersShipping && (
+                  <ShippingSettings
+                    chosenFields={chosenFields}
+                    errors={errors}
+                    fields={customFields}
+                    state={formState.shipping}
+                    tiers={paidTiers}
+                    onChange={(shipping) => {
+                      SHIPPING_ERRORS.forEach(clearError);
+                      updateForm((state) => ({ ...state, shipping }));
+                    }}
+                  />
+                )}
+                {offersPhone && (
+                  <PhoneSettings
+                    chosenFields={chosenFields}
+                    errors={errors}
+                    fields={customFields}
+                    state={formState.phone}
+                    tiers={paidTiers}
+                    onChange={(phone) => {
+                      PHONE_ERRORS.forEach(clearError);
+                      updateForm((state) => ({ ...state, phone }));
+                    }}
+                  />
+                )}
               </Stack>
             </FieldGroup>
           </FieldSet>
@@ -418,6 +459,11 @@ const CheckoutEditor: React.FC<{
         <CheckoutPreview
           design={formState.customize ? formState.design : branding.design}
           displayName={branding.display_name}
+          phone={
+            offersPhone && formState.phone.collect
+              ? { audience: audienceOf(formState.phone, paidTiers) }
+              : undefined
+          }
           shipping={
             offersShipping && formState.shipping.collect
               ? { audience: audienceOf(formState.shipping, paidTiers) }

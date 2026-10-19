@@ -28,6 +28,18 @@ const Placeholder: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <span className="truncate text-[15px] text-neutral-400">{children}</span>
 );
 
+/** A field's label, tagged with the tiers it is asked on when that isn't every paid tier. */
+const SketchLabel: React.FC<{ label: string; audience: string }> = ({ label, audience }) => (
+  <span className="flex items-center justify-between gap-2 text-[16px] font-semibold">
+    {label}
+    {audience && (
+      <Badge className="font-sans" size="sm" variant="warning">
+        {audience}
+      </Badge>
+    )}
+  </span>
+);
+
 const Block: React.FC<{ className: string }> = ({ className }) => (
   <Skeleton className={className} containerClassName="block" />
 );
@@ -59,8 +71,10 @@ const CheckoutPreview: React.FC<{
    * or is empty when every paid tier asks.
    */
   shipping?: { audience: string };
+  /** Set when checkout asks for a phone number, like `shipping`. */
+  phone?: { audience: string };
   loading?: boolean;
-}> = ({ design, displayName, shipping, loading }) => {
+}> = ({ design, displayName, shipping, phone, loading }) => {
   const { radius, boxRadius } = CORNER_RADII[design.border_style];
 
   return (
@@ -116,14 +130,7 @@ const CheckoutPreview: React.FC<{
               </div>
               {shipping && (
                 <div className="flex flex-col gap-1.5">
-                  <span className="flex items-center justify-between gap-2 text-[16px] font-semibold">
-                    Shipping address
-                    {shipping.audience && (
-                      <Badge className="font-sans" size="sm" variant="warning">
-                        {shipping.audience}
-                      </Badge>
-                    )}
-                  </span>
+                  <SketchLabel audience={shipping.audience} label="Shipping address" />
                   <div
                     className="flex flex-col border border-neutral-200 [&>*+*]:border-t [&>*+*]:border-neutral-200"
                     style={{ borderRadius: boxRadius }}
@@ -133,6 +140,17 @@ const CheckoutPreview: React.FC<{
                         <Placeholder>{placeholder}</Placeholder>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+              {phone && (
+                <div className="flex flex-col gap-1.5">
+                  <SketchLabel audience={phone.audience} label="Phone" />
+                  <div
+                    className="flex h-9 items-center border border-neutral-200 px-3"
+                    style={{ borderRadius: radius }}
+                  >
+                    <Placeholder>(201) 555-0123</Placeholder>
                   </div>
                 </div>
               )}
