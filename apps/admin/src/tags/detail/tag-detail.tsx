@@ -477,13 +477,15 @@ const TagDetail: React.FC = () => {
                 </PageHeader.Actions>
               )}
             </PageHeader>
+            {/* The title wraps rather than truncates, and stops short of the
+                actions above it on wide screens */}
             {largeTitles && (
-              <div className="flex min-w-0 items-baseline gap-3">
+              <div className="flex min-w-0 items-baseline gap-3 lg:pr-40">
                 {!isCreating && isLoading ? (
                   <Skeleton className="h-(--large-title-size) w-64" />
                 ) : (
                   <H1
-                    className="min-w-0 truncate text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]!"
+                    className="min-w-0 text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]! break-words"
                     data-testid="tag-detail-title"
                   >
                     {isCreating ? draft?.name || 'New tag' : title}
