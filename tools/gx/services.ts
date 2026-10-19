@@ -161,38 +161,82 @@ function list(rows: Service[]) {
   );
 }
 
+const groups: { name: string; label: string; matches: (row: Service) => boolean }[] = [
+  { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
+  {
+    name: 'retained',
+    label: 'Retained services',
+    matches: (row) => row.entry?.disposition === 'retain',
+  },
+  { name: 'migrated', label: 'Migrated', matches: (row) => row.category === 'Migrated' },
+  {
+    name: 'unmigrated',
+    label: 'Unmigrated entries',
+    matches: (row) => !!row.entry && !row.entry.migrated,
+  },
+  {
+    name: 'unmigrated-retained',
+    label: 'Unmigrated retained services',
+    matches: (row) => row.entry?.disposition === 'retain' && !row.entry.migrated,
+  },
+  {
+    name: 'relocation',
+    label: 'Relocation candidates',
+    matches: (row) => row.category === 'Relocation candidate',
+  },
+  {
+    name: 'ownership-undecided',
+    label: 'Ownership undecided',
+    matches: (row) => row.category === 'Ownership undecided',
+  },
+  {
+    name: 'needs-preparation',
+    label: 'Needs preparation',
+    matches: (row) => row.category === 'Needs preparation',
+  },
+  {
+    name: 'straightforward',
+    label: 'Straightforward migrations',
+    matches: (row) => row.category === 'Straightforward',
+  },
+  {
+    name: 'straightforward-with-violations',
+    label: 'Straightforward — dependency violations',
+    matches: (row) => row.category === 'Straightforward' && row.findings.length > 0,
+  },
+  {
+    name: 'straightforward-clear',
+    label: 'Straightforward — no dependency violations',
+    matches: (row) => row.category === 'Straightforward' && row.analyzed && !row.findings.length,
+  },
+  {
+    name: 'unmigrated-with-violations',
+    label: 'Unmigrated entries with dependency violations',
+    matches: (row) => !!row.entry && !row.entry.migrated && row.findings.length > 0,
+  },
+  {
+    name: 'unmigrated-retained-with-violations',
+    label: 'Unmigrated retained services with dependency violations',
+    matches: (row) =>
+      row.entry?.disposition === 'retain' && !row.entry.migrated && row.findings.length > 0,
+  },
+  {
+    name: 'migrated-with-violations',
+    label: 'Migrated services with dependency violations',
+    matches: (row) => row.category === 'Migrated' && row.findings.length > 0,
+  },
+  { name: 'not-analyzed', label: 'Not analyzed', matches: (row) => !row.analyzed },
+  {
+    name: 'not-inventoried',
+    label: 'Not inventoried',
+    matches: (row) => row.category === 'Not inventoried',
+  },
+];
+
 function summary(rows: Service[]) {
-  const entries = rows.filter((row) => row.entry);
-  const unmigrated = entries.filter((row) => !row.entry?.migrated);
-  const retained = entries.filter((row) => row.entry?.disposition === 'retain');
-  const count = (label: Category) => rows.filter((row) => row.category === label).length;
-  return {
-    'Catalogued entries': entries.length,
-    'Retained services': retained.length,
-    Migrated: count('Migrated'),
-    'Unmigrated entries': unmigrated.length,
-    'Unmigrated retained services': retained.filter((row) => !row.entry?.migrated).length,
-    'Relocation candidates': count('Relocation candidate'),
-    'Ownership undecided': count('Ownership undecided'),
-    'Needs preparation': count('Needs preparation'),
-    'Straightforward migrations': count('Straightforward'),
-    'Straightforward — dependency violations': rows.filter(
-      (row) => row.category === 'Straightforward' && row.findings.length,
-    ).length,
-    'Straightforward — no dependency violations': rows.filter(
-      (row) => row.category === 'Straightforward' && row.analyzed && !row.findings.length,
-    ).length,
-    'Unmigrated entries with dependency violations': unmigrated.filter((row) => row.findings.length)
-      .length,
-    'Unmigrated retained services with dependency violations': unmigrated.filter(
-      (row) => row.entry?.disposition === 'retain' && row.findings.length,
-    ).length,
-    'Migrated services with dependency violations': rows.filter(
-      (row) => row.category === 'Migrated' && row.findings.length,
-    ).length,
-    'Not analyzed': rows.filter((row) => !row.analyzed).length,
-    'Not inventoried': count('Not inventoried'),
-  };
+  return Object.fromEntries(
+    groups.map((group) => [group.label, rows.filter(group.matches).length]),
+  );
 }
 
 function details(row: Service) {
@@ -296,14 +340,32 @@ export function runServices(command: string, args: string[]) {
     }
     const { values, positionals } = parseArgs({
       args,
-      options: { json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' } },
+      options: {
+        json: { type: 'boolean' },
+        help: { type: 'boolean', short: 'h' },
+        ...(command === 'list' ? { group: { type: 'string' as const } } : {}),
+      },
       allowPositionals: command === 'report',
     });
     if (values.help) {
       process.stdout.write(
-        `Usage: pnpm gx services ${command}${command === 'report' ? ' [service]' : ''} [--json]\n`,
+        `Usage: pnpm gx services ${command}${command === 'report' ? ' [service]' : ''}${command === 'list' ? ' [--group <group>]' : ''} [--json]\n`,
       );
+      if (command === 'list') {
+        process.stdout.write(
+          `\n${table(
+            ['GROUP', 'MIGRATION'],
+            groups.map((group) => [group.name, group.label]),
+          )}\n`,
+        );
+      }
       return;
+    }
+    const group = groups.find((item) => item.name === values.group);
+    if (values.group !== undefined && !group) {
+      throw new Error(
+        `Unknown group: ${values.group}. Use "pnpm gx services list --help" to see groups.`,
+      );
     }
     if (positionals.length > 1) {
       throw new Error('Supply at most one service name.');
@@ -321,8 +383,9 @@ export function runServices(command: string, args: string[]) {
     let output: unknown;
     let text: string;
     if (command === 'list') {
-      output = rows;
-      text = list(rows);
+      const filtered = group ? rows.filter(group.matches) : rows;
+      output = filtered;
+      text = list(filtered);
     } else if (command === 'dependencies') {
       const counts = frequencies(rows);
       output = counts;
@@ -334,11 +397,13 @@ export function runServices(command: string, args: string[]) {
       output = selected;
       text = details(selected);
     } else {
-      output = summary(rows);
+      const counts = summary(rows);
+      output = counts;
       text = table(
-        ['MIGRATION', 'COUNT'],
-        Object.entries(summary(rows)).map(([label, count]) => [label, String(count)]),
+        ['MIGRATION', 'COUNT', 'GROUP'],
+        groups.map((item) => [item.label, String(counts[item.label]), item.name]),
       );
+      text += '\n\nList a group: pnpm gx services list --group <group>';
     }
     process.stdout.write(`${values.json ? JSON.stringify(output, null, 2) : text}\n`);
     if (!values.json && command !== 'dependencies') {

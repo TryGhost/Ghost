@@ -268,26 +268,128 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   assert.match(unknown.stderr, /Unknown service: nonexistent/);
 });
 
-test('summary includes own-root-only findings and keeps unanalyzed entries out of the clean category', async (t) => {
+test('list filters match every report group, including unknown analysis and every violation type', async (t) => {
   const f = await fixture(t);
-  await f.write(
-    `${services}/service-inventory.yaml`,
-    JSON.stringify({
-      services: { alpha: entry(), own: entry(), absent: entry() },
-    }),
-  );
-  await f.write(`${services}/own/index.ts`, 'export const value = 1;');
+  const entries = {
+    absent: entry(),
+    alpha: entry(),
+    clean: entry(),
+    done: entry({ migrated: true }),
+    drift: entry({ migrated: true }),
+    own: entry(),
+    prepare: entry({ migration: { ...entry().migration, complexity: 'complex' } }),
+    relocate: entry({ disposition: 'relocate' }),
+    review: entry({ disposition: 'review' }),
+    unresolved: entry(),
+  };
+  await f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: entries }));
+  for (const name of [...Object.keys(entries), 'unlisted'].filter(
+    (candidate) => candidate !== 'absent',
+  )) {
+    await f.write(`${services}/${name}/index.ts`, 'export const value = 1;');
+  }
+  for (const name of ['drift', 'relocate']) {
+    await f.write(`${services}/${name}/worker.ts`, "import '../../../shared/client.js';");
+  }
   await f.write(
     `${services}/own/worker.ts`,
     "import { value } from './index'; console.log(value);",
   );
-  const result = f.run(['report', '--json']);
-  assert.equal(result.status, 0, result.stderr);
-  const summary = JSON.parse(result.stdout);
-  assert.equal(summary['Straightforward migrations'], 3);
-  assert.equal(summary['Straightforward — dependency violations'], 2);
-  assert.equal(summary['Straightforward — no dependency violations'], 0);
-  assert.equal(summary['Not analyzed'], 1);
+  await f.write(`${services}/unresolved/worker.ts`, "import './missing.ts';");
+  const all = f.run(['list', '--json']);
+  assert.equal(all.status, 0, all.stderr);
+  const rows = JSON.parse(all.stdout) as ReturnType<typeof buildServiceReport>;
+  const own = rows.find(({ name }) => name === 'own');
+  assert.deepEqual(own?.dependencies, []);
+  assert.equal(own?.ownRoot, 1);
+  assert.equal(rows.find(({ name }) => name === 'unresolved')?.unresolved, 1);
+
+  const groups: [string, string, string[]][] = [
+    ['catalogued', 'Catalogued entries', Object.keys(entries)],
+    [
+      'retained',
+      'Retained services',
+      ['absent', 'alpha', 'clean', 'done', 'drift', 'own', 'prepare', 'unresolved'],
+    ],
+    ['migrated', 'Migrated', ['done', 'drift']],
+    [
+      'unmigrated',
+      'Unmigrated entries',
+      ['absent', 'alpha', 'clean', 'own', 'prepare', 'relocate', 'review', 'unresolved'],
+    ],
+    [
+      'unmigrated-retained',
+      'Unmigrated retained services',
+      ['absent', 'alpha', 'clean', 'own', 'prepare', 'unresolved'],
+    ],
+    ['relocation', 'Relocation candidates', ['relocate']],
+    ['ownership-undecided', 'Ownership undecided', ['review']],
+    ['needs-preparation', 'Needs preparation', ['prepare']],
+    [
+      'straightforward',
+      'Straightforward migrations',
+      ['absent', 'alpha', 'clean', 'own', 'unresolved'],
+    ],
+    [
+      'straightforward-with-violations',
+      'Straightforward — dependency violations',
+      ['alpha', 'own', 'unresolved'],
+    ],
+    ['straightforward-clear', 'Straightforward — no dependency violations', ['clean']],
+    [
+      'unmigrated-with-violations',
+      'Unmigrated entries with dependency violations',
+      ['alpha', 'own', 'relocate', 'unresolved'],
+    ],
+    [
+      'unmigrated-retained-with-violations',
+      'Unmigrated retained services with dependency violations',
+      ['alpha', 'own', 'unresolved'],
+    ],
+    ['migrated-with-violations', 'Migrated services with dependency violations', ['drift']],
+    ['not-analyzed', 'Not analyzed', ['absent']],
+    ['not-inventoried', 'Not inventoried', ['unlisted']],
+  ];
+  const report = f.run(['report']);
+  assert.equal(report.status, 0, report.stderr);
+  assert.match(report.stdout.split('\n')[0] ?? '', /MIGRATION\s+COUNT\s+GROUP/);
+  const summary = f.run(['report', '--json']);
+  assert.equal(summary.status, 0, summary.stderr);
+  const counts = JSON.parse(summary.stdout);
+  assert.equal(Object.keys(counts).length, groups.length);
+  for (const [group, label, names] of groups) {
+    const result = f.run(['list', '--group', group, '--json']);
+    assert.equal(result.status, 0, `${group}: ${result.stderr}`);
+    assert.deepEqual(
+      JSON.parse(result.stdout),
+      rows.filter(({ name }) => names.includes(name)),
+      group,
+    );
+    assert.equal(counts[label], names.length, group);
+    assert.ok(
+      report.stdout.split('\n').some((line) => {
+        const [reportedLabel, count, reportedGroup] = line.split(/ {2,}/);
+        return reportedLabel === label && count === String(names.length) && reportedGroup === group;
+      }),
+      `${group} is discoverable next to its report count`,
+    );
+  }
+  const clean = f.run(['list', '--group=straightforward-clear']);
+  assert.equal(clean.status, 0, clean.stderr);
+  assert.match(clean.stdout, /^SERVICE\s+CATEGORY/m);
+  assert.match(clean.stdout, /^clean\s+Straightforward\s+0\s+0\s+0$/m);
+  assert.doesNotMatch(clean.stdout, /^(?:absent|alpha|own|unresolved)\s+/m);
+});
+
+test('empty groups preserve list headers and return an empty JSON array', async (t) => {
+  const f = await fixture(t);
+  const empty = f.run(['list', '--group', 'migrated']);
+  assert.equal(empty.status, 0, empty.stderr);
+  assert.match(empty.stdout, /^SERVICE\s+CATEGORY\s+DISALLOWED DEPS\s+UNRESOLVED\s+OWN ROOT/m);
+  assert.doesNotMatch(empty.stdout, /^alpha\s+/m);
+  const json = f.run(['list', '--group', 'migrated', '--json']);
+  assert.equal(json.status, 0, json.stderr);
+  assert.deepEqual(JSON.parse(json.stdout), []);
 });
 
 test('CLI help needs no audit and analyzer failures cannot produce clean reports', async (t) => {
@@ -301,5 +403,50 @@ test('CLI help needs no audit and analyzer failures cannot produce clean reports
     assert.notEqual(failed.status, 0);
     assert.equal(failed.stdout, '');
     assert.match(failed.stderr, /Broken audit configuration/);
+  }
+});
+
+test('list help describes groups and invalid filters fail before the audit runs', async (t) => {
+  const f = await fixture(t);
+  await f.write('.dependency-cruiser.cjs', "throw new Error('Audit must not run');");
+  const help = f.run(['list', '--help']);
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /--group/);
+  for (const group of [
+    'catalogued',
+    'retained',
+    'migrated',
+    'unmigrated',
+    'unmigrated-retained',
+    'relocation',
+    'ownership-undecided',
+    'needs-preparation',
+    'straightforward',
+    'straightforward-with-violations',
+    'straightforward-clear',
+    'unmigrated-with-violations',
+    'unmigrated-retained-with-violations',
+    'migrated-with-violations',
+    'not-analyzed',
+    'not-inventoried',
+  ]) {
+    assert.ok(help.stdout.includes(group), group);
+  }
+  assert.ok(help.stdout.includes('Straightforward — no dependency violations'));
+  const invalid = f.run(['list', '--group', 'nonexistent']);
+  assert.equal(invalid.status, 1);
+  assert.equal(invalid.stdout, '');
+  assert.match(invalid.stderr, /[Uu]nknown.*group.*nonexistent/);
+  assert.doesNotMatch(invalid.stderr, /Audit must not run/);
+  const missing = f.run(['list', '--group']);
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /--group/);
+  assert.doesNotMatch(missing.stderr, /Audit must not run/);
+  for (const command of ['report', 'dependencies']) {
+    const result = f.run([command, '--group', 'migrated']);
+    assert.equal(result.status, 1, command);
+    assert.equal(result.stdout, '', command);
+    assert.match(result.stderr, /--group/, command);
+    assert.doesNotMatch(result.stderr, /Audit must not run/, command);
   }
 });

@@ -161,6 +161,13 @@ Unresolved imports and own-root imports have separate columns.
 `pnpm gx services report <entry>` shows the recorded reasons, assessment
 revisions, preparation and blockers alongside current offending imports.
 
+Each summary row includes a group ID. Use `pnpm gx services list --group <group>`
+to list exactly the entries counted in that row, or `list --help` to see all groups.
+For example, `pnpm gx services list --group straightforward-clear` lists
+straightforward migrations with no dependency violations. Add `--json` for
+structured output. Groups can overlap: a retained service can also be unmigrated
+and need preparation.
+
 Categories come from the inventory, not dependency counts:
 
 - **Migrated:** marked `migrated: true`.

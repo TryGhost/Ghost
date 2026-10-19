@@ -109,6 +109,15 @@ Dependency Cruiser audit. Run them from the repository root:
 | `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files           |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                              |
 
+List any group from the report with `list --group <group>`. Each report row
+shows its group ID; `list --help` lists all groups. For example:
+
+```sh
+pnpm gx services list --group straightforward-clear
+pnpm gx services list --group needs-preparation
+pnpm gx services list --group migrated --json
+```
+
 `report`, `list` and `dependencies` accept `--json` for structured output.
 `services audit` accepts the formatter's options, including
 `--output-type markdown` and `--output-type json --output-to /tmp/service-dependencies.json`.
