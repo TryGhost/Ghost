@@ -61,7 +61,7 @@ test('classifies ownership before migration difficulty and combines both assessm
     dependencies: 'Needs preparation',
     lifecycle: 'Needs preparation',
     migrated: 'Migrated',
-    relocate: 'Relocation candidate',
+    relocate: 'Move or split planned',
     review: 'Ownership undecided',
     straight: 'Straightforward',
   });
@@ -197,18 +197,18 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   assert.equal(summary.status, 0, summary.stderr);
   assert.deepEqual(JSON.parse(summary.stdout), {
     'Catalogued entries': 1,
-    'Retained services': 1,
+    'Staying in services/': 1,
     Migrated: 0,
     'Unmigrated entries': 1,
-    'Unmigrated retained services': 1,
-    'Relocation candidates': 0,
+    'Unmigrated — staying in services/': 1,
+    'Move or split planned': 0,
     'Ownership undecided': 0,
     'Needs preparation': 0,
     'Straightforward migrations': 1,
     'Straightforward — dependency violations': 1,
     'Straightforward — no dependency violations': 0,
     'Unmigrated entries with dependency violations': 1,
-    'Unmigrated retained services with dependency violations': 1,
+    'Unmigrated — staying in services/ with dependency violations': 1,
     'Migrated services with dependency violations': 0,
     'Not analyzed': 0,
     'Not inventoried': 0,
@@ -241,6 +241,7 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   ]) {
     assert.ok(details.stdout.includes(value), value);
   }
+  assert.doesNotMatch(details.stdout, /Inventory notes:/);
   const jsonDetails = f.run(['report', 'alpha', '--json']);
   assert.equal(jsonDetails.status, 0, jsonDetails.stderr);
   assert.deepEqual(JSON.parse(jsonDetails.stdout), rows[0]);
@@ -266,6 +267,50 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   assert.equal(unknown.status, 1);
   assert.equal(unknown.stdout, '');
   assert.match(unknown.stderr, /Unknown service: nonexistent/);
+});
+
+test('planned moves retain runtime-service notes ahead of older migration assessments', async (t) => {
+  const f = await fixture(t);
+  const notes =
+    '\n  This is a configured runtime service. Split its parser out before moving the service.  \n';
+  const planned = entry({ disposition: 'relocate', notes });
+  await f.write(
+    `${services}/service-inventory.yaml`,
+    JSON.stringify({ services: { alpha: planned } }),
+  );
+  const summary = f.run(['report', '--json']);
+  assert.equal(summary.status, 0, summary.stderr);
+  const counts = JSON.parse(summary.stdout);
+  assert.equal(counts['Unmigrated entries'], 1);
+  assert.equal(counts['Move or split planned'], 1);
+  assert.equal(counts.Migrated, 0);
+  assert.equal(counts['Straightforward migrations'], 0);
+
+  const listing = f.run(['list', '--group', 'relocation', '--json']);
+  assert.equal(listing.status, 0, listing.stderr);
+  const rows = JSON.parse(listing.stdout);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].name, 'alpha');
+  assert.equal(rows[0].category, 'Move or split planned');
+  assert.equal(rows[0].entry.notes, notes);
+  assert.equal(rows[0].entry.migration.complexity, 'straightforward');
+  const jsonDetails = f.run(['report', 'alpha', '--json']);
+  assert.equal(jsonDetails.status, 0, jsonDetails.stderr);
+  assert.deepEqual(JSON.parse(jsonDetails.stdout), rows[0]);
+
+  const details = f.run(['report', 'alpha']);
+  assert.equal(details.status, 0, details.stderr);
+  assert.ok(details.stdout.includes(`Inventory notes:\n${notes.trim()}`));
+  assert.ok(details.stdout.includes(assessment.reason));
+  assert.ok(details.stdout.indexOf(notes.trim()) < details.stdout.indexOf('Overall assessment'));
+
+  await f.write(
+    `${services}/service-inventory.yaml`,
+    JSON.stringify({ services: { alpha: entry({ notes: ' \n  ' }) } }),
+  );
+  const blank = f.run(['report', 'alpha']);
+  assert.equal(blank.status, 0, blank.stderr);
+  assert.doesNotMatch(blank.stdout, /Inventory notes:/);
 });
 
 test('list filters match every report group, including unknown analysis and every violation type', async (t) => {
@@ -308,7 +353,7 @@ test('list filters match every report group, including unknown analysis and ever
     ['catalogued', 'Catalogued entries', Object.keys(entries)],
     [
       'retained',
-      'Retained services',
+      'Staying in services/',
       ['absent', 'alpha', 'clean', 'done', 'drift', 'own', 'prepare', 'unresolved'],
     ],
     ['migrated', 'Migrated', ['done', 'drift']],
@@ -319,10 +364,10 @@ test('list filters match every report group, including unknown analysis and ever
     ],
     [
       'unmigrated-retained',
-      'Unmigrated retained services',
+      'Unmigrated — staying in services/',
       ['absent', 'alpha', 'clean', 'own', 'prepare', 'unresolved'],
     ],
-    ['relocation', 'Relocation candidates', ['relocate']],
+    ['relocation', 'Move or split planned', ['relocate']],
     ['ownership-undecided', 'Ownership undecided', ['review']],
     ['needs-preparation', 'Needs preparation', ['prepare']],
     [
@@ -343,7 +388,7 @@ test('list filters match every report group, including unknown analysis and ever
     ],
     [
       'unmigrated-retained-with-violations',
-      'Unmigrated retained services with dependency violations',
+      'Unmigrated — staying in services/ with dependency violations',
       ['alpha', 'own', 'unresolved'],
     ],
     ['migrated-with-violations', 'Migrated services with dependency violations', ['drift']],

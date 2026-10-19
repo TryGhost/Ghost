@@ -20,6 +20,7 @@ const inventorySchema = z.object({
       .object({
         migrated: z.boolean().optional(),
         disposition: z.enum(['retain', 'relocate', 'review']),
+        notes: z.string().optional(),
         migration: assessment.extend({
           modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
           dependencies: assessment
@@ -49,7 +50,7 @@ const auditSchema = z.object({
 type Entry = z.infer<typeof inventorySchema>['services'][string];
 type Category =
   | 'Migrated'
-  | 'Relocation candidate'
+  | 'Move or split planned'
   | 'Ownership undecided'
   | 'Needs preparation'
   | 'Straightforward'
@@ -63,7 +64,7 @@ function category(entry?: Entry): Category {
     return 'Migrated';
   }
   if (entry.disposition === 'relocate') {
-    return 'Relocation candidate';
+    return 'Move or split planned';
   }
   if (entry.disposition === 'review') {
     return 'Ownership undecided';
@@ -165,7 +166,7 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
   { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
   {
     name: 'retained',
-    label: 'Retained services',
+    label: 'Staying in services/',
     matches: (row) => row.entry?.disposition === 'retain',
   },
   { name: 'migrated', label: 'Migrated', matches: (row) => row.category === 'Migrated' },
@@ -176,13 +177,13 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
   },
   {
     name: 'unmigrated-retained',
-    label: 'Unmigrated retained services',
+    label: 'Unmigrated — staying in services/',
     matches: (row) => row.entry?.disposition === 'retain' && !row.entry.migrated,
   },
   {
     name: 'relocation',
-    label: 'Relocation candidates',
-    matches: (row) => row.category === 'Relocation candidate',
+    label: 'Move or split planned',
+    matches: (row) => row.category === 'Move or split planned',
   },
   {
     name: 'ownership-undecided',
@@ -216,7 +217,7 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
   },
   {
     name: 'unmigrated-retained-with-violations',
-    label: 'Unmigrated retained services with dependency violations',
+    label: 'Unmigrated — staying in services/ with dependency violations',
     matches: (row) =>
       row.entry?.disposition === 'retain' && !row.entry.migrated && row.findings.length > 0,
   },
@@ -242,7 +243,10 @@ function summary(rows: Service[]) {
 function details(row: Service) {
   const lines = [list([row])];
   if (row.entry) {
-    const { migration, blockers, unverified } = row.entry;
+    const { migration, notes, blockers, unverified } = row.entry;
+    if (notes?.trim()) {
+      lines.push(`\nInventory notes:\n${notes.trim()}`);
+    }
     lines.push(
       `\nOverall assessment (${migration.complexity}, ${migration.reviewedAt}):\n${migration.reason.trim()}`,
     );
