@@ -218,6 +218,12 @@ until the directory actually leaves, and preserve its dependency, readiness
 and lifetime contracts at the destination. Use `notes` to describe the intended
 split and distinguish it from an earlier in-place migration assessment.
 
+Base disposition on the capability's responsibilities and intended owner. Per-call
+construction, no initializer, a single consumer, or use of another service does
+not by itself justify relocation. A feature-owned target list or an extractable
+helper also does not settle ownership of the whole root. If the owner is
+undecided, use `review` and keep initialization and dependency work applicable.
+
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
 `audited` means all facets have been investigated and recorded from source or

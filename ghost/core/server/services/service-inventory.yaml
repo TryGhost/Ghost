@@ -242,11 +242,14 @@ services:
     notes: >-
       Planned split and relocation out of services: reusable adapter loading, validation and
       instance management belong in kernel; Ghost's adapter registry, search paths and
-      configuration wiring belong in boot. No source has moved. Reassess initialization
-      after separating ownership rather than migrating this root in place. Preserve boot
-      validation, lazy adapter construction, lookup precedence, live configuration resolution
-      and cached identity. Consumers retain adapters outside the manager; disposal and
-      replacement must account for those references and adapter-specific resource owners.
+      configuration wiring belong in boot. Keep Ghost's legacy scheduling/storage
+      normalization, import-storage isolation and content-path defaults in application
+      wiring, preserving live resolution on each lookup. No source has moved. Reassess
+      initialization after separating ownership rather than migrating this root in place.
+      Preserve boot validation, lazy adapter construction, lookup precedence, live
+      configuration resolution and cached identity. Consumers retain adapters outside the
+      manager; disposal and replacement must account for those references and adapter-
+      specific resource owners.
     contracts:
       exports:
         summary: >-
@@ -5841,10 +5844,12 @@ services:
       Planned split and relocation out of services: generic scheduling, dispatch, execution
       and outbox machinery belong in kernel; application configuration, registration and
       activation belong in boot; job definitions and handlers belong with their owning
-      services. No source has moved. Reassess initialization after separating ownership
-      rather than migrating this root in place. Preserve the retained process instance,
-      per-boot handler reset, registration-before-start and backend-specific shutdown.
-      Relocation does not remove the queue's dependency, readiness or lifetime contracts.
+      services. The kernel boundary must exclude Ghost's config/schema imports and concrete
+      database wiring, including outbox availability checks and the jobs_outbox mapping. No
+      source has moved. Reassess initialization after separating ownership rather than
+      migrating this root in place. Preserve the retained process instance, per-boot handler
+      reset, registration-before-start and backend-specific shutdown. Relocation does not
+      remove the queue's dependency, readiness or lifetime contracts.
     contracts:
       exports:
         summary: >-
@@ -11936,12 +11941,15 @@ services:
       - settings/index.js
       - settings/settings-service.js
     notes: >-
-      Planned split and relocation: Ghost-wide settings/cache policy belongs in core/shared with
-      settings-cache; API presentation stays with its endpoint. Boot must inject models, stores
-      and delivery dependencies rather than introducing Shared imports of server code. The cache
-      and caller-owned settings operations retain their distinct lifetimes. No source has moved.
-      Preserve per-boot cache rebuilding, synchronous retained readers and separate caller-owned
-      BREAD instances. Utility consumers also run before ordinary service boot.
+      Planned split and relocation: Ghost-wide settings/cache policy belongs in core/shared
+      with settings-cache; API presentation stays with its endpoint. Boot must inject
+      models, stores and delivery dependencies rather than introducing Shared imports of
+      server code. The cache and caller-owned settings operations retain their distinct
+      lifetimes. Settle ownership of protected setting mutations, verification delivery and
+      feature-specific side effects separately; these are not API presentation merely
+      because endpoints invoke them. No source has moved. Preserve per-boot cache
+      rebuilding, synchronous retained readers and separate caller-owned BREAD instances.
+      Utility consumers also run before ordinary service boot.
     contracts:
       exports:
         summary: >-
@@ -14941,55 +14949,57 @@ services:
         provider acceptance, production deadlines or shared transport disposal on stop/reset.
   tinybird-sync:
     kind: directory
-    disposition: relocate
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
-      complexity: straightforward
+      complexity: complex
       modelImpact: fits
       reason: >-
-        Move eager factory composition into the initializer and await it before boot
-        captures the sync handler. Keep job scheduling separate, including disabled
-        scheduling and retry after registration failure; sync reads its configuration when
-        invoked. This follows the existing signing-key split between a ready instance and
-        jobs-owned recurring work.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        A retained sync instance fits defineService, but ownership is undecided. Automations
+        defines the current disclosure targets; the sync capability also owns ingestion,
+        durable watermarks and recurring registration. Decide whether it belongs wholly to
+        Automations or remains a separate integration before migrating its composition.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/tinybird-sync/index.ts
         - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
+        - core/server/services/tinybird-sync/get-ingest-config.ts
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
       dependencies:
-        complexity: straightforward
+        complexity: complex
         reason: >-
-          The factory already receives config, settings, database, logger, randomness, clock, fetch
-          and ID creation. Its only non-allowlisted cross-service implementation import is the
-          stateless cron helper. Config is read on each sync and the jobs instance is supplied when
-          scheduling, so no service lookup cycle needs untangling.
+          Factory dependencies are already explicit, but the owner of the target list,
+          ingestion configuration and durable sync state must be settled together. A single
+          current feature dataset does not establish ownership of the entire integration.
+          After that decision, dependency wiring remains bounded and does not reveal a
+          defineService extension.
         preparation:
           - >-
-            Inject the cron-generation operation from index.ts or review an exact allowance for the
-            pure helper, keeping the existing allowed Job base import direct.
+            Decide whether Automations owns the whole sync pipeline or supplies disclosure
+            targets to a retained sync capability; keep provider transport and watermark
+            responsibilities explicit at the chosen boundary.
           - >-
-            Move factory invocation to boot-owned construction while preserving live ingest
-            configuration and jobs-service scheduling after startup.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Wire or allowlist the pure cron helper, preserve live ingest configuration,
+            and keep job registration separate from construction with retry after failure.
+        reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
         sources:
           - core/server/services/tinybird-sync/index.ts
           - core/server/services/tinybird-sync/tinybird-sync-service.ts
+          - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
           - core/server/services/tinybird-sync/get-ingest-config.ts
           - core/server/services/jobs-service/cron.ts
-          - core/boot.js
     entryPoints:
       - tinybird-sync/index.ts
     notes: >-
-      Planned relocation under Automations as its private analytics sync handler and job
-      definition. The current disclosure targets are automation_runs and automation_run_steps;
-      generic batching does not make that feature policy Shared or Kernel code. Boot retains
-      registration/activation, and transport may stay private while there is one owner. No source
-      has moved. Eager composition exposes incremental automation-data sync and recurring
-      registration. Jobs-service owns scheduling; preserve cursor, retry and shutdown behavior
-      before migration.
+      Ownership remains under review. Automations defines the current table and column
+      disclosure policy, while this capability owns incremental replication, durable watermarks,
+      ingestion configuration and recurring registration. Decide whether Automations owns the
+      complete pipeline or supplies targets to a retained sync service. One current feature
+      dataset does not establish the final owner. Preserve live configuration, cursor, retry
+      and shutdown contracts. No source has moved.
     contracts:
       exports:
         summary: >-
@@ -15173,47 +15183,58 @@ services:
         current units do not prove provider ingestion or clean resource release.
   update-check:
     kind: directory
-    disposition: relocate
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
-      complexity: not-applicable
-      modelImpact: not-applicable
+      complexity: complex
+      modelImpact: fits
       reason: >-
-        This is an invocation-local checker and job definition, with a new mail/check graph
-        for each call, rather than a retained application instance. Move the cohesive
-        capability to server/lib/update-check as directory cleanup, keeping scheduling with
-        jobs. Do not turn the check operation into a once-only initializer.
-      reviewedAt: ebe8d3df2068fbfccd8a671dc5cc1b0b8265b952
+        Ownership remains undecided between a standalone update-check capability and
+        Notifications-owned remote notice ingestion. Per-invocation construction does not
+        establish that this is non-service support. Either owner can expose a repeatable
+        check operation without changing defineService; preserve live configuration,
+        persisted due-date gating and caller-specific error policy when choosing its lifetime.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/update-check/index.js
+        - core/server/services/update-check/update-check-service.js
         - core/server/services/update-check/jobs/update-check-job.ts
+        - core/server/services/notifications/notifications.js
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
       dependencies:
-        complexity: not-applicable
+        complexity: complex
         reason: >-
-          The root creates a new checker and mail collaborators for each permitted invocation; jobs
-          own scheduling and call it as an operation. This confirmed relocation entry should keep
-          its API/request dependencies at that call boundary rather than acquire a retained service
-          initializer.
+          The root assembles settings, users and notifications API operations, request and
+          mail collaborators. Choose the capability owner and composition boundary before
+          moving those dependencies; creating a new graph per invocation does not justify
+          relocation to server/lib or skipping initialization assessment.
         preparation:
           - >-
-            Move the cohesive checker and job support to server/lib/update-check, updating boot
-            scheduling and handler imports while preserving per-invocation config and error policy.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Decide whether update-check remains a separate integration or becomes private
+            Notifications support, keeping request policy, group filtering and alert delivery
+            with that owner and job registration in boot.
+          - >-
+            Preserve per-invocation configuration and error modes, live due-date reads and
+            mail dependency readiness; keep repeated checking separate from initialization.
+        reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
         sources:
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
           - core/server/services/update-check/jobs/update-check-job.ts
+          - core/server/services/notifications/notification-email.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/boot.js
     entryPoints:
       - update-check/index.js
     notes: >-
-      Each permitted invocation constructs a checker and mail collaborators. Boot owns job
-      registration and scheduling; decide the final capability owner without moving this
-      business logic into the HTTP layer.
+      Ownership needs review: the checker owns remote request policy, persisted check timing,
+      notification-group filtering and administrator alert delivery. Notifications is a possible
+      owner, but consuming its API does not establish ownership. Per-call construction alone
+      is not a reason to relocate. Boot owns job registration and scheduling; preserve a
+      repeatable check operation and its dependency, readiness and error contracts at either
+      destination. No source has moved.
     contracts:
       exports:
         summary: >-
@@ -15934,23 +15955,24 @@ services:
         coverage proves a successful fixture path, not suspended-user rollback or recovery.
   verification:
     kind: directory
-    disposition: relocate
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Settle the cohesive Members verification boundary with verification-trigger before
-        moving or wrapping this sender; ownership is still under review. The sender itself
-        is a small configured collaborator whose validation and request state are per call.
-        It can fit inside the chosen owner factory without a helper extension, but a
-        standalone migration would pre-empt that ownership decision.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        Review this sender with verification-trigger as one site email-verification capability.
+        Its specialized delivery payload and configuration do not establish exclusive Members
+        ownership. The configured collaborator can fit the chosen owner's factory without a
+        defineService extension; choose that owner before a standalone migration or relocation.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/verification/verification-webhook-service.ts
         - core/server/services/verification-trigger.js
         - core/server/services/members/service.js
+        - core/server/services/email-service/email-service.js
+        - core/server/api/endpoints/members.js
       dependencies:
         complexity: straightforward
         reason: >-
@@ -15975,12 +15997,12 @@ services:
     entryPoints:
       - verification/verification-webhook-service.ts
     notes: >-
-      Planned relocation under Members as its private verification-webhook integration. Members'
-      VerificationTrigger is its only production consumer, and generic signed request construction
-      already lives in server/lib/signed-webhook. That resolves the earlier ownership review
-      without moving source. Preserve the eager sender, live configuration, signed delivery and
-      the trigger's delivery-before-persistence contract; test dependency replacement does not
-      establish production hot reload.
+      Review ownership together with verification-trigger. The sender implements a configured
+      email-verification integration with threshold/count payloads; generic signing already
+      lives in server/lib/signed-webhook. Members is its current composition point, but that
+      alone does not establish private Members ownership of the site-wide email-verification
+      capability. Preserve live configuration, signed delivery and delivery-before-persistence
+      behavior while choosing the boundary. No source has moved.
     contracts:
       exports:
         summary: >-
@@ -16139,23 +16161,25 @@ services:
         introducing them during lifecycle migration needs separate compatibility evidence.
   verification-trigger.js:
     kind: file
-    disposition: relocate
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Review this together with the verification sender as a Members-owned capability, not
-        an independent initializer by default. Construction subscribes to member events,
-        Members retains the trigger, and Email captures it; partial Members startup must
-        clean up registration without breaking those consumers. The placement decision
-        remains open, while the retained collaborator itself fits an owner factory.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        Review this together with the verification sender. Member-list thresholds and signup
+        events feed a site-wide email-verification gate used by imports, welcome email and
+        newsletter delivery. Members currently constructs and retains the trigger, but that
+        does not settle the capability's owner. A retained collaborator fits the chosen owner
+        factory; preserve subscription cleanup and retained Email consumers when moving it.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/verification-trigger.js
         - core/server/services/members/service.js
         - core/server/services/email-service/email-service-wrapper.js
+        - core/server/services/email-service/email-service.js
+        - core/server/api/endpoints/members.js
       dependencies:
         complexity: straightforward
         reason: >-
@@ -16179,9 +16203,12 @@ services:
     entryPoints:
       - verification-trigger.js
     notes: >-
-      Members owns this trigger and its event subscription. Preserve threshold calculations,
-      the webhook-before-persistence sequence and caller-specific failure behavior before
-      relocation; concurrent triggers and listener cleanup remain open contracts.
+      Ownership remains under review with the verification sender. Member signup/import and
+      removed-recipient checks drive site-wide email-verification state and sending restrictions.
+      Members currently constructs the trigger and Email retains it; these construction and
+      consumer relationships do not settle the final owner. Preserve thresholds, event
+      subscriptions, delivery-before-persistence and caller-specific failure behavior; concurrent
+      triggers and listener cleanup remain open contracts. No source has moved.
     contracts:
       exports:
         summary: >-
