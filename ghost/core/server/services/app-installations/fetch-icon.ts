@@ -27,7 +27,11 @@ function invalidIcon(message: string) {
   });
 }
 
-function iconError(iconUrl: string, failure: AppFetchFailure, logging: Pick<GhostLogger, 'warn'>) {
+function iconError(
+  iconUrl: string,
+  failure: AppFetchFailure,
+  logging: Pick<GhostLogger, 'warn'>,
+): errors.ValidationError {
   switch (failure.reason) {
     case 'unreachable':
       // Logged like an unreachable manifest, and only the status is said.
