@@ -193,7 +193,7 @@ services:
         application. Existing row/helper tests do not make this root migration-ready.
   adapter-manager:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -240,9 +240,13 @@ services:
     entryPoints:
       - adapter-manager/index.ts
     notes: >-
-      Preserve boot validation, lazy adapter construction, lookup precedence and cached
-      identity. Consumers retain adapters outside the manager; disposal and replacement
-      must account for those references and adapter-specific resource owners.
+      Planned split and relocation out of services: reusable adapter loading, validation and
+      instance management belong in kernel; Ghost's adapter registry, search paths and
+      configuration wiring belong in boot. No source has moved. Reassess initialization
+      after separating ownership rather than migrating this root in place. Preserve boot
+      validation, lazy adapter construction, lookup precedence, live configuration resolution
+      and cached identity. Consumers retain adapters outside the manager; disposal and
+      replacement must account for those references and adapter-specific resource owners.
     contracts:
       exports:
         summary: >-
@@ -2435,7 +2439,7 @@ services:
         selected rows and mail values, not exactly-once delivery or drain.
   email-address:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -2486,9 +2490,14 @@ services:
     entryPoints:
       - email-address/index.js
     notes: >-
-      Preserve the stable implementation and live configuration callbacks, together with
-      consumers that retain the implementation, wrapper or derived sender values. Keep parser
-      helpers available independently of service initialization.
+      Planned split and relocation out of services: the configured Ghost sender-policy
+      service belongs in shared; construction and live settings wiring belong in boot.
+      Mailbox parsing and formatting belong in an ordinary library, not kernel, while
+      delivery compatibility rules belong with sending. No source has moved. Reassess
+      initialization after separating ownership rather than migrating this root in place.
+      The policy remains a boot-owned service with dependency and readiness contracts.
+      Preserve stable identity, live callbacks and consumers that retain the implementation,
+      wrapper or derived sender values. Keep library helpers independent of service startup.
     contracts:
       exports:
         summary: >-
@@ -5772,7 +5781,7 @@ services:
         authority, forwarded name/password and the expiry boundary without real persistence.
   jobs-service:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -5820,8 +5829,13 @@ services:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
     notes: >-
-      Retained process instance; per-boot handler reset, registration-before-start and
-      backend-specific shutdown need to remain explicit.
+      Planned split and relocation out of services: generic scheduling, dispatch, execution
+      and outbox machinery belong in kernel; application configuration, registration and
+      activation belong in boot; job definitions and handlers belong with their owning
+      services. No source has moved. Reassess initialization after separating ownership
+      rather than migrating this root in place. Preserve the retained process instance,
+      per-boot handler reset, registration-before-start and backend-specific shutdown.
+      Relocation does not remove the queue's dependency, readiness or lifetime contracts.
     contracts:
       exports:
         summary: >-

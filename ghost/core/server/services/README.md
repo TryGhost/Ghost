@@ -209,6 +209,15 @@ Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
 
+`disposition` records the intended home of the current directory entry:
+`retain` keeps it here, `relocate` plans a move or split between other owners,
+and `review` leaves ownership undecided. It does not record completed work.
+A relocated capability can still be a configured runtime service; relocation
+does not make its initialization assessment `not-applicable`. Keep the entry
+until the directory actually leaves, and preserve its dependency, readiness
+and lifetime contracts at the destination. Use `notes` to describe the intended
+split and distinguish it from an earlier in-place migration assessment.
+
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
 `audited` means all facets have been investigated and recorded from source or
