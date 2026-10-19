@@ -28,7 +28,12 @@ const config = {
   workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
   fullyParallel: false,
   reporter: process.env.CI
-    ? [['list', { printSteps: true }], ['blob']]
+    ? [
+        ['list', { printSteps: true }],
+        ['blob'],
+        // Per-file durations for CI shard balancing (tools/scripts/ci/e2e-shards.ts).
+        ['json', { outputFile: 'json-report/report.json' }],
+      ]
     : [
         ['list', { printSteps: true }],
         ['html', { open: 'never' }],
@@ -60,6 +65,7 @@ const config = {
         '**/*.teardown.ts',
         'analytics/**/*.test.ts',
         'stripe-fixtures/**/*.test.ts',
+        'fake-services/**/*.test.ts',
       ],
       testDir: './tests',
       use: {
@@ -70,7 +76,7 @@ const config = {
     {
       name: 'fixtures',
       testDir: './tests',
-      testMatch: ['stripe-fixtures/**/*.test.ts'],
+      testMatch: ['stripe-fixtures/**/*.test.ts', 'fake-services/**/*.test.ts'],
     },
     {
       name: 'analytics',

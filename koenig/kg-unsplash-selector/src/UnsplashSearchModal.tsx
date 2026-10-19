@@ -51,7 +51,12 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key !== 'Escape') {
+        return;
+      }
+      if (zoomedImg) {
+        setZoomedImg(null);
+      } else {
         onClose();
       }
     };
@@ -59,23 +64,17 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, zoomedImg]);
 
   React.useEffect(() => {
     const ref = galleryRef.current;
-    if (!zoomedImg) {
-      if (ref) {
-        ref.addEventListener('scroll', () => {
-          setScrollPos(ref.scrollTop);
-        });
-      }
-      // unmount
+    if (!zoomedImg && ref) {
+      const handleScroll = () => {
+        setScrollPos(ref.scrollTop);
+      };
+      ref.addEventListener('scroll', handleScroll);
       return () => {
-        if (ref) {
-          ref.removeEventListener('scroll', () => {
-            setScrollPos(ref.scrollTop);
-          });
-        }
+        ref.removeEventListener('scroll', handleScroll);
       };
     }
   }, [galleryRef, zoomedImg]);
@@ -84,7 +83,10 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
     if (initLoadRef.current === false || searchTerm.length === 0) {
       setDataset([]);
       UnsplashLib.clearPhotos();
-      await UnsplashLib.loadNew();
+      const isLatest = await UnsplashLib.loadNew();
+      if (!isLatest) {
+        return;
+      }
       const columns = UnsplashLib.getColumns();
       setDataset(columns || []);
       if (galleryRef.current && galleryRef.current.scrollTop !== 0) {
@@ -112,7 +114,10 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
       setIsLoading(true);
       setDataset([]);
       UnsplashLib.clearPhotos();
-      await UnsplashLib.updateSearch(searchTerm);
+      const isLatest = await UnsplashLib.updateSearch(searchTerm);
+      if (!isLatest) {
+        return;
+      }
       const columns = UnsplashLib.getColumns();
       if (columns) {
         setDataset(columns);
@@ -140,7 +145,10 @@ export const UnsplashSearchModal: React.FC<UnsplashModalProps> = ({
 
   const loadMorePhotos = React.useCallback(async () => {
     setIsLoading(true);
-    await UnsplashLib.loadNextPage();
+    const isLatest = await UnsplashLib.loadNextPage();
+    if (!isLatest) {
+      return;
+    }
     const columns = UnsplashLib.getColumns();
     setDataset(columns || []);
     setIsLoading(false);

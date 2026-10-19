@@ -77,13 +77,7 @@ const FieldRow: React.FC<{
         </button>
       </ActionListItemContent>
       <ActionListItemActions>
-        <Button
-          className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
-          size="sm"
-          type="button"
-          variant="link"
-          onClick={() => openModal(field)}
-        >
+        <Button size="sm" type="button" variant="ghost" onClick={() => openModal(field)}>
           Edit
         </Button>
       </ActionListItemActions>
@@ -179,10 +173,10 @@ const FieldList: React.FC<{
         </ActionList>
       )}
       {isTruncated && (
-        <div className="flex items-center gap-2 border-t border-border pt-2 font-bold text-green hover:opacity-80">
-          <button type="button" onClick={onShowAll}>
+        <div className="flex items-center gap-2 border-t border-border pt-2">
+          <Button size="sm" type="button" variant="outline" onClick={onShowAll}>
             Show all
-          </button>
+          </Button>
         </div>
       )}
     </>

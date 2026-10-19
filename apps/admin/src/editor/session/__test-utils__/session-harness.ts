@@ -10,6 +10,7 @@ import {
   type EditorSessionOptions,
 } from '@/editor/session/editor-session';
 import type { EditorRecord } from '@/editor/session/projection';
+import type { EditorWritableData } from '@/editor/session/write-payload';
 
 export const LOADED_AT = '2026-01-01T00:00:00.000Z';
 
@@ -55,7 +56,7 @@ export function updateCollision(): JSONError {
  * The post serializer standing in for the transport: a payload is not a record,
  * so this resolves it into the fields a saved record carries.
  */
-export function serializedFields(payload: EditorCreatePayload): Partial<EditorRecord> {
+export function serializedFields(payload: EditorWritableData): Partial<EditorRecord> {
   return serializePostPayload(payload);
 }
 
@@ -73,11 +74,15 @@ export interface HarnessHooks {
   /** Answers an update with nothing, which the session reports as a failed save. */
   failSave?: (saveCount: number) => boolean;
   failUpdateWith?: Error;
+  /** Commits the update, then answers it with this error, as a lost response would. */
+  failAfterCommitWith?: (saveCount: number) => Error | undefined;
+  /** Replaces the read of the post as the server holds it. */
+  read?: (acknowledged: EditorRecord) => Promise<EditorRecord | undefined>;
   failSlugWith?: Error;
   /** Replaces the generator, so a test can hold a slug request open. */
   generateSlug?: (text: string) => Promise<string>;
   /** Resolves a payload into the fields the acknowledgement carries back. */
-  applied?: (payload: EditorCreatePayload, acknowledged: EditorRecord) => Partial<EditorRecord>;
+  applied?: (payload: EditorWritableData, acknowledged: EditorRecord) => Partial<EditorRecord>;
 }
 
 export interface HarnessOptions extends Partial<EditorSessionOptions> {
@@ -134,9 +139,9 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
       const next = {
         ...state.acknowledged,
         ...(hooks.applied?.(payload, state.acknowledged) ?? {
-          title: payload.title,
-          slug: payload.slug,
-          lexical: payload.lexical,
+          title: payload.title ?? state.acknowledged.title,
+          slug: payload.slug ?? state.acknowledged.slug,
+          lexical: 'lexical' in payload ? payload.lexical : state.acknowledged.lexical,
           custom_excerpt: ('custom_excerpt' in payload
             ? payload.custom_excerpt
             : (state.acknowledged.custom_excerpt ?? null)) as string | null,
@@ -147,8 +152,15 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
         updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
       } as EditorRecord;
       state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
-      return Promise.resolve(state.acknowledged);
+      const lost = hooks.failAfterCommitWith?.(saveCount);
+      return lost ? Promise.reject(lost) : Promise.resolve(state.acknowledged);
     },
+  );
+
+  const read = vi.fn((id: string) =>
+    hooks.read
+      ? hooks.read(state.acknowledged)
+      : Promise.resolve(id === state.acknowledged.id ? state.acknowledged : undefined),
   );
 
   const session = createEditorSession({
@@ -158,6 +170,7 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
     transport: {
       create,
       update,
+      read,
       generateSlug: (text) => {
         if (hooks.generateSlug) {
           return hooks.generateSlug(text);
@@ -174,5 +187,5 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
     session.setBaseline(baseline ?? null);
   }
 
-  return { session, state, create, update };
+  return { session, state, create, update, read };
 }

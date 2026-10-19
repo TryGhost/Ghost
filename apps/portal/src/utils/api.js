@@ -1,4 +1,5 @@
 import { HumanReadableError } from './errors';
+import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
 
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
@@ -27,6 +28,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     headers = {},
     credentials = undefined,
     body = undefined,
+    edgeChallenge = false,
   }) {
     const options = {
       method,
@@ -34,7 +36,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       credentials,
       body,
     };
-    return fetch(url, options);
+    return edgeChallenge ? fetchWithEdgeChallenge(url, options) : fetch(url, options);
   }
   const api = {};
 
@@ -378,6 +380,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       const res = await makeRequest({
         url,
         method: 'GET',
+        edgeChallenge: true,
       });
 
       if (res.ok) {
@@ -447,6 +450,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
+        edgeChallenge: true,
       });
 
       if (res.ok) {

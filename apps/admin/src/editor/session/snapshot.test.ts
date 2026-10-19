@@ -6,7 +6,7 @@ const clean: ChangeVerdict = { dirty: false, reasons: [] };
 
 const titleDiverged: ChangeVerdict = {
   dirty: true,
-  reasons: [{ code: 'POST_TITLE_DIVERGED', reason: 'title is different', context: {} }],
+  reasons: [{ code: 'POST_TITLE_DIVERGED' }],
 };
 
 function sources(overrides: Partial<SnapshotSources> = {}): SnapshotSources {
@@ -15,6 +15,7 @@ function sources(overrides: Partial<SnapshotSources> = {}): SnapshotSources {
     status: 'draft',
     publishedAt: null,
     publishedAtDirty: false,
+    settingsDirty: false,
     title: 'Hello',
     slug: 'hello',
     slugIsCustom: false,

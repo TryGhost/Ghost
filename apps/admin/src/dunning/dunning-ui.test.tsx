@@ -41,9 +41,16 @@ vi.mock('@tryghost/admin-x-framework/api/users', async () => {
   return { ...actual, useBrowseUsers: mockUseBrowseUsers };
 });
 
-vi.mock('@/ember-bridge', () => ({
-  useSubscriptionStatus: mockUseSubscriptionStatus,
-}));
+vi.mock('@/billing/api', async () => {
+  const { activeDunning, readDunningPaymentSettledFor } = await vi.importActual<
+    typeof import('@/billing/billing-protocol')
+  >('@/billing/billing-protocol');
+  return {
+    activeDunning,
+    readDunningPaymentSettledFor,
+    useSubscriptionStatus: mockUseSubscriptionStatus,
+  };
+});
 
 const NOW = new Date('2026-09-10T12:00:00Z');
 
@@ -329,7 +336,7 @@ describe('dunning UI', () => {
       expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
 
       // The click records where to return after the payment (consumed by the
-      // Ember billing service's previousPage handling)
+      // billing screen's previousPage handling)
       expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).toBe('/analytics');
 
       // On the billing route both stand down as usual.

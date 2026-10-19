@@ -53,6 +53,7 @@ describe('Members list', () => {
 
     await expect(membersScreen.memberRows()).toHaveCount(1);
 
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await membersScreen.searchInput().fill('nonexistentnamestring');
 
     await expect.element(membersScreen.noResults()).toBeVisible();
@@ -151,6 +152,8 @@ describe('Members list', () => {
     await renderAdminApp('/members');
 
     await expect(membersScreen.memberRows()).toHaveCount(2);
+    // The list doesn't wait for the definitions lookup, so let it land before counting.
+    await expect.poll(() => definitionsApi.requests.length).toBeGreaterThan(0);
     const requestsBeforeFilter = definitionsApi.requests.length;
 
     await membersScreen.addFilter('Name', 'Alice');

@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 
 import {
   configResponse,
+  currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
   fakeSettingsScreens,
@@ -48,6 +49,7 @@ function stripeLimitConfig() {
         error: "Your current plan doesn't support Stripe Connect.",
       },
     },
+    billing: { enabled: true },
   };
   return config;
 }
@@ -79,8 +81,11 @@ describe('Tier settings', () => {
     await modal.getByLabelText('Name').fill(created.name);
     await modal.getByLabelText('Monthly price').fill('8');
     await modal.getByLabelText('Yearly price').fill('80');
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    // Observe the short Saved feedback while the browser click is in flight.
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
     await modal.getByRole('button', { name: 'Close' }).click();
 
     await expect
@@ -129,8 +134,10 @@ describe('Tier settings', () => {
     await expect.element(preview).toHaveTextContent('$100/year');
     await expect.element(preview).toHaveTextContent('17% discount');
 
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.tiers().getByText(updated.name, { exact: true }))
@@ -157,8 +164,10 @@ describe('Tier settings', () => {
     await modal.getByLabelText('New benefit').fill('First benefit');
     await modal.getByRole('button', { name: 'Add' }).click();
     await modal.getByLabelText('New benefit').fill('Second benefit');
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
 
     expect(editApi.lastRequest?.body).toMatchObject({
       tiers: [
@@ -292,8 +301,10 @@ describe('Tier settings', () => {
     await expect.element(checkbox).not.toBeChecked();
 
     await checkbox.click();
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
     expect(tierApi.lastRequest?.body).toMatchObject({
       tiers: [{ id: hidden.id, visibility: 'public' }],
     });
@@ -312,7 +323,7 @@ describe('Tier settings', () => {
       .toHaveTextContent("Your current plan doesn't support Stripe Connect");
     await expect(settingsScreen.stripeModal()).toHaveCount(0);
     await settingsScreen.limitModal().getByRole('button', { name: 'Upgrade' }).click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await expect.poll(currentRoute).toBe('/pro');
   });
 
   it('allows an already-connected site to manage Stripe despite the plan limit', async () => {
@@ -374,6 +385,6 @@ describe('Tier settings', () => {
       .toHaveTextContent("Your current plan doesn't support Stripe Connect");
     await expect(settingsScreen.stripeModal()).toHaveCount(0);
     await settingsScreen.limitModal().getByRole('button', { name: 'Upgrade' }).click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await expect.poll(currentRoute).toBe('/pro');
   });
 });

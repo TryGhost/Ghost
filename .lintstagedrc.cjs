@@ -1,15 +1,21 @@
 const path = require('path');
 const fs = require('fs');
-const { quote: shellQuote } = require('shell-quote');
+const { quote } = require('shell-quote');
 
 const ROOT = process.cwd();
+
+function shellQuote(args) {
+  // lint-staged parses arguments without a shell, so backslash-escaped dollar
+  // signs become literal backslashes. Quote paths instead where possible.
+  return args.map((arg) => (arg.includes("'") ? quote([arg]) : `'${arg}'`)).join(' ');
+}
 
 function normalize(p) {
   return p.split(path.sep).join('/');
 }
 
 // Parse the `packages:` list from pnpm-workspace.yaml. We only need the simple
-// glob shapes pnpm allows here (`apps/*`, `ghost/*`, `e2e`); anything fancier
+// glob shapes pnpm allows here (`apps/*`, `ghost`, `e2e`); anything fancier
 // would warrant a real YAML parser.
 function loadWorkspacePatterns() {
   const yaml = fs.readFileSync(path.join(ROOT, 'pnpm-workspace.yaml'), 'utf8');
@@ -86,7 +92,7 @@ function buildOxfmtCommand(files) {
   const relativeFiles = files.map((file) => normalize(path.relative(ROOT, file)));
   // --no-error-on-unmatched-pattern: a staged set may consist entirely of
   // files the formatter config ignores, which is otherwise an error.
-  return `node scripts/format.js --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
+  return `node tools/scripts/format.ts --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
@@ -129,14 +135,14 @@ module.exports = {
       ),
     ];
   },
-  'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
+  'ghost/core/{server,kernel,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
   'apps/{admin,shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}':
     (files) => buildBoundaryCommand(files),
   '*.{mjs,mts,cts,json,jsonc,json5,yml,yaml,css,mdx}': (files) => buildOxfmtCommand(files),
   '**/*.md': (files) => [buildOxfmtCommand(files), ...buildMarkdownCommands(files)],
-  '{**/AGENTS.md,scripts/check-agent-guidance.js}': () => 'pnpm lint:agent-guidance',
-  '{.agents/skills/**,.claude/skills/**,scripts/check-agent-skill-links.js}': () =>
+  '{**/AGENTS.md,tools/scripts/ci/check-agent-guidance.ts}': () => 'pnpm lint:agent-guidance',
+  '{.agents/skills/**,.claude/skills/**,tools/scripts/ci/check-agent-skill-links.ts}': () =>
     'pnpm lint:agent-skills',
-  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,scripts/check-internal-packages.js,scripts/create-package.js,scripts/lib/constants.js,scripts/lib/package-template.js}':
+  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,tools/scripts/ci/check-internal-packages.ts,tools/gx/**,tools/scripts/lib/constants.ts}':
     () => 'pnpm lint:packages',
 };

@@ -23,17 +23,17 @@ export function PostBookmark({ post, siteTitle }: PostBookmarkProps) {
           style={{ backgroundImage: `url(${post.featureImage})` }}
         />
       ) : null}
-      <Stack className="p-5" gap="xs">
-        <Text size="lg" weight="bold">
+      <Stack className="p-6" gap="xs">
+        <Text as="h3" className="text-pretty" size="lg" weight="bold">
           {post.title}
         </Text>
         {post.excerpt ? (
-          <Text className="line-clamp-2" tone="secondary">
+          <Text className="line-clamp-2 text-pretty" size="lg" tone="secondary">
             {post.excerpt}
           </Text>
         ) : null}
         {siteTitle ? (
-          <Text size="sm" tone="tertiary">
+          <Text size="lg" tone="secondary">
             {siteTitle}
           </Text>
         ) : null}

@@ -36,7 +36,7 @@ export const useRequestExport = createMutation<unknown, ExportRequestPayload>({
   method: 'POST',
   path: () => '/exports/',
   body: ({ components }) => ({ components }),
-  // Not idempotent: each delivered request can schedule an archive and an
+  // Not idempotent: each delivered request can schedule an export and an
   // email, so a lost response must not trigger an automatic re-send.
   retry: false,
 });

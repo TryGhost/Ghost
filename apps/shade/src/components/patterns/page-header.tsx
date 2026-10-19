@@ -1,4 +1,5 @@
-import { useShade } from '@/providers/shade-provider';
+import { HeaderTooltipProvider } from '@/providers/header-tooltip-provider';
+import { useShade } from '@/providers/shade-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,14 +7,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { SelectTrigger } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Kbd } from '@/components/ui/kbd';
 import { H1 } from '@/components/layout/heading';
 import { Inline, Stack, Text } from '@/components/primitives';
 import { cn } from '@/lib/utils';
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { ListFilter } from 'lucide-react';
+import { PageHeaderLargeTitleContext } from './page-header-large-title';
 import { Slot } from '@radix-ui/react-slot';
 
 type PropsWithChildrenAndClassName = React.PropsWithChildren & {
@@ -25,12 +28,15 @@ type PageHeaderProps = PropsWithChildrenAndClassName & {
   blurredBackground?: boolean;
 };
 
-/** Header tooltips require Admin 7 and never belong on primary actions. */
+/**
+ * Header tooltips require Admin 7 and never belong on primary actions. A tooltip
+ * without a label shows only the shortcut, for a control whose text already names it.
+ */
 function PageHeaderTooltip({
   children,
   label,
   shortcut,
-}: React.PropsWithChildren<{ label: string; shortcut?: string }>) {
+}: React.PropsWithChildren<{ label?: string; shortcut?: string }>) {
   const { isAdmin7 } = useShade();
   if (!isAdmin7) {
     return <>{children}</>;
@@ -73,6 +79,8 @@ type PageHeaderActionProps = ButtonProps & {
   iconOnly?: boolean;
   primary?: boolean;
   shortcut?: string;
+  /** Show an explanation for a changing value; static labels need no tooltip. */
+  tooltip?: boolean;
   /** Temporary compatibility for existing screens; new headers use the defaults. */
   fallbackVariant?: ButtonProps['variant'];
   fallbackSize?: ButtonProps['size'];
@@ -85,6 +93,7 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
       iconOnly = false,
       primary: primaryProp,
       shortcut,
+      tooltip = iconOnly || Boolean(shortcut),
       fallbackVariant = 'outline',
       fallbackSize,
       className,
@@ -106,10 +115,12 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
         {...props}
       />
     );
-    return primary || !isAdmin7 ? (
+    // A labelled action already shows its name, so its shortcut tooltip shows the keys alone.
+    const tooltipLabel = iconOnly || !shortcut ? label : undefined;
+    return primary || !isAdmin7 || !tooltip ? (
       button
     ) : (
-      <PageHeaderTooltip label={label} shortcut={shortcut}>
+      <PageHeaderTooltip label={tooltipLabel} shortcut={shortcut}>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
       </PageHeaderTooltip>
     );
@@ -137,27 +148,31 @@ PageHeaderFilterTrigger.displayName = 'PageHeaderFilterTrigger';
 
 const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
-  React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
->(({ label, className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string; tooltip?: boolean }
+>(({ label, tooltip = true, className, ...props }, ref) => {
   const { controlShape, isAdmin7 } = useShade();
-  return (
+  const trigger = (
+    <SelectTrigger
+      ref={ref}
+      aria-label={label}
+      className={cn(
+        'w-auto',
+        isAdmin7 &&
+          'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
+        className,
+      )}
+      shape={controlShape}
+      showChevron={!isAdmin7}
+      variant={isAdmin7 ? 'ghost' : 'default'}
+      {...props}
+    />
+  );
+  return tooltip ? (
     <PageHeaderTooltip label={label}>
-      <PageHeaderTooltipTrigger asChild>
-        <SelectTrigger
-          ref={ref}
-          aria-label={label}
-          className={cn(
-            'w-auto',
-            isAdmin7 && 'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2!',
-            className,
-          )}
-          shape={controlShape}
-          showChevron={!isAdmin7}
-          variant={isAdmin7 ? 'ghost' : 'default'}
-          {...props}
-        />
-      </PageHeaderTooltipTrigger>
+      <PageHeaderTooltipTrigger asChild>{trigger}</PageHeaderTooltipTrigger>
     </PageHeaderTooltip>
+  ) : (
+    trigger
   );
 });
 PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
@@ -221,6 +236,10 @@ function PageHeaderMeta({ className, children }: PropsWithChildrenAndClassName) 
  * below the heading.
  */
 function PageHeaderTitle({ className, children }: PropsWithChildrenAndClassName) {
+  const largeTitle = React.useContext(PageHeaderLargeTitleContext);
+  const registerLargeTitle = largeTitle?.registerTitle;
+  React.useLayoutEffect(() => registerLargeTitle?.(), [registerLargeTitle]);
+
   const headingChildren: React.ReactNode[] = [];
   const subTextChildren: React.ReactNode[] = [];
 
@@ -239,6 +258,40 @@ function PageHeaderTitle({ className, children }: PropsWithChildrenAndClassName)
         headingChildren.push(child);
     }
   });
+
+  // Shown large above the page's header, the title is that heading; the one
+  // in the header is a stand-in, fading in as the header takes over
+  if (largeTitle) {
+    return (
+      <>
+        <H1
+          aria-hidden="true"
+          className={cn(
+            'large-title-header-title text-lg font-semibold tracking-[0.1px] whitespace-nowrap',
+            className,
+          )}
+          data-page-header="title"
+        >
+          {headingChildren}
+        </H1>
+        {largeTitle.slot &&
+          createPortal(
+            <Stack data-page-header="large-title" gap="none">
+              <H1
+                className="flex items-baseline gap-3 font-medium tracking-[-0.03em] whitespace-nowrap [&_[data-page-header=count]]:tracking-normal"
+                data-large-title=""
+                // Inline, over Text's own line height
+                style={{ fontSize: 'var(--large-title-size)', lineHeight: 1.15 }}
+              >
+                {headingChildren}
+              </H1>
+              {subTextChildren}
+            </Stack>,
+            largeTitle.slot,
+          )}
+      </>
+    );
+  }
 
   const heading = (
     <H1
@@ -336,17 +389,6 @@ function PageHeaderActionGroupMobileMenuContent({
   );
 }
 
-function PageHeaderTooltipProvider({ children }: React.PropsWithChildren) {
-  const { isAdmin7 } = useShade();
-  return isAdmin7 ? (
-    <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
-      {children}
-    </TooltipProvider>
-  ) : (
-    <>{children}</>
-  );
-}
-
 const DEFAULT_MOBILE_MENU_BREAKPOINT = 640;
 
 const isBelowBreakpoint = (breakpoint: number) => {
@@ -424,7 +466,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
 
     if (!mobileMenu) {
       return (
-        <PageHeaderTooltipProvider>
+        <HeaderTooltipProvider>
           <Inline
             align="center"
             className={className}
@@ -434,13 +476,13 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
           >
             {children}
           </Inline>
-        </PageHeaderTooltipProvider>
+        </HeaderTooltipProvider>
       );
     }
 
     if (!shouldCollapse) {
       return (
-        <PageHeaderTooltipProvider>
+        <HeaderTooltipProvider>
           <Inline
             align="center"
             className={className}
@@ -452,12 +494,12 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
               {desktopChildren}
             </Inline>
           </Inline>
-        </PageHeaderTooltipProvider>
+        </HeaderTooltipProvider>
       );
     }
 
     return (
-      <PageHeaderTooltipProvider>
+      <HeaderTooltipProvider>
         <Inline
           align="center"
           className={className}
@@ -480,7 +522,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
               ))}
           </Inline>
         </Inline>
-      </PageHeaderTooltipProvider>
+      </HeaderTooltipProvider>
     );
   },
   {
@@ -493,14 +535,16 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
 
 function PageHeaderActions({ className, children }: PropsWithChildrenAndClassName) {
   return (
-    <Inline
-      align="center"
-      className={cn('min-h-(--control-height) shrink-0', className)}
-      data-page-header="actions"
-      gap="lg"
-    >
-      {children}
-    </Inline>
+    <HeaderTooltipProvider>
+      <Inline
+        align="center"
+        className={cn('min-h-(--control-height) shrink-0', className)}
+        data-page-header="actions"
+        gap="lg"
+      >
+        {children}
+      </Inline>
+    </HeaderTooltipProvider>
   );
 }
 
@@ -545,7 +589,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
           'flex flex-col',
           sticky && 'sticky top-0 z-50',
           blurredBackground &&
-            'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
+            'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md',
           className,
         )}
         data-page-header="page-header"

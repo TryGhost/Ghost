@@ -34,7 +34,7 @@
             h5,
             h6
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+            font-family: var(--kg-font-heading, "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif);
             font-weight: 700;
             color: var(--black);
         }
@@ -52,42 +52,42 @@
 
         /* H1 should be almost the same size as the post title to suggest avoid using it */
         :where(h1):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 4.4rem;
+            font-size: calc(4.4rem * var(--kg-font-heading-scale, 1));
             line-height: 1.15em;
-            letter-spacing: -0.015em;
+            letter-spacing: calc(-0.015em * var(--kg-font-heading-tracking-scale, 1));
         }
 
         :where(h2):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 3.2rem;
+            font-size: calc(3.2rem * var(--kg-font-heading-scale, 1));
             line-height: 1.2em;
-            letter-spacing: -0.014em;
+            letter-spacing: calc(-0.014em * var(--kg-font-heading-tracking-scale, 1));
         }
 
         :where(h3):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 2.5rem;
+            font-size: calc(2.5rem * var(--kg-font-heading-scale, 1));
             line-height: 1.3em;
-            letter-spacing: -0.013em;
+            letter-spacing: calc(-0.013em * var(--kg-font-heading-tracking-scale, 1));
         }
 
         /* H4 is almost the same size as H3 to discourage using it */
         :where(h4):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 2.2rem;
+            font-size: calc(2.2rem * var(--kg-font-heading-scale, 1));
             line-height: 1.35em;
-            letter-spacing: -0.011em;
+            letter-spacing: calc(-0.011em * var(--kg-font-heading-tracking-scale, 1));
         }
 
         :where(h5):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 2.0rem;
+            font-size: calc(2.0rem * var(--kg-font-heading-scale, 1));
             line-height: 1.35em;
             font-weight: 700;
-            letter-spacing: -0.011em;
+            letter-spacing: calc(-0.011em * var(--kg-font-heading-tracking-scale, 1));
         }
 
         :where(h6):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 1.85rem;
+            font-size: calc(1.85rem * var(--kg-font-heading-scale, 1));
             line-height: 1.4em;
             font-weight: 700;
-            letter-spacing: -0.008em;
+            letter-spacing: calc(-0.008em * var(--kg-font-heading-tracking-scale, 1));
         }
 
         :where(
@@ -309,10 +309,12 @@
             ul,
             ol
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: georgia,Times,serif;
+            font-family: var(--kg-font-body, georgia,Times,serif);
             font-weight: 400;
-            line-height: 1.6em;
-            font-size: 2.0rem;
+            line-height: var(--kg-font-body-line-height, 1.6em);
+            /* Unset by default, so the declaration falls back to inheriting */
+            letter-spacing: var(--kg-font-body-tracking);
+            font-size: calc(2.0rem * var(--kg-font-body-scale, 1));
         }
 
         :where(
@@ -610,7 +612,7 @@
             padding: 1rem 6rem 1.25rem;
             font-style: italic;
             text-align: center;
-            font-size: 2.4rem;
+            font-size: calc(2.4rem * var(--kg-font-body-scale, 1));
             color: var(--grey-500);
         }
 
@@ -729,10 +731,10 @@
             border: 1px solid var(--grey-200);
             border-radius: 2px;
             color: var(--grey-900);
-            font-size: .8em;
+            font-size: var(--kg-font-code-size, .8em);
             line-height: 1em;
             padding: .4rem .4rem .2rem;
-            vertical-align: middle;
+            vertical-align: var(--kg-font-code-vertical-align, middle);
             white-space: pre-wrap;
         }
 
@@ -833,7 +835,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                    @apply font-sans !leading-[1.1] font-bold tracking-tight;
+                    @apply font-heading !leading-[1.1] font-bold tracking-tight;
         }
         :where(
                     a,
@@ -909,7 +911,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                    @apply font-sans !leading-snug font-medium tracking-tight;
+                    @apply font-heading !leading-snug font-medium tracking-tight;
         }
         :where(
                     strong

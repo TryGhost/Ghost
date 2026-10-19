@@ -26,12 +26,7 @@ export function createTestQueryClient(): QueryClient {
  * Default framework props for testing
  */
 export const defaultFrameworkProps: TopLevelFrameworkProps = {
-  externalNavigate: () => {},
   ghostVersion: '5.x',
-  onDelete: () => {},
-  onInvalidate: () => {},
-  onUpdate: () => {},
-  sentryDSN: null,
   unsplashConfig: {
     Authorization: '',
     'Accept-Version': '',

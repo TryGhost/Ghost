@@ -7,6 +7,7 @@ import ThemePreview from './theme/theme-preview';
 import {
   Button,
   Dropzone,
+  Link,
   LoadingIndicator,
   Tabs,
   TabsList,
@@ -34,6 +35,7 @@ import {
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 interface ThemeToolbarProps {
   selectedTheme: OfficialTheme | null;
@@ -235,10 +237,15 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
         prompt: uploadConfig.error || (
           <>
             Your current plan only supports official themes. You can install them from the{' '}
-            <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
+            <Link href="https://ghost.org/marketplace/" external>
+              Ghost theme marketplace
+            </Link>
+            .
           </>
         ),
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
     }
   };
@@ -246,9 +253,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
   const right = (
     <div className="flex items-center gap-14">
       <div className="flex items-center gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <PageHeader.Action label="Close" type="button" onClick={onClose}>
           Close
-        </Button>
+        </PageHeader.Action>
         <Button disabled={isUploading} type="button" onClick={handleUpload}>
           {isUploading && <LoadingIndicator size="sm" />}Upload theme
         </Button>
@@ -454,7 +461,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       if (limitError) {
         showLimit({
           prompt: limitError,
-          onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+          onOk: () => {
+            navigateTo(upgradeRoute);
+          },
         });
         return;
       }

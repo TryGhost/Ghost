@@ -1,0 +1,129 @@
+const assert = require('node:assert/strict');
+const { assertExists } = require('../../../utils/assertions');
+const supertest = require('supertest');
+const { createRemoteJWKSet, jwtVerify } = require('jose');
+const testUtils = require('../../../utils');
+const localUtils = require('./utils');
+const config = require('../../../../core/shared/config');
+
+let request;
+
+const verifyJWKS = async (endpoint, token) => {
+  const { payload } = await jwtVerify(token, createRemoteJWKSet(new URL(endpoint)), {
+    algorithms: ['RS256'],
+  });
+  return payload;
+};
+
+describe('Identities API', function () {
+  describe('As Owner', function () {
+    beforeAll(async function () {
+      await localUtils.startGhost();
+      request = supertest.agent(config.get('url'));
+      await localUtils.doAuth(request);
+    });
+
+    it('Can create JWT token and verify it afterwards with public jwks', function () {
+      let identity;
+
+      return request
+        .get(localUtils.API.getApiQuery(`identities/`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200)
+        .then((res) => {
+          assert.equal(res.headers['x-cache-invalidate'], undefined);
+          const jsonResponse = res.body;
+          assertExists(jsonResponse);
+          assertExists(jsonResponse.identities);
+
+          identity = jsonResponse.identities[0];
+        })
+        .then(() => {
+          return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
+        })
+        .then((decoded) => {
+          assert.equal(decoded.sub, 'jbloggs@example.com');
+          assert.equal(decoded.role, 'Owner');
+        });
+    });
+  });
+
+  describe('As Administrator', function () {
+    beforeAll(function () {
+      return localUtils
+        .startGhost()
+        .then(function () {
+          request = supertest.agent(config.get('url'));
+        })
+        .then(function () {
+          return testUtils.createUser({
+            user: testUtils.DataGenerator.forKnex.createUser({ email: 'admin+1@ghost.org' }),
+            role: testUtils.DataGenerator.Content.roles[0].name,
+          });
+        })
+        .then(function (admin) {
+          request.user = admin;
+
+          return localUtils.doAuth(request);
+        });
+    });
+
+    it('Can create JWT token and verify it afterwards with public jwks', function () {
+      let identity;
+
+      return request
+        .get(localUtils.API.getApiQuery(`identities/`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(200)
+        .then((res) => {
+          assert.equal(res.headers['x-cache-invalidate'], undefined);
+          const jsonResponse = res.body;
+          assertExists(jsonResponse);
+          assertExists(jsonResponse.identities);
+
+          identity = jsonResponse.identities[0];
+        })
+        .then(() => {
+          return verifyJWKS(`${request.app}/ghost/.well-known/jwks.json`, identity.token);
+        })
+        .then((decoded) => {
+          assert.equal(decoded.sub, 'admin+1@ghost.org');
+          assert.equal(decoded.role, 'Administrator');
+        });
+    });
+  });
+
+  describe('As Editor', function () {
+    beforeAll(function () {
+      return localUtils
+        .startGhost()
+        .then(function () {
+          request = supertest.agent(config.get('url'));
+        })
+        .then(function () {
+          return testUtils.createUser({
+            user: testUtils.DataGenerator.forKnex.createUser({ email: 'editor+1@ghost.org' }),
+            role: testUtils.DataGenerator.Content.roles[1].name,
+          });
+        })
+        .then(function (admin) {
+          request.user = admin;
+
+          return localUtils.doAuth(request);
+        });
+    });
+
+    it('Cannot read', function () {
+      return request
+        .get(localUtils.API.getApiQuery(`identities/`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(403);
+    });
+  });
+});

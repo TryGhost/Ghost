@@ -225,12 +225,13 @@ describe('CustomFieldFilterRenderer operators', () => {
 
     expect(screen.getByLabelText('Shipping value')).toHaveTextContent('Germany');
     fireEvent.click(screen.getByLabelText('Shipping value'));
-    await screen.findByRole('listbox');
+    const search = await screen.findByPlaceholderText('Search countries...');
+
+    // Role queries over the full country list are slow in jsdom, so search first
+    fireEvent.change(search, { target: { value: 'congo' } });
     expect(screen.getByRole('option', { name: 'Congo - Kinshasa' })).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText('Search countries...'), {
-      target: { value: 'united states' },
-    });
+    fireEvent.change(search, { target: { value: 'united states' } });
     expect(screen.queryByRole('option', { name: 'Germany' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('option', { name: 'United States' }));
     expect(onChange).toHaveBeenCalledWith(['country', 'DE', 'US']);
@@ -253,7 +254,9 @@ describe('CustomFieldFilterRenderer operators', () => {
 
     expect(screen.getByLabelText('Shipping value')).toHaveTextContent('2 selected');
     fireEvent.click(screen.getByLabelText('Shipping value'));
-    await screen.findByRole('listbox');
+    fireEvent.change(await screen.findByPlaceholderText('Search countries...'), {
+      target: { value: 'xx' },
+    });
     expect(screen.getByRole('option', { name: 'XX' })).toBeInTheDocument();
   });
 

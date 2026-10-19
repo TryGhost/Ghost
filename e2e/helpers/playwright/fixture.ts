@@ -18,12 +18,11 @@ import {
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
+import { FakeUpgradeHost } from '@/helpers/services/upgrade';
+import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
-import { faker } from '@faker-js/faker';
-import { loginToGetAuthenticatedSession } from '@/helpers/playwright/flows/sign-in';
-import { setupUser } from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -75,7 +74,6 @@ interface WorkerFixtures {
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
-let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
 
 // External hosts requested by the browser, accumulated across a worker so the
@@ -115,6 +113,9 @@ export interface GhostInstanceFixture {
   mailgunEnabled?: boolean;
   mailgunServer?: FakeMailgunServer;
   mailgun?: MailgunTestService;
+  // Forces per-test isolation because Ghost boots against a per-test fake upgrade host.
+  upgradeHostEnabled?: boolean;
+  upgradeHost?: FakeUpgradeHost;
   emailClient: EmailClient;
   ghostAccountOwner: User;
   ghostAccountAuthor: StaffAccount;
@@ -172,10 +173,33 @@ async function setupNewAuthenticatedPage(
   });
   const page = await context.newPage();
 
-  await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+  // Sign in through the session API rather than the sign-in form. A UI sign-in
+  // boots the admin twice (the form, then a full reload once signed in); this
+  // boots it once. The sign-in screens have their own tests.
+  const { email, password } = ghostAccountOwner;
+  const response = await context.request.post('/ghost/api/admin/session/', {
+    data: { username: email, password },
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `Signing in as ${email} failed (${response.status()}): ${await response.text()}`,
+    );
+  }
+  await page.goto('/ghost/#/');
+  await waitForAdminHome(page);
   debug('Authentication completed for Ghost instance');
 
   return { page, context, ghostAccountOwner };
+}
+
+// Wait for either Analytics header (normal mode) or billing iframe (force upgrade mode)
+async function waitForAdminHome(page: Page) {
+  const analyticsPage = new AnalyticsOverviewPage(page);
+  const billingIframe = page.getByTitle('Billing');
+  await Promise.race([
+    analyticsPage.header.waitFor({ state: 'visible' }),
+    billingIframe.waitFor({ state: 'visible' }),
+  ]);
 }
 
 async function setupAuthenticatedPageFromStorageState(
@@ -194,13 +218,7 @@ async function setupAuthenticatedPageFromStorageState(
   });
   const page = await context.newPage();
   await page.goto('/ghost/#/');
-
-  const analyticsPage = new AnalyticsOverviewPage(page);
-  const billingIframe = page.getByTitle('Billing');
-  await Promise.race([
-    analyticsPage.header.waitFor({ state: 'visible' }),
-    billingIframe.waitFor({ state: 'visible' }),
-  ]);
+  await waitForAdminHome(page);
 
   return {
     page,
@@ -271,7 +289,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       const environmentManager = await getEnvironmentManager();
       await environmentManager.perTestTeardown(cachedPerFileInstance.instance);
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
     },
     {
@@ -340,15 +357,25 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   ],
 
   _testEnvironmentContext: async (
-    { config, isolation, labs, stripeEnabled, stripeServer, mailgunEnabled, mailgunServer },
+    {
+      config,
+      isolation,
+      labs,
+      stripeEnabled,
+      stripeServer,
+      mailgunEnabled,
+      mailgunServer,
+      upgradeHostEnabled,
+      upgradeHost,
+    },
     use,
     testInfo: TestInfo,
   ) => {
     const environmentManager = await getEnvironmentManager();
     const requestedIsolation = getResolvedIsolation(testInfo, isolation);
-    // Stripe-enabled tests boot Ghost against a per-test fake Stripe server,
+    // Stripe and upgrade host tests boot Ghost against a per-test fake server,
     // so they cannot safely participate in per-file environment reuse.
-    const resolvedIsolation = stripeEnabled ? 'per-test' : requestedIsolation;
+    const resolvedIsolation = stripeEnabled || upgradeHostEnabled ? 'per-test' : requestedIsolation;
     const suiteKey = getSuiteKey(testInfo);
     const stripeConfig =
       stripeEnabled && stripeServer
@@ -366,7 +393,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             bulkEmail__mailgun__baseUrl: `http://host.docker.internal:${mailgunServer.port}/v3`,
           }
         : {};
-    const mergedConfig = { ...(config || {}), ...stripeConfig, ...mailgunConfig };
+    const upgradeHostConfig =
+      upgradeHostEnabled && upgradeHost
+        ? {
+            adapters__upgrade__active: 'HttpUpgradeAdapter',
+            adapters__upgrade__HttpUpgradeAdapter__url: `http://host.docker.internal:${upgradeHost.port}`,
+          }
+        : {};
+    const mergedConfig = {
+      ...(config || {}),
+      ...stripeConfig,
+      ...mailgunConfig,
+      ...upgradeHostConfig,
+    };
     const stripe = stripeServer
       ? {
           secretKey: STRIPE_SECRET_KEY,
@@ -389,7 +428,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       });
       const previousPerFileInstance = cachedPerFileInstance?.instance;
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -428,7 +466,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextPerFileInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -458,7 +495,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       Object.assign(holder, nextInstance);
@@ -481,6 +517,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   labs: [undefined, { option: true }],
   stripeEnabled: [false, { option: true }],
   mailgunEnabled: [false, { option: true }],
+  upgradeHostEnabled: [false, { option: true }],
 
   stripeServer: async ({ stripeEnabled }, use) => {
     if (!stripeEnabled) {
@@ -512,6 +549,25 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
     await server.stop();
     debug('Fake Mailgun server stopped');
+  },
+
+  upgradeHost: async ({ upgradeHostEnabled }, use) => {
+    if (!upgradeHostEnabled) {
+      await use(undefined);
+      return;
+    }
+
+    const server = new FakeUpgradeHost();
+    await server.start();
+    debug('Fake upgrade host started on port', server.port);
+
+    await use(server);
+
+    await server.stop();
+    debug('Fake upgrade host stopped');
+    if (server.violations.length > 0) {
+      throw new Error(server.violations.join('\n'));
+    }
   },
 
   mailgun: async ({ mailgunEnabled, mailgunServer }, use) => {
@@ -581,33 +637,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
   // Create user credentials only (no authentication)
   ghostAccountOwner: async ({ ghostInstance, _testEnvironmentContext }, use) => {
-    if (!ghostInstance.baseUrl) {
-      throw new Error('baseURL is not defined');
-    }
-
     _testEnvironmentContext.markResetEnvironmentBlocker('ghostAccountOwner');
 
-    if (
-      _testEnvironmentContext.resolvedIsolation === 'per-file' &&
-      cachedPerFileGhostAccountOwner
-    ) {
-      await use(cachedPerFileGhostAccountOwner);
-      return;
-    }
-
-    // Create user in this Ghost instance
-    const ghostAccountOwner: User = {
-      name: 'Test User',
-      email: `test${faker.string.uuid()}@ghost.org`,
-      password: 'test@123@test',
-    };
-    await setupUser(ghostInstance.baseUrl, ghostAccountOwner);
-
-    if (_testEnvironmentContext.resolvedIsolation === 'per-file') {
-      cachedPerFileGhostAccountOwner = ghostAccountOwner;
-    }
-
-    await use(ghostAccountOwner);
+    // The owner is set up in the snapshot each test database is restored from.
+    await use({ ...GHOST_OWNER, email: ghostInstance.ownerEmail });
   },
 
   ghostAccountAuthor: async ({ pageWithAuthenticatedUser, emailClient }, use) => {

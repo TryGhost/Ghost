@@ -71,6 +71,72 @@ test.describe('Floating format toolbar', async () => {
         await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
     });
 
+    test.describe('positioning', function () {
+        const TEXT = 'one two three four five six seven eight nine ten eleven twelve';
+
+        async function getTextRect(text) {
+            return page.evaluate((searchText) => {
+                const textNode = document.querySelector('.koenig-lexical [data-lexical-text]').firstChild;
+                const start = textNode.textContent.indexOf(searchText);
+                const range = document.createRange();
+                range.setStart(textNode, start);
+                range.setEnd(textNode, start + searchText.length);
+                const {left, right, top, bottom} = range.getBoundingClientRect();
+                return {left, right, top, bottom};
+            }, text);
+        }
+
+        async function expectToolbarCenteredOnSelection() {
+            await expect(page.locator('[data-kg-floating-toolbar]')).toHaveCSS('opacity', '1');
+
+            const {selectionCenter, toolbarCenter} = await page.evaluate(() => {
+                const selectionRect = window.getSelection().getRangeAt(0).getBoundingClientRect();
+                const toolbarRect = document.querySelector('[data-kg-floating-toolbar]').getBoundingClientRect();
+                return {
+                    selectionCenter: selectionRect.left + selectionRect.width / 2,
+                    toolbarCenter: toolbarRect.left + toolbarRect.width / 2
+                };
+            });
+
+            expect(Math.abs(toolbarCenter - selectionCenter)).toBeLessThan(2);
+        }
+
+        test('centers over drag selection', async function () {
+            await focusEditor(page);
+            await page.keyboard.type(TEXT);
+
+            const startRect = await getTextRect('six');
+            const endRect = await getTextRect('eight');
+            const y = (startRect.top + startRect.bottom) / 2;
+
+            await page.mouse.move(startRect.left + 1, y);
+            await page.mouse.down();
+            await page.mouse.move(endRect.right - 1, y, {steps: 10});
+            await page.mouse.up();
+
+            await expectToolbarCenteredOnSelection();
+        });
+
+        test('centers over keyboard selection', async function () {
+            await focusEditor(page);
+            await page.keyboard.type(TEXT);
+            await page.keyboard.press('End');
+            for (let i = 0; i < ' nine ten eleven twelve'.length; i++) {
+                await page.keyboard.press('ArrowLeft');
+            }
+            // extend in two steps so the toolbar mounts before the selection is complete
+            await selectBackwards(page, 1);
+            await selectBackwards(page, 'six seven eight'.length - 1);
+
+            // toolbar reveals after the mouse moves past a threshold
+            await page.mouse.move(10, 10);
+            await page.waitForTimeout(50);
+            await page.mouse.move(50, 50);
+
+            await expectToolbarCenteredOnSelection();
+        });
+    });
+
     test.describe('buttons', function () {
         const BASIC_TOGGLES = [{
             button: 'bold',

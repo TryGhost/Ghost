@@ -20,7 +20,6 @@ import type { MemberActivityEvent } from '@tryghost/admin-x-framework/api/member
 import { activityScreen as screen } from './member-activity.screen';
 
 const EVENTS = /^\/members\/events\//;
-const labs = { membersActivityReact: true };
 const permittedRoles: StaffRoleName[] = ['Owner', 'Administrator', 'Super Editor'];
 const ada = member({ id: 'ada', name: 'Ada Lovelace', email: 'ada@example.com' });
 const grace = member({ id: 'grace', name: 'Grace Hopper', email: 'grace@example.com' });
@@ -65,7 +64,7 @@ describe('Member activity', () => {
   });
   it('opens a member from the global table, retains exclusions, and follows browser history', async () => {
     world();
-    await renderAdminApp('/members-activity?excludedEvents=login_event', { labs });
+    await renderAdminApp('/members-activity?excludedEvents=login_event');
 
     await expect.element(screen.heading('Member activity')).toBeVisible();
     await expect.element(screen.memberColumn()).toBeVisible();
@@ -92,7 +91,7 @@ describe('Member activity', () => {
   it('searches the real members endpoint with a debounce and selects a member', async () => {
     world();
     const membersApi = fakeMembers(({ search }) => (search === 'Grace' ? [grace] : []));
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect.element(screen.search()).toBeVisible();
     await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
     await screen.search().fill('Grace');
@@ -112,7 +111,7 @@ describe('Member activity', () => {
         ? []
         : [event('signup')],
     }));
-    await renderAdminApp('/members-activity?member=ada', { labs });
+    await renderAdminApp('/members-activity?member=ada');
     await expect.element(screen.text('Signed up')).toBeVisible();
     await expect.element(screen.filterButton()).toHaveTextContent('All events');
     await screen.filterButton().click();
@@ -144,7 +143,6 @@ describe('Member activity', () => {
   it('omits global email filters and respects disabled newsletters, comments and click tracking', async () => {
     const { eventsApi } = world([]);
     await renderAdminApp('/members-activity', {
-      labs,
       boot: {
         browseSettings: {
           response: settingsResponse({
@@ -183,13 +181,13 @@ describe('Member activity', () => {
         ?.match(/type:-\[([^\]]*)\]/)?.[1]
         ?.replaceAll("'", '');
 
-    await renderAdminApp('/members/ada', { labs, boot: settings });
+    await renderAdminApp('/members/ada', { boot: settings });
     await expect.poll(excludedTypes).toBeDefined();
     const preview = excludedTypes()!.split(',').sort();
     expect(preview).toContain('comment_event');
     expect(preview).toContain('metafield_change_event');
 
-    await renderAdminApp('/members-activity?member=ada', { labs, boot: settings });
+    await renderAdminApp('/members-activity?member=ada', { boot: settings });
     await expect.poll(() => excludedTypes()?.split(',').sort()).toEqual(preview);
   });
 
@@ -198,7 +196,7 @@ describe('Member activity', () => {
     const signup = event('unsafe');
     signup.data.attribution = { title: 'Unsafe source', url: 'javascript:alert(1)' };
     world([unknown, signup]);
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect.element(screen.text('Unknown activity')).toBeVisible();
     await expect.element(screen.text('Unknown member')).toBeVisible();
     await expect.element(screen.link('Unknown member')).not.toBeInTheDocument();
@@ -221,7 +219,7 @@ describe('Member activity', () => {
     world([subscription, donation, subscribed]);
     fakeTiers([tier({ name: 'Gold' }), tier({ name: 'Silver' })]);
     fakeNewsletters([newsletter({ name: 'Daily' }), newsletter({ name: 'Weekly' })]);
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect.element(screen.text('(Gold $5/month)')).toBeVisible();
     await expect.element(screen.text('($10)')).toBeVisible();
     await expect.element(screen.text('Subscribed to Weekly')).toBeVisible();
@@ -235,7 +233,7 @@ describe('Member activity', () => {
       { errors: [{ type: 'NotFoundError', message: 'Member not found' }] },
       { status: 404 },
     );
-    await renderAdminApp('/members-activity?member=missing', { labs });
+    await renderAdminApp('/members-activity?member=missing');
     await expect.element(screen.heading('Member not found')).toBeVisible();
     await screen.clearMember().click();
     await expect.element(screen.heading('Member activity')).toBeVisible();
@@ -255,7 +253,7 @@ describe('Member activity', () => {
       }
       return { events: [event('signup')] };
     });
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect.element(screen.text('Signed up')).toBeVisible();
     await screen.filterButton().click();
     await screen.eventType('Signups').click();
@@ -276,7 +274,7 @@ describe('Member activity', () => {
       { errors: [{ type: 'ValidationError', message: 'Could not load activity' }] },
       { status: 422 },
     );
-    await renderAdminApp('/members-activity?member=ada', { labs });
+    await renderAdminApp('/members-activity?member=ada');
     await expect.element(screen.heading('Couldn’t load member activity')).toBeVisible();
     const retryApi = fakeAdminEndpoint('GET', EVENTS, { events: [event('retry')] });
     await screen.retry().click();
@@ -299,7 +297,7 @@ describe('Member activity', () => {
       }
       return { events: firstPage };
     });
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect(screen.rows()).toHaveCount(50);
     screen.scrollToEnd();
     await expect.element(screen.text('Logged in')).toBeVisible();
@@ -313,7 +311,7 @@ describe('Member activity', () => {
 
   it('keeps loaded rows when loading more fails and retries from the same position', async () => {
     world(firstActivityPage());
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect(screen.rows()).toHaveCount(50);
     fakeAdminEndpoint(
       'GET',
@@ -338,7 +336,6 @@ describe('Member activity', () => {
   it('reports settings failure instead of claiming there is no activity', async () => {
     const { eventsApi } = world();
     await renderAdminApp('/members-activity', {
-      labs,
       boot: {
         browseSettings: {
           response: { errors: [{ type: 'ValidationError', message: 'Could not load settings' }] },
@@ -349,7 +346,7 @@ describe('Member activity', () => {
     await expect.element(screen.heading('Couldn’t load activity settings')).toBeVisible();
     await expect.element(screen.heading('No member activity yet')).not.toBeInTheDocument();
     expect(eventsApi.requests).toHaveLength(0);
-    fakeAdminEndpoint('GET', /^\/settings\/\?group=/, settingsResponse({ labs }));
+    fakeAdminEndpoint('GET', /^\/settings\/\?group=/, settingsResponse());
     await screen.retry().click();
     await expect.element(screen.text('Signed up')).toBeVisible();
   });
@@ -358,7 +355,7 @@ describe('Member activity', () => {
     world();
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: role })];
-    await renderAdminApp('/members-activity', { labs, boot: { browseMe: { response: me } } });
+    await renderAdminApp('/members-activity', { boot: { browseMe: { response: me } } });
     await expect.element(screen.text('Signed up')).toBeVisible();
   });
 
@@ -371,7 +368,7 @@ describe('Member activity', () => {
     world([opened]);
     fakeNewsletters([newsletter({ name: 'Daily', sender_name: 'Daily sender' })]);
     await page.viewport(1280, 720);
-    await renderAdminApp('/members-activity?member=ada', { labs });
+    await renderAdminApp('/members-activity?member=ada');
     await screen.previewButton('Original newsletter').click();
     await expect.element(screen.preview()).toBeVisible();
     await expect
@@ -392,7 +389,7 @@ describe('Member activity', () => {
   it('keeps the global filters reachable on a narrow screen', async () => {
     world();
     await page.viewport(375, 720);
-    await renderAdminApp('/members-activity', { labs });
+    await renderAdminApp('/members-activity');
     await expect.element(screen.text('Signed up')).toBeVisible();
     await expect
       .poll(() => screen.root().element().scrollWidth - screen.root().element().clientWidth)

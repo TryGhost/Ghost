@@ -18,7 +18,7 @@ Use this skill whenever the user asks you to create a git commit for the current
    source of truth for Ghost's commit conventions.
 4. For publishable packages, check whether a release intent is required. A
    package `README.md` is published and requires a release; repository-only
-   Markdown such as `AGENTS.md`, `CLAUDE.md`, changelogs, and package-local
+   Markdown such as `AGENTS.md`, changelogs, and package-local
    `docs/` does not.
 5. Run `git status --short` after committing and confirm the result.
 

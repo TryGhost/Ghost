@@ -12,8 +12,6 @@ import {
 import { metaMouseDown, postsListScreen } from './posts-list.screen';
 import type { StaffRoleName } from '@tryghost/test-data';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-
 /**
  * Selection has no checkboxes — it is entirely modifier-clicks, Cmd+A, Escape
  * and window-level handlers. None of that can be covered by the reducer tests:
@@ -32,10 +30,10 @@ const POSTS = [
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
-async function renderList(options: object = FLAG_ON) {
+async function renderList(options: object = {}) {
   fakePosts(POSTS);
   await renderAdminApp('/posts?type=published', options);
   await expect.element(postsListScreen.listItems().nth(3)).toBeVisible();

@@ -12,7 +12,6 @@ import type {
   UsersResponseType,
 } from '@tryghost/admin-x-framework/api/users';
 import type { SetupServer } from 'msw/node';
-import * as emberBridge from '@/ember-bridge';
 
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
@@ -173,39 +172,45 @@ describe('useTheme (standalone)', () => {
   );
 });
 
-describe('useTheme (Ember-managed)', () => {
+describe('useTheme save failures', () => {
   themeTest(
-    'tracks system changes without applying the DOM theme',
+    'rolls back a failed save to the current system appearance',
     async ({ server, wrapper, animationFrames }) => {
       mockPreferences(server, 'system');
       const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
       const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
-      const managedSpy = vi.spyOn(emberBridge, 'isEmberThemeManaged').mockReturnValue(true);
-      const removeListenerSpy = vi.spyOn(mediaQuery, 'removeEventListener');
-
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      let finish: () => void = () => {};
+      const gate = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      server.use(
+        http.put(USER_UPDATE_API_URL, async () => {
+          await gate;
+          return HttpResponse.json({ errors: [{ message: 'Save failed' }] }, { status: 500 });
+        }),
+      );
       try {
-        const { result, unmount } = renderHook(() => useTheme(), { wrapper });
+        const { result } = renderHook(() => useTheme(), { wrapper });
         await waitFor(() => expect(result.current.theme).toBe('system'));
-        expect(result.current.resolvedTheme).toBe('light');
-
+        let saving: Promise<void> = Promise.resolve();
         act(() => {
-          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+          saving = result.current.setTheme('dark');
         });
+        await waitFor(() => expect(result.current.theme).toBe('dark'));
+        Object.defineProperty(mediaQuery, 'matches', { value: true });
+        finish();
+        await act(async () => {
+          await saving;
+        });
+        expect(result.current.theme).toBe('system');
         expect(result.current.resolvedTheme).toBe('dark');
-        expect(document.documentElement.classList.contains('dark')).toBe(false);
-        expect(animationFrames.size).toBe(0);
-
-        act(() => {
-          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: false }));
-        });
-        expect(result.current.resolvedTheme).toBe('light');
-
-        unmount();
-        expect(removeListenerSpy).toHaveBeenCalledWith('change', expect.any(Function));
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
       } finally {
+        finish();
         mediaSpy.mockRestore();
-        managedSpy.mockRestore();
-        removeListenerSpy.mockRestore();
+        errorSpy.mockRestore();
+        flushAnimationFrames(animationFrames);
       }
     },
   );

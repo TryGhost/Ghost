@@ -2,11 +2,13 @@ import { vi } from 'vitest';
 import { deferred, type Deferred } from '@/utils/deferred';
 import {
   createSaveEngine,
+  type ConfirmOutcome,
   type DispatchIntent,
   type PrepareOutcome,
   type SaveEngine,
   type SaveEngineState,
   type SaveError,
+  type SaveFailure,
   type SaveOutcome,
   type SaveRequest,
   type SaveResult,
@@ -35,6 +37,7 @@ export const BASE: SnapshotFields = {
   title: 'Hello',
   slug: 'hello',
   isDirty: true,
+  settingsDirty: false,
   changedSinceLastRevision: true,
   version: 1,
 };
@@ -50,6 +53,8 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
       return engine.dispatch('schedule', { publishedAt: FUTURE });
     case 'publish':
       return engine.dispatch('publish');
+    case 'settings':
+      return engine.dispatch('settings');
     default:
       return engine.dispatch(kind);
   }
@@ -57,7 +62,11 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
 
 export function setup(
   overrides: Partial<SnapshotFields> = {},
-  ports: { autosaveDebounceMs?: () => number | undefined } = {},
+  ports: {
+    autosaveDebounceMs?: () => number | undefined;
+    onSaveFailed?: (failure: SaveFailure) => void;
+    confirm?: (prepared: SaveRequest, signal: AbortSignal) => Promise<ConfirmOutcome>;
+  } = {},
 ) {
   let snapshot = { ...BASE, ...overrides } as SaveSnapshot;
   const requests: SaveRequest[] = [];
@@ -120,6 +129,7 @@ export function setup(
       publishedAt: prepared.target.publishedAt,
       slug: prepared.slug,
       isDirty: editedInFlight,
+      settingsDirty: editedInFlight && snapshot.settingsDirty,
     };
   });
 
@@ -222,6 +232,7 @@ export const hostLimit: SaveError = { kind: 'host-limit', message: 'Upgrade requ
 export const transport: SaveError = { kind: 'transport', message: 'Server unreachable' };
 export const sessionInvalid: SaveError = { kind: 'session-invalid', message: 'Unauthorized' };
 export const notFound: SaveError = { kind: 'not-found', message: 'Post not found' };
+export const forbidden: SaveError = { kind: 'forbidden', message: 'Permission error' };
 export const conflict: SaveError = {
   kind: 'conflict',
   message: 'Someone else is editing this post',

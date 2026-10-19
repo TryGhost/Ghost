@@ -286,7 +286,9 @@ describe('staging the publish time', () => {
     await Promise.resolve();
 
     expect(update).not.toHaveBeenCalled();
-    // Staged, not attempted: no save the writer did not ask for may fail.
+    await vi.waitFor(() =>
+      expect(session.getView().pendingSave).toMatchObject({ blockedBy: { kind: 'validation' } }),
+    );
     expect(session.getState().kind).toBe('idle');
   });
 
@@ -373,7 +375,7 @@ describe('staging the publish time', () => {
       slug: 'post',
       status: 'published',
       lexical: null,
-      updated_at: '2026-01-01T00:00:05.000Z',
+      updated_at: LOADED_AT,
       published_at: PAST,
       tags: [],
     });
@@ -394,11 +396,32 @@ describe('staging the publish time', () => {
       slug: 'post',
       status: 'published',
       lexical: null,
-      updated_at: '2026-01-01T00:00:05.000Z',
+      updated_at: LOADED_AT,
       published_at: OLDER,
       tags: [],
     });
 
     expect(session.isDirty()).toBe(false);
+  });
+
+  it('keeps a staged time through a refetch of a version it did not load', () => {
+    const { session } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(OLDER);
+    session.recordRefetched({
+      id: 'post-id',
+      uuid: 'post-uuid',
+      url: 'https://example.com/post/',
+      title: 'Post',
+      slug: 'post',
+      status: 'published',
+      lexical: null,
+      updated_at: '2026-01-01T00:00:05.000Z',
+      published_at: OLDER,
+      tags: [],
+    });
+
+    expect(session.getPublishedAt()).toBe(OLDER);
+    expect(session.isDirty()).toBe(true);
   });
 });

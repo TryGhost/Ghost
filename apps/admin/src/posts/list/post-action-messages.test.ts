@@ -57,9 +57,7 @@ describe('getPostActionMessage', () => {
     /**
      * Ember hardcodes "Post link copied" and "Preview link copied" with no
      * interpolation, so copying a *page* link still says "Post". Ported
-     * as-is rather than quietly corrected: it is a visible string, and
-     * changing it here would make the two implementations disagree while
-     * the flag is still switchable.
+     * as-is rather than quietly corrected: it is a visible string.
      */
     it('still says "Post link copied" on a page, as Ember does', () => {
       expect(getPostActionMessage('copiedPostUrl', { count: 1, resource: 'pages' })).toBe(

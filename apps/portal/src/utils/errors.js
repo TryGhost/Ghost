@@ -111,6 +111,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
       t('Too many sign-up attempts, try again later');
       t('Memberships from this email domain are currently restricted.');
       t('Invalid verification code');
+      t('Unable to verify your request, please try again');
     }
   };
 

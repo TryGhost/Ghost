@@ -164,12 +164,7 @@ const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({
         </ActionList>
         {showMore?.hasMore && (
           <div className="border-t border-border pt-2">
-            <Button
-              className="h-auto p-0 text-green hover:text-green"
-              type="button"
-              variant="link"
-              onClick={showMore.loadMore}
-            >
+            <Button size="sm" type="button" variant="outline" onClick={showMore.loadMore}>
               Show all
             </Button>
           </div>

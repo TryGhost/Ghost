@@ -23,6 +23,8 @@ interface UsePostSelectionOptions {
   allFilter: string;
   /** Off for authors and contributors, who cannot bulk-edit anything. */
   enabled: boolean;
+  /** Keep the selection while a bulk-action modal owns pointer and keyboard input. */
+  suspended?: boolean;
 }
 
 /**
@@ -43,7 +45,12 @@ function clearTextSelection() {
   }
 }
 
-export function usePostSelection({ orderedIds, allFilter, enabled }: UsePostSelectionOptions) {
+export function usePostSelection({
+  orderedIds,
+  allFilter,
+  enabled,
+  suspended = false,
+}: UsePostSelectionOptions) {
   const [state, dispatch] = useReducer(postSelectionReducer, initialPostSelection);
 
   /**
@@ -61,8 +68,8 @@ export function usePostSelection({ orderedIds, allFilter, enabled }: UsePostSele
   // Read by the window handlers, which are registered once. Keeping these in
   // a ref rather than in the dependency list means the listeners aren't torn
   // down and rebuilt on every keystroke in the filter bar.
-  const latest = useRef({ orderedIds, enabled });
-  latest.current = { orderedIds, enabled };
+  const latest = useRef({ orderedIds, enabled, suspended });
+  latest.current = { orderedIds, enabled, suspended };
 
   /**
    * Ember clears the selection on every model refresh — `clearSelection()` in
@@ -85,7 +92,9 @@ export function usePostSelection({ orderedIds, allFilter, enabled }: UsePostSele
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (!latest.current.enabled) {
+      // Dismissing a dialog can resume selection before this handler runs.
+      // Respect the overlay's ownership of that same Escape keypress.
+      if (event.defaultPrevented || !latest.current.enabled || latest.current.suspended) {
         return;
       }
 
@@ -126,7 +135,9 @@ export function usePostSelection({ orderedIds, allFilter, enabled }: UsePostSele
     }
 
     function onWindowClick(event: MouseEvent) {
-      if (!latest.current.enabled) {
+      // Portaled dropdowns can retarget a click outside the dialog. Preserve
+      // the selection for the whole modal interaction, regardless of target.
+      if (!latest.current.enabled || latest.current.suspended) {
         return;
       }
 
@@ -139,9 +150,7 @@ export function usePostSelection({ orderedIds, allFilter, enabled }: UsePostSele
       // that role and *not* `dialog`, so matching only `dialog` would
       // miss the one case that matters most.
       //
-      // Ember has no target check at all here; it freezes the selection
-      // list while its menu is open instead. Scoping by role is the same
-      // guarantee without the freeze/unfreeze machinery.
+      // Other menus and dialogs also preserve selection for clicks inside them.
       const target = event.target as HTMLElement | null;
 
       if (

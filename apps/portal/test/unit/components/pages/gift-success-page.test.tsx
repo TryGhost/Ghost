@@ -14,6 +14,7 @@ function setup({
   duration = 3,
   deliveryDate,
   scheduledAt,
+  locale,
 }: {
   Page: typeof GiftSuccessPage;
   monthlyPrice: ReturnType<typeof getPriceData> | null;
@@ -21,6 +22,7 @@ function setup({
   duration?: number;
   deliveryDate?: string;
   scheduledAt?: number;
+  locale?: string;
 }) {
   const product = {
     ...getProductData({
@@ -37,7 +39,7 @@ function setup({
 
   return render(<Page />, {
     overrideContext: {
-      site,
+      site: { ...site, locale },
       pageData: {
         token: 'abc123',
         tierId: 'tier_123',
@@ -61,6 +63,19 @@ describe.each([{ name: 'GiftSuccessPage', Page: GiftSuccessPage }])('$name', ({ 
     expect(getByTestId('gift-redeem-link')).toHaveTextContent('/gift/abc123');
     expect(getByTestId('gift-card-duration')).toHaveTextContent('3 months');
     expect(getByTestId('gift-card-value')).toHaveTextContent('$15');
+  });
+
+  test.each([
+    { locale: 'de-CH', value: 'CHF20.70' },
+    { locale: 'de-DE', value: 'CHF20,70' },
+  ])('formats the gift value using the $locale site locale', ({ locale, value }) => {
+    const { getByTestId } = setup({
+      Page,
+      monthlyPrice: getPriceData({ amount: 690, currency: 'CHF', interval: 'month' }),
+      locale,
+    });
+
+    expect(getByTestId('gift-card-value')).toHaveTextContent(value);
   });
 
   test('renders without card details when the tier no longer has a monthly price', () => {

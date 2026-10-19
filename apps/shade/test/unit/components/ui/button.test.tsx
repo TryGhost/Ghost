@@ -43,7 +43,7 @@ describe('Button Component', () => {
     const button = screen.getByRole('button', { name: /disabled/i });
 
     assert.ok(button.hasAttribute('disabled'), 'Button should be disabled');
-    assert.ok(button.className.includes('disabled:opacity-50'), 'Should have disabled styling');
+    assert.ok(button.className.includes('disabled:opacity-100'), 'Disabled primary stays opaque');
   });
 
   it('renders ChevronDown icon when variant is dropdown', () => {

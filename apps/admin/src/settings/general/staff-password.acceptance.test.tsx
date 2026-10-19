@@ -21,8 +21,12 @@ describe('Staff passwords', () => {
     const save = modal.getByTestId('save-password-button');
     await expect.element(newPassword).toHaveFocus();
 
+    // Establish browser keyboard focus after the form's programmatic autofocus.
+    await newPassword.click();
     await newPassword.fill('short');
+    await expect.element(newPassword).toHaveValue('short');
     await confirmPassword.fill('short');
+    await expect.element(confirmPassword).toHaveValue('short');
     await save.click();
     await expect
       .element(modal.getByText('Password must be at least 10 characters long.'))
@@ -71,8 +75,11 @@ describe('Staff passwords', () => {
     const save = modal.getByTestId('save-password-button');
     await expect.element(oldPassword).toHaveFocus();
 
+    await newPassword.click();
     await newPassword.fill('this-is-sufficiently-secure');
+    await expect.element(newPassword).toHaveValue('this-is-sufficiently-secure');
     await confirmPassword.fill('this-is-sufficiently-secure');
+    await expect.element(confirmPassword).toHaveValue('this-is-sufficiently-secure');
     await save.click();
     await expect
       .element(modal.getByText('Your current password is required to set a new one'))

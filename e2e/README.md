@@ -29,7 +29,7 @@ pnpm test
 
 If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
 
-- `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
+- `dev` when the Admin dev server from `pnpm dev` or `pnpm dev:docker` is reachable
 - `build` otherwise
 
 To use dev mode, start `pnpm dev` before running tests:
@@ -41,6 +41,9 @@ pnpm dev
 # Terminal 2: Run e2e tests (from e2e folder)
 pnpm test
 ```
+
+On Linux, start it with `GHOST_DEV_LISTEN=0.0.0.0 pnpm dev`: the test containers
+reach it through the Docker bridge, and it only listens on loopback by default.
 
 If infra is already running, `pnpm infra:up` is safe to run again.
 For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
@@ -75,10 +78,16 @@ GHOST_E2E_MODE=build pnpm --filter @tryghost/e2e infra:up
 GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm --filter @tryghost/e2e test
 ```
 
-Build-mode E2E infra uses tmpfs-backed MySQL storage by default so database
-snapshot restore cycles stay fast and isolated from local development data.
-Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
-`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
+E2E shares the MySQL, Redis and Mailpit containers with `pnpm dev` and only
+touches `ghost_e2e_*` databases. Setup and teardown remove the checkout's own
+E2E containers and databases. A linked worktree adds a key from its path to
+their names and lets Docker pick its gateway ports, so worktrees and the main
+checkout can run E2E at the same time. Run one suite at a time per checkout.
+
+CI sets `GHOST_E2E_MYSQL_TMPFS=true` to put build-mode MySQL on tmpfs, which
+keeps snapshot restores fast (`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` adjusts the size).
+Don't set it locally while any checkout uses that MySQL: it recreates the
+container without their databases.
 
 Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
 slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
@@ -147,7 +156,7 @@ e2e/
 │   │   ├── base-page.ts        # Base class for all page objects
 │   │   └── admin/              # e.g. login-page.ts, admin-page.ts
 │   ├── environment/            # Ghost container/database lifecycle
-│   ├── services/               # Test doubles (fake Stripe, Mailgun, etc.)
+│   ├── services/               # Test doubles (fake Stripe, Mailgun, upgrade host, etc.)
 │   └── utils/                  # Shared utilities
 ├── data-factory/               # Test data factories (see its own README)
 ├── visual-regression/          # Screenshot baseline suite (separate config)
@@ -212,12 +221,14 @@ Environment identity for per-file reuse:
 - `labs` participates in the environment identity.
 - If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
 - `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+- `upgradeHostEnabled` forces per-test isolation for the same reason, with a per-test fake upgrade host.
 
 Fixture option behavior:
 
 - `config`: use for boot-time Ghost config that should get a fresh environment when it changes.
 - `labs`: use for labs flags that should get a fresh environment when they change.
 - `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
+- `upgradeHostEnabled`: use for Ghost update tests; see [Testing Ghost updates](../docs/contributing/testing-ghost-updates.md).
 
 Escape hatch:
 
@@ -260,8 +271,14 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
-6. **Artifacts**: Upload Playwright traces and reports on failure
+5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`tools/scripts/ci/e2e-shards.ts`)
+6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
+7. **Artifacts**: Upload Playwright traces and reports on failure
+
+`main` shards balance on per-file durations that each `main` branch run records
+into the Actions cache. A file without a recorded time is estimated from its test
+count, so new tests need no setup. The `analytics` project still uses
+Playwright's `--shard`.
 
 ## Available Scripts
 
@@ -271,9 +288,8 @@ Within the e2e directory:
 # Run all tests
 pnpm test
 
-# Start/stop test infra (MySQL/Redis/Mailpit/Tinybird)
+# Start test infra (MySQL/Redis/Mailpit/Tinybird), shared with pnpm dev
 pnpm infra:up
-pnpm infra:down
 
 # CI-like preflight for build mode (pulls images + starts infra)
 pnpm preflight:build
@@ -281,7 +297,8 @@ pnpm preflight:build
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true pnpm test
 
-# Check the fake Stripe server against captured Stripe responses (no infra, ~1s)
+# Check the fake Stripe server against captured Stripe responses, and the fake
+# upgrade host against the upgrade protocol fixtures (no infra, ~1s)
 pnpm test:fixtures
 
 # Put a Stripe test account into the state fixtures are captured from
@@ -311,7 +328,7 @@ would return. Those shapes were originally written from the docs rather than fro
 Stripe, so nothing checked them against the real API.
 
 `helpers/services/stripe/fixtures/` holds responses captured from Stripe test mode at
-API version `2020-08-27`, the version `ghost/core` pins. `pnpm test:fixtures` asserts
+API version `2020-08-27`, the version `ghost` pins. `pnpm test:fixtures` asserts
 the builders against them, and needs no Ghost, no Docker and no browser.
 
 Two failures are worth catching. A builder emitting a key Stripe does not return means
@@ -376,3 +393,15 @@ register its own pinned endpoint, so it receives the payloads production receive
 2. **Traces**: Available in `test-results/` directory
 3. **Debug Mode**: Run with `pnpm test --debug` or `pnpm test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
+
+### Sign-in page never renders on Linux
+
+If tests time out waiting for the admin sign-in form and the trace shows
+requests failing with `net::ERR_NETWORK_CHANGED`, Chrome is reacting to Docker
+giving a new Ghost container's host-side network interface an IPv6 link-local
+address, about 1.5s after the container starts. CI avoids this by disabling IPv6
+on new interfaces before the tests run; do the same locally:
+
+```bash
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```

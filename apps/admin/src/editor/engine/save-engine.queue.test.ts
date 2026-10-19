@@ -11,7 +11,9 @@ import {
 } from './save-engine';
 import {
   BASE,
+  dispatchAny,
   flush,
+  forbidden,
   FUTURE,
   hostLimit,
   idleSlug,
@@ -156,7 +158,7 @@ describe('createSaveEngine', () => {
     it('saves a new post immediately on its first edit', async () => {
       const h = setup({ id: null, updatedAt: null });
       void h.engine.dispatch('autosave');
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'autosave' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'autosave' });
       await flush();
 
       expect(h.execute).toHaveBeenCalledTimes(1);
@@ -280,18 +282,21 @@ describe('createSaveEngine', () => {
       expect(h.execute).toHaveBeenCalledTimes(2);
     });
 
-    it('halts permanently on a 404 for a known post id', async () => {
+    it.each([
+      ['a 404 for a known post id', notFound],
+      ['a refusal of a writer who lost access', forbidden],
+    ])('halts permanently on %s', async (_label, error) => {
       const h = setup();
       const failing = h.engine.dispatch('explicit');
       await flush();
       h.edit();
       const autosave = h.engine.dispatch('autosave');
 
-      await h.fail(notFound);
-      expect(h.engine.getState()).toEqual({ kind: 'halted' });
+      await h.fail(error);
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error });
       await expect(failing).resolves.toEqual({
         kind: 'failed',
-        error: notFound,
+        error,
         executedAs: 'explicit',
       });
       await expect(autosave).resolves.toEqual({ kind: 'dropped', reason: 'halted' });
@@ -309,6 +314,41 @@ describe('createSaveEngine', () => {
       await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
     });
 
+    it.each(['publish', 'schedule'] as const)(
+      'refuses only the %s, not the post, when the writer may not change its status',
+      async (kind) => {
+        const h = setup();
+        const command = dispatchAny(h.engine, kind);
+        await h.fail(forbidden);
+
+        await expect(command).resolves.toEqual({
+          kind: 'failed',
+          error: forbidden,
+          executedAs: kind,
+        });
+        expect(h.engine.getState()).toEqual({ kind: 'error', intent: kind, error: forbidden });
+
+        h.edit();
+        void h.engine.dispatch('autosave');
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        expect(h.execute).toHaveBeenCalledTimes(2);
+        expect(h.requests[1]).toMatchObject({ command: { kind: 'autosave' } });
+      },
+    );
+
+    it('refuses only the unpublish of a published post the writer may not change', async () => {
+      const h = setup({ status: 'published' });
+      const revert = h.engine.dispatch('revert');
+      await h.fail(forbidden);
+
+      await expect(revert).resolves.toMatchObject({ kind: 'failed', error: forbidden });
+      expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'revert', error: forbidden });
+      h.edit();
+      void h.engine.dispatch('explicit');
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(2);
+    });
+
     it('crashes on a 404 for a post that has no id yet', async () => {
       const h = setup({ id: null, updatedAt: null });
       void h.engine.dispatch('explicit');
@@ -319,6 +359,14 @@ describe('createSaveEngine', () => {
         kind: 'dropped',
         reason: 'halted',
       });
+    });
+
+    it('halts rather than crashes when a create is refused for lost access', async () => {
+      const h = setup({ id: null, updatedAt: null });
+      void h.engine.dispatch('explicit');
+
+      await h.fail(forbidden);
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error: forbidden });
     });
 
     // Either port can report the error, so both are held to the same suppression.
@@ -445,7 +493,7 @@ describe('createSaveEngine', () => {
       const release = h.holdSlugWork();
       const field = h.engine.dispatch('field');
       await flush();
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'field' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'field' });
 
       h.patch({ isDirty: false });
       await release();
@@ -461,12 +509,16 @@ describe('createSaveEngine', () => {
 
       void h.engine.dispatch('explicit');
       await h.succeed();
-      expect(seen).toEqual([{ kind: 'saving', intent: 'explicit' }, { kind: 'idle' }]);
+      expect(seen).toEqual([
+        { kind: 'preparing', intent: 'explicit' },
+        { kind: 'saving', intent: 'explicit' },
+        { kind: 'idle' },
+      ]);
       expect(h.states).toEqual(seen);
 
       unsubscribe();
       void h.engine.dispatch('explicit');
-      expect(seen).toHaveLength(2);
+      expect(seen).toHaveLength(3);
     });
 
     it('dispose cancels timers and settles every outstanding dispatch', async () => {
@@ -598,7 +650,7 @@ describe('createSaveEngine', () => {
       const seen: string[] = [];
       const unsubscribe = h.engine.subscribe((state) => {
         seen.push(state.kind);
-        if (state.kind === 'saving') {
+        if (state.kind === 'preparing') {
           unsubscribe();
           void h.engine.dispatch('field');
         }
@@ -607,9 +659,9 @@ describe('createSaveEngine', () => {
 
       void h.engine.dispatch('explicit');
 
-      expect(seen).toEqual(['saving', 'other:pending-coalesced']);
+      expect(seen).toEqual(['preparing', 'other:preparing']);
       expect(h.engine.getState()).toEqual({
-        kind: 'pending-coalesced',
+        kind: 'preparing',
         intent: 'explicit',
         pending: 'field',
       });
@@ -627,7 +679,7 @@ describe('createSaveEngine', () => {
       void h.engine.dispatch('explicit');
 
       expect(h.listenerErrors).toEqual([failure]);
-      expect(seen).toEqual([{ kind: 'saving', intent: 'explicit' }]);
+      expect(seen).toEqual([{ kind: 'preparing', intent: 'explicit' }]);
     });
 
     it('still saves when the onStateChange port throws, and reports it', async () => {
@@ -652,7 +704,7 @@ describe('createSaveEngine', () => {
 
       await expect(engine.dispatch('explicit')).resolves.toMatchObject({ kind: 'saved' });
       expect(engine.getState()).toEqual({ kind: 'idle' });
-      expect(reported).toEqual([failure, failure]);
+      expect(reported).toEqual([failure, failure, failure]);
     });
 
     it('re-runs a frozen explicit after a superseded publish while the winning revert needs retry', async () => {

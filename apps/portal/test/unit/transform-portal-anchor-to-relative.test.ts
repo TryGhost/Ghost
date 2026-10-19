@@ -3,6 +3,17 @@ import { transformPortalAnchorToRelative } from '../../src/utils/transform-porta
 // NOTE: window.location.origin = http://localhost:3000
 
 describe('transformPortalAnchorToRelative', function () {
+  test.each(['http://[invalid/#/portal/signup', 'https://example.com:invalid/#/share'])(
+    'ignores malformed URLs without interrupting Portal initialization: %s',
+    (href) => {
+      const anchor = document.createElement('a');
+      anchor.setAttribute('href', href);
+
+      expect(() => transformPortalAnchorToRelative(anchor)).not.toThrow();
+      expect(anchor.getAttribute('href')).toBe(href);
+    },
+  );
+
   test('ignores non-portal links', function () {
     const anchor = document.createElement('a');
     anchor.setAttribute('href', 'http://localhost:3000/#/signup');

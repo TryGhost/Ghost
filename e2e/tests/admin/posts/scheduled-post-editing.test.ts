@@ -55,7 +55,7 @@ test.describe('Ghost Admin - Scheduled post editing', () => {
 
     // Completing the publish flow navigates to the posts list with a success
     // modal, so editing means closing it and reopening the post
-    await editor.publishFlow.close();
+    await postsPage.closePublishCelebration();
     await editor.gotoPost(postId);
 
     await expect(editor.postStatus.first()).toContainText('Scheduled');
@@ -63,9 +63,8 @@ test.describe('Ghost Admin - Scheduled post editing', () => {
     // A schedule set through the picker round-trips without validation
     // errors: the editor zeroes milliseconds before saving (the API only
     // stores whole seconds), so re-saves send back an identical published_at
-    // and cannot trip date-changed validation. Seconds are not zeroed - they
-    // are inherited from the moment scheduling was toggled - so pin the
-    // picked minute and the zeroed milliseconds only
+    // and cannot trip date-changed validation. Pin the picked minute and the
+    // zeroed milliseconds only
     const scheduled = await getPost(page, postId);
     expect(scheduled.status).toBe('scheduled');
     expect(scheduled.published_at).toMatch(
@@ -98,8 +97,11 @@ test.describe('Ghost Admin - Scheduled post editing', () => {
       published_at: publishAt,
     });
 
+    const postsPage = new PostsPage(page);
+    await postsPage.goto();
+    await postsPage.getPostByTitle(post.title).click();
+
     const editor = new PostEditorPage(page);
-    await editor.gotoPost(post.id);
     await expect(editor.postStatus.first()).toContainText('Scheduled');
 
     // Enter the window in which a *changed* publish time would be rejected

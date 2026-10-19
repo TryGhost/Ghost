@@ -92,7 +92,7 @@ fi
 
 # Start stripe listen in the background
 echo "Starting Stripe webhook listener forwarding to ${GHOST_URL}/members/webhooks/stripe/"
-stripe listen --forward-to ${GHOST_URL}/members/webhooks/stripe/ --api-key "${STRIPE_SECRET_KEY}" &
+stripe listen --all-snapshot --forward-to "${GHOST_URL}/members/webhooks/stripe/" --api-key "${STRIPE_SECRET_KEY}" &
 child=$!
 
 # Wait for the child process

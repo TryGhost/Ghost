@@ -1,13 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUTOSAVE_DEBOUNCE_MS, TIMED_SAVE_INTERVAL_MS } from './save-engine';
+import { deferred } from '@/utils/deferred';
+import {
+  AUTOSAVE_DEBOUNCE_MS,
+  TIMED_SAVE_INTERVAL_MS,
+  type ConfirmOutcome,
+  type SaveRequest,
+} from './save-engine';
 import {
   BASELINE,
   conflict,
   flush,
   FUTURE,
   hostLimit,
+  notFound,
   PAST,
   setup,
+  sessionInvalid,
   transport,
   unknown,
   validation,
@@ -49,7 +57,7 @@ describe('createSaveEngine', () => {
       expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: transport });
 
       void h.engine.dispatch('explicit');
-      expect(h.engine.getState()).toEqual({ kind: 'saving', intent: 'explicit' });
+      expect(h.engine.getState()).toEqual({ kind: 'preparing', intent: 'explicit' });
     });
 
     it('treats a rejected execute as an unknown error rather than swallowing it', async () => {
@@ -186,6 +194,163 @@ describe('createSaveEngine', () => {
       expect(h.engine.getState()).toEqual({ kind: 'idle' });
     });
 
+    it.each([true, false])(
+      'retains collision recovery after a retry fails with dirty=%s',
+      async (isDirty) => {
+        const h = setup({ isDirty });
+        const first = h.engine.dispatch('publish');
+        await h.fail(conflict);
+        await first;
+        const retry = h.engine.dispatch('explicit');
+        await h.fail(transport);
+        await expect(retry).resolves.toMatchObject({ kind: 'failed', error: transport });
+        expect(h.engine.getState()).toEqual({
+          kind: 'conflict',
+          intent: 'publish',
+          error: conflict,
+        });
+        await expect(h.engine.dispatch('field')).resolves.toEqual({
+          kind: 'dropped',
+          reason: 'conflict',
+        });
+        expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+        h.patch({ updatedAt: FUTURE });
+        expect(h.engine.getState()).toEqual({ kind: 'idle' });
+      },
+    );
+
+    it('refuses reload during preparation, execution and reauth, then retains recovery on abandonment', async () => {
+      const h = setup({ isDirty: false });
+      const first = h.engine.dispatch('publish');
+      await h.fail(conflict);
+      await first;
+      const release = h.holdSlugWork();
+      const retry = h.engine.dispatch('explicit');
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      await release();
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      await h.fail(sessionInvalid);
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      h.engine.reauthAbandoned();
+      await expect(retry).resolves.toMatchObject({ kind: 'failed', error: sessionInvalid });
+      expect(h.engine.getPendingSave()).toBeNull();
+      expect(h.engine.getState()).toEqual({ kind: 'conflict', intent: 'publish', error: conflict });
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+    });
+
+    it('retires a validation hold belonging to the document replaced after conflict', async () => {
+      const h = setup();
+      const first = h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      await first;
+      h.prepare.mockResolvedValueOnce({ ok: false, error: validation });
+      await expect(h.engine.dispatch('explicit')).resolves.toMatchObject({
+        kind: 'failed',
+        error: validation,
+      });
+      expect(h.engine.getState().kind).toBe('conflict');
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+      h.patch({ updatedAt: FUTURE });
+      expect(h.engine.getPendingSave()?.blockedBy).toBeNull();
+      const save = h.engine.dispatch('field');
+      await h.succeed();
+      await expect(save).resolves.toMatchObject({ kind: 'saved' });
+    });
+
+    it('does not reload a post deleted during a collision retry', async () => {
+      const h = setup();
+      const first = h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      await first;
+      const retry = h.engine.dispatch('explicit');
+      await h.fail(notFound);
+      await retry;
+      const adopt = vi.fn();
+      expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(false);
+      expect(adopt).not.toHaveBeenCalled();
+      expect(h.engine.getState()).toEqual({ kind: 'halted', error: notFound });
+    });
+
+    it('adopts the replacement before recovery subscribers edit or dispatch', async () => {
+      const h = setup();
+      const first = h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      await first;
+      let save: ReturnType<typeof h.engine.dispatch> | undefined;
+      const stop = h.engine.subscribe((state) => {
+        if (state.kind === 'idle') {
+          stop();
+          expect(h.snapshot.updatedAt).toBe(FUTURE);
+          h.edit();
+          save = h.engine.dispatch('explicit');
+        }
+      });
+      expect(
+        h.engine.contentReloaded(FUTURE, () => {
+          h.patch({ updatedAt: FUTURE, isDirty: false });
+          const nestedAdopt = vi.fn();
+          expect(h.engine.contentReloaded(FUTURE, nestedAdopt)).toBe(false);
+          expect(nestedAdopt).not.toHaveBeenCalled();
+        }),
+      ).toBe(true);
+      await h.succeed();
+      await expect(save).resolves.toMatchObject({ kind: 'saved' });
+      expect(h.requests[1].snapshot).toMatchObject({ version: 2, updatedAt: FUTURE });
+    });
+
+    it('preserves disposal and dispatches triggered inside document adoption', async () => {
+      for (const dispose of [true, false]) {
+        const h = setup();
+        const first = h.engine.dispatch('explicit');
+        await h.fail(conflict);
+        await first;
+        let save: ReturnType<typeof h.engine.dispatch> | undefined;
+        expect(
+          h.engine.contentReloaded(FUTURE, () => {
+            h.patch({ updatedAt: FUTURE });
+            if (dispose) {
+              h.engine.dispose();
+            } else {
+              save = h.engine.dispatch('explicit');
+            }
+          }),
+        ).toBe(!dispose);
+        if (dispose) {
+          expect(h.engine.getState()).toEqual({ kind: 'disposed' });
+        } else {
+          await h.succeed();
+          await expect(save).resolves.toMatchObject({ kind: 'saved' });
+          expect(h.requests[1].snapshot.updatedAt).toBe(FUTURE);
+          expect(h.maxConcurrent()).toBe(1);
+        }
+      }
+    });
+
+    it('replaces a clean post without a collision, but never one holding unsaved work', () => {
+      const h = setup({ isDirty: true });
+      const adopt = vi.fn();
+
+      expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(false);
+      expect(adopt).not.toHaveBeenCalled();
+
+      h.patch({ isDirty: false });
+      expect(h.engine.contentReloaded(FUTURE, adopt)).toBe(true);
+      expect(adopt).toHaveBeenCalledTimes(1);
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it('waits for a save in flight before replacing a clean post without a collision', async () => {
+      const h = setup();
+      const save = h.engine.dispatch('explicit');
+      await flush();
+      h.patch({ isDirty: false });
+
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      await h.succeed();
+      await expect(save).resolves.toMatchObject({ kind: 'saved' });
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+    });
+
     it('drops queued background work on a conflict and keeps the content dirty', async () => {
       const h = setup();
       void h.engine.dispatch('explicit');
@@ -242,6 +407,152 @@ describe('createSaveEngine', () => {
       });
       expect(h.snapshot).toMatchObject({ isDirty: true, status: 'scheduled', publishedAt: PAST });
       expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: validation });
+    });
+  });
+
+  describe('a request that may have committed although it failed', () => {
+    const LANDED_AT = '2026-09-02T11:30:00.000Z';
+
+    function landed(prepared: SaveRequest) {
+      return {
+        id: prepared.snapshot.id ?? 'post-1',
+        status: prepared.target.status,
+        updatedAt: LANDED_AT,
+      };
+    }
+
+    function confirming(...answers: Array<'landed' | 'absent' | ConfirmOutcome>) {
+      return vi.fn((prepared: SaveRequest): Promise<ConfirmOutcome> => {
+        const answer = answers.shift() ?? 'absent';
+        if (answer === 'landed') {
+          return Promise.resolve({ ok: true, result: landed(prepared) });
+        }
+        return Promise.resolve(answer === 'absent' ? { ok: true, result: null } : answer);
+      });
+    }
+
+    it.each([transport, unknown])(
+      'reads a $kind failure back before the next request and sends the token it landed at',
+      async (error) => {
+        const confirm = confirming('landed');
+        const h = setup({}, { confirm });
+        void h.engine.dispatch('explicit');
+        await h.fail(error);
+        expect(confirm).not.toHaveBeenCalled();
+
+        h.edit();
+        const next = h.engine.dispatch('explicit');
+        await flush();
+
+        expect(confirm).toHaveBeenCalledWith(h.requests[0], expect.any(AbortSignal));
+        expect(h.reconcile).toHaveBeenCalledWith(h.requests[0], landed(h.requests[0]));
+        expect(h.requests[1].snapshot.updatedAt).toBe(LANDED_AT);
+        await h.succeed();
+        await expect(next).resolves.toMatchObject({ kind: 'saved' });
+
+        h.edit();
+        void h.engine.dispatch('explicit');
+        await h.succeed();
+        expect(confirm).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it('drops a background save whose content the landed write already carried', async () => {
+      const h = setup({}, { confirm: confirming('landed') });
+      void h.engine.dispatch('field');
+      await h.fail(transport);
+
+      const next = h.engine.dispatch('field');
+      await flush();
+
+      await expect(next).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+      expect(h.snapshot).toMatchObject({ isDirty: false, updatedAt: LANDED_AT });
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it('sends the held token when the server does not hold the write', async () => {
+      const confirm = confirming('absent');
+      const h = setup({}, { confirm });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      void h.engine.dispatch('explicit');
+      await h.succeed();
+
+      expect(h.reconcile).toHaveBeenCalledTimes(1);
+      expect(h.requests[1].snapshot.updatedAt).toBe(BASELINE);
+      expect(confirm).toHaveBeenCalledTimes(1);
+    });
+
+    it('reads back inside the single request in flight', async () => {
+      const read = deferred<ConfirmOutcome>();
+      const h = setup({}, { confirm: vi.fn(() => read.promise) });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      void h.engine.dispatch('explicit');
+      await flush();
+      h.edit();
+      void h.engine.dispatch('field');
+
+      expect(h.engine.getState()).toEqual({
+        kind: 'preparing',
+        intent: 'explicit',
+        pending: 'field',
+      });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      read.resolve({ ok: true, result: null });
+      await h.succeed();
+      expect(h.maxConcurrent()).toBe(1);
+    });
+
+    it('fails the next request with the error the read met, and reads back again after it', async () => {
+      const confirm = confirming({ ok: false, error: transport }, 'landed');
+      const h = setup({}, { confirm });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      await expect(h.engine.dispatch('explicit')).resolves.toEqual({
+        kind: 'failed',
+        error: transport,
+        executedAs: 'explicit',
+      });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      void h.engine.dispatch('explicit');
+      await flush();
+      expect(confirm).toHaveBeenCalledTimes(2);
+      expect(h.requests[1].snapshot.updatedAt).toBe(LANDED_AT);
+    });
+
+    it.each([validation, hostLimit, conflict])(
+      'never reads back a request the server refused with $kind',
+      async (error) => {
+        const confirm = confirming('landed');
+        const h = setup({}, { confirm });
+        void h.engine.dispatch('explicit');
+        await h.fail(error);
+
+        void h.engine.dispatch('explicit');
+        await flush();
+
+        expect(confirm).not.toHaveBeenCalled();
+      },
+    );
+
+    it('never reads back a create, whose id it never learned', async () => {
+      const confirm = confirming('landed');
+      const h = setup({ id: null, updatedAt: null }, { confirm });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      void h.engine.dispatch('explicit');
+      await flush();
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(h.execute).toHaveBeenCalledTimes(2);
     });
   });
 });

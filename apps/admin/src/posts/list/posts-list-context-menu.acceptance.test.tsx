@@ -9,8 +9,6 @@ import {
 } from '@test-utils/acceptance';
 import { metaMouseDown, postsListScreen } from './posts-list.screen';
 
-const FLAG_ON = { labs: { postsListReact: true } };
-
 // Captured before any test stubs it, so afterEach can put it back. Normally
 // undefined: `clipboard` lives on the prototype, not as an own property.
 const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
@@ -55,7 +53,7 @@ describe('Posts list context menu', () => {
 
   it('opens on right-click', async () => {
     fakePosts([post({ title: 'A draft', status: 'draft' })]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -77,7 +75,7 @@ describe('Posts list context menu', () => {
       post({ title: 'Gated post', status: 'published', visibility: 'paid', featured: false }),
       post({ title: 'Also published', status: 'published', visibility: 'public', featured: false }),
     ]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
     // Two rows selected, so the gift link — a single-post action — is
@@ -101,7 +99,7 @@ describe('Posts list context menu', () => {
   // *public* post offers no gift link, and Ember draws no rule there.
   it('separates Unpublish from the gift link only when the gift link is shown', async () => {
     fakePosts([post({ title: 'Public post', status: 'published', visibility: 'public' })]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -113,7 +111,7 @@ describe('Posts list context menu', () => {
 
   it('separates Unpublish from the gift link when it is shown', async () => {
     fakePosts([post({ title: 'Gated post', status: 'published', visibility: 'paid' })]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -127,7 +125,7 @@ describe('Posts list context menu', () => {
   // has selected acts on that row alone.
   it('offers actions for the right-clicked row when nothing is selected', async () => {
     fakePosts([post({ title: 'A draft', status: 'draft' })]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -140,13 +138,12 @@ describe('Posts list context menu', () => {
    * Ember's "Copy preview link" copies `post.url` — the public permalink,
    * which for a draft points at a page that does not exist yet. It is the
    * same string its "Copy link to post" action copies, so the two menu items
-   * are indistinguishable. Fixed here rather than ported; flagged for Ember
-   * separately.
+   * are indistinguishable. Fixed here rather than ported.
    */
   it('copies the preview link, not the public permalink', async () => {
     const draft = post({ title: 'A draft', status: 'draft', url: 'https://example.com/a-draft/' });
     fakePosts([draft]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     const copied = recordClipboard();
@@ -165,7 +162,7 @@ describe('Posts list context menu', () => {
       url: 'https://example.com/live/',
     });
     fakePosts([published]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     const copied = recordClipboard();
@@ -195,7 +192,7 @@ describe('Posts list context menu', () => {
       duplicated = true;
       return { posts: [duplicate] };
     });
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -209,17 +206,15 @@ describe('Posts list context menu', () => {
   });
 
   /**
-   * A gift link shares a gated post with someone who isn't a member. Ember's
-   * menu hands off to this same React modal over the state bridge; the React
-   * list opens it directly, so there is one modal and one set of eligibility
-   * rules (`@/shared/gift-link`) behind both.
+   * A gift link shares a gated post with someone who isn't a member. The list
+   * opens the modal directly; eligibility rules live in `@/shared/gift-link`.
    */
   describe('share as a gift', () => {
     const gated = post({ title: 'Members only', status: 'published', visibility: 'paid' });
 
     it('offers it for a gated published post', async () => {
       fakePosts([gated]);
-      await renderAdminApp('/posts?type=published', FLAG_ON);
+      await renderAdminApp('/posts?type=published');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -230,7 +225,7 @@ describe('Posts list context menu', () => {
     // Nothing to gift — anyone can already read it.
     it('does not offer it for a public post', async () => {
       fakePosts([post({ title: 'Open to all', status: 'published', visibility: 'public' })]);
-      await renderAdminApp('/posts?type=published', FLAG_ON);
+      await renderAdminApp('/posts?type=published');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -245,7 +240,7 @@ describe('Posts list context menu', () => {
       fakeAdminEndpoint('PUT', new RegExp(`/posts/${gated.id}/gift_links`), {
         gift_links: [{ id: 'g1', url: `https://example.com/members/gift/${gated.id}` }],
       });
-      await renderAdminApp('/posts?type=published', FLAG_ON);
+      await renderAdminApp('/posts?type=published');
       await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
       await postsListScreen.listItems().first().click({ button: 'right' });
@@ -265,7 +260,7 @@ describe('Posts list context menu', () => {
       post({ title: 'First', status: 'published' }),
       post({ title: 'Second', status: 'published' }),
     ]);
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
     await postsListScreen
@@ -295,7 +290,7 @@ describe('Posts list context menu', () => {
    */
   it('offers no item that does nothing', async () => {
     fakePosts([post({ title: 'A draft', status: 'draft' })]);
-    await renderAdminApp('/posts?type=draft', FLAG_ON);
+    await renderAdminApp('/posts?type=draft');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });
@@ -328,7 +323,7 @@ describe('Posts list context menu', () => {
       { errors: [{ message: 'Could not duplicate this post.' }] },
       { status: 500 },
     );
-    await renderAdminApp('/posts?type=published', FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
     await postsListScreen.listItems().first().click({ button: 'right' });

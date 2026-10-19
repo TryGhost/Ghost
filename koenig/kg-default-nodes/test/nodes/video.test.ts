@@ -15,11 +15,10 @@ describe('VideoNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -256,7 +255,7 @@ describe('VideoNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders', editorTest(function () {
+        it('renders', editorTest(async function () {
             const payload = {
                 src: '/content/images/2022/11/koenig-lexical.mp4',
                 width: 200,
@@ -267,7 +266,7 @@ describe('VideoNode', function () {
             const videoNode = $createVideoNode(payload);
             const {element} = videoNode.exportDOM(editor, exportOptions);
 
-            assertPrettifiesTo((element as HTMLElement).outerHTML, html`
+            await assertPrettifiesTo((element as HTMLElement).outerHTML, html`
                 <figure class="kg-card kg-video-card kg-width-regular" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="">
                     <div class="kg-video-container">
                         <video

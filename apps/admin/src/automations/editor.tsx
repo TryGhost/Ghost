@@ -1,5 +1,12 @@
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
+import { LimitModalContent } from '@/settings/api';
+import NewAutomation from './new-automation';
+import AutomationStatusDialog from './components/automation-status-dialog';
+import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
-import AutomationHeader from './components/automation-header';
+import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
+import { useFeatureFlag, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
 import React from 'react';
 import {
@@ -14,8 +21,8 @@ import {
   type ButtonProps,
   LoadingIndicator,
 } from '@tryghost/shade/components';
-import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
+import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -23,19 +30,33 @@ import type {
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useParams } from '@tryghost/admin-x-framework';
+import { useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
+import { isAutomationStatusActive } from './utils/is-automation-status-active';
+import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+
+const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
 
 const editableSlice = (automation: AutomationDetail) => ({
+  name: automation.name,
+  description: automation.description,
   status: automation.status,
+  trigger_tier_scope: automation.trigger_tier_scope,
+  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
   actions: automation.actions,
   edges: automation.edges,
 });
+
+const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
+  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
+    : {};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';
@@ -64,11 +85,45 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
   return errors;
 };
 
-const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automationId }) => {
+const AutomationEditorContent: React.FC<{
+  automationId: string | null;
+  creation?: {
+    initialAutomation: AutomationDetail;
+    triggerTop?: number;
+    onCreated: (id: string) => void;
+  };
+}> = ({ automationId, creation }) => {
+  const navigate = useNavigate();
+  const addMutation = useAddAutomation();
+  const limiter = useLimiter({ limits: AUTOMATION_LIMITS });
+  const { data: configData } = useBrowseConfig();
+  const [limitError, setLimitError] = React.useState<HostLimitError | null>(null);
+  const { confirm: confirmUpgrade, dialogProps: upgradeDialogProps } = useDirtyConfirmation();
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
+  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const [validationFeedback, setValidationFeedback] =
+    React.useState<AutomationValidationAction | null>(null);
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
+  const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
+  // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
+  const [invalidWaitIds, setInvalidWaitIds] = React.useState<Set<string>>(new Set());
+  const onWaitValidityChange = React.useCallback((stepId: string, valid: boolean) => {
+    setValidationFeedback(null);
+    setInvalidWaitIds((current) => {
+      if (current.has(stepId) === !valid) {
+        return current;
+      }
+      const next = new Set(current);
+      if (valid) {
+        next.delete(stepId);
+      } else {
+        next.add(stepId);
+      }
+      return next;
+    });
+  }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
   const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
   const isEmailModalDirtyRef = React.useRef(false);
@@ -79,7 +134,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const [savedAutomation, setSavedAutomation] = React.useState<AutomationDetail | undefined>(
     undefined,
   );
-  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
+  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
+    creation?.initialAutomation,
+  );
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -93,17 +150,27 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
   // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
   // otherwise flip the dirty flag immediately after every successful publish.
+  const isNew = !!draft && !draft.id;
   const hasUnsavedChanges =
-    !!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation));
+    isNew ||
+    invalidWaitIds.size > 0 ||
+    (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
   const onDraftChange = (next: AutomationDetail) => {
+    setValidationFeedback(null);
     setDraft(next);
+    setInvalidWaitIds((current) => {
+      const remaining = new Set(
+        [...current].filter((id) => next.actions.some((action) => action.id === id)),
+      );
+      return remaining.size === current.size ? current : remaining;
+    });
     setActionErrors((oldErrors) => {
       if (Object.keys(oldErrors).length === 0) {
         return oldErrors;
       }
 
-      const nextErrors = getActionErrors(next);
+      const nextErrors = { ...getActionErrors(next), ...getTriggerErrors(next) };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
       );
@@ -111,48 +178,59 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
   };
 
-  const validateActionErrors = (
+  const validateForAction = (
     automationToValidate: AutomationDetail,
-    errorState: AutomationEditState,
+    action: AutomationValidationAction,
   ): boolean => {
-    const nextActionErrors = getActionErrors(automationToValidate);
-    if (Object.keys(nextActionErrors).length > 0) {
+    setValidationFeedback(null);
+    if (automationsPerTierEnabled && !automationToValidate.name.trim()) {
+      toast.error('Add an automation name.');
+      return false;
+    }
+    const nextActionErrors = {
+      ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
+      ...getTriggerErrors(automationToValidate),
+    };
+    if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
-      setEditState(errorState);
-      toast.error('Automation needs a few details', {
-        description: 'Fix the highlighted steps and try again.',
-      });
+      setEditState({ phase: 'idle' });
+      setValidationFeedback(action);
       return false;
     }
 
     return true;
   };
 
-  const save = (statusToSave?: AutomationStatus) => {
+  const save = async (statusToSave?: AutomationStatus) => {
     if (!draft) {
       throw new Error('Cannot edit an automation that has not loaded.');
     }
 
+    let validationAction: AutomationValidationAction;
     let requestState: AutomationEditState;
     let errorState: AutomationEditState;
 
     const oldStatus = draft.status;
     const newStatus = statusToSave ?? oldStatus;
-    const statusTransition: `${AutomationStatus} -> ${AutomationStatus}` = `${oldStatus} -> ${newStatus}`;
+    const statusTransition: `${boolean} -> ${boolean}` = `${isAutomationStatusActive(oldStatus)} -> ${isAutomationStatusActive(newStatus)}`;
     switch (statusTransition) {
-      case 'active -> active':
+      case 'true -> true':
+        validationAction = 'publish';
         requestState = { phase: 'submitting', action: 'republish' };
         errorState = { phase: 'failed', action: 'republish' };
         break;
-      case 'inactive -> inactive':
+      case 'false -> false':
+        validationAction = 'save';
         requestState = { phase: 'submitting', action: 'save' };
         errorState = { phase: 'failed', action: 'save' };
         break;
-      case 'inactive -> active':
+      case 'false -> true':
+        validationAction = 'publish';
         requestState = { phase: 'submitting', action: 'publish' };
         errorState = { phase: 'failed', action: 'publish' };
         break;
-      case 'active -> inactive':
+      case 'true -> false':
+        validationAction = 'unpublish';
         requestState = { phase: 'submitting', action: 'unpublish' };
         errorState = { phase: 'failed', action: 'unpublish' };
         break;
@@ -162,19 +240,40 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
       }
     }
 
-    if (newStatus === 'active' && !validateActionErrors(draft, errorState)) {
+    if (!validateForAction(draft, validationAction)) {
       return;
     }
 
+    const handleSaveError = (error: unknown) => {
+      if (error instanceof HostLimitError) {
+        setEditState({ phase: 'idle' });
+        setLimitError(error);
+        return;
+      }
+      setEditState(errorState);
+      toast.error('Automation couldn’t be saved');
+    };
+
     setEditState(requestState);
 
-    editMutation.mutate(
-      {
-        id: draft.id,
-        status: newStatus,
-        actions: draft.actions,
-        edges: draft.edges,
-      },
+    // An existing active automation consumes its slot already. New active automations
+    // and inactive-to-active edits need a fresh count before sending the mutation.
+    if (
+      newStatus === 'active' &&
+      (isNew || savedAutomation?.status !== 'active') &&
+      limiter.isLimited('limitAutomations')
+    ) {
+      try {
+        await limiter.errorIfWouldGoOverLimit('limitAutomations');
+      } catch (error) {
+        handleSaveError(error);
+        return;
+      }
+    }
+
+    const mutation = isNew ? addMutation : editMutation;
+    mutation.mutate(
+      { ...draft, status: newStatus },
       {
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
@@ -182,24 +281,14 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           setDraft(savedDraft);
           setActionErrors({});
           setEditState({ phase: 'idle' });
-        },
-        onError: (error) => {
-          void error;
-          const nextActionErrors = newStatus === 'active' ? getActionErrors(draft) : {};
-          const hasActionErrors = Object.keys(nextActionErrors).length > 0;
-          if (hasActionErrors) {
-            setActionErrors(nextActionErrors);
-          }
-
-          setEditState(errorState);
-          if (hasActionErrors) {
-            toast.error('Automation needs a few details', {
-              description: 'Fix the highlighted steps and try again.',
-            });
-          } else {
-            toast.error('Automation couldn’t be saved');
+          if (isNew) {
+            creation?.onCreated(savedDraft.id);
+            bypassNextNavigation();
+            navigate(`/automations/${savedDraft.id}`, { replace: true });
           }
         },
+        // Another publisher can take the final slot after the frontend check.
+        onError: handleSaveError,
       },
     );
   };
@@ -209,19 +298,20 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   const isConfirmRepublishAlertOpen = editState.action === 'republish';
   const isEditRequestActive = editState.phase === 'submitting';
   let isSaveButtonEnabled =
-    !!draft && draft.actions.length > 0 && draft.status === 'inactive' && hasUnsavedChanges;
+    !!draft &&
+    draft.actions.length > 0 &&
+    !isAutomationStatusActive(draft.status) &&
+    hasUnsavedChanges;
   let saveButtonVariant: ButtonProps['variant'] = 'outline';
   let saveButtonChildren: React.ReactNode = 'Save';
   let isPublishButtonEnabled =
-    !!draft && draft.actions.length > 0 && (draft.status === 'inactive' || hasUnsavedChanges);
+    !!draft &&
+    draft.actions.length > 0 &&
+    (!isAutomationStatusActive(draft.status) || hasUnsavedChanges);
   const publishButtonVariant: ButtonProps['variant'] = 'default';
   const publishButtonChildren: React.ReactNode =
     draft?.status === 'active' ? (hasUnsavedChanges ? 'Publish changes' : 'Published') : 'Publish';
   let isTurnOffButtonEnabled = true;
-  let turnOffButtonChildren: React.ReactNode = 'Turn off';
-  let isPublishConfirmButtonEnabled = true;
-  let publishConfirmButtonVariant: ButtonProps['variant'] = 'default';
-  let publishConfirmButtonChildren: React.ReactNode = 'Publish';
   let isRepublishButtonEnabled = true;
   let republishButtonVariant: ButtonProps['variant'] = 'default';
   let republishButtonChildren: React.ReactNode = 'Publish changes';
@@ -243,13 +333,6 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           );
           break;
         case 'publish':
-          isPublishConfirmButtonEnabled = false;
-          publishConfirmButtonChildren = (
-            <>
-              <LoadingIndicator color="light" size="sm" />
-              <span className="sr-only">Publishing...</span>
-            </>
-          );
           break;
         case 'republish':
           isRepublishButtonEnabled = false;
@@ -261,12 +344,6 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           );
           break;
         case 'unpublish':
-          turnOffButtonChildren = (
-            <>
-              <LoadingIndicator color="light" size="sm" />
-              <span className="sr-only">Turning off...</span>
-            </>
-          );
           break;
       }
       break;
@@ -296,8 +373,6 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         case 'publish':
           isSaveButtonEnabled = false;
           isPublishButtonEnabled = false;
-          publishConfirmButtonVariant = 'destructive';
-          publishConfirmButtonChildren = 'Retry';
           break;
         case 'republish':
           isPublishButtonEnabled = false;
@@ -307,7 +382,6 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           break;
         case 'unpublish':
           isTurnOffButtonEnabled = true;
-          turnOffButtonChildren = 'Retry';
           break;
       }
       break;
@@ -364,17 +438,16 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
       throw new Error('Cannot publish an automation that has not loaded.');
     }
 
+    if (!validateForAction(draft, 'publish')) {
+      return;
+    }
+
     switch (draft.status) {
       case 'active':
-        if (!validateActionErrors(draft, { phase: 'idle' })) {
-          return;
-        }
         setEditState({ phase: 'confirming', action: 'republish' });
         break;
       case 'inactive':
-        if (!validateActionErrors(draft, { phase: 'idle' })) {
-          return;
-        }
+      case 'archived':
         setEditState({ phase: 'confirming', action: 'publish' });
         break;
       default: {
@@ -387,7 +460,11 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
   // The dirty email modal claims navigations that change its `emailStep`
   // query param (closing the modal, back button, leaving the editor) so the
   // canvas can run its own discard flow instead of the page-level dialog.
-  const { dialogProps: discardDialogProps, interceptedNavigation } = useUnsavedChangesGuard({
+  const {
+    dialogProps: discardDialogProps,
+    interceptedNavigation,
+    bypassNextNavigation,
+  } = useUnsavedChangesGuard({
     when: hasUnsavedChanges || isEmailModalDirty,
     confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
     interceptNavigation: ({ currentLocation, nextLocation }) => {
@@ -421,24 +498,44 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
       <AutomationHeader
         automation={draft}
         isLoadingAutomation={isEditorLoading}
-        isPublishButtonEnabled={isPublishButtonEnabled}
-        isSaveButtonEnabled={isSaveButtonEnabled}
-        isTurnOffButtonEnabled={isTurnOffButtonEnabled}
+        isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
+        isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
+        isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
         publishButtonChildren={publishButtonChildren}
         publishButtonVariant={publishButtonVariant}
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
+        validationFeedback={selectedRunId ? null : validationFeedback}
+        onDismissValidationFeedback={() => setValidationFeedback(null)}
         onPublish={onPublish}
-        onSave={() => save()}
-        onTurnOff={() => setEditState({ phase: 'confirming', action: 'unpublish' })}
+        onSave={() => void save()}
+        onTurnOff={() => {
+          if (draft && !validateForAction(draft, 'unpublish')) {
+            return;
+          }
+          setValidationFeedback(null);
+          setEditState({ phase: 'confirming', action: 'unpublish' });
+        }}
       />
 
       <AutomationCanvas
         actionErrors={actionErrors}
         automation={draft}
+        initialSidebar={
+          creation
+            ? 'closed'
+            : !draft || !configData
+              ? 'unknown'
+              : draft.status === 'active' && configData.config.stats
+                ? 'performance'
+                : 'closed'
+        }
+        initialTriggerTop={creation?.triggerTop}
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        selectedRunId={selectedRunId}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
@@ -457,57 +554,39 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           isBlockedEmailNavigationLeavingEditorRef.current = false;
           interceptedNavigation.reset();
         }}
+        onSelectRun={setSelectedRunId}
+        onWaitValidityChange={onWaitValidityChange}
       />
 
       <DirtyConfirmDialog {...discardDialogProps} />
+      <DirtyConfirmDialog {...upgradeDialogProps} />
 
-      <AlertDialog open={isConfirmPublishAlertOpen} onOpenChange={onConfirmPublishOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start your automation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Once published, your automation goes live. Any member who meets the trigger will be
-              enrolled automatically.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
-            <Button
-              disabled={!isPublishConfirmButtonEnabled}
-              variant={publishConfirmButtonVariant}
-              onClick={() => save('active')}
-            >
-              {publishConfirmButtonChildren}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isConfirmUnpublishAlertOpen} onOpenChange={onConfirmUnpublishOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Turn off automation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your automation will no longer run, and any members currently in progress will be
-              removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
-            <Button
-              disabled={isEditRequestActive}
-              variant={
-                editState.phase === 'failed' && editState.action === 'unpublish'
-                  ? 'destructive'
-                  : 'default'
-              }
-              onClick={() => save('inactive')}
-            >
-              {turnOffButtonChildren}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {limitError && (
+        <LimitModalContent
+          prompt={
+            limitError.data?.errors[0]?.context ||
+            limitError.data?.errors[0]?.message ||
+            limitError.message
+          }
+          onOk={() => {
+            setLimitError(null);
+            confirmUpgrade(hasUnsavedChanges || isEmailModalDirty, () => {
+              navigateTo(upgradeRoute(configData?.config));
+            });
+          }}
+          onRemove={() => setLimitError(null)}
+        />
+      )}
+      <AutomationStatusDialog
+        isError={editState.phase === 'failed'}
+        isPending={isEditRequestActive}
+        open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
+        status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
+        onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
+        onOpenChange={
+          isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange
+        }
+      />
 
       <AlertDialog open={isConfirmRepublishAlertOpen} onOpenChange={onConfirmRepublishOpenChange}>
         <AlertDialogContent>
@@ -523,7 +602,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
             <Button
               disabled={!isRepublishButtonEnabled}
               variant={republishButtonVariant}
-              onClick={() => save()}
+              onClick={() => void save()}
             >
               {republishButtonChildren}
             </Button>
@@ -537,7 +616,40 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 const AutomationEditor: React.FC = () => {
   const { id: automationId = '' } = useParams<{ id: string }>();
 
-  return <AutomationEditorContent key={automationId} automationId={automationId} />;
+  // Keep the creation session mounted when its first save replaces /new with the server ID.
+  const [session, setSession] = React.useState({
+    routeId: automationId,
+    createdId: null as string | null,
+    key: 0,
+  });
+  if (automationId !== session.routeId) {
+    const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    setSession({
+      routeId: automationId,
+      createdId: isFirstSave ? session.createdId : null,
+      key: isFirstSave ? session.key : session.key + 1,
+    });
+  }
+  return (
+    <ScreenEntranceProvider>
+      {automationId === 'new' || automationId === session.createdId ? (
+        <NewAutomation key={session.key}>
+          {(initialAutomation, triggerTop) => (
+            <AutomationEditorContent
+              automationId={null}
+              creation={{
+                initialAutomation,
+                triggerTop,
+                onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
+              }}
+            />
+          )}
+        </NewAutomation>
+      ) : (
+        <AutomationEditorContent key={automationId} automationId={automationId} />
+      )}
+    </ScreenEntranceProvider>
+  );
 };
 
 export default AutomationEditor;

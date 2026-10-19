@@ -167,7 +167,11 @@
   --color-text-tertiary: var(--text-tertiary);
   --color-border-default: var(--border-default);
   --color-border-strong: var(--border-strong);
+  --color-surface-glass: var(--surface-glass);
+  --color-border-glass: var(--border-glass);
   --color-focus-ring: var(--focus-ring);
+  --color-search-result-title: var(--search-result-title);
+  --color-search-result-description: var(--search-result-description);
   --color-state-info: var(--state-info);
   --color-state-info-foreground: var(--state-info-foreground);
   --color-state-success: var(--state-success);
@@ -202,6 +206,7 @@
   --color-tab-hover: var(--tab-hover);
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
+  --color-button-ghost-hover: var(--button-ghost-hover);
   --color-interactive-hover: var(--interactive-hover);
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);
@@ -276,6 +281,7 @@
 
   --text-base: 1.3rem;
   --text-control: 1.3rem;
+  --text-control-lg: 1.4rem;
   --text-2xs: 1rem;
   --text-xs: 1.1rem;
   --text-sm: 1.2rem;

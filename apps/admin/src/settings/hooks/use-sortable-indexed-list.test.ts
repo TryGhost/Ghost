@@ -77,6 +77,31 @@ describe('useSortableIndexedList', () => {
     assert.deepEqual(items[0], { name: 'Updated Item 1' });
   });
 
+  it('builds consecutive updates in one event on each other', () => {
+    let items = initialItems;
+    const setItems = (newItems: { name: string }[]) => {
+      items = newItems;
+    };
+
+    const { result } = renderHook(() =>
+      useSortableIndexedList({
+        items,
+        setItems,
+        blank: blankItem,
+        canAddNewItem,
+      }),
+    );
+
+    // Like saving a URL and clearing its error in one event: the second
+    // update has to see the first
+    act(() => {
+      result.current.updateItem('0', { name: 'Committed' });
+      result.current.updateItem('0', (current) => ({ name: `${current.name}!` }));
+    });
+
+    assert.deepEqual(items[0], { name: 'Committed!' });
+  });
+
   it('should remove an item', () => {
     let items = initialItems;
     const setItems = (newItems: { name: string }[]) => {

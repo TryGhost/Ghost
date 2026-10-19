@@ -6,30 +6,20 @@ type RouteMatch = {
 };
 
 const useMatchesMock = vi.fn<() => RouteMatch[]>();
-const useEmberSidebarVisibilityMock = vi.fn<() => boolean>();
+const useIsMobileMock = vi.fn<() => boolean>();
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useMatches: () => useMatchesMock(),
 }));
 
-vi.mock('@/ember-bridge', () => ({
-  useSidebarVisibility: () => useEmberSidebarVisibilityMock(),
+vi.mock('@tryghost/shade/utils', () => ({
+  useIsMobile: () => useIsMobileMock(),
 }));
 
 describe('useAdminSidebarVisibility', () => {
   beforeEach(() => {
     useMatchesMock.mockReturnValue([]);
-    useEmberSidebarVisibilityMock.mockReturnValue(true);
-  });
-
-  it('uses the Ember sidebar visibility by default', async () => {
-    const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
-
-    useEmberSidebarVisibilityMock.mockReturnValue(false);
-
-    const { result } = renderHook(() => useAdminSidebarVisibility());
-
-    expect(result.current).toBe(false);
+    useIsMobileMock.mockReturnValue(false);
   });
 
   it('hides the sidebar when any matched React route opts out', async () => {
@@ -53,5 +43,18 @@ describe('useAdminSidebarVisibility', () => {
     const { result } = renderHook(() => useAdminSidebarVisibility());
 
     expect(result.current).toBe(true);
+  });
+
+  it('keeps the sidebar visible in Settings on desktop and hides it on mobile', async () => {
+    const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
+
+    useMatchesMock.mockReturnValue([{ handle: { settingsSidebar: true } }]);
+
+    const { result, rerender } = renderHook(() => useAdminSidebarVisibility());
+    expect(result.current).toBe(true);
+
+    useIsMobileMock.mockReturnValue(true);
+    rerender();
+    expect(result.current).toBe(false);
   });
 });

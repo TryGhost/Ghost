@@ -7,7 +7,8 @@ export interface EmailSendingStatusContextValue {
   isNewsletterDataHidden: boolean;
   newsletterDataHiddenReason: 'sending' | 'failed' | null;
   hasNewsletterAnalytics: boolean;
-  hasUnknownDeliveryOutcome: boolean;
+  /** The send has finished successfully and its newsletter data is up to date. */
+  isEmailSent: boolean;
   isRetrying: boolean;
   retrySending: () => Promise<void>;
 }

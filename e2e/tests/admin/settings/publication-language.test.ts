@@ -10,7 +10,7 @@ test.describe('Ghost Admin - i18n Newsletter', () => {
     postFactory = createPostFactory(page.request);
   });
 
-  test('changing the site language immediately translates strings in newsletters', async ({
+  test('changing the site language immediately translates the post previews', async ({
     page,
     ghostAccountOwner,
   }) => {
@@ -24,6 +24,11 @@ test.describe('Ghost Admin - i18n Newsletter', () => {
     const postEditorPage = new PostEditorPage(page);
     await postEditorPage.gotoPost(post.id);
     await postEditorPage.previewButton.click();
+
+    const webPreview = postEditorPage.previewModalDesktopFrame;
+    await webPreview.waitForPreviewModalFrame();
+    await expect(webPreview.desktopPreviewFrame.locator('html')).toHaveAttribute('lang', 'fr');
+
     await postEditorPage.previewModal.switchToEmailTab();
 
     const emailPreviewContent = await postEditorPage.previewModal.emailPreviewContent();

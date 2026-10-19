@@ -147,12 +147,15 @@ async function pollSitePreview(
 expect.extend({
   /** `await expect(locator).toHaveCount(n)` — polls until the locator resolves to exactly `n` elements (`.not`-aware). */
   async toHaveCount(received: Locator, expected: number) {
+    // `elements()`, never `all()`: `all()` wraps each match in its own locator,
+    // and generating a unique selector per element costs ~15ms each, so a
+    // 50-row table is ~1s per poll and a loaded CI runner runs the test out.
     const deadline = Date.now() + POLL_TIMEOUT_MS;
-    let actual = received.all().length;
+    let actual = received.elements().length;
 
     while ((actual === expected) === Boolean(this.isNot) && Date.now() < deadline) {
       await sleep(POLL_INTERVAL_MS);
-      actual = received.all().length;
+      actual = received.elements().length;
     }
 
     return {

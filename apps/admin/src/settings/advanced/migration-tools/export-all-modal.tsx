@@ -8,6 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Link,
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -167,19 +168,18 @@ const ExportAllModal: React.FC<{
               <DialogTitle>Export data</DialogTitle>
               <DialogDescription>
                 {mode === 'async' ? (
-                  'Choose what to include. Your export will be prepared in the background and a download link emailed to the site owner.'
+                  'Choose what to include. Your export will be prepared in the background and a download link emailed to you.'
                 ) : (
                   <>
                     Your export will be downloaded as a single zip file. Images, videos and files
                     are not included.{' '}
-                    <a
-                      className="font-medium whitespace-nowrap text-foreground hover:underline"
+                    <Link
+                      className="whitespace-nowrap"
                       href="https://docs.ghost.org/migration/ghost#images"
-                      rel="noopener noreferrer"
-                      target="_blank"
+                      external
                     >
-                      Learn more &rarr;
-                    </a>
+                      Learn more
+                    </Link>
                   </>
                 )}
               </DialogDescription>
@@ -232,8 +232,8 @@ const ExportAllModal: React.FC<{
               </DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              A link to download your data will be emailed to the site owner once the export is
-              complete. The link will be valid for 7 days. You can now close this window.
+              A link to download your data will be emailed to you once the export is complete. The
+              link will be valid for 7 days. You can now close this window.
             </DialogDescription>
             <DialogFooter className="sm:justify-end">
               <Button onClick={() => handleOpenChange(false)}>Close</Button>

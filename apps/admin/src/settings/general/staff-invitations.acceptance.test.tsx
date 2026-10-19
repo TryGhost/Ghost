@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
+import { deferred } from '@/utils/deferred';
 import {
   configResponse,
   fakeAdminEndpoint,
   fakeInvites,
   renderAdminApp,
+  type StaffInvite,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import { fakeStaffWorld, invite, role, user } from './staff.test-helpers';
@@ -16,6 +18,25 @@ async function openInviteModal() {
 }
 
 describe('Staff invitations', () => {
+  it('sends an invitation with Enter', async () => {
+    const { boot } = fakeStaffWorld();
+    const created = invite({ id: 'newinvite', email: 'newuser@test.com' });
+    const pendingAdd = deferred<{ invites: StaffInvite[] }>();
+    const addApi = fakeAdminEndpoint('POST', '/invites/', () => pendingAdd.promise);
+    await renderAdminApp('/settings/staff', { boot });
+
+    const modal = await openInviteModal();
+    await modal.getByLabelText('Email address').fill(created.email);
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(() => addApi.requests.length).toBe(1);
+    await expect.element(modal.getByRole('button', { name: 'Sending...' })).toBeDisabled();
+
+    pendingAdd.resolve({ invites: [created] });
+    await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation sent');
+    await expect.element(modal).not.toBeInTheDocument();
+  });
+
   it('validates duplicate addresses and sends a role-specific invitation', async () => {
     const owner = user('Owner');
     const author = user('Author');

@@ -26,6 +26,9 @@ Extend `SSOBase` and implement every method listed in `requiredFns`:
 Ghost injects a user repository after constructing the adapter, exposed through
 the protected `getUserByEmail(email)` and `getOwnerUser()` helpers — use these
 to resolve Ghost users without reaching into Ghost's model layer directly.
+Ghost supplies `id`, `email`, and `status`. Adapters can require
+`status === 'active'` before granting a session, including when the owner is still the inactive
+placeholder used by first-run setup. Older Ghost versions omit `status`.
 
 ```js
 const {SSOBase} = require('@tryghost/adapter-base-sso');

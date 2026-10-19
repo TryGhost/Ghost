@@ -12,13 +12,12 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * filter restored (and the same members matched) proves the compound grammar
  * parses back to exactly what produced it.
  *
- * React member detail (the value editor is React-only) plus the membersCustomFields flag,
- * which is what lets the test define a field in Settings.
+ * The membersCustomFields flag is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Filter members by custom fields', () => {
-  test.use({ labs: { membersCustomFields: true, memberDetailsReact: true } });
+  test.use({ labs: { membersCustomFields: true } });
 
   test('a custom field filter can be built, saved as a segment, and reopened intact', async ({
     page,

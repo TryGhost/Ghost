@@ -1,0 +1,104 @@
+/* Ghost's theme for the Pintura image editor. Pintura appends its own stylesheet
+   when it loads, so these overrides need !important to win. */
+
+.pintura-editor {
+  --color-background: 0, 0, 0 !important;
+  --color-foreground: 255, 255, 255 !important;
+  --font-family:
+    Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans,
+    Helvetica Neue, sans-serif !important;
+  --editor-modal-border-radius: 3px !important;
+}
+
+.PinturaRoot[data-env~='landscape'][data-env~='has-navigation'] > .PinturaMain {
+  grid-column: 1 / -1 !important;
+}
+
+.PinturaRoot[data-env~='landscape'] .PinturaStage {
+  margin: auto !important;
+  max-width: calc(100% - 190px) !important;
+  width: 100% !important;
+}
+
+.PinturaRoot > .PinturaNavTools {
+  padding: 24px 24px 0 !important;
+}
+
+/* The editor is dark in both Admin themes, so its export button keeps fixed colours. */
+.PinturaRoot > .PinturaNav .PinturaButton:only-of-type {
+  padding: 0 14px !important;
+  height: 34px !important;
+  font-size: 2rem !important;
+  font-weight: 500 !important;
+  color: var(--color-black) !important;
+  background-color: var(--color-white) !important;
+  border-radius: 3px !important;
+  -webkit-font-smoothing: subpixel-antialiased !important;
+}
+
+.PinturaRoot > .PinturaNav .PinturaButtonExport .PinturaButtonInner {
+  height: auto !important;
+}
+
+.PinturaRoot .PinturaButtonExport:hover {
+  color: var(--color-black) !important;
+  background-color: var(--color-white) !important;
+  opacity: 0.95 !important;
+}
+
+.PinturaRoot[data-env~='landscape'] .PinturaNavGroup {
+  margin-left: 0 !important;
+}
+
+.PinturaRoot[data-env~='landscape'] .PinturaUtilMain,
+.PinturaRoot[data-env~='landscape'] .PinturaUtilFooter {
+  padding-right: 0 !important;
+}
+
+/* Crop corner handles */
+.PinturaRectManipulator[data-shape~='circle'] {
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.PinturaRectManipulator:not([data-shape='edge'])::after {
+  inset: 0 !important;
+  border-radius: 0 !important;
+  content: '' !important;
+  border-style: solid !important;
+  border-width: 4px 4px 0 0 !important;
+  display: inline-block !important;
+  height: 20px !important;
+  position: relative !important;
+  transform: rotate(-90deg) !important;
+  width: 20px !important;
+  border-color: var(--color-white) !important;
+}
+
+.PinturaRectManipulator[data-shape~='circle'][data-direction='tr'] {
+  left: -20px !important;
+}
+
+.PinturaRectManipulator[data-shape~='circle'][data-direction='tr']::after {
+  transform: rotate(0) !important;
+}
+
+.PinturaRectManipulator[data-shape~='circle'][data-direction='bl'] {
+  top: -20px !important;
+}
+
+.PinturaRectManipulator[data-shape~='circle'][data-direction='bl']::after {
+  transform: rotate(180deg) !important;
+}
+
+.PinturaRectManipulator[data-shape~='circle'][data-direction='br'] {
+  top: -20px !important;
+  left: -20px !important;
+}
+
+.PinturaRectManipulator[data-shape~='circle'][data-direction='br']::after {
+  transform: rotate(90deg) !important;
+}

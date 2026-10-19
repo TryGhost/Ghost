@@ -5,14 +5,16 @@ export interface OpenSubview {
   id: SettingsSectionId;
   /** The pane's heading, which names the panel while the pane is open. */
   title: string;
-  /** The pane needs more room than the section list does. */
-  wide: boolean;
 }
 
 export interface SubviewController {
   open: OpenSubview | null;
+  /** The section the panel was asked to show; the pane with this id opens itself. */
+  requested: SettingsSectionId | null;
   show: (subview: OpenSubview) => void;
   close: () => void;
+  /** Shows a section: opens its pane if it has one, and otherwise returns to the section list. */
+  reveal: (id: SettingsSectionId) => void;
 }
 
 export const SubviewContext = createContext<SubviewController | null>(null);
@@ -23,6 +25,7 @@ export const SubviewContext = createContext<SubviewController | null>(null);
  */
 export function useSubviewController(): SubviewController {
   const [open, setOpen] = useState<OpenSubview | null>(null);
+  const [requested, setRequested] = useState<SettingsSectionId | null>(null);
   const close = useCallback(() => {
     // Removing a focused field does not fire blur. Commit it before the pane
     // unmounts, just as clicking the back button does.
@@ -30,8 +33,23 @@ export function useSubviewController(): SubviewController {
     if (focused instanceof HTMLElement) {
       focused.blur();
     }
+    setRequested(null);
     setOpen(null);
   }, []);
+  const show = useCallback((subview: OpenSubview) => {
+    setRequested(null);
+    setOpen(subview);
+  }, []);
+  // Another pane hides every other section, the requested one's row included.
+  const reveal = useCallback(
+    (id: SettingsSectionId) => {
+      if (open && open.id !== id) {
+        close();
+      }
+      setRequested(id);
+    },
+    [close, open],
+  );
 
   useEffect(() => {
     if (!open) {
@@ -50,7 +68,10 @@ export function useSubviewController(): SubviewController {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [close, open]);
 
-  return useMemo(() => ({ open, show: setOpen, close }), [close, open]);
+  return useMemo(
+    () => ({ open, requested, show, close, reveal }),
+    [close, open, requested, reveal, show],
+  );
 }
 
 export function useSubviews(): SubviewController {

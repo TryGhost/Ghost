@@ -22,9 +22,25 @@ export interface UnsplashPickerProps {
   /** Names the button, e.g. `Select feature image from Unsplash`. */
   label: string;
   disabled?: boolean;
+  variant?: 'overlay' | 'inline';
   /** Places the button over the dropzone it sits on. */
   className?: string;
   onSelect: (image: UnsplashSelection) => void;
+}
+
+// Unsplash's API guidelines ask for this referral on every link in a photo credit.
+const REFERRAL = { utm_source: 'ghost', utm_medium: 'referral', utm_campaign: 'api-credit' };
+
+function withReferral(credit: string): string {
+  const doc = new DOMParser().parseFromString(credit, 'text/html');
+  for (const link of doc.body.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+    const url = new URL(link.href);
+    for (const [key, value] of Object.entries(REFERRAL)) {
+      url.searchParams.set(key, value);
+    }
+    link.href = url.href;
+  }
+  return doc.body.innerHTML;
 }
 
 /**
@@ -35,6 +51,7 @@ export function UnsplashPicker({
   enabled,
   label,
   disabled,
+  variant = 'overlay',
   className,
   onSelect,
 }: UnsplashPickerProps) {
@@ -78,15 +95,22 @@ export function UnsplashPicker({
         <Button
           ref={triggerRef}
           aria-label={label}
-          className="group/unsplash hover:bg-button-hover"
+          className={cn(
+            'group/unsplash hover:bg-button-hover',
+            variant === 'inline' && 'p-0 hover:bg-accent',
+          )}
           disabled={disabled}
+          shape="pill"
           size="icon"
           type="button"
           variant="ghost"
           onClick={() => setIsOpen(true)}
         >
           <BrandIcon
-            className="size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground"
+            className={cn(
+              'text-muted-foreground transition-colors group-hover/unsplash:text-foreground',
+              variant === 'inline' ? 'size-3.5' : 'size-4',
+            )}
             name="unsplash"
           />
         </Button>
@@ -111,7 +135,10 @@ export function UnsplashPicker({
                   onClose={() => setIsOpen(false)}
                   onImageInsert={(inserted) => {
                     if (inserted.src) {
-                      onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
+                      onSelect({
+                        src: inserted.src,
+                        caption: withReferral(inserted.caption ?? ''),
+                      });
                     }
                     setIsOpen(false);
                   }}

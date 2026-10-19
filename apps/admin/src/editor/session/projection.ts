@@ -1,9 +1,12 @@
+import { z } from 'zod';
 import type { PageEditorRecord } from '@tryghost/admin-x-framework/api/pages';
 import type { PostEditorRecord } from '@tryghost/admin-x-framework/api/posts';
 import { parsePostRevisions, revisionTime } from '@/editor/post-revisions';
 import type { EditablePostProjection, RevisionProjection } from '@/editor/engine/change-tracker';
 
 export type EditorRecord = PostEditorRecord | PageEditorRecord;
+
+const emailSubjectSchema = z.string().nullish();
 
 /** A post the writer has not saved yet, credited to whoever is creating it. */
 export function newPostProjection(currentUserId?: string): EditablePostProjection {
@@ -13,6 +16,7 @@ export function newPostProjection(currentUserId?: string): EditablePostProjectio
     lexical: null,
     tags: [],
     custom_excerpt: null,
+    email_subject: null,
     feature_image: null,
     feature_image_alt: null,
     feature_image_caption: null,
@@ -38,12 +42,19 @@ export function newPostProjection(currentUserId?: string): EditablePostProjectio
 }
 
 export function projectionOf(record: EditorRecord): EditablePostProjection {
+  // API hook types do not validate runtime responses. Malformed optional subject
+  // metadata uses the same title fallback as an absent subject.
+  const emailSubject = emailSubjectSchema.safeParse(
+    'email_subject' in record ? record.email_subject : undefined,
+  );
+
   return {
     title: record.title,
     slug: record.slug,
     lexical: record.lexical ?? null,
     tags: record.tags ?? [],
     custom_excerpt: record.custom_excerpt ?? null,
+    email_subject: emailSubject.success ? (emailSubject.data ?? null) : null,
     feature_image: record.feature_image ?? null,
     feature_image_alt: record.feature_image_alt ?? null,
     feature_image_caption: record.feature_image_caption ?? null,

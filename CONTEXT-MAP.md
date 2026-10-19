@@ -10,24 +10,37 @@ Portal is the visitor-facing membership widget embedded on a Ghost site — the 
 
 ### Gift Subscriptions
 
-Path: `ghost/core/core/server/services/gifts/CONTEXT.md`
+Path: `ghost/core/server/services/gifts/CONTEXT.md`
 
 Gift Subscriptions covers prepaid, fixed-duration membership access from gift purchase through gift redemption, gift expiration, gift consumption, and gift continuation into a paid subscription.
 
 ### Gift Links
 
-Path: `ghost/core/core/server/services/gift-links/CONTEXT.md`
+Path: `ghost/core/server/services/gift-links/CONTEXT.md`
 
 Gift Links covers shareable access to individual protected posts and pages without creating a membership.
 
 ### Newsletter Email Sending
 
-Path: `ghost/core/core/server/services/email-service/CONTEXT.md`
+Path: `ghost/core/server/services/email-service/CONTEXT.md`
 
 Newsletter Email Sending covers the preparation and submission of newsletter emails to the configured email provider.
+
+### App Contracts
+
+Path: `packages/app-contracts/CONTEXT.md`
+
+App Contracts covers what Ghost and an app must agree on: how an app describes itself in its manifest, and how two versions of that manifest differ.
+
+### App Installations
+
+Path: `ghost/core/server/services/app-installations/CONTEXT.md`
+
+App Installations covers a site's record of the apps it has approved, from the publisher's review of an install link through approvals of later changes to uninstalling.
 
 ## Relationships
 
 - **Portal ↔ Gift Subscriptions**: Portal presents the purchase and redemption journeys for gift subscriptions.
 - **Gift Subscriptions ↔ Gift Links**: A gift-subscription redemption link claims fixed-duration membership access; a Gift Link grants access to one protected post or page.
 - **Newsletter Email Sending ↔ Gift Subscriptions**: Newsletter Email Sending describes the status of a whole newsletter send; Gift Subscriptions' email delivery status describes one recipient's gift email.
+- **App Contracts ↔ App Installations**: App Installations keeps parsed manifests as App Contracts defines them, and asks App Contracts which changes between an approved manifest and a newer one need the publisher's approval.

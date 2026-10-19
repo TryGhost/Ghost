@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -57,6 +57,7 @@
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
     "@playwright/test": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

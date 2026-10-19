@@ -1,7 +1,7 @@
 import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
-import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
+import PostAnalyticsEmailSendingStatus from '@/posts/analytics/email-sending-status/post-analytics-email-sending-status';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -29,22 +29,19 @@ import {
   PageMenuItem,
 } from '@tryghost/shade/components';
 import { H1 } from '@tryghost/shade/primitives';
-import {
-  LucideIcon,
-  formatDisplayDate,
-  formatDisplayTime,
-  formatNumber,
-} from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { usePageChrome } from '@tryghost/shade/page-templates';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useIsEmberOwnedRoute } from '@/routes';
+import { editorReturnState } from '@/editor/api';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
+import { getPostPublicationSummary } from '@/posts/analytics/utils/post-publication-summary';
 import {
-  isEmailOnly,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
+  useLocation,
   useNavigate,
 } from '@tryghost/admin-x-framework';
 import {
@@ -52,10 +49,31 @@ import {
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
-import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
+import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
+import { useQueryClient } from '@tanstack/react-query';
+
+/**
+ * Holds the header and its tabs together, sticky as a whole, where `sticky`;
+ * otherwise only the tabs stick. It scrolls up until its first row (the
+ * breadcrumb) sits where a list page's collapsed header row does, 24px from
+ * the top, level with the sidebar's menu. It stays below overlays (z-50) and
+ * above the content, which keeps its own raised layers, like the newsletter
+ * charts' hover cards (z-50), to itself (PostAnalyticsContent).
+ */
+const HeaderChrome: React.FC<{ sticky: boolean; children: React.ReactNode }> = ({
+  sticky,
+  children,
+}) =>
+  sticky ? (
+    <div className="sticky top-[calc(24px-var(--large-title-space))] z-40 -mx-(--page-gutter) bg-background px-(--page-gutter)">
+      {children}
+    </div>
+  ) : (
+    <>{children}</>
+  );
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -64,9 +82,14 @@ interface PostAnalyticsHeaderProps {
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
   const { isAdmin7 } = useShade();
+  // Where list pages show their titles large (admin7Design), the post's title
+  // goes large too, a step down as it can run long, under the same space.
+  const { largeTitles } = usePageChrome();
   const navigate = useNavigate();
+  const location = useLocation();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
+  const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -74,17 +97,16 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
-  const { hasNewsletterAnalytics, status: emailSendingStatus } = useEmailSendingStatusContext();
+  const { hasNewsletterAnalytics, isEmailSent } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
   const editorPath = `/editor/post/${postId}`;
-  // Whether the editor needs a hash navigation depends on the `editorReact` flag.
-  const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
-  const siteTimezone = getSiteTimezone(settings);
-  const isPublishedPost = post?.status === 'published';
-  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
-  const showPublishedOnSite = isPublishedPost && (!hasNewsletterAnalytics || hasFailedEmail);
-  const showPublishedAndSent = isPublishedPost && hasNewsletterAnalytics && !hasFailedEmail;
+  const publicationSummary =
+    post &&
+    getPostPublicationSummary(post, {
+      isEmailSent,
+      timezone: getSiteTimezone(settings),
+    });
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -152,9 +174,11 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
     try {
       await deletePost({ id: postId });
+      // `refetchType: 'none'`: this screen's own read of the post is still mounted.
+      void queryClient.invalidateQueries({ queryKey: [postsDataType], refetchType: 'none' });
       setShowDeleteDialog(false);
       // Navigate back to posts list
-      navigate('/posts/', { crossApp: true });
+      navigate('/posts/');
     } catch (e) {
       handleError(e);
     }
@@ -204,7 +228,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                navigate(editorPath, { crossApp: editorIsEmberOwned });
+                navigate(editorPath, { state: editorReturnState(location) });
               }}
             >
               <LucideIcon.Pen />
@@ -229,152 +253,169 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
 
   return (
     <>
-      <header className="z-50 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
-        <div
-          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
-          data-header="header"
+      <HeaderChrome sticky={largeTitles}>
+        <header
+          className={cn(
+            'z-50 -mx-(--page-gutter)',
+            largeTitles ? 'bg-background' : 'bg-white/70 backdrop-blur-md dark:bg-background',
+          )}
         >
-          <div className="flex w-full flex-col gap-6">
-            <div className="flex w-full flex-col flex-wrap justify-between md:flex-row md:items-center">
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <button
-                        className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                        type="button"
-                        onClick={() => navigate('/analytics/')}
-                      >
-                        Analytics
-                      </button>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Post analytics</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-              <div className="flex w-full items-center gap-2 md:w-auto">
-                {webAnalyticsEnabled && !post?.email_only && (
-                  <div className="mr-3 flex grow items-center gap-2 md:grow-0">
-                    <div
-                      className="flex items-center gap-2 text-muted-foreground"
-                      title="Active readers in the last 5 minutes · Updates every 60 seconds"
-                    >
-                      <span>
-                        {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} reading now
-                      </span>
+          <div
+            className={cn(
+              'relative flex min-h-[102px] w-full items-start justify-between gap-5 px-(--page-gutter) pb-0',
+              largeTitles ? 'pt-(--large-title-space)!' : 'pt-[28px]!',
+            )}
+            data-header="header"
+          >
+            <div className={cn('flex w-full flex-col', largeTitles ? 'gap-1' : 'gap-6')}>
+              <div className="flex w-full flex-col flex-wrap justify-between md:flex-row md:items-center">
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild>
+                        <button
+                          className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+                          type="button"
+                          onClick={() => navigate('/analytics/')}
+                        >
+                          Analytics
+                        </button>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <div className="flex w-full items-center gap-2 md:w-auto">
+                  {webAnalyticsEnabled && !post?.email_only && (
+                    <div className="mr-3 flex grow items-center gap-2 md:grow-0">
                       <div
-                        className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}
-                      ></div>
+                        className="flex items-center gap-2 text-muted-foreground"
+                        title="Active readers in the last 5 minutes · Updates every 60 seconds"
+                      >
+                        <span>
+                          {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} reading now
+                        </span>
+                        <div
+                          className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}
+                        ></div>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
-                {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
-                {!isPostLoading && (
-                  <PageHeader.ActionGroup>
-                    {isAdmin7 ? (
-                      <>
-                        {moreActions}
-                        {shareAction && (
-                          <PageHeader.ActionGroup.Primary>
-                            {shareAction}
-                          </PageHeader.ActionGroup.Primary>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {shareAction}
-                        {moreActions}
-                      </>
-                    )}
-                  </PageHeader.ActionGroup>
-                )}
-              </div>
-            </div>
-            {!isPostLoading && (
-              <div className="flex items-start gap-6 md:items-center">
-                {post?.feature_image && (
-                  <div
-                    className="aspect-[16/10] w-full max-w-[100px] rounded-md bg-cover bg-center md:max-w-[132px]"
-                    style={{
-                      backgroundImage: `url(${post.feature_image})`,
-                    }}
-                  ></div>
-                )}
-                <div>
-                  <H1
-                    className="-ml-px max-w-[920px] indent-0 !text-xl md:leading-[1.2em]"
-                    data-header="header-title"
-                  >
-                    {post?.title}
-                  </H1>
-                  {post?.published_at && (
-                    <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
-                      {isEmailOnly(post) &&
-                        `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedOnSite &&
-                        `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {showPublishedAndSent &&
-                        `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                    </div>
+                  )}
+                  {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
+                  {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
+                  {!isPostLoading && (
+                    <PageHeader.ActionGroup>
+                      {isAdmin7 ? (
+                        <>
+                          {moreActions}
+                          {shareAction && (
+                            <PageHeader.ActionGroup.Primary>
+                              {shareAction}
+                            </PageHeader.ActionGroup.Primary>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {shareAction}
+                          {moreActions}
+                        </>
+                      )}
+                    </PageHeader.ActionGroup>
                   )}
                 </div>
               </div>
-            )}
-            <EmailSendingStatusBanner />
+              {!isPostLoading && (
+                <div className="flex items-start gap-6 md:items-center">
+                  {post?.feature_image && (
+                    <div
+                      className="aspect-[16/10] w-full max-w-[100px] rounded-md bg-cover bg-center md:max-w-[132px]"
+                      style={{
+                        backgroundImage: `url(${post.feature_image})`,
+                      }}
+                    ></div>
+                  )}
+                  <div>
+                    <H1
+                      className={cn(
+                        '-ml-px max-w-[920px] indent-0',
+                        largeTitles
+                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! font-medium! tracking-[-0.025em]!'
+                          : '!text-xl md:leading-[1.2em]',
+                      )}
+                      data-header="header-title"
+                    >
+                      {post?.title}
+                    </H1>
+                    {publicationSummary && (
+                      <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
+                        {publicationSummary}
+                      </div>
+                    )}
+                    <PostAnalyticsEmailSendingStatus key={postId} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
-      <Navbar className="sticky top-0 z-50 -mb-8 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-background">
-        {!isPostLoading && (
-          <PageMenu className="min-h-[34px]" defaultValue={currentTab} responsive>
-            {availableTabs.includes('Overview') && (
-              <PageMenuItem
-                value="Overview"
-                onClick={() => {
-                  navigate(`/posts/analytics/${postId}`);
-                }}
-              >
-                Overview
-              </PageMenuItem>
-            )}
-            {availableTabs.includes('Web') && (
-              <PageMenuItem
-                value="Web"
-                onClick={() => {
-                  navigate(`/posts/analytics/${postId}/web`);
-                }}
-              >
-                Web traffic
-              </PageMenuItem>
-            )}
-            {availableTabs.includes('Newsletter') && (
-              <PageMenuItem
-                value="Newsletter"
-                onClick={() => {
-                  navigate(`/posts/analytics/${postId}/newsletter`);
-                }}
-              >
-                Newsletter
-              </PageMenuItem>
-            )}
-            {availableTabs.includes('Growth') && (
-              <PageMenuItem
-                value="Growth"
-                onClick={() => {
-                  navigate(`/posts/analytics/${postId}/growth`);
-                }}
-              >
-                Growth
-              </PageMenuItem>
-            )}
-          </PageMenu>
-        )}
-        {children}
-      </Navbar>
+        </header>
+        <Navbar
+          className={cn(
+            '-mb-8 transform-gpu flex-col items-start gap-y-0 border-none py-8 lg:flex-row lg:items-center',
+            largeTitles
+              ? 'bg-background'
+              : 'sticky top-0 z-50 bg-white/70 backdrop-blur-md dark:bg-background',
+          )}
+        >
+          {!isPostLoading && (
+            <PageMenu className="min-h-[34px]" defaultValue={currentTab} responsive>
+              {availableTabs.includes('Overview') && (
+                <PageMenuItem
+                  value="Overview"
+                  onClick={() => {
+                    navigate(`/posts/analytics/${postId}`);
+                  }}
+                >
+                  Overview
+                </PageMenuItem>
+              )}
+              {availableTabs.includes('Web') && (
+                <PageMenuItem
+                  value="Web"
+                  onClick={() => {
+                    navigate(`/posts/analytics/${postId}/web`);
+                  }}
+                >
+                  Web traffic
+                </PageMenuItem>
+              )}
+              {availableTabs.includes('Newsletter') && (
+                <PageMenuItem
+                  value="Newsletter"
+                  onClick={() => {
+                    navigate(`/posts/analytics/${postId}/newsletter`);
+                  }}
+                >
+                  Newsletter
+                </PageMenuItem>
+              )}
+              {availableTabs.includes('Growth') && (
+                <PageMenuItem
+                  value="Growth"
+                  onClick={() => {
+                    navigate(`/posts/analytics/${postId}/growth`);
+                  }}
+                >
+                  Growth
+                </PageMenuItem>
+              )}
+            </PageMenu>
+          )}
+          {children}
+        </Navbar>
+      </HeaderChrome>
 
       {canManageGiftLink && postId && (
         <GiftLinkModal

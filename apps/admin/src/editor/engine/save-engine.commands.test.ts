@@ -111,6 +111,9 @@ describe('resolveTarget', () => {
     ['explicit', 'sent', PAST],
     ['leave', 'published', PAST],
     ['leave', 'draft', null],
+    ['settings', 'published', PAST],
+    ['settings', 'scheduled', FUTURE],
+    ['settings', 'sent', PAST],
   ])('%s on a %s post preserves the status', (kind, status, publishedAt) => {
     expect(resolveTarget(command(kind), { status, publishedAt })).toEqual({
       status,

@@ -13,11 +13,10 @@ describe('HeaderNode', function () {
         let dataset: Record<string, unknown>;
         let exportOptions: Record<string, unknown>;
 
-        const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+        const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
-                    testFn();
-                    resolve();
+                    resolve(testFn());
                 } catch (e) {
                     reject(e);
                 }
@@ -134,7 +133,7 @@ describe('HeaderNode', function () {
         });
 
         describe('exportDOM', function () {
-            it('can render to HTML', editorTest(function () {
+            it('can render to HTML', editorTest(async function () {
                 const headerNode = $createHeaderNode(dataset);
                 const result = headerNode.exportDOM(editor, exportOptions);
                 const expectedElement = html`
@@ -145,7 +144,7 @@ describe('HeaderNode', function () {
                 </div>
         `;
                 expect((result as unknown as {type?: string}).type).toBe('inner');
-                assertPrettifiesTo((result.element as HTMLElement).innerHTML, expectedElement);
+                await assertPrettifiesTo((result.element as HTMLElement).innerHTML, expectedElement);
             }));
         });
         describe('importDOM', function () {
@@ -205,11 +204,10 @@ describe('HeaderNode', function () {
         let dataset: Record<string, unknown>;
         let exportOptions: Record<string, unknown>;
 
-        const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+        const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
-                    testFn();
-                    resolve();
+                    resolve(testFn());
                 } catch (e) {
                     reject(e);
                 }

@@ -6,10 +6,12 @@ import {
   currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
+  fakeEndpoint,
   fakeSettingsScreens,
   fakeTiers,
   renderAdminApp,
   settingsResponse,
+  siteResponse,
   tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -110,6 +112,7 @@ describe('Access settings', () => {
 
   it('regenerates a locked private-site access code server-side', async () => {
     fakeSettingsScreens();
+    fakeEndpoint('POST', `${String(siteResponse().site.url)}private/`, {});
     const settings = settingsResponse({ settings: { is_private: true, password: 'fake-123' } });
     for (const key of ['is_private', 'password']) {
       Object.assign(

@@ -1,7 +1,7 @@
 import PinIcon from '../../images/icons/pin.svg?react';
 import PinOffIcon from '../../images/icons/pin-off.svg?react';
 import React from 'react';
-import { Comment, useAppContext } from '../../app-context';
+import { type Comment, useAppContext } from '../../app-context';
 
 const PinnedLabel: React.FC<{ comment: Comment }> = ({ comment }) => {
   const { dispatchAction, isAdmin, t } = useAppContext();

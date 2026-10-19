@@ -5,16 +5,23 @@ import {
   fakeActions,
   fakeAdminEndpoint,
   fakeEditSettings,
+  fakeOffers,
   fakeSettingsScreens,
+  fakeTiers,
   fakeUsers,
+  offer,
   renderAdminApp,
   settingsResponse,
   currentUserResponse,
   currentRoute,
   configResponse,
+  tag,
+  tier,
   type StaffUser,
 } from '@test-utils/acceptance';
+import { offersScreen } from '@/settings/offers.screen';
 import { settingsScreen } from '@/settings/settings.screen';
+import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 
 // Settings groups and the content wrapper open stacking contexts; a dialog rendered
 // inside them (rather than through the settings dialog portal) paints below the chrome.
@@ -38,7 +45,7 @@ function advancedSettings(overrides: Record<string, string | boolean | null>) {
 }
 
 describe('Advanced settings', () => {
-  it('treats an absent React editor flag as off and allows enabling it', async () => {
+  it('treats an absent private flag as off and allows enabling it', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
     const response = configResponse();
@@ -48,14 +55,14 @@ describe('Advanced settings', () => {
     const section = settingsScreen.section('labs');
     await section.getByRole('button', { name: 'Open' }).click();
     await section.getByRole('tab', { name: 'Private features' }).click();
-    const toggle = section.getByRole('switch', { name: 'React editor' });
+    const toggle = section.getByRole('switch', { name: 'Machine payments' });
     await expect.element(toggle).not.toBeChecked();
     await toggle.click();
     await expect(settingsApi).toHaveEditedSettings([
       {
         key: 'labs',
         value: String(
-          settingsResponse({ labs: { editorReact: true } }).settings.find((setting) => {
+          settingsResponse({ labs: { machinePayments: true } }).settings.find((setting) => {
             return setting.key === 'labs';
           })!.value,
         ),
@@ -192,25 +199,20 @@ describe('Advanced settings', () => {
     ]);
   });
 
-  it('opens every built-in migrator in its external Admin route', async () => {
+  it.each([
+    ['Substack', '/migrate/substack'],
+    ['beehiiv', '/migrate/beehiiv'],
+    ['WordPress', '/migrate/wordpress'],
+    ['Squarespace', '/migrate/squarespace'],
+    ['Medium', '/migrate/medium'],
+    ['Mailchimp', '/migrate/mailchimp'],
+  ])('opens the %s migrator at its Admin route', async (name, route) => {
     fakeSettingsScreens();
     await renderAdminApp('/settings/migration');
 
-    const section = settingsScreen.section('migrationtools');
-    for (const [name, route] of [
-      ['Substack', '/migrate/substack'],
-      ['beehiiv', '/migrate/beehiiv'],
-      ['WordPress', '/migrate/wordpress'],
-      ['Squarespace', '/migrate/squarespace'],
-      ['Medium', '/migrate/medium'],
-      ['Mailchimp', '/migrate/mailchimp'],
-    ]) {
-      await section.getByRole('button', { name }).click();
-      expect(JSON.parse(document.body.dataset.externalNavigate ?? 'null')).toMatchObject({
-        route,
-        isExternal: true,
-      });
-    }
+    await settingsScreen.section('migrationtools').getByRole('button', { name }).click();
+
+    await expect.poll(currentRoute).toBe(route);
   });
 
   it('imports content from the universal importer and confirms the import is queued', async () => {
@@ -284,19 +286,6 @@ describe('Advanced settings', () => {
       .toContain('"automations":true');
   });
 
-  it('downloads the content and settings export', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings/migration');
-
-    const section = settingsScreen.section('migrationtools');
-    await section.getByRole('tab', { name: 'Export' }).click();
-    await section.getByRole('button', { name: 'Content & settings' }).click();
-
-    await expect
-      .poll(() => document.querySelector<HTMLIFrameElement>('iframe#iframeDownload')?.src)
-      .toMatch(/\/api\/admin\/db\/$/);
-  });
-
   it.each([
     {
       kind: 'redirects',
@@ -333,7 +322,8 @@ describe('Advanced settings', () => {
         .toHaveTextContent(new RegExp(`${kind} uploaded`, 'i'));
       expect(uploadApi.requests).toHaveLength(1);
 
-      await section.getByRole('button', { name: `Download current ${kind}` }).click();
+      await section.getByRole('button', { name: `More ${kind} actions` }).click();
+      await page.getByRole('menuitem', { name: 'Download file' }).click();
       await expect
         .poll(() => document.querySelector<HTMLIFrameElement>('iframe#iframeDownload')?.src)
         .toContain(downloadPath);
@@ -492,12 +482,6 @@ describe('Advanced settings', () => {
       .toHaveTextContent(
         /Security action reset authentication: 4 API keys rotated, 3 users locked/,
       );
-    await modal.getByText('Useful tag').click();
-    expect(JSON.parse(document.body.dataset.externalNavigate ?? 'null')).toMatchObject({
-      isExternal: true,
-      route: 'tag',
-      models: ['useful-tag'],
-    });
     await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
     const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
     expect(initialQuery.get('include')).toBe('actor,resource');
@@ -535,6 +519,67 @@ describe('Advanced settings', () => {
 
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(modal).toHaveCount(0);
+  });
+
+  it('opens an offer from history in the offer editor', async () => {
+    fakeSettingsScreens();
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    const supporter = tier({ name: 'Supporter' });
+    const blackFriday = offer({
+      name: 'Black Friday',
+      tier: { id: supporter.id, name: supporter.name },
+    });
+    fakeTiers([supporter]);
+    fakeOffers([blackFriday]);
+    fakeAdminEndpoint('GET', `/offers/${blackFriday.id}/`, { offers: [blackFriday] });
+    fakeActions([
+      {
+        id: 'offer',
+        resource_id: blackFriday.id,
+        resource_type: 'offer',
+        actor_id: '1',
+        actor_type: 'user',
+        event: 'edited',
+        context: '{}',
+        created_at: '2023-08-11T12:37:02.000Z',
+        actor: { id: '1', name: 'Jamie Larson', slug: 'main', image: null },
+        resource: { id: blackFriday.id, slug: blackFriday.code, name: blackFriday.name },
+      },
+    ]);
+    await renderAdminApp('/settings/history/view');
+
+    await settingsScreen.section('history-modal').getByText('Black Friday').click();
+
+    await expect.poll(currentRoute).toBe(`/settings/offers/edit/${blackFriday.id}`);
+    await expect.element(offersScreen.updateModal()).toBeVisible();
+  });
+
+  it('opens a tag from history on its detail page', async () => {
+    fakeSettingsScreens();
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    fakeAdminEndpoint('GET', /^\/tags\/slug\/useful-tag\//, {
+      tags: [tag({ name: 'Useful tag', slug: 'useful-tag' })],
+    });
+    fakeActions([
+      {
+        id: 'tag',
+        resource_id: 'tag',
+        resource_type: 'tag',
+        actor_id: '1',
+        actor_type: 'user',
+        event: 'edited',
+        context: '{}',
+        created_at: '2023-08-11T12:37:02.000Z',
+        actor: { id: '1', name: 'Jamie Larson', slug: 'main', image: null },
+        resource: { id: 'tag', slug: 'useful-tag', title: 'Useful tag' },
+      },
+    ]);
+    await renderAdminApp('/settings/history/view');
+
+    await settingsScreen.section('history-modal').getByText('Useful tag').click();
+
+    await expect.poll(currentRoute).toBe('/tags/useful-tag');
+    await expect.element(tagDetailScreen.detail()).toBeVisible();
   });
 
   it('hydrates the staff filter from a history route', async () => {

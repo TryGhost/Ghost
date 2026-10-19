@@ -46,7 +46,7 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
 
     if (fullPath) {
       return (
-        <Button className={linkClass} variant="ghost" asChild>
+        <Button className={linkClass} shape="rounded" variant="ghost" asChild>
           <Link
             to={fullPath}
             onClick={() => {
@@ -62,7 +62,14 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
     }
 
     return (
-      <Button ref={ref} className={linkClass} variant="ghost" onClick={props.onClick} {...props}>
+      <Button
+        ref={ref}
+        className={linkClass}
+        shape="rounded"
+        variant="ghost"
+        onClick={props.onClick}
+        {...props}
+      >
         {children}
         {badge}
       </Button>

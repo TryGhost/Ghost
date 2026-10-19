@@ -10,6 +10,7 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
+  Link,
   Switch,
 } from '@tryghost/shade/components';
 import {
@@ -119,14 +120,9 @@ function PinturaModal() {
             </div>
             <div className="flex grow flex-col items-end justify-between gap-2 md:basis-1/2">
               <img alt="Pintura screenshot" src={pinturaScreenshot} />
-              <a
-                className="-mb-1 font-medium text-green"
-                href="https://pqina.nl/pintura/ghost/?ref=ghost.org"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Find out more &rarr;
-              </a>
+              <Link className="-mb-1" href="https://pqina.nl/pintura/ghost/?ref=ghost.org" external>
+                Find out more
+              </Link>
             </div>
           </div>
         )}
@@ -141,14 +137,9 @@ function PinturaModal() {
                 <FieldLabel htmlFor="pintura-enabled">Enable Pintura</FieldLabel>
                 <FieldDescription>
                   Enable{' '}
-                  <a
-                    className="text-green"
-                    href="https://pqina.nl/pintura/ghost/?ref=ghost.org"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
+                  <Link href="https://pqina.nl/pintura/ghost/?ref=ghost.org" external>
                     Pintura
-                  </a>{' '}
+                  </Link>{' '}
                   for editing your images in Ghost
                 </FieldDescription>
               </FieldContent>

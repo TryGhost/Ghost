@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   configResponse,
+  currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
   fakeSettingsScreens,
   renderAdminApp,
   settingsResponse,
 } from '@test-utils/acceptance';
+import { deferred } from '@/utils/deferred';
 import { settingsScreen } from '@/settings/settings.screen';
 
 type AnalyticsSetting = { key: string; value: boolean; is_read_only?: boolean };
@@ -36,6 +38,7 @@ function analyticsConfig({ limited = false }: { limited?: boolean } = {}) {
           errorCode: 'HOST_LIMIT_REACHED',
         },
       },
+      billing: { enabled: true },
     };
   }
   return response;
@@ -166,20 +169,17 @@ describe('Analytics settings', () => {
       .element(section.getByText(/available on the Publisher plan and above/))
       .toBeVisible();
     await expect(section.getByText(/requires configuration/)).toHaveCount(0);
-    await section.getByText('Upgrade now →', { exact: true }).click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await section.getByRole('button', { name: 'Upgrade now' }).click();
+    await expect.poll(currentRoute).toBe('/pro');
   });
 
   it('disables the post analytics export while downloading from the expected endpoint', async () => {
     fakeSettingsScreens();
-    let finishExport!: () => void;
+    const pendingExport = deferred<object>();
     const exportApi = fakeAdminEndpoint(
       'GET',
       '/posts/export/?limit=1000',
-      () =>
-        new Promise<object>((resolve) => {
-          finishExport = () => resolve({});
-        }),
+      () => pendingExport.promise,
     );
     await renderAdminApp('/settings');
 
@@ -188,11 +188,14 @@ describe('Analytics settings', () => {
     const button = migrationTools.getByTestId('post-analytics-export-button');
     await button.click();
 
-    expect(exportApi.requests).toHaveLength(1);
-    await expect.element(button).toBeDisabled();
-    await expect.element(button).toHaveTextContent('Loading...');
-
-    finishExport();
+    try {
+      await expect.poll(() => exportApi.requests.length).toBe(1);
+      await expect.element(button).toBeDisabled();
+      await expect.element(button).toHaveTextContent('Loading...');
+    } finally {
+      // Settle the held export even when an assertion fails.
+      pendingExport.resolve({});
+    }
 
     await expect.element(button).toBeEnabled();
     expect(exportApi.lastRequest?.url).toContain('/posts/export/?limit=1000');

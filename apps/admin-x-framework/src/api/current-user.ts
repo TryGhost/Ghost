@@ -24,6 +24,9 @@ export const useCurrentUser = ({ requestOptions }: CurrentUserOptions = {}) => {
     queryKey: currentUserQueryKey,
     queryFn: () => fetchApi<UsersResponseType>(currentUserUrl, requestOptions),
     select: (data) => data.users[0],
+    // Every query hook reads the current user for permissions, so each new
+    // screen would otherwise re-ask a signed-out server; signing in reloads.
+    retryOnMount: false,
   });
 
   useEffect(() => {

@@ -20,6 +20,7 @@ export interface PostRevision {
   post_status: 'draft' | 'published' | 'scheduled' | 'sent';
   reason: string | null;
   created_at: string;
+  created_at_ts?: number;
   author?: { id: string; name: string; profile_image?: string | null } | null;
 }
 

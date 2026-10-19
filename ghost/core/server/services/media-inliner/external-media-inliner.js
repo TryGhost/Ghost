@@ -1,0 +1,552 @@
+const mime = require('mime-types');
+const request = require('../../lib/request-external');
+const urlUtils = require('../../../shared/url-utils').default;
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+const string = require('@tryghost/string');
+const path = require('path');
+const { isSvgExtension } = require('../../lib/image/image-content');
+const { sanitizeSvgBuffer } = require('../../lib/image/svg-sanitizer');
+const vm = require('node:vm');
+
+// Domains are regular expression patterns (migration tooling sends wildcards
+// such as `https?://i[0-9]{1}.wp.com`), so they cannot be escaped. Matching
+// runs under a V8 execution timeout instead to bound catastrophic backtracking.
+const FIND_MATCHES_TIMEOUT_MS = 1000;
+const PATTERN_TIMEOUT_CODE = 'MEDIA_INLINER_PATTERN_TIMEOUT';
+
+let findMatchesScript;
+let findMatchesContext;
+
+function matchAllWithTimeout(content, regex, timeout) {
+  if (!findMatchesScript) {
+    findMatchesScript = new vm.Script('Array.from(content.matchAll(regex), (match) => match[1])');
+    findMatchesContext = vm.createContext({});
+  }
+
+  findMatchesContext.content = content;
+  findMatchesContext.regex = regex;
+
+  try {
+    // Copy into this realm so callers get a normal Array
+    return Array.from(findMatchesScript.runInContext(findMatchesContext, { timeout }));
+  } finally {
+    findMatchesContext.content = undefined;
+    findMatchesContext.regex = undefined;
+  }
+}
+
+let fileTypeFromBuffer;
+
+async function getFileTypeFromBuffer(buffer) {
+  if (!fileTypeFromBuffer) {
+    ({ fileTypeFromBuffer } = await import('file-type'));
+  }
+
+  return fileTypeFromBuffer(buffer);
+}
+
+class ExternalMediaInliner {
+  /** @type {object} */
+  #PostModel;
+
+  /** @type {object} */
+  #PostMetaModel;
+
+  /** @type {object} */
+  #TagModel;
+
+  /** @type {object} */
+  #UserModel;
+
+  /**
+   *
+   * @param {Object} deps
+   * @param {Object} deps.PostModel - Post model
+   * @param {Object} deps.PostMetaModel - PostMeta model
+   * @param {Object} deps.TagModel - Tag model
+   * @param {Object} deps.UserModel - User model
+   * @param {(extension: string, fileBuffer: Buffer) => Promise<import('ghost-storage-base').StorageBase | null>} deps.getMediaStorage - picks the storage for a file, or null if no storage accepts it
+   */
+  constructor(deps) {
+    this.#PostModel = deps.PostModel;
+    this.#PostMetaModel = deps.PostMetaModel;
+    this.#TagModel = deps.TagModel;
+    this.#UserModel = deps.UserModel;
+    this.getMediaStorage = deps.getMediaStorage;
+  }
+
+  /**
+   *
+   * @param {string} requestURL - url of remote media
+   * @returns {Promise<Object>}
+   */
+  async getRemoteMedia(requestURL) {
+    // @NOTE: this is the most expensive operation in the whole inlining process
+    //        we should consider caching the results to improve performance
+
+    // Enforce http - http > https redirects are commonplace
+    requestURL = requestURL.replace(/^\/\//g, 'http://');
+
+    // Encode to handle special characters in URLs
+    requestURL = encodeURI(requestURL);
+    try {
+      const response = await request(requestURL, {
+        followRedirect: true,
+        responseType: 'buffer',
+      });
+
+      return response;
+    } catch (error) {
+      // NOTE: add special case for 404s
+      logging.error(`Error downloading remote media: ${requestURL}`);
+      logging.error(
+        new errors.DataImportError({
+          err: error,
+        }),
+      );
+
+      return null;
+    }
+  }
+
+  /**
+   *
+   * @param {string} requestURL - url of remote media
+   * @param {Object} response - response from request
+   * @returns {Promise<Object>}
+   */
+  async extractFileDataFromResponse(requestURL, response) {
+    let extension;
+    let body = response.body;
+
+    // Attempt to get the file extension from the file itself
+    // If that fails, or if `.ext` is undefined, get the extension from the file path in the catch
+    try {
+      const fileInfo = await getFileTypeFromBuffer(body);
+      extension = fileInfo.ext;
+    } catch {
+      const headers = response.headers;
+      const contentType = headers['content-type'];
+      const extensionFromPath = path
+        .parse(requestURL)
+        .ext.split(/[^a-z]/i)
+        .filter(Boolean)[0];
+      extension = mime.extension(contentType) || extensionFromPath;
+    }
+
+    // If the file is heic or heif, attempt to convert it to jpeg
+    if (extension === 'heic' || extension === 'heif') {
+      // Lazy: pulls in libheif-js, a WASM codec costing ~50ms to load at boot.
+      // Deliberately outside the try — a missing codec is not a conversion error,
+      // and swallowing it would store an unconvertible .heic in its place.
+      const convert = require('heic-convert');
+
+      try {
+        body = await convert({
+          buffer: body,
+          format: 'JPEG',
+        });
+
+        extension = 'jpg';
+      } catch (error) {
+        logging.error(`Error converting file to JPEG: ${requestURL}`);
+        logging.error(
+          new errors.DataImportError({
+            err: error,
+          }),
+        );
+      }
+    }
+
+    const removeExtRegExp = new RegExp(`.${extension}`, '');
+    const fileNameNoExt = path.parse(requestURL).base.replace(removeExtRegExp, '');
+
+    // CASE: Query strings _can_ form part of the unique image URL, so rather that strip them include the in the file name
+    // Then trim to last 248 chars (this will be more unique than the first 248), and trim leading & trailing dashes.
+    // 248 is on the lower end of limits from various OSes and file systems
+    const fileName = string
+      .slugify(path.parse(fileNameNoExt).base, {
+        requiredChangesOnly: true,
+      })
+      .slice(-248)
+      .replace(/^-|-$/, '');
+
+    return {
+      fileBuffer: body,
+      filename: `${fileName}.${extension}`,
+      extension: `.${extension}`,
+    };
+  }
+
+  /**
+   *
+   * @param {Object} media - media to store locally
+   * @returns {Promise<string>} - path to stored media
+   */
+  async storeMediaLocally(media) {
+    // The extension can come from the response's Content-Type or the URL
+    // when the contents aren't a recognised binary format, so SVGs get the
+    // same sanitizing as SVG uploads
+    if (isSvgExtension(media.extension)) {
+      const sanitized = await sanitizeSvgBuffer(media.fileBuffer, media.extension === '.svgz');
+
+      if (!sanitized) {
+        logging.warn(`Could not sanitize SVG file: ${media.filename}`);
+        return null;
+      }
+
+      media = { ...media, fileBuffer: sanitized };
+    }
+
+    // A failed content check skips this file rather than the rest of the post
+    let storage;
+    try {
+      storage = await this.getMediaStorage(media.extension, media.fileBuffer);
+    } catch (error) {
+      logging.warn(`Could not determine storage adapter for file: ${media.filename}`);
+      logging.error(error);
+      return null;
+    }
+
+    if (!storage) {
+      logging.warn(`No storage adapter found for file extension: ${media.extension}`);
+      return null;
+    } else {
+      // @NOTE: this is extremely convoluted and should live on a
+      //        storage adapter level
+      const targetDir = storage.getTargetDir(storage.storagePath);
+      const uniqueFileName = await storage.getUniqueFileName(
+        {
+          name: media.filename,
+        },
+        targetDir,
+      );
+      const targetPath = path.relative(storage.storagePath, uniqueFileName);
+      const filePath = await storage.saveRaw(media.fileBuffer, targetPath);
+
+      return urlUtils.toTransformReady(filePath);
+    }
+  }
+
+  /**
+   * Download and store one external media URL without deciding where it came from
+   * or where its replacement belongs. Callers own discovery and replacement.
+   *
+   * @param {string} sourceUrl
+   * @returns {Promise<import('./types').ExternalMediaImportResult>}
+   */
+  async importUrl(sourceUrl) {
+    let response;
+    try {
+      response = await this.getRemoteMedia(sourceUrl);
+    } catch (error) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'download',
+        reason: 'The media file could not be downloaded.',
+        error,
+      };
+    }
+
+    if (!response) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'download',
+        reason: 'The media file could not be downloaded.',
+      };
+    }
+
+    let media;
+    try {
+      media = await this.extractFileDataFromResponse(sourceUrl, response);
+    } catch (error) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'extract',
+        reason: 'The downloaded media file could not be read.',
+        error,
+      };
+    }
+
+    try {
+      const storedUrl = await this.storeMediaLocally(media);
+      if (!storedUrl) {
+        return {
+          status: 'failed',
+          sourceUrl,
+          stage: 'unsupported',
+          reason: 'No configured storage accepts this media file.',
+        };
+      }
+
+      return {
+        status: 'stored',
+        sourceUrl,
+        storedUrl,
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'storage',
+        reason: 'The media file could not be stored in Ghost.',
+        error,
+      };
+    }
+  }
+
+  /**
+   * Convert an import result into the replacement URL expected by the existing
+   * content and field processing. Expected download and unsupported-file failures
+   * return null so the original URL remains unchanged. Results containing an
+   * underlying processing error are rethrown so the established per-resource
+   * catch boundary continues to log and isolate them.
+   *
+   * @param {import('./types').ExternalMediaImportResult} result
+   * @returns {string|null}
+   */
+  #replacementUrlFromImportResult(result) {
+    if (result.status === 'stored') {
+      return result.storedUrl;
+    }
+    if ('error' in result) {
+      throw result.error;
+    }
+    return null;
+  }
+
+  /**
+   * @param {string} content
+   * @param {string} domain - regular expression pattern matching the start of a media URL
+   * @param {Object} [options]
+   * @param {number} [options.timeout] - milliseconds before matching is abandoned
+   * @returns {string[]}
+   */
+  static findMatches(content, domain, { timeout = FIND_MATCHES_TIMEOUT_MS } = {}) {
+    // NOTE: the src could end with a quote, bracket, apostrophe, double-backslash, or encoded quote.
+    //     Backlashes are added to content as an escape character
+    const srcTerminationSymbols = `("|\\)|'|(?=(?:,https?))| |<|\\\\|&quot;|$)`;
+    const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
+
+    // Simplify the matches so we only get the result needed
+    let matchesArray;
+    try {
+      matchesArray = matchAllWithTimeout(content, regex, timeout);
+    } catch (error) {
+      if (error.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT') {
+        throw new errors.DataImportError({
+          message: `Matching media URLs for domain pattern "${domain}" timed out.`,
+          code: PATTERN_TIMEOUT_CODE,
+          errorDetails: { domain },
+        });
+      }
+      throw error;
+    }
+
+    // Trim trailing commas from each match
+    matchesArray = matchesArray.map((item) => {
+      return item.replace(/,$/, '');
+    });
+
+    return matchesArray;
+  }
+
+  /**
+   * Find & inline external media from a JSON sting.
+   * This works with both Lexical & Mobiledoc, so no separate methods are needed here.
+   *
+   * @param {string} content - stringified JSON of post Lexical or Mobiledoc content
+   * @param {String[]} domains - domains to inline media from
+   * @param {Set<string>} [timedOutDomains] - patterns to skip; timed out patterns are added
+   * @returns {Promise<string>} - updated stringified JSON of post content
+   */
+  async inlineContent(content, domains, timedOutDomains = new Set()) {
+    for (const domain of domains) {
+      if (timedOutDomains.has(domain)) {
+        continue;
+      }
+
+      let matches;
+      try {
+        matches = this.constructor.findMatches(content, domain);
+      } catch (err) {
+        if (err.code !== PATTERN_TIMEOUT_CODE) {
+          throw err;
+        }
+        // Skip only this pattern so replacements from other domains are kept
+        timedOutDomains.add(domain);
+        logging.error(err);
+        continue;
+      }
+
+      for (const src of matches) {
+        const result = await this.importUrl(src);
+        const replacementUrl = this.#replacementUrlFromImportResult(result);
+
+        if (replacementUrl) {
+          // NOTE: does not account for duplicate images in content
+          //       in those cases would be processed twice
+          content = content.replace(src, replacementUrl);
+          logging.info(`Inlined media: ${src} -> ${replacementUrl}`);
+        }
+      }
+    }
+
+    return content;
+  }
+
+  /**
+   *
+   * @param {Object} resourceModel - one of PostModel, TagModel, UserModel instances
+   * @param {String[]} fields - fields to inline
+   * @param {String[]} domains - domains to inline media from
+   * @returns Promise<Object> - updated fields map with local media paths
+   */
+  async inlineFields(resourceModel, fields, domains) {
+    const updatedFields = {};
+
+    for (const field of fields) {
+      for (const domain of domains) {
+        const src = resourceModel.get(field);
+
+        if (src && src.startsWith(domain)) {
+          const result = await this.importUrl(src);
+          const replacementUrl = this.#replacementUrlFromImportResult(result);
+
+          if (replacementUrl) {
+            updatedFields[field] = replacementUrl;
+            logging.info(`Added media to inline: ${src} -> ${replacementUrl}`);
+          }
+        }
+      }
+    }
+
+    return updatedFields;
+  }
+
+  /**
+   *
+   * @param {Object[]} resources - array of model instances
+   * @param {Object} model - resource model
+   * @param {string[]} fields - fields to inline
+   * @param {string[]} domains - domains to inline media from
+   */
+  async inlineSimpleFields(resources, model, fields, domains) {
+    logging.info(
+      `Starting inlining external media for ${resources?.length} resources and with ${fields.join(', ')} fields`,
+    );
+
+    for (const resource of resources) {
+      try {
+        const updatedFields = await this.inlineFields(resource, fields, domains);
+
+        if (Object.keys(updatedFields).length > 0) {
+          await model.edit(updatedFields, {
+            id: resource.id,
+            context: {
+              internal: true,
+            },
+          });
+        }
+      } catch (err) {
+        logging.error(`Error inlining media for: ${resource.id}`);
+        logging.error(
+          new errors.DataImportError({
+            err,
+          }),
+        );
+      }
+    }
+  }
+
+  /**
+   *
+   * @param {string[]} domains domains to inline media from
+   */
+  async inline(domains) {
+    const posts = await this.#PostModel.findAll({ context: { internal: true } });
+    const postsInilingFields = ['feature_image'];
+
+    logging.info(`Starting inlining external media for posts: ${posts?.length}`);
+
+    // A pattern that timed out once is likely to time out again, so stop
+    // applying it rather than spending the timeout on every remaining post.
+    const timedOutDomains = new Set();
+
+    for (const post of posts) {
+      try {
+        const mobiledocContent = post.get('mobiledoc');
+        const lexicalContent = post.get('lexical');
+
+        const updatedFields = await this.inlineFields(post, postsInilingFields, domains);
+
+        if (mobiledocContent) {
+          const inlinedContent = await this.inlineContent(
+            mobiledocContent,
+            domains,
+            timedOutDomains,
+          );
+
+          // If content has changed, update the post
+          if (inlinedContent !== mobiledocContent) {
+            updatedFields.mobiledoc = inlinedContent;
+          }
+        }
+
+        if (lexicalContent) {
+          const inlinedContent = await this.inlineContent(lexicalContent, domains, timedOutDomains);
+
+          // If content has changed, update the post
+          if (inlinedContent !== lexicalContent) {
+            updatedFields.lexical = inlinedContent;
+          }
+        }
+
+        if (Object.keys(updatedFields).length > 0) {
+          await this.#PostModel.edit(updatedFields, {
+            id: post.id,
+            context: {
+              internal: true,
+            },
+          });
+        }
+      } catch (err) {
+        logging.error(`Error inlining media for post: ${post.id}`);
+        logging.error(
+          new errors.DataImportError({
+            err,
+          }),
+        );
+      }
+    }
+
+    const { data: postsMetas } = await this.#PostMetaModel.findPage({
+      limit: 'all',
+    });
+    const postsMetaInilingFields = ['og_image', 'twitter_image'];
+
+    await this.inlineSimpleFields(postsMetas, this.#PostMetaModel, postsMetaInilingFields, domains);
+
+    const { data: tags } = await this.#TagModel.findPage({
+      limit: 'all',
+    });
+    const tagInliningFields = ['feature_image', 'og_image', 'twitter_image'];
+
+    await this.inlineSimpleFields(tags, this.#TagModel, tagInliningFields, domains);
+
+    const { data: users } = await this.#UserModel.findPage({
+      limit: 'all',
+    });
+    const userInliningFields = ['profile_image', 'cover_image'];
+
+    await this.inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
+
+    logging.info('Finished inlining external media for posts, tags, and users');
+  }
+}
+
+module.exports = ExternalMediaInliner;

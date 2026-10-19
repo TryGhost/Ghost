@@ -1,7 +1,9 @@
-// Ref: https://reactjs.org/docs/context.html
-import React, { ComponentProps, useContext } from 'react';
-import pages, { Page, PageName } from './pages';
-import { GhostApi } from './utils/api';
+import { createContext } from 'preact';
+import { useContext } from 'preact/hooks';
+import type pages from './pages';
+import type { ComponentProps } from 'preact';
+import type { GhostApi } from './utils/api';
+import type { Page, PageName } from './pages';
 
 export type SignupFormOptions = {
   title?: string;
@@ -27,7 +29,7 @@ export type AppContextType = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AppContext = React.createContext<AppContextType>({} as any);
+const AppContext = createContext<AppContextType>({} as any);
 
 export const AppContextProvider = AppContext.Provider;
 

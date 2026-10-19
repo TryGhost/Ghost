@@ -9,7 +9,7 @@ import {
   useEditSettings,
 } from '@tryghost/admin-x-framework/api/settings';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
-import { Switch } from '@tryghost/shade/components';
+import { Link, Switch } from '@tryghost/shade/components';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
@@ -84,24 +84,18 @@ const Network: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                 {isDisabledByPrivateMode ? (
                   <>
                     Network is automatically disabled while your site is in{' '}
-                    <span
-                      className="cursor-pointer text-green"
-                      onClick={() => updateRoute('members')}
-                    >
-                      private mode
-                    </span>
+                    <Link asChild>
+                      <button type="button" onClick={() => updateRoute('members')}>
+                        private mode
+                      </button>
+                    </Link>
                   </>
                 ) : (
                   <>
                     You need to configure a supported custom domain to use this feature.{' '}
-                    <a
-                      className="text-green"
-                      href="https://ghost.org/help/social-web/#custom-domain-required"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Help &rarr;
-                    </a>
+                    <Link href="https://ghost.org/help/social-web/#custom-domain-required" external>
+                      Help
+                    </Link>
                   </>
                 )}
               </div>

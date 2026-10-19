@@ -26,11 +26,11 @@ import {
   type NewsletterRadialChartData,
 } from '@/posts/analytics/newsletter/components/newsletter-radial-chart';
 import { type Post } from '@tryghost/admin-x-framework/api/posts';
-import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
+import { cleanTrackedUrl } from '@/posts/analytics/utils/link-helpers';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
+import { usePostTopLinks } from '@/posts/analytics/hooks/use-post-top-links';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -64,15 +64,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   }, [post]);
 
   // Get top links for this post
-  const { data: linksResponse } = useTopLinks({
-    searchParams: {
-      filter: `post_id:'${postId}'`,
-    },
-  });
-
-  const topLinks = useMemo(() => {
-    return processAndGroupTopLinks(linksResponse);
-  }, [linksResponse]);
+  const { topLinks } = usePostTopLinks();
 
   // "Clicked" Chart
   const commonChartData: NewsletterRadialChartData[] = [
@@ -136,7 +128,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
         <CardContent>
           <PendingSendEmpty
             className={cn(fullWidth && 'grid gap-6 md:grid-cols-2 md:gap-0')}
-            description="Opens and clicks will appear once every email has been sent"
+            description="You'll see opens and clicks here once it finishes"
             title="Your newsletter is being sent"
           >
             <div className={cn(fullWidth && 'md:border-r md:pr-6')}>
@@ -191,7 +183,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                   <DataList className="">
                     <DataListBody>
                       {topLinks.slice(0, fullWidth ? 10 : 5).map((link) => {
-                        const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                        const percentage =
+                          stats.clicked > 0 ? Math.min(link.count / stats.clicked, 1) : 0;
                         return (
                           <DataListRow key={link.link.link_id}>
                             <DataListBar

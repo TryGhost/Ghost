@@ -1,39 +1,116 @@
-import MainContent from './main-content';
+import Sidebar from './sidebar';
 import { DirtyNavigationGuard } from './dirty-navigation-guard';
 import SettingsAppProvider from '@/settings/providers/settings-app-provider';
-import { type UpgradeStatusType } from '@/settings/providers/settings-app-context';
+import {
+  type UpgradeStatusType,
+  useOpenSectionRequest,
+  useSearch,
+} from '@/settings/providers/settings-app-context';
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { DialogPortalProvider } from '@/settings/providers/dialog-portal';
 import { Outlet, useLocation } from '@tryghost/admin-x-framework';
-import { useEffect } from 'react';
+import { Stack } from '@tryghost/shade/primitives';
+import { startTransition, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
+import { isOpenSectionRequest } from '@/settings/utils/open-section';
+import {
+  useSettingsNavigationSlot,
+  useSettingsSidebarMorphing,
+} from '@/layout/settings-navigation';
+import { SettingsLoading } from '@/settings/settings-loading';
+
+import { useLazyComponent } from '@/shared/use-lazy-component';
+import { loadSettingsContent } from '@/settings/load-settings';
+
+// Renders the sections even if the sidebar's morph never reports its end
+const SECTIONS_FALLBACK_DELAY = 1000;
 
 interface AppProps {
   upgradeStatus?: UpgradeStatusType;
 }
 
-// Keeps the scroll-spy's navigated section in sync with the URL, replacing the
-// legacy SettingsRouter.
+const sectionOf = (pathname: string) => pathname.replace(/^\/settings\/?/, '').split('/')[0];
+
+// history entries whose open request has run, so going back to one doesn't reopen it
+const handledOpenRequests = new Set<string>();
+
+// Keeps the scroll-spy's navigated section in sync with the URL. An `?open` link
+// also clears the sidebar filter so its section shows, then asks it to open.
 function SettingsLocationSync() {
-  const { pathname } = useLocation();
+  const { key, pathname, search } = useLocation();
   const { updateNavigatedSection } = useScrollSectionContext();
+  const { filter, setFilter, setNoResult } = useSearch();
+  const { setOpenSectionRequest } = useOpenSectionRequest();
+  const [pendingSection, setPendingSection] = useState<string>();
 
   useEffect(() => {
-    const route = pathname.replace(/^\/settings\/?/, '');
-    updateNavigatedSection(route.split('/')[0]);
+    updateNavigatedSection(sectionOf(pathname));
   }, [pathname, updateNavigatedSection]);
+
+  useEffect(() => {
+    if (!isOpenSectionRequest(search) || handledOpenRequests.has(key)) {
+      return;
+    }
+
+    handledOpenRequests.add(key);
+    setFilter('');
+    setNoResult(false);
+    setPendingSection(sectionOf(pathname));
+  }, [key, pathname, search, setFilter, setNoResult]);
+
+  // asked only once the cleared filter has rendered, so a section reacting to it can't undo the open
+  useEffect(() => {
+    if (pendingSection && !filter) {
+      setOpenSectionRequest({ section: pendingSection });
+      setPendingSection(undefined);
+    }
+  }, [filter, pendingSection, setOpenSectionRequest]);
 
   return null;
 }
 
+function SettingsNavigation() {
+  return (
+    <Stack className="settings-app min-h-0 flex-1" gap="none">
+      <Sidebar />
+    </Stack>
+  );
+}
+
+function SettingsNavigationPortal() {
+  const container = useSettingsNavigationSlot();
+
+  return container ? createPortal(<SettingsNavigation />, container) : null;
+}
+
 export function App({ upgradeStatus }: AppProps) {
+  const MainContent = useLazyComponent(loadSettingsContent);
+  // While the floating sidebar grows to show the navigation, the sections wait
+  // for it to finish (or a fallback), so rendering them doesn't stall the morph
+  const sidebarMorphing = useSettingsSidebarMorphing();
+  const [sectionsReady, setSectionsReady] = useState(!sidebarMorphing);
+  useEffect(() => {
+    if (sectionsReady) {
+      return;
+    }
+    const ready = () => startTransition(() => setSectionsReady(true));
+    if (!sidebarMorphing) {
+      ready();
+      return;
+    }
+    const timer = window.setTimeout(ready, SECTIONS_FALLBACK_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [sectionsReady, sidebarMorphing]);
+
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>
-      <div className="settings-app [--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]">
+      <div className="settings-app h-full min-h-0">
         <ConfirmationProvider>
           <DialogPortalProvider>
             <SettingsLocationSync />
-            <MainContent />
+            <SettingsNavigationPortal />
+            {sectionsReady && (MainContent ? <MainContent /> : <SettingsLoading />)}
             <Outlet />
             <DirtyNavigationGuard />
           </DialogPortalProvider>

@@ -221,13 +221,12 @@ describe('getPostContextMenuItems', () => {
     expect(withoutGift.find((item) => item.key === 'unpublish')?.separated).toBe(false);
   });
 
-  // Ember hardcodes the noun here, as it does in the matching toast. Ported
-  // rather than corrected, so the two implementations read alike.
-  it('still says "post" on a page, as Ember does', () => {
-    const items = getPostContextMenuItems(
-      inputs([post({ status: 'published' })], { resource: 'pages' }),
-    );
+  it.each([
+    ['posts', 'Copy link to post'],
+    ['pages', 'Copy link to page'],
+  ] as const)('uses the copy-link label for %s', (resource, label) => {
+    const items = getPostContextMenuItems(inputs([post({ status: 'published' })], { resource }));
 
-    expect(items.find((item) => item.key === 'copy-link')?.label).toBe('Copy link to post');
+    expect(items.find((item) => item.key === 'copy-link')?.label).toBe(label);
   });
 });

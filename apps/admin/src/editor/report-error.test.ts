@@ -1,19 +1,81 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Sentry from '@sentry/react';
-import { reportEditorError, reportKoenigError } from './report-error';
+import {
+  APIError,
+  JSONError,
+  MaintenanceError,
+  ServerUnreachableError,
+} from '@tryghost/admin-x-framework/errors';
+import { buildLexicalParagraph } from '@tryghost/test-data';
+import type { SaveCommand, SaveError } from '@/editor/engine/save-engine';
+import type { EditorSaveFailure } from '@/editor/session/editor-session';
+import { body, record, sessionHarness } from '@/editor/session/__test-utils__/session-harness';
+import { preloadKoenig } from '@/settings/components/koenig-loader';
+import {
+  koenigErrorReporters,
+  reportEditorError,
+  reportEditorNotice,
+  reportKoenigError,
+  reportKoenigRenderError,
+  reportLeaveConfirmation,
+  reportSaveFailure,
+  reportShownAlert,
+} from './report-error';
 
-vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
+vi.mock('@sentry/react', () => ({ captureException: vi.fn(), captureMessage: vi.fn() }));
+
+vi.mock('@/utils/fetch-koenig-lexical', () => ({
+  fetchKoenigLexical: () => Promise.resolve({ version: '1.2.3' }),
+}));
+
+const FIELD: SaveCommand = {
+  kind: 'field',
+  requiresRevision: false,
+  requiresReconfirmation: false,
+};
+
+function failure(overrides: Partial<EditorSaveFailure> = {}): EditorSaveFailure {
+  return {
+    command: FIELD,
+    error: { kind: 'unknown', message: 'Boom', cause: new Error('Boom') },
+    persisted: true,
+    durationMs: 120,
+    postId: 'post-1',
+    status: 'draft',
+    ...overrides,
+  };
+}
+
+const TAGS = {
+  savePostTask: true,
+  post_type: 'post',
+  save_intent: 'field',
+  save_error_kind: 'unknown',
+  save_persisted: true,
+  save_status: 'draft',
+};
+
+/** The error the first exception report carried. */
+function reportedError(): Error {
+  return vi.mocked(Sentry.captureException).mock.calls[0][0] as Error;
+}
+
+/** The error Sentry titles with the given name, carrying the transport error as its cause. */
+function titled(name: string, message: string, cause: unknown) {
+  return expect.objectContaining({ name, message, cause }) as Error;
+}
+
+beforeEach(() => {
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.mocked(Sentry.captureException).mockClear();
+  vi.mocked(Sentry.captureMessage).mockClear();
+});
 
 describe('reportEditorError', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.mocked(Sentry.captureException).mockClear();
-  });
-
   it('forwards the error to Sentry with the given context and logs it once', () => {
     const error = new Error('boom');
 
@@ -35,8 +97,8 @@ describe('reportEditorError', () => {
     expect(Sentry.captureException).toHaveBeenCalledWith(error, undefined);
   });
 
-  it('tags Koenig failures with the Lexical version', () => {
-    window['@tryghost/koenig-lexical'] = { version: '1.2.3' };
+  it('tags Koenig failures with the Lexical version', async () => {
+    await preloadKoenig();
     const error = new Error('lexical exploded');
 
     reportKoenigError(error);
@@ -45,5 +107,496 @@ describe('reportEditorError', () => {
       tags: { lexical: true },
       contexts: { koenig: { version: '1.2.3' } },
     });
+  });
+});
+
+describe('reportEditorNotice', () => {
+  it('sends the message with the given tags, never as an exception', () => {
+    reportEditorNotice('LocalStorage quota exceeded. Removing old revisions.', {
+      tags: { localRevisions: 'quotaExceeded' },
+    });
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'LocalStorage quota exceeded. Removing old revisions.',
+      { tags: { localRevisions: 'quotaExceeded' } },
+    );
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+});
+
+describe('reportKoenigRenderError', () => {
+  it('tags a boundary crash as Lexical and keeps where in the tree it happened', async () => {
+    await preloadKoenig();
+    const error = new Error('render exploded');
+
+    reportKoenigRenderError(error, { componentStack: '\n    at KoenigComposer' });
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+      tags: { lexical: true },
+      contexts: {
+        koenig: { version: '1.2.3' },
+        react: { componentStack: '\n    at KoenigComposer' },
+      },
+    });
+  });
+});
+
+describe('koenigErrorReporters', () => {
+  it.each(['primary', 'secondary'] as const)(
+    'tags a Lexical failure in the %s instance with its role',
+    async (instance) => {
+      await preloadKoenig();
+      const error = new Error('lexical exploded');
+
+      koenigErrorReporters(instance).onError(error);
+
+      expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+        tags: { lexical: true, koenig_instance: instance },
+        contexts: { koenig: { version: '1.2.3' } },
+      });
+    },
+  );
+
+  it('tags a boundary crash with the instance role and where in the tree', async () => {
+    await preloadKoenig();
+    const error = new Error('render exploded');
+
+    koenigErrorReporters('secondary').onRenderError(error, {
+      componentStack: '\n    at KoenigComposer',
+    });
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: {
+        koenig: { version: '1.2.3' },
+        react: { componentStack: '\n    at KoenigComposer' },
+      },
+    });
+  });
+
+  it('reports without a role for a Koenig instance outside the post body', () => {
+    reportKoenigError(new Error('caption exploded'));
+
+    const context = vi.mocked(Sentry.captureException).mock.calls[0][1] as { tags: object };
+    expect(context.tags).toStrictEqual({ lexical: true });
+  });
+});
+
+describe('reportSaveFailure', () => {
+  it('reports the failing request with what it was and which post it was for', () => {
+    const cause = new Error('Boom');
+
+    reportSaveFailure(failure({ error: { kind: 'unknown', message: 'Boom', cause } }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveUnknownError', 'Boom', cause),
+      {
+        tags: TAGS,
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(reportedError());
+  });
+
+  it('builds an error from the message when the failure has no cause', () => {
+    reportSaveFailure(
+      failure({ error: { kind: 'unknown', message: 'No record came back' } }),
+      'page',
+    );
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveUnknownError', 'No record came back', undefined),
+      {
+        tags: { ...TAGS, post_type: 'page' },
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
+  });
+
+  it('titles a collision by the sentence the API gave for it', () => {
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          details: null,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveConflictError', 'Saving failed! Someone else is editing this post.', cause),
+      expect.anything(),
+    );
+  });
+
+  it('attaches the collision details the API gave with a collision', () => {
+    const collision = {
+      changedFields: ['lexical'],
+      clientUpdatedAt: '2026-10-08T20:30:00.000Z',
+      serverUpdatedAt: '2026-10-08T23:31:10.000Z',
+    };
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          // Core sends an object here, which the shared error type doesn't describe
+          details: collision as unknown as string,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      extra: { post_id: 'post-1', duration_ms: 120, collision },
+    });
+  });
+
+  it.each<[string, SaveError, string]>([
+    [
+      'a collision',
+      {
+        kind: 'conflict',
+        message: 'Something went wrong while loading posts, please try again.',
+        cause: new JSONError(new Response(null, { status: 409 })),
+      },
+      'SaveConflictError',
+    ],
+    [
+      'a server error',
+      {
+        kind: 'transport',
+        message: 'Ghost is currently undergoing maintenance, please wait a moment then retry.',
+        cause: new MaintenanceError(new Response(null, { status: 503 }), ''),
+      },
+      'SaveTransportError',
+    ],
+    [
+      'an unexplained failure',
+      {
+        kind: 'unknown',
+        message: 'Something went wrong while loading posts, please try again.',
+        cause: new APIError(new Response(null, { status: 500 })),
+      },
+      'SaveUnknownError',
+    ],
+  ])('titles %s by its kind with the transport error as the cause', (_label, error, name) => {
+    reportSaveFailure(failure({ error }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    const reported = reportedError();
+    expect(reported.name).toBe(name);
+    expect(reported.message).toBe(error.message);
+    expect(reported.cause).toBe(error.cause);
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      tags: { ...TAGS, save_error_kind: error.kind },
+    });
+  });
+
+  it.each<[string, SaveCommand['kind']]>([
+    ['an autosave', 'autosave'],
+    ['the timed cycle', 'timed'],
+    ['a leave save', 'leave'],
+    ['a publish', 'publish'],
+  ])('tags a failure from %s with its intent', (_label, kind) => {
+    reportSaveFailure(failure({ command: { ...FIELD, kind } }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      tags: { save_intent: kind },
+    });
+  });
+
+  it('reports a collision with its kind and the persisted status', () => {
+    const cause = new Error('Saving failed! Someone else is editing this post.');
+
+    reportSaveFailure(
+      failure({
+        command: { ...FIELD, kind: 'explicit', requiresRevision: true },
+        error: { kind: 'conflict', message: cause.message, cause },
+        status: 'published',
+      }),
+      'post',
+    );
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveConflictError', cause.message, cause),
+      {
+        tags: {
+          ...TAGS,
+          save_intent: 'explicit',
+          save_error_kind: 'conflict',
+          save_status: 'published',
+        },
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
+  });
+
+  it('reports a persisted post that is gone as a message carrying the post id', () => {
+    reportSaveFailure(
+      failure({ error: { kind: 'not-found', message: 'Post not found', cause: new Error('404') } }),
+      'page',
+    );
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('Attempted to edit deleted page', {
+      tags: { ...TAGS, post_type: 'page', save_error_kind: 'not-found' },
+      extra: { post_id: 'post-1' },
+    });
+  });
+
+  it('reports a not-found on an unpersisted post as an exception', () => {
+    const cause = new Error('404');
+
+    reportSaveFailure(
+      failure({
+        error: { kind: 'not-found', message: 'Post not found', cause },
+        persisted: false,
+        postId: null,
+      }),
+      'post',
+    );
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveNotFoundError', 'Post not found', cause),
+      {
+        tags: { ...TAGS, save_error_kind: 'not-found', save_persisted: false },
+        extra: { post_id: null, duration_ms: 120 },
+      },
+    );
+  });
+
+  it.each<[string, SaveError]>([
+    ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
+    ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
+    [
+      'an unreachable server',
+      { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },
+    ],
+  ])('sends nothing for %s', (_label, error) => {
+    reportSaveFailure(failure({ error }), 'post');
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, SaveError, string]>([
+    [
+      'a forbidden save',
+      { kind: 'forbidden', message: 'Permission error' },
+      'Save of page was forbidden',
+    ],
+    [
+      'an expired session the writer did not sign back in to',
+      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+      'Session expired while editing page',
+    ],
+  ])('notes %s as a message rather than an error', (_label, error, message) => {
+    reportSaveFailure(failure({ error }), 'page');
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(message, {
+      tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
+      extra: { post_id: 'post-1' },
+    });
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('reports a failure that took more than two seconds with its timing as well', () => {
+    const cause = new ServerUnreachableError();
+
+    reportSaveFailure(
+      failure({
+        command: {
+          kind: 'publish',
+          requiresRevision: true,
+          requiresReconfirmation: true,
+          target: { status: 'published', publishedAt: null, emailSegment: 'status:free' },
+        },
+        error: { kind: 'transport', message: 'Unreachable', cause },
+        durationMs: 2001,
+      }),
+      'post',
+    );
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureException).toHaveBeenCalledWith('Failed Lexical save took > 2s', {
+      tags: {
+        ...TAGS,
+        save_intent: 'publish',
+        save_error_kind: 'transport',
+        save_time: 3,
+        save_revision: true,
+        email_segment: 'status:free',
+      },
+      extra: { post_id: 'post-1' },
+    });
+  });
+
+  it('omits the email segment tag from a slow failure that carried none', () => {
+    reportSaveFailure(failure({ durationMs: 2001 }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toStrictEqual({
+      tags: { ...TAGS, save_time: 3, save_revision: false },
+      extra: { post_id: 'post-1' },
+    });
+  });
+
+  it('sends no timing for a failure that never reached the transport', () => {
+    reportSaveFailure(failure({ durationMs: null }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      extra: { post_id: 'post-1', duration_ms: null },
+    });
+  });
+});
+
+describe('reportSaveFailure response tags', () => {
+  it('tags a failure the server answered with its status', () => {
+    const cause = new APIError(new Response(null, { status: 500 }));
+
+    reportSaveFailure(failure({ error: { kind: 'unknown', message: 'Boom', cause } }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveUnknownError', 'Boom', cause),
+      {
+        tags: { ...TAGS, api_response_status: 500 },
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
+  });
+
+  it('carries no response tags for a failure that never got an answer', () => {
+    reportSaveFailure(
+      failure({ error: { kind: 'unknown', message: 'Boom', cause: new Error() } }),
+      'post',
+    );
+
+    const context = vi.mocked(Sentry.captureException).mock.calls[0][1] as { tags: object };
+    expect(Object.keys(context.tags)).not.toContain('api_response_status');
+    expect(Object.keys(context.tags)).not.toContain('api_url');
+  });
+});
+
+describe('reportShownAlert', () => {
+  it('reports the banner text the writer read with the failure behind it', () => {
+    const cause = new APIError(new Response(null, { status: 409 }));
+
+    reportShownAlert('Someone else is editing this post.', {
+      kind: 'conflict',
+      message: 'Saving failed!',
+      cause,
+    });
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('Someone else is editing this post.', {
+      tags: {
+        shown_to_user: true,
+        source: 'editor-banner',
+        save_error_kind: 'conflict',
+        api_response_status: 409,
+      },
+      contexts: {
+        ghost: {
+          displayed_message: 'Someone else is editing this post.',
+          save_error_message: 'Saving failed!',
+        },
+      },
+    });
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+});
+
+describe('reportLeaveConfirmation', () => {
+  it('reports the leave prompt with why the post counted as unsaved', () => {
+    const difference = { at: 104, before: '"text":"Hello', live: ' and more",', other: '",' };
+    reportLeaveConfirmation(
+      {
+        postId: 'post-1',
+        status: 'draft',
+        engineState: 'error',
+        reasons: ['POST_HAS_ERROR', 'SCRATCH_DIVERGED_FROM_SECONDARY'],
+        dirtyFields: ['lexical', 'custom_excerpt'],
+        bodyDiff: { saved: difference, baseline: difference },
+      },
+      'post',
+    );
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('showing leave editor modal', {
+      tags: {
+        post_type: 'post',
+        save_status: 'draft',
+        engine_state: 'error',
+        leave_reasons: 'POST_HAS_ERROR,SCRATCH_DIVERGED_FROM_SECONDARY',
+      },
+      extra: {
+        post_id: 'post-1',
+        reasons: ['POST_HAS_ERROR', 'SCRATCH_DIVERGED_FROM_SECONDARY'],
+        dirty_fields: ['lexical', 'custom_excerpt'],
+        body_diff: { saved: difference, baseline: difference },
+      },
+    });
+  });
+
+  it('sends where a long body diverged as short excerpts, never the documents', async () => {
+    const words = Array.from({ length: 2000 }, (_, index) => `word${index}`);
+    const loaded = buildLexicalParagraph(words.join(' '));
+    const { session } = sessionHarness({
+      record: record({ status: 'published', lexical: loaded }),
+      baseline: loaded,
+      onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, 'post'),
+    });
+    words[1000] = 'edited';
+    session.patchLexical(body(words.join(' ')));
+    session.patchExcerpt('A new excerpt');
+
+    expect(await session.leaveRequested()).toBe('confirm');
+
+    const [, context] = vi.mocked(Sentry.captureMessage).mock.calls[0];
+    const { extra } = context as { extra: Record<string, unknown> };
+    expect(extra.dirty_fields).toEqual(['lexical', 'custom_excerpt']);
+    const edit = {
+      live: expect.stringMatching(/^edited word1001 /) as unknown,
+      other: expect.stringMatching(/^word1000 word1001 /) as unknown,
+    };
+    expect(extra.body_diff).toMatchObject({ saved: edit, baseline: edit });
+    const sent = JSON.stringify(extra);
+    expect(sent.length).toBeLessThan(2048);
+    expect(sent).not.toContain('word0 ');
+    expect(sent).not.toContain('word1999');
   });
 });

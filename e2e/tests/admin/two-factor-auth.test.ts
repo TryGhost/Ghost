@@ -16,6 +16,14 @@ test.describe('Two-Factor authentication', () => {
     return match[0];
   }
 
+  // The per-file owner is shared, so earlier tests' emails are already in the inbox
+  async function searchVerificationEmails(to: string, numberOfMessages?: number) {
+    return emailClient.search(
+      { subject: 'verification code', to },
+      numberOfMessages === undefined ? { timeoutMs: null } : { numberOfMessages },
+    );
+  }
+
   test.beforeEach(async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
@@ -24,14 +32,12 @@ test.describe('Two-Factor authentication', () => {
   test('authenticates with 2FA token', async ({ browser, baseURL, ghostAccountOwner }) => {
     await withIsolatedPage(browser, { baseURL }, async ({ page: page }) => {
       const { email, password } = ghostAccountOwner;
+      const previousCount = (await searchVerificationEmails(email)).length;
       const adminLoginPage = new LoginPage(page);
       await adminLoginPage.goto();
       await adminLoginPage.signIn(email, password);
 
-      const messages = await emailClient.search({
-        subject: 'verification code',
-        to: ghostAccountOwner.email,
-      });
+      const messages = await searchVerificationEmails(email, previousCount + 1);
       const code = parseCodeFromMessageSubject(messages[0]);
 
       const verifyPage = new LoginVerifyPage(page);
@@ -50,28 +56,18 @@ test.describe('Two-Factor authentication', () => {
   }) => {
     await withIsolatedPage(browser, { baseURL }, async ({ page: page }) => {
       const { email, password } = ghostAccountOwner;
+      const previousCount = (await searchVerificationEmails(email)).length;
       const adminLoginPage = new LoginPage(page);
       await adminLoginPage.goto();
       await adminLoginPage.signIn(email, password);
 
-      let messages = await emailClient.search({
-        subject: 'verification code',
-        to: ghostAccountOwner.email,
-      });
-      expect(messages.length).toBe(1);
+      await searchVerificationEmails(email, previousCount + 1);
 
       const verifyPage = new LoginVerifyPage(page);
       await verifyPage.resendTwoFactorCodeButton.click();
 
-      messages = await emailClient.search(
-        {
-          subject: 'verification code',
-          to: ghostAccountOwner.email,
-        },
-        { numberOfMessages: 2 },
-      );
-
-      expect(messages.length).toBe(2);
+      // Resending rotates the challenge, so only the newest code is valid
+      const messages = await searchVerificationEmails(email, previousCount + 2);
 
       const code = parseCodeFromMessageSubject(messages[0]);
       await verifyPage.twoFactorTokenField.fill(code);

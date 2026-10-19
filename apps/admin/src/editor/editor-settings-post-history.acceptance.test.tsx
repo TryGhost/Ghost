@@ -16,6 +16,7 @@ import {
   postRevision,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   staffUser,
   submittedPost,
 } from '@test-utils/acceptance';
@@ -23,7 +24,6 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
@@ -78,6 +78,26 @@ const BARE = postRevision({
 // Deliberately out of order: the list is the component's to sort.
 const REVISIONS = [MIDDLE, NEWEST, OLDEST];
 
+// Two saves within one second, in the oldest-first order the API sends them.
+const SAME_SECOND_OLDER = postRevision({
+  id: 'rev-same-second-older',
+  title: 'Saved first',
+  lexical: buildLexicalParagraph('Saved first'),
+  post_status: 'draft',
+  created_at: '2026-02-04T09:00:00.000Z',
+  created_at_ts: 1770195600100,
+  author: { id: ADA.id, name: ADA.name },
+});
+const SAME_SECOND_NEWER = postRevision({
+  id: 'rev-same-second-newer',
+  title: 'Saved second',
+  lexical: buildLexicalParagraph('Saved second'),
+  post_status: 'draft',
+  created_at: '2026-02-04T09:00:00.000Z',
+  created_at_ts: 1770195600900,
+  author: { id: GRACE.id, name: GRACE.name },
+});
+
 function editorChrome() {
   fakeEditorChrome();
   fakeTiers([]);
@@ -125,6 +145,8 @@ function fakeUnsavablePost() {
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 async function openHistory() {
@@ -142,7 +164,7 @@ describe('Post settings post history', () => {
       fakeAdminEndpoint('GET', ROUTE, {
         posts: [{ ...savedPost(), post_revisions: postRevisions }],
       });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
       await openHistory();
 
       await expect
@@ -156,7 +178,7 @@ describe('Post settings post history', () => {
   it('leaves the row out until the post has been saved', async () => {
     editorChrome();
     fakeAdminEndpoint('POST', /^\/posts\/\?/, { posts: [post({ id: 'new123' })] });
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post');
     await openSidebar();
 
     await expect(editorScreen.settingsPostHistory()).toHaveCount(0);
@@ -164,7 +186,7 @@ describe('Post settings post history', () => {
 
   it('leaves the row out for a post with no lexical content', async () => {
     fakeSavablePost({ lexical: null, mobiledoc: null, post_revisions: [] });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
 
     await expect(editorScreen.settingsPostHistory()).toHaveCount(0);
@@ -172,7 +194,7 @@ describe('Post settings post history', () => {
 
   it('leaves the row out for a published post that only went out as an email', async () => {
     fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT, email_only: true });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
 
     await expect(editorScreen.settingsPostHistory()).toHaveCount(0);
@@ -180,7 +202,7 @@ describe('Post settings post history', () => {
 
   it('offers the row for a published post that also has a web version', async () => {
     fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT, email_only: false });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
 
     await expect.element(editorScreen.settingsPostHistory()).toBeVisible();
@@ -189,7 +211,6 @@ describe('Post settings post history', () => {
   it('lists a draft’s versions newest first, with their labels and authors', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      ...FLAG_ON,
       boot: {
         browseSettings: { response: settingsResponse({ settings: { timezone: 'Etc/UTC' } }) },
       },
@@ -226,9 +247,32 @@ describe('Post settings post history', () => {
       .toHaveTextContent('1 Feb 2026, 09:00');
   });
 
+  it('labels the newer of two versions saved in the same second as latest', async () => {
+    fakeSavablePost({ post_revisions: [SAME_SECOND_OLDER, SAME_SECOND_NEWER] });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await openHistory();
+
+    await expect(editorScreen.postHistoryRevisions()).toHaveCount(2);
+    await expect
+      .element(editorScreen.postHistoryRevision(0))
+      .toHaveTextContent(postHistoryLatestText);
+    await expect.element(editorScreen.postHistoryRevision(0)).toHaveTextContent('Grace Hopper');
+    await expect.element(editorScreen.postHistoryPreviewTitle()).toHaveTextContent('Saved second');
+    await expect(editorScreen.postHistoryRevision(0).restore()).toHaveCount(0);
+
+    await editorScreen.postHistoryRevision(1).select().click();
+
+    await expect
+      .element(editorScreen.postHistoryRevision(1))
+      .not.toHaveTextContent(postHistoryLatestText);
+    await expect.element(editorScreen.postHistoryRevision(1)).toHaveTextContent('Ada Lovelace');
+    await expect.element(editorScreen.postHistoryPreviewTitle()).toHaveTextContent('Saved first');
+    await expect.element(editorScreen.postHistoryRevision(1).restore()).toBeVisible();
+  });
+
   it('previews the version the writer selects', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await expect
@@ -250,9 +294,45 @@ describe('Post settings post history', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   });
 
+  it('does not let a card in the previewed version be selected', async () => {
+    const withCallout = postRevision({
+      ...NEWEST,
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            {
+              type: 'callout',
+              version: 1,
+              calloutText: '<p><span>A callout from the past</span></p>',
+              calloutEmoji: '💡',
+              backgroundColor: 'grey',
+            },
+          ],
+          direction: null,
+          format: '',
+          indent: 0,
+          type: 'root',
+          version: 1,
+        },
+      }),
+    });
+    fakeSavablePost({ post_revisions: [withCallout] });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await openHistory();
+
+    const card = editorScreen.postHistoryPreviewBody().getByText('A callout from the past');
+    await expect.element(card, POLL).toBeVisible();
+
+    // Forced: an unreachable card fails Playwright's hit-target check by design.
+    await card.click({ force: true });
+    await card.click({ force: true });
+
+    expect(editorScreen.postHistoryPreviewSelectedCard()).toBeNull();
+  });
+
   it('shows the version’s feature image in the preview', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await expect(editorScreen.postHistoryPreviewFeatureImage()).toHaveCount(0);
@@ -266,7 +346,7 @@ describe('Post settings post history', () => {
 
   it('restores a version into the editor and saves it as a new one', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await editorScreen.postHistoryRevision(1).select().click();
@@ -296,7 +376,7 @@ describe('Post settings post history', () => {
   it('stands the post in for a version carrying neither title nor excerpt', async () => {
     const saveApi = fakeSavablePost({ post_revisions: [NEWEST, BARE] });
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      labs: { editorReact: true, editorExcerpt: true },
+      labs: { editorExcerpt: true },
     });
     await openHistory();
 
@@ -324,7 +404,7 @@ describe('Post settings post history', () => {
     const saveApi = fakeSavablePost({
       post_revisions: [NEWEST, { ...OLDEST, lexical: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
     await editorScreen.postHistoryRevision(1).select().click();
 
@@ -343,7 +423,7 @@ describe('Post settings post history', () => {
       const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
       return { posts: [savedPost({ ...submitted, updated_at: '2026-01-01T00:00:01.000Z' })] };
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
     await editorScreen.postHistoryRevision(1).select().click();
     await editorScreen.postHistoryRevision(1).restore().click();
@@ -365,7 +445,7 @@ describe('Post settings post history', () => {
 
   it('leaves the post’s slug alone when the restored title differs', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await editorScreen.postHistoryRevision(1).select().click();
@@ -382,7 +462,7 @@ describe('Post settings post history', () => {
 
   it('puts the post back when the restore cannot be saved', async () => {
     const saveApi = fakeUnsavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await editorScreen.postHistoryRevision(1).select().click();
@@ -411,7 +491,7 @@ describe('Post settings post history', () => {
 
   it('keeps the editor and the versions on screen when the restore cannot be saved', async () => {
     const saveApi = fakeUnsavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await editorScreen.postHistoryRevision(1).select().click();
@@ -424,7 +504,39 @@ describe('Post settings post history', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   });
 
-  it('releases an expired-session restore and keeps the original content', async () => {
+  it('asks for the password over the history and completes the restore once signed in', async () => {
+    fakeSavablePost();
+    const expiredApi = fakeAdminEndpoint(
+      'PUT',
+      ROUTE,
+      { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
+      { status: 401 },
+    );
+    const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await openHistory();
+    await editorScreen.postHistoryRevision(1).select().click();
+    await editorScreen.postHistoryRevision(1).restore().click();
+    await editorScreen.confirmRestore().click();
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    await expect.poll(() => expiredApi.requests.length, POLL).toBe(1);
+
+    // Saves answer again: declared after the expired fake, so it takes over from it.
+    const saveApi = fakeEditorPost(savedPost());
+    await editorScreen.reauthPassword().fill('hunter22');
+    await editorScreen.reauthSignIn().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    expect(sessionApi.requests).toHaveLength(1);
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({ title: 'Published at last' });
+    await expect(editorScreen.postHistoryModal()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('The published words');
+    await expect.element(editorScreen.titleInput()).toHaveValue('Published at last');
+  });
+
+  it('rolls back an expired-session restore when the sign-in is abandoned', async () => {
     fakeSavablePost();
     fakeAdminEndpoint(
       'PUT',
@@ -432,17 +544,19 @@ describe('Post settings post history', () => {
       { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
       { status: 401 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
     await editorScreen.postHistoryRevision(1).select().click();
     await editorScreen.postHistoryRevision(1).restore().click();
     await editorScreen.confirmRestore().click();
 
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    await editorScreen.cancelReauth().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
     await expect
       .element(editorScreen.postHistoryModal().getByRole('alert'))
-      .toHaveTextContent(
-        'Your session expired. Sign in again in a new tab, then try restoring again.',
-      );
+      .toHaveTextContent('Your session expired. Restore again to sign in and continue.');
     await expect(editorScreen.restoreConfirm()).toHaveCount(0);
     await userEvent.keyboard('{Escape}');
     await expect(editorScreen.postHistoryModal()).toHaveCount(0);
@@ -453,7 +567,7 @@ describe('Post settings post history', () => {
   it('restores the version’s excerpt while the inline excerpt is on', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      labs: { editorReact: true, editorExcerpt: true },
+      labs: { editorExcerpt: true },
     });
     await openHistory();
 
@@ -461,6 +575,14 @@ describe('Post settings post history', () => {
     await expect
       .element(editorScreen.postHistoryPreviewExcerpt())
       .toHaveTextContent('The first summary');
+    // The preview sets the excerpt as the editor does.
+    const typeOf = (element: Element) => {
+      const { fontSize, fontWeight, lineHeight, letterSpacing, color } = getComputedStyle(element);
+      return { fontSize, fontWeight, lineHeight, letterSpacing, color };
+    };
+    expect(typeOf(editorScreen.postHistoryPreviewExcerpt().element())).toEqual(
+      typeOf(editorScreen.excerptInput().element()),
+    );
 
     await editorScreen.postHistoryRevision(2).restore().click();
     await editorScreen.confirmRestore().click();
@@ -472,7 +594,7 @@ describe('Post settings post history', () => {
 
   it('warns that restoring updates a published post on the site', async () => {
     fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await editorScreen.postHistoryRevision(1).select().click();
@@ -485,7 +607,7 @@ describe('Post settings post history', () => {
 
   it('leaves the post alone when the restore is cancelled', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openHistory();
 
     await editorScreen.postHistoryRevision(2).select().click();
@@ -498,15 +620,25 @@ describe('Post settings post history', () => {
     expect(saveApi.requests).toHaveLength(0);
   });
 
-  it('closes on Escape', async () => {
-    fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await openHistory();
+  it.each(['Escape', 'Close button'])(
+    'closes with %s and returns focus to the sidebar',
+    async (action) => {
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`);
+      await openHistory();
 
-    await userEvent.keyboard('{Escape}');
+      if (action === 'Escape') {
+        await userEvent.keyboard('{Escape}');
+      } else {
+        await editorScreen
+          .postHistoryModal()
+          .getByRole('button', { name: 'Close', exact: true })
+          .click();
+      }
 
-    await expect(editorScreen.postHistoryModal()).toHaveCount(0);
-    await expect.element(editorScreen.settingsPostHistory()).toBeVisible();
-    await expect.element(editorScreen.settingsPostHistory()).toHaveFocus();
-  });
+      await expect(editorScreen.postHistoryModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsPostHistory()).toBeVisible();
+      await expect.element(editorScreen.settingsPostHistory()).toHaveFocus();
+    },
+  );
 });

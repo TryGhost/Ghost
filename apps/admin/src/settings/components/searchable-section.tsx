@@ -11,8 +11,10 @@ const SearchableSection: React.FC<SearchableSectionProps> = ({ children, keyword
   const { checkVisible, noResult } = useSearch();
   const isVisible = checkVisible(keywords) || noResult;
 
+  // The parent stack owns the spacing between sections, so it
+  // matches the page's top and bottom padding.
   return (
-    <Box className={isVisible ? 'mb-[10vh]' : 'hidden'}>
+    <Box className={!isVisible ? 'hidden' : undefined}>
       {title && (
         <Text
           as="h2"
@@ -25,7 +27,7 @@ const SearchableSection: React.FC<SearchableSectionProps> = ({ children, keyword
         </Text>
       )}
       {children && (
-        <Stack className="mb-10 gap-12" gap="none">
+        <Stack className="gap-12" gap="none">
           {children}
         </Stack>
       )}

@@ -48,7 +48,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Basic tabs for simple content switching.',
+        story:
+          'Button tabs follow the shared control shape: pill with Admin 7 enabled, rounded otherwise.',
       },
     },
   },

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Inline, Stack, Text } from '@/components/primitives';
 import { FilterBar } from '@/components/patterns/filter-bar';
 import { PageHeader } from '@/components/patterns/page-header';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import ShadeApp from '@/shade-app';
 import {
   Filters,
@@ -13,8 +13,8 @@ import {
   type CustomRendererProps,
   type Filter,
   type FilterFieldConfig,
-  createFilter,
 } from './filters';
+import { createFilter } from '@/components/patterns/filters-helpers';
 import {
   User,
   Mail,
@@ -279,6 +279,37 @@ export const WithBooleanFields: Story = {
     docs: {
       description: {
         story: 'Filters with boolean toggle fields with custom labels.',
+      },
+    },
+  },
+};
+
+// A flag read as a sentence: the menu offers "Featured", the pill reads
+// "Post is Featured" and its operator flips it to "is not".
+const pillLabelFields: FilterFieldConfig[] = [
+  {
+    key: 'featured',
+    label: 'Featured',
+    pillLabel: 'Post',
+    type: 'custom',
+    icon: <CheckCircle className="size-4" />,
+    operators: [
+      { value: 'is', label: 'is' },
+      { value: 'is_not', label: 'is not' },
+    ],
+    defaultValue: 'true',
+    staticValue: true,
+    customRenderer: () => <span>Featured</span>,
+  },
+];
+
+export const WithPillLabel: Story = {
+  render: () => <FilterDemo fields={pillLabelFields} />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A pill label that differs from the menu entry, for flags that read as "Post is Featured".',
       },
     },
   },

@@ -335,7 +335,7 @@ const sortOfferListItems = (
 export const OffersIndexModal: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
   const { data: { offers: allOffers = [] } = {} } = useBrowseOffers();
-  const { data: { tiers: allTiers } = {} } = useBrowseTiers();
+  const { data: { tiers: allTiers } = {}, isLoading: isTiersLoading } = useBrowseTiers();
   const signupOffers = allOffers.filter((offer) => offer.redemption_type === 'signup');
   const retentionOffers = getRetentionOffers(allOffers);
   const { sortingState, setSortingState } = useSortingState();
@@ -421,6 +421,7 @@ export const OffersIndexModal: React.FC = () => {
         Close
       </Button>
       <Button
+        disabled={isTiersLoading}
         type="button"
         onClick={() => {
           if (paidActiveTiers.length === 0) {

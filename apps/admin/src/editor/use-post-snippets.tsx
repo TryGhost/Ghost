@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -19,6 +19,7 @@ import {
 import { snippetConfirmModal } from '@tryghost/test-data/selectors/editor';
 import type { CardConfigSnippet, CardConfigSnippetInput } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { toSnippetValue } from './snippet-value';
 
 type PendingSnippetAction =
   | { kind: 'update'; snippet: Snippet; value: string }
@@ -34,29 +35,42 @@ export interface PostSnippets {
 // Snippets for the card menu plus the create/update/delete flows and their
 // confirmation dialogs
 export function usePostSnippets({ canManage }: { canManage: boolean }): PostSnippets {
-  const { data } = useBrowseSnippets({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage } = useBrowseSnippets({
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+
+  // Core caps `limit=all`, so the response can still contain a next page. Koenig
+  // takes the list as the whole menu, so it gets none until every page has arrived.
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && !isError) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isError]);
+  const browsed = hasNextPage ? undefined : data?.snippets;
   const addSnippet = useAddSnippet();
   const editSnippet = useEditSnippet();
   const removeSnippet = useDeleteSnippet();
   const [pending, setPending] = useState<PendingSnippetAction | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  const records = useMemo(
+  const entries = useMemo(
     () =>
-      (data?.snippets ?? [])
-        .filter((snippet) => snippet.lexical !== null)
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    [data?.snippets],
+      (browsed ?? [])
+        .map((snippet) => ({ snippet, value: toSnippetValue(snippet) }))
+        .filter((entry): entry is { snippet: Snippet; value: string } => entry.value !== null)
+        .sort((a, b) => a.snippet.name.localeCompare(b.snippet.name)),
+    [browsed],
   );
+  const records = useMemo(() => browsed ?? [], [browsed]);
 
   const snippets = useMemo<CardConfigSnippet[]>(
     () =>
-      records.map((snippet) => ({
+      entries.map(({ snippet, value }) => ({
         id: snippet.id,
         name: snippet.name,
-        value: snippet.lexical ?? '',
+        value,
       })),
-    [records],
+    [entries],
   );
 
   const createSnippet = useCallback(

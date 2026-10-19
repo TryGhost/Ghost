@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import readable_url from '../../../../core/frontend/helpers/readable_url';
+import logging from '@tryghost/logging';
+import sinon from 'sinon';
+import type { SinonStub } from 'sinon';
+import errors from '@tryghost/errors';
+
+describe('{{#readable_url}} helper', function () {
+  let loggingErrorStub: SinonStub;
+
+  beforeEach(function () {
+    // Stub the logging.error method
+    loggingErrorStub = sinon.stub(logging, 'error');
+  });
+
+  afterEach(function () {
+    // Restore the original logging.error method
+    loggingErrorStub.restore();
+  });
+
+  it('renders a short URL, without protocol, www, query params nor hash fragments', function () {
+    const readable = readable_url.call({}, 'https://www.foobar.com/some/path/?query=param#hash/');
+
+    assert.equal(readable.string, 'foobar.com/some/path');
+  });
+
+  it('renders an empty string when the input is not a string', function () {
+    const readable = readable_url.call({}, { foo: 'bar' });
+
+    sinon.assert.calledOnce(loggingErrorStub);
+    sinon.assert.calledWith(loggingErrorStub, sinon.match.instanceOf(errors.IncorrectUsageError));
+
+    assert.equal(readable.string, '');
+  });
+
+  it('returns the input string if not parsable as URL', function () {
+    const readable = readable_url.call({}, 'hello world');
+
+    assert.equal(readable.string, 'hello world');
+  });
+});

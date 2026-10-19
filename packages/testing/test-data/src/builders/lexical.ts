@@ -32,6 +32,29 @@ interface CardNode {
 }
 
 const CARD_DEFAULTS: Record<string, CardNode> = {
+  header: {
+    type: 'header',
+    version: 2,
+    size: 'small',
+    style: 'dark',
+    buttonEnabled: false,
+    buttonUrl: '',
+    buttonText: '',
+    header: '<span>Header card</span>',
+    subheader: '',
+    backgroundImageSrc: '',
+    accentColor: '#FF1A75',
+    alignment: 'center',
+    backgroundColor: '#000000',
+    backgroundImageWidth: null,
+    backgroundImageHeight: null,
+    backgroundSize: 'cover',
+    textColor: '#FFFFFF',
+    buttonColor: '#ffffff',
+    buttonTextColor: '#000000',
+    layout: 'full',
+    swapped: false,
+  },
   transistor: {
     type: 'transistor',
     version: 1,
@@ -56,7 +79,7 @@ function resolveCard(spec: CardSpec): CardNode {
     const defaults = CARD_DEFAULTS[spec];
     if (!defaults) {
       // Test-only builder failing fast; @tryghost/errors' HTTP semantics don't apply here
-      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
       throw new Error(`Unknown card type: "${spec}". Register it in CARD_DEFAULTS in lexical.ts.`);
     }
     return { ...defaults };
@@ -66,7 +89,7 @@ function resolveCard(spec: CardSpec): CardNode {
   const defaults = CARD_DEFAULTS[cardType];
   if (!defaults) {
     // Test-only builder failing fast; @tryghost/errors' HTTP semantics don't apply here
-    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error(
       `Unknown card type: "${cardType}". Register it in CARD_DEFAULTS in lexical.ts.`,
     );

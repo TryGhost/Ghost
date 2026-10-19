@@ -7,9 +7,14 @@ interface OpenEditorParams {
   handleSave: (file: File) => void | boolean | Promise<void | boolean>;
 }
 
+type PinturaRequestOptions = NonNullable<Parameters<typeof usePinturaConfig>[0]>['requestOptions'];
+
 /** Loads Ghost's configured Pintura editor and exposes the legacy image-edit action. */
-export function usePinturaEditor({ disabled = false }: { disabled?: boolean } = {}) {
-  const config = usePinturaConfig();
+export function usePinturaEditor({
+  disabled = false,
+  requestOptions,
+}: { disabled?: boolean; requestOptions?: PinturaRequestOptions } = {}) {
+  const config = usePinturaConfig({ requestOptions });
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [cssLoaded, setCssLoaded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);

@@ -9,7 +9,10 @@ import {
   LoaderIcon,
   X,
   Copy,
+  Plus,
+  Trash2,
 } from 'lucide-react';
+import { Stack } from '@/components/primitives';
 import {
   InputGroup,
   InputGroupAddon,
@@ -212,6 +215,42 @@ export const Button: Story = {
     docs: {
       description: {
         story: 'Add interactive buttons for actions like copy, clear, or submit.',
+      },
+    },
+  },
+};
+
+export const CompactActions: Story = {
+  render: () => (
+    <Stack className="w-full max-w-sm" gap="md">
+      <InputGroup>
+        <InputGroupInput placeholder="Add an item" />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton aria-label="Add item" shape="rounded" size="icon-xs" variant="default">
+            <Plus />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+      <InputGroup>
+        <InputGroupInput defaultValue="Example item" />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton
+            aria-label="Remove item"
+            shape="rounded"
+            size="icon-xs"
+            variant="secondary"
+          >
+            <Trash2 />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </Stack>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'In Admin 7, compact inline actions have equal outer insets. Rounded actions follow the input curve, and icons inherit their button variant color.',
       },
     },
   },

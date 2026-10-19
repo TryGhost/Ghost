@@ -5,7 +5,7 @@ import Link from '@tiptap/extension-link';
 import Paragraph from '@tiptap/extension-paragraph';
 import Placeholder from '@tiptap/extension-placeholder';
 import Text from '@tiptap/extension-text';
-import { EditorOptions } from '@tiptap/core';
+import type { EditorOptions } from '@tiptap/core';
 
 export type CommentsEditorConfig = {
   placeholder: string;

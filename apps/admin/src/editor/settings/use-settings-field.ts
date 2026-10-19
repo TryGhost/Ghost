@@ -5,7 +5,7 @@ import {
 } from '@/editor/session/settings-fields';
 import type { EditorSettingsPort } from './editor-settings-port';
 
-/** The settings keys a plain text field writes: the ones held to a length. */
+/** The settings keys a plain text field writes: including canonical URL validation. */
 export type SettingsTextFieldKey = Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>;
 
 export interface SettingsFieldBinding {
@@ -19,6 +19,7 @@ export interface SettingsFieldBinding {
     'aria-describedby': string | undefined;
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     onBlur: () => void;
+    'data-settings-field': SettingsTextFieldKey;
   };
   /** Spread onto the field's `FieldError`, which the field points at while it errors. */
   errorProps: { id: string };
@@ -52,6 +53,8 @@ export function useSettingsField(
       // A cleared field is stored as no value, the way the excerpt is.
       onChange: (event) => session.stageSettings({ [key]: event.target.value || null }),
       onBlur: session.commitSettings,
+      // Where a refused save takes the writer.
+      'data-settings-field': key,
     },
     errorProps: { id: errorId },
   };

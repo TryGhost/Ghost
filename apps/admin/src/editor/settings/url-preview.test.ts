@@ -12,6 +12,12 @@ describe('formatUrlPreview', () => {
     );
   });
 
+  it('puts a prefix between the site and the slug', () => {
+    expect(formatUrlPreview('https://example.com/blog/', 'post-uuid', 'email')).toBe(
+      'example.com/blog/email/post-uuid/',
+    );
+  });
+
   it('shows the site on its own until the post has a slug', () => {
     expect(formatUrlPreview('https://example.com/', '')).toBe('example.com/');
   });

@@ -18,6 +18,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  imageOverlayButton,
 } from '@tryghost/shade/components';
 import {
   type ErrorMessages,
@@ -63,6 +64,7 @@ import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/ima
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { navigateTo } from '@/utils/navigation';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
   name: ({ name }) => {
@@ -233,7 +235,9 @@ const UserDetailModalContent: React.FC<{
           showLimit({
             formSheet: true,
             prompt: error.message || `Your current plan doesn't support more users.`,
-            onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+            onOk: () => {
+              navigateTo(upgradeRoute);
+            },
           });
           return;
         } else {
@@ -377,8 +381,10 @@ const UserDetailModalContent: React.FC<{
       (isEditorUser(currentUser) && isAuthorOrContributor(user)));
   const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
-  const coverButtonClasses =
-    'h-8 bg-surface-inverse px-3 text-surface-inverse-foreground opacity-80 hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground hover:opacity-100';
+  const coverButtonClasses = clsx(
+    'h-8 px-3 opacity-80 hover:opacity-100',
+    imageOverlayButton(isAdmin7),
+  );
 
   const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 

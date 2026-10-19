@@ -25,8 +25,6 @@ export type NavigationItemErrors = { [key in keyof NavigationItem]?: string };
 export type EditableItem = NavigationItem & { id: string; errors: NavigationItemErrors };
 
 const hasTextValue = (value?: string) => Boolean(value && !value.match(/^\s*$/));
-const hasNewItem = (newItem: NavigationItem) =>
-  Boolean(hasTextValue(newItem.label) || newItem.url !== '/' || hasTextValue(newItem.icon));
 
 export type NavigationEditor = {
   items: EditableItem[];
@@ -57,10 +55,20 @@ const serializeItem = ({ url, label, icon, visibility }: NavigationItem): Naviga
 const useNavigationEditor = ({
   items,
   setItems,
+  blankUrl = '/',
 }: {
   items: NavigationItem[];
   setItems: (newItems: NavigationItem[]) => void;
+  blankUrl?: string;
 }): NavigationEditor => {
+  const hasNewItem = useCallback(
+    (newItem: NavigationItem) =>
+      Boolean(
+        hasTextValue(newItem.label) || newItem.url !== blankUrl || hasTextValue(newItem.icon),
+      ),
+    [blankUrl],
+  );
+
   const editableItems = useMemo(() => items.map(normalizeItem), [items]);
   const setNavigationItems = useCallback(
     (newItems: Omit<EditableItem, 'id'>[]) => {
@@ -72,7 +80,7 @@ const useNavigationEditor = ({
   const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
     items: editableItems,
     setItems: setNavigationItems,
-    blank: { url: '/', label: '', icon: '', visibility: 'public', errors: {} },
+    blank: { url: blankUrl, label: '', icon: '', visibility: 'public', errors: {} },
     canAddNewItem: hasNewItem,
   });
 
@@ -116,8 +124,7 @@ const useNavigationEditor = ({
   };
 
   const updateItem = (id: string, item: Partial<NavigationItem>) => {
-    const currentItem = list.items.find((current) => current.id === id)!;
-    list.updateItem(id, mergeItemUpdates(currentItem.item, item));
+    list.updateItem(id, (current) => mergeItemUpdates(current, item));
   };
 
   const addItem = () => {
@@ -140,12 +147,19 @@ const useNavigationEditor = ({
 
   const newItemId = 'new';
 
+  // Updaters, because picking a suggestion saves the URL and clears its error
+  // in the same event. Building both from the same render would undo the URL.
   const clearError = (id: string, key: keyof NavigationItem) => {
     if (id === newItemId) {
-      list.setNewItem({ ...list.newItem, errors: { ...list.newItem.errors, [key]: undefined } });
+      list.setNewItem((current) => ({
+        ...current,
+        errors: { ...current.errors, [key]: undefined },
+      }));
     } else {
-      const currentItem = list.items.find((current) => current.id === id)!.item;
-      list.updateItem(id, { ...currentItem, errors: { ...currentItem.errors, [key]: undefined } });
+      list.updateItem(id, (current) => ({
+        ...current,
+        errors: { ...current.errors, [key]: undefined },
+      }));
     }
   };
 
@@ -158,7 +172,7 @@ const useNavigationEditor = ({
     moveItem,
 
     newItem: { ...list.newItem, id: newItemId },
-    setNewItem: (item) => list.setNewItem(mergeItemUpdates(list.newItem, item)),
+    setNewItem: (item) => list.setNewItem((current) => mergeItemUpdates(current, item)),
 
     clearError,
     validate: () => {

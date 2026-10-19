@@ -1,4 +1,4 @@
-import { Comment } from '../app-context';
+import type { Comment } from '../app-context';
 
 export type ThreadedReply = Comment & {
   nestedReplies: ThreadedReply[];

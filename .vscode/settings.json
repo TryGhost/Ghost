@@ -7,7 +7,7 @@
       "pattern": "./apps/*/"
     },
     {
-      "pattern": "./ghost/*/"
+      "pattern": "./ghost/"
     },
     {
       "pattern": "./koenig/*/"
@@ -20,7 +20,7 @@
     "**/dist/**": true,
     "**/ghost.map": true,
     "**/node_modules": true,
-    "ghost/core/core/built/**": true,
+    "ghost/core/built/**": true,
     ".claude/worktrees/**": true,
     "**/config.*.json": false,
     "**/config.*.jsonc": false
@@ -28,6 +28,6 @@
   "tailwindCSS.experimental.classRegex": [["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]],
   "git.detectSubmodules": false,
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   }
 }

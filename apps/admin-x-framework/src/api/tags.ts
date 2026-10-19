@@ -39,6 +39,8 @@ export interface TagsResponseType {
 
 const dataType = 'TagsResponseType';
 
+export const tagsDataType = dataType;
+
 const useBrowseTagsQuery = createInfiniteQuery<TagsResponseType>({
   dataType,
   path: '/tags/',

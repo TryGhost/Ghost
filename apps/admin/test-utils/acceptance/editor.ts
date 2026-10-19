@@ -1,13 +1,27 @@
+import type { QueryClient } from '@tanstack/react-query';
+import { onTestFinished } from 'vitest';
+import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import { buildLexicalParagraph, post, settingsResponse, type Post } from '@tryghost/test-data';
 import type { RenderAdminAppOptions } from './render-admin-app';
 import { fakeNewsletters, fakePosts, fakeSnippets } from './resources';
 import { fakeAdminEndpoint, fakeEndpoint, type EndpointCapture } from './worker';
 
-/** Supporting reads shared by the editor's header and card configuration. */
+/** Supporting reads shared by the editor's header, card configuration and email size check. */
 export function fakeEditorChrome(): void {
   fakeSnippets([]);
   fakePosts([]);
   fakeNewsletters([]);
+  fakeEmailPreview();
+}
+
+/**
+ * Renders any post's email as `bytes` bytes of HTML, a size the editor estimates
+ * as it is. A later call replaces the earlier one.
+ */
+export function fakeEmailPreview(bytes = 1024): EndpointCapture {
+  return fakeAdminEndpoint('GET', /^\/email_previews\/posts\/[^/]+\//, {
+    email_previews: [{ html: 'a'.repeat(bytes), plaintext: '', subject: 'Hello from React' }],
+  });
 }
 
 /** Saved fields are returned by later reads; each save advances the collision token. */
@@ -43,6 +57,42 @@ export function fakeEditorPost(
 export function submittedPost(capture: EndpointCapture, index = -1): Record<string, unknown> {
   const body = capture.requests.at(index)?.body as { posts: Record<string, unknown>[] } | undefined;
   return body?.posts[0] ?? {};
+}
+
+/**
+ * Resolves once a read of `version` at its `updated_at` has landed in the query cache and the
+ * editor has handled it; a read the editor refuses changes nothing on screen to wait for.
+ */
+export function editorReadLanded(
+  queryClient: QueryClient,
+  version: Pick<Post, 'id' | 'updated_at'>,
+): Promise<void> {
+  const cache = queryClient.getQueryCache();
+  const landed = () =>
+    cache.findAll({ queryKey: [postsDataType] }).some((query) => {
+      const data = query.state.data as { posts?: Array<Pick<Post, 'updated_at'>> } | undefined;
+      return (
+        String(query.queryKey[1]).includes(`/posts/${version.id}/`) &&
+        // A save writes its own answer into the entry while the read after it is in flight.
+        query.state.fetchStatus === 'idle' &&
+        data?.posts?.[0]?.updated_at === version.updated_at
+      );
+    });
+
+  return new Promise((resolve) => {
+    // The cache hears of a read before its observers, which it tells on its next timer turn.
+    const handled = () => setTimeout(() => setTimeout(resolve));
+    if (landed()) {
+      handled();
+      return;
+    }
+    const unsubscribe = cache.subscribe(() => {
+      if (landed()) {
+        unsubscribe();
+        handled();
+      }
+    });
+  });
 }
 
 const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';
@@ -99,5 +149,77 @@ export function withFastAutosave(options: RenderAdminAppOptions = {}): RenderAdm
 export function withoutUnsplash(): RenderAdminAppOptions {
   return {
     boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
+  };
+}
+
+// Data URLs, so neither the stylesheet link nor anything that reads them fetches.
+const PINTURA_JS_URL = 'data:text/javascript,';
+const PINTURA_CSS_URL = 'data:text/css,';
+
+/** Boots a site with Pintura configured; `fakePintura()` stands in for its script. */
+export function withPintura(): RenderAdminAppOptions {
+  return {
+    boot: {
+      browseSettings: {
+        response: settingsResponse({
+          settings: {
+            pintura: true,
+            pintura_js_url: PINTURA_JS_URL,
+            pintura_css_url: PINTURA_CSS_URL,
+          },
+        }),
+      },
+    },
+  };
+}
+
+export interface FakePintura {
+  /** The `src` of every image the editor was opened on. */
+  opened: string[];
+  /** Ends the open edit as Save and close does: hands `file` to the field, then closes. */
+  save: (file: File) => void;
+}
+
+/**
+ * Stands in for the script and stylesheet `withPintura()` configures, as already
+ * loaded; both are removed again when the test finishes.
+ */
+export function fakePintura(): FakePintura {
+  const opened: string[] = [];
+  let process: ((result: { dest: File }) => void) | undefined;
+  let destroyed: (() => void) | undefined;
+
+  window.pintura = {
+    openDefaultEditor: ({ src }) => {
+      opened.push(src);
+      return {
+        on: (event, callback) => {
+          if (event === 'process') {
+            process = callback;
+          }
+          if (event === 'destroy') {
+            destroyed = callback as () => void;
+          }
+        },
+        destroy: () => {},
+      };
+    },
+  };
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = PINTURA_CSS_URL;
+  document.head.appendChild(link);
+
+  onTestFinished(() => {
+    link.remove();
+    Reflect.deleteProperty(window, 'pintura');
+  });
+
+  return {
+    opened,
+    save: (file) => {
+      process?.({ dest: file });
+      destroyed?.();
+    },
   };
 }

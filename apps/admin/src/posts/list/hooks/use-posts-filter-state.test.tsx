@@ -31,6 +31,7 @@ describe('usePostsFilterState', () => {
     // bucket's sort - even though it is not part of the chip model.
     expect(result.current.params).toEqual({
       type: null,
+      featured: null,
       visibility: null,
       author: null,
       tag: null,
@@ -66,8 +67,7 @@ describe('usePostsFilterState', () => {
   });
 
   // A URL is a saved view's identity. Rewriting it on load - even
-  // canonicalising it - would silently corrupt the user's view, and the
-  // Ember screen would then read something different.
+  // canonicalising it - would silently corrupt the user's view.
   it('never rewrites the URL on hydration', async () => {
     const { result } = renderState('/posts?type=draft&tag=news&order=updated_at+desc');
     const initial = result.current.query;

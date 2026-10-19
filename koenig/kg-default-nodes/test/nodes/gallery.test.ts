@@ -18,11 +18,10 @@ describe('GalleryNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -646,11 +645,11 @@ describe('GalleryNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders', editorTest(function () {
+        it('renders', editorTest(async function () {
             const galleryNode = $createGalleryNode(dataset);
             const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
-            assertPrettifiesTo((element as HTMLElement).outerHTML, html`
+            await assertPrettifiesTo((element as HTMLElement).outerHTML, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">

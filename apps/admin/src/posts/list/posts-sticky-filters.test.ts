@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   clearStickyPostFilters,
+  getPostListReturnUrl,
   getStickyPostFilterUrl,
   rememberStickyPostFilters,
 } from './posts-sticky-filters';
 
-// Ported from state-bridge.js `getRouteUrl`. Three rules, in order:
+// Three rules, in order:
 //   1. already on the route -> bare URL ("click again to go home")
 //   2. otherwise reuse the last params seen for that route
 //   3. unless those match a saved view, or clicking "Posts" would silently
@@ -20,6 +21,23 @@ describe('sticky post filters', () => {
 
   it('links to the bare route when nothing has been remembered', () => {
     expect(getStickyPostFilterUrl('posts', '/members', NO_VIEWS)).toBe('posts');
+    expect(getPostListReturnUrl('posts')).toBe('/posts');
+  });
+
+  it('returns editors to saved views and preserves all filters and sorting', () => {
+    rememberStickyPostFilters(
+      'posts',
+      '?type=draft&visibility=members&author=ada&tag=news&order=title%20asc',
+    );
+    rememberStickyPostFilters('pages', '?tag=pages');
+
+    expect(getPostListReturnUrl('posts')).toBe(
+      '/posts?type=draft&visibility=members&author=ada&tag=news&order=title+asc',
+    );
+    expect(getPostListReturnUrl('pages')).toBe('/pages?tag=pages');
+    rememberStickyPostFilters('posts', '');
+    expect(getPostListReturnUrl('posts')).toBe('/posts');
+    expect(getPostListReturnUrl('pages')).toBe('/pages?tag=pages');
   });
 
   it('reuses the last params seen for the route', () => {

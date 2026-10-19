@@ -30,7 +30,7 @@ interface Screen {
 // Full-page screens
 // ---------------------------------------------------------------------------
 const SCREENS: Screen[] = [
-  // Core Ember pages (HIGH risk — CSS class collisions with .flex, .hidden, etc.)
+  // Main Admin pages
   { name: 'dashboard', path: '/ghost/#/dashboard' },
   { name: 'posts-list', path: '/ghost/#/posts' },
   { name: 'pages-list', path: '/ghost/#/pages' },
@@ -45,13 +45,13 @@ const SCREENS: Screen[] = [
   // Settings (full page — captures top portion)
   { name: 'settings', path: '/ghost/#/settings' },
 
-  // Analytics / Stats pages (React)
+  // Analytics / Stats pages
   { name: 'analytics-overview', path: '/ghost/#/stats', extraWait: 1500 },
   { name: 'analytics-web', path: '/ghost/#/stats/web', extraWait: 1500 },
   { name: 'analytics-growth', path: '/ghost/#/stats/growth', extraWait: 1500 },
   { name: 'analytics-newsletters', path: '/ghost/#/stats/newsletters', extraWait: 1500 },
 
-  // ActivityPub pages (React)
+  // ActivityPub pages
   { name: 'activitypub-inbox', path: '/ghost/#/activitypub', extraWait: 1500 },
   { name: 'activitypub-feed', path: '/ghost/#/activitypub/feed', extraWait: 1500 },
   { name: 'activitypub-profile', path: '/ghost/#/activitypub/profile', extraWait: 1500 },
@@ -114,19 +114,13 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
 const HIDE_DYNAMIC_CONTENT = `
     /* Timestamps and relative dates */
     [data-testid="timestamp"],
-    [data-test-date],
-    time,
-    .gh-content-entry-date,
-    .gh-members-list-joined,
-    .gh-post-list-updated,
-    .gh-post-list-date {
+    time {
         visibility: hidden !important;
     }
 
     /* Notifications and toasts */
-    .gh-notification,
-    .gh-alerts,
-    [data-testid="toast"] {
+    [data-testid="admin-alerts"],
+    [data-sonner-toast] {
         display: none !important;
     }
 
@@ -138,14 +132,7 @@ const HIDE_DYNAMIC_CONTENT = `
         transition-delay: 0s !important;
     }
 
-    /* Avatars (can vary between runs) */
-    .gh-member-avatar img,
-    .gh-author-avatar img {
-        visibility: hidden !important;
-    }
-
     /* Loading spinners */
-    .gh-loading-spinner,
     .gh-loading-orb {
         display: none !important;
     }
@@ -166,7 +153,6 @@ const HIDE_DYNAMIC_CONTENT = `
     }
 
     /* Editor carets and cursors */
-    .koenig-cursor,
     .ProseMirror .ProseMirror-cursor,
     [data-lexical-editor] .cursor,
     .kg-prose caret-color {
@@ -209,7 +195,7 @@ test.describe('settings sections', () => {
       await page.goto('/ghost/#/settings');
       await page.waitForLoadState('load');
 
-      // Wait for Settings React app to mount
+      // Wait for Settings to mount
       await page.waitForSelector('[data-testid="title-and-description"]', { timeout: 15_000 });
 
       // Extra settle time for settings to fully render

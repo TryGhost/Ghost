@@ -15,3 +15,5 @@ export { useScrollRestoration } from './use-scroll-restoration';
 
 export { LoadMoreButton } from './load-more-button';
 export type { LoadMoreButtonProps } from './load-more-button';
+
+export { getListReturnNavigationState } from './list-return-state';

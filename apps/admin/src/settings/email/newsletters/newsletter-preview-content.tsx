@@ -166,7 +166,7 @@ const NewsletterPreviewContent: React.FC<{
       <div className="absolute inset-0 m-5 flex items-center justify-center">
         <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
           {/* Email header */}
-          <div className="flex-column flex min-h-[77px] justify-center gap-1 rounded-t-sm border-b border-gray-200 bg-white px-6 text-gray-700">
+          <div className="flex min-h-[77px] flex-col justify-center gap-1 rounded-t-sm border-b border-gray-200 bg-white px-6 text-gray-700">
             {emailHeader}
           </div>
 

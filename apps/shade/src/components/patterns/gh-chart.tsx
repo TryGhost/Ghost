@@ -140,6 +140,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
   const yTicks = isWholeMid ? [yRange[0], midValue, yRange[1]] : yRange;
 
   const xTickHoursOnly = showHours && range === 1;
+  const xTicks = data.length > 0 ? [...new Set([data[0].date, data[data.length - 1].date])] : [];
 
   return (
     <ChartContainer className={cn('w-full', className)} config={chartConfig}>
@@ -163,12 +164,13 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
               formatter={(value) =>
                 formatDisplayDateWithRange(String(value), range, showHours, xTickHoursOnly)
               }
+              textAnchor={xTicks.length === 1 ? 'middle' : undefined}
             />
           )}
           tickFormatter={(value) => formatDisplayDateWithRange(String(value), range, showHours)}
           tickLine={false}
           tickMargin={10}
-          ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
+          ticks={xTicks}
         />
         <YAxis
           allowDataOverflow={allowDataOverflow}

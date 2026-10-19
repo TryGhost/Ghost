@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { settingsXCardBackButton, settingsXCardRow } from '@tryghost/test-data/selectors/editor';
 
 import {
   UNSPLASH_PICKED,
@@ -7,25 +8,28 @@ import {
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
+  fakePintura,
   fakeTiers,
   fakeUnsplashPhotos,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withPintura,
   withoutAutosave,
   withoutUnsplash,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const BACK_LABEL = 'Close X card panel';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const FEATURE = 'https://example.com/content/images/2026/09/coast.png';
 // The site fixture's own description, which the card falls back to last.
@@ -38,7 +42,7 @@ type SavedPost = ReturnType<typeof post>;
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {
@@ -72,10 +76,19 @@ function fakeImageUpload() {
   });
 }
 
+/** The site's member total, which the publish inputs read before Publish is offered. */
+function fakeMembersTotal() {
+  fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+  });
+}
+
 async function openXCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow('X card').click();
+  await settleTransitions();
+  await editorScreen.settingsSubviewRow(settingsXCardRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
@@ -101,7 +114,7 @@ describe('Post settings X card', () => {
         },
         { status },
       );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await openXCard();
 
       try {
@@ -111,9 +124,9 @@ describe('Post settings X card', () => {
         );
         await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
         await expect.element(editorScreen.settingsXImageInput()).toBeDisabled();
-        await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+        await editorScreen.settingsSubviewBack(settingsXCardBackButton).click();
         await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-        await editorScreen.settingsSubviewRow('X card').click();
+        await editorScreen.settingsSubviewRow(settingsXCardRow).click();
         await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
         await expect.element(editorScreen.settingsXImageInput()).toBeDisabled();
         await expect.element(editorScreen.settingsXImageUnsplashButton()).toBeDisabled();
@@ -134,7 +147,7 @@ describe('Post settings X card', () => {
 
   it('opens the pane over the section list and comes back from it', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     // The pane replaces the list it was opened from.
@@ -143,17 +156,17 @@ describe('Post settings X card', () => {
     await expect.element(editorScreen.settingsXDescription()).toBeVisible();
     await expect.element(editorScreen.settingsXImage()).toBeVisible();
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsXCardBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow('X card')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsXCardRow)).toBeVisible();
   });
 
   it('saves an uploaded X image as soon as it lands', async () => {
     const saveApi = fakeSavablePost();
     const uploadApi = fakeImageUpload();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await userEvent.upload(
@@ -168,7 +181,7 @@ describe('Post settings X card', () => {
 
   it('clears the X image the post already had', async () => {
     const saveApi = fakeSavablePost({ twitter_image: UPLOADED });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.removeSettingsXImage().click();
@@ -179,7 +192,7 @@ describe('Post settings X card', () => {
 
   it('persists a draft’s X title and description on the blur that ends each edit', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXTitle().fill('A better title for X');
@@ -198,30 +211,25 @@ describe('Post settings X card', () => {
     expect(saveApi.requests).toHaveLength(2);
   });
 
-  it('stages a published post’s X title until Update', async () => {
+  it('saves a published post’s X title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXTitle().fill('A better title for X');
     await editorScreen.settingsXDescription().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       twitter_title: 'A better title for X',
-      status: 'published',
     });
   });
 
   it('stands in the post’s own title and excerpt until the X fields carry their own', async () => {
     fakeSavablePost({ custom_excerpt: 'The excerpt this post already has' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await expect
@@ -246,7 +254,7 @@ describe('Post settings X card', () => {
 
   it('falls back to the excerpt the server generated for the post', async () => {
     fakeSavablePost({ excerpt: 'The first words of the post itself' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await expect
@@ -259,7 +267,7 @@ describe('Post settings X card', () => {
 
   it('falls back to the site’s own description for a post that has none', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await expect
@@ -271,7 +279,7 @@ describe('Post settings X card', () => {
   it('previews the feature image the writer is looking at, and follows it as it changes', async () => {
     fakeSavablePost({ feature_image: FEATURE });
     fakeImageUpload();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     // The card falls back to it while the pane's own dropzone is still empty.
@@ -294,10 +302,10 @@ describe('Post settings X card', () => {
     expect(pane.isConnected).toBe(true);
   });
 
-  it('stages a published post’s X image until Update', async () => {
+  it('saves a published post’s X image on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     const uploadApi = fakeImageUpload();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await userEvent.upload(
@@ -306,23 +314,19 @@ describe('Post settings X card', () => {
     );
 
     await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
-    await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       twitter_image: UPLOADED,
-      status: 'published',
     });
+    await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
   });
 
   it('reports an upload the server refuses and leaves the field as it was', async () => {
     const saveApi = fakeSavablePost();
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', { errors: [] }, { status: 415 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await userEvent.upload(
@@ -341,7 +345,7 @@ describe('Post settings X card', () => {
   it('reports a malformed upload response without saving its image value', async () => {
     const saveApi = fakeSavablePost();
     fakeAdminEndpoint('POST', '/images/upload/', { images: [{ url: 123, ref: null }] });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await userEvent.upload(
@@ -360,7 +364,7 @@ describe('Post settings X card', () => {
       meta_title: 'In search results',
       meta_description: 'What search engines are told',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await expect
@@ -373,7 +377,8 @@ describe('Post settings X card', () => {
 
   it('refuses to save an X title longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    fakeMembersTotal();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXTitle().fill('a'.repeat(301));
@@ -385,20 +390,34 @@ describe('Post settings X card', () => {
     await expect.element(editorScreen.settingsXTitle()).toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('X title cannot be longer than 300 characters.');
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Publish is refused too, and opens the closed panel on the pane the field is in.
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+    await expect.element(editorScreen.settingsXTitle()).toHaveFocus();
+    await expect
+      .element(editorScreen.saveError())
+      .toHaveTextContent('X title cannot be longer than 300 characters.');
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 
   it('refuses to save an X description longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXDescription().fill('a'.repeat(501));
@@ -416,7 +435,7 @@ describe('Post settings X card', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('X description cannot be longer than 500 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });
@@ -438,7 +457,7 @@ describe('Post settings X card', () => {
   it('offers Unsplash on an empty X image field', async () => {
     fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXImageUnsplashButton().click();
@@ -448,7 +467,7 @@ describe('Post settings X card', () => {
 
   it('leaves Unsplash out while the site’s integration is off', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withoutUnsplash() });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(withoutUnsplash()));
     await openXCard();
 
     await expect.element(editorScreen.settingsXImageInput()).toBeInTheDocument();
@@ -458,7 +477,7 @@ describe('Post settings X card', () => {
   it('saves an X image picked from Unsplash as soon as it lands', async () => {
     const saveApi = fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXImageUnsplashButton().click();
@@ -472,7 +491,7 @@ describe('Post settings X card', () => {
   it('keeps keyboard navigation inside Unsplash and restores focus after Escape', async () => {
     fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
 
     await editorScreen.settingsXImageUnsplashButton().click();
@@ -494,22 +513,22 @@ describe('Post settings X card', () => {
 
     await expect(editorScreen.unsplashModal()).toHaveCount(0);
     await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+    await expect.element(editorScreen.settingsXTitle()).toBeVisible();
     await expect.element(editorScreen.settingsXImageUnsplashButton()).toHaveFocus();
   });
 
-  it('keeps the pane open when Escape dismisses the Unsplash search', async () => {
-    fakeSavablePost();
-    fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('saves the X image edited in Pintura in place of the original', async () => {
+    const pintura = fakePintura();
+    const saveApi = fakeSavablePost({ twitter_image: FEATURE });
+    const uploadApi = fakeImageUpload();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(withPintura()));
     await openXCard();
 
-    await editorScreen.settingsXImageUnsplashButton().click();
-    await expect.element(editorScreen.unsplashModal()).toBeVisible();
+    await editorScreen.editSettingsXImage().click();
+    expect(pintura.opened[0]).toContain(FEATURE);
+    pintura.save(new File(['edited'], 'coast.png', { type: 'image/png' }));
 
-    await userEvent.keyboard('{Escape}');
-
-    await expect(editorScreen.unsplashModal()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
-    await expect.element(editorScreen.settingsXTitle()).toBeVisible();
+    await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+    await expect(saveApi).toHaveSavedFields({ twitter_image: UPLOADED });
   });
 });

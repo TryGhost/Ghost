@@ -52,7 +52,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Basic select dropdown with simple options.',
+        story:
+          'Basic select dropdown with simple options. The chevron has no left margin; triggers with a chevron reduce right padding by one spacing step (4px).',
       },
     },
   },

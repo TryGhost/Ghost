@@ -16,12 +16,12 @@ Run `pnpm dev` to start the editor in standalone mode for development on http://
 
 All Koenig packages are part of the Ghost monorepo workspace, so no linking is
 needed — run `pnpm dev:lexical` from the monorepo root. That starts the normal
-Ghost dev environment plus the editor's `dev:integrated` target: a rebuild
-watcher for the editor (and kg-default-nodes / kg-default-transforms) and a
-preview server on port 4173 that the dev gateway proxies to Admin's
-`EDITOR_URL`.
+Ghost dev environment plus the editor's `dev:integrated` target, which rebuilds
+the editor (and kg-default-nodes / kg-default-transforms) on every change. In
+this mode Admin's dev server reads the editor's `dist` directly instead of
+pre-bundling it.
 
-Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a post, it will use your local version of the editor. Changes to the editor will be reflected inside Ghost Admin after a few seconds - the time for the editor to get rebuilt.
+Now, if you open a post in Ghost Admin (http://localhost:2368/ghost in the main checkout), it uses your local version of the editor. Changes to the editor reach Admin a few seconds later, once the editor has been rebuilt.
 
 ### Specific card setup
 
@@ -63,6 +63,28 @@ All styles are scoped under `.koenig-lexical` class to avoid clashes and keep st
 
 When packaging the module, styles are included inside the JS file rather than being separate to allow for a single import of the module in the consuming app.
 
+**Content fonts**
+
+A host can restyle the text a writer writes by setting these variables on an
+ancestor of `.koenig-lexical`. Each falls back to the editor's own typography,
+so a host that sets none sees no change.
+
+| Variable                            | Applies to                                                                        | Default                 |
+| ----------------------------------- | --------------------------------------------------------------------------------- | ----------------------- |
+| `--kg-font-body`                    | Paragraphs, lists, quotes, tables, the placeholder and callout, toggle and CTA text | Georgia                 |
+| `--kg-font-body-scale`              | Multiplies the body's font sizes                                                  | `1`                     |
+| `--kg-font-body-line-height`        | The body's line height                                                            | `1.6em`                 |
+| `--kg-font-body-tracking`           | The body's letter spacing                                                         | inherited               |
+| `--kg-font-heading`                 | Headings, and the heading and subheading text of header, signup, product and toggle cards | Inter         |
+| `--kg-font-heading-scale`           | Multiplies the H1–H6 font sizes                                                   | `1`                     |
+| `--kg-font-heading-tracking-scale`  | Multiplies the H1–H6 letter spacing                                               | `1`                     |
+| `--kg-font-code-size`               | Inline code's font size, relative to the text around it                           | `.8em`                  |
+| `--kg-font-code-vertical-align`     | Inline code's vertical alignment; `baseline` suits code set at the body's size    | `middle`                |
+
+In Tailwind, `font-body`, `font-heading` and `text-body` read the same variables.
+Captions, buttons, link previews and the editor's own controls are not content
+and always stay in Inter.
+
 **SVGs**
 
 SVGs can be imported as React components in the [same way as create-react-app](https://create-react-app.dev/docs/adding-images-fonts-and-files/#adding-svgs). Typically files are stored in `src/assets/`.
@@ -92,8 +114,21 @@ Package tests live in `test/unit/` and `test/e2e/`, with shared test helpers in
 - `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
   instructions (some tests may fail or time out due to the added delays)
 
+Acceptance tests start their own Vite demo server on port 5185, separate from
+Admin's development server on 5174. They never reuse an existing server or move
+to another port if it is occupied. Set `KOENIG_TEST_PORT` when running tests from
+multiple worktrees, for example `KOENIG_TEST_PORT=5186 pnpm test:acceptance`.
+The port must be an integer between 1 and 65535.
+
+Use `pnpm dev:test` to run the test demo manually on the same configurable port.
+The acceptance runner requires that port to be free, so stop the manual server
+before running tests. For collaboration development, `pnpm dev:multiplayer`
+starts the demo and WebSocket server together; acceptance tests do not start the
+unused WebSocket server.
+
 The acceptance-test commands use these environment variables:
 
+- `KOENIG_TEST_PORT=5186` changes the demo server port.
 - `PLAYWRIGHT_HEADED=true` shows the browser UI.
 - `PLAYWRIGHT_HTML_REPORT=true` generates an HTML report.
 - `PLAYWRIGHT_SLOWMO=100` adds a delay in milliseconds between browser actions.

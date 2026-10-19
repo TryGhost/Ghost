@@ -1,6 +1,6 @@
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 
-export function canCreateLabel(labels: Label[], query: string): boolean {
+export function canCreateLabel(labels: Pick<Label, 'name'>[], query: string): boolean {
   const normalized = query.trim().toLowerCase();
   if (!normalized) {
     return false;

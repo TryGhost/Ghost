@@ -152,7 +152,6 @@ describe('members api', () => {
 
   it('invalidates member queries after importing members', async () => {
     const queryClient = createTestQueryClient();
-    const onInvalidate = vi.fn();
     const unrelatedKey = ['PostsResponseType', 'http://localhost:3000/ghost/api/admin/posts/'];
     const file = new File(['email\njamie@example.com'], 'members.csv', { type: 'text/csv' });
 
@@ -172,7 +171,6 @@ describe('members api', () => {
       },
       async (mock) => {
         const { result } = renderHookWithProviders(() => useImportMembers(), {
-          frameworkProps: { onInvalidate },
           queryClient,
         });
 
@@ -195,7 +193,6 @@ describe('members api', () => {
           expectQueryInvalidation(queryClient, 'MembersResponseType', true);
           expectQueryInvalidation(queryClient, 'PostsResponseType', false);
         });
-        expect(onInvalidate).toHaveBeenCalledWith('MembersResponseType');
       },
     );
   });

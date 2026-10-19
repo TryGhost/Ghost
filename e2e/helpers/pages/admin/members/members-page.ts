@@ -1,6 +1,11 @@
 import { AdminPage } from '@/admin-pages';
 import { JSHandle, Locator, Page } from '@playwright/test';
-import { membersListItem, newMemberLink } from '@tryghost/test-data/selectors/members';
+import {
+  loadMoreButton,
+  membersListItem,
+  membersListScrollRoot,
+  newMemberLink,
+} from '@tryghost/test-data/selectors/members';
 
 export class MembersPage extends AdminPage {
   readonly newMemberButton: Locator;
@@ -14,8 +19,8 @@ export class MembersPage extends AdminPage {
 
     this.newMemberButton = page.getByRole('link', { name: newMemberLink });
 
-    this.loadMoreButton = page.getByRole('button', { name: 'Load more' });
-    this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
+    this.loadMoreButton = page.getByRole('button', { name: loadMoreButton });
+    this.membersListScrollRoot = page.getByTestId(membersListScrollRoot);
     this.memberListItems = page.getByTestId(membersListItem);
   }
 

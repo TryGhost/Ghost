@@ -349,6 +349,18 @@ describe('Helpers - ', () => {
       expect(formatPrice(1234.5, 'en-US')).toBe('1,234.50');
     });
 
+    test.each(['en_US', '', null])(
+      'falls back to the browser locale for invalid locale %j',
+      (locale) => {
+        const expected = (6.9).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+
+        expect(formatPrice(6.9, locale)).toBe(expected);
+      },
+    );
+
     test('returns empty string for null/undefined input', () => {
       expect(formatPrice(null)).toBe('');
       expect(formatPrice(undefined)).toBe('');

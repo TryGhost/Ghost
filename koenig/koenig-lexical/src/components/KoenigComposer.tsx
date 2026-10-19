@@ -118,7 +118,8 @@ const KoenigComposer = ({
                 multiplayerDocId,
                 multiplayerUsername,
                 createWebsocketProvider,
-                onWordCountChangeRef
+                onWordCountChangeRef,
+                onError
             }}>
                 <KoenigSelectedCardContext>
                     <TKContext>

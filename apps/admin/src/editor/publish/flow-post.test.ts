@@ -42,6 +42,11 @@ function record(overrides: Partial<PostEditorRecord> = {}): PostEditorRecord {
   };
 }
 
+/** The access a session loaded at `loaded` holds until the writer changes it. */
+function accessOf(loaded: PostEditorRecord | PageEditorRecord = record()) {
+  return { visibility: loaded.visibility ?? null, tiers: loaded.tiers ?? [] };
+}
+
 // Built through the shared builder: the record carries the whole API relation.
 const NEWSLETTER = newsletter({ slug: 'weekly', name: 'Weekly', status: 'active' });
 
@@ -135,7 +140,12 @@ const CASES = [
 
 describe('buildPublishFlowPost', () => {
   it.each(CASES)('projects $name', ({ snapshot: snap, record: rec, expected }) => {
-    const post = buildPublishFlowPost({ snapshot: snap, record: rec, displayName: 'post' });
+    const post = buildPublishFlowPost({
+      snapshot: snap,
+      record: rec,
+      access: accessOf(rec),
+      displayName: 'post',
+    });
 
     expect(post).toMatchObject(expected);
     expect(post.id).toBe('post-1');
@@ -151,6 +161,7 @@ describe('buildPublishFlowPost', () => {
         title: 'Typed since',
       }),
       record: record(),
+      access: accessOf(),
       displayName: 'post',
     });
 
@@ -159,10 +170,44 @@ describe('buildPublishFlowPost', () => {
     expect(post.title).toBe('Typed since');
   });
 
+  it('reads access from the settings the writer chose, ahead of any save', () => {
+    const post = buildPublishFlowPost({
+      snapshot: snapshot(),
+      // A Public read carries every tier.
+      record: record({
+        tiers: [
+          { id: 'tier-1', slug: 'gold' },
+          { id: 'tier-2', slug: 'silver' },
+        ],
+      }),
+      access: { visibility: 'tiers', tiers: [{ id: 'tier-1' }, { id: 'tier-3', slug: 'bronze' }] },
+      displayName: 'post',
+    });
+
+    expect(post.visibility).toBe('tiers');
+    expect(post.tiers).toEqual([{ slug: 'gold' }, { slug: 'bronze' }]);
+  });
+
+  it('names a tier picked before its save lands from the site’s tiers', () => {
+    const post = buildPublishFlowPost({
+      snapshot: snapshot(),
+      record: record({ visibility: 'tiers', tiers: [{ id: 'tier-2', slug: 'silver' }] }),
+      access: { visibility: 'tiers', tiers: [{ id: 'tier-2' }, { id: 'tier-1' }] },
+      knownTiers: [
+        { id: 'tier-1', slug: 'gold' },
+        { id: 'tier-2', slug: 'silver' },
+      ],
+      displayName: 'post',
+    });
+
+    expect(post.tiers).toEqual([{ slug: 'silver' }, { slug: 'gold' }]);
+  });
+
   it('prefers the unsaved body over the record it was loaded with', () => {
     const post = buildPublishFlowPost({
       snapshot: snapshot(),
       record: record(),
+      access: accessOf(),
       displayName: 'post',
       lexical: '{"root":{"unsaved":true}}',
     });
@@ -171,7 +216,11 @@ describe('buildPublishFlowPost', () => {
   });
 
   it('describes a created post the editor has not read back yet', () => {
-    const post = buildPublishFlowPost({ snapshot: snapshot(), displayName: 'post' });
+    const post = buildPublishFlowPost({
+      snapshot: snapshot(),
+      access: { visibility: 'public', tiers: [] },
+      displayName: 'post',
+    });
 
     expect(post).toMatchObject({
       id: 'post-1',
@@ -196,7 +245,12 @@ describe('buildPublishFlowPost', () => {
       updated_at: UPDATED_AT,
     };
 
-    const post = buildPublishFlowPost({ snapshot: snapshot(), record: page, displayName: 'page' });
+    const post = buildPublishFlowPost({
+      snapshot: snapshot(),
+      record: page,
+      access: accessOf(page),
+      displayName: 'page',
+    });
 
     expect(post).toMatchObject({
       displayName: 'page',

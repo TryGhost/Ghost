@@ -47,7 +47,7 @@ const TopicFilter: React.FC<TopicFilterProps> = ({
     <div className="relative w-full">
       <div
         ref={scrollContainerRef}
-        className="flex w-full max-w-full min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex w-full max-w-full min-w-0 snap-x snap-mandatory [scrollbar-width:none] gap-2 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         onScroll={handleScroll}
       >
         {filteredTopics.map(({ slug, name }) => (

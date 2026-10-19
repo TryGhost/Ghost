@@ -1,0 +1,1099 @@
+const EmailService = require('../../../../../core/server/services/email-service/email-service');
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
+const { createModel, createModelClass } = require('./utils');
+
+describe('Email Service', function () {
+  let memberCount, limited, verificicationRequired, service;
+  let scheduleEmail;
+  let retryStatusLock;
+  let settings, settingsCache;
+  let membersRepository;
+  let emailRenderer;
+  let sendingService;
+  let scheduleRecurringNewslettersJob;
+  let domainWarmingService;
+  let getMembersCount;
+  let sendingStatusService;
+  let Email;
+
+  beforeEach(function () {
+    memberCount = 123;
+    limited = {
+      emails: null, // null = not limited, true = limited and error, false = limited no error
+      members: null,
+    };
+    verificicationRequired = false;
+    scheduleEmail = sinon.stub().resolves();
+    retryStatusLock = sinon.stub().resolves(null);
+    scheduleRecurringNewslettersJob = sinon.stub().resolves();
+    settings = {};
+    settingsCache = {
+      get(key) {
+        return settings[key];
+      },
+    };
+    membersRepository = {
+      get: sinon.stub().returns(undefined),
+    };
+    emailRenderer = {
+      getSubject: () => {
+        return 'Subject';
+      },
+      getFromAddress: () => {
+        return 'From';
+      },
+      getReplyToAddress: () => {
+        return 'ReplyTo';
+      },
+      renderBody: () => {
+        return {
+          html: 'HTML',
+          plaintext: 'Plaintext',
+          replacements: [],
+        };
+      },
+      getSegmentForAudience: (post, memberStatus) => {
+        if (memberStatus === 'free') {
+          return 'status:free';
+        }
+        if (memberStatus === 'paid') {
+          return 'status:-free';
+        }
+        return null;
+      },
+      describeSegment: (post, segment) => {
+        return {
+          status: segment?.includes('status:-free')
+            ? 'status:-free'
+            : segment?.includes('status:free')
+              ? 'status:free'
+              : null,
+          hasPostAccess: true,
+        };
+      },
+    };
+    sendingService = {
+      send: sinon.stub().returns(),
+    };
+    domainWarmingService = {
+      isEnabled: sinon.stub().returns(false),
+      getWarmupLimit: sinon.stub(),
+    };
+    getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
+    Email = createModelClass();
+
+    sendingStatusService = {
+      retryEligibilityFor: sinon.stub().resolves('retryable'),
+    };
+
+    service = new EmailService({
+      sendingStatusService,
+      emailSegmenter: {
+        getMembersCount,
+      },
+      limitService: {
+        isLimited: (type) => {
+          return typeof limited[type] === 'boolean';
+        },
+        errorIfIsOverLimit: (type) => {
+          if (limited[type]) {
+            throw new Error('Over limit');
+          }
+        },
+        errorIfWouldGoOverLimit: (type) => {
+          if (limited[type]) {
+            throw new Error('Would go over limit');
+          }
+        },
+      },
+      verificationTrigger: {
+        checkVerificationRequired: () => {
+          return Promise.resolve(verificicationRequired);
+        },
+      },
+      models: {
+        Email,
+      },
+      batchSendingService: {
+        scheduleEmail,
+        updateStatusLock: retryStatusLock,
+      },
+      settingsCache,
+      emailRenderer,
+      membersRepository,
+      sendingService,
+      emailAnalyticsJobs: {
+        scheduleRecurringNewslettersJob,
+      },
+      domainWarmingService: domainWarmingService,
+    });
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  describe('checkLimits', function () {
+    it('Throws if over member limit', async function () {
+      limited.members = true;
+      await assert.rejects(service.checkLimits(), /Over limit/);
+    });
+
+    it('Throws if over email limit', async function () {
+      limited.emails = true;
+      await assert.rejects(service.checkLimits(), /Would go over limit/);
+    });
+
+    it('Throws if verification is required', async function () {
+      verificicationRequired = true;
+      await assert.rejects(service.checkLimits(), /Email sending is temporarily disabled/);
+    });
+
+    it('Throws with EMAIL_VERIFICATION_NEEDED code when verification is required', async function () {
+      verificicationRequired = true;
+      try {
+        await service.checkLimits();
+        assert.fail('Should have thrown');
+      } catch (e) {
+        assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+      }
+    });
+
+    it('Uses custom message when config provides emailSendingDisabledMessage', async function () {
+      const customService = new EmailService({
+        emailSegmenter: {
+          getMembersCount: () => Promise.resolve(memberCount),
+        },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: {
+          checkVerificationRequired: () => Promise.resolve(true),
+        },
+        models: { Email: createModelClass() },
+        batchSendingService: { scheduleEmail },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+        config: {
+          get(key) {
+            if (key === 'hostSettings:emailVerification:emailSendingDisabledMessage') {
+              return 'Custom: Email paused. Contact help@example.com';
+            }
+            return undefined;
+          },
+        },
+      });
+
+      try {
+        await customService.checkLimits();
+        assert.fail('Should have thrown');
+      } catch (e) {
+        assert.equal(e.message, 'Custom: Email paused. Contact help@example.com');
+        assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+      }
+    });
+
+    it('Does not throw if limits are enabled', async function () {
+      // Enable limits, but don't go over limit
+      limited.members = false;
+      limited.emails = false;
+      await assert.doesNotReject(service.checkLimits());
+    });
+  });
+
+  describe('checkCanSendEmail', function () {
+    it('Throws if newsletter is null', async function () {
+      await assert.rejects(
+        service.checkCanSendEmail(null, 'all'),
+        /The post does not have a newsletter relation/,
+      );
+    });
+
+    it('Throws if newsletter is archived', async function () {
+      const newsletter = createModel({
+        status: 'archived',
+      });
+      await assert.rejects(
+        service.checkCanSendEmail(newsletter, 'all'),
+        /Cannot send email to archived newsletters/,
+      );
+    });
+
+    it('Throws if over member limit', async function () {
+      limited.members = true;
+      const newsletter = createModel({
+        status: 'active',
+      });
+      await assert.rejects(service.checkCanSendEmail(newsletter, 'all'), /Over limit/);
+    });
+
+    it('Throws if over email limit', async function () {
+      limited.emails = true;
+      const newsletter = createModel({
+        status: 'active',
+      });
+      await assert.rejects(service.checkCanSendEmail(newsletter, 'all'), /Would go over limit/);
+    });
+
+    it('Throws if verification is required', async function () {
+      verificicationRequired = true;
+      const newsletter = createModel({
+        status: 'active',
+      });
+      await assert.rejects(
+        service.checkCanSendEmail(newsletter, 'all'),
+        /Email sending is temporarily disabled/,
+      );
+    });
+
+    it('Does not throw for active newsletter within limits', async function () {
+      limited.members = false;
+      limited.emails = false;
+      const newsletter = createModel({
+        status: 'active',
+      });
+      await assert.doesNotReject(service.checkCanSendEmail(newsletter, 'all'));
+    });
+
+    it('Leaves the warming domain count out when domain warming is disabled', async function () {
+      const newsletter = createModel({ status: 'active' });
+
+      const result = await service.checkCanSendEmail(newsletter, 'all');
+
+      assert.deepEqual(result, { emailCount: memberCount, csdEmailCount: undefined });
+      sinon.assert.notCalled(domainWarmingService.getWarmupLimit);
+    });
+
+    it('Counts the recipients to send from the warming domain when domain warming is enabled', async function () {
+      domainWarmingService.isEnabled.returns(true);
+      domainWarmingService.getWarmupLimit.resolves(500);
+      const newsletter = createModel({ status: 'active' });
+
+      const result = await service.checkCanSendEmail(newsletter, 'all');
+
+      assert.deepEqual(result, { emailCount: memberCount, csdEmailCount: 500 });
+      sinon.assert.calledOnceWithExactly(domainWarmingService.getWarmupLimit, memberCount);
+    });
+  });
+
+  describe('createEmail', function () {
+    function createPost(properties = {}) {
+      return createModel({
+        id: 'post-123',
+        newsletter_id: 'newsletter-123',
+        email_recipient_filter: 'status:paid',
+        mobiledoc: 'Mobiledoc',
+        ...properties,
+      });
+    }
+
+    function createPreflight() {
+      return {
+        newsletter: createModel({ id: 'newsletter-123', status: 'active', feedback_enabled: true }),
+        emailRecipientFilter: 'status:paid',
+        emailCount: 42,
+        csdEmailCount: 10,
+      };
+    }
+
+    it('records the original preflight count, including zero, to identify new sends', async function () {
+      for (const emailCount of [42, 0]) {
+        const email = await service.createEmail(createPost(), {
+          preflight: { ...createPreflight(), emailCount },
+        });
+        assert.equal(email.get('preflight_email_count'), emailCount);
+        assert.equal(email.get('email_count'), emailCount);
+      }
+    });
+
+    it('Creates a pending email from the pre-save checks without checking again or scheduling', async function () {
+      limited.emails = true;
+      const transacting = {};
+      const add = sinon.spy(Email, 'add');
+
+      const email = await service.createEmail(createPost(), {
+        preflight: createPreflight(),
+        transacting,
+      });
+
+      sinon.assert.calledOnceWithMatch(add, sinon.match.object, { transacting });
+      sinon.assert.notCalled(getMembersCount);
+      sinon.assert.notCalled(scheduleEmail);
+      assert.equal(email.get('post_id'), 'post-123');
+      assert.equal(email.get('newsletter_id'), 'newsletter-123');
+      assert.equal(email.get('recipient_filter'), 'status:paid');
+      assert.equal(email.get('email_count'), 42);
+      assert.equal(email.get('csd_email_count'), 10);
+      assert.equal(email.get('feedback_enabled'), true);
+      assert.equal(email.get('status'), 'pending');
+      assert.equal(email.get('source'), 'Mobiledoc');
+      assert.equal(email.get('source_type'), 'mobiledoc');
+    });
+
+    it('Creates an email with lexical', async function () {
+      const email = await service.createEmail(createPost({ mobiledoc: null, lexical: 'Lexical' }), {
+        preflight: createPreflight(),
+      });
+
+      assert.equal(email.get('source'), 'Lexical');
+      assert.equal(email.get('source_type'), 'lexical');
+    });
+
+    it('Rejects a post saved with a newsletter or audience other than the one checked', async function () {
+      const add = sinon.spy(Email, 'add');
+
+      for (const [post, preflight] of [
+        [createPost({ newsletter_id: 'newsletter-456' }), createPreflight()],
+        [createPost({ email_recipient_filter: 'status:free' }), createPreflight()],
+        [createPost(), null],
+      ]) {
+        await assert.rejects(service.createEmail(post, { preflight }), {
+          errorType: 'UpdateCollisionError',
+        });
+      }
+      sinon.assert.notCalled(add);
+    });
+  });
+
+  describe('scheduleEmail', function () {
+    it('Schedules the email and the analytics job', async function () {
+      const email = createModel({ status: 'pending' });
+
+      assert.equal(await service.scheduleEmail(email), email);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, email);
+      sinon.assert.calledOnceWithExactly(scheduleRecurringNewslettersJob, true);
+    });
+
+    it('Ignores analytics job scheduling errors', async function () {
+      scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
+      sinon.stub(logging, 'error');
+
+      await service.scheduleEmail(createModel({ status: 'pending' }));
+      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
+    });
+
+    it('Stores the error in the email model if scheduling fails', async function () {
+      scheduleEmail.rejects(new Error('Test error'));
+      const email = createModel({ status: 'pending' });
+
+      await service.scheduleEmail(email);
+
+      assert.equal(email.get('error'), 'Test error');
+      assert.equal(email.get('status'), 'failed');
+    });
+
+    it('Stores a default error in the email model if scheduling fails', async function () {
+      scheduleEmail.rejects(new Error());
+      const email = createModel({ status: 'pending' });
+
+      await service.scheduleEmail(email);
+
+      assert.equal(email.get('error'), 'Something went wrong while scheduling the email');
+      assert.equal(email.get('status'), 'failed');
+    });
+  });
+
+  describe('Retry email', function () {
+    it('rejects an unknown delivery outcome without changing the email or scheduling', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Original error',
+        post: createModel({ status: 'published' }),
+      });
+      sendingStatusService.retryEligibilityFor.resolves('unknown-outcome');
+
+      await assert.rejects(
+        service.retryEmail(email),
+        (err) => err.statusCode === 400 && /delivery outcome is unknown/.test(err.message),
+      );
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Original error');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('rejects a stale failed email when the current send is already active', async function () {
+      const email = createModel({ status: 'failed', post: createModel({ status: 'sent' }) });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      assert.equal(email.get('status'), 'failed');
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('Schedules email again', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Test error',
+        post: createModel({
+          status: 'published',
+        }),
+      });
+
+      const lockedEmail = createModel({ id: email.id, status: 'pending' });
+      retryStatusLock.resolves(lockedEmail);
+
+      assert.equal(await service.retryEmail(email), lockedEmail);
+      sinon.assert.calledOnceWithExactly(
+        retryStatusLock,
+        sinon.match.any,
+        email.id,
+        'pending',
+        ['failed'],
+        { autoRefresh: true },
+      );
+      sinon.assert.calledOnceWithExactly(scheduleEmail, lockedEmail);
+    });
+
+    it('Rejects a stale failed model once another retry has claimed the email', async function () {
+      const email = createModel({
+        status: 'failed',
+        post: createModel({ status: 'published' }),
+      });
+      retryStatusLock.resolves(null);
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('Restores failed status and preserves the error if scheduling fails', async function () {
+      const schedulingError = new Error('Scheduling failed');
+      const email = createModel({
+        status: 'failed',
+        error: 'Original send error',
+        post: createModel({ status: 'published' }),
+      });
+      retryStatusLock.resolves(email);
+      scheduleEmail.rejects(schedulingError);
+
+      await assert.rejects(() => service.retryEmail(email), schedulingError);
+
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Original send error');
+    });
+
+    it('Does not schedule email again if draft', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Test error',
+        post: createModel({
+          status: 'draft',
+        }),
+      });
+
+      await assert.rejects(service.retryEmail(email));
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('Checks limits before scheduling', async function () {
+      const email = createModel({
+        status: 'failed',
+        error: 'Test error',
+      });
+
+      limited.emails = true;
+      assert.rejects(service.retryEmail(email));
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('Throws BadRequestError if email status is not failed', async function () {
+      const email = createModel({
+        status: 'submitting',
+        post: createModel({
+          status: 'published',
+        }),
+      });
+      sendingStatusService.retryEligibilityFor.resolves('not-failed');
+
+      await assert.rejects(
+        service.retryEmail(email),
+        (err) => err.statusCode === 400 && /Only failed emails can be retried/.test(err.message),
+      );
+      sinon.assert.notCalled(scheduleEmail);
+    });
+  });
+
+  describe('resumeInterruptedSends', function () {
+    // The scanner runs one query per cutoff side. Tests that don't exercise the stale
+    // path get an empty list for it and the given emails for the fresh one.
+    const filterAwareFindAll =
+      (emails) =>
+      async ({ filter }) => ({ models: filter.includes('created_at:<') ? [] : emails });
+
+    it('Per-email try/catch: one bad email does not skip the others', async function () {
+      const errorLog = sinon.stub(logging, 'error');
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+
+      const emails = [
+        createModel({
+          id: 'good-1',
+          status: 'submitting',
+          post: createModel({ status: 'published' }),
+        }),
+        createModel({
+          id: 'bad',
+          status: 'submitting',
+          get post() {
+            throw new Error('Boom');
+          },
+        }),
+        createModel({
+          id: 'good-2',
+          status: 'submitting',
+          post: createModel({ status: 'sent' }),
+        }),
+      ];
+      // createModel exposes `post` via .related('post') / .getLazyRelation('post').
+      // Override getLazyRelation on the bad one to throw — this is what the scanner awaits first.
+      emails[1].getLazyRelation = () => {
+        throw new Error('Boom');
+      };
+
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: {
+          Email: { findAll: filterAwareFindAll(emails) },
+        },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+        },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledTwice(scheduleEmail);
+      sinon.assert.calledOnce(errorLog);
+    });
+
+    it('Continues recovery after a dispatch failure', async function () {
+      const errorLog = sinon.stub(logging, 'error');
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const emails = [
+        createModel({
+          id: 'bad-dispatch',
+          status: 'pending',
+          post: createModel({ status: 'published' }),
+        }),
+        createModel({
+          id: 'good-dispatch',
+          status: 'pending',
+          post: createModel({ status: 'published' }),
+        }),
+      ];
+      scheduleEmail.onFirstCall().rejects(new Error('Queue unavailable'));
+      scheduleEmail.onSecondCall().resolves();
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: { Email: { findAll: filterAwareFindAll(emails) } },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledTwice(scheduleEmail);
+      assert.equal(scheduleEmail.firstCall.args[0], emails[0]);
+      assert.equal(scheduleEmail.secondCall.args[0], emails[1]);
+      sinon.assert.calledOnce(errorLog);
+    });
+
+    it('Marks email as failed if the parent post is no longer published or sent', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const emails = [
+        createModel({
+          id: 'unpublished',
+          status: 'submitting',
+          post: createModel({ status: 'draft' }),
+        }),
+      ];
+
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: {
+          Email: { findAll: filterAwareFindAll(emails) },
+        },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+        },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledOnce(updateStatusLock);
+      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'unpublished', 'failed', [
+        'submitting',
+      ]);
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('Flips stale submitting and pending emails to failed and does not resume them', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const staleSubmittingEmail = createModel({
+        id: 'ancient-submitting',
+        status: 'submitting',
+        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        post: createModel({ status: 'published' }),
+      });
+      const stalePendingEmail = createModel({
+        id: 'ancient-pending',
+        status: 'pending',
+        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        post: createModel({ status: 'published' }),
+      });
+      const freshEmail = createModel({
+        id: 'recent',
+        status: 'submitting',
+        created_at: new Date(),
+        post: createModel({ status: 'published' }),
+      });
+
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: {
+          Email: {
+            findAll: async ({ filter }) => ({
+              models: filter.includes('created_at:<')
+                ? [staleSubmittingEmail, stalePendingEmail]
+                : [freshEmail],
+            }),
+          },
+        },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+        },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      assert.equal(updateStatusLock.callCount, 3);
+      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'ancient-submitting', 'failed', [
+        'submitting',
+      ]);
+      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'ancient-pending', 'failed', [
+        'pending',
+      ]);
+      sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'recent', 'pending', [
+        'submitting',
+      ]);
+      sinon.assert.calledOnce(scheduleEmail);
+    });
+
+    it('Resumes fresh pending emails without changing their status', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const email = createModel({
+        id: 'pending',
+        status: 'pending',
+        post: createModel({ status: 'published' }),
+      });
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: { Email: { findAll: filterAwareFindAll([email]) } },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.notCalled(updateStatusLock);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, email);
+    });
+
+    it('Marks fresh pending emails with unsendable posts as failed', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const email = createModel({
+        id: 'pending',
+        status: 'pending',
+        post: createModel({ status: 'draft' }),
+      });
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: { Email: { findAll: filterAwareFindAll([email]) } },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledOnceWithExactly(updateStatusLock, sinon.match.any, 'pending', 'failed', [
+        'pending',
+      ]);
+      sinon.assert.notCalled(scheduleEmail);
+    });
+
+    it('Respects bulkEmail:resumeMaxAgeMs config override', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const capturedFilters = [];
+
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: {
+          Email: {
+            findAll: async ({ filter }) => {
+              capturedFilters.push(filter);
+              return { models: [] };
+            },
+          },
+        },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+        // 1 hour override
+        config: { get: (key) => (key === 'bulkEmail:resumeMaxAgeMs' ? 60 * 60 * 1000 : undefined) },
+      });
+
+      const before = Date.now();
+      await localService.resumeInterruptedSends();
+      const after = Date.now();
+
+      assert.equal(capturedFilters.length, 2);
+      // Both sides ask for both statuses, against one shared cutoff.
+      for (const filter of capturedFilters) {
+        assert.match(filter, /status:\[pending,submitting\]/);
+      }
+      assert.equal(
+        new Set(capturedFilters.map((filter) => filter.match(/created_at:[<>]'([^']+)'/)[1])).size,
+        1,
+      );
+      const match = capturedFilters[0].match(/created_at:[<>]'([^']+)'/);
+      assert.ok(match, `expected ISO cutoff in filter, got: ${capturedFilters[0]}`);
+      const cutoffMs = new Date(match[1]).getTime();
+      // Cutoff should be ~1 hour before "now" (the moment we called resumeInterruptedSends).
+      assert.ok(cutoffMs >= before - 60 * 60 * 1000 - 100, `cutoff ${match[1]} too old`);
+      assert.ok(cutoffMs <= after - 60 * 60 * 1000 + 100, `cutoff ${match[1]} too recent`);
+    });
+  });
+
+  describe('getExampleMember', function () {
+    it('Returns a member', async function () {
+      const member = createModel({
+        uuid: '123',
+        name: 'Example member',
+        email: 'example@example.com',
+        status: 'free',
+      });
+      membersRepository.get.resolves(member);
+      const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
+      assert.equal(exampleMember.id, member.id);
+      assert.equal(exampleMember.name, member.get('name'));
+      assert.equal(exampleMember.email, member.get('email'));
+      assert.equal(exampleMember.uuid, member.get('uuid'));
+      assert.equal(exampleMember.status, 'free');
+      assert.deepEqual(exampleMember.subscriptions, []);
+      assert.deepEqual(exampleMember.tiers, []);
+    });
+
+    it('Returns a paid member', async function () {
+      const member = createModel({
+        uuid: '123',
+        name: 'Example member',
+        email: 'example@example.com',
+        status: 'paid',
+        stripeSubscriptions: [
+          createModel({
+            status: 'active',
+            current_period_end: new Date(2050, 0, 1),
+            cancel_at_period_end: false,
+          }),
+        ],
+        products: [
+          createModel({
+            name: 'Silver',
+            expiry_at: null,
+          }),
+        ],
+      });
+      membersRepository.get.resolves(member);
+      const exampleMember = await service.getExampleMember('example@example.com', 'status:-free');
+      assert.equal(exampleMember.id, member.id);
+      assert.equal(exampleMember.name, member.get('name'));
+      assert.equal(exampleMember.email, member.get('email'));
+      assert.equal(exampleMember.uuid, member.get('uuid'));
+      assert.equal(exampleMember.status, 'paid');
+      assert.deepEqual(exampleMember.subscriptions, [
+        {
+          status: 'active',
+          current_period_end: new Date(2050, 0, 1),
+          cancel_at_period_end: false,
+          id: member.related('stripeSubscriptions')[0].id,
+        },
+      ]);
+      assert.deepEqual(exampleMember.tiers, [
+        {
+          name: 'Silver',
+          expiry_at: null,
+          id: member.related('products')[0].id,
+        },
+      ]);
+    });
+
+    it('Returns a forced free member', async function () {
+      const member = createModel({
+        uuid: '123',
+        name: 'Example member',
+        email: 'example@example.com',
+        status: 'paid',
+      });
+      membersRepository.get.resolves(member);
+      const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
+      assert.equal(exampleMember.id, member.id);
+      assert.equal(exampleMember.name, member.get('name'));
+      assert.equal(exampleMember.email, member.get('email'));
+      assert.equal(exampleMember.uuid, member.get('uuid'));
+      assert.equal(exampleMember.status, 'free');
+      assert.deepEqual(exampleMember.subscriptions, []);
+      assert.deepEqual(exampleMember.tiers, []);
+    });
+
+    it('Returns a member without name if member does not exist', async function () {
+      membersRepository.get.resolves(undefined);
+      const exampleMember = await service.getExampleMember('example@example.com');
+      assert.equal(exampleMember.name, '');
+      assert.equal(exampleMember.email, 'example@example.com');
+      assert.ok(exampleMember.id);
+      assert.ok(exampleMember.uuid);
+    });
+
+    it('Returns a default member', async function () {
+      membersRepository.get.resolves(undefined);
+      const exampleMember = await service.getExampleMember();
+      assert.ok(exampleMember.id);
+      assert.ok(exampleMember.uuid);
+      assert.ok(exampleMember.name);
+      assert.ok(exampleMember.email);
+    });
+  });
+
+  describe('previewEmail', function () {
+    it('Replaces replacements with example member', async function () {
+      const post = createModel({
+        id: '123',
+        newsletter: createModel({
+          status: 'active',
+          feedback_enabled: true,
+        }),
+      });
+      sinon.stub(emailRenderer, 'renderBody').resolves({
+        html: 'Hello {name}, {name}',
+        plaintext: 'Hello {name}',
+        replacements: [
+          {
+            id: 'name',
+            token: /{name}/g,
+            getValue: (member) => {
+              return member.name;
+            },
+          },
+        ],
+      });
+
+      const data = await service.previewEmail(post, post.get('newsletter'), null);
+      assert.equal(data.html, 'Hello Jamie Larson, Jamie Larson');
+      assert.equal(data.plaintext, 'Hello Jamie Larson');
+      assert.equal(data.subject, 'Subject');
+    });
+
+    it('renders using the preview segment mapped for the post', async function () {
+      const post = createModel({
+        id: '123',
+        newsletter: createModel({
+          status: 'active',
+          feedback_enabled: true,
+        }),
+      });
+      sinon.stub(emailRenderer, 'getSegmentForAudience').returns("status:-free+(product:'gold')");
+      const renderBody = sinon.stub(emailRenderer, 'renderBody').resolves({
+        html: 'HTML',
+        plaintext: 'Plaintext',
+        replacements: [],
+      });
+
+      await service.previewEmail(post, post.get('newsletter'), 'paid');
+
+      sinon.assert.calledOnceWithExactly(
+        emailRenderer.getSegmentForAudience,
+        post,
+        'paid',
+        undefined,
+      );
+      assert.equal(renderBody.firstCall.args[2], "status:-free+(product:'gold')");
+    });
+
+    it('passes the selected tier through to the preview segment', async function () {
+      const post = createModel({
+        id: '123',
+        newsletter: createModel({
+          status: 'active',
+          feedback_enabled: true,
+        }),
+      });
+      sinon.stub(emailRenderer, 'getSegmentForAudience').returns("status:-free+product:'silver'");
+      const renderBody = sinon.stub(emailRenderer, 'renderBody').resolves({
+        html: 'HTML',
+        plaintext: 'Plaintext',
+        replacements: [],
+      });
+
+      await service.previewEmail(post, post.get('newsletter'), 'paid', 'silver');
+
+      sinon.assert.calledOnceWithExactly(
+        emailRenderer.getSegmentForAudience,
+        post,
+        'paid',
+        'silver',
+      );
+      assert.equal(renderBody.firstCall.args[2], "status:-free+product:'silver'");
+    });
+  });
+
+  describe('sendTestEmail', function () {
+    it('Sends a test email', async function () {
+      const post = createModel({
+        id: '123',
+        newsletter: createModel({
+          status: 'active',
+          feedback_enabled: true,
+        }),
+      });
+      await service.sendTestEmail(post, post.get('newsletter'), null, ['example@example.com']);
+      sinon.assert.calledOnce(sendingService.send);
+      const members = sendingService.send.firstCall.args[0].members;
+      const options = sendingService.send.firstCall.args[1];
+      assert.equal(members.length, 1);
+      assert.equal(members[0].email, 'example@example.com');
+      assert.equal(options.isTestEmail, true);
+    });
+
+    it('sends with the mapped preview segment while personalizing for the chosen audience', async function () {
+      const post = createModel({
+        id: '123',
+        newsletter: createModel({
+          status: 'active',
+          feedback_enabled: true,
+        }),
+      });
+      sinon.stub(emailRenderer, 'getSegmentForAudience').returns("status:-free+(product:'gold')");
+
+      await service.sendTestEmail(post, post.get('newsletter'), 'paid', ['example@example.com']);
+
+      sinon.assert.calledOnce(sendingService.send);
+      const { segment, members } = sendingService.send.firstCall.args[0];
+      assert.equal(segment, "status:-free+(product:'gold')");
+      // The example member is still built from the audience choice, not the mapped filter
+      assert.equal(members[0].status, 'paid');
+    });
+
+    it('passes the selected tier through to the preview segment', async function () {
+      const post = createModel({
+        id: '123',
+        newsletter: createModel({
+          status: 'active',
+          feedback_enabled: true,
+        }),
+      });
+      const getSegmentForAudience = sinon
+        .stub(emailRenderer, 'getSegmentForAudience')
+        .returns("status:-free+product:'silver'");
+
+      await service.sendTestEmail(
+        post,
+        post.get('newsletter'),
+        'paid',
+        ['example@example.com'],
+        'silver',
+      );
+
+      sinon.assert.calledOnceWithExactly(getSegmentForAudience, post, 'paid', 'silver');
+      const { segment } = sendingService.send.firstCall.args[0];
+      assert.equal(segment, "status:-free+product:'silver'");
+    });
+  });
+});

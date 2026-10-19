@@ -75,6 +75,18 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
     }
   });
 
+  test('editor direct URL is blocked by billing iframe', async ({ page }) => {
+    const sidebarPage = new SidebarPage(page);
+    const billingPage = new BillingPage(page);
+
+    for (const directUrl of ['/ghost/#/editor/post', '/ghost/#/editor/page']) {
+      await sidebarPage.goto(directUrl);
+
+      const billingIframe = await billingPage.waitForBillingIframe();
+      await expect(billingIframe).toBeVisible();
+    }
+  });
+
   test('Settings is accessible via sidebar', async ({ page }) => {
     const sidebarPage = new SidebarPage(page);
     const billingPage = new BillingPage(page);
@@ -112,7 +124,7 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
     });
   });
 
-  test('Ember-handled tag detail route shows billing iframe', async ({ page }) => {
+  test('tag detail route shows billing iframe', async ({ page }) => {
     const sidebarPage = new SidebarPage(page);
     const billingPage = new BillingPage(page);
     await sidebarPage.goto('/ghost/#/tags/default-tag');

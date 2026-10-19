@@ -33,9 +33,7 @@ const queryClient = new QueryClient({
 
 const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
-    externalNavigate={() => {}}
     ghostVersion="5.x"
-    sentryDSN=""
     unsplashConfig={{
       Authorization: '',
       'Accept-Version': '',
@@ -43,9 +41,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
       'App-Pragma': '',
       'X-Unsplash-Cache': true,
     }}
-    onDelete={() => {}}
-    onInvalidate={() => {}}
-    onUpdate={() => {}}
   >
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   </FrameworkProvider>

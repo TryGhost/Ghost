@@ -28,37 +28,39 @@ function fakeExportDownload() {
   });
 }
 
-async function renderWithArchiveHost() {
+async function renderWithExportHost() {
   const config = configResponse();
   config.config.hostSettings = {
-    export: { webhookUrl: 'https://archives.example.com/generate' },
+    export: { webhookUrl: 'https://exports.example.com/generate' },
   };
   await renderAdminApp('/settings/advanced', {
-    labs: { selfServeArchives: true },
     boot: { browseConfig: { response: config } },
   });
 }
 
 describe('Migration tools export', () => {
-  it('keeps the individual export buttons without the selfServeArchives flag', async () => {
+  it('keeps the post analytics export button alongside the export dialog', async () => {
     fakeSettingsScreens();
+    const csv = new TextEncoder().encode('id,title\n').buffer;
+    const postsExport = fakeAdminEndpoint('GET', /^\/posts\/export\//, csv, {
+      contentType: 'text/csv',
+    });
     await renderAdminApp('/settings/advanced');
 
     const section = await openExportTab();
-    await expect.element(section.getByRole('button', { name: 'Content & settings' })).toBeVisible();
-    await expect.element(section.getByRole('button', { name: 'Post analytics' })).toBeVisible();
-    await expect
-      .element(section.getByRole('button', { name: 'Export data' }))
-      .not.toBeInTheDocument();
+    await expect.element(section.getByRole('button', { name: 'All data' })).toBeVisible();
+    await section.getByRole('button', { name: 'Post analytics' }).click();
+
+    await expect.poll(() => postsExport.lastRequest?.url).toContain('/posts/export/?limit=1000');
   });
 
   it('offers the sync export dialog without media and downloads the zip', async () => {
     fakeSettingsScreens();
     const download = fakeExportDownload();
-    await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
+    await renderAdminApp('/settings/advanced');
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect
@@ -79,10 +81,10 @@ describe('Migration tools export', () => {
   it('only requests the selected components', async () => {
     fakeSettingsScreens();
     const download = fakeExportDownload();
-    await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
+    await renderAdminApp('/settings/advanced');
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('checkbox', { name: 'Members' }).click();
@@ -102,10 +104,10 @@ describe('Migration tools export', () => {
       { errors: [{ message: 'Boom' }] },
       { status: 500 },
     );
-    await renderAdminApp('/settings/advanced', { labs: { selfServeArchives: true } });
+    await renderAdminApp('/settings/advanced');
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -118,17 +120,17 @@ describe('Migration tools export', () => {
       .not.toBeInTheDocument();
   });
 
-  it('offers media and email delivery when an archive host is configured', async () => {
+  it('offers media and email delivery when an export host is configured', async () => {
     fakeSettingsScreens();
     const exportsApi = fakeAdminEndpoint('POST', '/exports/', {}, { status: 202 });
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect
-      .element(dialog.getByText('emailed to the site owner', { exact: false }))
+      .element(dialog.getByText('download link emailed to you', { exact: false }))
       .toBeVisible();
     await expect.element(dialog.getByText('Media files', { exact: true })).toBeVisible();
 
@@ -165,10 +167,10 @@ describe('Migration tools export', () => {
       },
       { status: 202 },
     );
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -177,7 +179,7 @@ describe('Migration tools export', () => {
     await expect.element(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await userEvent.keyboard('{Escape}');
     await expect
-      .element(dialog.getByText('emailed to the site owner', { exact: false }))
+      .element(dialog.getByText('download link emailed to you', { exact: false }))
       .toBeVisible();
 
     releaseRequest();
@@ -187,10 +189,10 @@ describe('Migration tools export', () => {
   it('sends the selected components to the exports endpoint', async () => {
     fakeSettingsScreens();
     const exportsApi = fakeAdminEndpoint('POST', '/exports/', {}, { status: 202 });
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByText('Post analytics', { exact: true }).click();
@@ -217,10 +219,10 @@ describe('Migration tools export', () => {
     fakeSettingsScreens();
     // An older backend without the endpoint 404s — must not crash the dialog
     fakeAdminEndpoint('POST', '/exports/', {}, { status: 404 });
-    await renderWithArchiveHost();
+    await renderWithExportHost();
 
     const section = await openExportTab();
-    await section.getByRole('button', { name: 'Export data' }).click();
+    await section.getByRole('button', { name: 'All data' }).click();
 
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Export', exact: true }).click();

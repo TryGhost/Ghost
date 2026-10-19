@@ -76,9 +76,8 @@ describe('createEditorSession', () => {
       session.recordRefetched(
         record({
           status: 'published',
-          custom_excerpt: 'Another editor’s summary',
+          custom_excerpt: 'The server’s summary',
           published_at: '2025-12-01T10:00:00.000Z',
-          updated_at: '2026-01-01T00:00:01.000Z',
         }),
       ),
     ).toBe(true);
@@ -88,7 +87,7 @@ describe('createEditorSession', () => {
       isDirty: true,
       settings: {
         meta_title: 'My unsaved search title',
-        custom_excerpt: 'Another editor’s summary',
+        custom_excerpt: 'The server’s summary',
       },
       publishTime: { status: 'published', publishedAt: '2025-12-01T10:00:00.000Z' },
     });

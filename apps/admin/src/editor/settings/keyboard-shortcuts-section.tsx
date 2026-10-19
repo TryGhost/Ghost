@@ -3,6 +3,7 @@ import { Kbd, KbdGroup, Tooltip, TooltipContent, TooltipTrigger } from '@tryghos
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { settingsShortcutRow } from '@tryghost/test-data/selectors/editor';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isMacPlatform } from '@/utils/is-mac-platform';
 import {
   keyboardShortcutGroups,
@@ -11,6 +12,7 @@ import {
   type ShortcutStyle,
 } from './keyboard-shortcuts';
 import { SettingsSubview } from './settings-subview';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 const LABEL_CLASSES: Record<ShortcutStyle, string> = {
   bold: 'font-semibold',
@@ -36,6 +38,7 @@ function KeyCap({ token }: { token: ShortcutKey }) {
         token.tooltip && 'pointer-events-auto',
       )}
       role={token.tooltip ? 'img' : undefined}
+      variant="contrast"
     >
       {token.text}
     </Kbd>
@@ -58,13 +61,18 @@ function KeyCap({ token }: { token: ShortcutKey }) {
 
 function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
   return (
-    <Inline data-testid={settingsShortcutRow} gap="sm" justify="between">
-      <dt>
+    <Inline
+      className="-mx-2 rounded-md px-2 py-1 hover:bg-interactive-hover"
+      data-testid={settingsShortcutRow}
+      gap="sm"
+      justify="between"
+    >
+      <dt className="min-w-0 flex-1 wrap-anywhere">
         <Text as="span" className={shortcut.style && LABEL_CLASSES[shortcut.style]} size="sm">
           {shortcut.label}
         </Text>
       </dt>
-      <dd>
+      <dd className="m-0 shrink-0">
         <KbdGroup>
           {shortcut.keys.map((token) => (
             <KeyCap key={token.text} token={token} />
@@ -77,7 +85,13 @@ function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
 
 /** The editor's keyboard shortcuts, as a reference the writer reads rather than edits. */
 export function KeyboardShortcutsSection() {
-  const groups = useMemo(() => keyboardShortcutGroups(isMacPlatform()), []);
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const groups = useMemo(
+    () => keyboardShortcutGroups(isMacPlatform(), { settingsShortcut: editorImprovements }),
+    [editorImprovements],
+  );
 
   return (
     <SettingsSubview
@@ -88,11 +102,11 @@ export function KeyboardShortcutsSection() {
       title="Keyboard shortcuts"
     >
       {groups.map((group) => (
-        <Stack key={group.title} gap="sm">
-          <Text as="h3" size="sm" weight="medium">
+        <Stack key={group.title} className="mb-2" gap="sm">
+          <Text as="h3" className="border-b border-border-default pb-2" size="md" weight="semibold">
             {group.title}
           </Text>
-          <dl className="flex flex-col gap-2">
+          <dl className="m-0">
             {group.shortcuts.map((shortcut) => (
               <ShortcutRow key={shortcut.label} shortcut={shortcut} />
             ))}

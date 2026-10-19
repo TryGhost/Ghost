@@ -10,10 +10,6 @@ describe('ErrorPage Component', () => {
     const errorPage = screen.getByTestId('error-page');
 
     assert.ok(errorPage, 'ErrorPage should be rendered');
-    assert.ok(
-      errorPage.className.includes('admin-x-container-error'),
-      'Should have correct className',
-    );
 
     const heading = screen.getByRole('heading', { level: 1 });
     assert.equal(heading.textContent, 'Loading interrupted', 'Should have correct heading text');
@@ -30,10 +26,7 @@ describe('ErrorPage Component', () => {
     const errorPage = screen.getByTestId('error-page');
 
     assert.ok(errorPage.className.includes('custom-error-class'), 'Should have custom class');
-    assert.ok(
-      errorPage.className.includes('admin-x-container-error'),
-      'Should retain default styling',
-    );
+    assert.ok(errorPage.className.includes('h-screen'), 'Should retain default styling');
   });
 
   it('calls onBackToDashboard when back link is clicked', () => {

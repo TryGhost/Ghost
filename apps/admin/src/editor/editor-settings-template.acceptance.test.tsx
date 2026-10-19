@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
@@ -8,16 +7,16 @@ import {
   fakeThemes,
   post,
   renderAdminApp,
+  settleTransitions,
   submittedPost,
   theme,
-  unsavedChangesGuarded,
   withoutAutosave,
   type ThemeTemplate,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 
 const POLL = { timeout: 10_000 };
@@ -72,6 +71,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 async function openTemplate() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await expect.element(editorScreen.settingsTemplate()).toBeVisible();
 }
 
@@ -88,7 +88,7 @@ describe('Post settings template', () => {
   it('persists a draft’s template on its own', async () => {
     fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openTemplate();
 
     await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Default');
@@ -102,7 +102,7 @@ describe('Post settings template', () => {
   it('clears the template when the default is chosen again', async () => {
     fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
     const saveApi = fakeSavablePost({ custom_template: 'custom-longread' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openTemplate();
 
     await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Longread');
@@ -122,9 +122,10 @@ describe('Post settings template', () => {
       { errors: [{ message: 'Authorization failed', type: 'UnauthorizedError' }] },
       { status: 401 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await settleTransitions();
 
     await expect
       .element(editorScreen.settingsLoadError())
@@ -145,7 +146,7 @@ describe('Post settings template', () => {
     // Slug templates are the theme's, never the writer's, to pick.
     fakeSiteThemes([SLUG_TEMPLATE]);
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
@@ -156,7 +157,7 @@ describe('Post settings template', () => {
   it('hands the choice to the theme when the post’s URL matches a template', async () => {
     fakeSiteThemes([SHARED_TEMPLATE, SLUG_TEMPLATE]);
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openTemplate();
 
     await expect
@@ -165,26 +166,19 @@ describe('Post settings template', () => {
     await expect.element(editorScreen.settingsTemplate()).toBeDisabled();
   });
 
-  it('stages a published post’s template until Update', async () => {
+  it('saves a published post’s template on its own', async () => {
     fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openTemplate();
-
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
     await chooseTemplate('Full Feature');
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       custom_template: 'custom-full-feature',
-      status: 'published',
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });

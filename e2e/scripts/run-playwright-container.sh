@@ -29,6 +29,13 @@ fi
 
 printf -v project_args_string '%q ' "${project_args[@]}"
 
+# A planned test list (tools/scripts/ci/e2e-shards.ts) replaces Playwright's count-based --shard.
+if [[ -n "${E2E_TEST_LIST:-}" ]]; then
+    printf -v selection_args '%q ' "--test-list=${E2E_TEST_LIST}" --pass-with-no-tests
+else
+    selection_args="--shard=${SHARD_INDEX}/${SHARD_TOTAL} "
+fi
+
 # Resolve $PLAYWRIGHT_IMAGE (runner image, or upstream fallback) before launching.
 # Idempotent with the prepare step: whichever image is already local wins, so both
 # steps converge on the same tag.
@@ -39,6 +46,7 @@ docker run --rm --network host --ipc host \
   -v "${WORKSPACE_PATH}:${WORKSPACE_PATH}" \
   -w "${WORKSPACE_PATH}/e2e" \
   -e CI=true \
+  -e pnpm_config_enable_global_virtual_store=false \
   -e TEST_WORKERS_COUNT="${TEST_WORKERS_COUNT:-1}" \
   -e COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-ghost-dev}" \
   -e GHOST_E2E_MODE="${GHOST_E2E_MODE:-build}" \
@@ -46,4 +54,4 @@ docker run --rm --network host --ipc host \
   -e GHOST_E2E_GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}" \
   -e GHOST_E2E_ANALYTICS="${GHOST_E2E_ANALYTICS:-true}" \
   "$PLAYWRIGHT_IMAGE" \
-  bash -c "corepack enable && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}--shard=${SHARD_INDEX}/${SHARD_TOTAL} --retries=${RETRIES}"
+  bash -c "corepack enable && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}${selection_args}--retries=${RETRIES}"

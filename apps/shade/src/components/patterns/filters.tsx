@@ -15,6 +15,11 @@ import { PageHeader } from '@/components/patterns/page-header';
 import { Calendar } from '@/components/ui/calendar';
 import { useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import {
+  createFilter,
+  createOperatorsFromI18n,
+  DEFAULT_I18N,
+} from '@/components/patterns/filters-helpers';
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -33,7 +38,7 @@ import { MultiSelectCombobox } from '@/components/ui/multi-select-combobox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import { cva, type VariantProps } from 'class-variance-authority';
 import {
   AlertCircle,
@@ -126,84 +131,6 @@ export interface FilterI18nConfig {
     invalid: string;
   };
 }
-
-// Default English i18n configuration
-export const DEFAULT_I18N: FilterI18nConfig = {
-  // UI Labels
-  addFilter: '',
-  clearFilters: 'Clear',
-  searchFields: 'Search fields...',
-  noFieldsFound: 'No fields found.',
-  noResultsFound: 'No results found.',
-  loading: 'Loading...',
-  loadMore: 'Load more',
-  showMore: (count) => `Show ${count} more`,
-  select: 'Select...',
-  true: 'True',
-  false: 'False',
-  min: 'Min',
-  max: 'Max',
-  to: 'to',
-  typeAndPressEnter: 'Type and press Enter to add tag',
-  selected: 'selected',
-  selectedCount: 'selected',
-  percent: '%',
-  defaultCurrency: '$',
-  defaultColor: 'currentColor',
-  addFilterTitle: '',
-
-  // Operators
-  operators: {
-    is: 'is',
-    isNot: 'is not',
-    isAnyOf: 'is any of',
-    isNotAnyOf: 'is not any of',
-    includesAll: 'includes all',
-    excludesAll: 'excludes all',
-    before: 'before',
-    after: 'after',
-    between: 'between',
-    notBetween: 'not between',
-    contains: 'contains',
-    notContains: 'does not contain',
-    startsWith: 'starts with',
-    endsWith: 'ends with',
-    isExactly: 'is exactly',
-    equals: 'equals',
-    notEquals: 'not equals',
-    greaterThan: 'greater than',
-    lessThan: 'less than',
-    overlaps: 'overlaps',
-    includes: 'includes',
-    excludes: 'excludes',
-    includesAllOf: 'includes all of',
-    includesAnyOf: 'includes any of',
-    empty: 'is empty',
-    notEmpty: 'is not empty',
-  },
-
-  // Placeholders
-  placeholders: {
-    enterField: (fieldType: string) => `Enter ${fieldType}...`,
-    selectField: 'Select...',
-    searchField: (fieldName: string) => `Search ${fieldName.toLowerCase()}...`,
-    enterKey: 'Enter key...',
-    enterValue: 'Enter value...',
-  },
-
-  // Helper functions
-  helpers: {
-    formatOperator: (operator: string) => operator.replace(/_/g, ' '),
-  },
-
-  // Validation
-  validation: {
-    invalidEmail: 'Invalid email format',
-    invalidUrl: 'Invalid URL format',
-    invalidTel: 'Invalid phone format',
-    invalid: 'Invalid input format',
-  },
-};
 
 // Context for all Filter component props
 interface FilterContextValue {
@@ -400,9 +327,11 @@ const filterOperatorVariants = cva(
   },
 );
 
+// The label is static text, so it takes no pointer events: no hover state,
+// including the one FilterBar paints on every segment of a pill.
 const filterFieldLabelVariants = cva(
   [
-    'flex shrink-0 items-center gap-1.5 px-1.5 py-1 text-foreground',
+    'pointer-events-none flex shrink-0 items-center gap-1.5 px-1.5 py-1 text-foreground',
     '[&_svg:not([class*=size-])]:size-4',
   ],
   {
@@ -1038,6 +967,12 @@ export interface ValueSource<T = string> {
 export interface FilterFieldConfig<T = unknown> {
   key?: string;
   label?: string;
+  // Label on an applied pill, when it should read differently from the field's
+  // entry in the add-filter menu (e.g. menu "Featured", pill "Post is Featured").
+  pillLabel?: string;
+  // The customRenderer shows fixed text with nothing to pick, so the value area
+  // takes no hover or pointer.
+  staticValue?: boolean;
   icon?: React.ReactNode;
   type?:
     | 'select'
@@ -1154,116 +1089,6 @@ const getFieldsMap = <T = unknown,>(
     {} as Record<string, FilterFieldConfig<T>>,
   );
 };
-
-// Helper function to create operators from i18n config
-const createOperatorsFromI18n = (i18n: FilterI18nConfig): Record<string, FilterOperator[]> => ({
-  select: [
-    { value: 'is', label: i18n.operators.is },
-    { value: 'is_not', label: i18n.operators.isNot },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  multiselect: [
-    { value: 'is_any_of', label: i18n.operators.isAnyOf },
-    { value: 'is_not_any_of', label: i18n.operators.isNotAnyOf },
-    { value: 'includes_all', label: i18n.operators.includesAll },
-    { value: 'excludes_all', label: i18n.operators.excludesAll },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  date: [
-    { value: 'before', label: i18n.operators.before },
-    { value: 'after', label: i18n.operators.after },
-    { value: 'is', label: i18n.operators.is },
-    { value: 'is_not', label: i18n.operators.isNot },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  daterange: [
-    { value: 'between', label: i18n.operators.between },
-    { value: 'not_between', label: i18n.operators.notBetween },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  text: [
-    { value: 'contains', label: i18n.operators.contains },
-    { value: 'not_contains', label: i18n.operators.notContains },
-    { value: 'starts_with', label: i18n.operators.startsWith },
-    { value: 'ends_with', label: i18n.operators.endsWith },
-    { value: 'is', label: i18n.operators.isExactly },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  number: [
-    { value: 'equals', label: i18n.operators.equals },
-    { value: 'not_equals', label: i18n.operators.notEquals },
-    { value: 'greater_than', label: i18n.operators.greaterThan },
-    { value: 'less_than', label: i18n.operators.lessThan },
-    { value: 'between', label: i18n.operators.between },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  numberrange: [
-    { value: 'between', label: i18n.operators.between },
-    { value: 'overlaps', label: i18n.operators.overlaps },
-    { value: 'contains', label: i18n.operators.contains },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  boolean: [
-    { value: 'is', label: i18n.operators.is },
-    { value: 'is_not', label: i18n.operators.isNot },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  email: [
-    { value: 'contains', label: i18n.operators.contains },
-    { value: 'not_contains', label: i18n.operators.notContains },
-    { value: 'starts_with', label: i18n.operators.startsWith },
-    { value: 'ends_with', label: i18n.operators.endsWith },
-    { value: 'is', label: i18n.operators.isExactly },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  url: [
-    { value: 'contains', label: i18n.operators.contains },
-    { value: 'not_contains', label: i18n.operators.notContains },
-    { value: 'starts_with', label: i18n.operators.startsWith },
-    { value: 'ends_with', label: i18n.operators.endsWith },
-    { value: 'is', label: i18n.operators.isExactly },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  tel: [
-    { value: 'contains', label: i18n.operators.contains },
-    { value: 'not_contains', label: i18n.operators.notContains },
-    { value: 'starts_with', label: i18n.operators.startsWith },
-    { value: 'ends_with', label: i18n.operators.endsWith },
-    { value: 'is', label: i18n.operators.isExactly },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  time: [
-    { value: 'before', label: i18n.operators.before },
-    { value: 'after', label: i18n.operators.after },
-    { value: 'is', label: i18n.operators.is },
-    { value: 'between', label: i18n.operators.between },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-  datetime: [
-    { value: 'before', label: i18n.operators.before },
-    { value: 'after', label: i18n.operators.after },
-    { value: 'is', label: i18n.operators.is },
-    { value: 'between', label: i18n.operators.between },
-    { value: 'empty', label: i18n.operators.empty },
-    { value: 'not_empty', label: i18n.operators.notEmpty },
-  ],
-});
-
-// Default operators for different field types (using default i18n)
-export const DEFAULT_OPERATORS: Record<string, FilterOperator[]> =
-  createOperatorsFromI18n(DEFAULT_I18N);
 
 // Helper function to get operators for a field
 const getOperatorsForField = <T = unknown,>(
@@ -2234,12 +2059,15 @@ function FilterValueSelector<T = unknown>({
 
     return (
       <div
-        className={filterFieldValueVariants({
-          variant: context.variant,
-          size: context.size,
-          cursorPointer: context.cursorPointer,
-          readOnly,
-        })}
+        className={cn(
+          filterFieldValueVariants({
+            variant: context.variant,
+            size: context.size,
+            cursorPointer: field.staticValue ? false : context.cursorPointer,
+            readOnly,
+          }),
+          field.staticValue && 'pointer-events-none',
+        )}
         data-slot="filters-value"
       >
         {field.customRenderer({ field, values, onChange, operator, onOperatorChange, readOnly })}
@@ -2774,7 +2602,7 @@ export const FiltersContent = <T = unknown,>({
               })}
             >
               {field.icon}
-              {field.label}
+              {field.pillLabel ?? field.label}
             </div>
 
             {/* Operator Dropdown */}
@@ -3315,7 +3143,7 @@ export function Filters<T = unknown>({
                 })}
               >
                 {field.icon}
-                {field.label}
+                {field.pillLabel ?? field.label}
               </div>
 
               {/* Operator Dropdown */}
@@ -3511,26 +3339,3 @@ export function Filters<T = unknown>({
 }
 
 Filters.Trigger = FiltersTrigger;
-
-export const createFilter = <T = unknown,>(
-  field: string,
-  operator?: string,
-  values: T[] = [],
-): Filter<T> => ({
-  id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-  field,
-  operator: operator || 'is',
-  values,
-});
-
-export const createFilterGroup = <T = unknown,>(
-  id: string,
-  label: string,
-  fields: FilterFieldConfig<T>[],
-  initialFilters: Filter<T>[] = [],
-): FilterGroup<T> => ({
-  id,
-  label,
-  filters: initialFilters,
-  fields,
-});

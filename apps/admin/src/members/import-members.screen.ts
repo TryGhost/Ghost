@@ -12,6 +12,8 @@ import {
 
 /** Import-members modal locators and gestures for acceptance specs; no assertions. */
 export const importMembersScreen = {
+  dialog: () => page.getByRole('dialog'),
+
   dropzone: () => page.getByRole('button', { name: new RegExp(csvDropzoneText, 'i') }),
 
   /** The dropzone's visually hidden file input — no accessible locator reaches it. */

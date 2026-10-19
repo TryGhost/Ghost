@@ -1,5 +1,5 @@
 import AvatarIcon from '../../images/icons/avatar.svg?react';
-import { Member, useAppContext } from '../../app-context';
+import { type Member, useAppContext } from '../../app-context';
 import { getInitials, getMemberName } from '../../utils/helpers';
 
 function getDimensionClasses() {

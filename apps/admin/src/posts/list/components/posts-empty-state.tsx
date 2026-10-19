@@ -24,7 +24,11 @@ export function PostsEmptyState({ resource, hasFilters, onClearFilters }: PostsE
   if (hasFilters) {
     return (
       <EmptyIndicator
-        actions={<Button onClick={onClearFilters}>Show all {copy.plural}</Button>}
+        actions={
+          <Button variant="outline" onClick={onClearFilters}>
+            Show all {copy.plural}
+          </Button>
+        }
         data-testid="posts-empty-filtered"
         title={`No ${copy.plural} match the current filter`}
       >

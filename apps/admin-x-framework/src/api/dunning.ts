@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
 /**
- * sessionStorage keys the React admin's dunning UI and the Ember billing
- * service handshake through — one side writes, the other consumes. Defined
- * here so the cross-app contract lives in one place.
+ * sessionStorage keys the dunning UI and the billing screen exchange across a
+ * payment — one side writes, the other consumes.
  */
 
 /** Route a "Pay now" CTA was clicked on; the post-payment return lands there. */
@@ -25,7 +24,6 @@ const dunningConfigSchema = z
   })
   .refine(({ paymentFailedAt, suspendsAt }) => suspendsAt.getTime() > paymentFailedAt.getTime());
 
-/** Shared by React warnings and the legacy alert so invalid config never hides both. */
 export function parseDunningConfig(value: unknown) {
   const result = dunningConfigSchema.safeParse(value);
   return result.success ? result.data : null;

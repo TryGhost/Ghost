@@ -1,4 +1,6 @@
-/* Unmodified Inter v4.1 variable fonts. */
+/* Unmodified Inter v4.1 variable fonts, under both of the names Admin asks
+   for them by. `Inter` is the one Koenig, Shade's default stack and the
+   overlays ask for; both names share the files, so a browser fetches each once. */
 
 @font-face {
   font-family: 'Inter Admin';
@@ -10,6 +12,22 @@
 
 @font-face {
   font-family: 'Inter Admin';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./InterVariable-Italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
   font-style: italic;
   font-display: swap;
   font-weight: 100 900;

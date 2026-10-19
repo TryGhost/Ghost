@@ -31,6 +31,8 @@ function navigationPanelScope(panel: Locator): NavigationPanelScope {
 /** Settings locators and gestures shared by the acceptance batches; no assertions. */
 export const settingsScreen = {
   section: (testId: string) => page.getByTestId(testId),
+  modalSaveButton: (modal: Locator) => modal.getByRole('button', { name: 'Save', exact: true }),
+  modalSavedButton: (modal: Locator) => modal.getByRole('button', { name: 'Saved' }),
   titleAndDescription: () => page.getByTestId(sel.titleAndDescription),
   design: () => page.getByTestId(sel.design),
   users: () => page.getByTestId(sel.users),

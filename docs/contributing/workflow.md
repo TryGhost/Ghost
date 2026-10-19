@@ -33,6 +33,12 @@ Keep unrelated changes on separate branches and in separate pull requests. If a
 larger effort needs a shared or release branch, agree that with the maintainers
 first; ordinary pull requests target `main`.
 
+## Generate an internal package
+
+Run `pnpm gx generate package <name>` to scaffold a private TypeScript package
+from the repository template. `pnpm gx --help` lists developer commands; the
+[Ghost Dev Tools README](../../tools/gx/README.md) explains options and verification.
+
 ## Make and validate the change
 
 Add or update automated tests when behavior changes. Run the most focused checks
@@ -45,8 +51,8 @@ pnpm check
 ```
 
 `pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
-not include the browser E2E suite or Ember Admin tests, so run those separately
-when the affected area requires them. CI uses the Nx affected graph and path
+not include app acceptance suites or the browser E2E suite, so run them separately
+when the affected area requires it. CI uses the Nx affected graph and path
 filters to select the relevant lint, unit, integration, acceptance, build, and
 browser-test jobs for a pull request.
 
@@ -89,7 +95,7 @@ impact. The summary becomes the changelog entry, so describe the result for the
 package's consumers.
 
 A package `README.md` is included when the package is published, so changing it
-requires a release. Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`,
+requires a release. Repository-only Markdown such as `AGENTS.md`,
 changelogs, and files under a package's `docs/` directory does not.
 
 If a changed publishable package genuinely requires no release—for example, a

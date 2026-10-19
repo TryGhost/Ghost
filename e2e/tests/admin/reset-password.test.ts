@@ -36,6 +36,7 @@ test.describe('Ghost Admin - Reset Password', () => {
 
     const analyticsPage = new AnalyticsOverviewPage(page);
     await expect(analyticsPage.header).toBeVisible();
+    await expect(page.getByText('Password updated')).toBeVisible();
 
     const cookies = await page.context().cookies();
     expect(cookies.find(({ name }) => name === 'ghost-admin-api-session')).toBeDefined();
@@ -66,7 +67,10 @@ test.describe('Ghost Admin - Reset Password', () => {
     const passwordResetPage = new PasswordResetPage(page);
     await passwordResetPage.resetPassword(newPassword, newPassword);
 
+    // The emailed link already proves the address, so the reset signs in a
+    // verified session and no code is asked for
     const analyticsPage = new AnalyticsOverviewPage(page);
     await expect(analyticsPage.header).toBeVisible();
+    await expect(page.getByText('Password updated')).toBeVisible();
   });
 });

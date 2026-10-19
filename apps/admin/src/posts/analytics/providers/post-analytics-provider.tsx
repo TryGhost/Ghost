@@ -1,8 +1,9 @@
 import { POST_ANALYTICS_INCLUDE, STATS_RANGES } from '@/shared/analytics/constants';
 import { PostAnalyticsContext } from '@/posts/analytics/providers/post-analytics-context';
 import { type ReactNode, useCallback, useState } from 'react';
-import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
+import { type PostsResponseType, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { useParams } from '@tryghost/admin-x-framework';
+import { getEmailStatsPollingOptions } from '@/posts/analytics/utils/email-stats-polling';
 
 // Slim provider: holds only post-scoped state (the routed post + selected date
 // range). Framework data is sourced from the shell via `useAnalyticsData`.
@@ -23,6 +24,7 @@ const PostAnalyticsProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isPostLoading,
     refetch,
   } = useBrowsePosts({
+    ...getEmailStatsPollingOptions<PostsResponseType>((data) => data?.posts[0]?.email),
     searchParams: {
       filter: `id:${postId}`,
       include: POST_ANALYTICS_INCLUDE,

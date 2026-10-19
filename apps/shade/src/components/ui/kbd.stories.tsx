@@ -3,6 +3,7 @@ import { Kbd, KbdGroup } from './kbd';
 import { Button } from './button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './tooltip';
 import { InputGroup, InputGroupInput, InputGroupAddon } from './input-group';
+import { Inline, Stack, Text } from '@/components/primitives';
 
 const meta = {
   title: 'Components / Kbd',
@@ -12,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Displays keyboard keys and shortcuts in a styled format. Use to indicate keyboard input or shortcuts in tooltips, buttons, and documentation.',
+          'Displays keyboard keys and shortcuts in a styled format. Use to indicate keyboard input or shortcuts in tooltips, buttons, and documentation. The contrast variant uses a slightly darker background on light surfaces such as sidebars. KbdGroup is an unstyled layout container; each Kbd owns its keycap appearance, avoiding inherited keycap styles around the whole group.',
       },
     },
   },
@@ -29,6 +30,36 @@ export const Default: Story = {
     docs: {
       description: {
         story: 'Basic usage displaying a single keyboard key.',
+      },
+    },
+  },
+};
+
+export const Contrast: Story = {
+  args: { variant: 'contrast', children: '⌘' },
+  render: (args) => (
+    <Stack className="rounded-lg bg-sidebar p-5" gap="md">
+      <Inline gap="sm">
+        <Text size="sm">Default</Text>
+        <KbdGroup>
+          <Kbd>⌘</Kbd>
+          <Kbd>K</Kbd>
+        </KbdGroup>
+      </Inline>
+      <Inline gap="sm">
+        <Text size="sm">Contrast</Text>
+        <KbdGroup>
+          <Kbd {...args} />
+          <Kbd variant="contrast">K</Kbd>
+        </KbdGroup>
+      </Inline>
+    </Stack>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use variant="contrast" when keycaps need more separation from a light surface, such as a sidebar. Semantic colors adapt to dark mode; tooltip styling is preserved.',
       },
     },
   },

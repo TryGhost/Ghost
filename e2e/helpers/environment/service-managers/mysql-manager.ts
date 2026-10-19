@@ -1,11 +1,14 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import { DEV_PRIMARY_DATABASE } from '@/helpers/environment/constants';
+import { E2E_BASE_DATABASE, E2E_DATABASE_PREFIX } from '@/helpers/environment/constants';
 import { PassThrough } from 'stream';
 import type { Container } from 'dockerode';
 
 const debug = baseDebug('e2e:MySQLManager');
+
+// Every checkout's runs share the MySQL container's /tmp
+const SNAPSHOT_PATH = `/tmp/${E2E_BASE_DATABASE}.sql`;
 
 interface ContainerWithModem extends Container {
   modem: {
@@ -34,6 +37,7 @@ export class MySQLManager {
   async setupTestDatabase(
     databaseName: string,
     siteUuid: string,
+    ownerEmail: string,
     options: {
       stripe?: {
         secretKey: string;
@@ -46,6 +50,7 @@ export class MySQLManager {
       await this.createDatabase(databaseName);
       await this.restoreDatabaseFromSnapshot(databaseName);
       await this.updateSiteUuid(databaseName, siteUuid);
+      await this.updateOwnerEmail(databaseName, ownerEmail);
       if (options.stripe) {
         await this.updateStripeSettings(
           databaseName,
@@ -102,13 +107,13 @@ export class MySQLManager {
 
   /**
    * Used for cleanup of leftover databases from interrupted tests.
-   * This removes all databases matching the pattern 'ghost_%' except base databases.
+   * This removes this checkout's base database and its per-test databases, named by a site UUID.
    */
   async dropAllTestDatabases(): Promise<void> {
     try {
       debug('Finding all test databases to clean up...');
 
-      const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '${DEV_PRIMARY_DATABASE}')`;
+      const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name REGEXP '^${E2E_DATABASE_PREFIX}(base|[0-9a-f]{8}(_[0-9a-f]{4}){3}_[0-9a-f]{12})$'`;
       const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
       const databaseNames = this.parseDatabaseNames(output);
@@ -125,7 +130,7 @@ export class MySQLManager {
 
   async createSnapshot(
     sourceDatabase: string = 'ghost_testing',
-    outputPath: string = '/tmp/dump.sql',
+    outputPath: string = SNAPSHOT_PATH,
   ): Promise<void> {
     logging.info('Creating database snapshot...');
 
@@ -136,7 +141,7 @@ export class MySQLManager {
     logging.info('Database snapshot created');
   }
 
-  async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+  async deleteSnapshot(snapshotPath: string = SNAPSHOT_PATH): Promise<void> {
     try {
       debug('Deleting MySQL snapshot:', snapshotPath);
 
@@ -151,7 +156,7 @@ export class MySQLManager {
 
   async restoreDatabaseFromSnapshot(
     database: string,
-    snapshotPath: string = '/tmp/dump.sql',
+    snapshotPath: string = SNAPSHOT_PATH,
   ): Promise<void> {
     debug('Restoring database from snapshot:', database);
 
@@ -203,6 +208,26 @@ export class MySQLManager {
     await this.exec(command);
 
     debug('site_uuid updated in database settings:', siteUuid);
+  }
+
+  // Mailpit is shared between test databases, so each owner gets its own address.
+  async updateOwnerEmail(database: string, email: string): Promise<void> {
+    debug('Updating owner email in database:', database, email);
+
+    const command =
+      'mysql -uroot -proot -e "UPDATE \\`' +
+      database +
+      '\\`.users u JOIN \\`' +
+      database +
+      '\\`.roles_users ru ON ru.user_id = u.id JOIN \\`' +
+      database +
+      "\\`.roles r ON r.id = ru.role_id SET u.email='" +
+      email +
+      "' WHERE r.name='Owner';\"";
+
+    await this.exec(command);
+
+    debug('Owner email updated in database:', email);
   }
 
   async updateStripeSettings(

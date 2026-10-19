@@ -29,8 +29,8 @@ const keysOf = (fields: ReturnType<typeof buildPostFilterFields>) =>
   fields.map((field) => field.key);
 
 describe('buildPostFilterFields', () => {
-  it('offers the four filterable params, in Ember order', () => {
-    expect(keysOf(build())).toEqual(['type', 'visibility', 'author', 'tag']);
+  it('offers the filterable params, in order', () => {
+    expect(keysOf(build())).toEqual(['type', 'featured', 'visibility', 'author', 'tag']);
   });
 
   // Sorting is not a filter — it has no operator and belongs in its own
@@ -57,17 +57,63 @@ describe('buildPostFilterFields', () => {
   // Ember hides visibility, author and tag for contributors, and author for
   // authors too — they only ever see their own posts.
   it('hides visibility, author and tag from contributors', () => {
-    expect(keysOf(build({ isContributor: true }))).toEqual(['type']);
+    expect(keysOf(build({ isContributor: true }))).toEqual(['type', 'featured']);
   });
 
   it('hides the author filter from authors', () => {
-    expect(keysOf(build({ isAuthorOrContributor: true }))).toEqual(['type', 'visibility', 'tag']);
+    expect(keysOf(build({ isAuthorOrContributor: true }))).toEqual([
+      'type',
+      'featured',
+      'visibility',
+      'tag',
+    ]);
   });
 
-  it('uses single-select equality throughout', () => {
-    build().forEach((field) => {
-      expect(field.operators?.map((operator) => operator.value)).toEqual(['is']);
-    });
+  it('lets type match any of several values', () => {
+    const type = build().find((field) => field.key === 'type');
+
+    expect(type?.type).toBe('multiselect');
+    expect(type?.operators?.map((operator) => operator.value)).toEqual(['is_any_of']);
+  });
+
+  // Reads "Post is Featured" / "Post is not Featured".
+  it('makes featured a flag whose operator carries the value', () => {
+    const featured = build().find((field) => field.key === 'featured');
+
+    expect(featured?.label).toBe('Featured');
+    expect(featured?.pillLabel).toBe('Post');
+    expect(featured?.operators?.map((operator) => operator.value)).toEqual(['is', 'is_not']);
+    expect(featured?.defaultValue).toBe('true');
+    expect(build({ resource: 'pages' }).find((field) => field.key === 'featured')?.pillLabel).toBe(
+      'Page',
+    );
+  });
+
+  it('uses single-select equality for every other field', () => {
+    build()
+      .filter((field) => field.key !== 'type' && field.key !== 'featured')
+      .forEach((field) => {
+        expect(field.operators?.map((operator) => operator.value)).toEqual(['is']);
+      });
+  });
+
+  it('adds an unknown option per unrecognised type value', () => {
+    const options = build({ params: { type: 'draft,nonsense' } })
+      .find((field) => field.key === 'type')
+      ?.options?.map((option) => [option.value, option.label]);
+
+    expect(options).toContainEqual(['nonsense', 'Unknown type']);
+    expect(options).not.toContainEqual(['draft', 'Unknown type']);
+  });
+
+  // Legacy `?type=featured` surfaces as a Featured chip, so it is not an
+  // unknown type.
+  it('does not treat legacy type=featured as an unknown type', () => {
+    const labels = build({ params: { type: 'featured' } })
+      .find((field) => field.key === 'type')
+      ?.options?.map((option) => option.label);
+
+    expect(labels).not.toContain('Unknown type');
   });
 
   it('gives author and tag async value sources rather than fixed options', () => {

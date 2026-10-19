@@ -104,4 +104,12 @@ describe('usePinturaEditor', () => {
 
     expect(result.current.isEnabled).toBe(false);
   });
+
+  it('reads the configuration with the request options it is given', () => {
+    renderHook(() => usePinturaEditor({ requestOptions: { sessionExpiryRedirect: false } }));
+
+    expect(mockUsePinturaConfig).toHaveBeenCalledWith({
+      requestOptions: { sessionExpiryRedirect: false },
+    });
+  });
 });

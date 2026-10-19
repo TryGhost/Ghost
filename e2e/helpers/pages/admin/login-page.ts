@@ -20,6 +20,9 @@ export class LoginPage extends AdminPage {
   }
 
   async signIn(email: string, password: string) {
+    // A deep-link redirect can still show the previous sign-in form. Wait for
+    // the redirect before filling it, otherwise the remount clears the inputs.
+    await this.page.waitForURL(this.pageUrl);
     await this.emailAddressField.fill(email);
     await this.passwordField.fill(password);
     await this.signInButton.click();
@@ -34,15 +37,5 @@ export class LoginPage extends AdminPage {
   async logout() {
     await this.page.goto('/ghost/#/signout');
     await this.signInButton.waitFor({ state: 'visible' });
-  }
-
-  async waitForLoginPageAfterUserCreated(): Promise<void> {
-    const response = await this.goto();
-    if (!response) {
-      throw new Error('Error going to signin page (no response)');
-    }
-    if (!response.ok) {
-      throw new Error(`Error going to signin page (${response.status})`);
-    }
   }
 }

@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { useFramework } from '../providers/framework-provider';
 import { APIError, SessionExpiredError, getErrorMessage } from '../utils/errors';
 
 function showErrorToast(message: React.ReactNode) {
@@ -15,8 +14,6 @@ function showErrorToast(message: React.ReactNode) {
  * errors in order to handle anything unexpected.
  */
 const useHandleError = () => {
-  const { sentryDSN } = useFramework();
-
   /**
    * @param error Thrown error.
    * @param options.withToast Show a toast with the error message (default: true).
@@ -29,11 +26,19 @@ const useHandleError = () => {
       // eslint-disable-next-line no-console
       console.error(error);
 
-      if (sentryDSN && !(error instanceof SessionExpiredError)) {
+      if (Sentry.getClient() && !(error instanceof SessionExpiredError)) {
         Sentry.withScope((scope) => {
-          if (error instanceof APIError && error.response) {
-            scope.setTag('api_url', error.response.url);
-            scope.setTag('api_response_status', error.response.status);
+          scope.setTag('source', 'useHandleError');
+          // API errors reach the user through the toast or the caller's own message
+          scope.setTag('shown_to_user', error instanceof APIError);
+          if (error instanceof APIError) {
+            scope.setContext('ghost', {
+              displayed_message: getErrorMessage(error, error.message),
+            });
+            if (error.response) {
+              scope.setTag('api_url', error.response.url);
+              scope.setTag('api_response_status', error.response.status);
+            }
           }
           Sentry.captureException(error);
         });
@@ -49,16 +54,16 @@ const useHandleError = () => {
         // but still clear lingering toasts that would block clicks the same way.
         toast.dismiss();
       } else if (error instanceof SessionExpiredError) {
-        // A redirecting request unloads the page, so a toast would only flash;
-        // one that opted out of the redirect reports the expiry itself.
-        toast.dismiss();
+        // Either the page is reloading to signin or nobody is signed in yet, so
+        // there is nothing to report; toasts the signin flow shows must survive.
+        return;
       } else if (error instanceof APIError) {
         showErrorToast(getErrorMessage(error, error.message));
       } else {
         showErrorToast('Something went wrong, please try again.');
       }
     },
-    [sentryDSN],
+    [],
   );
 
   return handleError;

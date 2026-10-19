@@ -1,7 +1,7 @@
 import AdminContextMenu from './admin-context-menu';
 import AuthorContextMenu from './author-context-menu';
 import NotAuthorContextMenu from './not-author-context-menu';
-import { Comment, useAppContext } from '../../../app-context';
+import { type Comment, useAppContext } from '../../../app-context';
 import { useEffect, useRef } from 'react';
 import { useOutOfViewportClasses } from '../../../utils/hooks';
 

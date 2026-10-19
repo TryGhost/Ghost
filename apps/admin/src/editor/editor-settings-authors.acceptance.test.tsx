@@ -4,12 +4,14 @@ import { page, userEvent } from 'vitest/browser';
 import {
   browseResponse,
   currentUserResponse,
+  dragByPointer,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
   fakeUsers,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   staffUser,
   submittedPost,
@@ -24,9 +26,9 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
 const OWNER_ID = '1';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
+const UPLOADED_IMAGE = 'https://example.com/content/images/2026/09/hills.png';
 
 const POLL = { timeout: 10_000 };
 
@@ -52,7 +54,7 @@ function hydrateAuthors(authors: unknown): unknown[] {
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome(staff: StaffUser[] = [NADIA, JOSE]) {
@@ -79,6 +81,7 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}, staff?: StaffUser[]
 async function openAuthors() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  await settleTransitions();
   await expect.element(editorScreen.settingsAuthors()).toBeVisible();
 }
 
@@ -101,7 +104,7 @@ describe('Post settings authors', () => {
       { errors: [{ message: 'Authorization failed', type: 'UnauthorizedError' }] },
       { status: 401 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
     await editorScreen.settingsAuthorsInput().click();
 
@@ -122,7 +125,7 @@ describe('Post settings authors', () => {
 
   it('credits another author on a draft as soon as one is picked', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
 
     expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User']);
@@ -141,7 +144,7 @@ describe('Post settings authors', () => {
     const saveApi = fakeSavablePost({
       authors: [OWNER, { id: NADIA.id, name: NADIA.name, email: NADIA.email }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
 
     expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User', 'Nadia Ahmed']);
@@ -152,13 +155,80 @@ describe('Post settings authors', () => {
     await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Owner User']);
   });
 
+  it('drags an author before another and saves the new order', async () => {
+    const saveApi = fakeSavablePost({
+      authors: [OWNER, { id: NADIA.id, name: NADIA.name, email: NADIA.email }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+
+    await dragByPointer(
+      editorScreen.removeAuthor('Nadia Ahmed'),
+      editorScreen.removeAuthor('Owner User'),
+    );
+
+    await expect(saveApi).toHaveSavedFields({ authors: [{ id: NADIA.id }, { id: OWNER_ID }] });
+    // The click that ends the drag does not remove the chip it lands on.
+    await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Nadia Ahmed', 'Owner User']);
+    expect(saveApi.requests).toHaveLength(1);
+  });
+
+  it('leaves the authors alone when a drag ends where it began', async () => {
+    const saveApi = fakeSavablePost({
+      authors: [OWNER, { id: NADIA.id, name: NADIA.name, email: NADIA.email }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+
+    // Past the press threshold, but still nearest its own place.
+    await dragByPointer(editorScreen.removeAuthor('Owner User'), { x: 0, y: 6 });
+
+    await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Owner User', 'Nadia Ahmed']);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('removes an author on a press that barely moves', async () => {
+    const saveApi = fakeSavablePost({
+      authors: [OWNER, { id: NADIA.id, name: NADIA.name, email: NADIA.email }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+
+    await dragByPointer(editorScreen.removeAuthor('Nadia Ahmed'), { x: 2, y: 1 });
+
+    await expect(saveApi).toHaveSavedFields({ authors: [{ id: OWNER_ID }] });
+  });
+
+  it('saves a published post’s author order on its own', async () => {
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      authors: [OWNER, { id: NADIA.id, name: NADIA.name, email: NADIA.email }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+
+    await dragByPointer(
+      editorScreen.removeAuthor('Nadia Ahmed'),
+      editorScreen.removeAuthor('Owner User'),
+    );
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      authors: [{ id: NADIA.id }, { id: OWNER_ID }],
+    });
+    await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Nadia Ahmed', 'Owner User']);
+  });
+
   it('keeps naming the authors a removal left behind', async () => {
     const saveApi = fakeSavablePost({
       status: 'published',
       published_at: PUBLISHED_AT,
       authors: [OWNER, { id: NADIA.id, name: NADIA.name, email: NADIA.email }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
 
     // The list is never opened, so the staff browse never answers.
@@ -169,8 +239,6 @@ describe('Post settings authors', () => {
       .element(editorScreen.removeAuthor('Nadia Ahmed'))
       .toHaveAttribute('aria-label', 'Remove Nadia Ahmed');
 
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).authors).toEqual([{ id: NADIA.id }]);
     await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Nadia Ahmed']);
@@ -178,14 +246,14 @@ describe('Post settings authors', () => {
 
   it('refuses to save a post nobody is credited with', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
 
     await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
 
     await editorScreen.removeAuthor('Owner User').click();
 
-    // Staged rather than saved: the field gate holds an empty list back.
+    // The preparation validator holds the whole document while authors are empty.
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
     await expect
       .element(editorScreen.settingsAuthorsInput())
@@ -196,7 +264,7 @@ describe('Post settings authors', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');
     expect(saveApi.requests).toHaveLength(0);
 
@@ -209,30 +277,138 @@ describe('Post settings authors', () => {
     await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
   });
 
-  it('stages a published post’s authors until Update', async () => {
-    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('keeps the authors error visible while unrelated edits await a save', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
 
-    await expect.element(editorScreen.updateButton()).toBeDisabled();
+    // Keep focus in the title: no blur or successful preparation can clear the hold.
+    await editorScreen.titleInput().fill('Still waiting for an author');
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await editorScreen.body().fill('Body awaiting the same author correction');
+    // This test disables the debounce, so a second blocked attempt cannot restore
+    // an error that disappeared on the keystroke.
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    expect(saveApi.requests).toHaveLength(0);
 
     await openAuthorList();
     await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+    await expect(saveApi).toHaveSavedFields({
+      title: 'Still waiting for an author',
+      authors: [{ id: NADIA.id }],
+    });
+    expect(submittedPost(saveApi).lexical).toContain('Body awaiting the same author correction');
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+  });
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
+  it('does not revive the authors error after undoing their removal', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Owner User').click();
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     expect(saveApi.requests).toHaveLength(0);
 
-    await userEvent.keyboard('{Meta>}s{/Meta}');
+    // Keep the title focused: a later save must not show a stale error.
+    await editorScreen.titleInput().fill('Unrelated title edit');
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('holds a new feature image back while the author list is emptied', async () => {
+    const saveApi = fakeSavablePost({ feature_image: null });
+    const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+      images: [{ url: UPLOADED_IMAGE, ref: null }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await openAuthors();
+
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await userEvent.upload(
+      editorScreen.featureImageInput().element(),
+      new File(['image'], 'hills.png', { type: 'image/png' }),
+    );
+
+    await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+    await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    // Exercise a real body autosave too, with the normal production debounce.
+    await editorScreen.body().fill('Body edited while authors are invalid');
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await expect(editorScreen.saveError()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Crediting someone again lets the staged image through with the authors.
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }, { id: NADIA.id }]);
+    expect(submittedPost(saveApi).lexical).toContain('Body edited while authors are invalid');
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
+    expect(submittedPost(saveApi)).toMatchObject({
+      authors: [{ id: NADIA.id }],
+      feature_image: UPLOADED_IMAGE,
+    });
+  });
+
+  it('holds a renamed title back while the author list is emptied', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+    await expect.element(editorScreen.settingsSlug()).toHaveValue('hello-from-react');
+
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+
+    await editorScreen.titleInput().fill('Brand New Name');
+    await editorScreen.body().click();
+
+    await expect.element(editorScreen.settingsSlug()).toHaveValue('brand-new-name');
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await expect(editorScreen.saveError()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Crediting someone again lets the staged title and slug through with the authors.
+    await openAuthorList();
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      title: 'Brand New Name',
+      slug: 'brand-new-name',
+      authors: [{ id: NADIA.id }],
+    });
+  });
+
+  it('saves a published post’s authors on their own', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await openAuthors();
+    await openAuthorList();
+
+    await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
+      authors: [{ id: OWNER_ID }, { id: NADIA.id }],
+    });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
   it('searches the staff by name, credits the highlighted one with Tab and drops the last with Backspace', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
     await openAuthorList();
 
@@ -254,9 +430,11 @@ describe('Post settings authors', () => {
 
   it('keeps the keyboard on a row after picking one further down the list', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
     await openAuthorList();
+    // The staff browse starts on open; arrow keys do nothing until its rows arrive.
+    await expect.element(editorScreen.settingsAuthorOption('José García')).toBeVisible();
 
     // Nothing typed, so the pick is the second row rather than the first.
     await userEvent.keyboard('{ArrowDown}{Enter}');
@@ -280,7 +458,7 @@ describe('Post settings authors', () => {
 
   it('closes the list when focus leaves the field', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
     await openAuthorList();
 
@@ -292,7 +470,7 @@ describe('Post settings authors', () => {
 
   it('keeps the term on Escape and drops it on a click away', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
     await openAuthorList();
 
@@ -328,7 +506,7 @@ describe('Post settings authors', () => {
       posts: [created],
     }));
 
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post', withoutAutosave());
     await openAuthors();
 
     expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User']);
@@ -341,7 +519,7 @@ describe('Post settings authors', () => {
     expect(submittedPost(createApi).authors).toEqual([{ id: OWNER_ID }]);
   });
 
-  it('refuses a publish while nobody is credited', async () => {
+  it('refuses to open the publish flow while nobody is credited', async () => {
     const saveApi = fakeSavablePost();
     // The publish machine reads the site's member total, which the boot entry
     // counts in a different shape.
@@ -349,21 +527,24 @@ describe('Post settings authors', () => {
       members: [],
       meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
 
     await editorScreen.removeAuthor('Owner User').click();
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
 
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.publishButton().click();
-    await expect.element(publishScreen.options()).toBeVisible();
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
 
+    // Refused as Ember refuses it: the status line names the rule, and the
+    // panel opens on the field.
     await expect
-      .element(publishScreen.confirmError())
+      .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');
-    await expect(publishScreen.complete()).toHaveCount(0);
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -383,7 +564,7 @@ describe('Post settings authors', () => {
         }),
       ],
     }));
-    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${POST_ID}`, withoutAutosave());
     await openAuthors();
 
     expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User']);
@@ -396,7 +577,7 @@ describe('Post settings authors', () => {
       const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
       return browseResponse('users', [NADIA, JOSE], { page: pageNumber, limit: 1 });
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAuthors();
     await openAuthorList();
 

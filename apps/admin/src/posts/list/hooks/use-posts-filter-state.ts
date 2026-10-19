@@ -15,9 +15,8 @@ import type { PostListParams } from '@/posts/list/post-query-params';
  * the members equivalent: it never writes on hydration. A posts URL is a saved
  * view's identity - the sidebar persists `{type, visibility, author, tag,
  * order}` records and compares them verbatim - so canonicalising a URL just
- * because we parsed it would silently corrupt the user's view, and the Ember
- * screen would then read something different. Values we don't recognise are
- * carried through untouched for the same reason.
+ * because we parsed it would silently corrupt the user's view. Values we don't
+ * recognise are carried through untouched for the same reason.
  *
  * `order` is kept out of the chip model because it is a sort, not a filter.
  */

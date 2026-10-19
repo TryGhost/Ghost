@@ -49,80 +49,94 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
     memberFactory = createMemberFactory(page.request);
   });
 
-  test('restores unlocked rows and scroll position after navigating back from a member', async ({
-    page,
-  }) => {
-    test.slow();
+  for (const returnWith of ['back', 'breadcrumb']) {
+    test(`restores unlocked rows and scroll position using ${returnWith}`, async ({ page }) => {
+      test.slow();
 
-    const members = await Promise.all(
-      Array.from({ length: 25 }, (_, index) => {
-        const suffix = String(index + 1).padStart(2, '0');
+      const members = await Promise.all(
+        Array.from({ length: 25 }, (_, index) => {
+          const suffix = String(index + 1).padStart(2, '0');
 
-        return memberFactory.create({
-          name: `Window Member ${suffix}`,
-          email: `window-member-${suffix}@example.com`,
-        });
-      }),
-    );
+          return memberFactory.create({
+            name: `Window Member ${suffix}`,
+            email: `window-member-${returnWith}-${suffix}@example.com`,
+          });
+        }),
+      );
 
-    await mockLargeMembersList(page, members);
+      await mockLargeMembersList(page, members);
 
-    const membersPage = new MembersPage(page, { route: 'members' });
-    const memberDetailsPage = new MemberDetailsPage(page);
+      const membersPage = new MembersPage(page, { route: 'members' });
+      const memberDetailsPage = new MemberDetailsPage(page);
 
-    await membersPage.goto();
-    await expect(membersPage.loadMoreButton).toBeVisible();
-    await membersPage.loadMoreButton.click();
-    await expect(membersPage.loadMoreButton).toBeHidden();
+      await membersPage.goto();
+      await expect(membersPage.loadMoreButton).toBeVisible();
+      await membersPage.loadMoreButton.click();
+      await expect(membersPage.loadMoreButton).toBeHidden();
 
-    await expect
-      .poll(async () => {
-        const historyState = await page.evaluate(() => window.history.state);
-        return historyState?.ghostVirtualListWindow?.['/members::'];
-      })
-      .toBe(2000);
+      await expect
+        .poll(async () => {
+          const historyState = await page.evaluate(() => window.history.state);
+          return historyState?.ghostVirtualListWindow?.['/members::'];
+        })
+        .toBe(2000);
 
-    const reactMemberRows = page.getByTestId('members-list').getByTestId('members-list-item');
-    const maxRenderedIndex = await membersPage.scrollUntilMaxRenderedIndexAtLeast(1000);
+      const reactMemberRows = page.getByTestId('members-list').getByTestId('members-list-item');
+      const maxRenderedIndex = await membersPage.scrollUntilMaxRenderedIndexAtLeast(1000);
 
-    expect(maxRenderedIndex).toBeGreaterThan(1000);
+      expect(maxRenderedIndex).toBeGreaterThan(1000);
 
-    const renderedCount = await reactMemberRows.count();
-    const candidateRowLocator = reactMemberRows.nth(Math.max(0, renderedCount - 5));
-    const targetIndex = Number(await candidateRowLocator.getAttribute('data-index'));
-    const targetRowLocator = page
-      .getByTestId('members-list')
-      .locator(`[data-testid="members-list-item"][data-index="${targetIndex}"]`);
-    const targetLinkLocator = targetRowLocator.getByRole('link');
-
-    await targetLinkLocator.scrollIntoViewIfNeeded();
-    const targetRow = {
-      index: targetIndex,
-      text: await targetRowLocator.textContent(),
-      scrollTop: await membersPage.getScrollParentScrollTop(),
-    };
-
-    expect(targetRow.index).toBeGreaterThan(1000);
-
-    await targetLinkLocator.click();
-
-    await expect(memberDetailsPage.nameInput).toBeVisible();
-
-    await page.goBack();
-    await expect(page).toHaveURL(/\/ghost\/#\/members$/);
-    await expect(
-      page
+      const renderedCount = await reactMemberRows.count();
+      const candidateRowLocator = reactMemberRows.nth(Math.max(0, renderedCount - 5));
+      const targetIndex = Number(await candidateRowLocator.getAttribute('data-index'));
+      const targetRowLocator = page
         .getByTestId('members-list')
-        .locator(`[data-testid="members-list-item"][data-index="${targetRow.index}"]`),
-    ).toContainText(targetRow.text ?? '');
+        .locator(`[data-testid="members-list-item"][data-index="${targetIndex}"]`);
+      const targetLinkLocator = targetRowLocator.getByRole('link');
 
-    await expect
-      .poll(async () => {
-        const scrollTop = await membersPage.getScrollParentScrollTop();
-        return Math.abs(scrollTop - targetRow.scrollTop);
-      })
-      .toBeLessThan(250);
+      await targetLinkLocator.scrollIntoViewIfNeeded();
+      const targetRow = {
+        index: targetIndex,
+        text: await targetRowLocator.textContent(),
+        scrollTop: await membersPage.getScrollParentScrollTop(),
+      };
 
-    expect(await membersPage.getMaxRenderedIndex()).toBeGreaterThan(1000);
-  });
+      expect(targetRow.index).toBeGreaterThan(1000);
+
+      await targetLinkLocator.click();
+
+      await expect(memberDetailsPage.nameInput).toBeVisible();
+
+      if (returnWith === 'back') {
+        await page.goBack();
+      } else {
+        await page
+          .getByTestId('member-detail')
+          .getByRole('link', { name: 'Members', exact: true })
+          .click();
+      }
+      await expect(page).toHaveURL(/\/ghost\/#\/members$/);
+      await expect(
+        page
+          .getByTestId('members-list')
+          .locator(`[data-testid="members-list-item"][data-index="${targetRow.index}"]`),
+      ).toContainText(targetRow.text ?? '');
+
+      await expect
+        .poll(async () => {
+          const scrollTop = await membersPage.getScrollParentScrollTop();
+          return Math.abs(scrollTop - targetRow.scrollTop);
+        })
+        .toBeLessThan(250);
+
+      expect(await membersPage.getMaxRenderedIndex()).toBeGreaterThan(1000);
+
+      await page
+        .getByTestId('admin-sidebar')
+        .getByRole('link', { name: 'Members', exact: true })
+        .click();
+      await expect(membersPage.loadMoreButton).toBeVisible();
+      await expect.poll(() => membersPage.getScrollParentScrollTop()).toBe(0);
+    });
+  }
 });
