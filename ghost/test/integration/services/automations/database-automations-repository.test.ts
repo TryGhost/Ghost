@@ -232,7 +232,7 @@ describe('database automations repository', function () {
       const api = createApi();
       const memberId = ObjectId().toHexString();
       await api.trigger({
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
@@ -250,7 +250,7 @@ describe('database automations repository', function () {
       const api = createApi();
       const memberId = ObjectId().toHexString();
       await api.trigger({
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
@@ -295,7 +295,7 @@ describe('database automations repository', function () {
         // Actually do the triggers.
         const api = createApi();
         const triggerOptions = {
-          event: 'member_sign_up' as const,
+          event: 'membership_started' as const,
           memberId,
           memberEmail,
           memberStatus: 'free' as const,
@@ -352,7 +352,7 @@ describe('database automations repository', function () {
 
       const triggers = memberIds.map((memberId, index) =>
         api.trigger({
-          event: 'member_sign_up',
+          event: 'membership_started',
           memberId,
           memberEmail: memberEmails[index],
           memberStatus: 'free',
@@ -390,7 +390,7 @@ describe('database automations repository', function () {
       const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
         await api.trigger({
-          event: 'member_sign_up',
+          event: 'membership_started',
           memberId,
           memberEmail: await insertMember(memberId),
           memberStatus: 'paid',
