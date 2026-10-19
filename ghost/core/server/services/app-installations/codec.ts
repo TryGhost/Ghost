@@ -2,20 +2,25 @@ import { z } from 'zod';
 import { DbAppInstallation, DbAppInstallationManifest } from './schema';
 
 /**
- * An installation joined with its approved manifest. The read query and the Admin API use
- * the same field names; decoding converts the dates, the status and the manifest JSON.
+ * An installation joined with its approved manifest, as the repository reads it. Decoding
+ * converts the dates, the status and the manifest JSON.
  */
-export const AppInstallationRow = z.object({
+export const InstallationRow = z.object({
   ...DbAppInstallation.pick({
     id: true,
     app_id: true,
     status: true,
+    manifest_id: true,
+    pending_manifest_id: true,
     revision: true,
     created_at: true,
     updated_at: true,
   }).shape,
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
+
+/** An installation with its approved manifest. Loaded manifests are compared against it. */
+export type Installation = z.output<typeof InstallationRow>;
 
 export interface HistoryActor {
   id: string;
@@ -37,31 +42,17 @@ export interface AppInstallationHistoryEntry {
 }
 
 /** One site's approval of one app, as the Admin API returns it. */
-export type AppInstallation = z.output<typeof AppInstallationRow> & {
+export type AppInstallation = Pick<
+  Installation,
+  | 'id'
+  | 'app_id'
+  | 'status'
+  | 'revision'
+  | 'manifest_url'
+  | 'manifest'
+  | 'created_at'
+  | 'updated_at'
+> & {
   /** Newest first. Only included when read with `include=history`. */
   history?: AppInstallationHistoryEntry[];
 };
-
-/**
- * An app's installation that hasn't been uninstalled, with its approved manifest. Loaded
- * manifests are compared against it.
- */
-export const CurrentInstallationRow = z.object({
-  ...DbAppInstallation.pick({
-    id: true,
-    app_id: true,
-    status: true,
-    manifest_id: true,
-    pending_manifest_id: true,
-    revision: true,
-  }).shape,
-  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
-});
-
-export type CurrentInstallation = z.output<typeof CurrentInstallationRow>;
-
-/**
- * The pending manifest's digest, which covers the manifest and its URL. A loaded manifest
- * is the pending one when the digests match.
- */
-export const PendingManifestRow = DbAppInstallationManifest.pick({ id: true, digest: true });

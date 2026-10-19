@@ -1,5 +1,5 @@
 import { compareManifests } from '@tryghost/app-contracts/manifest';
-import type { CurrentInstallation } from './codec';
+import type { Installation } from './codec';
 import type { LoadedManifest } from './load-manifest';
 
 /** One field that differs from what the publisher approved. */
@@ -9,7 +9,7 @@ export interface AppManifestChange {
   requires_approval: boolean;
 }
 
-type Approved = Pick<CurrentInstallation, 'manifest_url' | 'manifest'>;
+type Approved = Pick<Installation, 'manifest_url' | 'manifest'>;
 
 /**
  * Lists what differs between the approved manifest and a loaded one. The preview shows

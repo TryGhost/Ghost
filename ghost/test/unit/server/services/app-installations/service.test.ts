@@ -7,7 +7,8 @@ import {
   keepManifest,
 } from '../../../../../core/server/services/app-installations/service';
 import type { RecordAppInstallationAction } from '../../../../../core/server/services/app-installations/actions';
-import type { CurrentInstallation } from '../../../../../core/server/services/app-installations/codec';
+import { AppInstallationsRepository } from '../../../../../core/server/services/app-installations/app-installations-repository';
+import type { Installation } from '../../../../../core/server/services/app-installations/codec';
 import type {
   AppManifestChange,
   ManifestDecisionKind,
@@ -178,7 +179,7 @@ describe('keepManifest', function () {
       }),
       { raw: (sql: string, bindings: unknown[]) => ({ sql, bindings }) },
     );
-    const current: CurrentInstallation = {
+    const current: Installation = {
       id: 'installation',
       app_id: manifest.id,
       status: pending ? 'suspended' : 'active',
@@ -187,8 +188,11 @@ describe('keepManifest', function () {
       revision: 3,
       manifest_url: loaded.manifestUrl,
       manifest,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     const kept = await keepManifest(
+      new AppInstallationsRepository({} as Knex),
       trx as unknown as Knex.Transaction,
       current,
       loaded,
