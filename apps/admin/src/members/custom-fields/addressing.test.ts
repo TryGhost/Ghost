@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { customFieldAddressing } from './addressing';
 import { parseFilterToAst } from '@/shared/filters';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 function ast(filter: string) {
   const node = parseFilterToAst(filter);
@@ -13,7 +14,10 @@ function ast(filter: string) {
 }
 
 describe('customFieldAddressing bound to a key', () => {
-  const bound = customFieldAddressing({ namespace: 'custom', key: 'shipping' });
+  const bound = customFieldAddressing({
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('shipping'),
+  });
 
   it('claims a compound naming its own key', () => {
     expect(

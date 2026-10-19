@@ -6,6 +6,8 @@ import {
   useMembersFilterState,
 } from './use-members-filter-state';
 import type { ReactNode } from 'react';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import type { CustomFieldDefinition } from '@/members/custom-fields/filter-fields';
 
 vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
   useBrowseSettings: () => ({
@@ -446,7 +448,7 @@ describe('useMembersFilterState — once its sources have arrived', () => {
 
   function renderWithSources(sources: {
     newsletters?: { slug: string; name: string }[];
-    customFields?: { namespace: string; key: string; name: string; type: 'short_text' }[];
+    customFields?: CustomFieldDefinition[];
   }) {
     return renderHook(
       () => {
@@ -463,7 +465,14 @@ describe('useMembersFilterState — once its sources have arrived', () => {
 
   it('reads and writes normally once they have', async () => {
     const { result } = renderWithSources({
-      customFields: [{ namespace: 'custom', key: 'company', name: 'Company', type: 'short_text' }],
+      customFields: [
+        {
+          namespace: CUSTOM_NAMESPACE,
+          key: KeySchema.parse('company'),
+          name: 'Company',
+          type: 'short_text',
+        },
+      ],
     });
 
     await waitFor(() => {

@@ -11,11 +11,15 @@ import {
 } from '@tryghost/metafield-types';
 import {
   CUSTOM_NAMESPACE,
+  IdentityTextSchema,
+  type Key,
+  KeySchema,
+  type Namespace,
   QUALIFIER,
-  formatIdentity,
-  parseIdentity,
+  SEPARATOR,
 } from '@tryghost/metafield-types/identity';
 import {
+  DbMetafield,
   DbMetafieldChangeEventWithMember,
   DbMetafieldLeaf,
   DbMetafieldValue,
@@ -84,10 +88,18 @@ function refusalError(refusals: Refusal[]): errors.ValidationError {
   });
 }
 
+/** What a write needs of a field, decoded so its key arrives checked. */
+const WritableField = DbMetafield.pick({
+  id: true,
+  name: true,
+  type: true,
+  member_access: true,
+}).extend({ key: KeySchema });
+
 interface AllowedField {
   id: string;
-  namespace: string;
-  key: string;
+  namespace: Namespace;
+  key: Key;
   name: string;
   type: FieldType;
   memberAccess: MemberAccess;
@@ -128,29 +140,55 @@ export class MetafieldValuesService {
     identities: string[],
     audience: Audience,
   ): Promise<Map<string, AllowedField>> {
-    const keys = identities
-      .map((identity) => parseIdentity(identity))
-      .filter((parsed) => parsed !== null && parsed.namespace === CUSTOM_NAMESPACE)
-      .map((parsed) => (parsed as { key: string }).key);
+    // A write names whole fields, so an identity naming a part is one no field answers to.
+    const keys = identities.flatMap((text) => {
+      const identity = z.safeDecode(IdentityTextSchema, text);
+      return identity.success &&
+        identity.data.namespace === CUSTOM_NAMESPACE &&
+        identity.data.parts.length === 0
+        ? [identity.data.key]
+        : [];
+    });
     if (keys.length === 0) {
       return new Map();
     }
-    const fields = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
+    const rows = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
       .whereIn('key', keys)
       .select('id', 'key', 'name', 'type', 'member_access');
-    return new Map(
-      fields.map((field) => [
-        formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, partPath: null }),
-        {
-          id: field.id,
-          key: field.key,
-          name: field.name,
-          type: field.type,
+
+    const allowed = new Map<string, AllowedField>();
+    for (const row of rows) {
+      // Skipped rather than thrown, the way an unreadable value is: the write then reports
+      // this one field as unknown instead of failing every other value it carries.
+      const field = WritableField.safeParse(row);
+      if (!field.success) {
+        logging.warn(
+          {
+            event: { name: 'members.metafields.field_unreadable' },
+            err: field.error,
+            metafieldKey: row.key,
+          },
+          'Skipping an unreadable metafield',
+        );
+        continue;
+      }
+      allowed.set(
+        z.encode(IdentityTextSchema, {
           namespace: CUSTOM_NAMESPACE,
-          memberAccess: field.member_access,
+          key: field.data.key,
+          parts: [],
+        }),
+        {
+          id: field.data.id,
+          namespace: CUSTOM_NAMESPACE,
+          key: field.data.key,
+          name: field.data.name,
+          type: field.data.type,
+          memberAccess: field.data.member_access,
         },
-      ]),
-    );
+      );
+    }
+    return allowed;
   }
 
   /**
@@ -257,7 +295,7 @@ export class MetafieldValuesService {
         });
       }
       for (const [key, raw] of Object.entries(values as Record<string, unknown>)) {
-        identified[`${namespace}.${key}`] = raw;
+        identified[[namespace, key].join(SEPARATOR)] = raw;
       }
     }
     return identified;

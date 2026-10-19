@@ -1,19 +1,20 @@
 import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
+import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
+import { CUSTOM_NAMESPACE, IdentityTextSchema, type Key } from '@tryghost/metafield-types/identity';
 import { INTERNAL } from './access';
 import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
 
-const { CUSTOM_NAMESPACE } = require('@tryghost/metafield-types/identity');
 const BINDINGS_TABLE = 'members_metafield_bindings';
 
 export interface BoundField {
   bindingId: string;
-  key: string;
+  key: Key;
   type: FieldType;
 }
 
@@ -45,7 +46,7 @@ export class MetafieldBindingsService {
     this.values = values;
   }
 
-  async bind(db: Knex, port: string, metafieldKey: string, now: Date): Promise<string> {
+  async bind(db: Knex, port: string, metafieldKey: Key, now: Date): Promise<string> {
     const existing = await db(BINDINGS_TABLE).where({ port }).first();
     if (existing?.metafield_key === metafieldKey) {
       await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
@@ -134,7 +135,13 @@ export class MetafieldBindingsService {
         // looking. A port exists because a publisher pointed it at a field, and that
         // decision is what admits the value, whoever supplied it.
         const writes = await this.values.planWrite(
-          { [`${CUSTOM_NAMESPACE}.${destination.key}`]: value },
+          {
+            [z.encode(IdentityTextSchema, {
+              namespace: CUSTOM_NAMESPACE,
+              key: destination.key,
+              parts: [],
+            })]: value,
+          },
           INTERNAL,
         );
         plans.push({ writes, origin: attribute(destination) });

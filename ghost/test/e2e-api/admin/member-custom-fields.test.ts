@@ -292,13 +292,29 @@ describe('Member Custom Fields Admin API', function () {
 
     it('404s reading, editing or deleting a non-existent field', async function () {
       // A key that doesn't exist reaches the service's not-found.
-      const missing = 'does-not-exist';
+      const missing = 'does_not_exist';
       await agent.get(`members/metafields/custom/${missing}/`).expectStatus(404);
       await agent
         .put(`members/metafields/custom/${missing}/`)
         .body({ members_metafields: [{ name: 'Topic' }] })
         .expectStatus(404);
       await agent.delete(`members/metafields/custom/${missing}/`).expectStatus(404);
+    });
+
+    it('refuses a route naming something that cannot be a namespace or key', async function () {
+      // No field could be stored under either, so the request is malformed rather than
+      // asking after something missing.
+      const { body } = await agent
+        .get('members/metafields/custom/does-not-exist/')
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'key');
+      assert.equal(
+        body.errors[0].context,
+        'A key can only contain lowercase letters, numbers and underscores.',
+      );
+
+      const namespace = await agent.get('members/metafields/Custom/').expectStatus(422);
+      assert.equal(namespace.body.errors[0].property, 'namespace');
     });
 
     it('hides archived fields from the default list', async function () {
@@ -864,6 +880,20 @@ describe('Member Custom Fields Admin API', function () {
 
       await reorder(['company', 'company'], 422);
 
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+    });
+
+    it('rejects a list naming something that cannot be a key', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+
+      const { errors } = await reorder(['shirt_size', 'Company'], 422);
+
+      assert.equal(errors[0].property, 'key');
+      assert.equal(
+        errors[0].message,
+        'A key can only contain lowercase letters, numbers and underscores.',
+      );
       assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
     });
 

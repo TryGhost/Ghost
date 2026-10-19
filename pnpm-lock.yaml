@@ -4241,6 +4241,9 @@ importers:
       '@tryghost/metafield-types':
         specifier: workspace:*
         version: link:../metafield-types
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

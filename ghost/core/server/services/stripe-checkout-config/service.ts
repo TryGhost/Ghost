@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
 import { FIELD_STATUS } from '../members-metafields/schema';
+import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordCheckoutConfigAction, RequestContext } from './actions';
 import { ConfigRow, type TierScope } from './codec';
@@ -17,7 +18,8 @@ import {
   type StripeCheckoutConfig,
 } from './models';
 import { CONFIG_SLUG, CONFIG_TABLE, CONFIG_TIERS_TABLE } from './schema';
-import { CheckoutConfigInput, parseRequest } from './serializers';
+import { parseRequest } from '../../lib/parse-request';
+import { CheckoutConfigInput } from './serializers';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
 const FIELDS_TABLE = 'members_metafields';
@@ -35,7 +37,7 @@ type StoredPart<Section extends CollectedSection> = NonNullable<
 /** A custom field a request names for a port, and how to say it can't take the port's values. */
 interface Destination {
   port: StripePort;
-  customFieldKey: string;
+  customFieldKey: Key;
   /** The request property naming the field. */
   property: string;
   wrongType: string;
@@ -52,7 +54,7 @@ const PARTS: {
     stored: (settings: CollectedSettings[Section]) => StoredPart<Section>;
     destinations: Array<
       Omit<Destination, 'customFieldKey'> & {
-        customFieldKey: (settings: CollectedSettings[Section]) => string;
+        customFieldKey: (settings: CollectedSettings[Section]) => Key;
         /**
          * Whether checkouts stop asking for the part while this field can't take a value, as
          * the answer would have nowhere to go.
@@ -178,7 +180,7 @@ const ReadRow = z.object({
   section: z.enum(COLLECTED_SECTIONS).nullable(),
   paid_tier_id: z.string().nullable(),
   port: z.enum(STRIPE_PORTS).nullable(),
-  bound_key: z.string().nullable(),
+  bound_key: z.nullable(KeySchema),
   active_key: z.string().nullable(),
   active_type: z.string().nullable(),
 });
@@ -186,7 +188,7 @@ type ReadRow = z.output<typeof ReadRow>;
 
 /** A port's custom field as the read found it, and whether it can take a value right now. */
 interface Bound {
-  customFieldKey: string;
+  customFieldKey: Key;
   ready: boolean;
 }
 
@@ -206,12 +208,12 @@ function boundFields(rows: ReadRow[]): Map<StripePort, Bound> {
 }
 
 const LockedTier = z.object({ id: z.string(), type: z.string() });
-const LockedField = z.object({ key: z.string(), type: z.string(), status: z.string() });
-const LockedBinding = z.object({ port: z.enum(STRIPE_PORTS), metafield_key: z.string() });
+const LockedField = z.object({ key: KeySchema, type: z.string(), status: z.string() });
+const LockedBinding = z.object({ port: z.enum(STRIPE_PORTS), metafield_key: KeySchema });
 
 /** Points a port at a custom field, or stops it writing anywhere. */
 export interface PortBinder {
-  bind(db: Knex, port: string, customFieldKey: string, now: Date): Promise<string>;
+  bind(db: Knex, port: string, customFieldKey: Key, now: Date): Promise<string>;
   remove(db: Knex, port: string): Promise<void>;
 }
 

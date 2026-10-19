@@ -12,6 +12,7 @@ import {
 } from '@test-utils/acceptance';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { StripeCheckoutConfig } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'free', type: 'free' });
 const paidTier = tier({ id: '645453f4d254799990dd0e22', name: 'Supporter', slug: 'supporter' });
@@ -29,8 +30,8 @@ function stripeSettings() {
 }
 
 const phoneField: MemberCustomField = {
-  namespace: 'custom',
-  key: 'contact_phone',
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('contact_phone'),
   name: 'Contact phone',
   type: 'short_text',
   status: 'active',
@@ -113,8 +114,13 @@ describe('Checkout settings', () => {
       },
       [
         phoneField,
-        { ...phoneField, key: 'recipient_name', name: 'Recipient name' },
-        { ...phoneField, key: 'delivery_address', name: 'Delivery address', type: 'address' },
+        { ...phoneField, key: KeySchema.parse('recipient_name'), name: 'Recipient name' },
+        {
+          ...phoneField,
+          key: KeySchema.parse('delivery_address'),
+          name: 'Delivery address',
+          type: 'address',
+        },
       ],
     );
 

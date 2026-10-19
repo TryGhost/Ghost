@@ -13,6 +13,7 @@ import {
   tier,
 } from '@test-utils/acceptance';
 import { membersScreen } from './members.screen';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 describe('Members list', () => {
   it('lists members', async () => {
@@ -90,8 +91,8 @@ describe('Members list', () => {
   it('builds a custom field filter without losing the page to the hydration gate', async () => {
     const fieldsApi = fakeMemberCustomFields([
       {
-        namespace: 'custom',
-        key: 'employer',
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('employer'),
         name: 'Employer',
         type: 'short_text',
         status: 'active',

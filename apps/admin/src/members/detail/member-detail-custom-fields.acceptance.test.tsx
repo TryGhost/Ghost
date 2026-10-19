@@ -11,11 +11,12 @@ import {
 } from '@test-utils/acceptance';
 import { memberDetailScreen } from './member-detail.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 const FIELDS: MemberCustomField[] = [
   {
-    namespace: 'custom',
-    key: 'job_title',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('job_title'),
     name: 'Job title',
     type: 'short_text',
     status: 'active',
@@ -24,8 +25,8 @@ const FIELDS: MemberCustomField[] = [
     updated_at: null,
   },
   {
-    namespace: 'custom',
-    key: 'company',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('company'),
     name: 'Company',
     type: 'long_text',
     status: 'active',
@@ -34,8 +35,8 @@ const FIELDS: MemberCustomField[] = [
     updated_at: null,
   },
   {
-    namespace: 'custom',
-    key: 'home_address',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('home_address'),
     name: 'Home address',
     type: 'address',
     status: 'active',

@@ -10,7 +10,6 @@ import type {
   MemberCustomField,
   MemberCustomFieldAddress,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { FieldIdentityString } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // The parts of the address composite, in the order its value schema declares them, each
 // with the label every other surface shows it under.
@@ -74,14 +73,14 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
 
 export function getEditableCustomFieldValues(
   metafields: Record<string, Record<string, unknown> | undefined> | null | undefined,
-): Record<FieldIdentityString, EditableCustomFieldValue> {
-  const flattened: Record<FieldIdentityString, unknown> = {};
+): Record<string, EditableCustomFieldValue> {
+  const flattened: Record<string, unknown> = {};
   for (const [namespace, records] of Object.entries(metafields ?? {})) {
     for (const [fieldKey, fieldValue] of Object.entries(records ?? {})) {
       flattened[`${namespace}.${fieldKey}`] = fieldValue;
     }
   }
-  const values: Record<FieldIdentityString, EditableCustomFieldValue> = {};
+  const values: Record<string, EditableCustomFieldValue> = {};
   for (const [key, value] of Object.entries(flattened)) {
     if (typeof value === 'string' && value.trim() !== '') {
       values[key] = value.trim();

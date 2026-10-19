@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import type { FieldType } from '@tryghost/metafield-types/structure';
 import {
   csvCellsForFields,
   csvColumnsForField,
   fieldValuesFromCsvRow,
   isMetafieldColumn,
+  type CsvField,
 } from '../src/index.ts';
+
+function customField(key: string, type: FieldType): CsvField {
+  return { namespace: CUSTOM_NAMESPACE, key: KeySchema.parse(key), type };
+}
 
 // The behavioural outcomes — an export carrying the right columns, an exported
 // file re-importing without remapping — are proven end-to-end through the member
@@ -13,8 +20,8 @@ import {
 // invariant those tests can only observe indirectly: the key set is fixed by the
 // field definitions alone, never by which values a given member happens to hold.
 describe('metafield CSV cells', function () {
-  const nickname = { namespace: 'custom', key: 'nickname', type: 'short_text' } as const;
-  const address = { namespace: 'custom', key: 'shipping_address', type: 'address' } as const;
+  const nickname = customField('nickname', 'short_text');
+  const address = customField('shipping_address', 'address');
 
   const ADDRESS_COLUMNS = [
     'metafields.custom.shipping_address.line1',
@@ -34,7 +41,7 @@ describe('metafield CSV cells', function () {
   // A key is minted from a publisher-chosen name, so it can land on a column the
   // export already has. Namespacing is what stops the value taking its place.
   it('namespaces a key that collides with a core export column', function () {
-    const cells = csvCellsForFields([{ namespace: 'custom', key: 'email', type: 'short_text' }], {
+    const cells = csvCellsForFields([customField('email', 'short_text')], {
       custom: { email: 'a nickname' },
     });
 
@@ -111,24 +118,20 @@ describe('metafield CSV cells', function () {
 // the error report echoes, so they are derived from the same primitives the cells are.
 describe('metafield CSV columns', function () {
   it('gives a scalar field one namespaced column holding no particular part', function () {
-    assert.deepEqual(
-      csvColumnsForField({ namespace: 'custom', key: 'nickname', type: 'short_text' }),
-      [{ column: 'metafields.custom.nickname', subField: null }],
-    );
+    assert.deepEqual(csvColumnsForField(customField('nickname', 'short_text')), [
+      { column: 'metafields.custom.nickname', subField: null },
+    ]);
   });
 
   it('gives a composite field one column per sub-field, each naming the part it holds', function () {
-    assert.deepEqual(
-      csvColumnsForField({ namespace: 'custom', key: 'shipping_address', type: 'address' }),
-      [
-        { column: 'metafields.custom.shipping_address.line1', subField: 'line1' },
-        { column: 'metafields.custom.shipping_address.line2', subField: 'line2' },
-        { column: 'metafields.custom.shipping_address.city', subField: 'city' },
-        { column: 'metafields.custom.shipping_address.state', subField: 'state' },
-        { column: 'metafields.custom.shipping_address.postal_code', subField: 'postal_code' },
-        { column: 'metafields.custom.shipping_address.country', subField: 'country' },
-      ],
-    );
+    assert.deepEqual(csvColumnsForField(customField('shipping_address', 'address')), [
+      { column: 'metafields.custom.shipping_address.line1', subField: 'line1' },
+      { column: 'metafields.custom.shipping_address.line2', subField: 'line2' },
+      { column: 'metafields.custom.shipping_address.city', subField: 'city' },
+      { column: 'metafields.custom.shipping_address.state', subField: 'state' },
+      { column: 'metafields.custom.shipping_address.postal_code', subField: 'postal_code' },
+      { column: 'metafields.custom.shipping_address.country', subField: 'country' },
+    ]);
   });
 
   it('recognises a metafield column by its qualifier', function () {
@@ -143,8 +146,8 @@ describe('metafield CSV columns', function () {
 // End-to-end round-tripping is proven in the member import HTTP API tests; the row-level
 // reading rules are pinned here.
 describe('reading metafield values from a CSV row', function () {
-  const nickname = { namespace: 'custom', key: 'nickname', type: 'short_text' } as const;
-  const address = { namespace: 'custom', key: 'shipping_address', type: 'address' } as const;
+  const nickname = customField('nickname', 'short_text');
+  const address = customField('shipping_address', 'address');
 
   it('reads a scalar column into its value', function () {
     assert.deepEqual(fieldValuesFromCsvRow([nickname], { 'metafields.custom.nickname': 'Bex' }), {

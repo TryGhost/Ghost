@@ -1,6 +1,13 @@
+import * as z from 'zod/mini';
 import { subFieldsOf, type FieldType } from '@tryghost/metafield-types/structure';
-import { QUALIFIER, SEPARATOR, formatIdentity } from '@tryghost/metafield-types/identity';
-import type { FieldIdentityString } from '@tryghost/metafield-types/identity';
+import {
+  IdentityTextSchema,
+  type Key,
+  type Namespace,
+  PartSchema,
+  QUALIFIER,
+  SEPARATOR,
+} from '@tryghost/metafield-types/identity';
 
 /**
  * How a field's value maps onto CSV columns.
@@ -17,15 +24,35 @@ import type { FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 const PREFIX = `${QUALIFIER}${SEPARATOR}`;
 
-function columnIdentity(field: CsvField): FieldIdentityString {
-  return formatIdentity({ namespace: field.namespace, key: field.key, partPath: null });
-}
-
 /** A field definition reduced to what CSV needs to know about it. */
 export interface CsvField {
-  namespace: string;
-  key: string;
+  namespace: Namespace;
+  key: Key;
   type: FieldType;
+}
+
+// Every row of an export or an import is laid out against the same field objects, so each
+// identity is written once per field rather than once per cell.
+const written = new WeakMap<CsvField, Map<string | null, string>>();
+
+/** The identity of a field's whole value, or of the one part of it named. */
+function identityOf(field: CsvField, part: string | null = null): string {
+  const byPart = written.get(field) ?? new Map<string | null, string>();
+  written.set(field, byPart);
+  let identity = byPart.get(part);
+  if (identity === undefined) {
+    identity = z.encode(IdentityTextSchema, {
+      namespace: field.namespace,
+      key: field.key,
+      parts: part === null ? [] : [PartSchema.parse(part)],
+    });
+    byPart.set(part, identity);
+  }
+  return identity;
+}
+
+function columnOf(field: CsvField, part: string | null = null): string {
+  return `${PREFIX}${identityOf(field, part)}`;
 }
 
 function toCell(value: unknown): string {
@@ -50,11 +77,10 @@ export interface CsvFieldColumn {
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  const column = `${PREFIX}${columnIdentity(field)}`;
   const subFields = subFieldsOf(field.type);
   return subFields
-    ? subFields.map((sub) => ({ column: `${column}${SEPARATOR}${sub}`, subField: sub }))
-    : [{ column, subField: null }];
+    ? subFields.map((sub) => ({ column: columnOf(field, sub), subField: sub }))
+    : [{ column: columnOf(field), subField: null }];
 }
 
 export function isMetafieldColumn(column: string): boolean {
@@ -69,8 +95,7 @@ function cellFor(
   field: CsvField,
   tail: string | null,
 ): string | undefined {
-  const suffix = tail === null ? '' : `${SEPARATOR}${tail}`;
-  const cell = row[`${PREFIX}${columnIdentity(field)}${suffix}`];
+  const cell = row[columnOf(field, tail)];
   return typeof cell === 'string' ? cell : undefined;
 }
 
@@ -83,16 +108,15 @@ export function csvCellsForFields(
   for (const field of fields) {
     const value = values[field.namespace]?.[field.key];
     const subFields = subFieldsOf(field.type);
-    const column = `${PREFIX}${columnIdentity(field)}`;
 
     if (!subFields) {
-      cells[column] = toCell(value);
+      cells[columnOf(field)] = toCell(value);
       continue;
     }
 
     const composite = (value ?? {}) as Record<string, unknown>;
     for (const sub of subFields) {
-      cells[`${column}${SEPARATOR}${sub}`] = toCell(composite[sub]);
+      cells[columnOf(field, sub)] = toCell(composite[sub]);
     }
   }
 
@@ -123,8 +147,8 @@ export function fieldValuesFromCsvRow(
   fields: readonly CsvField[],
   row: Record<string, unknown>,
   decodeCell: (cell: string) => string = (cell) => cell,
-): Record<FieldIdentityString, unknown> {
-  const values: Record<FieldIdentityString, unknown> = {};
+): Record<string, unknown> {
+  const values: Record<string, unknown> = {};
 
   for (const field of fields) {
     const subFields = subFieldsOf(field.type);
@@ -134,7 +158,7 @@ export function fieldValuesFromCsvRow(
       if (cell !== undefined) {
         const decoded = decodeCell(cell);
         if (!isBlank(decoded)) {
-          values[columnIdentity(field)] = decoded;
+          values[identityOf(field)] = decoded;
         }
       }
       continue;
@@ -155,7 +179,7 @@ export function fieldValuesFromCsvRow(
     }
 
     if (anyColumnPresent && Object.keys(composite).length > 0) {
-      values[columnIdentity(field)] = composite;
+      values[identityOf(field)] = composite;
     }
   }
 

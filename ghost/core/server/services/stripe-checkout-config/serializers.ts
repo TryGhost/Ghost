@@ -1,8 +1,8 @@
-import errors from '@tryghost/errors';
 import { omit } from 'lodash';
 import { z } from 'zod';
 import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/checkout';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
+import { KeySchema } from '@tryghost/metafield-types/identity';
 import { SnakeDesign } from './codec';
 import {
   type CollectedSection,
@@ -57,7 +57,8 @@ const CountriesInput = z
 const DESTINATION_REQUIRED = 'Choose the custom field this is saved into.';
 const CustomFieldKey = z
   .string({ error: DESTINATION_REQUIRED })
-  .min(1, { error: DESTINATION_REQUIRED });
+  .min(1, { error: DESTINATION_REQUIRED })
+  .pipe(KeySchema);
 const Destination = z.strictObject(
   { custom_field_key: CustomFieldKey },
   { error: DESTINATION_REQUIRED },
@@ -167,23 +168,6 @@ export const CheckoutPreviewInput = z.strictObject({
   ...CollectedPreviews,
 });
 export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
-
-/** Parses a request body, turning the first problem into a validation error on its field. */
-export function parseRequest<Schema extends z.ZodType>(
-  schema: Schema,
-  input: unknown,
-  resource: string,
-): z.output<Schema> {
-  const parsed = schema.safeParse(input);
-  if (parsed.success) {
-    return parsed.data;
-  }
-  const issue = parsed.error.issues[0];
-  throw new errors.ValidationError({
-    message: issue.message,
-    property: issue.path.join('.') || resource,
-  });
-}
 
 /** Each collected part as the Admin API returns it, left out while its flag is off. */
 const CollectedResources = {
