@@ -1282,7 +1282,7 @@ async function finishStepAndEnqueueNext(
     return null;
   }
 
-  if (!(await repository2.isRunAutomationActive(trx, step.automation_run_id))) {
+  if (!(await repository2.isAutomationActiveForRun(trx, step.automation_run_id))) {
     return null;
   }
 
