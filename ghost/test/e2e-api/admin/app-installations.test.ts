@@ -513,6 +513,29 @@ describe('App installations Admin API', function () {
       assert.equal((await actions()).length, 1);
     });
 
+    it('approves changes that need no approval as an approval row', async function () {
+      const installed = await install();
+      serve(manifest({ description: 'Episodes and players.' }));
+      const reviewed = await preview();
+      assert.deepEqual(reviewed.installation.changes, [
+        { path: 'description', requires_approval: false },
+      ]);
+      serve(manifest({ description: 'Episodes and players.' }));
+
+      const { body } = await approve(installed.id, MANIFEST_URL, reviewed.digest, 200);
+
+      assert.equal(body.app_installations[0].manifest.description, 'Episodes and players.');
+      const [first, approved] = await manifestRows();
+      assert.equal(approved.source, 'approval');
+      assert.equal(Boolean(approved.requires_approval), false);
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, approved.id);
+      assert.equal(row.revision, 1);
+      const [, action] = await actions();
+      assert.equal(JSON.parse(action.context).from_manifest_id, first.id);
+      assert.equal(JSON.parse(action.context).to_manifest_id, approved.id);
+    });
+
     it('asks for a new review when the app changed in between', async function () {
       const installed = await install();
       serve(manifest({ name: 'Podcasts' }));

@@ -36,7 +36,7 @@ function compare(approved: Approved, loaded: LoadedManifest) {
 /** What to do with a loaded manifest. `decideOnManifest` describes each kind. */
 export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'resume' | 'suspend';
 
-/** A decision with the changes it was based on, so `keepManifest` doesn't compare again. */
+/** A decision with the changes it was based on, so storing it doesn't compare again. */
 export interface ManifestDecision {
   kind: ManifestDecisionKind;
   changes: AppManifestChange[];

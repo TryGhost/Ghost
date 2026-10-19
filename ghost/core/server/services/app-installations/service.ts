@@ -2,7 +2,7 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
-import { AppInstallationsRepository } from './app-installations-repository';
+import { AppInstallationsRepository, type Refused } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import {
   changesFrom,
@@ -91,58 +91,6 @@ function forAnotherApp(appId: string) {
     message: `The reviewed manifest is for ${appId}, not the app that is installed.`,
     code: 'APP_MANIFEST_OTHER_APP',
   });
-}
-
-/**
- * Writes a manifest decision for an installation. Approval and the re-check at session
- * start both use it, so they always store a manifest the same way.
- *
- * Call it in `repository.whileUnchanged`, with the `current` the decision was made from.
- *
- * `source` is who made the change:
- * - `update`: the re-check. It applies silent changes, and stores changes that need
- *   approval as the pending manifest, which suspends the installation.
- * - `approval`: a publisher. It applies the reviewed manifest, whatever changed.
- *
- * Each new manifest gets its own row, except the pending manifest when it's approved, which
- * already has one. When the re-check lifts a suspension because the app reverted the
- * pending changes, it writes a `resume` row: no person made that change, so the row is the
- * only record of it. Approving the manifest that's already approved writes no row; the
- * staff history records the approval.
- *
- * Returns the approved manifest ID before and after, or null if there was nothing to write.
- */
-export async function keepManifest(
-  repository: AppInstallationsRepository,
-  trx: Knex.Transaction,
-  current: Installation,
-  loaded: LoadedManifest,
-  { kind, changes }: ManifestDecision,
-  source: 'approval' | 'update',
-): Promise<{ from: string; to: string } | null> {
-  if (kind === 'unchanged' || (kind === 'use_pending' && source === 'update')) {
-    return null;
-  }
-  const waits = kind === 'suspend' && source === 'update';
-  // An approval that resolves to `resume` is recorded as an approval, not a resume.
-  const resumes = kind === 'resume' && source === 'update';
-
-  let manifestId = current.manifest_id;
-  if (kind === 'use_pending' && current.pending_manifest_id !== null) {
-    manifestId = current.pending_manifest_id;
-  } else if (changes.length > 0 || resumes) {
-    manifestId = await repository.addManifest(trx, current.id, loaded, {
-      source: resumes ? 'resume' : source,
-      requiresApproval: kind === 'suspend',
-    });
-  }
-
-  if (waits) {
-    await repository.suspend(trx, current.id, manifestId);
-    return { from: current.manifest_id, to: current.manifest_id };
-  }
-  await repository.activate(trx, current.id, manifestId);
-  return { from: current.manifest_id, to: manifestId };
 }
 
 export class AppInstallationsService {
@@ -296,9 +244,7 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(current),
       loaded,
     });
-    const approved = await this.repository.whileUnchanged(current, (trx) =>
-      keepManifest(this.repository, trx, current, loaded, decision, 'approval'),
-    );
+    const approved = await this.storeApproval(current, loaded, decision);
     if (approved === 'uninstalled') {
       throw uninstalled();
     }
@@ -319,6 +265,43 @@ export class AppInstallationsService {
       });
     }
     return this.read(id);
+  }
+
+  /**
+   * Stores a publisher's approval of the reviewed manifest, which becomes the approved
+   * manifest whatever changed. It's only written while the installation is as `current`,
+   * which the approval was decided from.
+   *
+   * The pending manifest and the approved one already have rows, so approving either adds
+   * none; approving the approved manifest lets go of the pending one. Any other manifest gets
+   * an `approval` row.
+   *
+   * Returns the approved manifest ID before and after, or null when it's the approved manifest
+   * with nothing pending, which writes nothing.
+   */
+  private storeApproval(
+    current: Installation,
+    loaded: LoadedManifest,
+    { kind, changes }: ManifestDecision,
+  ): Promise<{ from: string; to: string } | null | Refused> {
+    return this.repository.whileUnchanged(current, async (trx) => {
+      if (kind === 'unchanged') {
+        return null;
+      }
+      let approved: string;
+      if (kind === 'use_pending' && current.pending_manifest_id !== null) {
+        approved = current.pending_manifest_id;
+      } else if (changes.length === 0) {
+        approved = current.manifest_id;
+      } else {
+        approved = await this.repository.addManifest(trx, current.id, loaded, {
+          source: 'approval',
+          requiresApproval: changes.some((change) => change.requires_approval),
+        });
+      }
+      await this.repository.activate(trx, current.id, approved);
+      return { from: current.manifest_id, to: approved };
+    });
   }
 
   /** The installation changed since the review, so the error carries a new preview. */
@@ -437,12 +420,53 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(before),
       loaded,
     });
-    const kept = await this.repository.whileUnchanged(before, (trx) =>
-      keepManifest(this.repository, trx, before, loaded, decision, 'update'),
-    );
-    if (kept === 'uninstalled') {
+    const stored = await this.storeRecheck(before, loaded, decision);
+    if (stored === 'uninstalled') {
       throw notInstalled();
     }
+  }
+
+  /**
+   * Stores what a re-check found. It's only written while the installation is as `current`,
+   * which the re-check decided from. No person made these changes, so each gets a manifest
+   * row as its only record.
+   */
+  private storeRecheck(
+    current: Installation,
+    loaded: LoadedManifest,
+    { kind }: ManifestDecision,
+  ): Promise<void | Refused> {
+    return this.repository.whileUnchanged(current, async (trx) => {
+      switch (kind) {
+        case 'unchanged':
+        case 'use_pending':
+          return;
+        case 'apply': {
+          // Silent changes are applied straight away.
+          const applied = await this.repository.addManifest(trx, current.id, loaded, {
+            source: 'update',
+            requiresApproval: false,
+          });
+          return this.repository.activate(trx, current.id, applied);
+        }
+        case 'resume': {
+          // The app reverted the pending changes, which lifts the suspension.
+          const resumed = await this.repository.addManifest(trx, current.id, loaded, {
+            source: 'resume',
+            requiresApproval: false,
+          });
+          return this.repository.activate(trx, current.id, resumed);
+        }
+        case 'suspend': {
+          // Any other change becomes the pending manifest, replacing an older one.
+          const pending = await this.repository.addManifest(trx, current.id, loaded, {
+            source: 'update',
+            requiresApproval: true,
+          });
+          return this.repository.suspend(trx, current.id, pending);
+        }
+      }
+    });
   }
 
   /**
