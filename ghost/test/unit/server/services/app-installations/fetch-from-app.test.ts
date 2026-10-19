@@ -93,6 +93,17 @@ describe('createAppFetcher', function () {
       assert.ok(failure.cause instanceof Error);
     });
 
+    it('reads a URL that carries credentials without them, and reports it without them', async function () {
+      nock('https://podcast.example.com', { badheaders: ['authorization'] })
+        .get('/ghost-app.json')
+        .reply(200, 'Hello');
+      const url = Object.assign(new URL(APP_URL), { username: 'user', password: 'example' }).href;
+
+      const result = await fetcher()(url, OPTIONS);
+
+      assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+    });
+
     it('reports a request that gets no answer as unreachable, with why for the logs', async function () {
       nock('https://podcast.example.com')
         .get('/ghost-app.json')

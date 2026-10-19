@@ -107,6 +107,10 @@ export function createAppFetcher({
         failure: { reason: 'unreachable', cause: `${url} is not a URL` },
       };
     }
+    // got would send the credentials in the URL it starts from, though it drops a
+    // redirect's. These are dropped too, so none are ever sent or reported.
+    start.username = '';
+    start.password = '';
     const alias = getLocalhostAlias();
     // The URL being fetched now, as the browser would see it (without the alias).
     let current = start;
