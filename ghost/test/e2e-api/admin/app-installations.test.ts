@@ -548,6 +548,33 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 2);
     });
 
+    it('asks for a new review when the installation changes while the reviewed manifest is fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          // An app session's re-check suspends the app for other changes while the approval
+          // fetches the reviewed manifest, so what was reviewed no longer matches.
+          serve(manifest({ name: 'Podcasts!' }));
+          await service().startSession(installed.id);
+          return manifest({ name: 'Podcasts' });
+        });
+
+      const { body } = await approve(installed.id, MANIFEST_URL, reviewed.digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.status, 'suspended');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      const row = await installationRow(installed.id);
+      assert.equal(row.status, 'suspended');
+      assert.equal(row.revision, 1);
+      // The install and the re-check's pending manifest, and nothing from the approval.
+      assert.equal((await manifestRows()).length, 2);
+      assert.equal((await actions()).length, 1);
+    });
+
     it('needs the revision that was reviewed, as a whole number', async function () {
       const installed = await install();
       serve(manifest());
@@ -735,6 +762,30 @@ describe('App installations Admin API', function () {
       const { body } = await approve(installed.id, MANIFEST_URL, digest, 409);
       assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
       assert.equal(unfetched.isDone(), false);
+    });
+
+    it('refuses an installation uninstalled while the reviewed manifest is fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          return manifest({ name: 'Podcasts' });
+        });
+
+      const { body } = await approve(installed.id, MANIFEST_URL, reviewed.digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      const row = await installationRow(installed.id);
+      assert.equal(row.status, 'uninstalled');
+      assert.equal(row.revision, 1);
+      assert.equal((await manifestRows()).length, 1);
+      assert.deepEqual(
+        (await actions()).map((action: any) => action.event),
+        ['installed', 'uninstalled'],
+      );
     });
   });
 
