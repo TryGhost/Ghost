@@ -1,5 +1,8 @@
 import React, { useId } from 'react';
-import type { AutomationTrigger } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationTierTrigger,
+  AutomationTriggerType,
+} from '@tryghost/admin-x-framework/api/automations';
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
@@ -13,14 +16,18 @@ import {
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { LabelTriggerPicker } from './label-trigger-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 
 export type TriggerData = {
+  type: AutomationTriggerType;
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
-  scope: AutomationTrigger['trigger_tier_scope'];
+  scope: AutomationTierTrigger['trigger_tier_scope'];
   tierIds: readonly string[];
   savedTierIds: readonly string[];
-  onUpdate: (trigger: AutomationTrigger) => void;
+  labelIds: readonly string[];
+  onUpdateTiers: (tiers: AutomationTierTrigger) => void;
+  onUpdateLabels: (labelIds: string[]) => void;
 };
 
 const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
@@ -44,7 +51,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
     };
   });
   const updateTiers = (tierIds: string[]) =>
-    trigger.onUpdate({
+    trigger.onUpdateTiers({
       trigger_tier_scope: 'selected_paid',
       trigger_tier_ids: tierIds,
     });
@@ -58,7 +65,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
         value={trigger.scope ?? undefined}
         onValueChange={(scope) => {
           if (scope === 'all_paid') {
-            trigger.onUpdate({ trigger_tier_scope: scope, trigger_tier_ids: null });
+            trigger.onUpdateTiers({ trigger_tier_scope: scope, trigger_tier_ids: null });
           } else if (scope === 'selected_paid') {
             updateTiers([]);
           }
@@ -124,22 +131,46 @@ export const TriggerCard: React.FC<
     onInteract?: () => void;
   }>
 > = ({ trigger, errorMessage, onInteract, children }) => {
-  let paid: boolean;
-  switch (trigger.scope) {
-    case 'all_paid':
-    case 'selected_paid':
-      paid = true;
+  let kind: 'free' | 'paid' | 'label';
+  switch (trigger.type) {
+    case 'label_added':
+      kind = 'label';
       break;
-    case 'free':
-    case null:
-      paid = false;
+    case 'membership_started':
+      kind = trigger.scope === 'all_paid' || trigger.scope === 'selected_paid' ? 'paid' : 'free';
       break;
     default: {
-      const _exhaustive: never = trigger.scope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+      const _exhaustive: never = trigger.type;
+      throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
     }
   }
-  const title = paid ? 'Paid subscription started' : 'Free member signed up';
+  const { title, icon, content } = {
+    free: {
+      title: 'Free member signed up',
+      icon: <LucideIcon.UserPlus className="size-4" />,
+      content: (
+        <Text as="p" size="md" tone="secondary">
+          Triggered when someone signs up as a free member
+        </Text>
+      ),
+    },
+    paid: {
+      title: 'Paid subscription started',
+      icon: <LucideIcon.CreditCard className="size-4" />,
+      content: <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />,
+    },
+    label: {
+      title: 'Label added',
+      icon: <LucideIcon.Tag className="size-4" />,
+      content: (
+        <LabelTriggerPicker
+          errorMessage={errorMessage}
+          labelIds={trigger.labelIds}
+          onChange={trigger.onUpdateLabels}
+        />
+      ),
+    },
+  }[kind];
   return (
     <AutomationCard
       aria-label={title}
@@ -150,24 +181,8 @@ export const TriggerCard: React.FC<
       onFocusCapture={onInteract}
       onPointerDownCapture={onInteract}
     >
-      <AutomationCardHeader
-        icon={
-          paid ? (
-            <LucideIcon.CreditCard className="size-4" />
-          ) : (
-            <LucideIcon.UserPlus className="size-4" />
-          )
-        }
-        iconClassName="p-2.5 text-foreground"
-        title={title}
-      />
-      {paid ? (
-        <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />
-      ) : (
-        <Text as="p" size="md" tone="secondary">
-          Triggered when someone signs up as a free member
-        </Text>
-      )}
+      <AutomationCardHeader icon={icon} iconClassName="p-2.5 text-foreground" title={title} />
+      {content}
       {children}
     </AutomationCard>
   );

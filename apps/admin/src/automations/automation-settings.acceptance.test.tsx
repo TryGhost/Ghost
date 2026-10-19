@@ -2,10 +2,7 @@ import { composeConfigBootOverrides } from '@test-utils/acceptance/boot';
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import type {
-  AutomationDetail,
-  EditAutomationPayload,
-} from '@tryghost/admin-x-framework/api/automations';
+import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail, setup, flags } from './run-history.test-utils';
 import { openAutomationSidebar } from './run-list.test-utils';
 
@@ -25,7 +22,7 @@ describe('Automation settings', () => {
     const edit = fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => {
       saved = {
         ...saved,
-        ...(body as { automations: EditAutomationPayload[] }).automations[0],
+        ...(body as { automations: Array<typeof saved> }).automations[0],
       };
       return { automations: [saved] };
     });

@@ -6,6 +6,7 @@ import type {
   AutomationPerformanceStats,
   AutomationRunStatusFilter,
   AutomationTrigger,
+  AutomationTriggerType,
 } from '@tryghost/admin-x-framework/api/automations';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-stats';
@@ -202,6 +203,7 @@ export const AutomationSidebar: React.FC<{
   automationId: string;
   name: string;
   description: string;
+  triggerType: AutomationTriggerType;
   triggerTierScope: AutomationTrigger['trigger_tier_scope'];
   triggerTierIds: readonly string[];
   tiers: readonly Tier[];
@@ -219,6 +221,7 @@ export const AutomationSidebar: React.FC<{
   automationId,
   name,
   description,
+  triggerType,
   triggerTierScope,
   triggerTierIds,
   tiers,
@@ -271,8 +274,13 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
+  const triggerKind = triggerType === 'label_added' ? triggerType : triggerTierScope;
   let stopConditionDescription: string;
-  switch (triggerTierScope) {
+  switch (triggerKind) {
+    case 'label_added':
+      stopConditionDescription =
+        'Members stop early if they unsubscribe or no longer have any of the trigger labels.';
+      break;
     case 'free':
     case null:
       stopConditionDescription = 'Members stop early if they unsubscribe.';
@@ -298,7 +306,7 @@ export const AutomationSidebar: React.FC<{
       break;
     }
     default: {
-      const _exhaustive: never = triggerTierScope;
+      const _exhaustive: never = triggerKind;
       throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
     }
   }

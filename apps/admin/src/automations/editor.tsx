@@ -22,7 +22,11 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
-import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import {
+  getAutomationTriggerType,
+  useAddAutomation,
+  useEditAutomation,
+} from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -47,16 +51,24 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
+  trigger_type: getAutomationTriggerType(automation),
   trigger_tier_scope: automation.trigger_tier_scope,
   trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
+  trigger_label_ids: automation.trigger_label_ids ? [...automation.trigger_label_ids].sort() : null,
   actions: automation.actions,
   edges: automation.edges,
 });
 
-const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
-  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+const getTriggerErrors = (automation: AutomationDetail): Record<string, string> => {
+  if (automation.trigger_type === 'label_added') {
+    return automation.trigger_label_ids.length
+      ? {}
+      : { [TRIGGER_CANVAS_ID]: 'Select at least one label.' };
+  }
+  return automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
     ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
     : {};
+};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';

@@ -29,8 +29,15 @@ export const useVisibleAutomations = () => {
     ? data?.automations
     : data?.automations?.filter((automation) => automation.slug !== WELCOME_EMAIL_SLUGS.paid);
 
+  // Backends that support trigger types return `trigger_type` on every automation, and the
+  // default welcome automations mean the list is never empty in practice.
+  const supportsTriggerTypes = (data?.automations ?? []).some(
+    (automation) => automation.trigger_type !== undefined,
+  );
+
   return {
     automations,
+    supportsTriggerTypes,
     allAutomations: data?.automations,
     stripeEnabled,
     isStripeReady: !!settingsData && !!configData && !isSettingsFetching && !isConfigFetching,

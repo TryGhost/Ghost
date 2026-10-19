@@ -17,7 +17,9 @@ import {
   removeAction,
   updateSendEmailAction,
   updateWaitAction,
+  getAutomationTriggerType,
   useBrowseAutomationActionLinks,
+  useEditAutomation,
 } from '../../../src/api/automations';
 
 const baseDetail = (
@@ -87,6 +89,60 @@ describe('automations api queries', () => {
       },
     );
   });
+  it.each([
+    [
+      'leaves trigger type keys out for backends that predate them',
+      baseDetail([], []),
+      { trigger_tier_scope: 'free', trigger_tier_ids: null },
+    ],
+    [
+      'sends label trigger fields',
+      {
+        ...baseDetail([], []),
+        trigger_type: 'label_added',
+        trigger_label_ids: ['label-1', 'label-2'],
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+      } satisfies AutomationDetail,
+      {
+        trigger_type: 'label_added',
+        trigger_label_ids: ['label-1', 'label-2'],
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+      },
+    ],
+  ])('%s when editing', async (_name, detail, expectedTrigger) => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user-id', name: 'Test User', email: 'test@example.com', roles: [] }],
+    });
+
+    await withMockFetch({ json: { automations: [detail] } }, async (mock) => {
+      const { result } = renderHookWithProviders(() => useEditAutomation(), { queryClient });
+      await act(() => result.current.mutateAsync(detail));
+
+      const body = JSON.parse(String(mock.calls[0][1]?.body));
+      expect(body).toEqual({
+        automations: [
+          {
+            name: 'Welcome',
+            description: 'Welcome new members.',
+            status: 'active',
+            actions: [],
+            edges: [],
+            ...expectedTrigger,
+          },
+        ],
+      });
+    });
+  });
+
+  it('treats an automation without a trigger type as a membership trigger', () => {
+    expect(getAutomationTriggerType(baseDetail([], []))).toBe('membership_started');
+    expect(getAutomationTriggerType({ trigger_type: 'label_added' })).toBe('label_added');
+  });
+
   it('isolates a late response when returning to the same status in a new query scope', async () => {
     const queryClient = createTestQueryClient();
     queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });

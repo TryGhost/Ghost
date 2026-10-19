@@ -32,6 +32,8 @@ export type AutomationStats = {
 
 export type AutomationBrowseItem = Automation & {
   stats?: AutomationStats;
+  /** Absent from backends that predate trigger types. */
+  trigger_type?: AutomationTriggerType;
 };
 
 export type AutomationWaitAction = {
@@ -68,7 +70,9 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationTrigger =
+export type AutomationTriggerType = 'membership_started' | 'label_added';
+
+export type AutomationTierTrigger =
   | {
       trigger_tier_scope: 'free' | 'all_paid' | null;
       trigger_tier_ids: null;
@@ -77,6 +81,29 @@ export type AutomationTrigger =
       trigger_tier_scope: 'selected_paid';
       trigger_tier_ids: readonly string[];
     };
+
+/**
+ * Backends that predate trigger types return neither `trigger_type` nor `trigger_label_ids`,
+ * and reject them on add; every automation there is a membership trigger.
+ */
+export type AutomationMembershipTrigger = AutomationTierTrigger & {
+  trigger_type?: 'membership_started';
+  trigger_label_ids?: null;
+};
+
+/** Members enter when any of the labels is added to them. */
+export type AutomationLabelTrigger = {
+  trigger_type: 'label_added';
+  trigger_label_ids: readonly string[];
+  trigger_tier_scope: null;
+  trigger_tier_ids: null;
+};
+
+export type AutomationTrigger = AutomationMembershipTrigger | AutomationLabelTrigger;
+
+export const getAutomationTriggerType = (trigger: {
+  trigger_type?: AutomationTriggerType;
+}): AutomationTriggerType => trigger.trigger_type ?? 'membership_started';
 
 export type AutomationDetail = Automation &
   AutomationTrigger & {
@@ -325,6 +352,8 @@ const serializeEditableAction = (action: AutomationAction): AutomationAction => 
 const serializeEditableAutomation = ({
   name,
   description,
+  trigger_type: triggerType,
+  trigger_label_ids: triggerLabelIds,
   trigger_tier_scope: triggerTierScope,
   trigger_tier_ids: triggerTierIds,
   status,
@@ -335,6 +364,9 @@ const serializeEditableAutomation = ({
     {
       name,
       description,
+      // Left undefined (and so out of the JSON) for backends that predate trigger types.
+      trigger_type: triggerType,
+      trigger_label_ids: triggerLabelIds,
       trigger_tier_scope: triggerTierScope,
       trigger_tier_ids: triggerTierIds,
       status,

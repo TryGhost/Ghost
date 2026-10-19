@@ -1,6 +1,10 @@
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint } from '@test-utils/acceptance';
-import type { AutomationDetail, AutomationRun } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationMembershipTrigger,
+  AutomationRun,
+} from '@tryghost/admin-x-framework/api/automations';
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 
 import { response, openAutomationSidebar } from './run-list.test-utils';
@@ -38,7 +42,7 @@ export const history = (
     },
   ],
 });
-export const detail = (id: string): AutomationDetail => ({
+export const detail = (id: string): AutomationDetail & AutomationMembershipTrigger => ({
   id,
   name: 'Welcome series',
   description: '',

@@ -21,6 +21,7 @@ import {
   removeAction,
   updateSendEmailAction,
   updateWaitAction,
+  getAutomationTriggerType,
 } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationAction,
@@ -43,6 +44,7 @@ import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { isEmptyEmailLexical } from '@/automations/utils';
+import { labelTrigger, membershipTrigger, withTrigger } from '@/automations/utils/trigger';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
@@ -244,11 +246,20 @@ const buildGraph = ({
       },
       data: {
         trigger: {
+          type: getAutomationTriggerType(automation),
           tierQuery,
           scope: automation.trigger_tier_scope,
           tierIds: automation.trigger_tier_ids ?? [],
           savedTierIds: savedTriggerTierIds,
-          onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
+          labelIds: automation.trigger_label_ids ?? [],
+          onUpdateTiers: (tiers) =>
+            onChange(
+              withTrigger(
+                automation,
+                membershipTrigger(tiers, automation.trigger_type !== undefined),
+              ),
+            ),
+          onUpdateLabels: (labelIds) => onChange(withTrigger(automation, labelTrigger(labelIds))),
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -928,6 +939,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           tiers={tierData?.tiers ?? []}
           triggerTierIds={automation.trigger_tier_ids ?? []}
           triggerTierScope={automation.trigger_tier_scope}
+          triggerType={getAutomationTriggerType(automation)}
           onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {
             setAutomationSidebarOpen(open);
