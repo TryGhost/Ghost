@@ -479,8 +479,8 @@ module.exports = class CheckoutSessionEventService {
    */
   async saveShippingDetails(memberId, session, { canUpdateMember }) {
     try {
-      const { SHIPPING_FLAG } = this.deps.stripeCheckoutConfig;
-      if (!session.shipping_address_collection || !this.deps.labs.isSet(SHIPPING_FLAG)) {
+      const { COLLECTION_FLAG } = this.deps.stripeCheckoutConfig;
+      if (!session.shipping_address_collection || !this.deps.labs.isSet(COLLECTION_FLAG)) {
         return;
       }
 

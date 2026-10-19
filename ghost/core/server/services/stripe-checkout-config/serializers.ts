@@ -5,6 +5,8 @@ import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/chec
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { SnakeDesign } from './codec';
 import {
+  COLLECTED_SECTIONS,
+  type CollectedSection,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
   type ShippingCollection,
@@ -90,22 +92,20 @@ const ShippingInput = z
       : null,
   );
 
+/** Each collected part in an edit request. */
+const CollectedInputs = {
+  shipping: ShippingInput.optional(),
+} satisfies Record<CollectedSection, z.ZodType>;
+
 /** An edit request. Parts it leaves out are not changed. */
 export const CheckoutConfigInput = z.strictObject({
   design: DesignInput.optional(),
-  shipping: ShippingInput.optional(),
+  ...CollectedInputs,
 });
 export type CheckoutConfigInput = z.output<typeof CheckoutConfigInput>;
 
-/**
- * A preview request: the paid tier to open a checkout for, and the design to show it in,
- * which need not be saved.
- */
-export const CheckoutPreviewInput = z.strictObject({
-  tier_id: z.string().regex(/^[0-9a-f]{24}$/, { error: 'Choose a tier to preview checkout for.' }),
-  cadence: z.enum(['month', 'year']).default('month'),
-  design: DesignInput,
-  /** Unsaved shipping to preview. Left out, the checkout asks as the saved settings say. */
+/** Each collected part a preview can carry unsaved. Left out, the checkout asks as saved. */
+const CollectedPreviews = {
   shipping: z
     .discriminatedUnion('collect', [
       z.strictObject({ collect: z.literal(false) }),
@@ -116,6 +116,17 @@ export const CheckoutPreviewInput = z.strictObject({
       }),
     ])
     .optional(),
+} satisfies Record<CollectedSection, z.ZodType>;
+
+/**
+ * A preview request: the paid tier to open a checkout for, and the design to show it in,
+ * which need not be saved.
+ */
+export const CheckoutPreviewInput = z.strictObject({
+  tier_id: z.string().regex(/^[0-9a-f]{24}$/, { error: 'Choose a tier to preview checkout for.' }),
+  cadence: z.enum(['month', 'year']).default('month'),
+  design: DesignInput,
+  ...CollectedPreviews,
 });
 export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
 
@@ -136,11 +147,8 @@ export function parseRequest<Schema extends z.ZodType>(
   });
 }
 
-const CheckoutConfigResource = z.object({
-  design: z.discriminatedUnion('customize', [
-    z.object({ customize: z.literal(false) }),
-    SnakeDesign.extend({ customize: z.literal(true) }),
-  ]),
+/** Each collected part as the Admin API returns it, left out while its flag is off. */
+const CollectedResources = {
   shipping: z
     .discriminatedUnion('collect', [
       z.object({ collect: z.literal(false) }),
@@ -153,6 +161,14 @@ const CheckoutConfigResource = z.object({
       }),
     ])
     .optional(),
+} satisfies Record<CollectedSection, z.ZodType>;
+
+const CheckoutConfigResource = z.object({
+  design: z.discriminatedUnion('customize', [
+    z.object({ customize: z.literal(false) }),
+    SnakeDesign.extend({ customize: z.literal(true) }),
+  ]),
+  ...CollectedResources,
 });
 
 /** Shipping as the Admin API returns it, in the same shape a request gives it. */
@@ -169,24 +185,49 @@ function shippingResource(shipping: ShippingCollection | null) {
   };
 }
 
+/** Each collected part as the Admin API returns it, in the same shape a request gives it. */
+const RESOURCE_OF: {
+  [Section in CollectedSection]: (
+    part: StripeCheckoutConfig[Section],
+  ) => z.input<(typeof CollectedResources)[Section]>;
+} = {
+  shipping: shippingResource,
+};
+
+/** The collected parts a response carries: the ones the config it is given includes. */
+function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>) {
+  const resources: {
+    [Section in CollectedSection]?: z.input<(typeof CollectedResources)[Section]>;
+  } = {};
+  const add = <Section extends CollectedSection>(section: Section) => {
+    const part = settings[section];
+    if (part !== undefined) {
+      resources[section] = RESOURCE_OF[section](part);
+    }
+  };
+  COLLECTED_SECTIONS.forEach(add);
+  return resources;
+}
+
+/** The collected parts, which a response leaves out while their flag is off. */
+const COLLECTED_OPTIONAL: Record<CollectedSection, true> = { shipping: true };
+
 const CheckoutConfigResponse = z.object({
   checkout_config: z.tuple([CheckoutConfigResource]),
 });
 
 /**
  * The config as the Admin API returns it. Every part says whether it is set, so a client can
- * save back exactly what it read. Shipping is left out while its flag is off.
+ * save back exactly what it read. The collected parts are left out while their flag is off.
  */
-export const toCheckoutConfigResponse = StripeCheckoutConfig.partial({ shipping: true })
+export const toCheckoutConfigResponse = StripeCheckoutConfig.partial(COLLECTED_OPTIONAL)
   .transform((settings): z.input<typeof CheckoutConfigResponse> => ({
     checkout_config: [
       {
         design: settings.design
           ? { customize: true as const, ...snakeKeys(settings.design) }
           : { customize: false as const },
-        ...(settings.shipping !== undefined
-          ? { shipping: shippingResource(settings.shipping) }
-          : {}),
+        ...collectedResources(settings),
       },
     ],
   }))

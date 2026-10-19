@@ -14,7 +14,13 @@ export type {
   StripeCheckoutConfig,
   StripeCheckoutDesign,
 } from './models';
-export { SHIPPING_FLAG, collectsShippingFor, countriesToAsk, shippingCountriesFor } from './models';
+export {
+  COLLECTED_NOUNS,
+  COLLECTED_SECTIONS,
+  COLLECTION_FLAG,
+  countriesToAsk,
+  shippingCountriesFor,
+} from './models';
 export { CheckoutBrandingService } from './branding-service';
 export { CheckoutPreviewService } from './preview-service';
 export {

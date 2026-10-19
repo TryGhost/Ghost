@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { DbDate } from '../../lib/db-types/date';
+import { COLLECTED_SECTIONS } from './models';
 
 export const CONFIG_TABLE = 'stripe_checkout_config';
 
@@ -25,9 +26,9 @@ export type DbConfigParts = z.infer<typeof DbConfigParts>;
 
 export const CONFIG_TIERS_TABLE = 'stripe_checkout_config_tiers';
 
-/** A `stripe_checkout_config_tiers` row: one of the tiers a part of the config is limited to. */
+/** A `stripe_checkout_config_tiers` row: one of the tiers a collected part is limited to. */
 export const DbConfigTier = z.object({
-  section: z.literal('shipping'),
+  section: z.enum(COLLECTED_SECTIONS),
   product_id: z.string(),
 });
 type ConfigTierRow = z.infer<typeof DbConfigTier>;

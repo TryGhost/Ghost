@@ -57,31 +57,46 @@ export const ShippingCollection = ShippingSettings.extend({
 });
 export type ShippingCollection = z.infer<typeof ShippingCollection>;
 
+/** Each collected part of the config as saved. */
+const COLLECTED_PARTS = {
+  /** Null means checkout doesn't ask for a shipping address. */
+  shipping: ShippingCollection.nullable(),
+} satisfies Record<CollectedSection, z.ZodType>;
+
 /** The site-wide Stripe Checkout config. */
 export const StripeCheckoutConfig = z.object({
   /** Null means Stripe uses the design set in the Stripe dashboard. */
   design: StripeCheckoutDesign.nullable(),
-  /** Null means checkout doesn't ask for a shipping address. */
-  shipping: ShippingCollection.nullable(),
+  ...COLLECTED_PARTS,
 });
 export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
 
 /**
- * The private flag shipping is behind. The config itself is behind the design flag, which
- * releases first. Staff only see and save shipping while it's on, and checkouts and the
- * completed-checkout webhook only act on shipping while it's on.
+ * The parts of the config that ask the buyer for something, each on every paid tier or only
+ * the ones it names.
  */
-export const SHIPPING_FLAG = 'stripeCheckoutCollection';
+export const COLLECTED_SECTIONS = ['shipping'] as const;
+export type CollectedSection = (typeof COLLECTED_SECTIONS)[number];
 
-/** Whether a checkout for this paid tier asks for a shipping address. */
-export function collectsShippingFor(
-  shipping: ShippingCollection | null,
+/** What each collected part asks the buyer for, as messages about it name it. */
+export const COLLECTED_NOUNS = {
+  shipping: 'shipping address',
+} as const satisfies Record<CollectedSection, string>;
+
+/**
+ * The private flag the collected parts are behind. The config itself is behind the design
+ * flag, which releases first. Staff only see and save the collected parts while it's on, and
+ * checkouts and the completed-checkout webhook only act on them while it's on.
+ */
+export const COLLECTION_FLAG = 'stripeCheckoutCollection';
+
+/** Whether a checkout for this paid tier asks for what a collected part collects. */
+export function collectsFor<Part extends { tierIds: string[] | null; collectable: boolean }>(
+  part: Part | null,
   tierId: string,
-): shipping is ShippingCollection {
+): part is Part {
   return (
-    shipping !== null &&
-    shipping.collectable &&
-    (shipping.tierIds === null || shipping.tierIds.includes(tierId))
+    part !== null && part.collectable && (part.tierIds === null || part.tierIds.includes(tierId))
   );
 }
 
@@ -94,7 +109,7 @@ export function shippingCountriesFor(
   shipping: ShippingCollection | null,
   tierId: string,
 ): string[] | null {
-  if (!collectsShippingFor(shipping, tierId)) {
+  if (!collectsFor(shipping, tierId)) {
     return null;
   }
   return countriesToAsk(shipping.allowedCountries);

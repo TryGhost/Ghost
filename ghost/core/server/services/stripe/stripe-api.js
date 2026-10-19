@@ -6,7 +6,7 @@ const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
 const { snakeKeys } = require('../../lib/case-keys');
 const { z } = require('zod');
-const { SHIPPING_FLAG } = require('../stripe-checkout-config/models');
+const { COLLECTION_FLAG } = require('../stripe-checkout-config/models');
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -122,7 +122,7 @@ module.exports = class StripeAPI {
    * @returns {{shipping_address_collection?: {allowed_countries: string[]}}}
    */
   _shippingCollection(config, tierId) {
-    if (!tierId || !this.labs.isSet(SHIPPING_FLAG)) {
+    if (!tierId || !this.labs.isSet(COLLECTION_FLAG)) {
       return {};
     }
     const countries = this._stripeCheckoutConfig.shippingCountriesFor(
@@ -141,7 +141,7 @@ module.exports = class StripeAPI {
    * @returns {{shipping_address_collection?: {allowed_countries: string[]}}}
    */
   _previewedShipping(shipping) {
-    if (!shipping || !this.labs.isSet(SHIPPING_FLAG)) {
+    if (!shipping || !this.labs.isSet(COLLECTION_FLAG)) {
       return {};
     }
     return {
