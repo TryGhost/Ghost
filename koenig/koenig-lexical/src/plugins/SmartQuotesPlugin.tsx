@@ -167,17 +167,52 @@ function $smartenComposedQuote(quote: string): boolean {
     return true;
 }
 
-function $smartenPastedText(node: TextNode) {
+// the text around the caret when a paste starts, which keeps its quotes as they were
+type PasteSurroundings = {key: string, prefix: string, suffix: string};
+
+function $getPasteSurroundings(): PasteSurroundings | null {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) {
+        return null;
+    }
+
+    const [start, end] = selection.isBackward() ? [selection.focus, selection.anchor] : [selection.anchor, selection.focus];
+    const startNode = start.getNode();
+    const endNode = end.getNode();
+
+    return {
+        key: startNode.getKey(),
+        prefix: $isTextNode(startNode) ? startNode.getTextContent().slice(0, start.offset) : '',
+        suffix: $isTextNode(endNode) ? endNode.getTextContent().slice(end.offset) : ''
+    };
+}
+
+// pasting inside a text node splits and merges it with the pasted text, so the transform also
+// sees text that was already there. Only convert the part between the existing prefix and suffix
+function $smartenPastedText(node: TextNode, surroundings: PasteSurroundings | null) {
     if (!$hasUpdateTag(SMART_QUOTES_PASTE_TAG) || node.hasFormat('code')) {
         return;
     }
 
     const text = node.getTextContent();
-    const newText = smartenQuotes(text, $getTextBeforeNode(node));
+    let start = 0;
+    let end = text.length;
+
+    if (surroundings) {
+        if (node.getKey() === surroundings.key && text.startsWith(surroundings.prefix)) {
+            start = surroundings.prefix.length;
+        }
+        if (surroundings.suffix && text.endsWith(surroundings.suffix) && text.length - surroundings.suffix.length >= start) {
+            end = text.length - surroundings.suffix.length;
+        }
+    }
+
+    const pasted = text.slice(start, end);
+    const smartened = smartenQuotes(pasted, $getTextBeforeNode(node) + text.slice(0, start));
 
     // quotes are always replaced by a single character so any selection offsets stay valid
-    if (newText !== text) {
-        node.setTextContent(newText);
+    if (smartened !== pasted) {
+        node.setTextContent(text.slice(0, start) + smartened + text.slice(end));
     }
 }
 
@@ -185,6 +220,9 @@ export const SmartQuotesPlugin = () => {
     const [editor] = useLexicalComposerContext();
 
     useEffect(() => {
+        let pasteSurroundings: PasteSurroundings | null = null;
+        const onPastedText = (node: TextNode) => $smartenPastedText(node, pasteSurroundings);
+
         const onCompositionEnd = (event: CompositionEvent) => {
             const quote = event.data;
             if (quote !== '"' && quote !== '\'') {
@@ -212,6 +250,7 @@ export const SmartQuotesPlugin = () => {
             editor.registerCommand(
                 PASTE_COMMAND,
                 () => {
+                    pasteSurroundings = $getPasteSurroundings();
                     $addUpdateTag(SMART_QUOTES_PASTE_TAG);
                     return false;
                 },
@@ -222,9 +261,9 @@ export const SmartQuotesPlugin = () => {
                 rootElement?.addEventListener('compositionend', onCompositionEnd);
             }),
             () => editor.getRootElement()?.removeEventListener('compositionend', onCompositionEnd),
-            editor.registerNodeTransform(TextNode, $smartenPastedText),
+            editor.registerNodeTransform(TextNode, onPastedText),
             // nested editors may not have ExtendedTextNode registered
-            editor.hasNode(ExtendedTextNode) ? editor.registerNodeTransform(ExtendedTextNode, $smartenPastedText) : () => {}
+            editor.hasNode(ExtendedTextNode) ? editor.registerNodeTransform(ExtendedTextNode, onPastedText) : () => {}
         );
     }, [editor]);
 
