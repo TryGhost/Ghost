@@ -53,8 +53,9 @@ export type InstallationEvent =
   | { type: 'recheck' | 'approve'; manifest: LoadedManifest }
   | { type: 'uninstall' };
 
-/** The incoming manifest, as a transition stores it in a new row. */
+/** The incoming manifest, and how a transition stores it in a new row. */
 export interface NewManifestRow {
+  manifest: LoadedManifest;
   source: 'approval' | 'update' | 'resume';
   /** Whether it had changes that needed approval. */
   requiresApproval: boolean;
@@ -99,7 +100,9 @@ export function transition(
   const { type, manifest } = event;
   if (installation.status === 'active') {
     const difference = differenceFromApproved(installation, manifest);
-    return type === 'recheck' ? recheckActive(difference) : approveActive(difference);
+    return type === 'recheck'
+      ? recheckActive(difference, manifest)
+      : approveActive(difference, manifest);
   }
   // The pending manifest again. The digest covers the manifest and its URL, so the digests
   // match. A re-check leaves it waiting, and approving it runs the row it already has.
@@ -110,19 +113,19 @@ export function transition(
   }
   const difference = differenceFromApproved(installation, manifest);
   return type === 'recheck'
-    ? recheckSuspended(difference)
-    : approveSuspended(installation, difference);
+    ? recheckSuspended(difference, manifest)
+    : approveSuspended(installation, difference, manifest);
 }
 
 /** Re-checking adopts silent changes, and suspends the installation for any others. */
-function recheckActive(difference: Difference): Transition {
+function recheckActive(difference: Difference, manifest: LoadedManifest): Transition {
   switch (difference) {
     case 'none':
       return SAME;
     case 'silent':
-      return { to: 'active', stores: { source: 'update', requiresApproval: false } };
+      return { to: 'active', stores: { manifest, source: 'update', requiresApproval: false } };
     case 'requires_approval':
-      return { to: 'suspended', stores: { source: 'update', requiresApproval: true } };
+      return { to: 'suspended', stores: { manifest, source: 'update', requiresApproval: true } };
   }
 }
 
@@ -131,25 +134,25 @@ function recheckActive(difference: Difference): Transition {
  * manifest without any means the app reverted the pending changes, which resumes the
  * installation. No person made that change, so its `resume` row is the only record of it.
  */
-function recheckSuspended(difference: Difference): Transition {
+function recheckSuspended(difference: Difference, manifest: LoadedManifest): Transition {
   switch (difference) {
     case 'requires_approval':
-      return { to: 'suspended', stores: { source: 'update', requiresApproval: true } };
+      return { to: 'suspended', stores: { manifest, source: 'update', requiresApproval: true } };
     case 'none':
     case 'silent':
-      return { to: 'active', stores: { source: 'resume', requiresApproval: false } };
+      return { to: 'active', stores: { manifest, source: 'resume', requiresApproval: false } };
   }
 }
 
 /** Approving the approved manifest changes nothing. Any other becomes the approved one. */
-function approveActive(difference: Difference): Transition {
+function approveActive(difference: Difference, manifest: LoadedManifest): Transition {
   switch (difference) {
     case 'none':
       return SAME;
     case 'silent':
-      return { to: 'active', stores: { source: 'approval', requiresApproval: false } };
+      return { to: 'active', stores: { manifest, source: 'approval', requiresApproval: false } };
     case 'requires_approval':
-      return { to: 'active', stores: { source: 'approval', requiresApproval: true } };
+      return { to: 'active', stores: { manifest, source: 'approval', requiresApproval: true } };
   }
 }
 
@@ -157,13 +160,17 @@ function approveActive(difference: Difference): Transition {
  * Approving always resumes the installation. Approving the approved manifest runs the row it
  * already has, and the staff history records the approval.
  */
-function approveSuspended(installation: SuspendedInstallation, difference: Difference): Transition {
+function approveSuspended(
+  installation: SuspendedInstallation,
+  difference: Difference,
+  manifest: LoadedManifest,
+): Transition {
   switch (difference) {
     case 'none':
       return { to: 'active', approvedManifestId: installation.manifest_id };
     case 'silent':
-      return { to: 'active', stores: { source: 'approval', requiresApproval: false } };
+      return { to: 'active', stores: { manifest, source: 'approval', requiresApproval: false } };
     case 'requires_approval':
-      return { to: 'active', stores: { source: 'approval', requiresApproval: true } };
+      return { to: 'active', stores: { manifest, source: 'approval', requiresApproval: true } };
   }
 }

@@ -58,10 +58,11 @@ const same: Transition = { to: 'same' };
 
 function stores(
   to: 'active' | 'suspended',
+  manifest: LoadedManifest,
   source: NewManifestRow['source'],
   { requiresApproval = false } = {},
 ): Transition {
-  return { to, stores: { source, requiresApproval } };
+  return { to, stores: { manifest, source, requiresApproval } };
 }
 
 describe('changesFrom', function () {
@@ -81,7 +82,8 @@ describe('transition', function () {
   describe('of an active installation', function () {
     it('adopts silent changes a re-check finds, and suspends for any others', function () {
       assert.deepEqual(transition(active, recheck(incoming())), same);
-      assert.deepEqual(transition(active, recheck(incoming(silent))), stores('active', 'update'));
+      const silently = incoming(silent);
+      assert.deepEqual(transition(active, recheck(silently)), stores('active', silently, 'update'));
       // Including when only some of the changes are silent, or the app moved.
       for (const changed of [
         incoming(needsApproval),
@@ -90,18 +92,22 @@ describe('transition', function () {
       ]) {
         assert.deepEqual(
           transition(active, recheck(changed)),
-          stores('suspended', 'update', { requiresApproval: true }),
+          stores('suspended', changed, 'update', { requiresApproval: true }),
         );
       }
     });
 
     it('stores any approved manifest but the approved one as the approved manifest', function () {
       assert.deepEqual(transition(active, approve(incoming())), same);
-      assert.deepEqual(transition(active, approve(incoming(silent))), stores('active', 'approval'));
+      const silently = incoming(silent);
+      assert.deepEqual(
+        transition(active, approve(silently)),
+        stores('active', silently, 'approval'),
+      );
       for (const changed of [incoming(needsApproval), incoming({}, MOVED_URL)]) {
         assert.deepEqual(
           transition(active, approve(changed)),
-          stores('active', 'approval', { requiresApproval: true }),
+          stores('active', changed, 'approval', { requiresApproval: true }),
         );
       }
     });
@@ -110,9 +116,10 @@ describe('transition', function () {
   describe('of a suspended installation', function () {
     it('leaves the pending manifest waiting, or replaces it with other changes that need approval', function () {
       assert.deepEqual(transition(suspended, recheck(incoming(needsApproval))), same);
+      const other = incoming({ name: 'Podcasts!' });
       assert.deepEqual(
-        transition(suspended, recheck(incoming({ name: 'Podcasts!' }))),
-        stores('suspended', 'update', { requiresApproval: true }),
+        transition(suspended, recheck(other)),
+        stores('suspended', other, 'update', { requiresApproval: true }),
       );
     });
 
@@ -120,21 +127,22 @@ describe('transition', function () {
       const moved = incoming(needsApproval, MOVED_URL);
       assert.deepEqual(
         transition(suspended, recheck(moved)),
-        stores('suspended', 'update', { requiresApproval: true }),
+        stores('suspended', moved, 'update', { requiresApproval: true }),
       );
       assert.deepEqual(
         transition(suspended, approve(moved)),
-        stores('active', 'approval', { requiresApproval: true }),
+        stores('active', moved, 'approval', { requiresApproval: true }),
       );
     });
 
     it('resumes with a resume row when the app reverts the pending changes', function () {
       // The approved manifest again, with or without silent changes.
-      assert.deepEqual(transition(suspended, recheck(incoming())), stores('active', 'resume'));
-      assert.deepEqual(
-        transition(suspended, recheck(incoming(silent))),
-        stores('active', 'resume'),
-      );
+      for (const reverted of [incoming(), incoming(silent)]) {
+        assert.deepEqual(
+          transition(suspended, recheck(reverted)),
+          stores('active', reverted, 'resume'),
+        );
+      }
     });
 
     it('resumes on any approval, running the rows it has for the pending and approved manifests', function () {
@@ -146,13 +154,15 @@ describe('transition', function () {
         to: 'active',
         approvedManifestId: 'approved',
       });
+      const silently = incoming(silent);
       assert.deepEqual(
-        transition(suspended, approve(incoming(silent))),
-        stores('active', 'approval'),
+        transition(suspended, approve(silently)),
+        stores('active', silently, 'approval'),
       );
+      const other = incoming({ name: 'Podcasts!' });
       assert.deepEqual(
-        transition(suspended, approve(incoming({ name: 'Podcasts!' }))),
-        stores('active', 'approval', { requiresApproval: true }),
+        transition(suspended, approve(other)),
+        stores('active', other, 'approval', { requiresApproval: true }),
       );
     });
   });

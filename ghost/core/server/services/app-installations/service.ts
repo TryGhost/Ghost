@@ -12,13 +12,7 @@ import {
   type CurrentInstallation,
 } from './codec';
 import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
-import {
-  changesFrom,
-  transition,
-  type AppManifestChange,
-  type NewManifestRow,
-  type Transition,
-} from './lifecycle';
+import { changesFrom, transition, type AppManifestChange, type Transition } from './lifecycle';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import { DbAppInstallation, DbAppInstallationManifest, type AppInstallationStatus } from './schema';
 
@@ -169,9 +163,6 @@ type Applied =
   | { outcome: 'applied'; from: string; to: string }
   | { outcome: 'unchanged' | 'gone' | 'stale' };
 
-/** A transition that stores the incoming manifest as a new row. */
-type StoringTransition = Extract<Transition, { stores: NewManifestRow }>;
-
 const RevisionRow = DbAppInstallation.pick({ revision: true });
 
 /** Reads the revision of an installation that hasn't been uninstalled. */
@@ -191,7 +182,6 @@ async function writeTransition(
   trx: Knex.Transaction,
   installation: CurrentInstallation,
   next: Transition,
-  incoming: LoadedManifest | undefined,
 ): Promise<Applied> {
   if (next.to === 'same') {
     return { outcome: 'unchanged' };
@@ -216,20 +206,16 @@ async function writeTransition(
   if ('approvedManifestId' in next) {
     manifestId = next.approvedManifestId;
   } else {
-    if (!incoming) {
-      throw new errors.IncorrectUsageError({
-        message: 'A transition that stores a manifest needs the manifest it stores.',
-      });
-    }
+    const { manifest, source, requiresApproval } = next.stores;
     manifestId = new ObjectId().toHexString();
     await trx(MANIFESTS).insert({
       id: manifestId,
       installation_id: installation.id,
-      manifest_url: incoming.manifestUrl,
-      manifest: incoming.serialised,
-      digest: incoming.digest,
-      source: next.stores.source,
-      requires_approval: next.stores.requiresApproval,
+      manifest_url: manifest.manifestUrl,
+      manifest: manifest.serialised,
+      digest: manifest.digest,
+      source,
+      requires_approval: requiresApproval,
       created_at: now,
     });
   }
@@ -249,35 +235,24 @@ async function writeTransition(
 /**
  * Applies `next`, a transition decided from the installation as it was read. Every change
  * moves the revision on, so the transition only goes ahead while the installation is still
- * at `installation.revision`. Uninstalling doesn't depend on what the installation runs, so
- * it goes ahead at any revision. A transition that stores a row takes the manifest it stores.
+ * at `installation.revision`. A transition that doesn't depend on what the installation runs
+ * can go ahead `atAnyRevision`.
  */
-function applyTransition(
-  knex: Knex,
-  installation: CurrentInstallation,
-  next: StoringTransition,
-  incoming: LoadedManifest,
-): Promise<Applied>;
-function applyTransition(
-  knex: Knex,
-  installation: CurrentInstallation,
-  next: Exclude<Transition, StoringTransition>,
-): Promise<Applied>;
 async function applyTransition(
   knex: Knex,
   installation: CurrentInstallation,
   next: Transition,
-  incoming?: LoadedManifest,
+  { atAnyRevision = false }: { atAnyRevision?: boolean } = {},
 ): Promise<Applied> {
   return knex.transaction(async (trx): Promise<Applied> => {
     const revision = revisionOf(await currentRevision(trx, installation.id).forUpdate());
     if (revision === undefined) {
       return { outcome: 'gone' };
     }
-    if (revision !== installation.revision && next.to !== 'uninstalled') {
+    if (revision !== installation.revision && !atAnyRevision) {
       return { outcome: 'stale' };
     }
-    return writeTransition(trx, installation, next, incoming);
+    return writeTransition(trx, installation, next);
   });
 }
 
@@ -593,16 +568,16 @@ export class AppInstallationsService {
    * installation as it was read, and only written while the installation is still at that
    * revision, so it still holds when it's written.
    */
-  private async applyIncoming(
+  private applyIncoming(
     installation: CurrentInstallation,
     incoming: LoadedManifest,
     type: 'recheck' | 'approve',
   ): Promise<Applied> {
-    const next = transition(installation, { type, manifest: incoming });
-    if (!('stores' in next)) {
-      return applyTransition(this.knex, installation, next);
-    }
-    return applyTransition(this.knex, installation, next, incoming);
+    return applyTransition(
+      this.knex,
+      installation,
+      transition(installation, { type, manifest: incoming }),
+    );
   }
 
   /** The installation changed since the review, so the error carries a new preview. */
@@ -720,8 +695,13 @@ export class AppInstallationsService {
       }
       return;
     }
+    // Uninstalling doesn't depend on what the installation runs, so it goes ahead at any
+    // revision.
     const next = transition(installation, { type: 'uninstall' });
-    if ((await applyTransition(this.knex, installation, next)).outcome !== 'applied') {
+    const { outcome } = await applyTransition(this.knex, installation, next, {
+      atAnyRevision: true,
+    });
+    if (outcome !== 'applied') {
       return;
     }
     await this.recordAction({
