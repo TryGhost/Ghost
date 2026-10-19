@@ -131,6 +131,42 @@ test.describe('Bluesky sharing', async () => {
     await expect(page.getByText('Switching your Bluesky handle')).toHaveCount(0);
   });
 
+  test('I can check again when Bluesky takes a while to switch my handle', async ({ page }) => {
+    await page.clock.install();
+
+    const claiming = { domain: 'site.com', status: 'claiming', reason: null };
+
+    await mockApi({
+      page,
+      requests: {
+        getMyAccount: getMyAccount({
+          blueskyHandle: 'index.site.com.ap.brid.gy',
+          blueskyDomainHandle: claiming,
+        }),
+        confirmBlueskyHandle: {
+          method: 'POST',
+          path: '/v2/actions/bluesky/confirm-handle',
+          response: blueskyResponse('index.site.com.ap.brid.gy', claiming),
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/preferences/bluesky-sharing');
+    await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
+
+    // The screen checks every 5 seconds for about two minutes
+    await page.clock.runFor(5000 * 30);
+
+    await expect(
+      page.getByText("Bluesky hasn't switched your handle to @site.com yet."),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: 'Check again' }).click();
+
+    await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
+  });
+
   test('I can switch back to the default Bluesky handle', async ({ page }) => {
     const { lastApiRequests } = await mockApi({
       page,

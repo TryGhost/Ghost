@@ -32,23 +32,29 @@ export interface Account {
   blueskyDomainHandle?: BlueskyDomainHandle | null;
 }
 
-export type BlueskyDomainHandleStatus =
-  | 'claiming'
-  | 'active'
-  | 'unavailable'
-  | 'opted_out'
-  | 'released';
-
-export type BlueskyDomainHandleReason = 'taken' | 'not_reachable' | 'dns_error' | 'rejected';
-
 /**
  * Whether the site's domain is (or is becoming) the Bluesky handle, or why it
  * can't be
  */
-export interface BlueskyDomainHandle {
-  domain: string;
-  status: BlueskyDomainHandleStatus;
-  reason: BlueskyDomainHandleReason | null;
+const blueskyDomainHandleSchema = z.object({
+  domain: z.string(),
+  status: z.enum(['claiming', 'active', 'unavailable', 'opted_out', 'released']),
+  reason: z.enum(['taken', 'not_reachable', 'dns_error', 'rejected']).nullable().catch(null),
+});
+
+export type BlueskyDomainHandle = z.infer<typeof blueskyDomainHandleSchema>;
+export type BlueskyDomainHandleStatus = BlueskyDomainHandle['status'];
+export type BlueskyDomainHandleReason = NonNullable<BlueskyDomainHandle['reason']>;
+
+/**
+ * Parse a domain handle from the ActivityPub service. Anything that isn't one
+ * this version understands (eg a status added later) counts as no domain
+ * handle yet
+ */
+function parseBlueskyDomainHandle(value: unknown): BlueskyDomainHandle | null {
+  const result = blueskyDomainHandleSchema.safeParse(value);
+
+  return result.success ? result.data : null;
 }
 
 export interface BlueskyHandleDetails {
@@ -588,8 +594,15 @@ export class ActivityPubAPI {
   async getAccount(handle: string): Promise<GetAccountResponse> {
     const url = new URL(`.ghost/activitypub/v1/account/${handle}`, this.apiUrl);
     const json = await this.fetchJSON(url);
+    const account = json as GetAccountResponse;
 
-    return json as GetAccountResponse;
+    // Only there for the site's own account, and only with ActivityPub
+    // services that support domain handles
+    if (json !== null && 'blueskyDomainHandle' in json) {
+      account.blueskyDomainHandle = parseBlueskyDomainHandle(json.blueskyDomainHandle);
+    }
+
+    return account;
   }
 
   async getAccountFollows(
@@ -1021,30 +1034,11 @@ export class ActivityPubAPI {
     const handle =
       json !== null && 'handle' in json && typeof json.handle === 'string' ? json.handle : '';
 
+    // Older ActivityPub services leave it out entirely
     if (json === null || !('domainHandle' in json)) {
       return { handle };
     }
 
-    let domainHandle: BlueskyDomainHandle | null = null;
-
-    if (
-      json.domainHandle !== null &&
-      typeof json.domainHandle === 'object' &&
-      'domain' in json.domainHandle &&
-      typeof json.domainHandle.domain === 'string' &&
-      'status' in json.domainHandle &&
-      typeof json.domainHandle.status === 'string'
-    ) {
-      domainHandle = {
-        domain: json.domainHandle.domain,
-        status: json.domainHandle.status as BlueskyDomainHandleStatus,
-        reason:
-          'reason' in json.domainHandle && typeof json.domainHandle.reason === 'string'
-            ? (json.domainHandle.reason as BlueskyDomainHandleReason)
-            : null,
-      };
-    }
-
-    return { handle, domainHandle };
+    return { handle, domainHandle: parseBlueskyDomainHandle(json.domainHandle) };
   }
 }

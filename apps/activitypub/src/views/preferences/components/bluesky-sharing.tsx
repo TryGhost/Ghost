@@ -52,13 +52,28 @@ const LearnMore: React.FC = () => (
 const DomainHandleStatus: React.FC<{
   domainHandle: BlueskyDomainHandle;
   busy: boolean;
+  stoppedChecking: boolean;
   onClaim: () => void;
+  onCheckAgain: () => void;
   onReset: () => void;
-}> = ({ domainHandle, busy, onClaim, onReset }) => {
+}> = ({ domainHandle, busy, stoppedChecking, onClaim, onCheckAgain, onReset }) => {
   const domain = `@${domainHandle.domain}`;
 
   switch (domainHandle.status) {
     case 'claiming':
+      if (stoppedChecking) {
+        return (
+          <div className="flex flex-col items-center gap-2 text-center text-sm text-gray-700 dark:text-gray-600">
+            <p>
+              Bluesky hasn&apos;t switched your handle to {domain} yet. This can take a few minutes.
+            </p>
+            <Button size="sm" variant="outline" onClick={onCheckAgain}>
+              Check again
+            </Button>
+          </div>
+        );
+      }
+
       return (
         <div className="flex items-center justify-center gap-2 text-sm text-gray-700 dark:text-gray-600">
           <LoadingIndicator size="sm" />
@@ -113,7 +128,10 @@ const BlueskySharing: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [handleConfirmed, setHandleConfirmed] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [stoppedCheckingDomainHandle, setStoppedCheckingDomainHandle] = useState(false);
+  const [domainHandleCheckRound, setDomainHandleCheckRound] = useState(0);
   const retryCountRef = useRef(0);
+  const isConfirmingRef = useRef(false);
   const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
   const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
   const confirmBlueskyHandleMutation = useConfirmBlueskyHandleMutationForUser('index');
@@ -159,6 +177,13 @@ const BlueskySharing: React.FC = () => {
   };
 
   const confirmHandle = useCallback(() => {
+    // One check at a time, so a slow, older response can't overwrite a newer one
+    if (isConfirmingRef.current) {
+      return;
+    }
+
+    isConfirmingRef.current = true;
+
     confirmBlueskyHandleMutation
       .mutateAsync()
       .then(({ handle }) => {
@@ -168,6 +193,9 @@ const BlueskySharing: React.FC = () => {
       })
       .catch(() => {
         // Errors are handled by the mutation, the next check retries
+      })
+      .finally(() => {
+        isConfirmingRef.current = false;
       });
   }, []); // Empty deps - mutations are stable in practice
 
@@ -263,6 +291,9 @@ const BlueskySharing: React.FC = () => {
 
       if (checks > MAX_DOMAIN_HANDLE_CHECKS) {
         clearInterval(domainHandleInterval);
+        // Bluesky can be slow: offer to check again rather than keep saying
+        // it's switching
+        setStoppedCheckingDomainHandle(true);
 
         return;
       }
@@ -271,7 +302,17 @@ const BlueskySharing: React.FC = () => {
     }, CONFIRMATION_INTERVAL);
 
     return () => clearInterval(domainHandleInterval);
-  }, [shouldCheckDomainHandle, domainHandleStatus, confirmHandle]);
+  }, [shouldCheckDomainHandle, domainHandleStatus, domainHandleCheckRound, confirmHandle]);
+
+  // A new status (eg a new claim) starts the checks from scratch
+  useEffect(() => {
+    setStoppedCheckingDomainHandle(false);
+  }, [domainHandleStatus]);
+
+  const handleCheckDomainHandleAgain = () => {
+    setStoppedCheckingDomainHandle(false);
+    setDomainHandleCheckRound((round) => round + 1);
+  };
 
   if (isLoadingAccount) {
     return (
@@ -470,6 +511,8 @@ const BlueskySharing: React.FC = () => {
                   <DomainHandleStatus
                     busy={isUpdatingDomainHandle}
                     domainHandle={domainHandle}
+                    stoppedChecking={stoppedCheckingDomainHandle}
+                    onCheckAgain={handleCheckDomainHandleAgain}
                     onClaim={handleClaimDomainHandle}
                     onReset={() => setShowResetConfirm(true)}
                   />

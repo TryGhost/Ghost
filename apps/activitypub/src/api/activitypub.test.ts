@@ -2282,6 +2282,104 @@ describe('ActivityPubAPI', function () {
     });
   });
 
+  describe('getAccount', function () {
+    test('It validates the Bluesky domain handle', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v1/account/me`]: {
+          response: JSONResponse({
+            handle: '@index@example.com',
+            blueskyDomainHandle: { domain: 'example.com', status: 'pending_review', reason: null },
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      const account = await api.getAccount('me');
+
+      expect(account.blueskyDomainHandle).toBeNull();
+    });
+
+    test('It keeps a valid Bluesky domain handle', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v1/account/me`]: {
+          response: JSONResponse({
+            handle: '@index@example.com',
+            blueskyDomainHandle: { domain: 'example.com', status: 'active', reason: null },
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      const account = await api.getAccount('me');
+
+      expect(account.blueskyDomainHandle).toEqual({
+        domain: 'example.com',
+        status: 'active',
+        reason: null,
+      });
+    });
+
+    test('It leaves out the Bluesky domain handle for older ActivityPub services', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v1/account/me`]: {
+          response: JSONResponse({
+            handle: '@index@example.com',
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      const account = await api.getAccount('me');
+
+      expect('blueskyDomainHandle' in account).toBe(false);
+    });
+  });
+
   describe('enableBluesky', function () {
     test('It enables bluesky', async function () {
       const fakeFetch = Fetch({
@@ -2544,6 +2642,72 @@ describe('ActivityPubAPI', function () {
       expect(result).toEqual({
         handle: 'index.example.com.ap.brid.gy',
         domainHandle: null,
+      });
+    });
+
+    test('It treats a domain handle status it does not know as no domain handle', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
+          response: JSONResponse({
+            handle: 'index.example.com.ap.brid.gy',
+            domainHandle: { domain: 'example.com', status: 'pending_review', reason: null },
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      const result = await api.confirmBlueskyHandle();
+
+      expect(result).toEqual({ handle: 'index.example.com.ap.brid.gy', domainHandle: null });
+    });
+
+    test('It ignores a domain handle reason it does not know', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
+          response: JSONResponse({
+            handle: 'index.example.com.ap.brid.gy',
+            domainHandle: { domain: 'example.com', status: 'unavailable', reason: 'blocked' },
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      const result = await api.confirmBlueskyHandle();
+
+      expect(result.domainHandle).toEqual({
+        domain: 'example.com',
+        status: 'unavailable',
+        reason: null,
       });
     });
   });
