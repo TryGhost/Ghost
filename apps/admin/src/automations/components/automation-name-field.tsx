@@ -59,7 +59,8 @@ const AutomationNameField: React.FC<AutomationNameFieldProps> = ({ value, onChan
           selectOnRelease.current = true;
         }}
         onKeyDown={(event) => {
-          // Enter and Escape also confirm or cancel an IME candidate
+          // During IME input (e.g. Japanese or Chinese), Enter and Escape control
+          // character selection. This early return lets the input method handle them.
           if (event.nativeEvent.isComposing) {
             return;
           }

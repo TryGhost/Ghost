@@ -198,14 +198,13 @@ const PerformanceContent: React.FC<{
 
 export const AutomationSidebar: React.FC<{
   automationId: string;
-  name: string;
   description: string;
   triggerTierScope: AutomationTrigger['trigger_tier_scope'];
   triggerTierIds: readonly string[];
   tiers: readonly Tier[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
-  onDetailsChange: (details: { name: string; description: string }) => void;
+  onDescriptionChange: (description: string) => void;
   selectedTab: AutomationSidebarTab;
   onTabChange: (tab: AutomationSidebarTab) => void;
   isOpen: boolean;
@@ -215,14 +214,13 @@ export const AutomationSidebar: React.FC<{
   isRunSelectionDisabled: boolean;
 }> = ({
   automationId,
-  name,
   description,
   triggerTierScope,
   triggerTierIds,
   tiers,
   performanceEnabled,
   metadata,
-  onDetailsChange,
+  onDescriptionChange,
   isOpen,
   selectedTab,
   onTabChange,
@@ -427,9 +425,7 @@ export const AutomationSidebar: React.FC<{
                       maxLength={2000}
                       rows={4}
                       value={description}
-                      onChange={(event) =>
-                        onDetailsChange({ name, description: event.target.value })
-                      }
+                      onChange={(event) => onDescriptionChange(event.target.value)}
                     />
                   </Field>
                   <Field>

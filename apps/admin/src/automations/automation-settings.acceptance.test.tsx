@@ -67,7 +67,7 @@ describe('Automation settings', () => {
     await expect.element(nameField()).toHaveValue('Updated welcome flow');
   });
 
-  it('renames from the title, puts a blank name back, and allows a name in use', async () => {
+  it('renames from the title, restores the previous name when left blank, and allows a name in use', async () => {
     setup();
     let saved: AutomationDetail = { ...detail('first'), status: 'inactive' };
     fakeAdminEndpoint('GET', '/automations/first/', () => ({ automations: [saved] }));

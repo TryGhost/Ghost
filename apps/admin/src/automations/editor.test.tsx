@@ -1095,7 +1095,7 @@ describe('AutomationEditor', () => {
   });
 
   it.each(['', '   '])(
-    'blocks saving blank name %j, puts the name back on leaving, and allows empty description',
+    'blocks saving blank name %j and restores the previous name when left blank',
     (name) => {
       mockLabs.current = { automationsPerTier: true };
       mockUseReadAutomation.mockReturnValue({
@@ -1108,10 +1108,6 @@ describe('AutomationEditor', () => {
       const input = screen.getByRole('textbox', { name: 'Automation name' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: name } });
-      fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-      fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
-        target: { value: '' },
-      });
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
       expect(mockToastError).toHaveBeenCalledWith('Add an automation name.');
       expect(mockEditMutation.mutate).not.toHaveBeenCalled();
@@ -1120,11 +1116,31 @@ describe('AutomationEditor', () => {
       fireEvent.change(input, { target: { value: 'Valid name' } });
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
       expect(mockEditMutation.mutate).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Valid name', description: '' }),
+        expect.objectContaining({ name: 'Valid name' }),
         expect.any(Object),
       );
     },
   );
+
+  it('allows saving an empty description', () => {
+    mockLabs.current = { automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status: 'inactive' }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ description: '' }),
+      expect.any(Object),
+    );
+  });
 
   it('leaves IME composition keys to the input method when renaming', () => {
     mockLabs.current = { automationsPerTier: true };
