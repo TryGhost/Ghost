@@ -8,9 +8,8 @@ pnpm gx generate package email-utils --description "Email utilities for Ghost."
 pnpm gx generate package parser --dir packages/email/parser
 ```
 
-Package generation moves the existing package generator from `tools/scripts/`
-without changing its behavior. It still uses `packages/_template` and the shared
-helpers in `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alias.
+Package generation uses `packages/_template` and the shared helpers in
+`tools/scripts/lib/`. `pnpm create-package` remains a forwarding alias.
 Run `pnpm install` after generating a package; custom destinations must be covered
 by the workspace globs.
 
@@ -176,8 +175,8 @@ for the dependency policy.
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
 from TypeScript source and has no build or package exports. Its `test` command
 checks types as well as running the command tests. Run `pnpm --filter @internal/gx lint` and
-`pnpm --filter @internal/gx test` to validate it. Add further commands as focused migrations
-of existing tools.
+`pnpm --filter @internal/gx test` to validate it. Keep contributor command
+implementations here and reusable Core logic in its owning subsystem.
 
 See [tooling ownership](../README.md) before adding a command or relocating its
 implementation, shared helpers or installed-release functionality.

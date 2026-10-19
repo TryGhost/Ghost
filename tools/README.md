@@ -18,6 +18,11 @@ running a script manually does not, by itself, decide ownership.
 | A tool that must work against an installed Ghost release without contributor dependencies                                 | [ghost/bin/](../ghost/bin/README.md)         | Direct invocation in the installed tree                  |
 | Application or domain behavior used by Ghost itself                                                                       | Its owning app, package or Core subsystem    | Imported by the application; a CLI can call it           |
 
+An app or package's own build/test helpers and local configuration can stay
+beside that workspace. Use `tools/` for shared or repository-wide tooling and
+contributor commands. A workflow's isolated install boundary can also justify
+keeping its tooling local; see the owning README.
+
 Keep command implementations with their owner. A gx wrapper around a developer
 command left in an automation folder does not complete a move. Keep underlying
 Core logic in Core, and test fixtures beside their tests.

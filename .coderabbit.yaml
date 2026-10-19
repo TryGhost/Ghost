@@ -51,6 +51,34 @@ reviews:
           migration (ghost/core/server/data/migrations/), a tool/config file,
           under tools/scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
+      - name: 'Tooling ownership'
+        mode: 'error'
+        instructions: |
+          Review new, moved or substantially changed tooling wherever it appears in
+          the PR. Use tools/README.md and the owning folder README as the source of
+          truth; classify by purpose and execution environment, not the caller alone.
+          Fail only when the diff introduces or worsens one of these violations:
+          - Shared tooling configuration/policy belongs in tools/configs; repository
+            setup, validation, cross-workspace builds and releases in tools/scripts (ci/,
+            build/, release/, or root setup/repair); contributor commands and their
+            implementations in tools/gx, exposed through pnpm gx.
+          - Ghost-owned build, packaging and checkout policy-export tools belong in
+            ghost/scripts; tools requiring an installed Ghost tree belong in
+            ghost/bin. Production/installed tools must not depend on the private
+            gx/scripts workspaces or checkout-only loaders and dependencies.
+          - A move breaks actual callers, path-derived roots, sparse checkouts,
+            Docker copies, Nx inputs or compiled/shipped entrypoints; or makes
+            bootstrap, repair, direct shutdown or lifecycle hooks require installed
+            CLI dependencies where their documented contract is dependency-free.
+          Respect documented exceptions: workspace-local config/build/test helpers,
+          nearby tests/fixtures, shared scripts/lib helpers used by gx, isolated CI
+          install boundaries, loader adapters and the shipped scripts/prune.mts path.
+          A CI caller does not make a contributor task CI-owned; a manual caller
+          does not make release automation a gx command. Do not request cosmetic
+          moves, unrelated migrations or findings already covered by static checks.
+          For a failure, cite the changed file, the ownership rule and the actual
+          caller/runtime evidence, and state the correct home or broken contract.
+          Pass when no tooling changes or no concrete violation is established.
   path_instructions:
     - path: '**/*'
       instructions: |
@@ -193,6 +221,18 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
+      - files: 'tools/README.md'
+        applyTo: '**/*'
+      - files: 'tools/configs/README.md'
+        applyTo: 'tools/configs/**,**/*config*'
+      - files: 'tools/scripts/README.md'
+        applyTo: 'tools/scripts/**,.github/**,docker/**,package.json,nx.json'
+      - files: 'tools/gx/README.md'
+        applyTo: 'tools/gx/**,package.json,.codex/hooks.json'
+      - files: 'ghost/scripts/README.md'
+        applyTo: 'ghost/scripts/**,ghost/package.json,docker/**'
+      - files: 'ghost/bin/README.md'
+        applyTo: 'ghost/bin/**,ghost/package.json,docker/**'
       - files: 'docs/practices/api-design.md'
         applyTo: 'ghost/core/server/api/**,packages/admin-api-schema/**'
       - files: 'docs/practices/database-migrations.md'
