@@ -4,8 +4,13 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import { Metafield } from './models';
 import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
-import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { metafieldCodec } from './codec';
+import {
+  CUSTOM_NAMESPACE,
+  type Key,
+  KeySchema,
+  type Namespace,
+} from '@tryghost/metafield-types/identity';
 import { assertDefinable } from './namespaces';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
 import {
@@ -24,7 +29,8 @@ import {
   nql,
   type DefinitionQuery,
 } from './queries';
-import { KEY_CHARACTERS, mintableKey } from './key';
+import { mintableKey } from './key';
+import { parseRequest } from '../../lib/parse-request';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
 
 const TABLE = 'members_metafields';
@@ -50,8 +56,8 @@ const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length 
 // to be reserved is every prototype name a well-formed key could spell. The ones that
 // carry a capital cannot be spelled at all and need no reserving; `constructor` and
 // `__proto__` can.
-const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter((name) =>
-  KEY_CHARACTERS.test(name),
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter(
+  (name) => KeySchema.safeParse(name).success,
 );
 
 const FieldName = z
@@ -91,7 +97,10 @@ const AddFieldsInput = z
 const ReorderInput = z
   .array(
     z.object({
-      key: z.string().min(1, { message: 'Every custom field in the order needs a key.' }),
+      key: z
+        .string()
+        .min(1, { message: 'Every custom field in the order needs a key.' })
+        .pipe(KeySchema),
     }),
   )
   .min(1, { message: 'The order must name every custom field.' });
@@ -102,7 +111,7 @@ const EditFieldInput = z.object({
   name: FieldName.optional(),
   status: FieldStatusSchema.optional(),
   access: FieldAccess.optional(),
-  key: z.string().optional(),
+  key: z.optional(KeySchema),
   type: FieldTypeSchema.optional(),
 });
 
@@ -134,12 +143,12 @@ export class MetafieldDefinitionsService {
    * The fields table has no namespace column: every row in it belongs to the publisher's
    * `custom` namespace, so no other namespace can have a stored field.
    */
-  private isStored(namespace: string): boolean {
+  private isStored(namespace: Namespace): boolean {
     return namespace === CUSTOM_NAMESPACE;
   }
 
   async browse(
-    options: { namespace?: string; filter?: string },
+    options: { namespace?: Namespace; filter?: string },
     audience: Audience,
   ): Promise<Metafield[]> {
     if (options.namespace !== undefined && !this.isStored(options.namespace)) {
@@ -170,7 +179,7 @@ export class MetafieldDefinitionsService {
     return rows.map((row) => z.decode(metafieldCodec, row));
   }
 
-  async read(namespace: string, key: string, audience: Audience): Promise<Metafield> {
+  async read(namespace: Namespace, key: Key, audience: Audience): Promise<Metafield> {
     const [field] = this.isStored(namespace)
       ? await this.list(definitions(this.knex, { audience, status: ANY_STATUS, key }))
       : [];
@@ -190,7 +199,7 @@ export class MetafieldDefinitionsService {
    * batch, so two items sharing a name are caught and two items deriving the same
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
-  async add(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
+  async add(context: RequestContext, namespace: Namespace, input: unknown): Promise<Metafield[]> {
     assertDefinable(namespace);
     const requestedCount = Array.isArray(input) ? input.length : 0;
 
@@ -229,7 +238,7 @@ export class MetafieldDefinitionsService {
         // them rather than all sharing the end of the list.
         const firstSortOrder = await this.nextSortOrder(trx);
 
-        const keys: string[] = [];
+        const keys: Key[] = [];
         for (const [index, field] of fields.entries()) {
           await this.assertNameAvailable(trx, field.name);
           const key = await this.mintKey(trx, bases[index]);
@@ -273,26 +282,31 @@ export class MetafieldDefinitionsService {
    * which a single-connection pool would deadlock against an open transaction.
    */
   async addOne(
-    wanted: { key: string; name: string; type: FieldType; access: z.infer<typeof FieldAccess> },
+    wanted: {
+      key: string;
+      name: string;
+      type: FieldType;
+      access: z.infer<typeof FieldAccess>;
+    },
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
     // Before any database access, the way `add` mints before opening its transaction:
     // an unusable key is a payload problem worth reporting on its own terms.
-    assertKeyUsable(wanted.key);
+    const key = usableKey(wanted.key);
 
     const write = async (db: Knex) => {
       await this.assertWithinLimit(db, 1);
-      await this.assertKeyAvailable(db, wanted.key);
+      await this.assertKeyAvailable(db, key);
       await this.assertNameAvailable(db, wanted.name);
 
       await this.insertField(db, {
-        key: wanted.key,
+        key,
         name: wanted.name,
         type: wanted.type,
         memberAccess: wanted.access.member,
         sortOrder: await this.nextSortOrder(db),
       });
-      const [created] = await this.readMany(db, [wanted.key]);
+      const [created] = await this.readMany(db, [key]);
       return created;
     };
 
@@ -317,7 +331,7 @@ export class MetafieldDefinitionsService {
   private async insertField(
     db: Knex,
     field: {
-      key: string;
+      key: Key;
       name: string;
       type: FieldType;
       memberAccess: MemberAccess;
@@ -406,7 +420,11 @@ export class MetafieldDefinitionsService {
    * fresh rank, so a move is well-defined even where every rank is still the default.
    * Returns every definition, archived included, matching what the request named.
    */
-  async reorder(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
+  async reorder(
+    context: RequestContext,
+    namespace: Namespace,
+    input: unknown,
+  ): Promise<Metafield[]> {
     assertDefinable(namespace);
     const parsed = ReorderInput.safeParse(input);
     if (!parsed.success) {
@@ -450,7 +468,7 @@ export class MetafieldDefinitionsService {
    * once is refused rather than half-applied. A client that loaded before a colleague
    * added a field cannot name it, and is told to reload.
    */
-  private async assertNamesEveryField(db: Knex, keys: string[]): Promise<void> {
+  private async assertNamesEveryField(db: Knex, keys: Key[]): Promise<void> {
     const named = new Set(keys);
     const existing = new Set(await db(TABLE).pluck<string[]>('key'));
 
@@ -490,7 +508,7 @@ export class MetafieldDefinitionsService {
    * Reads the keys already taken by that base — including archived fields, so a
    * key is never reused once minted.
    */
-  private async mintKey(db: Knex, base: string): Promise<string> {
+  private async mintKey(db: Knex, base: Key): Promise<Key> {
     // Trimmed again after cutting, because the cut can land mid-separator and
     // a key that ends in one is not a shape minting is allowed to produce. The
     // base starts with an alphanumeric, so something always survives.
@@ -500,12 +518,12 @@ export class MetafieldDefinitionsService {
       ...(await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')),
     ]);
     if (!taken.has(safeBase)) {
-      return safeBase;
+      return KeySchema.parse(safeBase);
     }
     for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
       const candidate = `${safeBase}_${suffix}`;
       if (!taken.has(candidate)) {
-        return candidate;
+        return KeySchema.parse(candidate);
       }
     }
     throw new errors.ValidationError({
@@ -542,8 +560,8 @@ export class MetafieldDefinitionsService {
 
   async edit(
     context: RequestContext,
-    namespace: string,
-    key: string,
+    namespace: Namespace,
+    key: Key,
     input: unknown,
   ): Promise<Metafield> {
     if (!this.isStored(namespace)) {
@@ -642,7 +660,7 @@ export class MetafieldDefinitionsService {
    * which makes accidental data loss a deliberate two-step. Archiving is the
    * reversible soft state (see `edit` with a status change).
    */
-  async destroy(context: RequestContext, namespace: string, key: string): Promise<void> {
+  async destroy(context: RequestContext, namespace: Namespace, key: Key): Promise<void> {
     if (!this.isStored(namespace)) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
@@ -666,22 +684,16 @@ export class MetafieldDefinitionsService {
 }
 
 /**
- * The shape a stated key has to have. Minting derives one that is usable by
- * construction, so this is the check that path never needed: a caller stating its own
- * key has said nothing about the format, and guarding here covers every route in
- * rather than whichever one arrived first.
+ * A stated key, checked: made of the characters every key is, no longer than its column, and
+ * not a name every object already has. Minting derives keys that are all three by
+ * construction; a caller stating its own has said nothing about any of them.
  *
  * The length bound is the column's own, not `mintKey`'s: that one holds back room for a
  * `_<n>` collision suffix, and a stated key is written exactly as given and never
  * suffixed, so the whole column is available to it.
  */
-function assertKeyUsable(key: string): void {
-  if (!KEY_CHARACTERS.test(key)) {
-    throw new errors.ValidationError({
-      message: 'A custom field key can only contain lowercase letters, numbers and underscores.',
-      property: 'key',
-    });
-  }
+function usableKey(stated: string): Key {
+  const key = parseRequest(KeySchema, stated, 'key');
   if (key.length > MAX_KEY_LENGTH) {
     throw new errors.ValidationError({
       message: `A custom field key can be at most ${MAX_KEY_LENGTH} characters.`,
@@ -694,6 +706,7 @@ function assertKeyUsable(key: string): void {
       property: 'key',
     });
   }
+  return key;
 }
 
 // The field a zod issue points at. Create validates an array, so an issue's path

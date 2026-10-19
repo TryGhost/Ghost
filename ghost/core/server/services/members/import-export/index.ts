@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
+import type { Namespace } from '@tryghost/metafield-types/identity';
 import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
@@ -48,7 +49,7 @@ interface ImporterServices {
   // The metafields services the members service hands the import composition root.
   metafields: {
     definitions: {
-      browse(options: { namespace?: string }, audience: Audience): Promise<CsvField[]>;
+      browse(options: { namespace?: Namespace }, audience: Audience): Promise<CsvField[]>;
     };
     values: {
       planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
@@ -64,7 +65,7 @@ interface ImporterServices {
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
   definitions: {
-    browse(options: { namespace?: string }, audience: Audience): Promise<MetafieldDefinition[]>;
+    browse(options: { namespace?: Namespace }, audience: Audience): Promise<MetafieldDefinition[]>;
   };
   values: {
     getValuesForMembers(

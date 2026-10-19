@@ -14,11 +14,9 @@
 // single $elemMatch over them — positive asserts a matching row exists, $not
 // asserts none does — with no lookup against the field definitions.
 import errors from '@tryghost/errors';
-import {
-  CUSTOM_NAMESPACE,
-  formatIdentity,
-  parseIdentity,
-} from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
+import { CUSTOM_NAMESPACE, IdentityTextSchema } from '@tryghost/metafield-types/identity';
+import { pathOf } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -74,27 +72,21 @@ interface LeafTarget {
   path: string | typeof ANY_PATH;
 }
 
-// A stored key never contains a dot, so a full dotted identity is a key no stored
-// row can equal.
-function unmatchableLeaf(identity: {
-  namespace: string;
-  key: string;
-  partPath: string | null;
-}): LeafTarget {
-  return { key: formatIdentity(identity), path: identity.partPath };
-}
-
 function parseLeafAddress(raw: unknown): LeafTarget {
-  const identity = typeof raw === 'string' ? parseIdentity(raw) : null;
-  if (!identity) {
+  const identity = typeof raw === 'string' ? z.safeDecode(IdentityTextSchema, raw) : null;
+  if (!identity?.success) {
     throw new errors.BadRequestError({
       message: `A metafield filter names a field as namespace.key, for example (${KEY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
     });
   }
-  if (identity.namespace !== CUSTOM_NAMESPACE) {
-    return unmatchableLeaf(identity);
+  const { namespace, key, parts } = identity.data;
+  const path = parts.length > 0 ? pathOf(parts) : ANY_PATH;
+  // A stored key never contains a dot, so the identity written out whole is a key no stored
+  // row can equal.
+  if (namespace !== CUSTOM_NAMESPACE) {
+    return { key: z.encode(IdentityTextSchema, identity.data), path };
   }
-  return { key: identity.key, path: identity.partPath };
+  return { key, path };
 }
 
 export function createMetafieldsFilterTransformer() {

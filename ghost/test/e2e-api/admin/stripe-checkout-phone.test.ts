@@ -159,6 +159,12 @@ describe('Stripe Checkout phone number collection', function () {
       property: 'phone.custom_field_key',
       message: 'Choose a custom field the site already has.',
     });
+    // Refused for its spelling before any lookup. MySQL compares keys without regard to
+    // case, so a lookup alone would find `contact_phone` and save the binding as typed.
+    assert.deepEqual(await refusal(phone({ custom_field_key: 'Contact_Phone' })), {
+      property: 'phone.custom_field_key',
+      message: 'A key can only contain lowercase letters, numbers and underscores.',
+    });
     assert.deepEqual(await refusal(phone({ custom_field_key: 'delivery_address' })), {
       property: 'phone.custom_field_key',
       message: 'Choose a short text custom field for the phone number.',

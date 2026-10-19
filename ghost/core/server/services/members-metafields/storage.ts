@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import { type Part, SEPARATOR } from '@tryghost/metafield-types/identity';
 
 // A value is a tree; the database stores one row per leaf, under the path addressing it.
 // A value with no parts is a single leaf at the root, a part is a leaf under its key, and
@@ -8,11 +9,13 @@ import errors from '@tryghost/errors';
 // and rows are rebuilt as what they were written as rather than as what the type says
 // today, so a type that changes shape does not rewrite what members already have.
 
-/** Also the notation a segment filter addresses a part by, so the two cannot drift. */
-const SEPARATOR = '.';
-
 /** Empty rather than null: a unique index does not constrain nulls, which would let the same leaf be stored twice. */
 export const ROOT_PATH = '';
+
+/** The path the value of these parts is stored under, written the way an identity writes them. */
+export function pathOf(parts: readonly Part[]): string {
+  return parts.join(SEPARATOR);
+}
 
 export interface Leaf {
   path: string;

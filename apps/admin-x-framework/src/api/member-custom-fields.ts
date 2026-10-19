@@ -9,6 +9,7 @@ import {
   type PartType,
   type PartsOf,
 } from '@tryghost/metafield-types';
+import { type Key, type Namespace } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 import { countryName } from '../utils/countries';
@@ -16,7 +17,6 @@ import { countryName } from '../utils/countries';
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
 export { isMetafieldColumn } from '@tryghost/metafield-csv';
-export type { FieldIdentity, FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 // Re-exported so admin apps can type address values and validate against the
 // same schemas the server enforces, without a direct dependency on the shared
@@ -27,11 +27,11 @@ export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/metafield-ty
 export type { FieldKind as MemberCustomFieldKind } from '@tryghost/metafield-types';
 
 export type MemberCustomField = {
-  namespace: string;
+  namespace: Namespace;
   // The Admin API never serializes a database id for these records, so there is no `id` to
   // key off. A field is addressed by its namespace and key, and neither is reissued once
   // minted.
-  key: string;
+  key: Key;
   name: string;
   // The same field-type enum the backend validates against, so admin and
   // server never drift on the set.
@@ -194,18 +194,16 @@ export const memberCustomFieldCsvColumns = (
 ): MemberCustomFieldCsvColumn[] => {
   return fields.flatMap((field) => {
     const labels = partLabelsFor(field.type);
-    return csvColumnsForField({ namespace: field.namespace, key: field.key, type: field.type }).map(
-      ({ column, subField }) => {
-        const partLabel = subField === null ? undefined : labels[subField];
-        return {
-          value: column,
-          fieldName: field.name,
-          ...(partLabel === undefined ? {} : { partLabel }),
-          label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
-          type: field.type,
-        };
-      },
-    );
+    return csvColumnsForField(field).map(({ column, subField }) => {
+      const partLabel = subField === null ? undefined : labels[subField];
+      return {
+        value: column,
+        fieldName: field.name,
+        ...(partLabel === undefined ? {} : { partLabel }),
+        label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
+        type: field.type,
+      };
+    });
   });
 };
 

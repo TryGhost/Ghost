@@ -15,12 +15,15 @@ npm install @tryghost/metafield-types
   type of value each part holds. It depends on nothing.
 - `@tryghost/metafield-types/countries`: the two-letter country codes a country
   part accepts. It depends on nothing.
-- `@tryghost/metafield-types/identity`: how a field is named in filters and
-  payloads (`custom.<key>`). It depends on nothing.
+- `@tryghost/metafield-types/identity`: how a field is named everywhere: its
+  namespace, its key, the parts of a record value, and the identity they make
+  together (`custom.shipping_address.country`). Each is a type that only its
+  check produces. It loads `zod/mini`, a small fraction of zod's size, so a
+  browser app can check identities without paying for the rest.
 - `@tryghost/metafield-types`: the structure above, plus the rules that validate
   a value of each type. These are built on [zod](https://zod.dev), and only this
-  entry point loads it, so an integration that only draws inputs can use the three
-  entry points above without zod ever being loaded.
+  entry point loads all of it, so an integration that only draws inputs can use
+  `./structure` and `./countries` without loading zod at all.
 
 ## Compatibility
 

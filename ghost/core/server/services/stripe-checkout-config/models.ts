@@ -4,6 +4,7 @@ import {
   STRIPE_CHECKOUT_BORDER_STYLES,
   STRIPE_CHECKOUT_FONTS,
 } from '@tryghost/checkout';
+import { KeySchema } from '@tryghost/metafield-types/identity';
 
 /**
  * A color as a 6-digit hex code. It is lowercased, so the same color is always stored the same
@@ -46,14 +47,14 @@ const CollectedPart = z.object({
 export const ShippingSettings = CollectedPart.extend({
   /** ISO 3166-1 alpha-2 codes, or null for everywhere Stripe ships. */
   allowedCountries: z.array(z.string()).nullable(),
-  addressCustomFieldKey: z.string(),
-  nameCustomFieldKey: z.string(),
+  addressCustomFieldKey: KeySchema,
+  nameCustomFieldKey: KeySchema,
 });
 export type ShippingSettings = z.infer<typeof ShippingSettings>;
 
 /** Collecting a phone number at checkout, as the publisher set it. */
 export const PhoneSettings = CollectedPart.extend({
-  customFieldKey: z.string(),
+  customFieldKey: KeySchema,
 });
 export type PhoneSettings = z.infer<typeof PhoneSettings>;
 

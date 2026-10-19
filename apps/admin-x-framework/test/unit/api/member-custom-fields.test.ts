@@ -6,6 +6,7 @@ import {
   memberCustomFieldCsvColumns,
   memberCustomFieldParts,
 } from '../../../src/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 // Compile-time cases: the build failing is the assertion. Each `@ts-expect-error` fails the
 // build if the case it names stops being an error. Directives sit immediately above the
@@ -64,9 +65,12 @@ export {
   scalarWithRun,
 };
 
-const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
-  namespace: 'custom',
-  key: 'nickname',
+const field = ({
+  key = 'nickname',
+  ...overrides
+}: Omit<Partial<MemberCustomField>, 'key'> & { key?: string }): MemberCustomField => ({
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse(key),
   name: 'Nickname',
   type: 'short_text',
   status: 'active',

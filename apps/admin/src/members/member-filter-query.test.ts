@@ -545,6 +545,13 @@ describe('member-filter-query - custom fields', () => {
       values: ['country', ''],
       nql: "metafields.key:-'custom.shipping_address.country'",
     },
+    // A part of a part: no type has one yet, but an identity can name one.
+    {
+      field: 'metafields.custom.shipping_address',
+      operator: 'is-set',
+      values: ['country.code', ''],
+      nql: "metafields.key:'custom.shipping_address.country.code'",
+    },
   ];
 
   it.each(cases)(

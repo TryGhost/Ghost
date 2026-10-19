@@ -112,12 +112,7 @@ export function customFieldOperators(partTypes: readonly PartFilterType[]): read
 
 export const CUSTOM_FIELD_CLAUSE = METAFIELDS_FIELD_PREFIX;
 
-export interface CustomFieldDefinition {
-  namespace: string;
-  key: string;
-  name: string;
-  type: MemberCustomField['type'];
-}
+export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' | 'name' | 'type'>;
 
 export function customFieldDescriptor(definition: CustomFieldDefinition): FieldDescriptor {
   const kind = memberCustomFieldKind(definition.type);

@@ -1,7 +1,8 @@
 import errors from '@tryghost/errors';
 import { pick } from 'lodash';
 import { COLLECTED_SECTIONS, type CheckoutCollection, type StripeCheckoutDesign } from './models';
-import { CheckoutPreviewInput, parseRequest } from './serializers';
+import { parseRequest } from '../../lib/parse-request';
+import { CheckoutPreviewInput } from './serializers';
 
 // Stripe refuses a checkout that expires sooner than 30 minutes after it's created. The extra
 // minute keeps a server clock running a little behind Stripe's from going under that.

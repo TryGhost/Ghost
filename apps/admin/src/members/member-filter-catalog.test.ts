@@ -2,6 +2,7 @@ import { buildMemberFields, canReadMemberFilter } from './member-filter-catalog'
 import { describe, expect, it } from 'vitest';
 import { parseMemberFilter, serializeMemberFilters } from './member-filter-query';
 import type { MemberFields } from './member-filter-catalog';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 const SOURCES = {
   newsletters: [
@@ -9,10 +10,15 @@ const SOURCES = {
     { slug: 'daily', name: 'Daily' },
   ],
   customFields: [
-    { namespace: 'custom', key: 'company', name: 'Company', type: 'short_text' as const },
     {
-      namespace: 'custom',
-      key: 'shipping_address',
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('company'),
+      name: 'Company',
+      type: 'short_text' as const,
+    },
+    {
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('shipping_address'),
       name: 'Shipping address',
       type: 'address' as const,
     },

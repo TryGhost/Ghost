@@ -1,6 +1,7 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import { ADMIN, actingContext, definitions } from '../../services/members-metafields';
 import { assertDefinable } from '../../services/members-metafields/namespaces';
+import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 const permissionsService = require('../../services/permissions');
 
@@ -44,7 +45,7 @@ function canThis(frame: ReadFrame) {
  * have helped.
  */
 async function canDefine(frame: ReadFrame, action: (frame: ReadFrame) => Promise<unknown>) {
-  assertDefinable(frame.options.namespace);
+  assertDefinable(namespaceRoute(frame.options).namespace);
   return action(frame);
 }
 
@@ -60,10 +61,7 @@ const controller = {
     permissions: false,
     query(frame: ReadFrame) {
       return definitions!.browse(
-        {
-          namespace: frame.options.namespace,
-          filter: frame.options.filter,
-        },
+        { ...namespaceRoute(frame.options), filter: frame.options.filter },
         ADMIN,
       );
     },
@@ -75,7 +73,8 @@ const controller = {
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions: false,
     query(frame: ReadFrame) {
-      return definitions!.read(frame.options.namespace, frame.options.key, ADMIN);
+      const { namespace, key } = fieldRoute(frame.options);
+      return definitions!.read(namespace, key, ADMIN);
     },
   },
 
@@ -90,7 +89,7 @@ const controller = {
     query(frame: WriteFrame) {
       return definitions!.add(
         actingContext(frame.options.context),
-        frame.options.namespace,
+        namespaceRoute(frame.options).namespace,
         frame.data.members_metafields,
       );
     },
@@ -106,7 +105,7 @@ const controller = {
     query(frame: WriteFrame) {
       return definitions!.reorder(
         actingContext(frame.options.context),
-        frame.options.namespace,
+        namespaceRoute(frame.options).namespace,
         frame.data.members_metafields,
       );
     },
@@ -120,10 +119,11 @@ const controller = {
       return canDefine(frame, (f) => canThis(f).edit.member_custom_field(f.options.key));
     },
     query(frame: WriteFrame) {
+      const { namespace, key } = fieldRoute(frame.options);
       return definitions!.edit(
         actingContext(frame.options.context),
-        frame.options.namespace,
-        frame.options.key,
+        namespace,
+        key,
         frame.data.members_metafields[0],
       );
     },
@@ -138,11 +138,8 @@ const controller = {
       return canDefine(frame, (f) => canThis(f).destroy.member_custom_field(f.options.key));
     },
     async query(frame: WriteFrame) {
-      await definitions!.destroy(
-        actingContext(frame.options.context),
-        frame.options.namespace,
-        frame.options.key,
-      );
+      const { namespace, key } = fieldRoute(frame.options);
+      await definitions!.destroy(actingContext(frame.options.context), namespace, key);
       return null;
     },
   },
