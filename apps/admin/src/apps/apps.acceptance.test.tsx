@@ -17,11 +17,15 @@ import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
 import {
   APP_PAGE_URL,
+  ICON_SVG,
+  ICON_URL,
   MANIFEST_URL,
+  STORED_ICON,
   failAppFrame,
   fakeAppFrame,
   fakeAppPage,
   fakeInstallations,
+  imageSources,
   installation,
   labs,
   manifest,
@@ -403,6 +407,42 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  // Any request to the app's icon URL would also fail the test, as one the spec didn't fake.
+  it('draws an app’s own icon from the copy Ghost stored, never from the app', async () => {
+    const withIcon = installation({
+      manifest: manifest({ icon: { url: ICON_URL } }),
+      icon_svg: ICON_SVG,
+    });
+    fakeInstallations([withIcon]);
+    fakeDetails(withIcon);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    expect(imageSources(row)).toEqual([STORED_ICON]);
+    await expect.poll(() => row.querySelector('img')!.naturalWidth).toBeGreaterThan(0);
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([STORED_ICON]);
+
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+
+    await expect.element(appsScreen.details()).toHaveTextContent('Example Audio');
+    expect(imageSources(appsScreen.details().element())).toEqual([STORED_ICON]);
+  });
+
+  it('draws the default icon for an app’s own icon without a stored copy', async () => {
+    fakeInstallations([installation({ manifest: manifest({ icon: { url: ICON_URL } }) })]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    expect(imageSources(row)).toEqual([]);
+    expect(row.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
   });
 
   it('uninstalls an app from the list, after saying integration keys stay', async () => {

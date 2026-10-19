@@ -2684,6 +2684,10 @@ module.exports = {
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // A sanitized copy of the app's SVG icon, fetched when the row was added, so Admin never
+    // fetches the icon from the app. Null for an icon Admin ships. Defined by
+    // services/app-installations/fetch-icon.ts.
+    icon_svg: { type: 'text', maxlength: 65535, nullable: true },
     // How the row was added: when the app was installed, when an Administrator approved
     // changes, when Ghost picked up a newer version by itself, or when Ghost ran a suspended
     // app again because the app went back on the changes that waited.

@@ -79,6 +79,9 @@ export function decideOnManifest({ current, pending, loaded }: Manifests): Manif
   return { kind: changes.length === 0 ? 'unchanged' : 'apply', changes };
 }
 
+/** A new row as a write plans it. Its icon copy is fetched once the write is planned. */
+export type PlannedRow = Omit<AddedRow, 'iconSvg'>;
+
 /**
  * What storing a decision writes, decided before anything is written:
  *
@@ -88,12 +91,14 @@ export function decideOnManifest({ current, pending, loaded }: Manifests): Manif
  * - `add_approved`: the loaded manifest gets a new row, which becomes the approved manifest,
  *   and any pending one is let go of.
  * - `add_pending`: the loaded manifest gets a new row, which becomes the pending manifest.
+ *
+ * `Added` is the new row: as planned, or with its icon copy once that's fetched.
  */
-export type ManifestWrite =
+export type ManifestWrite<Added extends PlannedRow = PlannedRow> =
   | { kind: 'nothing' }
   | { kind: 'approve_existing'; manifestId: string }
-  | { kind: 'add_approved'; row: AddedRow }
-  | { kind: 'add_pending'; row: AddedRow };
+  | { kind: 'add_approved'; row: Added }
+  | { kind: 'add_pending'; row: Added };
 
 /** An approval always makes the reviewed manifest the approved one, so it's never left pending. */
 export type ApprovalWrite = Exclude<ManifestWrite, { kind: 'add_pending' }>;
