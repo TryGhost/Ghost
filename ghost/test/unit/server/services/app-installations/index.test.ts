@@ -55,10 +55,12 @@ describe('App installations composition root', function () {
     sandbox.stub(db, 'knex').get(readKnex);
     // Substitute only the outbound transport; keep the real fetcher and manifest validation.
     require(requestPath);
-    request = sandbox.stub().callsFake(() => ({
-      on: () => {},
-      text: async () => JSON.stringify(manifest),
-    }));
+    request = sandbox.stub().callsFake(() =>
+      Object.assign(Promise.resolve({ statusCode: 200 }), {
+        on: () => {},
+        text: async () => JSON.stringify(manifest),
+      }),
+    );
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
     root = require(rootPath).default;
   });
