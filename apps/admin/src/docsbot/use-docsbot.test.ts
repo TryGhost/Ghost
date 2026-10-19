@@ -132,7 +132,7 @@ describe('toSupportRequestDraft', () => {
       email: 'ada@example.com',
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.',
-      source: 'docsbot',
+      source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/#/posts',
       conversationUrl: 'https://docsbot.ai/conversation/conv-1',
       transcript: [
@@ -153,7 +153,7 @@ describe('toSupportRequestDraft', () => {
       email: undefined,
       subject: undefined,
       message: undefined,
-      source: 'docsbot',
+      source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/',
       conversationUrl: undefined,
       transcript: '',

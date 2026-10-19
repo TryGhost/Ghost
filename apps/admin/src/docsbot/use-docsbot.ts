@@ -153,7 +153,7 @@ export function toSupportRequestDraft(
     email: normalizedMetadata.email,
     subject: normalizedTicket?.subject,
     message: normalizedTicket?.message,
-    source: 'docsbot',
+    source: 'chat',
     pageUrl,
     conversationUrl: normalizedMetadata.conversationUrl,
     transcript: formatDocsBotHistory(normalizeDocsBotHistory(history)),
