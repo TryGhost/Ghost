@@ -344,7 +344,7 @@ export class AppInstallationsService {
     loaded: LoadedManifest,
     { kind, changes }: ManifestDecision,
   ): Promise<WriteOutcome<{ from: string; to: string } | null>> {
-    return this.repository.whileUnchanged(current, async (trx) => {
+    return this.repository.whileUnchanged(current, async (locked) => {
       if (kind === 'unchanged') {
         return null;
       }
@@ -354,12 +354,12 @@ export class AppInstallationsService {
       } else if (changes.length === 0) {
         approved = current.manifest_id;
       } else {
-        approved = await this.repository.addManifest(trx, current.id, loaded, {
+        approved = await locked.addManifest(loaded, {
           source: 'approval',
           requiresApproval: changes.some((change) => change.requires_approval),
         });
       }
-      await this.repository.activate(trx, current.id, approved);
+      await locked.activate(approved);
       return { from: current.manifest_id, to: approved };
     });
   }
@@ -459,7 +459,7 @@ export class AppInstallationsService {
     loaded: LoadedManifest,
     { kind }: ManifestDecision,
   ): Promise<WriteOutcome<void>> {
-    return this.repository.whileUnchanged(current, async (trx) => {
+    return this.repository.whileUnchanged(current, async (locked) => {
       switch (kind) {
         case 'unchanged':
         case 'use_pending':
@@ -468,19 +468,19 @@ export class AppInstallationsService {
         // that lifts the suspension.
         case 'apply':
         case 'resume': {
-          const applied = await this.repository.addManifest(trx, current.id, loaded, {
+          const applied = await locked.addManifest(loaded, {
             source: kind === 'resume' ? 'resume' : 'update',
             requiresApproval: false,
           });
-          return this.repository.activate(trx, current.id, applied);
+          return locked.activate(applied);
         }
         case 'suspend': {
           // Any other change becomes the pending manifest, replacing an older one.
-          const pending = await this.repository.addManifest(trx, current.id, loaded, {
+          const pending = await locked.addManifest(loaded, {
             source: 'update',
             requiresApproval: true,
           });
-          return this.repository.suspend(trx, current.id, pending);
+          return locked.suspend(pending);
         }
         default: {
           const _exhaustive: never = kind;

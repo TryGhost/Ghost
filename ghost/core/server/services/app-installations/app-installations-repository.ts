@@ -82,6 +82,64 @@ function nextRevision(db: Knex | Knex.Transaction) {
 }
 
 /**
+ * An installation `whileUnchanged` has locked, and the writes to it. Only `whileUnchanged`
+ * makes one, so these writes only happen under the lock, and only to that installation.
+ */
+class LockedInstallation {
+  private trx: Knex.Transaction;
+  private id: string;
+
+  constructor(trx: Knex.Transaction, id: string) {
+    this.trx = trx;
+    this.id = id;
+  }
+
+  /** Adds a manifest row for the installation, and returns its ID. */
+  async addManifest(
+    loaded: LoadedManifest,
+    { source, requiresApproval }: AddedManifest,
+  ): Promise<string> {
+    const id = new ObjectId().toHexString();
+    await this.trx(MANIFESTS).insert({
+      id,
+      installation_id: this.id,
+      manifest_url: loaded.manifestUrl,
+      manifest: loaded.serialised,
+      digest: loaded.digest,
+      source,
+      requires_approval: requiresApproval,
+      created_at: toDatabaseDate(new Date()),
+    });
+    return id;
+  }
+
+  /**
+   * Makes a manifest the approved manifest and lets go of any pending one. Suspended only
+   * means changes are waiting for approval, so with none left it's active.
+   */
+  async activate(manifestId: string): Promise<void> {
+    await this.trx(INSTALLATIONS)
+      .where({ id: this.id })
+      .update({
+        status: 'active',
+        manifest_id: manifestId,
+        pending_manifest_id: null,
+        ...nextRevision(this.trx),
+      });
+  }
+
+  /**
+   * Makes a manifest the pending manifest, which suspends the installation until that's
+   * approved. The approved manifest stays as it is.
+   */
+  async suspend(manifestId: string): Promise<void> {
+    await this.trx(INSTALLATIONS)
+      .where({ id: this.id })
+      .update({ status: 'suspended', pending_manifest_id: manifestId, ...nextRevision(this.trx) });
+  }
+}
+
+/**
  * The installations and their manifest rows. Manifest rows are only ever added, never
  * changed, and every write to an installation moves its revision on.
  */
@@ -255,13 +313,13 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * Locks the installation and runs `write`, unless it has been uninstalled or changed since
-   * `installation` was read. Every write moves the revision on, so a different revision
+   * Locks the installation and runs `write` on it, unless it has been uninstalled or changed
+   * since `installation` was read. Every write moves the revision on, so a different revision
    * means it changed.
    */
   whileUnchanged<T>(
     installation: Installation,
-    write: (trx: Knex.Transaction) => Promise<T>,
+    write: (locked: LockedInstallation) => Promise<T>,
   ): Promise<WriteOutcome<T>> {
     return this.knex.transaction(async (trx): Promise<WriteOutcome<T>> => {
       const row = await trx(INSTALLATIONS)
@@ -275,54 +333,11 @@ export class AppInstallationsRepository {
       if (locked.revision !== installation.revision) {
         return { status: 'changed' };
       }
-      return { status: 'written', value: await write(trx) };
+      return {
+        status: 'written',
+        value: await write(new LockedInstallation(trx, installation.id)),
+      };
     });
-  }
-
-  /** Adds a manifest row for an installation, and returns its ID. */
-  async addManifest(
-    trx: Knex.Transaction,
-    installationId: string,
-    loaded: LoadedManifest,
-    { source, requiresApproval }: AddedManifest,
-  ): Promise<string> {
-    const id = new ObjectId().toHexString();
-    await trx(MANIFESTS).insert({
-      id,
-      installation_id: installationId,
-      manifest_url: loaded.manifestUrl,
-      manifest: loaded.serialised,
-      digest: loaded.digest,
-      source,
-      requires_approval: requiresApproval,
-      created_at: toDatabaseDate(new Date()),
-    });
-    return id;
-  }
-
-  /**
-   * Makes a manifest the installation's approved manifest and lets go of any pending one.
-   * Suspended only means changes are waiting for approval, so with none left it's active.
-   */
-  async activate(trx: Knex.Transaction, id: string, manifestId: string): Promise<void> {
-    await trx(INSTALLATIONS)
-      .where({ id })
-      .update({
-        status: 'active',
-        manifest_id: manifestId,
-        pending_manifest_id: null,
-        ...nextRevision(trx),
-      });
-  }
-
-  /**
-   * Makes a manifest the installation's pending manifest, which suspends it until that's
-   * approved. The approved manifest stays as it is.
-   */
-  async suspend(trx: Knex.Transaction, id: string, manifestId: string): Promise<void> {
-    await trx(INSTALLATIONS)
-      .where({ id })
-      .update({ status: 'suspended', pending_manifest_id: manifestId, ...nextRevision(trx) });
   }
 
   /** Returns false if it was already uninstalled. */
