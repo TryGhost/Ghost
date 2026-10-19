@@ -657,14 +657,17 @@ services:
         The guarded boot factory still composes one instance after database readiness. It
         holds no resources, but it keeps the manifest re-checks in flight, which starting
         app sessions together relies on to share one fetch, so it must stay the one retained
-        instance rather than be composed per request. Return that instance through the
-        initializer and update endpoint access, preserving schema gating and live
+        instance rather than be composed per request. Its repository holds only the knex
+        handle it's built from, and the response serializers are pure. Return that instance
+        through the initializer and update endpoint access, preserving schema gating and live
         manifest/configuration callbacks. The new history, detail, uninstall and app session
         behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 3c94513eb28f32663409d7990c74cccfb9528523
+      reviewedAt: 166037f8c6c59c3e7fa63e49c8a5a35101f31d67
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
+        - core/server/services/app-installations/app-installations-repository.ts
+        - core/server/services/app-installations/serializers.ts
         - core/server/services/app-installations/decide-on-manifest.ts
         - core/server/services/app-installations/history.ts
         - core/server/api/endpoints/app-installations.ts

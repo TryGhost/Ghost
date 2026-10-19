@@ -44,6 +44,14 @@ module.exports = {
     return require('./gift-links');
   },
 
+  get app_installations() {
+    return require('./app-installations');
+  },
+
+  get app_sessions() {
+    return require('./app-sessions');
+  },
+
   get redirects() {
     return require('./redirects');
   },

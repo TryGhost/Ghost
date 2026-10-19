@@ -17,7 +17,8 @@ import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
-export type { AppInstallation } from './codec';
+export type { Installation, InstallationWithHistory } from './codec';
+export type { AppInstallation } from './serializers';
 export type { AppInstallationPreview, AppSession } from './service';
 
 /**
