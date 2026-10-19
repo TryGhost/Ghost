@@ -65,6 +65,12 @@ export type AutomationsRepository2<Connection> = {
   /** Insert automation runs. Typically coupled with the insertion of an equal number of steps. */
   insertRuns: (connection: Connection, toInsert: ReadonlyArray<RunToInsert>) => Promisable<void>;
 
+  /** Is this run's automation active? */
+  isAutomationActiveForRun: (
+    connection: Connection,
+    automationRunId: string,
+  ) => Promisable<boolean>;
+
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
 

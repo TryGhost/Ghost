@@ -137,6 +137,15 @@ export const createDatabaseAutomationsRepository2 = ({
       }
     },
 
+    async isAutomationActiveForRun(connection, automationRunId) {
+      const query = connection('automation_runs as run')
+        .select(connection.raw('1'))
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
+    },
+
     async isAutomationActiveForRunStep(connection, runStepId) {
       const query = connection('automation_run_steps as step')
         .select(connection.raw('1'))

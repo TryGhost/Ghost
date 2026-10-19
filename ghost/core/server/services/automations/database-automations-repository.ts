@@ -539,7 +539,7 @@ export function createDatabaseAutomationsRepository({
 
     async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
       return await knex.transaction((trx) =>
-        finishStepAndEnqueueNext(trx, {
+        finishStepAndEnqueueNext(repository2, trx, {
           step,
           fakeWaitHoursMultiplier,
         }),
@@ -1268,6 +1268,7 @@ function buildStepToRun(
 }
 
 async function finishStepAndEnqueueNext(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   options: Readonly<{
     step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
@@ -1281,7 +1282,7 @@ async function finishStepAndEnqueueNext(
     return null;
   }
 
-  if (!(await isRunAutomationActive(trx, step.automation_run_id))) {
+  if (!(await repository2.isAutomationActiveForRun(trx, step.automation_run_id))) {
     return null;
   }
 
@@ -1417,25 +1418,6 @@ async function cancelCancelablePendingStepsForAutomation(
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoff);
     });
-}
-
-async function isRunAutomationActive(
-  trx: Knex.Transaction,
-  automationRunId: string,
-): Promise<boolean> {
-  const query = trx('automation_runs as run')
-    .select(trx.raw('1'))
-    .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
-    .where('run.id', automationRunId)
-    .where('automation.status', 'active');
-  return await selectExists(trx, query);
-}
-
-async function selectExists(trx: Knex.Transaction, query: Knex.QueryBuilder): Promise<boolean> {
-  const row = await trx
-    .select<{ exists: boolean | number | string }>(trx.raw('exists ? as `exists`', [query]))
-    .first();
-  return Boolean(Number(row?.exists));
 }
 
 /**
