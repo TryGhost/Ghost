@@ -463,21 +463,15 @@ export class AppInstallationsService {
         case 'unchanged':
         case 'use_pending':
           return;
-        case 'apply': {
-          // Silent changes are applied straight away.
+        // Silent changes are applied straight away. When the app reverted the pending changes,
+        // that lifts the suspension.
+        case 'apply':
+        case 'resume': {
           const applied = await this.repository.addManifest(trx, current.id, loaded, {
-            source: 'update',
+            source: kind === 'resume' ? 'resume' : 'update',
             requiresApproval: false,
           });
           return this.repository.activate(trx, current.id, applied);
-        }
-        case 'resume': {
-          // The app reverted the pending changes, which lifts the suspension.
-          const resumed = await this.repository.addManifest(trx, current.id, loaded, {
-            source: 'resume',
-            requiresApproval: false,
-          });
-          return this.repository.activate(trx, current.id, resumed);
         }
         case 'suspend': {
           // Any other change becomes the pending manifest, replacing an older one.
@@ -486,6 +480,12 @@ export class AppInstallationsService {
             requiresApproval: true,
           });
           return this.repository.suspend(trx, current.id, pending);
+        }
+        default: {
+          const _exhaustive: never = kind;
+          throw new errors.InternalServerError({
+            message: `Unhandled manifest decision: ${_exhaustive}`,
+          });
         }
       }
     });
