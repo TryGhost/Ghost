@@ -71,7 +71,6 @@ const refusalOf = (param) =>
     param: z.string().startsWith(param),
   });
 const DesignRefusal = refusalOf('branding_settings');
-const ShippingRefusal = refusalOf('shipping_address_collection');
 
 /** Leaves out one parameter of a session. */
 const without = (params, key) =>
@@ -137,8 +136,9 @@ module.exports = class StripeAPI {
    * Creates a Checkout session with the saved design as its `branding_settings`, and the
    * collection parameters it is given. Every Checkout session Ghost creates goes through here.
    *
-   * If Stripe refuses the saved design or the shipping countries, the session is created again
-   * without them, as a checkout that looks plainer or asks for no address still takes payment.
+   * If Stripe refuses the saved design or something the checkout asks the buyer for, the
+   * session is created again without it, as a checkout that looks plainer or asks for less
+   * still takes payment.
    * The retry reuses the idempotency key, which is safe because Stripe doesn't store a result
    * for a request it rejects as invalid. A design given in place of the saved one is a preview
    * of one not saved yet, so Stripe refusing that is reported instead of hidden.
@@ -201,15 +201,19 @@ module.exports = class StripeAPI {
           previewing,
         );
       }
-      if (optional.shipping_address_collection && ShippingRefusal.safeParse(err).success) {
+      // Anything else from the config is something the checkout asks the buyer for.
+      const refused = Object.keys(optional).find(
+        (param) => refusalOf(param).safeParse(err).success,
+      );
+      if (refused) {
         logging.error(
-          { event: { name: 'stripe_checkout.shipping.refused' }, err },
-          'Stripe refused the Stripe Checkout shipping countries',
+          { event: { name: 'stripe_checkout.collection.refused' }, err, param: refused },
+          'Stripe refused something the Stripe Checkout asks the buyer for',
         );
         return this._createWithFallback(
           params,
           requestOptions,
-          without(optional, 'shipping_address_collection'),
+          without(optional, refused),
           previewing,
         );
       }

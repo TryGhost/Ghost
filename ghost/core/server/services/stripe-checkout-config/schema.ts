@@ -14,6 +14,7 @@ export const DbStripeCheckoutConfig = z.object({
   slug: z.string(),
   design: z.string().nullable(),
   shipping: z.string().nullable(),
+  phone: z.string().nullable(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
@@ -21,7 +22,11 @@ export const DbStripeCheckoutConfig = z.object({
 type StripeCheckoutConfigRow = z.infer<typeof DbStripeCheckoutConfig>;
 
 /** The columns holding the parts of the config, each JSON or null while that part is off. */
-export const DbConfigParts = DbStripeCheckoutConfig.pick({ design: true, shipping: true });
+export const DbConfigParts = DbStripeCheckoutConfig.pick({
+  design: true,
+  shipping: true,
+  phone: true,
+});
 export type DbConfigParts = z.infer<typeof DbConfigParts>;
 
 export const CONFIG_TIERS_TABLE = 'stripe_checkout_config_tiers';

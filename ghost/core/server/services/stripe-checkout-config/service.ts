@@ -12,6 +12,7 @@ import {
   COLLECTED_SECTIONS,
   type CheckoutSessionConfig,
   type CollectedSection,
+  type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutConfig,
 } from './models';
@@ -38,6 +39,8 @@ interface Destination {
   /** The request property naming the field. */
   property: string;
   wrongType: string;
+  /** What the field holds once the port fills it, as messages name it. */
+  holds: string;
 }
 
 /**
@@ -70,6 +73,7 @@ const PARTS: {
         customFieldKey: (shipping) => shipping.addressCustomFieldKey,
         property: 'shipping.address.custom_field_key',
         wrongType: 'Choose an address custom field for the shipping address.',
+        holds: 'the shipping address',
         essential: true,
       },
       {
@@ -77,17 +81,34 @@ const PARTS: {
         customFieldKey: (shipping) => shipping.nameCustomFieldKey,
         property: 'shipping.name.custom_field_key',
         wrongType: "Choose a short text custom field for the recipient's name.",
+        holds: "the recipient's name",
         // Without the name, the address is still kept.
         essential: false,
       },
     ],
   },
+  phone: {
+    stored: (phone) => ({ tier_scope: tierScopeOf(phone) }),
+    destinations: [
+      {
+        port: STRIPE_PORT.phone,
+        customFieldKey: (phone) => phone.customFieldKey,
+        property: 'phone.custom_field_key',
+        wrongType: 'Choose a short text custom field for the phone number.',
+        holds: 'the phone number',
+        essential: true,
+      },
+    ],
+  },
 };
 
-/** The ports the collected parts bind to custom fields. */
-const COLLECTED_PORTS = COLLECTED_SECTIONS.flatMap((section) =>
-  PARTS[section].destinations.map(({ port }) => port),
+/** The ports the collected parts bind to custom fields, each with what its field holds. */
+const PORT_HOLDS = new Map(
+  COLLECTED_SECTIONS.flatMap((section) =>
+    PARTS[section].destinations.map(({ port, holds }) => [port, holds] as const),
+  ),
 );
+const COLLECTED_PORTS = [...PORT_HOLDS.keys()];
 
 function tierScopeOf({ tierIds }: { tierIds: string[] | null }): TierScope {
   return tierIds ? 'selected_paid' : 'all_paid';
@@ -117,11 +138,12 @@ function changeOf<Section extends CollectedSection>(
     targets: settings && {
       tierIds: settings.tierIds,
       destinations: PARTS[section].destinations.map(
-        ({ port, customFieldKey, property, wrongType }): Destination => ({
+        ({ port, customFieldKey, property, wrongType, holds }): Destination => ({
           port,
           customFieldKey: customFieldKey(settings),
           property,
           wrongType,
+          holds,
         }),
       ),
     },
@@ -152,6 +174,7 @@ function storedColumns(requested: RequestedParts): {
 const ReadRow = z.object({
   design: z.string().nullable(),
   shipping: z.string().nullable(),
+  phone: z.string().nullable(),
   section: z.enum(COLLECTED_SECTIONS).nullable(),
   paid_tier_id: z.string().nullable(),
   port: z.enum(STRIPE_PORTS).nullable(),
@@ -184,7 +207,7 @@ function boundFields(rows: ReadRow[]): Map<StripePort, Bound> {
 
 const LockedTier = z.object({ id: z.string(), type: z.string() });
 const LockedField = z.object({ key: z.string(), type: z.string(), status: z.string() });
-const LockedBinding = z.object({ port: z.string(), metafield_key: z.string() });
+const LockedBinding = z.object({ port: z.enum(STRIPE_PORTS), metafield_key: z.string() });
 
 /** Points a port at a custom field, or stops it writing anywhere. */
 export interface PortBinder {
@@ -237,6 +260,10 @@ export class StripeCheckoutConfigService {
         allowedCountries: config.shipping.allowedCountries,
         collectable: collectableFrom('shipping', bound),
       },
+      phone: config.phone && {
+        tierIds: config.phone.tierIds,
+        collectable: collectableFrom('phone', bound),
+      },
     };
   }
 
@@ -280,13 +307,14 @@ export class StripeCheckoutConfigService {
     const [first] = rows;
     const bound = boundFields(rows);
     if (!first) {
-      return { config: { design: null, shipping: null }, bound };
+      return { config: { design: null, shipping: null, phone: null }, bound };
     }
-    const { design, shipping } = z.decode(ConfigRow, first);
+    const { design, shipping, phone } = z.decode(ConfigRow, first);
     return {
       config: {
         design,
         shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
+        phone: phone && phoneFrom(tierIdsOf('phone', phone, rows), bound),
       },
       bound,
     };
@@ -410,6 +438,15 @@ function shippingFrom(
   };
 }
 
+/** The phone number settings as the read found them, or null when what they point at is gone. */
+function phoneFrom(tierIds: string[] | null, bound: Map<StripePort, Bound>): PhoneSettings | null {
+  const field = bound.get(STRIPE_PORT.phone);
+  if (!field || tierIds?.length === 0) {
+    return null;
+  }
+  return { tierIds, customFieldKey: field.customFieldKey };
+}
+
 /** Whether checkouts can ask for a part: while every field it can't do without can take a value. */
 function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound>): boolean {
   return PARTS[section].destinations.every(
@@ -427,7 +464,8 @@ function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound
  *
  * A custom field has to exist, be active unless it is the one already chosen, and be the type
  * its port supplies. A publisher who named a field meant that field, so being told now beats
- * finding out later that nothing was saved.
+ * finding out later that nothing was saved. Each port needs a field of its own, as two ports
+ * writing one field would overwrite each other on every checkout.
  */
 async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
   const switchedOn = changes.flatMap(({ section, targets }) =>
@@ -494,6 +532,29 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
     }
     if (field.type !== PORT_FIELD[port].type) {
       throw new errors.ValidationError({ message: wrongType, property });
+    }
+  }
+
+  // Only once every field could take its value, so a field of the wrong type says so first.
+  // The fields the parts left out of the request keep saving into count too.
+  const replaced = new Set(
+    changes.flatMap(({ section }) => PARTS[section].destinations.map(({ port }) => port)),
+  );
+  const saving = [
+    ...bindings
+      .filter(({ port }) => !replaced.has(port))
+      .map(({ port, metafield_key: customFieldKey }) => ({ port, customFieldKey })),
+    ...destinations,
+  ];
+  for (const { port, customFieldKey, property } of destinations) {
+    const sharing = saving.find(
+      (other) => other.port !== port && other.customFieldKey === customFieldKey,
+    );
+    if (sharing) {
+      throw new errors.ValidationError({
+        message: `That custom field already holds ${PORT_HOLDS.get(sharing.port)}. Choose another.`,
+        property,
+      });
     }
   }
 }

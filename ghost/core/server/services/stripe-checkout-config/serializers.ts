@@ -5,11 +5,11 @@ import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/chec
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { SnakeDesign } from './codec';
 import {
-  COLLECTED_SECTIONS,
   type CollectedSection,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
   type CheckoutCollection,
+  type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutDesign,
 } from './models';
@@ -55,12 +55,11 @@ const CountriesInput = z
   .transform((codes) => [...new Set(codes)]);
 
 const DESTINATION_REQUIRED = 'Choose the custom field this is saved into.';
+const CustomFieldKey = z
+  .string({ error: DESTINATION_REQUIRED })
+  .min(1, { error: DESTINATION_REQUIRED });
 const Destination = z.strictObject(
-  {
-    custom_field_key: z
-      .string({ error: DESTINATION_REQUIRED })
-      .min(1, { error: DESTINATION_REQUIRED }),
-  },
+  { custom_field_key: CustomFieldKey },
   { error: DESTINATION_REQUIRED },
 );
 
@@ -92,9 +91,31 @@ const ShippingInput = z
       : null,
   );
 
+/** Collecting a phone number, as a request turns it on. */
+const PhoneOn = z.strictObject({
+  collect: z.literal(true),
+  tier_ids: TierIdsInput.optional(),
+  custom_field_key: CustomFieldKey,
+});
+
+/**
+ * The phone number in a request.
+ *
+ * `collect: false` means checkout doesn't ask for a phone number. `collect: true` names the
+ * custom field it is saved into.
+ */
+const PhoneInput = z
+  .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), PhoneOn])
+  .transform((input): PhoneSettings | null =>
+    input.collect
+      ? { tierIds: input.tier_ids ?? null, customFieldKey: input.custom_field_key }
+      : null,
+  );
+
 /** Each collected part in an edit request. */
 const CollectedInputs = {
   shipping: ShippingInput.optional(),
+  phone: PhoneInput.optional(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 /** An edit request. Parts it leaves out are not changed. */
@@ -122,6 +143,15 @@ const CollectedPreviews = {
             collectable: true,
           }
         : null,
+    )
+    .optional(),
+  phone: z
+    .discriminatedUnion('collect', [
+      z.strictObject({ collect: z.literal(false) }),
+      PhoneOn.omit({ custom_field_key: true }),
+    ])
+    .transform((input): CheckoutCollection['phone'] =>
+      input.collect ? { tierIds: input.tier_ids ?? null, collectable: true } : null,
     )
     .optional(),
 } satisfies Record<CollectedSection, z.ZodType>;
@@ -169,6 +199,16 @@ const CollectedResources = {
       }),
     ])
     .optional(),
+  phone: z
+    .discriminatedUnion('collect', [
+      z.object({ collect: z.literal(false) }),
+      z.object({
+        collect: z.literal(true),
+        tier_ids: z.array(z.string()).optional(),
+        custom_field_key: z.string(),
+      }),
+    ])
+    .optional(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 const CheckoutConfigResource = z.object({
@@ -193,32 +233,33 @@ function shippingResource(shipping: ShippingSettings | null) {
   };
 }
 
-/** Each collected part as the Admin API returns it, in the same shape a request gives it. */
-const RESOURCE_OF: {
-  [Section in CollectedSection]: (
-    part: StripeCheckoutConfig[Section],
-  ) => z.input<(typeof CollectedResources)[Section]>;
-} = {
-  shipping: shippingResource,
-};
+/** The phone number as the Admin API returns it, in the same shape a request gives it. */
+function phoneResource(phone: PhoneSettings | null) {
+  if (!phone) {
+    return { collect: false as const };
+  }
+  return {
+    collect: true as const,
+    ...(phone.tierIds ? { tier_ids: phone.tierIds } : {}),
+    custom_field_key: phone.customFieldKey,
+  };
+}
 
 /** The collected parts a response carries: the ones the config it is given includes. */
-function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>) {
-  const resources: {
-    [Section in CollectedSection]?: z.input<(typeof CollectedResources)[Section]>;
-  } = {};
-  const add = <Section extends CollectedSection>(section: Section) => {
-    const part = settings[section];
-    if (part !== undefined) {
-      resources[section] = RESOURCE_OF[section](part);
-    }
+function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>): {
+  [Section in CollectedSection]: z.input<(typeof CollectedResources)[Section]>;
+} {
+  return {
+    shipping: settings.shipping === undefined ? undefined : shippingResource(settings.shipping),
+    phone: settings.phone === undefined ? undefined : phoneResource(settings.phone),
   };
-  COLLECTED_SECTIONS.forEach(add);
-  return resources;
 }
 
 /** The collected parts, which a response leaves out while their flag is off. */
-const COLLECTED_OPTIONAL: Record<CollectedSection, true> = { shipping: true };
+const COLLECTED_OPTIONAL: Record<CollectedSection, true> = {
+  shipping: true,
+  phone: true,
+};
 
 const CheckoutConfigResponse = z.object({
   checkout_config: z.tuple([CheckoutConfigResource]),

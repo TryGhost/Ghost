@@ -428,7 +428,7 @@ describe('StripeAPI', function () {
           isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
         },
         stripeCheckoutConfig: {
-          service: { readForCheckout: async () => ({ design: null, shipping }) },
+          service: { readForCheckout: async () => ({ design: null, shipping, phone: null }) },
           collectionParams,
         },
       });
@@ -446,6 +446,44 @@ describe('StripeAPI', function () {
       const [asking, plain] = mockStripe.checkout.sessions.create.getCalls();
       assert.deepEqual(asking.firstArg.shipping_address_collection, { allowed_countries: ['XX'] });
       assert.equal(plain.firstArg.shipping_address_collection, undefined);
+      sinon.assert.calledOnce(logged);
+    });
+
+    it('creates the session again without the phone number when Stripe refuses it', async function () {
+      const logged = sinon.stub(logging, 'error');
+      const refusal = Object.assign(new Error('Invalid phone_number_collection'), {
+        type: 'StripeInvalidRequestError',
+        param: 'phone_number_collection[enabled]',
+      });
+      mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
+      mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_phone' });
+      const phoneApi = new StripeAPI({
+        labs: {
+          isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
+        },
+        stripeCheckoutConfig: {
+          service: {
+            readForCheckout: async () => ({
+              design: null,
+              shipping: null,
+              phone: { tierIds: null, collectable: true },
+            }),
+          },
+          collectionParams,
+        },
+      });
+      phoneApi.configure({
+        checkoutSessionSuccessUrl: '/success',
+        checkoutSessionCancelUrl: '/cancel',
+        secretKey: '',
+      });
+
+      const session = await phoneApi.createCheckoutSession('priceId', null, { tierId: 'tier_1' });
+
+      assert.equal(session.id, 'cs_no_phone');
+      const [asking, plain] = mockStripe.checkout.sessions.create.getCalls();
+      assert.deepEqual(asking.firstArg.phone_number_collection, { enabled: true });
+      assert.equal(plain.firstArg.phone_number_collection, undefined);
       sinon.assert.calledOnce(logged);
     });
 
