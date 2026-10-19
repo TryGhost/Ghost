@@ -74,8 +74,6 @@ const messages = {
   invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
 };
 
-export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
-
 const fakeWaitHoursMultiplier = parseFakeWaitHoursMultiplier(
   config.get('automations:fakeWaitHoursMultiplier'),
 );
