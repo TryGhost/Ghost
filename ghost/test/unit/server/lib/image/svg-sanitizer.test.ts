@@ -130,21 +130,102 @@ describe('lib/image: svg-sanitizer', function () {
         assert.match(svg, /<circle r="2"\/>/);
       });
 
-      it('keeps references within the SVG itself', function () {
-        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      /** The prefix the SVG's IDs were given, from the ID of its element with `original`. */
+      const idPrefix = (svg: string, original: string) => {
+        const prefix = new RegExp(`id="(svg-[0-9a-f]+-)${original}"`).exec(svg)?.[1];
+        assert.ok(prefix, `Expected an ID ending in ${original}`);
+        return prefix;
+      };
+
+      it('keeps references within the SVG itself, through IDs of its own', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
           <defs>
             <linearGradient id="base"><stop offset="0" stop-color="#fff"/></linearGradient>
             <linearGradient id="g" href="#base"/>
             <path id="shape" d="M0 0h24v24H0z"/>
           </defs>
           <path d="M0 0h24v24H0z" fill="url(#g)" style="stroke: url('#g')"/>
+          <path d="M0 0h24v24H0z" fill="url( #g )" stroke="URL( ' #g' )"/>
           <use href="#shape" fill="url(#g)"/>
+          <use xlink:href=" #shape"/>
         </svg>`)!;
 
-        assert.match(svg, /<linearGradient id="g" href="#base"\/>/);
-        assert.match(svg, /<use href="#shape" fill="url\(#g\)"\/>/);
-        assert.match(svg, /fill="url\(#g\)"/);
-        assert.match(svg, /style="stroke: url\('#g'\)"/);
+        const prefix = idPrefix(svg, 'g');
+        assert.match(svg, new RegExp(`<linearGradient id="${prefix}g" href="#${prefix}base"/>`));
+        assert.match(svg, new RegExp(`<use href="#${prefix}shape" fill="url\\(#${prefix}g\\)"/>`));
+        assert.match(svg, new RegExp(`<use xlink:href="#${prefix}shape"/>`));
+        assert.match(
+          svg,
+          new RegExp(`fill="url\\( #${prefix}g \\)" stroke="URL\\( ' #${prefix}g' \\)"`),
+        );
+        assert.match(svg, new RegExp(`style="stroke: url\\('#${prefix}g'\\)"`));
+        // Every ID and every reference has the prefix.
+        const reference = `(?:href="\\s*|url\\(\\s*['"]?\\s*)#`;
+        assert.equal(svg.match(/id="/g)?.length, 3);
+        assert.equal(svg.match(new RegExp(`id="${prefix}`, 'g'))?.length, 3);
+        assert.equal(svg.match(new RegExp(reference, 'gi'))?.length, 8);
+        assert.equal(svg.match(new RegExp(`${reference}${prefix}`, 'gi'))?.length, 8);
+      });
+
+      it('gives the IDs of each SVG a prefix of its own, the same each time', function () {
+        const svg = (color: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <linearGradient id="g"><stop offset="0" stop-color="${color}"/></linearGradient>
+          <path d="M0 0h24v24H0z" fill="url(#g)"/>
+        </svg>`;
+
+        const white = idPrefix(selfContained(svg('#fff'))!, 'g');
+        assert.equal(idPrefix(selfContained(svg('#fff'))!, 'g'), white);
+        assert.notEqual(idPrefix(selfContained(svg('#000'))!, 'g'), white);
+      });
+
+      it('removes references to IDs that would not get the prefix', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path id="a" d="M0 0h24v24H0z" aria-labelledby="a" aria-describedby="a"/>
+          <path d="M0 0h24v24H0z" style="mask-image: -moz-element(#a)"/>
+        </svg>`)!;
+
+        assert.doesNotMatch(svg, /aria-|element\(/);
+        assert.equal(svg.match(/<path /g)?.length, 2);
+      });
+
+      // As Adobe Illustrator writes them.
+      it('moves its stylesheet onto the elements it styles', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <defs>
+            <style>.st0{fill:#fff}.st1{fill:url(#g)} #shape{stroke:#000} :root{opacity:.9}</style>
+            <linearGradient id="g"><stop offset="0" stop-color="#fff"/></linearGradient>
+          </defs>
+          <path class="st0" d="M0 0h24v24H0z"/>
+          <path id="shape" class="st0 st1" style="opacity:.5" d="M0 0h2v2H0z"/>
+          <use href="#shape"/>
+        </svg>`)!;
+
+        const prefix = idPrefix(svg, 'g');
+        assert.doesNotMatch(svg, /<style|class=/);
+        assert.match(svg, /^<svg [^>]*style="opacity:\.9"/);
+        assert.match(svg, /<path d="M0 0h24v24H0z" style="fill:#fff"\/>/);
+        assert.match(
+          svg,
+          new RegExp(
+            `<path id="${prefix}shape" style="fill:url\\(#${prefix}g\\);stroke:#000;opacity:\\.5"`,
+          ),
+        );
+        assert.match(svg, new RegExp(`<use href="#${prefix}shape"/>`));
+      });
+
+      it('removes the rules that depend on how the SVG is shown', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <style>
+            path { fill: #fff }
+            path:hover { fill: red }
+            @media (prefers-color-scheme: dark) { path { fill: #000 } }
+            @keyframes spin { to { transform: rotate(1turn) } }
+          </style>
+          <path d="M0 0h24v24H0z"/>
+        </svg>`)!;
+
+        assert.match(svg, /<svg [^>]*><path d="M0 0h24v24H0z" style="fill:#fff"\/><\/svg>$/);
       });
 
       it('empties a stylesheet that refers to another document, and keeps one that does not', function () {
@@ -152,12 +233,12 @@ describe('lib/image: svg-sanitizer', function () {
           <style>@import url(https://tracker.example.net/1.css);</style>
           <style>@font-face { font-family: x; src: url(https://tracker.example.net/2.woff); }</style>
           <style>path { fill: \\75rl(https://tracker.example.net/3.svg#a); }</style>
-          <style>path { fill: white; }</style>
+          <style>path { stroke: white; }</style>
           <path d="M0 0h24v24H0z"/>
         </svg>`)!;
 
         assert.doesNotMatch(svg, /tracker/);
-        assert.match(svg, /<style>path \{ fill: white; \}<\/style>/);
+        assert.match(svg, /<path d="M0 0h24v24H0z" style="stroke:white"\/>/);
       });
 
       // Removing an element DOMPurify doesn't allow also removes its text, which joins the

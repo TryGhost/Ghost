@@ -1417,15 +1417,16 @@ describe('App installations Admin API', function () {
     });
 
     it('keeps a copy of icons as design tools export them', async function () {
-      const path = '<path d="M0 0h24v24H0z"/>';
-      // Adobe Illustrator's Save As declares entities in the doctype, and Sketch draws
-      // shapes it defines through <use>.
+      // Adobe Illustrator's Save As declares entities in the doctype and styles shapes
+      // through a stylesheet, and Sketch draws shapes it defines through <use>.
       const exported = [
         `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
 	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
 ]>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${path}</svg>`,
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><style type="text/css">
+	.st0{fill:#FFFFFF;}
+</style><path class="st0" d="M0 0h24v24H0z"/></svg>`,
         `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
           viewBox="0 0 24 24"><defs><path id="path-1" d="M0 0h24v24H0z"/></defs>
           <use xlink:href="#path-1"/></svg>`,
@@ -1437,8 +1438,14 @@ describe('App installations Admin API', function () {
         copies.push((await preview()).icon_svg);
       }
 
-      assert.match(copies[0], new RegExp(`^<svg [^>]*>${path}</svg>$`));
-      assert.match(copies[1], /<use xlink:href="#path-1"\/>/);
+      assert.match(
+        copies[0],
+        /^<svg [^>]*><path d="M0 0h24v24H0z" style="fill:#FFFFFF"\/><\/svg>$/,
+      );
+      assert.match(
+        copies[1],
+        /<path id="(svg-[0-9a-f]+-)path-1" d="M0 0h24v24H0z"\/><\/defs><use xlink:href="#\1path-1"\/>/,
+      );
     });
 
     it('keeps no copy of an icon Admin ships', async function () {
