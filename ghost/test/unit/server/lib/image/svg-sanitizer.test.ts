@@ -203,7 +203,7 @@ describe('lib/image: svg-sanitizer', function () {
 
         const prefix = idPrefix(svg, 'g');
         assert.doesNotMatch(svg, /<style|class=/);
-        assert.match(svg, /^<svg [^>]*style="opacity:\.9"/);
+        assert.match(svg, /^<svg [^>]*><g style="opacity:\.9"><defs>/);
         assert.match(svg, /<path d="M0 0h24v24H0z" style="fill:#fff"\/>/);
         assert.match(
           svg,
@@ -282,6 +282,51 @@ describe('lib/image: svg-sanitizer', function () {
 
         assert.match(svg, /^<svg [^>]*viewBox="0 0 24 24"><path d="M0 0h24v24H0z"\/><\/svg>$/);
         assert.equal(asImage(svg).namespaceURI, 'http://www.w3.org/2000/svg');
+      });
+
+      // A page lays out the root as a box of its own, which its styling could move or grow.
+      it('moves the styling of its root onto its content, leaving the root only its size', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+          x="0px" y="0px" id="logo" viewBox="0 0 24 24" width="24" height="24"
+          preserveAspectRatio="xMinYMin meet" style="position:fixed;inset:0;fill:red"
+          transform="scale(50)" overflow="visible" fill-rule="evenodd">
+          <style>svg { z-index: 9 }</style>
+          <path d="M0 0h24v24H0z"/>
+        </svg>`)!;
+
+        const root = asImage(svg);
+        const names = (element: Element) =>
+          [...element.attributes]
+            .map(({ name }) => name)
+            .filter((name) => !name.startsWith('xmlns'));
+        assert.deepEqual(names(root).sort(), ['height', 'preserveAspectRatio', 'viewBox', 'width']);
+        assert.equal(root.children.length, 1);
+        const content = root.children[0];
+        assert.equal(content.localName, 'g');
+        assert.deepEqual(names(content).sort(), [
+          'fill-rule',
+          'id',
+          'overflow',
+          'style',
+          'transform',
+        ]);
+        assert.equal(content.id, `${idPrefix(svg, 'logo')}logo`);
+        assert.equal(content.getAttribute('style'), 'z-index:9;position:fixed;inset:0;fill:red');
+        assert.equal(content.getAttribute('transform'), 'scale(50)');
+        assert.deepEqual(
+          [...content.children].map((child) => child.localName),
+          ['path'],
+        );
+      });
+
+      it('removes links, tab stops and data attributes, which only matter in a page', function () {
+        const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <a href="#shape"><path id="shape" tabindex="0" d="M0 0h24v24H0z"/></a>
+          <circle r="2" data-action="delete" tabindex="-1"/>
+        </svg>`)!;
+
+        assert.doesNotMatch(svg, /<a|tabindex|data-/);
+        assert.match(svg, /<path id="svg-[0-9a-f]+-shape" d="M0 0h24v24H0z"\/><circle r="2"\/>/);
       });
 
       it('refuses anything but a single SVG', function () {
