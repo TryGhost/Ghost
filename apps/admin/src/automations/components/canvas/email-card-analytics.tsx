@@ -203,17 +203,8 @@ const ClickedLinksList: React.FC<{
   isError: boolean;
   isLoading: boolean;
   links: AutomationActionLink[];
-  sentCount: number;
   onRetry: () => void;
-}> = ({ clickedCount, isError, isLoading, links, sentCount, onRetry }) => {
-  if (sentCount === 0) {
-    return (
-      <Text className="py-6 text-center" size="sm" tone="secondary">
-        No emails sent yet.
-      </Text>
-    );
-  }
-
+}> = ({ clickedCount, isError, isLoading, links, onRetry }) => {
   if (isLoading) {
     return (
       <Inline className="py-6" data-testid="automation-action-links-loading" justify="center">
@@ -287,11 +278,13 @@ const LinksEmptyState: React.FC<{
   </EmptyIndicator>
 );
 
-const noLinksState = (
+// Ghost records an email's links when it sends, so this covers an email with no links,
+// links added since it last sent, a send with click tracking off, and no sends yet.
+const noClickedLinksState = (
   <LinksEmptyState
-    description="Add links and publish to start tracking clicks"
+    description="Links are tracked each time this email is sent"
     icon={<LucideIcon.Link />}
-    title="No links in this email"
+    title="No clicked links yet"
   />
 );
 
@@ -327,15 +320,15 @@ const PaginatedClickedLinks: React.FC<EmailCardAnalyticsData> = ({
     return () => observer.disconnect();
   }, []);
 
-  if (data && !isError && links.length === 0 && sentCount > 0) {
-    return noLinksState;
+  if (sentCount === 0 || (data && !isError && links.length === 0)) {
+    return noClickedLinksState;
   }
 
   // An invisible empty state sets the minimum height, so a few links aren't shorter than none.
   return (
     <div className="grid">
       <div aria-hidden="true" className="invisible col-start-1 row-start-1">
-        {noLinksState}
+        {noClickedLinksState}
       </div>
       <Stack className="col-start-1 row-start-1" gap="xs">
         <Text size="sm" tone="secondary">
@@ -348,7 +341,6 @@ const PaginatedClickedLinks: React.FC<EmailCardAnalyticsData> = ({
               isError={isError}
               isLoading={isLoading}
               links={paginatedData ?? []}
-              sentCount={sentCount}
               onRetry={() => {
                 void refetch();
               }}

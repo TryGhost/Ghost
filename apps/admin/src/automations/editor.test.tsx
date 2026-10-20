@@ -910,7 +910,7 @@ describe('AutomationEditor', () => {
     expect(within(welcomeEmailCard()).getByText('Clicked: 0%, 0 members')).toBeInTheDocument();
   });
 
-  it('shows no click rate and a no-links state for an email without links', () => {
+  it('shows no click rate and the empty links state for an email without links', () => {
     mockAutomationWithEmailStats({
       email_clicked_count: 0,
       email_sent_count: 10,
@@ -929,7 +929,7 @@ describe('AutomationEditor', () => {
     );
     expect(within(welcomeEmailCard()).getByText('Clicked: —')).toBeInTheDocument();
     fireEvent.click(analyticsToggle());
-    expect(within(welcomeEmailCard()).getByText('No links in this email')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('No clicked links yet')).toBeInTheDocument();
   });
 
   it('pages through clicked links with counts, clamped percentages, and full destinations', () => {
@@ -1035,7 +1035,7 @@ describe('AutomationEditor', () => {
     expect(screen.getByRole('alert')).toHaveTextContent("Couldn't load clicked links.");
   });
 
-  it('disables the links request and shows a no-sends state when no emails were sent', () => {
+  it('disables the links request and shows the empty links state when no emails were sent', () => {
     mockAutomationWithEmailStats({
       email_clicked_count: 0,
       email_sent_count: 0,
@@ -1047,7 +1047,7 @@ describe('AutomationEditor', () => {
     renderEditor();
     fireEvent.click(analyticsToggle());
 
-    expect(screen.getByText('No emails sent yet.')).toBeInTheDocument();
+    expect(screen.getByText('No clicked links yet')).toBeInTheDocument();
     expect(linkRequests()).toHaveLength(0);
   });
 
