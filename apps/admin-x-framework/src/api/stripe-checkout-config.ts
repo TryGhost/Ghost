@@ -1,4 +1,10 @@
-import type { StripeCheckoutBorderStyle, StripeCheckoutFont } from '@tryghost/checkout';
+import type {
+  CheckoutPartSetting,
+  CheckoutPartSettings,
+  CollectedPart,
+  StripeCheckoutBorderStyle,
+  StripeCheckoutFont,
+} from '@tryghost/checkout';
 import { createMutation, createQuery } from '../utils/api/hooks';
 
 /** A Stripe Checkout design, in the field names Stripe's `branding_settings` uses. */
@@ -15,64 +21,21 @@ export type StripeCheckoutDesignSetting =
   | ({ customize: true } & StripeCheckoutDesign);
 
 /**
- * `collect: false` means checkout doesn't ask for a shipping address. `collect: true` names
- * the custom fields the address and the recipient's name are saved into.
+ * A part checkout can ask the buyer for, as the Admin API saves and returns it. `collect: false`
+ * switches it off. Left out, `tier_ids` covers every paid tier, including tiers added later.
  */
-export type StripeCheckoutShippingSetting =
-  | { collect: false }
-  | {
-      collect: true;
-      /** Left out, it covers every paid tier, including tiers added later. */
-      tier_ids?: string[];
-      /** Left out, Stripe ships everywhere it can. */
-      allowed_countries?: string[];
-      address: { custom_field_key: string };
-      name: { custom_field_key: string };
-    };
+export type StripeCheckoutPartSetting<Part extends CollectedPart> = CheckoutPartSetting<Part>;
+export type StripeCheckoutShippingSetting = StripeCheckoutPartSetting<'shipping'>;
+export type StripeCheckoutPhoneSetting = StripeCheckoutPartSetting<'phone'>;
+export type StripeCheckoutTaxNumberSetting = StripeCheckoutPartSetting<'tax_number'>;
 
 /**
- * `collect: false` means checkout doesn't ask for a phone number. `collect: true` names the
- * custom field it is saved into.
+ * The checkout config. A collected part is missing while it can't be collected: its private flag
+ * is off, or Ghost is older than the part.
  */
-export type StripeCheckoutPhoneSetting =
-  | { collect: false }
-  | {
-      collect: true;
-      /** Left out, it covers every paid tier, including tiers added later. */
-      tier_ids?: string[];
-      custom_field_key: string;
-    };
-
-/**
- * `collect: false` means checkout doesn't let buyers give a tax ID. Stripe keeps a tax ID given
- * at checkout on the customer, so no custom field is named.
- */
-export type StripeCheckoutTaxNumberSetting =
-  | { collect: false }
-  | {
-      collect: true;
-      /** Left out, it covers every paid tier, including tiers added later. */
-      tier_ids?: string[];
-    };
-
 export type StripeCheckoutConfig = {
   design: StripeCheckoutDesignSetting;
-  /**
-   * Missing while shipping can't be collected: its private flag is off, or Ghost is older
-   * than the setting.
-   */
-  shipping?: StripeCheckoutShippingSetting;
-  /**
-   * Missing while a phone number can't be collected: its private flag is off, or Ghost is
-   * older than the setting.
-   */
-  phone?: StripeCheckoutPhoneSetting;
-  /**
-   * Missing while a tax ID can't be collected: its private flag is off, or Ghost is older than
-   * the setting.
-   */
-  tax_number?: StripeCheckoutTaxNumberSetting;
-};
+} & Partial<CheckoutPartSettings>;
 
 export interface StripeCheckoutConfigResponseType {
   checkout_config: StripeCheckoutConfig[];
