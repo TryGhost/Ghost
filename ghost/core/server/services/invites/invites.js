@@ -30,8 +30,14 @@ class Invites {
     this.invitationLimiter = invitationLimiter;
   }
 
+  rateLimit() {
+    return this.invitationLimiter.rateLimit();
+  }
+
   accept(invitation) {
-    return accept(invitation, this.models);
+    return accept(invitation, this.models, (transaction) =>
+      this.invitationLimiter.lockStaffUsage(transaction),
+    );
   }
 
   add({ api, InviteModel, invites, options, user }) {

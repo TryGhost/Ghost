@@ -4,6 +4,7 @@ const security = require('@tryghost/security');
 const moment = require('moment');
 
 const settingsCache = require('../../shared/settings-cache');
+const config = require('../../shared/config');
 const { limitService } = require('../services/limits');
 const ghostBookshelf = require('./base');
 const { setIsRoles } = require('./role-utils');
@@ -99,6 +100,7 @@ const Invite = ghostBookshelf.Model.extend(
 
           if (
             isAdd &&
+            !config.get('hostSettings:staffInvites') &&
             limitService.isLimited('staff') &&
             roleToInvite.get('name') !== 'Contributor'
           ) {

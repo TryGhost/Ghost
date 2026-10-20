@@ -137,7 +137,7 @@ const UserDetailModalContent: React.FC<{
     return 'profile';
   };
   const { ownerUser } = useStaffUsers();
-  const { currentUser } = useGlobalData();
+  const { currentUser, config } = useGlobalData();
   const handleError = useHandleError();
   const { confirm, showLimit } = useConfirmation();
   const {
@@ -227,7 +227,11 @@ const UserDetailModalContent: React.FC<{
   }, [currentUser, navigate, updateRoute]);
 
   const confirmSuspend = async (_user: User) => {
-    if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
+    if (
+      !config?.hostSettings?.staffInvites &&
+      _user.status === 'inactive' &&
+      _user.roles[0].name !== 'Contributor'
+    ) {
       try {
         await limiter?.errorIfWouldGoOverLimit('staff');
       } catch (error) {

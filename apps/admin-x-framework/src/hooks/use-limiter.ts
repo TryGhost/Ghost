@@ -92,7 +92,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       errorIfIsOverLimit: (): Promise<void> => Promise.resolve(),
     };
 
-    if (!config?.hostSettings?.limits || isStaffLoading) {
+    if ((!config?.hostSettings?.limits && !config?.hostSettings?.staffInvites) || isStaffLoading) {
       return noOpLimiter;
     }
 
@@ -105,7 +105,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     // Periodic limits need a subscription to build, and registration stops at the first
     // limit that throws, so without one they're skipped to keep the rest working
     const limits = Object.fromEntries(
-      Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
+      Object.entries(config.hostSettings?.limits || {}).filter(([name, limit]) => {
         if (wanted && !wanted.includes(name)) {
           return false;
         }
@@ -118,7 +118,17 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     ) as Record<string, LimitConfig>;
     const limiter = new LimitService();
 
-    if (limits.staff) {
+    const trialInvites = config.hostSettings?.staffInvites;
+    if (trialInvites && wantsStaff) {
+      limits.staff = {
+        max: trialInvites.maxStaff,
+        error:
+          'Your trial supports up to {{max}} staff, including pending invitations and Contributors. Upgrade to invite more people.',
+        currentCountQuery: () => Promise.resolve(users.length + invites.length),
+      };
+    }
+
+    if (limits.staff && !trialInvites) {
       limits.staff.currentCountQuery = () => {
         // Keep the existing first-page behavior for this move. Full pagination is tracked in
         // PLA-369 because excluded users/invites can push countable staff onto later pages.
@@ -212,5 +222,6 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     sessionExpiryRedirect,
     users,
     wanted,
+    wantsStaff,
   ]);
 };

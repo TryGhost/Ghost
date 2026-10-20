@@ -6,7 +6,7 @@ import InvitationLimiter, {
 const db = require('../../../core/server/data/db');
 const dbUtils = require('../../utils/db-utils');
 
-describe('Staff invitation admission', function () {
+describe('Trial invitation admission', function () {
   let now: number;
   let limits: InvitationLimits | undefined;
   let limiter: InvitationLimiter;
@@ -17,8 +17,10 @@ describe('Staff invitation admission', function () {
 
   beforeEach(async function () {
     await dbUtils.truncate('brute');
+    await dbUtils.truncate('staff_invite_usage');
+    await dbUtils.truncate('invites');
     now = Date.parse('2026-10-20T12:00:00Z');
-    limits = { maxPerDay: 10, cooldownSeconds: 300 };
+    limits = { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 };
     limiter = new InvitationLimiter(
       db.knex,
       () => limits,
@@ -26,118 +28,97 @@ describe('Staff invitation admission', function () {
     );
   });
 
-  afterEach(async function () {
-    await dbUtils.truncate('brute');
-  });
-
-  it('admits exactly ten of twenty simultaneous invitations to different recipients', async function () {
-    const admitted: number[] = [];
-    const results = await Promise.allSettled(
-      Array.from({ length: 20 }, (_, index) =>
-        limiter.run(`recipient-${index}@example.com`, async () => admitted.push(index)),
-      ),
-    );
-    assert.equal(admitted.length, 10);
-    assert.equal(results.filter((result) => result.status === 'fulfilled').length, 10);
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        assert.equal(result.reason.code, 'STAFF_INVITE_DAILY_LIMIT');
-      }
-    }
-  });
-
-  it('admits one simultaneous send per normalized recipient across limiter instances', async function () {
-    const secondInstance = new InvitationLimiter(
+  it('admits exactly one of twenty concurrent requests across instances', async function () {
+    const other = new InvitationLimiter(
       db.knex,
       () => limits,
       () => now,
     );
-    const results = await Promise.allSettled([
-      limiter.run(' Recipient@example.com ', async () => 'first'),
-      secondInstance.run('recipient@EXAMPLE.COM', async () => 'second'),
-    ]);
-    assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
-    const rejected = results.find((result) => result.status === 'rejected');
-    assert.equal(rejected?.reason.code, 'STAFF_INVITE_COOLDOWN');
+    const results = await Promise.all(
+      Array.from({ length: 20 }, (_, index) => (index % 2 ? limiter : other).rateLimit()),
+    );
+    assert.equal(results.filter((wait) => wait === 0).length, 1);
+    assert.equal(results.filter((wait) => wait === 60).length, 19);
   });
 
-  it('counts resends toward the daily allowance and rejects until the cooldown expires', async function () {
-    limits = { maxPerDay: 2, cooldownSeconds: 300 };
-    await limiter.run('recipient@example.com', async () => {});
-    now += 299_000;
-    await assert.rejects(
-      limiter.run('recipient@example.com', async () => assert.fail()),
-      {
-        code: 'STAFF_INVITE_COOLDOWN',
-      },
-    );
+  it('does not extend the minute when requests are rejected and survives restarts', async function () {
+    assert.equal(await limiter.rateLimit(), 0);
+    now += 59_000;
+    assert.equal(await limiter.rateLimit(), 1);
     now += 1000;
-    await limiter.run('recipient@example.com', async () => {});
-    now += 300_000;
-    await assert.rejects(
-      limiter.run('recipient@example.com', async () => assert.fail()),
-      {
-        code: 'STAFF_INVITE_DAILY_LIMIT',
-      },
+    const restarted = new InvitationLimiter(
+      db.knex,
+      () => limits,
+      () => now,
     );
+    assert.equal(await restarted.rateLimit(), 0);
   });
 
-  it('resets the daily allowance at midnight UTC without resetting a recipient cooldown', async function () {
-    limits = { maxPerDay: 1, cooldownSeconds: 300 };
-    now = Date.parse('2026-10-20T23:59:00Z');
-    await limiter.run('recipient@example.com', async () => {});
-    now += 60_000;
-    await assert.rejects(
-      limiter.run('recipient@example.com', async () => assert.fail()),
-      {
-        code: 'STAFF_INVITE_COOLDOWN',
-      },
+  it('admits only fifteen concurrent email preparations even without the HTTP guard', async function () {
+    const results = await Promise.allSettled(
+      Array.from({ length: 25 }, (_, i) => limiter.run(`person-${i}@example.com`, async () => i)),
     );
-    await limiter.run('other@example.com', async () => {});
-  });
-
-  it('retains cooldowns and usage when the host changes the daily cap', async function () {
-    limits = { cooldownSeconds: 300 };
-    for (let index = 0; index < 12; index++) {
-      await limiter.run(`recipient-${index}@example.com`, async () => {});
+    assert.equal(results.filter((r) => r.status === 'fulfilled').length, 15);
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        assert.equal(result.reason.errorType, 'HostLimitError');
+        assert.match(result.reason.message, /15 staff invitation emails/);
+      }
     }
-    await assert.rejects(
-      limiter.run('recipient-0@example.com', async () => assert.fail()),
-      {
-        code: 'STAFF_INVITE_COOLDOWN',
-      },
-    );
-    // Reinstating a cap does not reset the already-used allowance.
-    limits = { maxPerDay: 10, cooldownSeconds: 300 };
-    await assert.rejects(
-      limiter.run('another@example.com', async () => assert.fail()),
-      {
-        code: 'STAFF_INVITE_DAILY_LIMIT',
-      },
-    );
   });
 
-  it('applies a higher allowance without resetting usage or the recipient cooldown', async function () {
-    limits = { maxPerDay: 1, cooldownSeconds: 300 };
-    await limiter.run('recipient@example.com', async () => {});
-    limits = { maxPerDay: 2, cooldownSeconds: 300 };
-    await assert.rejects(
-      limiter.run('recipient@example.com', async () => assert.fail()),
-      { code: 'STAFF_INVITE_COOLDOWN' },
+  it('never resets the trial allowance at midnight, after extensions, or after rate cleanup', async function () {
+    for (let i = 0; i < 15; i++) {
+      await limiter.run('resend@example.com', async () => {});
+      now += 60_000;
+    }
+    now += 90 * 86400_000;
+    await dbUtils.truncate('brute');
+    const restarted = new InvitationLimiter(
+      db.knex,
+      () => ({ ...limits! }),
+      () => now,
     );
-    await limiter.run('other@example.com', async () => {});
     await assert.rejects(
-      limiter.run('third@example.com', async () => assert.fail()),
-      { code: 'STAFF_INVITE_DAILY_LIMIT' },
+      restarted.run('new@example.com', async () => assert.fail()),
+      /Upgrade to send more/,
     );
+    const row = await db.knex('staff_invite_usage').where({ key: 'trial' }).first();
+    assert.equal(row.count, 15);
   });
 
-  it('rolls back both invitation changes and allowance if preparation fails', async function () {
+  it('reserves the last seat atomically, including pending Contributor invitations', async function () {
+    const users = await db.knex('users').count('id', { as: 'count' }).first();
+    limits!.maxStaff = Number(users.count) + 1;
+    const role = await db.knex('roles').where({ name: 'Contributor' }).first();
+    const results = await Promise.allSettled(
+      Array.from({ length: 5 }, (_, i) =>
+        limiter.run(`person-${i}@example.com`, async (transaction) => {
+          await transaction!('invites').insert({
+            id: String(i).padStart(24, '0'),
+            email: `person-${i}@example.com`,
+            role_id: role.id,
+            status: 'sent',
+            token: `token-${i}`,
+            expires: now + 86400_000,
+            created_at: new Date(now),
+          });
+        }),
+      ),
+    );
+    assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
+    const invite = await db.knex('invites').first();
+    // A resend reuses the occupied slot even at capacity.
+    await limiter.run(invite.email, async () => {});
+    const usage = await db.knex('staff_invite_usage').first();
+    assert.equal(usage.count, 2);
+  });
+
+  it('rolls back email allowance and invitation changes on preparation failure', async function () {
     await assert.rejects(
-      limiter.run('recipient@example.com', async (transaction) => {
-        assert.ok(transaction);
-        await transaction('brute').insert({
-          key: 'test-preparation',
+      limiter.run('person@example.com', async (transaction) => {
+        await transaction!('brute').insert({
+          key: 'test',
           count: 1,
           firstRequest: now,
           lastRequest: now,
@@ -147,35 +128,23 @@ describe('Staff invitation admission', function () {
       }),
       /Invalid invitation/,
     );
+    assert.deepEqual(await db.knex('staff_invite_usage').select(), []);
     assert.deepEqual(await db.knex('brute').select(), []);
-    await limiter.run('recipient@example.com', async () => {});
   });
 
-  it('starts the cooldown after preparation and retains reservations across process restarts', async function () {
-    await limiter.run('recipient@example.com', async () => {
-      now += 60_000;
-    });
-    const restarted = new InvitationLimiter(
-      db.knex,
-      () => limits,
-      () => now,
-    );
-    now += 299_000;
-    await assert.rejects(
-      restarted.run('recipient@example.com', async () => assert.fail()),
-      {
-        code: 'STAFF_INVITE_COOLDOWN',
-      },
-    );
-    now += 1000;
-    await restarted.run('recipient@example.com', async () => {});
-  });
-
-  it('does not reserve allowance when the host has not configured limits', async function () {
+  it('stops enforcing on upgrade without erasing the previously used allowance', async function () {
+    await limiter.run('person@example.com', async () => {});
+    await limiter.rateLimit();
     limits = undefined;
-    await limiter.run('recipient@example.com', async (transaction) => {
-      assert.equal(transaction, undefined);
-    });
-    assert.deepEqual(await db.knex('brute').select(), []);
+    assert.equal(await limiter.rateLimit(), 0);
+    await limiter.run('paid@example.com', async (transaction) =>
+      assert.equal(transaction, undefined),
+    );
+    assert.equal((await db.knex('staff_invite_usage').first()).count, 1);
+    limits = { maxStaff: 10, maxInvites: 1, minIntervalSeconds: 60 };
+    await assert.rejects(
+      limiter.run('trial-again@example.com', async () => assert.fail()),
+      /Upgrade/,
+    );
   });
 });

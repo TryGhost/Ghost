@@ -38,8 +38,9 @@ export type Config = {
     siteId?: string;
     forceUpgrade?: boolean;
     staffInvites?: {
-      maxPerDay?: number;
-      cooldownSeconds: number;
+      maxStaff: number;
+      maxInvites: number;
+      minIntervalSeconds: number;
     };
     limits?: {
       // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.

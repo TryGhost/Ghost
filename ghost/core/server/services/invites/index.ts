@@ -20,8 +20,11 @@ export default defineService('Invites', () => {
     urlUtils,
     models,
     logging,
-    invitationLimiter: new InvitationLimiter(db.knex, () =>
-      config.get('hostSettings:staffInvites'),
+    invitationLimiter: new InvitationLimiter(
+      db.knex,
+      () => config.get('hostSettings:staffInvites'),
+      Date.now,
+      () => config.get('hostSettings:billing:url'),
     ),
   });
 });
