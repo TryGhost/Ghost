@@ -61,7 +61,20 @@ export type AutomationSendEmailAction = {
   stats?: AutomationEmailStats;
 };
 
-export type AutomationAction = AutomationWaitAction | AutomationSendEmailAction;
+export type AutomationSendWebhookAction = {
+  id: string;
+  type: 'send_webhook';
+  data: {
+    url: string;
+    method: 'POST' | 'PUT';
+    body: string;
+  };
+};
+
+export type AutomationAction =
+  | AutomationWaitAction
+  | AutomationSendEmailAction
+  | AutomationSendWebhookAction;
 
 export type AutomationEdge = {
   source_action_id: string;
@@ -312,6 +325,7 @@ export const useBrowseAutomationActionLinks = (
 const serializeEditableAction = (action: AutomationAction): AutomationAction => {
   switch (action.type) {
     case 'wait':
+    case 'send_webhook':
       return action;
     case 'send_email':
       return { id: action.id, type: action.type, data: action.data };
@@ -422,6 +436,16 @@ const buildSendEmailAction = (): AutomationSendEmailAction => ({
   },
 });
 
+const buildSendWebhookAction = (): AutomationSendWebhookAction => ({
+  id: generateActionId(),
+  type: 'send_webhook',
+  data: {
+    url: '',
+    method: 'POST',
+    body: '{\n  "member_id": "{{member.id}}",\n  "member_email": "{{member.email}}"\n}',
+  },
+});
+
 // Anchor for where to splice a new action into the chain. `undefined` on either side means "no
 // real action there" — i.e. inserting at the head (no previousActionId) or the tail (no
 // nextActionId). When both are defined, we're inserting between two existing actions and the
@@ -513,6 +537,9 @@ export const insertWaitAction = ({ detail, anchor }: InsertActionArgs): Automati
 export const insertSendEmailAction = ({ detail, anchor }: InsertActionArgs): AutomationDetail =>
   spliceAction({ detail, action: buildSendEmailAction(), anchor });
 
+export const insertSendWebhookAction = ({ detail, anchor }: InsertActionArgs): AutomationDetail =>
+  spliceAction({ detail, action: buildSendWebhookAction(), anchor });
+
 type RemoveActionArgs = ReadonlyDeep<{
   detail: AutomationDetail;
   actionId: string;
@@ -594,6 +621,38 @@ export const updateSendEmailAction = ({
 
   if (!hasUpdated) {
     throw new Error(`updateSendEmailAction: unknown action id "${actionId}"`);
+  }
+
+  return { ...detail, actions, edges: [...detail.edges] };
+};
+
+type UpdateSendWebhookActionArgs = ReadonlyDeep<{
+  detail: AutomationDetail;
+  actionId: string;
+  data: Partial<AutomationSendWebhookAction['data']>;
+}>;
+
+export const updateSendWebhookAction = ({
+  detail,
+  actionId,
+  data,
+}: UpdateSendWebhookActionArgs): AutomationDetail => {
+  let hasUpdated = false;
+  const actions = detail.actions.map((action) => {
+    if (action.id === actionId) {
+      if (action.type !== 'send_webhook') {
+        throw new Error(
+          `updateSendWebhookAction: action "${actionId}" is not a send_webhook action`,
+        );
+      }
+      hasUpdated = true;
+      return { ...action, data: { ...action.data, ...data } };
+    }
+    return action;
+  });
+
+  if (!hasUpdated) {
+    throw new Error(`updateSendWebhookAction: unknown action id "${actionId}"`);
   }
 
   return { ...detail, actions, edges: [...detail.edges] };

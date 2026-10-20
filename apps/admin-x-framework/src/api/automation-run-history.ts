@@ -13,6 +13,11 @@ const PlanActionSchema = z.discriminatedUnion('type', [
     type: z.literal('send_email'),
     data: z.object({ email_subject: z.string().nullable(), email_lexical: z.string().nullable() }),
   }),
+  z.object({
+    id: z.string().min(1),
+    type: z.literal('send_webhook'),
+    data: z.object({ url: z.string(), method: z.enum(['POST', 'PUT']), body: z.string() }),
+  }),
 ]);
 
 const HistoryActionSchema = z.discriminatedUnion('type', [
@@ -25,6 +30,11 @@ const HistoryActionSchema = z.discriminatedUnion('type', [
     id: z.string().min(1),
     type: z.literal('send_email'),
     data: z.object({ email_subject: z.string(), email_lexical: z.string() }),
+  }),
+  z.object({
+    id: z.string().min(1),
+    type: z.literal('send_webhook'),
+    data: z.object({ url: z.string(), method: z.enum(['POST', 'PUT']), body: z.string() }),
   }),
 ]);
 

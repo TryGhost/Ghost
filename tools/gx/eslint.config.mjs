@@ -26,7 +26,7 @@ export default [
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
   ...nodeLibConfig({
-    srcGlobs: ['create-migration.ts'],
+    srcGlobs: ['create-migration.ts', 'webhook-server.ts'],
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
   ...nodeLibConfig({

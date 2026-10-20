@@ -31,6 +31,7 @@ import type {
   AutomationStepToRun,
   AutomationsRepository,
   BrowseOptions,
+  SendWebhookAction,
   EditAutomationData,
   Page,
 } from './automations-repository';
@@ -139,11 +140,12 @@ const runHistoryStepRowSchema = z
     email_delivered_at: DbDate.nullable(),
     status: z.enum(['pending', ...AUTOMATION_STEP_TERMINAL_STATUSES]),
     action_id: z.string(),
-    action_type: z.enum(['wait', 'send_email']),
+    action_type: z.enum(['wait', 'send_email', 'send_webhook']),
     revision_id: z.string(),
     wait_hours: z.number().nullable(),
     email_subject: z.string().nullable(),
     email_lexical: z.string().nullable(),
+    webhook_config: z.string().nullable(),
   })
   .refine((step) => step.status === 'pending' || step.finished_at !== null, {
     message: 'Terminal automation steps must have a completion timestamp.',
@@ -151,11 +153,12 @@ const runHistoryStepRowSchema = z
 
 type ActionRow = {
   id: string;
-  type: 'wait' | 'send_email';
+  type: 'wait' | 'send_email' | 'send_webhook';
   wait_hours: number | null;
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
+  webhook_config: string | null;
 };
 
 type ActionStatsRow = {
@@ -177,6 +180,7 @@ type ActionRevisionRow = {
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
+  webhook_config: string | null;
 };
 
 type StepToInsert = {
@@ -192,7 +196,7 @@ type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
   automation_action_revision_id: string;
-  type: 'wait' | 'send_email';
+  type: 'wait' | 'send_email' | 'send_webhook';
   wait_hours: number | null;
 };
 
@@ -214,6 +218,7 @@ type StepToRunRow = {
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
+  webhook_config: string | null;
 };
 
 type WaitActionData = Extract<AutomationAction, { type: 'wait' }>['data'];
@@ -729,6 +734,7 @@ async function loadRunHistory(
       'revisions.wait_hours',
       'revisions.email_subject',
       'revisions.email_lexical',
+      'revisions.webhook_config',
       // A retry can leave more than one recipient record. Read the first
       // successful send/delivery without duplicating the recorded step or
       // exposing recipient identity. Both the step and revision must match.
@@ -774,6 +780,13 @@ function buildRunHistoryStep(
           email_subject: requireValue(revision, 'email_subject'),
           email_lexical: requireValue(revision, 'email_lexical'),
         },
+      };
+      break;
+    case 'send_webhook':
+      action = {
+        id: row.action_id,
+        type: 'send_webhook',
+        data: parseWebhookConfig(requireValue(revision, 'webhook_config')),
       };
       break;
     /* v8 ignore start -- @preserve */
@@ -1143,6 +1156,7 @@ async function fetchAndLockSteps(
       'revision.email_subject as email_subject',
       'revision.email_lexical as email_lexical',
       'revision.email_design_setting_id as email_design_setting_id',
+      'revision.webhook_config as webhook_config',
     )
     .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
     .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
@@ -1243,6 +1257,12 @@ function buildStepToRun(
         email_subject: requireValue(row, 'email_subject'),
         email_lexical: requireValue(row, 'email_lexical'),
         email_design_setting_id: row.email_design_setting_id,
+      };
+    case 'send_webhook':
+      return {
+        ...base,
+        type: 'send_webhook',
+        ...parseWebhookConfig(requireValue(row, 'webhook_config')),
       };
     default:
       throw new errors.InternalServerError({
@@ -1367,6 +1387,7 @@ function getReadyAtForAction(
       return new Date(now.getTime() + waitMs);
     }
     case 'send_email':
+    case 'send_webhook':
       return now;
     /* v8 ignore start -- @preserve */
     default: {
@@ -1700,7 +1721,7 @@ function shouldInsertActionRevision(
 function buildRevisionActionData(
   action: AutomationAction,
   revision: ActionRevisionRow,
-): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData> {
+): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData | SendWebhookAction['data']> | null {
   switch (action.type) {
     case 'wait':
       return {
@@ -1712,6 +1733,8 @@ function buildRevisionActionData(
         email_lexical: revision.email_lexical,
         email_design_setting_id: revision.email_design_setting_id,
       };
+    case 'send_webhook':
+      return revision.webhook_config === null ? null : parseWebhookConfig(revision.webhook_config);
     /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = action;
@@ -1746,6 +1769,7 @@ async function loadLatestActionRevisions(
       'automation_action_revisions.email_subject',
       'automation_action_revisions.email_lexical',
       'automation_action_revisions.email_design_setting_id',
+      'automation_action_revisions.webhook_config',
     )
     .innerJoin(latestRevisionDates, function () {
       this.on('automation_action_revisions.action_id', 'latest_revision_dates.action_id').andOn(
@@ -1814,6 +1838,7 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         email_subject: null,
         email_lexical: null,
         email_design_setting_id: null,
+        webhook_config: null,
       };
     case 'send_email':
       return {
@@ -1824,6 +1849,22 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         email_subject: action.data.email_subject,
         email_lexical: action.data.email_lexical,
         email_design_setting_id: action.data.email_design_setting_id,
+        webhook_config: null,
+      };
+    case 'send_webhook':
+      return {
+        id: ObjectId().toString(),
+        created_at: createdAt,
+        action_id: actionId,
+        wait_hours: null,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null,
+        webhook_config: JSON.stringify({
+          url: action.data.url,
+          method: action.data.method,
+          body: action.data.body,
+        }),
       };
     /* v8 ignore start -- @preserve */
     default: {
@@ -1952,6 +1993,7 @@ async function loadActionRows(trx: Knex.Transaction, automationId: string): Prom
       'r.email_subject as email_subject',
       'r.email_lexical as email_lexical',
       'r.email_design_setting_id as email_design_setting_id',
+      'r.webhook_config as webhook_config',
     )
     .innerJoin('automation_action_revisions as r', 'r.action_id', 'a.id')
     .where('a.automation_id', automationId)
@@ -2005,7 +2047,23 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
         },
         stats: stats ?? EMPTY_EMAIL_STATS,
       };
+    case 'send_webhook':
+      return {
+        id: row.id,
+        type: 'send_webhook',
+        data: parseWebhookConfig(requireValue(row, 'webhook_config')),
+      };
   }
+}
+
+const webhookConfigSchema = z.object({
+  url: z.string(),
+  method: z.enum(['POST', 'PUT']),
+  body: z.string(),
+});
+
+function parseWebhookConfig(json: string): SendWebhookAction['data'] {
+  return webhookConfigSchema.parse(JSON.parse(json));
 }
 
 const EMPTY_EMAIL_STATS: AutomationEmailStats = {

@@ -41,6 +41,7 @@ const kindIcons = {
   trigger: LucideIcon.Zap,
   email: LucideIcon.Mail,
   wait: LucideIcon.Hourglass,
+  webhook: LucideIcon.Webhook,
   end: LucideIcon.LogOut,
   event: LucideIcon.LogOut,
 } satisfies Record<HistoryCardData['kind'], React.ElementType>;

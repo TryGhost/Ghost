@@ -14,12 +14,16 @@ const RETRY_DELAY_MS = 10 * 60 * 1000;
 
 type WaitStep = Extract<AutomationStepToRun, { type: 'wait' }>;
 type SendEmailStep = Extract<AutomationStepToRun, { type: 'send_email' }>;
+type SendWebhookStep = Extract<AutomationStepToRun, { type: 'send_webhook' }>;
 type StepSpecificField =
   | 'type'
   | 'wait_hours'
   | 'email_subject'
   | 'email_lexical'
-  | 'email_design_setting_id';
+  | 'email_design_setting_id'
+  | 'url'
+  | 'method'
+  | 'body';
 type StepBase = Omit<AutomationStepToRun, StepSpecificField>;
 type PollOptions = Parameters<typeof poll>[0];
 type AutomationsApi = PollOptions['automationsApi'];
@@ -127,6 +131,17 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
     email_design_setting_id: null,
     ...attrs,
   } satisfies SendEmailStep;
+}
+
+function buildWebhookStep(attrs: Partial<SendWebhookStep> = {}): SendWebhookStep {
+  return {
+    ...buildStep(attrs),
+    type: 'send_webhook',
+    url: 'https://example.com/hook',
+    method: 'POST',
+    body: '{"id": "{{member.id}}", "email": "{{member.email}}"}',
+    ...attrs,
+  } satisfies SendWebhookStep;
 }
 
 describe('automations poll', function () {
@@ -787,5 +802,79 @@ describe('automations poll', function () {
 
     sinon.assert.notCalled(automationsApi.retryStep);
     sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+  });
+
+  describe('webhooks', function () {
+    let fetchStub: sinon.SinonStub;
+
+    beforeEach(function () {
+      fetchStub = sinon.stub(globalThis, 'fetch');
+    });
+
+    it('sends the webhook with the interpolated body and enqueues the next step', async function () {
+      const nextReadyAt = new Date(Date.now() + 60 * 1000);
+      const step = buildWebhookStep({ method: 'PUT' });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
+      fetchStub.resolves(new Response(null, { status: 204 }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        fetchStub,
+        'https://example.com/hook',
+        sinon.match({
+          method: 'PUT',
+          body: '{"id": "member-id", "email": "member@example.com"}',
+          redirect: 'manual',
+        }),
+      );
+      sinon.assert.notCalled(memberWelcomeEmailService.init);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+      sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+    });
+
+    it('sends the webhook even if the member unsubscribed from emails', async function () {
+      const step = buildWebhookStep();
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      (Member.findOne as sinon.SinonStub).resolves(
+        buildMember({ enable_updates_and_announcements: false }),
+      );
+      fetchStub.resolves(new Response('ok'));
+
+      await poll(options);
+
+      sinon.assert.calledOnce(fetchStub);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    });
+
+    for (const status of [301, 302, 400, 404, 500, 503]) {
+      it(`permanently fails the step without retrying for HTTP ${status}`, async function () {
+        const step = buildWebhookStep();
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+        fetchStub.resolves(new Response(null, { status }));
+        sinon.stub(logging, 'warn');
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+      });
+    }
+
+    it('permanently fails the step without retrying when the request errors', async function () {
+      const step = buildWebhookStep();
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      fetchStub.rejects(new DOMException('The operation timed out.', 'TimeoutError'));
+      sinon.stub(logging, 'warn');
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+      sinon.assert.notCalled(automationsApi.retryStep);
+      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+    });
   });
 });

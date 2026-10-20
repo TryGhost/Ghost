@@ -50,7 +50,19 @@ export type SendEmailAction = {
   stats?: AutomationEmailStats;
 };
 
-export type AutomationAction = WaitAction | SendEmailAction;
+export type SendWebhookAction = {
+  id: string;
+  type: 'send_webhook';
+  data: SendWebhookConfig;
+};
+
+export type SendWebhookConfig = {
+  url: string;
+  method: 'POST' | 'PUT';
+  body: string;
+};
+
+export type AutomationAction = WaitAction | SendEmailAction | SendWebhookAction;
 
 export type AutomationEdge = {
   source_action_id: string;
@@ -163,6 +175,9 @@ export type AutomationStepToRun = ReadonlyDeep<
           email_lexical: string;
           email_design_setting_id: string | null;
         }
+      | ({
+          type: 'send_webhook';
+        } & SendWebhookConfig)
     )
 >;
 
@@ -179,6 +194,7 @@ export type AutomationStepStatus = 'pending' | AutomationStepTerminalStatus;
 
 export type AutomationRunHistoryAction =
   | WaitAction
+  | SendWebhookAction
   | (Pick<SendEmailAction, 'id' | 'type'> & {
       data: Pick<SendEmailAction['data'], 'email_subject' | 'email_lexical'>;
     });

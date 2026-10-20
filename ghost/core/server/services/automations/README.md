@@ -1,6 +1,6 @@
 # Automations
 
-Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait`, `send_email` and `send_webhook` actions. It can be active or inactive.
 
 ## How a run moves forward
 
@@ -9,6 +9,8 @@ The member repository calls `trigger()` after signup.
 The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
+
+A `send_webhook` action is a prototype. It sends a JSON `POST` or `PUT` request with a 15-second timeout. `{{member.id}}` and `{{member.email}}` in the body are replaced with JSON-escaped member values. Any failure, including a non-2xx response or redirect, permanently fails the step without a retry. Its URL, method and body are stored as JSON in the revision's `webhook_config` column. Only Admin validates them: the URL must be HTTPS and the body valid JSON.
 
 ## Where to look
 

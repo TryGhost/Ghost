@@ -2204,7 +2204,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['wait', 'send_email']] },
+      validations: { isIn: [['wait', 'send_email', 'send_webhook']] },
     },
   },
   automation_action_revisions: {
@@ -2230,6 +2230,7 @@ module.exports = {
     email_sent_count: { type: 'integer', nullable: true, unsigned: true },
     email_opened_count: { type: 'integer', nullable: true, unsigned: true },
     email_clicked_count: { type: 'integer', nullable: true, unsigned: true },
+    webhook_config: { type: 'text', maxlength: 65535, nullable: true },
     '@@UNIQUE_CONSTRAINTS@@': [['created_at', 'action_id']],
   },
   redirects: {

@@ -10,6 +10,7 @@ import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { formatRate } from './format-stats';
 import { EditableWaitCard, type EditableWaitData } from './editable-wait-card';
 import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
+import { EditableWebhookCard, type EditableWebhookData } from './editable-webhook-card';
 import { OffValue } from './off-value';
 import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
 
@@ -40,6 +41,7 @@ export type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparato
 type StepNodeData = {
   email?: EditableEmailData;
   wait?: EditableWaitData;
+  webhook?: EditableWebhookData;
   errorMessage?: string;
   showStatsFooter: boolean;
   stats?: AutomationEmailStats;
@@ -148,6 +150,19 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
         <HiddenHandle position={Position.Top} type="target" />
         <HiddenHandle position={Position.Bottom} type="source" />
       </EditableWaitCard>
+    );
+  }
+  if (data.webhook) {
+    return (
+      <EditableWebhookCard
+        errorMessage={data.errorMessage}
+        isNew={data.isNew}
+        menuItems={data.contextMenuItems}
+        webhook={data.webhook}
+      >
+        <HiddenHandle position={Position.Top} type="target" />
+        <HiddenHandle position={Position.Bottom} type="source" />
+      </EditableWebhookCard>
     );
   }
   return null;

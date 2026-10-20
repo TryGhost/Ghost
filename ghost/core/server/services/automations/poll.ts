@@ -6,6 +6,7 @@ import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
+import { sendWebhook } from './send-webhook';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
 
@@ -302,6 +303,27 @@ const processStep = async ({
               `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`,
             );
           }
+        }
+        break;
+      }
+      case 'send_webhook': {
+        try {
+          await sendWebhook(step, { id: step.member_id, email: member.get('email') });
+        } catch (err) {
+          // Webhooks are never retried. Any failure, including a non-2xx
+          // response, permanently fails the step.
+          logging.warn(
+            {
+              err,
+              system: {
+                event: 'automations.poll.webhook_failed',
+                step_id: step.id,
+              },
+            },
+            `[AUTOMATIONS] Webhook failed for step ${step.id}`,
+          );
+          await automationsApi.markStepTerminal(step, 'failed');
+          return null;
         }
         break;
       }

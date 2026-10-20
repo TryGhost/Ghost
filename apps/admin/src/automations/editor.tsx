@@ -29,6 +29,7 @@ import type {
 } from '@tryghost/admin-x-framework/api/automations';
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
+import { getWebhookError } from './utils/webhook-validation';
 import { toast } from 'sonner';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
@@ -66,6 +67,13 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
   const errors: Record<string, string> = {};
 
   for (const action of automation.actions) {
+    if (action.type === 'send_webhook') {
+      const webhookError = getWebhookError(action.data);
+      if (webhookError) {
+        errors[action.id] = webhookError;
+      }
+      continue;
+    }
     if (action.type !== 'send_email') {
       continue;
     }

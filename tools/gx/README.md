@@ -86,6 +86,17 @@ their development/local environment restriction and use the same Core runner.
 The former `node index.js repl` and `node index.js timetravel` entrypoints report
 their gx replacements. The old `ghost/core/cli` framework has been removed.
 
+## Webhook server
+
+Run `pnpm gx webhooks server [port]` to receive webhooks locally, for example from
+an automation's webhook step. The port defaults to 4545. `POST` or `PUT` JSON to
+`/webhook`; open `/` in a browser to see payloads as they arrive. Add a status to
+the URL, such as `/webhook?status=500`, to test a failing response. Payloads are
+kept in memory until the server stops.
+
+Admin only accepts HTTPS webhook URLs, so expose the server through an HTTPS
+tunnel, such as `cloudflared tunnel --url http://localhost:4545`.
+
 ## Recipient preparation benchmark
 
 Run `pnpm gx benchmark recipient-preparation [members] [concurrency]` to measure

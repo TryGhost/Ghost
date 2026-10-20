@@ -17,9 +17,11 @@ import {
 import {
   MAX_AUTOMATION_ACTIONS,
   insertSendEmailAction,
+  insertSendWebhookAction,
   insertWaitAction,
   removeAction,
   updateSendEmailAction,
+  updateSendWebhookAction,
   updateWaitAction,
 } from '@tryghost/admin-x-framework/api/automations';
 import type {
@@ -60,6 +62,7 @@ const NODE_VISUAL_GAP_Y = 112;
 const EDITABLE_NODE_WIDTH = 400;
 const EDITABLE_EMAIL_NODE_HEIGHT = 350;
 const EDITABLE_WAIT_NODE_HEIGHT = 144;
+const EDITABLE_WEBHOOK_NODE_HEIGHT = 380;
 const FIXED_TRIGGER_NODE_HEIGHT = 156;
 const EXIT_NODE_HEIGHT = 55;
 const INITIAL_VIEWPORT_Y = 40;
@@ -293,6 +296,18 @@ const buildGraph = ({
               },
             }
           : {}),
+        ...(action.type === 'send_webhook'
+          ? {
+              webhook: {
+                ...action.data,
+                onInteract: () => onInteract(action.id),
+                onUpdate: (data) =>
+                  onChange(
+                    updateSendWebhookAction({ detail: automation, actionId: action.id, data }),
+                  ),
+              },
+            }
+          : {}),
         contextMenuItems: buildNodeContextMenuItems({
           canDelete: true,
           canEditEmailBody: action.type === 'send_email',
@@ -308,7 +323,11 @@ const buildGraph = ({
       },
       ...nodeProps(action.id),
     });
-    const estimatedHeight = editableEmail ? EDITABLE_EMAIL_NODE_HEIGHT : EDITABLE_WAIT_NODE_HEIGHT;
+    const estimatedHeight = editableEmail
+      ? EDITABLE_EMAIL_NODE_HEIGHT
+      : action.type === 'send_webhook'
+        ? EDITABLE_WEBHOOK_NODE_HEIGHT
+        : EDITABLE_WAIT_NODE_HEIGHT;
     cursorY += (nodeSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
   });
 
@@ -418,6 +437,7 @@ type SelectedStep = {
 const insertActionByType = {
   wait: insertWaitAction,
   send_email: insertSendEmailAction,
+  send_webhook: insertSendWebhookAction,
 };
 
 const hasAutomationEmailModalState = (state: unknown): state is { automationEmailModal: boolean } =>
@@ -858,7 +878,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       if (!automation || node.id === TAIL_CANVAS_ID || node.id === TRIGGER_CANVAS_ID) {
         return;
       }
-      if (('email' in node.data && node.data.email) || ('wait' in node.data && node.data.wait)) {
+      if (
+        ('email' in node.data && node.data.email) ||
+        ('wait' in node.data && node.data.wait) ||
+        ('webhook' in node.data && node.data.webhook)
+      ) {
         return;
       }
       const action = automation.actions.find((item) => item.id === node.id);
@@ -979,7 +1003,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
                   node.id !== TAIL_CANVAS_ID &&
                   node.id !== TRIGGER_CANVAS_ID &&
                   !('email' in node.data && node.data.email) &&
-                  !('wait' in node.data && node.data.wait)
+                  !('wait' in node.data && node.data.wait) &&
+                  !('webhook' in node.data && node.data.webhook)
                 ) {
                   showWarningsForOtherSteps(node.id);
                   setSelectedStep({ id: node.id });

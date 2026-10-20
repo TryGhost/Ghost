@@ -11,7 +11,7 @@ export type ActionToInsert = {
   created_at: Date;
   updated_at: Date;
   automation_id: string;
-  type: 'wait' | 'send_email';
+  type: 'wait' | 'send_email' | 'send_webhook';
 };
 
 export type EdgeRow = {
@@ -41,7 +41,7 @@ type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
   automation_action_revision_id: string;
-} & ({ type: 'wait'; wait_hours: number } | { type: 'send_email' });
+} & ({ type: 'wait'; wait_hours: number } | { type: 'send_email' } | { type: 'send_webhook' });
 
 /**
  * Data storage abstraction for automations.

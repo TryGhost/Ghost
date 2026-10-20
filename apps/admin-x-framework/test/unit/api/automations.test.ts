@@ -13,9 +13,11 @@ import {
   AutomationSendEmailAction,
   InsertActionAnchor,
   insertSendEmailAction,
+  insertSendWebhookAction,
   insertWaitAction,
   removeAction,
   updateSendEmailAction,
+  updateSendWebhookAction,
   updateWaitAction,
   useBrowseAutomationActionLinks,
 } from '../../../src/api/automations';
@@ -50,6 +52,11 @@ const insertionCases: Array<{
 }> = [
   { name: 'insertWaitAction', insert: insertWaitAction, expectedType: 'wait' },
   { name: 'insertSendEmailAction', insert: insertSendEmailAction, expectedType: 'send_email' },
+  {
+    name: 'insertSendWebhookAction',
+    insert: insertSendWebhookAction,
+    expectedType: 'send_webhook',
+  },
 ];
 
 describe('automations api queries', () => {
@@ -589,6 +596,56 @@ describe('automations api helpers', () => {
 
     it('throws when waitHours is NaN', () => {
       expectInvalidWaitHoursRejected(Number.NaN);
+    });
+  });
+
+  describe('insertSendWebhookAction', () => {
+    it('inserts a POST webhook with a body that interpolates the member', () => {
+      const next = insertSendWebhookAction({ detail: baseDetail([], []), anchor: {} });
+
+      const [action] = next.actions;
+      expect(action.type).toBe('send_webhook');
+      if (action.type !== 'send_webhook') {
+        throw new Error('Expected a webhook action');
+      }
+      expect(action.data.url).toBe('');
+      expect(action.data.method).toBe('POST');
+      expect(JSON.parse(action.data.body)).toEqual({
+        member_id: '{{member.id}}',
+        member_email: '{{member.email}}',
+      });
+    });
+  });
+
+  describe('updateSendWebhookAction', () => {
+    const webhook = {
+      id: 'a',
+      type: 'send_webhook' as const,
+      data: { url: '', method: 'POST' as const, body: '{}' },
+    };
+
+    it('merges the given fields into the targeted webhook action', () => {
+      const next = updateSendWebhookAction({
+        detail: baseDetail([webhook], []),
+        actionId: 'a',
+        data: { url: 'https://example.com', method: 'PUT' },
+      });
+
+      expect(next.actions[0]).toEqual({
+        ...webhook,
+        data: { url: 'https://example.com', method: 'PUT', body: '{}' },
+      });
+    });
+
+    it('throws for unknown or non-webhook actions', () => {
+      const detail = baseDetail([webhook, { id: 'w', type: 'wait', data: { wait_hours: 1 } }], []);
+
+      expect(() => updateSendWebhookAction({ detail, actionId: 'x', data: {} })).toThrow(
+        /unknown action id/,
+      );
+      expect(() => updateSendWebhookAction({ detail, actionId: 'w', data: {} })).toThrow(
+        /not a send_webhook action/,
+      );
     });
   });
 

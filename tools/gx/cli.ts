@@ -160,6 +160,28 @@ cli.command({
 });
 
 cli.command({
+  flags: 'webhooks',
+  desc: 'Development webhook tools.',
+  setup(group) {
+    group.command({
+      flags: 'server',
+      desc: 'Receive webhooks and show them in a browser.',
+      run() {
+        commandRun = true;
+        const file = fileURLToPath(new URL('./webhook-server.ts', import.meta.url));
+        const result = spawnSync(process.execPath, [file, ...args.slice(2)], {
+          stdio: 'inherit',
+        });
+        if (result.error) {
+          throw result.error;
+        }
+        process.exitCode = result.status ?? 1;
+      },
+    });
+  },
+});
+
+cli.command({
   flags: 'repl',
   desc: 'Open a REPL with Ghost models and database access.',
   run() {

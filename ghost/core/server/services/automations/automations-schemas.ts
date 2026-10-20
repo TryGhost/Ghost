@@ -24,6 +24,17 @@ const sendEmailActionSchema = z.object({
   }),
 });
 
+const sendWebhookActionSchema = z.object({
+  id: objectIdSchema,
+  type: z.literal('send_webhook'),
+  // This is a prototype, so the URL and body are validated by Admin, not here.
+  data: z.object({
+    url: z.string(),
+    method: z.enum(['POST', 'PUT']),
+    body: z.string(),
+  }),
+});
+
 const edgeSchema = z.object({
   source_action_id: objectIdSchema,
   target_action_id: objectIdSchema,
@@ -34,7 +45,13 @@ const automationShape = {
   description: z.string().trim().max(2000),
   status: z.enum(['active', 'inactive', 'archived']),
   actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+    .array(
+      z.discriminatedUnion('type', [
+        waitActionSchema,
+        sendEmailActionSchema,
+        sendWebhookActionSchema,
+      ]),
+    )
     .max(MAX_AUTOMATION_ACTIONS),
   edges: z.array(edgeSchema),
 };

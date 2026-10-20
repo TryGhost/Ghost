@@ -138,6 +138,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.integer('email_tracked_sent_count');
     table.integer('email_opened_count');
     table.integer('email_clicked_count');
+    table.text('webhook_config');
     table.unique(['created_at', 'action_id']);
   });
 
@@ -533,6 +534,7 @@ describe('automations repository', function () {
         'automation_action_revisions.wait_hours as wait_hours',
         'automation_action_revisions.email_lexical as email_lexical',
         'automation_action_revisions.email_design_setting_id as email_design_setting_id',
+        'automation_action_revisions.webhook_config as webhook_config',
       )
       .innerJoin(
         'automation_action_revisions',
@@ -1969,6 +1971,73 @@ describe('automations repository', function () {
         'actions.type',
         /different type/,
       );
+    });
+  });
+
+  describe('webhook actions', function () {
+    const webhookAction = {
+      id: ObjectId().toHexString(),
+      type: 'send_webhook' as const,
+      data: {
+        url: 'https://example.com/hook',
+        method: 'POST' as const,
+        body: '{"email":"{{member.email}}"}',
+      },
+    };
+
+    const addWebhookAutomation = () =>
+      repo.add({
+        name: 'Webhook automation',
+        description: '',
+        status: 'active',
+        actions: [webhookAction],
+        edges: [],
+        trigger_tier_scope: 'free',
+      });
+
+    it('stores the whole configuration as JSON and reads it back', async function () {
+      const automation = await addWebhookAutomation();
+
+      assert.deepEqual(automation.actions, [webhookAction]);
+      assert.deepEqual(await repo.getById(automation.id), automation);
+      const revision = await getLatestActionRevisionByActionId(webhookAction.id);
+      assert.deepEqual(JSON.parse(revision.webhook_config), webhookAction.data);
+      assert.equal(revision.wait_hours, null);
+      assert.equal(revision.email_lexical, null);
+    });
+
+    it('only creates a revision when the configuration changes', async function () {
+      const automation = await addWebhookAutomation();
+      const edit = (data: Omit<typeof webhookAction.data, 'method'> & { method: 'POST' | 'PUT' }) =>
+        repo.edit(automation.id, {
+          status: 'active',
+          actions: [{ ...webhookAction, data }],
+          edges: [],
+        });
+
+      await edit(webhookAction.data);
+      assert.equal(await getRevisionCount(webhookAction.id), 1);
+
+      const edited = await edit({ ...webhookAction.data, method: 'PUT' });
+      assert.equal(await getRevisionCount(webhookAction.id), 2);
+      assert.deepEqual(edited?.actions, [
+        { ...webhookAction, data: { ...webhookAction.data, method: 'PUT' } },
+      ]);
+    });
+
+    it('returns webhook steps to run', async function () {
+      const automation = await addWebhookAutomation();
+      const revision = await getLatestActionRevisionByActionId(webhookAction.id);
+      const run = await insertRun(automation.id);
+      await insertStep(run.id, revision.revision_id, { ready_at: new Date('2024-01-01') });
+
+      const { steps } = await repo.fetchAndLockSteps(10);
+
+      assert.equal(steps.length, 1);
+      assert(steps[0].type === 'send_webhook');
+      assert.equal(steps[0].url, webhookAction.data.url);
+      assert.equal(steps[0].method, webhookAction.data.method);
+      assert.equal(steps[0].body, webhookAction.data.body);
     });
   });
 

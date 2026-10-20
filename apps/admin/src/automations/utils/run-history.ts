@@ -15,7 +15,7 @@ export type HistoryTimestamp = {
 };
 export type HistoryCardData = {
   id: string;
-  kind: 'trigger' | 'wait' | 'email' | 'end' | 'event';
+  kind: 'trigger' | 'wait' | 'email' | 'webhook' | 'end' | 'event';
   title: string;
   state: HistoryCardState;
   statusLabel: string;
@@ -58,6 +58,11 @@ function stepContent(step: Step, state: (typeof stepStates)[Step['status']]['sta
           subject: action.data.email_subject,
           text: emailTextExcerpt(action.data.email_lexical),
         },
+      };
+    case 'send_webhook':
+      return {
+        kind: 'webhook' as const,
+        title: `${state === 'occurred' ? 'Sent' : 'Send'} webhook to ${action.data.url}`,
       };
     default:
       throw new Error(`Unknown history action: ${String(action satisfies never)}`);
@@ -157,10 +162,11 @@ const mapEnd = (
         }
       }
       if (lastStep.status === 'failed') {
-        const names = { send_email: 'Email', wait: 'Wait' } satisfies Record<
-          Step['action']['type'],
-          string
-        >;
+        const names = {
+          send_email: 'Email',
+          send_webhook: 'Webhook',
+          wait: 'Wait',
+        } satisfies Record<Step['action']['type'], string>;
         title = `${names[lastStep.action.type]} step failed`;
       }
       return [

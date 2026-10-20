@@ -65,6 +65,9 @@ export function mapUpcomingRunSteps(
           },
         });
         break;
+      case 'send_webhook':
+        cards.push({ ...base, kind: 'webhook', title: `Send webhook to ${next.data.url}` });
+        break;
       default:
         throw new Error(`Unknown upcoming action: ${String(next satisfies never)}`);
     }
