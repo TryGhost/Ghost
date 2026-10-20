@@ -2,7 +2,7 @@ import CheckoutPreview from './checkout-preview';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import FormSection from '@/settings/components/form-section';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ShippingSettings from './shipping-settings';
 import {
   SHIPPING_ERRORS,
@@ -522,19 +522,4 @@ const CheckoutModal: React.FC = () => {
   return <CheckoutEditor branding={branding} config={config} onClose={close} />;
 };
 
-// The route stays registered, but with the stripeCheckoutDesign flag off it goes straight
-// back to Tiers, so the modal is only reachable while the flag is on.
-const CheckoutRoute: React.FC = () => {
-  const enabled = useFeatureFlag('stripeCheckoutDesign');
-  const { updateRoute } = useSettingsNavigation();
-
-  useEffect(() => {
-    if (!enabled) {
-      updateRoute('tiers');
-    }
-  }, [enabled, updateRoute]);
-
-  return enabled ? <CheckoutModal /> : null;
-};
-
-export default CheckoutRoute;
+export default CheckoutModal;

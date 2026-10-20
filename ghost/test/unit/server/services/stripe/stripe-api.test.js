@@ -20,7 +20,10 @@ describe('StripeAPI', function () {
       return false;
     },
   };
-  const api = new StripeAPI({ labs: mockLabs });
+  const api = new StripeAPI({
+    labs: mockLabs,
+    stripeCheckoutConfig: { service: { readForCheckout: async () => null } },
+  });
 
   let mockStripe;
   let mockLabsIsSet;
@@ -327,7 +330,7 @@ describe('StripeAPI', function () {
 
     function configured(readForCheckout) {
       const designed = new StripeAPI({
-        labs: { isSet: (flag) => flag === 'stripeCheckoutDesign' },
+        labs: { isSet: () => false },
         stripeCheckoutConfig: { service: { readForCheckout } },
       });
       designed.configure({
@@ -424,9 +427,7 @@ describe('StripeAPI', function () {
       mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_address' });
       const shipping = { tierIds: null, allowedCountries: ['XX'], collectable: true };
       const shippingApi = new StripeAPI({
-        labs: {
-          isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
-        },
+        labs: { isSet: (flag) => flag === 'stripeCheckoutCollection' },
         stripeCheckoutConfig: {
           service: { readForCheckout: async () => ({ design: null, shipping, phone: null }) },
           collectionParams,
@@ -458,9 +459,7 @@ describe('StripeAPI', function () {
       mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
       mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_phone' });
       const phoneApi = new StripeAPI({
-        labs: {
-          isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
-        },
+        labs: { isSet: (flag) => flag === 'stripeCheckoutCollection' },
         stripeCheckoutConfig: {
           service: {
             readForCheckout: async () => ({

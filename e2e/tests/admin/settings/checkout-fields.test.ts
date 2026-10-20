@@ -46,7 +46,7 @@ function latestPhoneRequest(stripe: StripeTestService) {
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
-    labs: { stripeCheckoutDesign: true, stripeCheckoutCollection: true, membersCustomFields: true },
+    labs: { stripeCheckoutCollection: true, membersCustomFields: true },
   });
 
   test('shipping address - a member gives one at checkout, and it lands on their record', async ({
@@ -228,7 +228,7 @@ test.describe('Ghost Admin - Checkout fields', () => {
 });
 
 test.describe('Ghost Admin - Checkout fields without the collection flag', () => {
-  test.use({ stripeEnabled: true, labs: { stripeCheckoutDesign: true } });
+  test.use({ stripeEnabled: true });
 
   test('labs flag off - only the design is offered, without tabs', async ({ page }) => {
     const settingsPage = new SettingsPage(page);
