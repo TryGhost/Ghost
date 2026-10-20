@@ -5,12 +5,14 @@ import { KeySchema } from '@tryghost/metafield-types/identity';
 import { SnakeDesign } from './codec';
 import {
   type CollectedSection,
+  type SectionName,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
   type CheckoutCollection,
   type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutDesign,
+  type TaxNumberSettings,
 } from './models';
 
 /**
@@ -119,17 +121,36 @@ const PhoneInput = z
       : null,
   );
 
+/**
+ * Letting buyers give a tax ID, as a request turns it on. Stripe keeps the tax ID, so the request
+ * names no custom field.
+ */
+const TaxNumberOn = z.strictObject({
+  collect: z.literal(true),
+  tier_ids: TierIdsInput.optional(),
+});
+
+/** The tax ID in a request. `collect: false` means checkout doesn't let buyers give one. */
+const TaxNumberInput = z
+  .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), TaxNumberOn])
+  .transform((input): TaxNumberSettings | null =>
+    input.collect ? { tierIds: input.tier_ids ?? null } : null,
+  );
+
 /** Each collected part in an edit request. */
 const CollectedInputs = {
   shipping: ShippingInput.optional(),
   phone: PhoneInput.optional(),
-} satisfies Record<CollectedSection, z.ZodType>;
+  tax_number: TaxNumberInput.optional(),
+} satisfies Record<SectionName, z.ZodType>;
 
-/** An edit request. Parts it leaves out are not changed. */
-export const CheckoutConfigInput = z.strictObject({
-  design: DesignInput.optional(),
-  ...CollectedInputs,
-});
+/** An edit request, keyed by each part's name in the model. Parts it leaves out are not changed. */
+export const CheckoutConfigInput = z
+  .strictObject({
+    design: DesignInput.optional(),
+    ...CollectedInputs,
+  })
+  .transform((input) => camelKeys(input));
 export type CheckoutConfigInput = z.output<typeof CheckoutConfigInput>;
 
 /**
@@ -161,7 +182,13 @@ const CollectedPreviews = {
       input.collect ? { tierIds: input.tier_ids ?? null, collectable: true } : null,
     )
     .optional(),
-} satisfies Record<CollectedSection, z.ZodType>;
+  tax_number: z
+    .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), TaxNumberOn])
+    .transform((input): CheckoutCollection['taxNumber'] =>
+      input.collect ? { tierIds: input.tier_ids ?? null, collectable: true } : null,
+    )
+    .optional(),
+} satisfies Record<SectionName, z.ZodType>;
 
 /**
  * A preview request: the paid tier to open a checkout for, and the design to show it in,
@@ -199,7 +226,13 @@ const CollectedResources = {
       }),
     ])
     .optional(),
-} satisfies Record<CollectedSection, z.ZodType>;
+  tax_number: z
+    .discriminatedUnion('collect', [
+      z.object({ collect: z.literal(false) }),
+      z.object({ collect: z.literal(true), tier_ids: z.array(z.string()).optional() }),
+    ])
+    .optional(),
+} satisfies Record<SectionName, z.ZodType>;
 
 const CheckoutConfigResource = z.object({
   design: z.discriminatedUnion('customize', [
@@ -235,13 +268,26 @@ function phoneResource(phone: PhoneSettings | null) {
   };
 }
 
+/** The tax ID as the Admin API returns it, in the same shape a request gives it. */
+function taxNumberResource(taxNumber: TaxNumberSettings | null) {
+  if (!taxNumber) {
+    return { collect: false as const };
+  }
+  return {
+    collect: true as const,
+    ...(taxNumber.tierIds ? { tier_ids: taxNumber.tierIds } : {}),
+  };
+}
+
 /** The collected parts a response carries: the ones the config it is given includes. */
 function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>): {
-  [Section in CollectedSection]: z.input<(typeof CollectedResources)[Section]>;
+  [Name in SectionName]: z.input<(typeof CollectedResources)[Name]>;
 } {
   return {
     shipping: settings.shipping === undefined ? undefined : shippingResource(settings.shipping),
     phone: settings.phone === undefined ? undefined : phoneResource(settings.phone),
+    tax_number:
+      settings.taxNumber === undefined ? undefined : taxNumberResource(settings.taxNumber),
   };
 }
 
@@ -249,6 +295,7 @@ function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, Collect
 const COLLECTED_OPTIONAL: Record<CollectedSection, true> = {
   shipping: true,
   phone: true,
+  taxNumber: true,
 };
 
 const CheckoutConfigResponse = z.object({

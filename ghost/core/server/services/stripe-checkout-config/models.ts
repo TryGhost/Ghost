@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
 import { KeySchema } from '@tryghost/metafield-types/identity';
+import type { CamelToSnake } from '../../lib/case-keys';
 
 /**
  * A color as a 6-digit hex code. It is lowercased, so the same color is always stored the same
@@ -54,12 +55,23 @@ export const PhoneSettings = CollectedPart.extend({
 });
 export type PhoneSettings = z.infer<typeof PhoneSettings>;
 
+/**
+ * Letting a business buyer give a tax ID at checkout, as the publisher set it. Stripe keeps the
+ * tax ID on the customer and shows it on their invoices, so Ghost saves nothing and needs no
+ * custom field. It's called a tax number in code, as a name ending in `_id` reads as a reference
+ * to another record.
+ */
+export const TaxNumberSettings = CollectedPart;
+export type TaxNumberSettings = z.infer<typeof TaxNumberSettings>;
+
 /** Each collected part of the config as saved. */
 const COLLECTED_PARTS = {
   /** Null means checkout doesn't ask for a shipping address. */
   shipping: ShippingSettings.nullable(),
   /** Null means checkout doesn't ask for a phone number. */
   phone: PhoneSettings.nullable(),
+  /** Null means checkout doesn't let buyers give a tax ID. */
+  taxNumber: TaxNumberSettings.nullable(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 /** The site-wide Stripe Checkout config. */
@@ -74,13 +86,25 @@ export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
  * The parts of the config that ask the buyer for something, each on every paid tier or only
  * the ones it names.
  */
-export const COLLECTED_SECTIONS = ['shipping', 'phone'] as const;
+export const COLLECTED_SECTIONS = ['shipping', 'phone', 'taxNumber'] as const;
 export type CollectedSection = (typeof COLLECTED_SECTIONS)[number];
+
+/**
+ * Each collected part's name where it is stored, in its own column and in the rows naming its
+ * tiers, and in the Admin API.
+ */
+export const SECTION_NAMES = {
+  shipping: 'shipping',
+  phone: 'phone',
+  taxNumber: 'tax_number',
+} as const satisfies { [Section in CollectedSection]: CamelToSnake<Section> };
+export type SectionName = (typeof SECTION_NAMES)[CollectedSection];
 
 /** What each collected part asks the buyer for, as messages about it name it. */
 export const COLLECTED_NOUNS = {
   shipping: 'shipping address',
   phone: 'phone number',
+  taxNumber: 'tax ID',
 } as const satisfies Record<CollectedSection, string>;
 
 /**
@@ -107,6 +131,7 @@ export interface AskedPart extends z.infer<typeof CollectedPart> {
 export interface AskedParts {
   shipping: AskedPart & Pick<ShippingSettings, 'allowedCountries'>;
   phone: AskedPart;
+  taxNumber: AskedPart;
 }
 
 /**
@@ -123,6 +148,8 @@ export interface Asking {
   shipping: Pick<ShippingSettings, 'allowedCountries'>;
   /** Asked the same way on every checkout. */
   phone: Record<string, never>;
+  /** Offered the same way on every checkout. */
+  taxNumber: Record<string, never>;
 }
 
 /** How a checkout asks for each collected part, or null for each it doesn't ask for. */

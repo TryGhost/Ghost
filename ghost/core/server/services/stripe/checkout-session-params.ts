@@ -12,6 +12,14 @@ export interface CheckoutSessionParams {
   branding_settings?: SnakeKeys<StripeCheckoutDesign>;
   shipping_address_collection?: { allowed_countries: string[] };
   phone_number_collection?: { enabled: true };
+  tax_id_collection?: { enabled: true };
+  customer_update?: { name: 'auto' };
+}
+
+/** The parameters of the session a checkout's own are added to that decide how they ask. */
+export interface SessionParams {
+  automatic_tax?: { enabled: boolean };
+  customer?: string;
 }
 
 /**
@@ -27,6 +35,7 @@ export type CheckoutSessionParts = {
 const STRIPE_PARAMS: {
   [Section in keyof CheckoutAsks]: (
     asking: NonNullable<CheckoutAsks[Section]>,
+    session: SessionParams,
   ) => CheckoutSessionParams;
 } = {
   shipping: ({ allowedCountries }) => ({
@@ -37,14 +46,28 @@ const STRIPE_PARAMS: {
     },
   }),
   phone: () => ({ phone_number_collection: { enabled: true } }),
+  // Automatic tax already lets a business buyer give a tax ID, in the tax parameters every
+  // session that takes payment sends.
+  taxNumber: (_asking, session) =>
+    session.automatic_tax?.enabled
+      ? {}
+      : {
+          tax_id_collection: { enabled: true },
+          // Stripe refuses to take an existing customer's tax ID unless it may save the business
+          // name on them, and refuses to update a customer on a checkout that has none.
+          ...(session.customer ? { customer_update: { name: 'auto' } } : {}),
+        },
 };
 
 /**
- * The Checkout session parameters for a checkout, by the part that adds them: its design as
- * `branding_settings`, and what it asks the buyer for. Without a checkout there are none, so
- * Stripe uses the merchant's own settings.
+ * The Checkout session parameters a checkout adds to a session, by the part that adds them: its
+ * design as `branding_settings`, and what it asks the buyer for. Without a checkout there are
+ * none, so Stripe uses the merchant's own settings.
  */
-export function checkoutSessionParts(checkout: CheckoutDefinition | null): CheckoutSessionParts {
+export function checkoutSessionParts(
+  checkout: CheckoutDefinition | null,
+  session: SessionParams,
+): CheckoutSessionParts {
   if (!checkout) {
     return {};
   }
@@ -54,7 +77,7 @@ export function checkoutSessionParts(checkout: CheckoutDefinition | null): Check
   const ask = <Section extends keyof CheckoutAsks>(section: Section) => {
     const asking = checkout.asks[section];
     if (asking) {
-      parts[section] = STRIPE_PARAMS[section](asking);
+      parts[section] = STRIPE_PARAMS[section](asking, session);
     }
   };
   COLLECTED_SECTIONS.forEach(ask);

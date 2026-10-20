@@ -16,15 +16,17 @@ import type { StripeCheckoutConfigService } from './service';
 const DESIGN_FLAG = 'stripeCheckoutDesign';
 
 /** Every collected part asking for nothing. */
-export const NOTHING_COLLECTED = Object.freeze({ shipping: null, phone: null } satisfies Record<
-  CollectedSection,
-  null
->);
+export const NOTHING_COLLECTED = Object.freeze({
+  shipping: null,
+  phone: null,
+  taxNumber: null,
+} satisfies Record<CollectedSection, null>);
 
 /** How a checkout asks for each collected part: as set, without the tiers it covers. */
 const ASKING: { [Section in CollectedSection]: (part: AskedParts[Section]) => Asking[Section] } = {
   shipping: ({ allowedCountries }) => ({ allowedCountries }),
   phone: () => ({}),
+  taxNumber: () => ({}),
 };
 
 /**
@@ -39,7 +41,11 @@ function checkoutForTier(config: CheckoutSessionConfig, tierId: string): Checkou
     part !== null && asksOn(part, tierId) ? ASKING[section](part) : null;
   return {
     design: config.design,
-    asks: { shipping: ask('shipping', config.shipping), phone: ask('phone', config.phone) },
+    asks: {
+      shipping: ask('shipping', config.shipping),
+      phone: ask('phone', config.phone),
+      taxNumber: ask('taxNumber', config.taxNumber),
+    },
   };
 }
 
@@ -54,6 +60,7 @@ function withPreviewed(
   return {
     shipping: previewed.shipping !== undefined ? previewed.shipping : (saved?.shipping ?? null),
     phone: previewed.phone !== undefined ? previewed.phone : (saved?.phone ?? null),
+    taxNumber: previewed.taxNumber !== undefined ? previewed.taxNumber : (saved?.taxNumber ?? null),
   };
 }
 

@@ -6,19 +6,22 @@ import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
 import type { FieldStatus } from '../members-metafields/schema';
 import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
+import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordCheckoutConfigAction, RequestContext } from './actions';
 import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,
   COLLECTED_SECTIONS,
+  SECTION_NAMES,
   type CheckoutSessionConfig,
   type CollectedSection,
   type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutConfig,
+  type TaxNumberSettings,
 } from './models';
-import { CONFIG_SLUG, CONFIG_TABLE, CONFIG_TIERS_TABLE } from './schema';
+import { CONFIG_SLUG, CONFIG_TABLE, CONFIG_TIERS_TABLE, DbConfigParts, DbSection } from './schema';
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutConfigInput } from './serializers';
 
@@ -32,8 +35,13 @@ type CollectedSettings = {
   [Section in CollectedSection]: NonNullable<CheckoutConfigInput[Section]>;
 };
 
-/** What a collected part keeps in its own column of the config row. */
-type StoredPart<Section extends CollectedSection> = NonNullable<z.output<ConfigRowSchema>[Section]>;
+/** What each collected part keeps in its own column of the config row. */
+type StoredParts = {
+  [Section in CollectedSection]: NonNullable<
+    z.output<ConfigRowSchema>[(typeof SECTION_NAMES)[Section]]
+  >;
+};
+type StoredPart<Section extends CollectedSection> = StoredParts[Section];
 
 /** A custom field a request names for a port, and how to say it can't take the port's values. */
 interface Destination {
@@ -103,6 +111,11 @@ const PARTS: {
       },
     ],
   },
+  taxNumber: {
+    stored: (taxNumber) => ({ tier_scope: tierScopeOf(taxNumber) }),
+    // Stripe keeps the tax ID on the customer, so Ghost saves nothing from it.
+    destinations: [],
+  },
 };
 
 /** The ports the collected parts bind to custom fields, each with what its field holds. */
@@ -153,7 +166,7 @@ function changeOf<Section extends CollectedSection>(
   };
 }
 
-/** The columns the collected parts in a request are stored in. */
+/** What the collected parts in a request keep in their columns, by part. */
 function storedColumns(requested: RequestedParts): {
   [Section in CollectedSection]?: StoredPart<Section> | null;
 } {
@@ -174,11 +187,8 @@ function storedColumns(requested: RequestedParts): {
  * and that field again only while it is active (or nulls). A config whose parts name several
  * tiers or bind several ports comes back as a row for each pairing.
  */
-const ReadRow = z.object({
-  design: z.string().nullable(),
-  shipping: z.string().nullable(),
-  phone: z.string().nullable(),
-  section: z.enum(COLLECTED_SECTIONS).nullable(),
+const ReadRow = DbConfigParts.extend({
+  section: DbSection.nullable(),
   paid_tier_id: z.string().nullable(),
   port: z.enum(STRIPE_PORTS).nullable(),
   bound_key: z.nullable(KeySchema),
@@ -271,6 +281,10 @@ export class StripeCheckoutConfigService {
         tierIds: config.phone.tierIds,
         collectable: collectableFrom('phone', bound),
       },
+      taxNumber: config.taxNumber && {
+        tierIds: config.taxNumber.tierIds,
+        collectable: collectableFrom('taxNumber', bound),
+      },
     };
   }
 
@@ -285,7 +299,10 @@ export class StripeCheckoutConfigService {
         // tiers times the ports, rather than with a join per part and per port multiplied
         // together.
         .leftJoin(`${CONFIG_TIERS_TABLE} as named`, (join) =>
-          join.onIn('named.section', [...COLLECTED_SECTIONS]),
+          join.onIn(
+            'named.section',
+            COLLECTED_SECTIONS.map((section) => z.encode(DbSection, section)),
+          ),
         )
         .leftJoin('products as tier', (join) =>
           join.on('tier.id', '=', 'named.product_id').andOnVal('tier.type', '=', 'paid'),
@@ -298,8 +315,7 @@ export class StripeCheckoutConfigService {
         )
         .where('config.slug', CONFIG_SLUG)
         .select(
-          'config.design',
-          ...COLLECTED_SECTIONS.map((section) => `config.${section}`),
+          ...DbConfigParts.keyof().options.map((column) => `config.${column}`),
           'named.section',
           'tier.id as paid_tier_id',
           'binding.port',
@@ -312,14 +328,15 @@ export class StripeCheckoutConfigService {
     const [first] = rows;
     const bound = boundFields(rows);
     if (!first) {
-      return { config: { design: null, shipping: null, phone: null }, bound };
+      return { config: { design: null, shipping: null, phone: null, taxNumber: null }, bound };
     }
-    const { design, shipping, phone } = z.decode(this.configRow, first);
+    const { design, shipping, phone, tax_number: taxNumber } = z.decode(this.configRow, first);
     return {
       config: {
         design,
         shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
         phone: phone && phoneFrom(tierIdsOf('phone', phone, rows), bound),
+        taxNumber: taxNumber && taxNumberFrom(tierIdsOf('taxNumber', taxNumber, rows)),
       },
       bound,
     };
@@ -341,7 +358,7 @@ export class StripeCheckoutConfigService {
     });
     const columns = z.encode(this.configRow.partial(), {
       ...(design === undefined ? {} : { design }),
-      ...storedColumns(requested),
+      ...snakeKeys(storedColumns(requested)),
     });
     const at = new Date();
     const now = toDatabaseDate(at);
@@ -384,10 +401,11 @@ export class StripeCheckoutConfigService {
     { section, targets }: Change,
     now: Date,
   ): Promise<void> {
-    await trx(CONFIG_TIERS_TABLE).where('section', section).del();
+    const name = z.encode(DbSection, section);
+    await trx(CONFIG_TIERS_TABLE).where('section', name).del();
     if (targets?.tierIds) {
       await trx(CONFIG_TIERS_TABLE).insert(
-        targets.tierIds.map((productId) => ({ section, product_id: productId })),
+        targets.tierIds.map((productId) => ({ section: name, product_id: productId })),
       );
     }
 
@@ -452,6 +470,11 @@ function phoneFrom(tierIds: string[] | null, bound: Map<StripePort, Bound>): Pho
   return { tierIds, customFieldKey: field.customFieldKey };
 }
 
+/** The tax ID settings as the read found them, or null once every tier they named is gone. */
+function taxNumberFrom(tierIds: string[] | null): TaxNumberSettings | null {
+  return tierIds?.length === 0 ? null : { tierIds };
+}
+
 /** Whether checkouts can ask for a part: while every field it can't do without can take a value. */
 function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound>): boolean {
   return PARTS[section].destinations.every(
@@ -494,7 +517,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
         message: typeOfTier.has(unusable)
           ? `Only paid tiers have a checkout to collect a ${COLLECTED_NOUNS[section]} at.`
           : `Unknown tier: ${unusable}`,
-        property: `${section}.tier_ids`,
+        property: `${SECTION_NAMES[section]}.tier_ids`,
       });
     }
   }

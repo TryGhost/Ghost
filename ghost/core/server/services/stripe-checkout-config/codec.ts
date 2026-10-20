@@ -2,7 +2,7 @@ import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbJson } from '../../lib/db-types/json';
-import { StripeCheckoutDesign, type CollectedSection } from './models';
+import { StripeCheckoutDesign, type SectionName } from './models';
 
 /** The design's fields in snake_case, as used by the database, the Admin API and Stripe. */
 export const SnakeDesign = z.object(snakeKeys(StripeCheckoutDesign.shape));
@@ -20,11 +20,7 @@ export type TierScope = z.infer<typeof TierScope>;
  * dropped, reads as off and is logged. Checkouts then go without it until the publisher saves
  * it again, and the other parts are unaffected.
  */
-function offWhenUnreadable(
-  logging: GhostLogger,
-  part: 'design' | CollectedSection,
-  message: string,
-) {
+function offWhenUnreadable(logging: GhostLogger, part: 'design' | SectionName, message: string) {
   return ({ error }: z.core.$ZodCatchCtx) => {
     logging.warn(
       { event: { name: `stripe_checkout.${part}.unreadable` }, err: new z.ZodError(error.issues) },
@@ -79,6 +75,17 @@ export function configRow(logging: GhostLogger) {
           logging,
           'phone',
           'Ignoring Stripe Checkout phone number settings that are no longer valid',
+        ),
+      ),
+    tax_number: DbJson(z.object({ tier_scope: TierScope }), {
+      message: 'The stored tax ID settings are not JSON.',
+    })
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'tax_number',
+          'Ignoring Stripe Checkout tax ID settings that are no longer valid',
         ),
       ),
   });
