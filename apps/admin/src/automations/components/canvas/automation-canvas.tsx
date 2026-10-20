@@ -862,14 +862,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         isOpen={sidebar.open}
         isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
         metadata={isHistoryOpen ? 'readonly' : 'editable'}
-        name={automation.name}
         performanceEnabled={isPerformanceEnabled}
         selectedRunId={selectedRunId}
         selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
         tiers={tierData?.tiers ?? []}
         triggerTierIds={automation.trigger_tier_ids ?? []}
         triggerTierScope={automation.trigger_tier_scope}
-        onDetailsChange={(details) => onChange({ ...automation, ...details })}
+        onDescriptionChange={(description) => onChange({ ...automation, description })}
         onOpenChange={setAutomationSidebarOpen}
         onSelectRun={handleSelectRun}
         onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}

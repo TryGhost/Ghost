@@ -31,6 +31,8 @@ const serveCreation = () =>
     ],
   }));
 
+const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
+
 describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
@@ -45,7 +47,7 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('New Automation (2)');
     await expect.element(button('Save')).toBeEnabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
@@ -146,9 +148,9 @@ describe('New automation', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
     window.location.hash = '#/automations/other';
-    await expect.element(page.getByText('Other automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Other automation');
     window.history.back();
-    await expect.element(page.getByText('Saved automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Saved automation');
     expect(read.requests).toHaveLength(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
@@ -432,7 +434,9 @@ describe('New automation', () => {
       await expect
         .element(page.getByRole('tab', { name: 'Settings' }))
         .toHaveAttribute('data-state', 'active');
-      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
+        .toBeVisible();
       await button('Hide automation sidebar').click();
       await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
