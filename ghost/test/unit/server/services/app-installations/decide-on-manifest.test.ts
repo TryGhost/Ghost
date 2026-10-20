@@ -164,7 +164,7 @@ describe('approvalWrite', function () {
         approvalWrite({ current, pending: pendingManifest, loaded: manifest }),
         {
           kind: 'add_approved',
-          manifest: { loaded: manifest, source: 'approval', requiresApproval },
+          row: { loaded: manifest, source: 'approval', requiresApproval },
         },
         name,
       );
@@ -186,7 +186,7 @@ describe('recheckWrite', function () {
     const manifest = loaded(silent);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_approved',
-      manifest: { loaded: manifest, source: 'update', requiresApproval: false },
+      row: { loaded: manifest, source: 'update', requiresApproval: false },
     });
   });
 
@@ -194,7 +194,7 @@ describe('recheckWrite', function () {
     const manifest = loaded();
     assert.deepEqual(recheckWrite({ current, pending, loaded: manifest }), {
       kind: 'add_approved',
-      manifest: { loaded: manifest, source: 'resume', requiresApproval: false },
+      row: { loaded: manifest, source: 'resume', requiresApproval: false },
     });
   });
 
@@ -202,7 +202,7 @@ describe('recheckWrite', function () {
     const manifest = loaded(needsApproval);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_pending',
-      manifest: { loaded: manifest, source: 'update', requiresApproval: true },
+      row: { loaded: manifest, source: 'update', requiresApproval: true },
     });
   });
 });

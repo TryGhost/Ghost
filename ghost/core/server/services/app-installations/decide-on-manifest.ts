@@ -1,5 +1,5 @@
 import { compareManifests } from '@tryghost/app-contracts/manifest';
-import type { AddedManifest } from './app-installations-repository';
+import type { AddedRow } from './app-installations-repository';
 import type { Installation } from './codec';
 import type { LoadedManifest } from './load-manifest';
 
@@ -92,8 +92,8 @@ export function decideOnManifest({ current, pending, loaded }: Manifests): Manif
 export type ManifestWrite =
   | { kind: 'nothing' }
   | { kind: 'approve_existing'; manifestId: string }
-  | { kind: 'add_approved'; manifest: AddedManifest }
-  | { kind: 'add_pending'; manifest: AddedManifest };
+  | { kind: 'add_approved'; row: AddedRow }
+  | { kind: 'add_pending'; row: AddedRow };
 
 /** An approval always makes the reviewed manifest the approved one, so it's never left pending. */
 export type ApprovalWrite = Exclude<ManifestWrite, { kind: 'add_pending' }>;
@@ -119,7 +119,7 @@ export function approvalWrite(manifests: Manifests): ApprovalWrite {
       }
       return {
         kind: 'add_approved',
-        manifest: {
+        row: {
           loaded: manifests.loaded,
           source: 'approval',
           requiresApproval: decision.kind === 'suspend',
@@ -145,7 +145,7 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
     case 'resume':
       return {
         kind: 'add_approved',
-        manifest: {
+        row: {
           loaded,
           source: decision.kind === 'resume' ? 'resume' : 'update',
           requiresApproval: false,
@@ -155,7 +155,7 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
     case 'suspend':
       return {
         kind: 'add_pending',
-        manifest: { loaded, source: 'update', requiresApproval: true },
+        row: { loaded, source: 'update', requiresApproval: true },
       };
   }
 }

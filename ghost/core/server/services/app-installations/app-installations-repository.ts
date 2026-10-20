@@ -72,7 +72,7 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 /** A manifest row to add for an installation. */
-export interface AddedManifest {
+export interface AddedRow {
   loaded: LoadedManifest;
   source: z.infer<typeof AppInstallationManifestSource>;
   requiresApproval: boolean;
@@ -97,7 +97,7 @@ class LockedInstallation {
   }
 
   /** Adds a manifest row for the installation, and returns its ID. */
-  async addManifest({ loaded, source, requiresApproval }: AddedManifest): Promise<string> {
+  async addManifest({ loaded, source, requiresApproval }: AddedRow): Promise<string> {
     const id = new ObjectId().toHexString();
     await this.trx(MANIFESTS).insert({
       id,

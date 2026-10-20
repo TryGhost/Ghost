@@ -343,12 +343,12 @@ export class AppInstallationsService {
           await locked.activate(write.manifestId);
           return write.manifestId;
         case 'add_approved': {
-          const added = await locked.addManifest(write.manifest);
+          const added = await locked.addManifest(write.row);
           await locked.activate(added);
           return added;
         }
         case 'add_pending': {
-          const added = await locked.addManifest(write.manifest);
+          const added = await locked.addManifest(write.row);
           await locked.suspend(added);
           return added;
         }
