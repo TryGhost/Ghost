@@ -36,6 +36,7 @@ export function emailTextExcerpt(lexical: string | null): string {
     switch (node.type) {
       case 'text':
       case 'extended-text':
+      case 'tk':
         if (typeof node.text !== 'string') {
           throw new Error('Invalid email text node');
         }
