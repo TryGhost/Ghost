@@ -36,6 +36,7 @@ const GA_FEATURES = [
   'admin7EditorImprovements',
   'editorReact',
   'billingReact',
+  'stripeCheckoutDesign',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -62,7 +63,6 @@ const PRIVATE_FEATURES = [
   'getHelperDeduplication',
   'membersCustomFields',
   'stripeCheckoutCollection',
-  'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
   'apps',
