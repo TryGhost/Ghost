@@ -39,7 +39,7 @@ When changing fixtures:
 1. Update `fixtures/fixtures.json`.
 2. Add a database migration when existing installations need the same change.
 3. Update affected models, exporter lists, and tests.
-4. Run the schema integrity test documented in the
+4. Run the database integrity test documented in the
    [database migrations guide](../../../../../docs/practices/database-migrations.md).
 
 ## Default settings
@@ -75,7 +75,7 @@ When adding or changing a default setting:
    utilities rather than inserting a row by hand.
 3. Update validation, API serializers, and tests when the setting's behaviour
    requires it.
-4. Run the schema integrity test.
+4. Run the database integrity test.
 
 Do not put environment-specific configuration in default settings. Runtime
 configuration belongs in Ghost's configuration system; see the

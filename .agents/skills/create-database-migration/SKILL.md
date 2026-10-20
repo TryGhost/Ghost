@@ -25,7 +25,7 @@ development" in the guide.
 7. Run the migration integration test, which covers initialization, rollback, forward migration, and idempotency: `cd ghost && pnpm test:single test/integration/migrations/migration.test.js`. It needs MySQL running, which `pnpm dev` starts.
 8. If adding or dropping a table, update `ghost/core/server/data/exporter/table-lists.js` as appropriate. The consistency assertion in `ghost/test/unit/server/data/exporter/index.test.js` checks that every schema table is classified in the exporter lists.
 9. Run the focused exporter unit test when the table lists change: `cd ghost && pnpm test:single test/unit/server/data/exporter/index.test.js`.
-10. Run the schema integrity test, and update the hash: `cd ghost && pnpm test:single test/unit/server/data/schema/integrity.test.js`
+10. For schema changes, run the schema-sync test: `cd ghost && pnpm test:single test/integration/migrations/schema-sync.test.ts`. For changes to fixtures, default settings, or default routes, run the database integrity test and update only the affected hash: `cd ghost && pnpm test:single test/unit/server/data/schema/integrity.test.ts`
 11. Run unit tests in Ghost core, and iterate until they pass: `cd ghost && pnpm test:unit`
 
 ## Examples
