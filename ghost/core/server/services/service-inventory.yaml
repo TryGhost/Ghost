@@ -657,14 +657,17 @@ services:
         The guarded boot factory still composes one instance after database readiness. It
         holds no resources, but it keeps the manifest re-checks in flight, which starting
         app sessions together relies on to share one fetch, so it must stay the one retained
-        instance rather than be composed per request. Return that instance through the
-        initializer and update endpoint access, preserving schema gating and live
+        instance rather than be composed per request. Its repository holds only the knex
+        handle it's built from, and the response serializers are pure. Return that instance
+        through the initializer and update endpoint access, preserving schema gating and live
         manifest/configuration callbacks. The new history, detail, uninstall and app session
         behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 3c94513eb28f32663409d7990c74cccfb9528523
+      reviewedAt: 166037f8c6c59c3e7fa63e49c8a5a35101f31d67
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
+        - core/server/services/app-installations/app-installations-repository.ts
+        - core/server/services/app-installations/serializers.ts
         - core/server/services/app-installations/decide-on-manifest.ts
         - core/server/services/app-installations/history.ts
         - core/server/api/endpoints/app-installations.ts
@@ -10142,14 +10145,14 @@ services:
         complexity: complex
         reason: >-
           canThis and its providers load the model registry directly while User.permissible calls
-          back into permissions through a deliberately deferred import. The action map and
-          parity-report state are module globals. Dependency injection needs an explicit shared
+          back into permissions through a deliberately deferred import. The action map is a
+          module global. Dependency injection needs an explicit shared
           authorization graph without turning the existing model/permissions cycle into eager
           construction.
         preparation:
           - >-
-            Create providers and canThis from injected models, model-rule helpers and logging,
-            sharing one owned action map and parity-report set.
+            Create providers and canThis from injected models and model-rule helpers, sharing one
+            owned action map.
           - >-
             Keep the User model callback deferred until authorization runs; cover both model-first
             and permission-first loading before switching consumers to a guarded service getter.
@@ -10193,18 +10196,18 @@ services:
       construction:
         summary: >-
           Import loads shared models, providers and one module-level empty actions cache without
-          querying permissions or constructing a service class. Every init forwards the supplied
-          options, or a new empty object, to Permission.findAll and rebuilds the map on fulfillment.
-          Action/object pairs are deduplicated; object_id is not part of this map. canThis starts
+          querying permissions or constructing a service class. Every init rebuilds the map from
+          the permissions defined in code (role-permissions all()); it does no I/O.
+          Action/object pairs are deduplicated. canThis starts
           user/key loads and builds handlers against a cloned action map and model references at
-          check creation. Units use a stubbed Permission query and forged models to assert map
-          loading/deduplication; import purity, option identity and provider-query timing are source-only.
+          check creation. Units assert the map built from the static data; import purity and
+          provider-query timing are source-only.
         sources:
           - core/server/services/permissions/index.js
           - core/server/services/permissions/actions-map-cache.js
           - core/server/services/permissions/can-this.js
           - core/server/services/permissions/providers.js
-          - core/server/models/permission.js
+          - core/server/services/permissions/role-permissions.ts
         tests:
           - test/unit/server/services/permissions/index.test.js
           - test/unit/server/services/permissions/can-this.test.js
@@ -10237,8 +10240,10 @@ services:
         summary: >-
           Boot awaits init in its main service Promise.all after database setup, before readiness;
           imports and parseContext need no populated map. canThis throws synchronously when the
-          map is empty, including internal requests. An empty successful query therefore resolves
-          init but leaves checks unavailable; no explicit ready flag is set. The pre-init unit
+          map is empty, including internal requests. Init builds the map from static data, so a
+          successful init populates it; it is also empty before init, after a rebuild that throws
+          (see failures), or if a caller empties the mutable map init returns (see lifetime). No
+          explicit ready flag is set. The pre-init unit
           stubs empty() rather than loading a fresh root. Booted HTTP suites establish successful
           composition, not empty data, init rejection, frontend-disabled ordering or the absence
           of authorization calls from other concurrently initializing services.
@@ -10253,7 +10258,7 @@ services:
       lifetime:
         summary: >-
           There is no init guard, in-flight sharing, invalidation subscription or stop/reset hook.
-          Each successful load replaces the cache; overlapping queries publish in completion order.
+          Each init replaces the cache synchronously.
           getAll clones it, but init returns its mutable object directly. Existing checks retain
           their handler set and one user/key permissions promise; calling a handler again does not
           reload authorization. New checks load fresh user/key data, while action definitions stay
@@ -10267,9 +10272,10 @@ services:
         tests: []
       configuration:
         summary: >-
-          No config/settings/URL values are read by the root; database rows define available chains.
-          User providers require active status and merge/deduplicate individual and role permissions
-          by action/object/object_id; API-key providers use their single role. Authorization matches
+          No config/settings/URL values are read by the root; permissions-data.ts defines available
+          chains. User providers require active status and take the deduplicated union of their
+          roles' permissions from code; API-key providers use their single role, and content keys
+          (no role) get none. Authorization matches
           action/object, with model-specific rules responsible for resource restrictions. Owner
           user roles bypass the generic user-permission check. When both user and key exist, user
           permissions win and model overrides receive apiKey:null, although both providers load.
@@ -10308,8 +10314,8 @@ services:
         tests: []
       failures:
         summary: >-
-          A rejected Permission query propagates while preserving the previous map; a failure
-          during rebuilding can leave an empty/partial replacement. Missing users/keys and inactive
+          Init reads no data, so it cannot fail on I/O; a throwing rebuild can leave an
+          empty/partial replacement. Missing users/keys and inactive
           users reject, as do denied checks; model override errors/results propagate. API support
           rewrites NoPermission messages, preserves Ghost errors and wraps other failures; role
           serialization instead omits roles on any check failure. Provider and canThis units pin
@@ -10328,7 +10334,7 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin real uninitialized-root behavior, empty query results, init option forwarding, boot
+        Pin real uninitialized-root behavior, boot
         failure/recovery and authorization ordering against other boot tasks. The current pre-init
         test stubs cache.empty and does not establish a fresh module's state or readiness gate.
       - >-
@@ -13875,16 +13881,16 @@ services:
       - stripe-checkout-config/index.ts
     notes: >-
       Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
-      creates and by the checkout webhook to save a collected shipping address, previews of a
+      creates and by the checkout webhook to save what a checkout collected, previews of a
       design on a real Stripe Checkout page, and the branding set in the Stripe dashboard.
     contracts:
       exports:
         summary: >-
           Named exports include init, the mutable service, previewService and
           brandingService bindings, StripeCheckoutConfigService, CheckoutPreviewService,
-          CheckoutBrandingService, the wire serializers, the shipping rules
-          collectsShippingFor and shippingCountriesFor, and actingContext.
-          The bindings are undefined before init.
+          CheckoutBrandingService, the wire serializers, the collected parts with their
+          nouns and private flag, collectionParams for the Checkout session parameters that
+          ask for them, and actingContext. The bindings are undefined before init.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
         tests: []
@@ -13892,10 +13898,11 @@ services:
         summary: >-
           Boot calls synchronous init in initCore after the custom fields services, which
           builds the service with knex, its history recorder and the custom field bindings it
-          saves shipping into, and throws if those bindings aren't set up yet. It also builds
-          the preview service with lookups of Stripe, tiers and the members payments service
-          made per preview, and the branding service with lookups of Stripe made per read, as
-          those start later in boot. An existing service makes later calls return.
+          saves the shipping address and phone number into, and throws if those bindings aren't
+          set up yet. It also builds the preview service with lookups of Stripe, tiers and the
+          members payments service made per preview, and the branding service with lookups of
+          Stripe made per read, as those start later in boot. An existing service makes later
+          calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js
@@ -13907,6 +13914,84 @@ services:
       - configuration
       - resources
       - failures
+    blockers: []
+  support-requests:
+    kind: directory
+    disposition: retain
+    status: auditing
+    migrated: true
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Added with the initializer: init composes one resource-free instance from config,
+        logging and the request transport. Configuration, signing and delivery happen per
+        request, mirroring export requests, so there is no startup work or cleanup.
+      reviewedAt: c538745fe27d8782fc3a6d847bb626d2b6ff130e
+      sources:
+        - core/server/services/support-requests/index.ts
+        - core/server/services/support-requests/support-requests-service.ts
+        - core/server/api/endpoints/support-requests.ts
+        - core/boot.js
+    entryPoints:
+      - support-requests/index.ts
+    notes: >-
+      Composition-only service that forwards a staff user's support request to the host as a
+      signed webhook. Root-level tests for init, identity and boot ordering are still to be
+      added.
+    contracts:
+      exports:
+        summary: >-
+          The root default-exports the shared initializer with async init and a guarded service
+          getter exposing SupportRequestsService, and re-exports the SupportRequest type.
+          send requires its receiver and resolves undefined after delivery; it does not inspect
+          the response body.
+        sources:
+          - core/server/services/support-requests/index.ts
+          - core/server/services/support-requests/support-requests-service.ts
+        tests:
+          - test/unit/server/services/support-requests/support-requests-service.test.ts
+          - test/e2e-api/admin/support-requests.test.ts
+      construction:
+        summary: >-
+          The factory constructs the service with shared config, logging and @tryghost/request
+          and performs no reads or delivery. Boot awaits init during core startup, after
+          Export Requests. POST /support_requests is the only runtime consumer.
+        sources:
+          - core/server/services/support-requests/index.ts
+          - core/server/api/endpoints/support-requests.ts
+          - core/boot.js
+        tests:
+          - test/e2e-api/admin/support-requests.test.ts
+      configuration:
+        summary: >-
+          hostSettings:supportRequest:webhookUrl, webhookSecret and hostSettings:siteId are read
+          on every send, not at construction. A missing URL is a NotFoundError; a missing secret
+          or site ID is logged and rejected as IncorrectUsageError before any delivery. The
+          secret is omitted from the public config endpoint.
+        sources:
+          - core/server/services/support-requests/support-requests-service.ts
+          - core/server/api/endpoints/utils/public-config/config.js
+        tests:
+          - test/unit/server/services/support-requests/support-requests-service.test.ts
+          - test/unit/server/api/endpoints/utils/public-config/config.test.js
+          - test/e2e-api/admin/support-requests.test.ts
+      failures:
+        summary: >-
+          Delivery uses no retries because a repeated delivery would duplicate the support
+          request. A transport
+          failure is logged with the URL reduced to its origin and surfaces as a generic 502.
+        sources:
+          - core/server/services/support-requests/support-requests-service.ts
+          - core/server/lib/signed-webhook.ts
+        tests:
+          - test/unit/server/services/support-requests/support-requests-service.test.ts
+          - test/e2e-api/admin/support-requests.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
     blockers: []
   tags-public:
     kind: directory

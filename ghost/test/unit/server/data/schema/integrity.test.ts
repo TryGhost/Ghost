@@ -35,14 +35,15 @@ const parseYaml = require('../../../../../core/server/services/route-settings/ya
  * 2. A blog get's updated from a lower Ghost version and the database looks correct and complete.
  *
  * Typical cases:
- * You have to add a migration script if you've added/modified permissions.
+ * Permissions are defined in core/server/services/permissions/permissions-data.ts
+ * and changing them needs no migration.
  * You have to add a migration script if you've add a new table.
  * You have to add a migration script if you've added new settings to populate group/flags column.
  */
 describe('DB version integrity', function () {
   // Only these variables should need updating
-  const currentSchemaHash = '3ab13b3d7419abff5bec5fff4bc66f5a';
-  const currentFixturesHash = 'f67efde9146f57c7d4fa6429db6c74ce';
+  const currentSchemaHash = '3274999690c2d862dc29af3c3e887c42';
+  const currentFixturesHash = '6b95ec92aa9846cbc44e75de6d29d8d0';
   const currentSettingsHash = 'ad77752f31c6a7f174c04c499214b975';
   const currentRoutesHash = 'd8c25fa01bf6d22a2bcb05ba0de70dc1';
 

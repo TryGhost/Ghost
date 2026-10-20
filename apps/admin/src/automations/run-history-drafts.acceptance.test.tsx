@@ -18,10 +18,7 @@ describe('Run history preserves editor drafts', () => {
   it('makes metadata readonly during history and restores the unsaved draft after closing', async () => {
     setup();
     respond(history('a'));
-    await renderAdminApp('/automations/first', {
-      ...flags,
-      labs: { ...flags.labs, automationsPerTier: true },
-    });
+    await renderAdminApp('/automations/first', flags);
     const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
     await nameField().fill('Unsaved name');
     await open();
@@ -39,24 +36,6 @@ describe('Run history preserves editor drafts', () => {
     await expect
       .element(page.getByRole('textbox', { name: 'Description', exact: true }))
       .toBeEnabled();
-  });
-
-  it('keeps metadata hidden during and after history when automationsPerTier is disabled', async () => {
-    setup();
-    respond(history('a'));
-    await renderAdminApp('/automations/first', {
-      ...flags,
-      labs: { ...flags.labs, automationsPerTier: false },
-    });
-    await open();
-    await select();
-    await expect.element(canvas()).toBeVisible();
-    await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
-    await expect
-      .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
-      .not.toBeInTheDocument();
-    await close();
-    await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
   });
 
   it('contains history render errors and retries without remounting the editor', async () => {

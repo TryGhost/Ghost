@@ -8,8 +8,10 @@ starts with.
 - `schema.js` is the final table and index structure expected after every
   migration has run.
 - `fixtures/fixtures.json` contains durable records and relationships required
-  by a new site, including roles, permissions, the owner, starter content,
-  tiers, and a newsletter.
+  by a new site, including roles, the owner, starter content, tiers, and a
+  newsletter. Permissions are defined in
+  `core/server/services/permissions/permissions-data.ts`; the permissions
+  tables in `schema.js` are unused until they are dropped.
 - `default-settings/default-settings.json` defines the settings a site starts
   with, grouped by responsibility.
 

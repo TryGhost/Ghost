@@ -3,8 +3,8 @@ import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import * as db from '../../../core/server/data/db';
 const labs: { isSet(name: string): boolean } = require('../../../core/shared/labs');
-import type { AddAutomationData } from '../../../core/server/services/automations/automations-api';
 import type { AutomationStatus } from '../../../core/server/services/automations/automations-repository';
+import type { AddAutomationData } from '../../../core/server/services/automations/automations-repository-2';
 
 const {
   createDatabaseAutomationsRepository,
@@ -31,7 +31,6 @@ describe('Automation host limits', () => {
   beforeEach(async () => {
     const stub = sinon.stub(labs, 'isSet').callThrough();
     stub.withArgs('automations').returns(true);
-    stub.withArgs('automationsPerTier').returns(true);
   });
   afterEach(async () => {
     sinon.restore();

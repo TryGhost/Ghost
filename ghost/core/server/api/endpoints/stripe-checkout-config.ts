@@ -1,7 +1,10 @@
 import errors from '@tryghost/errors';
+import { upperFirst } from 'lodash';
 import type { Controller, Frame } from '@tryghost/api-framework';
 import {
-  SHIPPING_FLAG,
+  COLLECTED_NOUNS,
+  COLLECTED_SECTIONS,
+  COLLECTION_FLAG,
   actingContext,
   service as checkoutConfig,
 } from '../../services/stripe-checkout-config';
@@ -11,15 +14,16 @@ const labs = require('../../../shared/labs');
 
 type EditFrame = Frame<{ data: { checkout_config: unknown[] } }>;
 
-/** Shipping is still in development, so it can't be saved while its flag is off. */
-function refuseShippingWhileOff(input: unknown): void {
-  if (labs.isSet(SHIPPING_FLAG) || typeof input !== 'object' || input === null) {
+/** The collected parts are still in development, so they can't be saved while their flag is off. */
+function refuseCollectionWhileOff(input: unknown): void {
+  if (labs.isSet(COLLECTION_FLAG) || typeof input !== 'object' || input === null) {
     return;
   }
-  if ('shipping' in input) {
+  const section = COLLECTED_SECTIONS.find((candidate) => candidate in input);
+  if (section) {
     throw new errors.ValidationError({
-      message: 'Shipping address collection is not available yet.',
-      property: 'shipping',
+      message: `${upperFirst(COLLECTED_NOUNS[section])} collection is not available yet.`,
+      property: section,
     });
   }
 }
@@ -28,8 +32,8 @@ function refuseShippingWhileOff(input: unknown): void {
  * The site-wide Stripe Checkout config.
  *
  * It uses the tier permissions, because checkout is where tiers are sold. Saving it doesn't
- * clear the site's cache, as no page on the site shows it. Shipping is only read and saved
- * while its private flag is on.
+ * clear the site's cache, as no page on the site shows it. The collected parts are only read
+ * and saved while their private flag is on.
  */
 const controller = {
   docName: 'checkout_config',
@@ -47,7 +51,7 @@ const controller = {
     permissions: { docName: 'products', method: 'edit' },
     async query(frame: EditFrame): Promise<StripeCheckoutConfig> {
       const [input] = frame.data.checkout_config;
-      refuseShippingWhileOff(input);
+      refuseCollectionWhileOff(input);
       await checkoutConfig!.edit(actingContext(frame.options.context), input);
       return checkoutConfig!.read();
     },

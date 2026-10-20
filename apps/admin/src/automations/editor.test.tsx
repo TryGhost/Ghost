@@ -220,8 +220,6 @@ const mockStats = vi.hoisted(
   }),
 );
 
-const mockLabs = vi.hoisted((): { current: Record<string, boolean> } => ({ current: {} }));
-
 vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/config')>(
     '@tryghost/admin-x-framework/api/config',
@@ -229,9 +227,7 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   return {
     ...actual,
     useBrowseConfig: () => ({
-      data: mockStats.loaded
-        ? { config: { labs: mockLabs.current, stats: mockStats.current } }
-        : undefined,
+      data: mockStats.loaded ? { config: { stats: mockStats.current } } : undefined,
     }),
   };
 });
@@ -533,7 +529,6 @@ describe('AutomationEditor', () => {
     mockEditMutation.isLoading = false;
     mockEditMutation.variables = undefined;
     mockToastError.mockReset();
-    mockLabs.current = {};
     mockStats.current = { endpoint: 'https://api.tinybird.test' };
     mockStats.loaded = true;
     mockEmailTracking.emailTrackOpens = true;
@@ -1045,7 +1040,6 @@ describe('AutomationEditor', () => {
     { status: 'active', label: 'Publish changes', nextStatus: 'active' },
     { status: 'active', label: 'Turn off', nextStatus: 'inactive' },
   ] as const)('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status }] },
       isLoading: false,
@@ -1097,7 +1091,6 @@ describe('AutomationEditor', () => {
   it.each(['', '   '])(
     'blocks saving blank name %j and restores the previous name when left blank',
     (name) => {
-      mockLabs.current = { automationsPerTier: true };
       mockUseReadAutomation.mockReturnValue({
         data: { automations: [{ ...automationDetail, status: 'inactive' }] },
         isLoading: false,
@@ -1123,7 +1116,6 @@ describe('AutomationEditor', () => {
   );
 
   it('allows saving an empty description', () => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'inactive' }] },
       isLoading: false,
@@ -1143,7 +1135,6 @@ describe('AutomationEditor', () => {
   });
 
   it('leaves IME composition keys to the input method when renaming', () => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'inactive' }] },
       isLoading: false,
@@ -1199,7 +1190,6 @@ describe('AutomationEditor', () => {
   });
 
   it('resolves the sidebar after loading and preserves user choices on later updates', async () => {
-    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       isLoading: true,
       isError: false,
@@ -1825,7 +1815,6 @@ describe('AutomationEditor', () => {
   it.each(['inactive', 'archived'] as const)(
     'allows empty %s automations to be saved, but not published',
     (status) => {
-      mockLabs.current = { automationsPerTier: true };
       mockStats.current = undefined;
       mockUseReadAutomation.mockReturnValue({
         data: { automations: [{ ...automationDetail, status, actions: [], edges: [] }] },
@@ -1851,7 +1840,6 @@ describe('AutomationEditor', () => {
   );
 
   it('disables publishing and hides save for an active automation with no actions', () => {
-    mockLabs.current = { automationsPerTier: true };
     mockStats.current = undefined;
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'active', actions: [], edges: [] }] },

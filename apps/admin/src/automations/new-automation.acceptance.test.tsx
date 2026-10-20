@@ -14,7 +14,7 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 import { detail } from './run-history.test-utils';
 import { performanceBoot } from './run-list.test-utils';
 
-const labs = { automations: true, automationsPerTier: true };
+const labs = { automations: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
@@ -401,14 +401,6 @@ describe('New automation', () => {
     await expect.element(button('Search members')).not.toBeInTheDocument();
     expect(stats.requests).toHaveLength(0);
     expect(runs.requests).toHaveLength(0);
-  });
-
-  it('does not offer creation when its flag is off', async () => {
-    fakeAutomations([]);
-    await renderAdminApp('/automations/new', { labs: { automations: true } });
-    await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
-    await expect.element(button('New automation')).not.toBeInTheDocument();
   });
 
   for (const [title, scope] of [
