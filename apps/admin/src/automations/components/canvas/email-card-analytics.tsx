@@ -282,9 +282,9 @@ const LinksEmptyState: React.FC<{
 // links added since it last sent, a send with click tracking off, and no sends yet.
 const noClickedLinksState = (
   <LinksEmptyState
-    description="Links are tracked each time this email is sent"
-    icon={<LucideIcon.Link />}
-    title="No clicked links yet"
+    description="Once someone clicks a link in this email, it will show here"
+    icon={<POST_METRIC_ICONS.clicks />}
+    title="No click data yet"
   />
 );
 

@@ -126,7 +126,7 @@ describe('Email card analytics', () => {
     await show();
     await show('Second');
     await expect.element(toggle()).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(card('Second').getByText('No clicked links yet')).toBeVisible();
+    await expect.element(card('Second').getByText('No click data yet')).toBeVisible();
     expect(height('Second')).toBeGreaterThanOrEqual(closedHeight);
   });
 
@@ -153,7 +153,7 @@ describe('Email card analytics', () => {
     await show('Second');
     await expect(card().getByRole('link')).toHaveCount(1);
     await expect
-      .element(card('Second').getByRole('status').getByText('No clicked links yet'))
+      .element(card('Second').getByRole('status').getByText('No click data yet'))
       .toBeVisible();
     await expect.element(card().getByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
     expect(height()).toBeGreaterThanOrEqual(height('Second'));
@@ -167,7 +167,7 @@ describe('Email card analytics', () => {
     // Asked once on load to tell "no links" from "no clicks yet".
     expect(request.requests.length).toBeGreaterThan(0);
     await show();
-    await expect.element(card().getByText('No clicked links yet')).toBeVisible();
+    await expect.element(card().getByText('No click data yet')).toBeVisible();
     await expect.element(card().getByText('Unique clicks per link')).not.toBeInTheDocument();
   });
 
@@ -203,7 +203,7 @@ describe('Email card analytics', () => {
     const request = fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
     await boot();
     await show();
-    await expect.element(card().getByText('No clicked links yet')).toBeVisible();
+    await expect.element(card().getByText('No click data yet')).toBeVisible();
     expect(request.requests).toHaveLength(0);
   });
 

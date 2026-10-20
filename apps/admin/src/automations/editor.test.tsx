@@ -929,7 +929,7 @@ describe('AutomationEditor', () => {
     );
     expect(within(welcomeEmailCard()).getByText('Clicked: —')).toBeInTheDocument();
     fireEvent.click(analyticsToggle());
-    expect(within(welcomeEmailCard()).getByText('No clicked links yet')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('No click data yet')).toBeInTheDocument();
   });
 
   it('pages through clicked links with counts, clamped percentages, and full destinations', () => {
@@ -1047,7 +1047,7 @@ describe('AutomationEditor', () => {
     renderEditor();
     fireEvent.click(analyticsToggle());
 
-    expect(screen.getByText('No clicked links yet')).toBeInTheDocument();
+    expect(screen.getByText('No click data yet')).toBeInTheDocument();
     expect(linkRequests()).toHaveLength(0);
   });
 
