@@ -6,7 +6,9 @@ const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
 const { snakeKeys } = require('../../lib/case-keys');
 const { z } = require('zod');
-const { COLLECTION_FLAG } = require('../stripe-checkout-config/models');
+const { COLLECTION_FLAG, collectionParams } = require('../stripe-checkout-config/models');
+
+/** @import stripeCheckoutConfig from '../stripe-checkout-config' */
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -84,7 +86,7 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
-   * @param {typeof import('../stripe-checkout-config')} deps.stripeCheckoutConfig
+   * @param {typeof stripeCheckoutConfig} deps.stripeCheckoutConfig
    *   Its service's config is read for every Checkout session.
    */
   constructor(deps) {
@@ -122,7 +124,7 @@ module.exports = class StripeAPI {
    */
   async _readCheckoutConfig() {
     try {
-      return await this._stripeCheckoutConfig.service.readForCheckout();
+      return await this._stripeCheckoutConfig.service.config.readForCheckout();
     } catch (err) {
       logging.error(
         { event: { name: 'stripe_checkout.config.read_failed' }, err },
@@ -805,7 +807,7 @@ module.exports = class StripeAPI {
       config,
       collection:
         options.tierId && this.labs.isSet(COLLECTION_FLAG)
-          ? this._stripeCheckoutConfig.collectionParams(config, options.tierId, options.collection)
+          ? collectionParams(config, options.tierId, options.collection)
           : {},
     });
 

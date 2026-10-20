@@ -13612,8 +13612,8 @@ services:
           four event services and controller. Picked models and the API object are retained.
           Getter dependencies defer members repositories, donation repository, gifts service,
           staff emails until handler work; welcome-email capability is initialized on demand.
-          The API retains the checkout-config module and reads its current service binding when a
-          session uses the saved design; that service is initialized later than Stripe module construction. The SDK
+          The API retains the checkout-config root and reads its guarded service when a session
+          uses the saved design; boot initializes that root later than Stripe module construction. The SDK
           client and two rate buckets are acquired by each successful non-null API configure. No
           guard coalesces repeated or overlapping root init/configure, and no rollback covers
           partially configured collaborators. No focused real-root
@@ -13709,7 +13709,7 @@ services:
           then captures key, URL, promo and environment values; shared URL helpers freeze their
           base URLs. Automatic-tax remains a labs getter and additional-payment-method checks
           happen per call. With stripeCheckoutDesign enabled, each checkout reads the saved
-          design through the current checkout-config service; an explicit preview design or null
+          design through the checkout-config root's guarded service; an explicit preview design or null
           overrides that read. Checkout HTTP tests assert saved/cleared designs, flag gating and
           malformed stored-design fallback with Stripe mocked, not real root replacement or
           provider acceptance. Nonproduction normally supplies a local placeholder secret;
@@ -13810,8 +13810,8 @@ services:
         Before changing initialization, pin real import/graph identity, receiver contracts,
         pre-init access, deferred dependency getters, retained members/webhook consumers and
         partial construction. Existing fake boot barriers protect awaited ordering, not real
-        root publication or successful dependency readiness. Include the late checkout-config
-        service binding and preview callbacks; current checkout tests do not hold or replace
+        root publication or successful dependency readiness. Include the checkout-config
+        root's guarded service and preview callbacks; current checkout tests do not hold or replace
         those roots.
       - >-
         Characterize repeated/overlapping init and reconfiguration, no-key and local/network
@@ -13834,15 +13834,25 @@ services:
     kind: directory
     disposition: retain
     status: auditing
+    migrated: true
+    extras:
+      actingContext:
+        purpose: Convert API authentication context into the staff actor recorded in the config's history.
+        callers:
+          - core/server/api/endpoints/stripe-checkout-config.ts
+        timing: Pure conversion when an API command runs; it does not require initialization.
+        dependencies: []
+        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
+        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Construct the config, preview and branding services as one ready aggregate after
-        member-metafield bindings, then update named runtime consumers. Preserve deferred
-        Stripe, tier and member callbacks so construction does not pull later boot
-        dependencies forward. The constructors own no startup resources; three outputs can
-        fit one returned composition.
+        Boot awaits the defineService initializer in initCore after the custom fields services.
+        It builds the config, preview and branding services as one ready aggregate from
+        member-metafield bindings, knex, models and logging, and keeps the deferred Stripe,
+        tier and member callbacks so construction does not pull later boot dependencies
+        forward. The constructors own no startup resources.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/stripe-checkout-config/index.ts
@@ -13853,22 +13863,17 @@ services:
         complexity: complex
         reason: >-
           Checkout config starts before Stripe and Members, then uses deferred callbacks back into
-          those consumers for preview/branding. Module-level schemas also capture logging and import
-          checkout/metafield contracts, while API callers consume root serializers and multiple
-          instances. Preserving the existing deferred cycle and separating schema libraries from
-          runtime collaborators needs preparation beyond a root wrapper.
+          those consumers for preview/branding. The root injects logging into the config row codec
+          factory, the history recorder and the branding service; the Stripe Checkout constraints
+          package, the metafield identity schemas, the request parser and the case-key helpers are
+          allowlisted by name, lodash is gone, and the metafield status is a type-only import. API
+          output serializers import the wire serializers from the service's own module rather than
+          the root.
         preparation:
           - >-
             Keep preview/branding callbacks deferred and characterize the
             config-to-Stripe-to-Members dependency path before changing boot order or instance
             capture.
-          - >-
-            Make logging-dependent codecs/actions explicit factories or collaborators, keeping pure
-            schema contracts separate; assess narrowly named checkout/case-key allowances rather
-            than allowlisting whole services.
-          - >-
-            Define the ready aggregate and the home of API serializer/context helpers so callers no
-            longer rely on unrelated root runtime exports.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/stripe-checkout-config/index.ts
@@ -13881,32 +13886,36 @@ services:
       - stripe-checkout-config/index.ts
     notes: >-
       Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
-      creates and by the checkout webhook to save what a checkout collected, previews of a
-      design on a real Stripe Checkout page, and the branding set in the Stripe dashboard.
+      creates, previews of a design on a real Stripe Checkout page, and the branding set in the
+      Stripe dashboard. The checkout webhook reads only the collection flag's name from it.
     contracts:
       exports:
         summary: >-
-          Named exports include init, the mutable service, previewService and
-          brandingService bindings, StripeCheckoutConfigService, CheckoutPreviewService,
-          CheckoutBrandingService, the wire serializers, the collected parts with their
-          nouns and private flag, collectionParams for the Checkout session parameters that
-          ask for them, and actingContext. The bindings are undefined before init.
+          The TypeScript root default-exports defineService with init, the guarded service getter
+          for the config, previews and branding services, and actingContext as its only extra.
+          Its named exports are type-only. API endpoints read the services through service, and
+          the API's output serializers and the collection-flag checks import the wire serializers
+          and the collected parts' constants from the service's own modules.
         sources:
+          - core/kernel/define-service.ts
           - core/server/services/stripe-checkout-config/index.ts
-        tests: []
+        tests:
+          - test/unit/server/services/stripe-checkout-config/index.test.ts
       construction:
         summary: >-
-          Boot calls synchronous init in initCore after the custom fields services, which
-          builds the service with knex, its history recorder and the custom field bindings it
-          saves the shipping address and phone number into, and throws if those bindings aren't
-          set up yet. It also builds the preview service with lookups of Stripe, tiers and the
-          members payments service made per preview, and the branding service with lookups of
-          Stripe made per read, as those start later in boot. An existing service makes later
-          calls return.
+          Boot awaits init in initCore after the custom fields services. The initializer builds
+          the config service with knex, its history recorder, logging and the custom field
+          bindings it saves the shipping address and phone number into, and throws if those
+          bindings aren't set up yet. It also builds the preview service with lookups of Stripe,
+          tiers and the members payments service made per preview, and the branding service with
+          lookups of Stripe made per read, as those start later in boot. Later init calls keep
+          the same services.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/stripe-checkout-config/index.test.ts
+          - test/unit/boot/init-core.test.ts
     unverified:
       - consumers
       - startup

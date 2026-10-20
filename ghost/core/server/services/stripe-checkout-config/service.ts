@@ -1,13 +1,14 @@
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
-import { FIELD_STATUS } from '../members-metafields/schema';
+import type { FieldStatus } from '../members-metafields/schema';
 import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordCheckoutConfigAction, RequestContext } from './actions';
-import { ConfigRow, type TierScope } from './codec';
+import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,
   COLLECTED_SECTIONS,
@@ -23,6 +24,8 @@ import { CheckoutConfigInput } from './serializers';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
 const FIELDS_TABLE = 'members_metafields';
+/** A custom field that can take a value: not archived. */
+const ACTIVE: FieldStatus = 'active';
 
 /** The settings a request saves for each collected part of the config. */
 type CollectedSettings = {
@@ -30,9 +33,7 @@ type CollectedSettings = {
 };
 
 /** What a collected part keeps in its own column of the config row. */
-type StoredPart<Section extends CollectedSection> = NonNullable<
-  z.output<typeof ConfigRow>[Section]
->;
+type StoredPart<Section extends CollectedSection> = NonNullable<z.output<ConfigRowSchema>[Section]>;
 
 /** A custom field a request names for a port, and how to say it can't take the port's values. */
 interface Destination {
@@ -222,19 +223,23 @@ export class StripeCheckoutConfigService {
   private knex: Knex;
   private recordAction: RecordCheckoutConfigAction;
   private bindings: PortBinder;
+  private configRow: ConfigRowSchema;
 
   constructor({
     knex,
     recordAction,
     bindings,
+    logging,
   }: {
     knex: Knex;
     recordAction: RecordCheckoutConfigAction;
     bindings: PortBinder;
+    logging: GhostLogger;
   }) {
     this.knex = knex;
     this.recordAction = recordAction;
     this.bindings = bindings;
+    this.configRow = configRow(logging);
   }
 
   /**
@@ -289,9 +294,7 @@ export class StripeCheckoutConfigService {
           join.onIn('binding.port', COLLECTED_PORTS),
         )
         .leftJoin(`${FIELDS_TABLE} as field`, (join) =>
-          join
-            .on('field.key', '=', 'binding.metafield_key')
-            .andOnVal('field.status', '=', FIELD_STATUS.active),
+          join.on('field.key', '=', 'binding.metafield_key').andOnVal('field.status', '=', ACTIVE),
         )
         .where('config.slug', CONFIG_SLUG)
         .select(
@@ -311,7 +314,7 @@ export class StripeCheckoutConfigService {
     if (!first) {
       return { config: { design: null, shipping: null, phone: null }, bound };
     }
-    const { design, shipping, phone } = z.decode(ConfigRow, first);
+    const { design, shipping, phone } = z.decode(this.configRow, first);
     return {
       config: {
         design,
@@ -336,7 +339,7 @@ export class StripeCheckoutConfigService {
       const settings = requested[section];
       return settings === undefined ? [] : [changeOf(section, settings)];
     });
-    const columns = z.encode(ConfigRow.partial(), {
+    const columns = z.encode(this.configRow.partial(), {
       ...(design === undefined ? {} : { design }),
       ...storedColumns(requested),
     });
@@ -526,7 +529,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
     }
     // Keeping a field that was archived after it was chosen is allowed, so a client can save
     // back what it read. Nothing is written to it while it stays archived.
-    if (field.status !== FIELD_STATUS.active && chosen.get(port) !== customFieldKey) {
+    if (field.status !== ACTIVE && chosen.get(port) !== customFieldKey) {
       throw new errors.ValidationError({
         message: 'An archived custom field cannot receive collected data. Restore it first.',
         property,

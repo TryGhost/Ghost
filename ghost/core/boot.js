@@ -196,8 +196,8 @@ async function initCore({ ghostServer, config }) {
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
-  const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
-  stripeCheckoutConfigService.init();
+  const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;
+  await stripeCheckoutConfig.init();
   debug('End: Stripe Checkout Config Service');
 
   if (ghostServer) {

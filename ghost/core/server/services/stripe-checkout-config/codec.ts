@@ -1,4 +1,4 @@
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbJson } from '../../lib/db-types/json';
@@ -20,7 +20,11 @@ export type TierScope = z.infer<typeof TierScope>;
  * dropped, reads as off and is logged. Checkouts then go without it until the publisher saves
  * it again, and the other parts are unaffected.
  */
-function offWhenUnreadable(part: 'design' | CollectedSection, message: string) {
+function offWhenUnreadable(
+  logging: GhostLogger,
+  part: 'design' | CollectedSection,
+  message: string,
+) {
   return ({ error }: z.core.$ZodCatchCtx) => {
     logging.warn(
       { event: { name: `stripe_checkout.${part}.unreadable` }, err: new z.ZodError(error.issues) },
@@ -36,38 +40,47 @@ function offWhenUnreadable(part: 'design' | CollectedSection, message: string) {
  * never reaches Stripe. Which tiers a collected part is limited to is in the tiers table, and
  * which custom fields its answers land in are the bindings for their ports.
  */
-export const ConfigRow = z.object({
-  design: DbJson(
-    z.codec(SnakeDesign, StripeCheckoutDesign, { decode: camelKeys, encode: snakeKeys }),
-    { message: 'The stored Stripe Checkout design is not JSON.' },
-  )
-    .nullable()
-    .catch(
-      offWhenUnreadable('design', 'Ignoring a Stripe Checkout design that is no longer valid'),
-    ),
-  shipping: DbJson(
-    z.object({
-      tier_scope: TierScope,
-      // A stored empty list would make Stripe refuse every checkout, so it reads as invalid.
-      allowed_countries: z.array(z.string()).min(1).nullable(),
-    }),
-    { message: 'The stored shipping settings are not JSON.' },
-  )
-    .nullable()
-    .catch(
-      offWhenUnreadable(
-        'shipping',
-        'Ignoring Stripe Checkout shipping settings that are no longer valid',
+export function configRow(logging: GhostLogger) {
+  return z.object({
+    design: DbJson(
+      z.codec(SnakeDesign, StripeCheckoutDesign, { decode: camelKeys, encode: snakeKeys }),
+      { message: 'The stored Stripe Checkout design is not JSON.' },
+    )
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'design',
+          'Ignoring a Stripe Checkout design that is no longer valid',
+        ),
       ),
-    ),
-  phone: DbJson(z.object({ tier_scope: TierScope }), {
-    message: 'The stored phone number settings are not JSON.',
-  })
-    .nullable()
-    .catch(
-      offWhenUnreadable(
-        'phone',
-        'Ignoring Stripe Checkout phone number settings that are no longer valid',
+    shipping: DbJson(
+      z.object({
+        tier_scope: TierScope,
+        // A stored empty list would make Stripe refuse every checkout, so it reads as invalid.
+        allowed_countries: z.array(z.string()).min(1).nullable(),
+      }),
+      { message: 'The stored shipping settings are not JSON.' },
+    )
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'shipping',
+          'Ignoring Stripe Checkout shipping settings that are no longer valid',
+        ),
       ),
-    ),
-});
+    phone: DbJson(z.object({ tier_scope: TierScope }), {
+      message: 'The stored phone number settings are not JSON.',
+    })
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'phone',
+          'Ignoring Stripe Checkout phone number settings that are no longer valid',
+        ),
+      ),
+  });
+}
+export type ConfigRowSchema = ReturnType<typeof configRow>;

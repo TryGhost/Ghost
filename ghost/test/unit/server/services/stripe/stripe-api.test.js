@@ -5,9 +5,6 @@ const logging = require('@tryghost/logging');
 const stripe = require('stripe');
 const i18n = require('../../../../../core/server/services/i18n');
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
-const {
-  collectionParams,
-} = require('../../../../../core/server/services/stripe-checkout-config/models');
 
 i18n.init();
 
@@ -328,7 +325,7 @@ describe('StripeAPI', function () {
     function configured(readForCheckout) {
       const designed = new StripeAPI({
         labs: { isSet: (flag) => flag === 'stripeCheckoutDesign' },
-        stripeCheckoutConfig: { service: { readForCheckout } },
+        stripeCheckoutConfig: { service: { config: { readForCheckout } } },
       });
       designed.configure({
         checkoutSessionSuccessUrl: '/success',
@@ -428,8 +425,9 @@ describe('StripeAPI', function () {
           isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
         },
         stripeCheckoutConfig: {
-          service: { readForCheckout: async () => ({ design: null, shipping, phone: null }) },
-          collectionParams,
+          service: {
+            config: { readForCheckout: async () => ({ design: null, shipping, phone: null }) },
+          },
         },
       });
       shippingApi.configure({
@@ -463,13 +461,14 @@ describe('StripeAPI', function () {
         },
         stripeCheckoutConfig: {
           service: {
-            readForCheckout: async () => ({
-              design: null,
-              shipping: null,
-              phone: { tierIds: null, collectable: true },
-            }),
+            config: {
+              readForCheckout: async () => ({
+                design: null,
+                shipping: null,
+                phone: { tierIds: null, collectable: true },
+              }),
+            },
           },
-          collectionParams,
         },
       });
       phoneApi.configure({

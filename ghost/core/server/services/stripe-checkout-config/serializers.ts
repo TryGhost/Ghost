@@ -1,4 +1,3 @@
-import { omit } from 'lodash';
 import { z } from 'zod';
 import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/checkout';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
@@ -20,14 +19,21 @@ import {
  * `customize: false` means no design, so Stripe uses the dashboard design.
  * `customize: true` gives the design, and must include every field.
  */
+const CustomizedDesign = z.strictObject({ customize: z.literal(true), ...SnakeDesign.shape });
 const DesignInput = z
   .discriminatedUnion('customize', [
     z.strictObject({ customize: z.literal(false) }),
-    z.strictObject({ customize: z.literal(true), ...SnakeDesign.shape }),
+    CustomizedDesign,
   ])
-  .transform((input): StripeCheckoutDesign | null =>
-    input.customize ? camelKeys(omit(input, 'customize')) : null,
-  );
+  .transform((input): StripeCheckoutDesign | null => (input.customize ? designOf(input) : null));
+
+/** The design a customized request gives, without the switch that says it's customized. */
+function designOf({
+  customize: _customize,
+  ...design
+}: z.output<typeof CustomizedDesign>): StripeCheckoutDesign {
+  return camelKeys(design);
+}
 
 const TierId = z.string().regex(/^[0-9a-f]{24}$/, { error: 'Enter a tier id.' });
 

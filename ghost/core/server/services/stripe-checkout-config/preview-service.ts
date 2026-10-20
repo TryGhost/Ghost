@@ -1,6 +1,5 @@
 import errors from '@tryghost/errors';
-import { pick } from 'lodash';
-import { COLLECTED_SECTIONS, type CheckoutCollection, type StripeCheckoutDesign } from './models';
+import type { CheckoutCollection, CollectedSection, StripeCheckoutDesign } from './models';
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutPreviewInput } from './serializers';
 
@@ -67,8 +66,10 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
       tier,
       cadence,
       design,
-      // Only the collected parts, so nothing else in the request is taken for one.
-      collection: pick(request, COLLECTED_SECTIONS),
+      collection: {
+        shipping: request.shipping,
+        phone: request.phone,
+      } satisfies Record<CollectedSection, unknown>,
       returnUrl: this.deps.siteUrl(),
       expiresInSeconds: PREVIEW_LIFETIME_SECONDS,
     });

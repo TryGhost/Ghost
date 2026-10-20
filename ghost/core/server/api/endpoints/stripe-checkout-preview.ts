@@ -1,5 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { previewService } from '../../services/stripe-checkout-config';
+import stripeCheckoutConfig from '../../services/stripe-checkout-config';
 
 type AddFrame = Frame<{ data: { checkout_preview: unknown[] } }>;
 
@@ -15,7 +15,7 @@ const controller = {
     headers: { cacheInvalidate: false },
     permissions: { docName: 'products', method: 'edit' },
     query(frame: AddFrame): Promise<{ url: string }> {
-      return previewService!.add(frame.data.checkout_preview[0]);
+      return stripeCheckoutConfig.service.previews.add(frame.data.checkout_preview[0]);
     },
   },
 } satisfies Controller<{ add: AddFrame }>;
