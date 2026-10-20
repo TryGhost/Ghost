@@ -191,3 +191,42 @@ retries that page. Search-scoped charts and date/status controls are a separate
 enhancement. Opening search replaces the Performance heading with the input.
 Typing slides the chart, status cards, and applied date chip closed over 200 ms;
 clearing search expands them again. Reduced-motion preferences disable the transition.
+
+## Automation email TK reminders
+
+TK reminders are an Admin editorial safeguard. They never prevent saving a draft,
+and the API and runtime sender do not reject or remove them. Editable canvas
+cards show one TK badge independently of their completeness warning, including
+on live automations. The badge describes the current editing draft, not the
+published revision. Historical run cards have no draft reminder.
+
+The email modal keeps changes local until Save; discarding changes leaves the
+canvas unchanged. Koenig highlights body reminders, and the modal also identifies
+subject/body reminders. Publication and reactivation use the existing confirmation
+to list affected emails and offer Back to editing or Publish anyway. Updating a
+live automation retains the warning about members already in progress. There is
+no persisted acknowledgment: each confirmation describes the current draft, and
+submission repeats normal validation and plan-limit checks.
+
+`src/automations/utils/email-tk.ts` inspects serialized content without mounting
+an editor. Subjects reuse the post title's uppercase-only matcher. Bodies follow
+Koenig's TKPlugin: `TK`, `Tk`, `tk`, repeated pairs, punctuation, and em-dash
+boundaries. Ordinary and serialized TK text nodes are checked across inline
+formatting, with separate checks for each block. Supported nested editor fields
+are image/bookmark/embed captions, callout text, email CTA HTML, CTA text and
+sponsor labels, and product titles/descriptions. HTML is parsed as inert text;
+URLs, attributes and metadata are not scanned.
+
+As with post TK highlighting, raw HTML/Markdown source cards, button labels and
+image alt text are outside detection. This is not an email rendering engine.
+Malformed serialized text or nested-editor fields surface a content error and
+block publication rather than appearing checked and clear. Empty drafts remain
+saveable. Admin currently has no translation runtime or extraction lane; these
+messages follow its existing English copy conventions and use complete sentences.
+
+For template authors, use a standalone uppercase `TK` or `TKTK`, separated by
+spaces, in subjects and ordinary body text. Keep the letters in one text run
+for reliable Koenig highlighting. Do not put reminders only in URLs, metadata,
+raw HTML/Markdown cards, or button labels. No template catalog integration is
+required. Detection unit tests and `email-tk.acceptance.test.tsx` cover unopened
+content, independent indicators, editing/discarding, and publication attempts.

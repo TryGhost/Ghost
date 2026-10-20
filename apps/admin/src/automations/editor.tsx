@@ -36,6 +36,8 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import { inspectEmailTk, emailsWithTk } from './utils/email-tk';
+import { EmailTkWarning } from './components/email-tk-warning';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
@@ -72,6 +74,10 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 
     const missingSubject = !action.data.email_subject.trim();
     const missingBody = isEmptyEmailLexical(action.data.email_lexical);
+    if (inspectEmailTk(action.data.email_subject, action.data.email_lexical).contentError) {
+      errors[action.id] = 'Email content could not be read. Open the email to check its content.';
+      continue;
+    }
 
     if (missingSubject && missingBody) {
       errors[action.id] = SUBJECT_AND_BODY_REQUIRED_MESSAGE;
@@ -125,6 +131,14 @@ const AutomationEditorContent: React.FC<{
   }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
   const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
+  const submittingRef = React.useRef(false);
+  const publishTriggerRef = React.useRef<HTMLElement | null>(null);
+  const restorePublishFocus = (event: Event) => {
+    if (publishTriggerRef.current?.isConnected) {
+      event.preventDefault();
+      publishTriggerRef.current.focus();
+    }
+  };
   const isEmailModalDirtyRef = React.useRef(false);
   const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
@@ -146,6 +160,7 @@ const AutomationEditorContent: React.FC<{
   }, [automation]);
   const isEditorLoading = !draft && !isReadError;
   const isEditorError = !draft && isReadError;
+  const tkEmails = React.useMemo(() => emailsWithTk(draft), [draft]);
 
   // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
   // otherwise flip the dirty flag immediately after every successful publish.
@@ -174,7 +189,9 @@ const AutomationEditorContent: React.FC<{
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
       );
     });
-    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+    setEditState((prev) =>
+      isFailedEditState(prev) || prev.phase === 'confirming' ? { phase: 'idle' } : prev,
+    );
   };
 
   const validateForAction = (
@@ -201,6 +218,9 @@ const AutomationEditorContent: React.FC<{
   };
 
   const save = async (statusToSave?: AutomationStatus) => {
+    if (submittingRef.current || isEmailModalDirtyRef.current) {
+      return;
+    }
     if (!draft) {
       throw new Error('Cannot edit an automation that has not loaded.');
     }
@@ -244,6 +264,7 @@ const AutomationEditorContent: React.FC<{
     }
 
     const handleSaveError = (error: unknown) => {
+      submittingRef.current = false;
       if (error instanceof HostLimitError) {
         setEditState({ phase: 'idle' });
         setLimitError(error);
@@ -253,6 +274,7 @@ const AutomationEditorContent: React.FC<{
       toast.error('Automation couldn’t be saved');
     };
 
+    submittingRef.current = true;
     setEditState(requestState);
 
     // An existing active automation consumes its slot already. New active automations
@@ -275,6 +297,7 @@ const AutomationEditorContent: React.FC<{
       { ...draft, status: newStatus },
       {
         onSuccess: (response) => {
+          submittingRef.current = false;
           const savedDraft = response.automations[0];
           setSavedAutomation(savedDraft);
           setDraft(savedDraft);
@@ -309,7 +332,9 @@ const AutomationEditorContent: React.FC<{
   let isTurnOffButtonEnabled = true;
   let isRepublishButtonEnabled = true;
   let republishButtonVariant: ButtonProps['variant'] = 'default';
-  let republishButtonChildren: React.ReactNode = 'Publish changes';
+  let republishButtonChildren: React.ReactNode = tkEmails.length
+    ? 'Publish anyway'
+    : 'Publish changes';
   switch (editState.phase) {
     case 'idle':
       break;
@@ -429,6 +454,9 @@ const AutomationEditorContent: React.FC<{
   };
 
   const onPublish = (): void => {
+    if (submittingRef.current || isEmailModalDirtyRef.current) {
+      return;
+    }
     if (!draft) {
       throw new Error('Cannot publish an automation that has not loaded.');
     }
@@ -436,6 +464,8 @@ const AutomationEditorContent: React.FC<{
     if (!validateForAction(draft, 'publish')) {
       return;
     }
+    publishTriggerRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     switch (draft.status) {
       case 'active':
@@ -580,6 +610,8 @@ const AutomationEditorContent: React.FC<{
         isPending={isEditRequestActive}
         open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
         status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
+        tkEmails={tkEmails}
+        onCloseAutoFocus={isConfirmUnpublishAlertOpen ? undefined : restorePublishFocus}
         onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
         onOpenChange={
           isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange
@@ -587,16 +619,22 @@ const AutomationEditorContent: React.FC<{
       />
 
       <AlertDialog open={isConfirmRepublishAlertOpen} onOpenChange={onConfirmRepublishOpenChange}>
-        <AlertDialogContent>
+        <AlertDialogContent onCloseAutoFocus={restorePublishFocus}>
           <AlertDialogHeader>
             <AlertDialogTitle>Update your automation?</AlertDialogTitle>
             <AlertDialogDescription>
               Once published, your changes apply immediately to members already in progress and to
               any new members who enter the automation.
+              {tkEmails.length > 0 && (
+                <span className="sr-only"> These emails contain unresolved TK reminders.</span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <EmailTkWarning emails={tkEmails} />
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isEditRequestActive}>
+              {tkEmails.length ? 'Back to editing' : 'Cancel'}
+            </AlertDialogCancel>
             <Button
               disabled={!isRepublishButtonEnabled}
               variant={republishButtonVariant}

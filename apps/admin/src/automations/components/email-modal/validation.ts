@@ -1,3 +1,5 @@
+import { inspectEmailTk } from '@/automations/utils/email-tk';
+
 export type EmailDraft = {
   subject: string;
   lexical: string;
@@ -48,7 +50,9 @@ export const getEmailValidationErrors = (state: EmailDraft): Record<string, stri
     newErrors.subject = 'A subject is required';
   }
 
-  if (isEmptyLexical(state.lexical)) {
+  if (inspectEmailTk(state.subject, state.lexical).contentError) {
+    newErrors.lexical = 'Email content could not be read. Check the email before sending.';
+  } else if (isEmptyLexical(state.lexical)) {
     newErrors.lexical = 'Email content is required';
   }
 

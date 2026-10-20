@@ -38,6 +38,7 @@ interface KoenigEmailEditorProps {
   darkMode?: boolean;
   fileUploader?: unknown;
   initialEditorState?: string;
+  isTKEnabled?: boolean;
   placeholderText?: string;
   registerAPI?: (api: unknown) => void;
   onChange?: (state: unknown) => void;
@@ -197,6 +198,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
               initialEditorState={initialEditorState.current}
               placeholderText={placeholder}
               registerAPI={registerEditorAPI}
+              isTKEnabled
               onChange={handleChange}
             />
           </div>

@@ -24,6 +24,8 @@ import {
 } from './email-card-analytics';
 import { useEmailHasNoLinks } from '@/automations/hooks/use-email-has-no-links';
 import type { NodeContextMenuEntry } from './nodes';
+import { inspectEmailTk } from '@/automations/utils/email-tk';
+import { EmailTkIndicator } from '@/automations/components/email-tk-indicator';
 
 export type EditableEmailData = {
   subject: string;
@@ -114,9 +116,19 @@ export const EditableEmailCard: React.FC<
     analytics?: EmailCardAnalyticsData;
   }>
 > = ({ email, isNew, errorMessage, menuItems, analytics, children }) => {
-  const warning =
-    email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
-  const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
+  const tk = useMemo(
+    () => inspectEmailTk(email.subject, email.lexical),
+    [email.subject, email.lexical],
+  );
+  const warning = tk.contentError
+    ? 'Email content could not be read. Open the email to check its content.'
+    : email.suppressWarning && !errorMessage
+      ? undefined
+      : getEmailWarning(email, errorMessage);
+  const text = useMemo(
+    () => (tk.contentError ? '' : emailTextExcerpt(email.lexical)),
+    [email.lexical, tk.contentError],
+  );
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
@@ -137,6 +149,7 @@ export const EditableEmailCard: React.FC<
       <AutomationCardHeader
         actions={
           <Inline gap="xs">
+            <EmailTkIndicator inspection={tk} />
             <AutomationCardWarning message={warning} />
             {analytics && (
               // Pressed matches a ghost button with its menu open, like the ⋯ beside it.

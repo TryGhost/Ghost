@@ -1,4 +1,6 @@
 import type { AutomationStatus } from '@tryghost/admin-x-framework/api/automations';
+import { EmailTkWarning } from './email-tk-warning';
+import type { emailsWithTk } from '@/automations/utils/email-tk';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -19,6 +21,7 @@ interface AutomationStatusDialogProps {
   isPending: boolean;
   isError: boolean;
   onCloseAutoFocus?: (event: Event) => void;
+  tkEmails?: ReturnType<typeof emailsWithTk>;
 }
 
 const AutomationStatusDialog = ({
@@ -29,6 +32,7 @@ const AutomationStatusDialog = ({
   isPending,
   isError,
   onCloseAutoFocus,
+  tkEmails = [],
 }: AutomationStatusDialogProps) => {
   const { title, description, buttonLabel, pendingLabel } = (() => {
     switch (status) {
@@ -68,10 +72,18 @@ const AutomationStatusDialog = ({
       <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription>
+            {description}
+            {status === 'active' && tkEmails.length > 0 && (
+              <span className="sr-only"> These emails contain unresolved TK reminders.</span>
+            )}
+          </AlertDialogDescription>
         </AlertDialogHeader>
+        {status === 'active' && <EmailTkWarning emails={tkEmails} />}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>
+            {status === 'active' && tkEmails.length ? 'Back to editing' : 'Cancel'}
+          </AlertDialogCancel>
           <Button
             disabled={isPending}
             variant={isError ? 'destructive' : 'default'}
@@ -84,6 +96,8 @@ const AutomationStatusDialog = ({
               </>
             ) : isError ? (
               'Retry'
+            ) : status === 'active' && tkEmails.length ? (
+              'Publish anyway'
             ) : (
               buttonLabel
             )}

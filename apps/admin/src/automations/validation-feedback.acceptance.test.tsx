@@ -113,9 +113,7 @@ describe('Automation action validation feedback', () => {
         .getByRole('button', { name: 'Cancel', exact: true })
         .click();
       await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
-      // The existing confirmation has no DialogTrigger and restores focus to body.
-      // Wait for that cleanup before mounting the next test's editor.
-      await expect.poll(() => document.activeElement === document.body).toBe(true);
+      await expect.element(publish).toHaveFocus();
       expect(save.requests).toHaveLength(0);
     });
   }
