@@ -12,9 +12,10 @@ export type AppIcon = { name: string } | { url: string };
 
 /**
  * The icon is drawn by Ghost on the app's accent colour: either one of the icons Admin
- * ships, by name, or an SVG the app serves. Ghost shows the SVG as an image and never
- * inlines it. A name Admin does not know is not an error here, since the set depends on
- * the Admin build; Admin falls back to a default icon.
+ * ships, by name, or an SVG the app serves. Ghost fetches the SVG when it stores a manifest
+ * version, keeps a sanitized copy, and only ever shows that copy, as an image. A name Admin
+ * does not know is not an error here, since the set depends on the Admin build; Admin falls
+ * back to a default icon.
  */
 export function iconField(url: UrlField) {
   return (

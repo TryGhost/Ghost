@@ -227,6 +227,7 @@
     "snakecase-keys": "catalog:",
     "stoppable": "1.1.0",
     "stripe": "8.222.0",
+    "svgo": "catalog:",
     "temporal-polyfill": "catalog:",
     "terser": "5.48.0",
     "tldts": "catalog:",
