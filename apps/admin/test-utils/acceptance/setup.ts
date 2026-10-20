@@ -14,7 +14,7 @@ import {
 } from './worker';
 import { resetDeclaredResources } from './resources';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
-import { resetFailedModuleLoads } from './module-loads';
+import { resetModuleRoutes } from './module-loads';
 
 // At import, before the spec module (and the app) loads.
 trackIssuedRequests();
@@ -115,7 +115,7 @@ afterEach(async () => {
       localStorage.removeItem('ghost-editor-draft-newsletters');
       window.location.hash = '';
       try {
-        await Promise.all([resetFakeFrameOrigins(), resetFailedModuleLoads()]);
+        await Promise.all([resetFakeFrameOrigins(), resetModuleRoutes()]);
       } finally {
         verifyNoUnhandledRequests();
       }

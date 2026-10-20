@@ -1,7 +1,13 @@
 import * as Sentry from '@sentry/react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { type Location, Outlet } from 'react-router';
-import { RouterProvider } from '../../../src/providers/router-provider';
+import {
+  RouterProvider,
+  type ViewTransitionController,
+  ViewTransitionControllerProvider,
+  useNavigate as useFrameworkNavigate,
+  useRouterDestination,
+} from '../../../src/providers/router-provider';
 import { TestWrapper } from '../../../src/test/test-utils';
 
 vi.mock('@sentry/react', async (importOriginal) => ({
@@ -35,6 +41,43 @@ describe('feature flag overrides', () => {
     );
 
     await waitFor(() => expect(onFeatureFlagOverridesChange).toHaveBeenCalled());
+  });
+
+  it('keeps the stored overrides on an app’s page, because its query belongs to the app', async () => {
+    sessionStorage.setItem('ghost-admin:labs-overrides', '["storedFlag"]');
+    window.history.replaceState(null, '', '/#/apps/6a1b2c3d4e5f60718293a4b5/?labs=');
+
+    render(
+      <TestWrapper>
+        <RouterProvider prefix="/" routes={[{ path: '/apps/:id/*', element: <div>App</div> }]}>
+          <Outlet />
+        </RouterProvider>
+      </TestWrapper>,
+    );
+
+    await screen.findByText('App');
+    expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBe('["storedFlag"]');
+  });
+
+  it('reads the overrides on Admin’s own screens under /apps/', async () => {
+    window.history.replaceState(null, '', '/#/apps/install?manifest=x&labs=apps');
+
+    render(
+      <TestWrapper>
+        <RouterProvider
+          prefix="/"
+          routes={[
+            { path: '/apps/install', element: <div>Install</div> },
+            { path: '/apps/:id/*', element: <div>App</div> },
+          ]}
+        >
+          <Outlet />
+        </RouterProvider>
+      </TestWrapper>,
+    );
+
+    await screen.findByText('Install');
+    expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBe('["apps"]');
   });
 });
 
@@ -122,5 +165,116 @@ describe('route errors', () => {
 
     await screen.findByText('Route error');
     expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+});
+
+describe('useRouterDestination', () => {
+  let destination: () => string | undefined;
+  let navigate: (path: string) => void;
+
+  function Home() {
+    destination = useRouterDestination();
+    const frameworkNavigate = useFrameworkNavigate();
+    navigate = (path) => frameworkNavigate(path);
+    return <div>Home</div>;
+  }
+
+  /** Renders a router whose `/slow` route never loads, so a navigation to it stays in progress. */
+  async function renderRouter({
+    prefix = '/',
+    controller = { shouldTransition: () => false },
+  }: { prefix?: string; controller?: ViewTransitionController } = {}) {
+    render(
+      <TestWrapper>
+        <RouterProvider
+          prefix={prefix}
+          routes={[
+            { path: '/', Component: Home },
+            { path: '/slow', lazy: () => new Promise<never>(() => {}) },
+          ]}
+        >
+          <ViewTransitionControllerProvider value={controller}>
+            <Outlet />
+          </ViewTransitionControllerProvider>
+        </RouterProvider>
+      </TestWrapper>,
+    );
+    await screen.findByText('Home');
+  }
+
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('returns a navigation’s destination as soon as it starts, before React commits it', async () => {
+    await renderRouter();
+    expect(destination()).toBe('/');
+
+    navigate('/slow');
+
+    expect(destination()).toBe('/slow');
+  });
+
+  it('returns the pathname within the router, without its basename', async () => {
+    window.history.replaceState(null, '', '/#/admin/');
+    await renderRouter({ prefix: 'admin' });
+    expect(destination()).toBe('/');
+
+    navigate('/slow');
+
+    expect(destination()).toBe('/slow');
+  });
+
+  it('returns the destination of a navigation a screen transition holds back', async () => {
+    let release!: (proceed: boolean) => void;
+    await renderRouter({
+      controller: {
+        shouldTransition: () => true,
+        beforeTransition: () =>
+          new Promise<boolean>((resolve) => {
+            release = resolve;
+          }),
+      },
+    });
+
+    navigate('/slow');
+    expect(destination()).toBe('/slow');
+
+    // The transition cancels the navigation, so the router stays where it is.
+    release(false);
+    await waitFor(() => expect(destination()).toBe('/'));
+  });
+
+  it('clears a held navigation whose transition fails', async () => {
+    let fail!: (error: Error) => void;
+    await renderRouter({
+      controller: {
+        shouldTransition: () => true,
+        beforeTransition: () =>
+          new Promise<boolean>((_, reject) => {
+            fail = reject;
+          }),
+      },
+    });
+
+    navigate('/slow');
+    expect(destination()).toBe('/slow');
+
+    fail(new Error('transition failed'));
+    await waitFor(() => expect(destination()).toBe('/'));
+  });
+
+  it('returns undefined outside the framework’s router', () => {
+    function Outside() {
+      destination = useRouterDestination();
+      return null;
+    }
+    render(<Outside />);
+
+    expect(destination()).toBeUndefined();
   });
 });
