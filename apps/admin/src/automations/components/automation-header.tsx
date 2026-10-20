@@ -45,6 +45,12 @@ interface AutomationHeaderProps {
   onNameChange?: (name: string) => void;
   // NY-1715 concepts: unsaved or unpublished changes waiting on the buttons here.
   pendingChanges?: PendingChangesKind | null;
+  // NY-1715 concept C: the corner only takes the automation live (Publish) or off (Turn off);
+  // saving and publishing changes move to the floating changes bar.
+  publishOnly?: boolean;
+  // NY-1715 concepts: 24px of padding all round, measured from the tallest thing in the
+  // header (the name field is taller than the buttons).
+  spacious?: boolean;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -64,6 +70,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onTurnOff,
   onNameChange,
   pendingChanges = null,
+  publishOnly = false,
+  spacious = false,
 }) => {
   const { isAdmin7 } = useShade();
   const entering = useScreenEntrance();
@@ -110,7 +118,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         'unpublish',
         <Button
           disabled={!isTurnOffButtonEnabled}
-          variant={isAdmin7 ? 'ghost' : 'outline'}
+          variant={isAdmin7 || publishOnly ? 'ghost' : 'outline'}
           onClick={onTurnOff}
         >
           Turn off
@@ -119,6 +127,10 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       break;
     case 'inactive':
     case 'archived':
+      if (publishOnly) {
+        statusAction = null;
+        break;
+      }
       statusAction = withValidationFeedback(
         'save',
         <Button
@@ -140,6 +152,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     <header
       className={cn(
         'screen-exit-chrome-top relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
+        spacious && 'h-auto p-6',
         entering && 'screen-enter-from-top',
       )}
     >
@@ -165,16 +178,17 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       <Inline className="shrink-0" gap="sm">
         {pendingChanges && <ChangesIndicator className="mr-1" kind={pendingChanges} />}
         {statusAction}
-        {withValidationFeedback(
-          'publish',
-          <Button
-            disabled={!isPublishButtonEnabled}
-            variant={publishButtonVariant}
-            onClick={onPublish}
-          >
-            {publishButtonChildren}
-          </Button>,
-        )}
+        {!(publishOnly && status === 'active') &&
+          withValidationFeedback(
+            'publish',
+            <Button
+              disabled={!isPublishButtonEnabled}
+              variant={publishButtonVariant}
+              onClick={onPublish}
+            >
+              {publishButtonChildren}
+            </Button>,
+          )}
       </Inline>
     </header>
   );

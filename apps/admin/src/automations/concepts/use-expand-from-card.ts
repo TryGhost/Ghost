@@ -42,11 +42,39 @@ const findCard = (stepId: string) =>
     .querySelector(`.react-flow__node[data-id="${CSS.escape(stepId)}"]`)
     ?.querySelector<HTMLElement>('[role="article"]') ?? null;
 
-// The panel clipped down to the card's outline.
-const cardClip = (panel: HTMLElement, card: HTMLElement) => {
-  const p = panel.getBoundingClientRect();
+// The panel turned into the card's outline, `progress` of the way from the full panel. A
+// clip can only show what's inside the panel, so a card that sits partly outside the panel's
+// own area (far left or right on the canvas) also needs the panel moved over to it: the
+// panel slides just far enough for the card to fit, then clips down to it. `panelRect` is
+// the panel's resting position, without that slide.
+const cardFrame = (panelRect: DOMRect, card: HTMLElement, progress = 1) => {
+  const p = panelRect;
   const c = card.getBoundingClientRect();
-  return `inset(${c.top - p.top}px ${p.right - c.right}px ${p.bottom - c.bottom}px ${c.left - p.left}px round ${RADIUS})`;
+  const dx = Math.max(0, c.right - p.right) + Math.min(0, c.left - p.left);
+  const dy = Math.max(0, c.bottom - p.bottom) + Math.min(0, c.top - p.top);
+  const inset = (value: number) => `${value * progress}px`;
+  return {
+    clipPath: `inset(${inset(c.top - (p.top + dy))} ${inset(p.right + dx - c.right)} ${inset(p.bottom + dy - c.bottom)} ${inset(c.left - (p.left + dx))} round ${RADIUS})`,
+    translate: `translate(${dx * progress}px, ${dy * progress}px)`,
+  };
+};
+
+// EASING as a function, for the shrink below, which runs frame by frame.
+const easeStandard = (x: number) => {
+  // Solve the curve's x for t by bisection, then return its y.
+  const bezier = (t: number, a: number, b: number) =>
+    3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * b + t * t * t;
+  let low = 0;
+  let high = 1;
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2;
+    if (bezier(mid, 0.4, 0.2) < x) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+  return bezier((low + high) / 2, 0, 1);
 };
 
 export const useExpandFromCard = ({
@@ -59,6 +87,18 @@ export const useExpandFromCard = ({
   clearsCanvas?: boolean;
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // The card the editor grew out of is hidden while the editor stands in for it, so the two
+  // never show at once (a doubled outline and shadow as they overlap). It reappears the
+  // moment the editor lands back on it, or whenever the editor goes away.
+  const hiddenCardRef = useRef<HTMLElement | null>(null);
+  const showCard = useCallback(() => {
+    if (hiddenCardRef.current) {
+      hiddenCardRef.current.style.visibility = '';
+      hiddenCardRef.current = null;
+    }
+  }, []);
+  useEffect(() => showCard, [showCard]);
 
   // The canvas comes back however the editor goes away, including the browser's Back.
   useEffect(() => {
@@ -93,17 +133,24 @@ export const useExpandFromCard = ({
       if (!card) {
         return;
       }
+      card.style.visibility = 'hidden';
+      hiddenCardRef.current = card;
       // Grow to full size slightly overscaled, then settle back to 1.
+      const start = cardFrame(panel.getBoundingClientRect(), card);
       panel.animate(
         [
-          { clipPath: cardClip(panel, card), transform: 'scale(1)', easing: EASING },
+          {
+            clipPath: start.clipPath,
+            transform: `${start.translate} scale(1)`,
+            easing: EASING,
+          },
           {
             clipPath: FULL,
-            transform: `scale(${OVERSHOOT_SCALE})`,
+            transform: `translate(0px, 0px) scale(${OVERSHOOT_SCALE})`,
             offset: DURATION / total,
             easing: 'ease-in-out',
           },
-          { clipPath: FULL, transform: 'scale(1)' },
+          { clipPath: FULL, transform: 'translate(0px, 0px) scale(1)' },
         ],
         { duration: total },
       );
@@ -147,15 +194,29 @@ export const useExpandFromCard = ({
           fill: 'forwards',
         });
       }
-      const shrink = panel.animate([{ clipPath: FULL }, { clipPath: cardClip(panel, card) }], {
-        delay: CONTENT_FADE_OUT / 2,
-        duration: DURATION,
-        easing: EASING,
-        fill: 'forwards',
-      });
-      shrink.finished.then(done, done);
+      // Frame by frame rather than a fixed animation, re-measuring the card each time: in D
+      // the sidebar reopens alongside, so the canvas (and the card) moves while this runs.
+      const startsAt = performance.now() + CONTENT_FADE_OUT / 2;
+      const panelRect = panel.getBoundingClientRect();
+      const step = (now: number) => {
+        const progress = Math.min(1, Math.max(0, (now - startsAt) / DURATION));
+        const frame = cardFrame(panelRect, card, easeStandard(progress));
+        panel.style.clipPath = frame.clipPath;
+        panel.style.transform = frame.translate;
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          // Swap in the same frame: closing unmounts the editor a few frames later (it goes
+          // through the router), and until then it would sit over the card, with the card's
+          // shadow showing round its edge.
+          panel.style.visibility = 'hidden';
+          showCard();
+          done();
+        }
+      };
+      requestAnimationFrame(step);
     },
-    [clearsCanvas, enabled, stepId],
+    [clearsCanvas, enabled, showCard, stepId],
   );
 
   return { panelRef: setPanel, close };

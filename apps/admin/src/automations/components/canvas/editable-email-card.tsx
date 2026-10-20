@@ -5,6 +5,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
+  buttonVariants,
   inputSurface,
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
@@ -24,6 +25,7 @@ import {
 } from './email-card-analytics';
 import { useEmailHasNoLinks } from '@/automations/hooks/use-email-has-no-links';
 import type { NodeContextMenuEntry } from './nodes';
+import ModifiedDot from '@/automations/concepts/modified-dot';
 import { isConceptA, useConcept } from '@/automations/concepts/concept';
 
 export type EditableEmailData = {
@@ -110,24 +112,27 @@ export const EditableEmailCard: React.FC<
   React.PropsWithChildren<{
     email: EditableEmailData;
     isNew: boolean;
+    modified?: boolean;
     errorMessage?: string;
     menuItems: NodeContextMenuEntry[];
     analytics?: EmailCardAnalyticsData;
   }>
-> = ({ email, isNew, errorMessage, menuItems, analytics, children }) => {
+> = ({ email, isNew, errorMessage, menuItems, analytics, modified = false, children }) => {
   const warning =
     email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
-  // NY-1715 concept A: the editor opens as an expanded view of this card.
-  const EditIcon = isConceptA(useConcept()) ? LucideIcon.Maximize2 : LucideIcon.Pen;
+  // NY-1715 concepts B–D: the editor opens as an expanded view of this card, and the field
+  // drops its hover fill for an outline button that appears on hover. The whole field
+  // still opens the editor; the button only shows where.
+  const isConcept = isConceptA(useConcept());
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
   return (
     <AutomationCard
-      aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
+      aria-label={`${email.subject ? `Send email: ${email.subject}` : 'Send email'}${modified ? ', modified' : ''}`}
       className={cn(
-        'nodrag nopan w-[400px] text-left',
+        'nodrag nopan relative w-[400px] text-left',
         warning && 'border-state-warning',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
@@ -137,6 +142,10 @@ export const EditableEmailCard: React.FC<
       onPointerDownCapture={email.onInteract}
     >
       {children}
+      {modified && (
+        // NY-1715 concepts: mirrors the ⋯ menu across the card edge: same 24px gap, same 36px box.
+        <ModifiedDot className="absolute top-6 left-full ml-6" />
+      )}
       <AutomationCardHeader
         actions={
           <Inline gap="xs">
@@ -181,7 +190,8 @@ export const EditableEmailCard: React.FC<
                   aria-label="Edit email content"
                   className={cn(
                     inputSurface('self'),
-                    'group/field flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left hover:bg-muted',
+                    'group/field flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left',
+                    isConcept ? 'hover:bg-muted/50' : 'hover:bg-muted',
                   )}
                   type="button"
                   onClick={email.onEditContent}
@@ -189,10 +199,24 @@ export const EditableEmailCard: React.FC<
                   <EmailCardExcerpt className="line-clamp-5 min-h-[5lh] text-[length:var(--text-control)] text-muted-foreground">
                     {text || 'Message'}
                   </EmailCardExcerpt>
-                  <EditIcon
-                    className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
-                    strokeWidth={2}
-                  />
+                  {isConcept ? (
+                    // Looks like an outline button, but is part of the field's own button:
+                    // a button can't sit inside another.
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        buttonVariants({ variant: 'outline', size: 'icon-sm' }),
+                        '-my-0.5 shrink-0 bg-surface-elevated opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none',
+                      )}
+                    >
+                      <LucideIcon.Maximize2 strokeWidth={2} />
+                    </span>
+                  ) : (
+                    <LucideIcon.Pen
+                      className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
+                      strokeWidth={2}
+                    />
+                  )}
                 </button>
               </EmailCardMessage>
             </Stack>

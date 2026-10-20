@@ -47,6 +47,12 @@ import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-fra
 import type { EmailModalMode } from '@/automations/components/types';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
+import { isConceptA, useConcept } from '@/automations/concepts/concept';
+import {
+  hasEmailChanged,
+  hasStepChanged,
+  type PendingChangesKind,
+} from '@/automations/concepts/pending-changes';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -171,6 +177,8 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  // NY-1715 concepts: set to mark steps that differ from the last save.
+  savedActionsForMarks: readonly AutomationAction[] | undefined;
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -192,6 +200,7 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
+  savedActionsForMarks,
   tierQuery,
   onChange,
   nodeSizes,
@@ -301,6 +310,7 @@ const buildGraph = ({
         }),
         errorMessage,
         isNew: newStepId === action.id,
+        modified: savedActionsForMarks ? hasStepChanged(action, savedActionsForMarks) : false,
       },
       ...nodeProps(action.id),
     });
@@ -404,6 +414,13 @@ type AutomationCanvasProps = {
   onSelectRun: (id: string | null) => void;
   onDiscardBlockedEmailNavigation?: (closeEmailModal: () => void) => void;
   onEmailDirtyChange?: (isDirty: boolean) => void;
+  // NY-1715 concepts: the automation's unsaved/unpublished state, shown in the email editor.
+  emailEditorPendingChanges?: PendingChangesKind | null;
+  // NY-1715 concept C: the changes bar, shown below the email editor while it's open.
+  emailEditorFooter?: React.ReactNode;
+  // NY-1715 concepts: the last-saved steps, so the email editor's indicator covers its own
+  // email only.
+  savedActions?: readonly AutomationAction[];
   onKeepEditingAfterBlockedEmailNavigation?: () => void;
 };
 
@@ -433,9 +450,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   onSelectRun,
   onDiscardBlockedEmailNavigation,
   onEmailDirtyChange,
+  emailEditorPendingChanges = null,
+  emailEditorFooter,
+  savedActions,
   onKeepEditingAfterBlockedEmailNavigation,
 }) => {
   const layoutRef = useRef<HTMLElement>(null);
+  const concept = useConcept();
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
   const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
     setNodeSizes((previous) => {
@@ -720,6 +741,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
+      savedActionsForMarks: isConceptA(concept) ? savedActions : undefined,
       tierQuery,
       onChange,
       nodeSizes,
@@ -739,6 +761,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors,
     connecting,
     savedTriggerTierIds,
+    concept,
+    savedActions,
     tierQuery,
     onChange,
     automation,
@@ -773,6 +797,34 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [deleteConfirmationAction, emailModalAction, sidebar.open, setAutomationSidebarOpen]);
+
+  // NY-1715 concept A3: the email editor clears the canvas, so an open sidebar slides away
+  // as the editor opens and comes back as it closes, both in step with the editor. Nothing
+  // the publisher opened stays closed.
+  const clearsCanvas = concept === 'a3';
+  const sidebarOpenBeforeEmailRef = useRef<boolean | null>(null);
+  const isEmailModalOpen = Boolean(emailModalAction);
+  useEffect(() => {
+    if (isEmailModalOpen && clearsCanvas && sidebarOpenBeforeEmailRef.current === null) {
+      sidebarOpenBeforeEmailRef.current = sidebar.open;
+      if (sidebar.open) {
+        setAutomationSidebarOpen(false);
+      }
+    } else if (!isEmailModalOpen && sidebarOpenBeforeEmailRef.current !== null) {
+      if (sidebarOpenBeforeEmailRef.current) {
+        setAutomationSidebarOpen(true);
+      }
+      sidebarOpenBeforeEmailRef.current = null;
+    }
+  }, [clearsCanvas, isEmailModalOpen, sidebar.open, setAutomationSidebarOpen]);
+  // As the editor starts to shrink back into the card. `false` rather than null keeps the
+  // effect above from closing the sidebar again while the editor finishes closing.
+  const handleEmailEditorCloseStart = useCallback(() => {
+    if (sidebarOpenBeforeEmailRef.current) {
+      setAutomationSidebarOpen(true);
+      sidebarOpenBeforeEmailRef.current = false;
+    }
+  }, [setAutomationSidebarOpen]);
 
   const closeEmailModal = () => {
     setEmailModalMode('edit');
@@ -938,12 +990,20 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       {emailModalAction && automation && (
         <EmailContentModal
           automationId={automation.id}
+          footer={emailEditorFooter}
           initialLexical={emailModalAction.data.email_lexical}
           initialMode={emailModalMode}
           initialSubject={emailModalAction.data.email_subject}
           isDiscardNavigationBlocked={isEmailNavigationBlocked}
           originStepId={emailModalAction.id}
+          pendingChanges={
+            emailEditorPendingChanges &&
+            (!savedActions || hasEmailChanged(emailModalAction, savedActions))
+              ? emailEditorPendingChanges
+              : null
+          }
           onClose={closeEmailModal}
+          onCloseStart={handleEmailEditorCloseStart}
           onDirtyChange={onEmailDirtyChange}
           onDiscardBlockedNavigation={() =>
             onDiscardBlockedEmailNavigation?.(closeEmailModalWithoutHistoryNavigation)

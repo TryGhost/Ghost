@@ -36,8 +36,9 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import ChangesBar from './concepts/changes-bar';
 import ConceptSwitcher from './concepts/concept-switcher';
-import { pendingChangesKind } from './concepts/pending-changes';
+import { countChanges, pendingChangesKind, withChangeCount } from './concepts/pending-changes';
 import { isConceptA, useConcept } from './concepts/concept';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
@@ -158,8 +159,17 @@ const AutomationEditorContent: React.FC<{
     invalidWaitIds.size > 0 ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
   const concept = useConcept();
+  // C settles changes from a floating bar instead (see ChangesBar), so it skips the indicator.
+  const hasChangesBar = concept === 'a2';
+  // C puts the count of changes in its Publish changes button (live automations, where
+  // publishing reaches members) instead of a separate "Unpublished changes" line.
+  const countsChanges = concept === 'a3';
+  const changeCount =
+    countsChanges && draft && savedAutomation ? countChanges(savedAutomation, draft) : 0;
   const headerPendingChanges =
-    isConceptA(concept) && hasUnsavedChanges && draft ? pendingChangesKind(draft.status) : null;
+    isConceptA(concept) && !hasChangesBar && !countsChanges && hasUnsavedChanges && draft
+      ? pendingChangesKind(draft.status)
+      : null;
 
   const onDraftChange = (next: AutomationDetail) => {
     setValidationFeedback(null);
@@ -182,6 +192,42 @@ const AutomationEditorContent: React.FC<{
     });
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
   };
+
+  // NY-1715 concept C: Discard goes straight back to the last save, with Undo in the toast
+  // rather than a confirmation first.
+  const discardChanges = () => {
+    if (!draft || !savedAutomation) {
+      return;
+    }
+    const discarded = draft;
+    onDraftChange(savedAutomation);
+    toast('Changes discarded', {
+      action: { label: 'Undo', onClick: () => onDraftChange(discarded) },
+      // A text link rather than sonner's filled button.
+      classNames: {
+        actionButton:
+          'h-auto! rounded-none! bg-transparent! p-0! font-medium! text-foreground! underline! underline-offset-2! hover:text-text-secondary!',
+      },
+    });
+  };
+
+  // NY-1715 concepts: switching concepts starts each one fresh for demos — unsaved edits,
+  // errors and pending dialogs are dropped (anything already saved stays saved), and the
+  // canvas remounts below (keyed on the concept).
+  const conceptRef = React.useRef(concept);
+  React.useEffect(() => {
+    if (conceptRef.current === concept) {
+      return;
+    }
+    conceptRef.current = concept;
+    if (savedAutomation) {
+      setDraft(savedAutomation);
+    }
+    setInvalidWaitIds(new Set());
+    setActionErrors({});
+    setValidationFeedback(null);
+    setEditState({ phase: 'idle' });
+  }, [concept, savedAutomation]);
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -311,7 +357,11 @@ const AutomationEditorContent: React.FC<{
     (!isAutomationStatusActive(draft.status) || hasUnsavedChanges);
   const publishButtonVariant: ButtonProps['variant'] = 'default';
   const publishButtonChildren: React.ReactNode =
-    draft?.status === 'active' ? (hasUnsavedChanges ? 'Publish changes' : 'Published') : 'Publish';
+    draft?.status === 'active'
+      ? hasUnsavedChanges
+        ? (withChangeCount('Publish', changeCount) ?? 'Publish changes')
+        : 'Published'
+      : 'Publish';
   let isTurnOffButtonEnabled = true;
   let isRepublishButtonEnabled = true;
   let republishButtonVariant: ButtonProps['variant'] = 'default';
@@ -490,6 +540,22 @@ const AutomationEditorContent: React.FC<{
     setIsEmailModalDirty(dirty);
   }, []);
 
+  // NY-1715 concept C: shown on the canvas, and below the email editor while it's open.
+  const changesBar =
+    hasChangesBar && hasUnsavedChanges && draft && !selectedRunId ? (
+      <ChangesBar
+        commitLabel={
+          isAutomationStatusActive(draft.status) ? 'Publish changes' : saveButtonChildren
+        }
+        isCommitEnabled={
+          isAutomationStatusActive(draft.status) ? isPublishButtonEnabled : isSaveButtonEnabled
+        }
+        kind={pendingChangesKind(draft.status)}
+        onCommit={isAutomationStatusActive(draft.status) ? onPublish : () => void save()}
+        onDiscard={savedAutomation ? discardChanges : undefined}
+      />
+    ) : null;
+
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col bg-background"
@@ -505,8 +571,10 @@ const AutomationEditorContent: React.FC<{
         pendingChanges={headerPendingChanges}
         publishButtonChildren={publishButtonChildren}
         publishButtonVariant={publishButtonVariant}
+        publishOnly={hasChangesBar}
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
+        spacious={isConceptA(concept)}
         validationFeedback={selectedRunId ? null : validationFeedback}
         onDismissValidationFeedback={() => setValidationFeedback(null)}
         onNameChange={
@@ -524,8 +592,11 @@ const AutomationEditorContent: React.FC<{
       />
 
       <AutomationCanvas
+        key={concept}
         actionErrors={actionErrors}
         automation={draft}
+        emailEditorFooter={changesBar}
+        emailEditorPendingChanges={headerPendingChanges}
         initialSidebar={
           creation
             ? 'closed'
@@ -539,6 +610,7 @@ const AutomationEditorContent: React.FC<{
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        savedActions={savedAutomation?.actions}
         savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
         selectedRunId={selectedRunId}
         onChange={onDraftChange}
@@ -565,6 +637,7 @@ const AutomationEditorContent: React.FC<{
 
       <DirtyConfirmDialog {...discardDialogProps} />
       <DirtyConfirmDialog {...upgradeDialogProps} />
+      {changesBar}
       <ConceptSwitcher />
 
       {limitError && (

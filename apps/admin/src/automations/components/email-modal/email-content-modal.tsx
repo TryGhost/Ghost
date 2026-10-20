@@ -20,6 +20,10 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getEmailValidationErrors } from './validation';
@@ -30,6 +34,8 @@ import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePreviewAutomationEmail } from '@tryghost/admin-x-framework/api/automations';
 import { isConceptA, useConcept } from '@/automations/concepts/concept';
 import { useExpandFromCard } from '@/automations/concepts/use-expand-from-card';
+import ChangesIndicator from '@/automations/concepts/changes-indicator';
+import type { PendingChangesKind } from '@/automations/concepts/pending-changes';
 import type { EmailModalMode } from '@/automations/components/types';
 
 interface EmailPreviewModalContentProps {
@@ -132,7 +138,25 @@ export interface EmailContentModalProps {
   onSave: (data: { subject: string; lexical: string }) => void;
   // NY-1715 concept A2: the email step whose card the editor grows out of.
   originStepId?: string;
+  // NY-1715 concept B: the automation's unsaved/unpublished state, shown beside Test.
+  pendingChanges?: PendingChangesKind | null;
+  // NY-1715 concept C: shown below the panel, on the scrim — never inside the editor.
+  footer?: React.ReactNode;
+  // NY-1715 concept D: called as the editor starts closing, so the canvas can bring its
+  // sidebar back in step with the shrink.
+  onCloseStart?: () => void;
 }
+
+// NY-1715 concept A: a tooltip for each icon action in the editor's top-right corner.
+const HeaderTooltip: React.FC<{ label: string; children: React.ReactElement }> = ({
+  label,
+  children,
+}) => (
+  <Tooltip>
+    <TooltipTrigger asChild>{children}</TooltipTrigger>
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
+);
 
 // Koenig popups (link input, emoji picker, card settings) handle Escape
 // themselves — the dialog shouldn't also act on it.
@@ -153,6 +177,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   onKeepEditingAfterBlockedNavigation,
   onSave,
   originStepId,
+  pendingChanges = null,
+  footer,
+  onCloseStart,
 }) => {
   // Concept A applies edits straight to the automation, like edits made on the
   // canvas, so the modal has no save step of its own. Read once so switching
@@ -164,13 +191,29 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   const [expandsInPlace] = useState(conceptAtOpen === 'a2' || conceptAtOpen === 'a3');
   // A3: same panel as A2, centred on a cleared canvas instead of over a scrim.
   const [clearsCanvas] = useState(conceptAtOpen === 'a3');
+  // B shows the unsaved/unpublished indicator beside close; Test stays in the Preview tab
+  // for every concept. B closes with a text Close.
+  const isFullModal = appliesEditsLive && !expandsInPlace;
+  const hasHeaderIndicator = isFullModal;
+  // C keeps the automation header live while the editor is open, so Save / Publish stay a
+  // click away: the editor's layer starts below the header (measured once, as it opens) and
+  // leaves the header out of the inert treatment below. The panel then clears the header by
+  // the same gap it leaves at the sides.
+  const [headerBottom] = useState(() => {
+    const header = document.querySelector('[data-testid="automation-editor"] > header');
+    return header ? header.getBoundingClientRect().bottom : 0;
+  });
+  const [panelGap] = useState(() => (window.matchMedia('(min-width: 640px)').matches ? 24 : 16));
   const expandFromCard = useExpandFromCard({
     enabled: expandsInPlace,
     stepId: originStepId,
     clearsCanvas,
   });
   const { close: closeIntoCard } = expandFromCard;
-  const closeEditor = useCallback(() => closeIntoCard(onClose), [closeIntoCard, onClose]);
+  const closeEditor = useCallback(() => {
+    onCloseStart?.();
+    closeIntoCard(onClose);
+  }, [closeIntoCard, onClose, onCloseStart]);
   // Live edits flow back in through initialLexical, so keep the content as it was on open.
   const [lexicalAtOpen] = useState(initialLexical || '');
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
@@ -310,10 +353,27 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     }
 
     const madeInert: HTMLElement[] = [];
+    // C: everything but the automation header, which stays usable (see headerBottom above).
+    const editorRoot = clearsCanvas
+      ? document.querySelector<HTMLElement>('[data-testid="automation-editor"]')
+      : null;
     for (const el of document.body.children) {
-      if (el !== dialogPortalWrapper && el instanceof HTMLElement && !el.inert) {
+      if (
+        el !== dialogPortalWrapper &&
+        el instanceof HTMLElement &&
+        !el.inert &&
+        !(editorRoot && el.contains(editorRoot))
+      ) {
         el.inert = true;
         madeInert.push(el);
+      }
+    }
+    if (editorRoot) {
+      for (const el of editorRoot.children) {
+        if (el instanceof HTMLElement && el.tagName !== 'HEADER' && !el.inert) {
+          el.inert = true;
+          madeInert.push(el);
+        }
       }
     }
 
@@ -322,7 +382,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         el.inert = false;
       });
     };
-  }, [dialogContentNode]);
+  }, [clearsCanvas, dialogContentNode]);
 
   const handleModeChange = useCallback(
     (nextMode: EmailModalMode) => {
@@ -387,20 +447,25 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           aria-describedby={undefined}
           className={cn(
             'top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none',
-            // Concept A: an inset panel over a scrim, so the editor reads as a temporary
-            // layer on top of the automation rather than a separate page. The scrim is its
-            // own layer, so this container skips the dialog's default fade and zoom — scaling
-            // it would show the scrim's edges moving.
-            appliesEditsLive
-              ? 'bg-transparent p-2 data-[state=open]:animate-none dark:bg-transparent'
+            // B opens exactly like the current editor. C and D grow a panel out of the card
+            // over the canvas, so this container is a transparent layer that skips the
+            // dialog's default fade and zoom; the panel animates instead.
+            expandsInPlace
+              ? 'bg-transparent data-[state=open]:animate-none dark:bg-transparent'
               : 'dark:bg-[#151719]',
-            expandsInPlace &&
-              // The panel grows out of the card, starting below the 56px automation header.
-              'p-4 pt-[4.5rem] sm:p-6 sm:pt-20',
-            // A2's height, centred now that the header slides away.
-            clearsCanvas && 'px-4 py-11 sm:px-6 sm:py-[52px]',
+            expandsInPlace && 'p-4 sm:p-6',
+            // D starts below the automation header, which stays in place (see style below).
           )}
           data-sentry-mask="true"
+          style={
+            clearsCanvas
+              ? {
+                  top: headerBottom,
+                  height: `calc(100dvh - ${headerBottom}px)`,
+                  paddingTop: panelGap,
+                }
+              : undefined
+          }
           onClick={(event) => {
             const isBackdrop =
               event.target === event.currentTarget ||
@@ -429,18 +494,25 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             // focus-guard spans), which re-triggers attemptClose
             event.preventDefault();
           }}
+          onOpenAutoFocus={(event) => {
+            // Concept A's header icon buttons have tooltips, which opening focus would show
+            // straight away; the editor takes that focus itself instead.
+            if (appliesEditsLive) {
+              event.preventDefault();
+              if (event.currentTarget instanceof HTMLElement) {
+                event.currentTarget.focus();
+              }
+            }
+          }}
         >
           <DialogTitle className="sr-only">Edit email</DialogTitle>
-          {appliesEditsLive &&
+          {expandsInPlace &&
             !clearsCanvas && (
-              // Covers the whole screen, header included, and only ever fades. In A2,
-              // useExpandFromCard fades it in step with the panel instead.
+              // C's scrim: covers the whole screen, header included, and only ever fades —
+              // useExpandFromCard fades it in step with the panel.
               <div
                 aria-hidden="true"
-                className={cn(
-                  'absolute inset-0 bg-black/30 dark:bg-black/60',
-                  !expandsInPlace && 'animate-in duration-200 fade-in-0',
-                )}
+                className="absolute inset-0 bg-black/30 dark:bg-black/60"
                 data-email-editor-scrim=""
               />
             )}
@@ -474,21 +546,37 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               </Tabs>
             }
             className={cn(
-              appliesEditsLive && 'relative rounded-xl border border-border-default shadow-xl',
-              // A keeps the dialog's usual entrance on the panel alone.
-              appliesEditsLive && !expandsInPlace && 'animate-in duration-200 fade-in-0 zoom-in-95',
-              expandsInPlace && 'mx-auto max-w-[860px]',
+              expandsInPlace &&
+                'relative mx-auto max-w-[860px] rounded-xl border border-border-default shadow-xl',
+              // C stops at 80% of the screen and sits centred on it, leaving room below for the
+              // changes bar.
+              expandsInPlace && !clearsCanvas && 'max-h-[80vh] self-center',
+              // A3 sits on the cleared canvas, so it takes the canvas cards' own shadow.
+              clearsCanvas && 'shadow-sm',
             )}
             headerActions={
               appliesEditsLive ? (
-                <Button
-                  aria-label="Minimize editor"
-                  size="icon"
-                  variant="ghost"
-                  onClick={closeEditor}
-                >
-                  <LucideIcon.Minimize2 />
-                </Button>
+                <TooltipProvider delayDuration={150}>
+                  {hasHeaderIndicator && pendingChanges && (
+                    <ChangesIndicator className="mr-1" kind={pendingChanges} />
+                  )}
+                  {isFullModal ? (
+                    <Button variant="ghost" onClick={closeEditor}>
+                      Close
+                    </Button>
+                  ) : (
+                    <HeaderTooltip label="Minimize">
+                      <Button
+                        aria-label="Minimize editor"
+                        size="icon"
+                        variant="ghost"
+                        onClick={closeEditor}
+                      >
+                        <LucideIcon.Minimize2 />
+                      </Button>
+                    </HeaderTooltip>
+                  )}
+                </TooltipProvider>
               ) : (
                 <>
                   <Button variant="outline" onClick={attemptClose}>
@@ -619,6 +707,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               )}
             </div>
           </EmailPreviewModalContent>
+          {expandsInPlace && !clearsCanvas && footer}
         </DialogContent>
       </Dialog>
       <AlertDialog

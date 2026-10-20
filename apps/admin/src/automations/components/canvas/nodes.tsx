@@ -41,6 +41,8 @@ type StepNodeData = {
   analytics?: EmailCardAnalyticsData;
   contextMenuItems: NodeContextMenuEntry[];
   isNew: boolean;
+  // NY-1715 concepts: differs from the last-saved automation.
+  modified?: boolean;
 };
 
 type TriggerNodeData = {
@@ -86,6 +88,7 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
         errorMessage={data.errorMessage}
         isNew={data.isNew}
         menuItems={data.contextMenuItems}
+        modified={data.modified}
       >
         <HiddenHandle position={Position.Top} type="target" />
         <HiddenHandle position={Position.Bottom} type="source" />
@@ -98,6 +101,7 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
         errorMessage={data.errorMessage}
         isNew={data.isNew}
         menuItems={data.contextMenuItems}
+        modified={data.modified}
         wait={data.wait}
       >
         <HiddenHandle position={Position.Top} type="target" />

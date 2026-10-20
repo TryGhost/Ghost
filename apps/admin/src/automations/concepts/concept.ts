@@ -3,10 +3,10 @@ import { useSyncExternalStore } from 'react';
 // NY-1715 exploration only — never merge. Lets reviewers flip between design
 // concepts for unsaved/unpublished email changes in one build.
 export const CONCEPTS = [
-  { id: 'current', label: 'Current' },
-  { id: 'a', label: 'A: Indicators' },
-  { id: 'a2', label: 'A2: Expanded card' },
-  { id: 'a3', label: 'A3: Full expand' },
+  { id: 'current', label: 'A. Current' },
+  { id: 'a', label: 'B. Full modal' },
+  { id: 'a3', label: 'C. Canvas card' },
+  { id: 'a2', label: 'D. Zoom card' },
 ] as const;
 
 export type ConceptId = (typeof CONCEPTS)[number]['id'];

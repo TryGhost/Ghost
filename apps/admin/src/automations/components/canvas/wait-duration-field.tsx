@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import {
   Field,
   FieldLabel,
@@ -56,6 +56,17 @@ export const WaitDurationField: React.FC<{
     setIsInlineErrorVisible(visible);
     onErrorVisibilityChange?.(visible);
   };
+
+  // Follow a wait that changes from outside the field, e.g. NY-1715 concept C's Discard
+  // putting the saved value back. Typing a valid wait updates waitHours to match, so this
+  // never fights the input.
+  useEffect(() => {
+    if (getValidWaitDays(daysText) !== waitHours / 24) {
+      setDaysText(String(waitHours / 24));
+      showInlineError(false);
+      onValidityChange?.(true);
+    }
+  }, [waitHours]);
 
   const days = Number(daysText);
   const isValid = getValidWaitDays(daysText) !== null;
