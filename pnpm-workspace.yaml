@@ -433,6 +433,8 @@ minimumReleaseAgeExclude:
   # nx pins its platform binaries to its own exact version, so the release age
   # of nx itself still gates them
   - '@nx/nx-*'
+  # Renovate security update: markdown-it@14.3.3
+  - markdown-it@14.3.3
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published
