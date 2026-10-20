@@ -3,7 +3,7 @@
 // types, which mangles branded primitives (a branded string is `string & {...}`, so it reads as an
 // object and gets walked); staying flat sidesteps that and keeps the keys' value types exact.
 
-type SnakeToCamel<S extends string> = S extends `${infer Head}_${infer Tail}`
+export type SnakeToCamel<S extends string> = S extends `${infer Head}_${infer Tail}`
   ? `${Head}${Capitalize<SnakeToCamel<Tail>>}`
   : S;
 

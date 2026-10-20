@@ -2,7 +2,8 @@ import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbJson } from '../../lib/db-types/json';
-import { StripeCheckoutDesign, type SectionName } from './models';
+import { type CollectedPart, isStripeAllowedCountry } from '@tryghost/checkout';
+import { StripeCheckoutDesign } from './models';
 
 /** The design's fields in snake_case, as used by the database, the Admin API and Stripe. */
 export const SnakeDesign = z.object(snakeKeys(StripeCheckoutDesign.shape));
@@ -20,7 +21,7 @@ export type TierScope = z.infer<typeof TierScope>;
  * dropped, reads as off and is logged. Checkouts then go without it until the publisher saves
  * it again, and the other parts are unaffected.
  */
-function offWhenUnreadable(logging: GhostLogger, part: 'design' | SectionName, message: string) {
+function offWhenUnreadable(logging: GhostLogger, part: 'design' | CollectedPart, message: string) {
   return ({ error }: z.core.$ZodCatchCtx) => {
     logging.warn(
       { event: { name: `stripe_checkout.${part}.unreadable` }, err: new z.ZodError(error.issues) },
@@ -53,8 +54,12 @@ export function configRow(logging: GhostLogger) {
     shipping: DbJson(
       z.object({
         tier_scope: TierScope,
-        // A stored empty list would make Stripe refuse every checkout, so it reads as invalid.
-        allowed_countries: z.array(z.string()).min(1).nullable(),
+        // A stored empty list, or a country Stripe no longer ships to, would make Stripe refuse
+        // every checkout, so either reads as invalid.
+        allowed_countries: z
+          .array(z.string().refine((code): boolean => isStripeAllowedCountry(code)))
+          .min(1)
+          .nullable(),
       }),
       { message: 'The stored shipping settings are not JSON.' },
     )
