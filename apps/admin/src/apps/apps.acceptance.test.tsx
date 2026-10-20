@@ -12,6 +12,7 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeFrameOrigin,
   fakeTags,
   holdModuleLoads,
   postFrameForm,
@@ -205,10 +206,6 @@ describe('Managing apps', () => {
       'allow-scripts',
     ]);
     await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
-    // The device's share sheet, for the app's own origin only.
-    await expect
-      .element(frame)
-      .toHaveAttribute('allow', expect.stringContaining("web-share 'src'"));
     // On for every origin unless refused, so the frame must say so.
     await expect
       .element(frame)
@@ -216,6 +213,23 @@ describe('Managing apps', () => {
     await expect
       .element(frame)
       .toHaveAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+  });
+
+  it('lets the app’s page open the share sheet, but not a page on another origin it goes to', async () => {
+    const elsewhere = 'https://elsewhere.example';
+    await fakeAppPage(installation());
+    await fakeFrameOrigin(
+      elsewhere,
+      '<!doctype html><script>window.__app = { canShare: () => navigator.canShare({ url: location.href }) };</script>',
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect(await callAppFrame(APP_ORIGIN, 'canShare')).toBe(true);
+
+    await callAppFrame(APP_ORIGIN, 'followLink', `${elsewhere}/page`);
+    // Retried until the page there has loaded.
+    await expect.poll(() => callAppFrame(elsewhere, 'canShare').catch(() => undefined)).toBe(false);
   });
 
   it('opens an app’s details from the row’s menu, and the app from its details', async () => {

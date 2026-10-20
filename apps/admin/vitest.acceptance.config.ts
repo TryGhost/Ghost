@@ -339,7 +339,9 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      provider: playwright(),
+      // Web Share is off in Playwright's Chromium, so without it `navigator.canShare` doesn't exist
+      // to report whether an app's frame may share.
+      provider: playwright({ launchOptions: { args: ['--enable-blink-features=WebShare'] } }),
       commands: {
         bundleAppSdk,
         bundleFrameScript,
