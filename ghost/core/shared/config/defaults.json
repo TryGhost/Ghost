@@ -270,6 +270,7 @@
   "optimization": {
     "maxLimit": 100,
     "allowLimitAll": false,
+    "capListingLimit": false,
     "getHelper": {
       "timeout": {
         "threshold": 5000,
