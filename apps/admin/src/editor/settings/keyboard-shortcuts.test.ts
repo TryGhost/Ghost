@@ -24,7 +24,7 @@ describe('keyboardShortcutGroups', () => {
       'Application',
       'Inserting',
     ]);
-    expect(mac.map((group) => group.shortcuts.length)).toEqual([12, 7, 3, 28]);
+    expect(mac.map((group) => group.shortcuts.length)).toEqual([12, 7, 4, 28]);
   });
 
   it('shows Mac writers the Mac glyphs', () => {
@@ -73,14 +73,9 @@ describe('keyboardShortcutGroups', () => {
     ]);
   });
 
-  it('lists the settings panel shortcut only where the editor offers it', () => {
-    const withSettings = { settingsShortcut: true };
-    expect(keys(keyboardShortcutGroups(true, withSettings), 'Toggle settings')).toEqual(['⌘', '.']);
-    expect(keys(keyboardShortcutGroups(false, withSettings), 'Toggle settings')).toEqual([
-      'Ctrl',
-      '.',
-    ]);
-    expect(() => find(mac, 'Toggle settings')).toThrow();
+  it('lists the settings panel shortcut', () => {
+    expect(keys(mac, 'Toggle settings')).toEqual(['⌘', '.']);
+    expect(keys(windows, 'Toggle settings')).toEqual(['Ctrl', '.']);
   });
 
   it('shows the formatting labels as the formatting they produce', () => {

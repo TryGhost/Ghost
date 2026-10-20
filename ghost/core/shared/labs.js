@@ -27,12 +27,13 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-// Admin no longer reads selfServeArchives; it stays enabled for older Admin builds
-// during independent deployments.
+// Admin no longer reads selfServeArchives or admin7EditorImprovements; they stay
+// enabled for older Admin builds during independent deployments.
 const GA_FEATURES = [
   'automationsArchive',
   'automationsPerTier',
   'selfServeArchives',
+  'admin7EditorImprovements',
   'editorReact',
   'billingReact',
 ];
@@ -55,7 +56,6 @@ const PRIVATE_FEATURES = [
   'csvContentImporter',
   'admin7Design',
   'admin7CustomizeFromViewSite',
-  'admin7EditorImprovements',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',
