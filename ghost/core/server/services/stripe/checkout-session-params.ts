@@ -5,42 +5,89 @@ import type {
   CheckoutDefinition,
   StripeCheckoutDesign,
 } from '../stripe-checkout-config';
+import { COLLECTED_SECTIONS } from '../stripe-checkout-config/models';
 
-/** The Checkout session parameters that come from Ghost's checkout settings. */
+/** The Checkout session parameters a part of Ghost's checkout settings adds. */
 export interface CheckoutSessionParams {
   branding_settings?: SnakeKeys<StripeCheckoutDesign>;
   shipping_address_collection?: { allowed_countries: string[] };
   phone_number_collection?: { enabled: true };
 }
 
+/**
+ * The Checkout session parameters each part of a checkout adds: its design, and each part it
+ * asks the buyer for. A part Stripe refuses is left out whole, so a parameter that only works
+ * beside another never goes without it.
+ */
+export type CheckoutSessionParts = {
+  [Part in 'design' | keyof CheckoutAsks]?: CheckoutSessionParams;
+};
+
 /** The Checkout session parameters that ask for each collected part a checkout asks for. */
 const STRIPE_PARAMS: {
-  [Section in keyof CheckoutAsks]: (asks: CheckoutAsks) => CheckoutSessionParams;
+  [Section in keyof CheckoutAsks]: (
+    asking: NonNullable<CheckoutAsks[Section]>,
+  ) => CheckoutSessionParams;
 } = {
-  shipping: ({ shipping }) =>
-    shipping
-      ? {
-          shipping_address_collection: {
-            // Stripe has no way to say everywhere, and a checkout without countries collects no
-            // address, so everywhere is every country Stripe accepts.
-            allowed_countries: shipping.allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES],
-          },
-        }
-      : {},
-  phone: ({ phone }) => (phone ? { phone_number_collection: { enabled: true } } : {}),
+  shipping: ({ allowedCountries }) => ({
+    shipping_address_collection: {
+      // Stripe has no way to say everywhere, and a checkout without countries collects no
+      // address, so everywhere is every country Stripe accepts.
+      allowed_countries: allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES],
+    },
+  }),
+  phone: () => ({ phone_number_collection: { enabled: true } }),
 };
 
 /**
- * The Checkout session parameters for a checkout: its design as `branding_settings`, and what it
- * asks the buyer for. Without a checkout there are none, so Stripe uses the merchant's own
- * settings.
+ * The Checkout session parameters for a checkout, by the part that adds them: its design as
+ * `branding_settings`, and what it asks the buyer for. Without a checkout there are none, so
+ * Stripe uses the merchant's own settings.
  */
-export function checkoutSessionParams(checkout: CheckoutDefinition | null): CheckoutSessionParams {
+export function checkoutSessionParts(checkout: CheckoutDefinition | null): CheckoutSessionParts {
   if (!checkout) {
     return {};
   }
-  return Object.values(STRIPE_PARAMS).reduce<CheckoutSessionParams>(
-    (params, ask) => ({ ...params, ...ask(checkout.asks) }),
-    checkout.design ? { branding_settings: snakeKeys(checkout.design) } : {},
-  );
+  const parts: CheckoutSessionParts = checkout.design
+    ? { design: { branding_settings: snakeKeys(checkout.design) } }
+    : {};
+  const ask = <Section extends keyof CheckoutAsks>(section: Section) => {
+    const asking = checkout.asks[section];
+    if (asking) {
+      parts[section] = STRIPE_PARAMS[section](asking);
+    }
+  };
+  COLLECTED_SECTIONS.forEach(ask);
+  return parts;
+}
+
+/** Whether Stripe works out a session's tax, and whether its buyer is an existing customer. */
+export interface SessionTax {
+  automaticTax: boolean;
+  hasCustomer: boolean;
+}
+
+/** The parameters every Checkout session that takes payment sends for tax. */
+export interface TaxSessionParams {
+  automatic_tax: { enabled: boolean };
+  tax_id_collection?: { enabled: true };
+  customer_update?: { address: 'auto'; name: 'auto' };
+}
+
+/**
+ * The tax parameters of a Checkout session that takes payment. With automatic tax, Stripe
+ * works out the tax from the buyer's address and lets a business buyer give a tax ID.
+ */
+export function taxSessionParams({ automaticTax, hasCustomer }: SessionTax): TaxSessionParams {
+  if (!automaticTax) {
+    return { automatic_tax: { enabled: false } };
+  }
+  return {
+    automatic_tax: { enabled: true },
+    tax_id_collection: { enabled: true },
+    // For an existing customer, Stripe works out the tax from the address saved on them, and
+    // refuses to take a tax ID unless it may save the business name on them, so both are saved
+    // from the checkout. Stripe refuses this without a customer.
+    ...(hasCustomer ? { customer_update: { address: 'auto', name: 'auto' } } : {}),
+  };
 }
