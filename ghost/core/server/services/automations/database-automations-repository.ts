@@ -202,6 +202,8 @@ type StepToRunRow = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
+  automation_trigger_type: 'membership_started' | 'paid_subscription_changed';
+  automation_trigger_to_tier_scope: null | 'free' | 'selected_paid';
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_status: AutomationStatus;
   member_id: string | null;
@@ -1233,6 +1235,8 @@ async function fetchAndLockSteps(
       'step.locked_by as locked_by',
       'step.automation_run_id as automation_run_id',
       'run.automation_id as automation_id',
+      'automation.trigger_type as automation_trigger_type',
+      'automation.trigger_to_tier_scope as automation_trigger_to_tier_scope',
       'automation.trigger_tier_scope as automation_trigger_tier_scope',
       'automation.status as automation_status',
       'run.member_id as member_id',
@@ -1262,7 +1266,13 @@ async function fetchAndLockSteps(
   const tierIdsByAutomation = await getTierIdsByAutomation(trx, rows);
 
   return {
-    steps: rows.map((row) => buildStepToRun(row, tierIdsByAutomation.get(row.automation_id))),
+    steps: rows.map((row) =>
+      buildStepToRun(
+        row,
+        tierIdsByAutomation.membershipStarted.get(row.automation_id),
+        tierIdsByAutomation.paidSubscriptionChanged.get(row.automation_id),
+      ),
+    ),
     nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
   };
 }
@@ -1270,30 +1280,55 @@ async function fetchAndLockSteps(
 async function getTierIdsByAutomation(
   trx: Knex.Transaction,
   stepsToRun: ReadonlyDeep<StepToRunRow[]>,
-): Promise<DefaultMap<string, string[]>> {
-  const result = new DefaultMap<string, string[]>(() => []);
-
-  const automationIdsToLookAt = new Set<string>();
-  for (const stepToRun of stepsToRun) {
-    if (stepToRun.automation_trigger_tier_scope === 'selected_paid') {
-      automationIdsToLookAt.add(stepToRun.automation_id);
+) {
+  const result = {
+    membershipStarted: new DefaultMap<string, string[]>(() => []),
+    paidSubscriptionChanged: new DefaultMap<string, string[]>(() => []),
+  };
+  const membershipAutomationIds = new Set<string>();
+  const subscriptionAutomationIds = new Set<string>();
+  for (const step of stepsToRun) {
+    switch (step.automation_trigger_type) {
+      case 'membership_started':
+        if (step.automation_trigger_tier_scope === 'selected_paid') {
+          membershipAutomationIds.add(step.automation_id);
+        }
+        break;
+      case 'paid_subscription_changed':
+        if (step.automation_trigger_to_tier_scope === 'selected_paid') {
+          subscriptionAutomationIds.add(step.automation_id);
+        }
+        break;
+      default: {
+        const _exhaustive: never = step.automation_trigger_type;
+        throw new errors.InternalServerError({
+          message: `Unexpected automation trigger: ${_exhaustive}`,
+        });
+      }
     }
   }
 
-  if (automationIdsToLookAt.size === 0) {
-    return result;
+  if (membershipAutomationIds.size > 0) {
+    const tiers: { automation_id: string; product_id: string }[] = await trx(
+      'automation_trigger_tiers',
+    )
+      .select('automation_id', 'product_id')
+      .whereIn('automation_id', [...membershipAutomationIds]);
+    for (const tier of tiers) {
+      result.membershipStarted.get(tier.automation_id).push(tier.product_id);
+    }
   }
-
-  const triggerTiers: { automation_id: string; product_id: string }[] = await trx(
-    'automation_trigger_tiers',
-  )
-    .select('automation_id', 'product_id')
-    .whereIn('automation_id', [...automationIdsToLookAt]);
-
-  for (const triggerTier of triggerTiers) {
-    result.get(triggerTier.automation_id).push(triggerTier.product_id);
+  if (subscriptionAutomationIds.size > 0) {
+    const tiers: { automation_id: string; product_id: string }[] = await trx(
+      'automation_trigger_transition_tiers',
+    )
+      .select('automation_id', 'product_id')
+      .whereIn('automation_id', [...subscriptionAutomationIds])
+      .where('direction', 'to');
+    for (const tier of tiers) {
+      result.paidSubscriptionChanged.get(tier.automation_id).push(tier.product_id);
+    }
   }
-
   return result;
 }
 
@@ -1315,6 +1350,7 @@ async function findNextPendingReadyAt(
 function buildStepToRun(
   row: ReadonlyDeep<StepToRunRow>,
   triggerTierIds: string[],
+  toTierIds: string[],
 ): AutomationStepToRun {
   const base = {
     id: row.id,
@@ -1323,6 +1359,9 @@ function buildStepToRun(
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
+    automation_trigger_type: row.automation_trigger_type,
+    automation_trigger_to_tier_scope: row.automation_trigger_to_tier_scope,
+    automation_trigger_to_tier_ids: toTierIds,
     automation_trigger_tier_scope: row.automation_trigger_tier_scope,
     automation_trigger_tier_ids: triggerTierIds,
     automation_status: row.automation_status,

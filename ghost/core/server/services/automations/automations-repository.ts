@@ -146,6 +146,9 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
+  automation_trigger_type: 'membership_started' | 'paid_subscription_changed';
+  automation_trigger_to_tier_scope: null | 'free' | 'selected_paid';
+  automation_trigger_to_tier_ids: string[];
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_trigger_tier_ids: string[];
   automation_status: AutomationStatus;
