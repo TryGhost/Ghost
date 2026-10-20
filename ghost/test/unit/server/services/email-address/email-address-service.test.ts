@@ -45,22 +45,27 @@ describe('EmailAddressService', function () {
     });
 
     it('retains the requested sender as reply-to when falling back to the default', function () {
-      const defaultFrom = { address: 'noreply@ghost.org', name: 'Ghost' };
       const preferredFrom = { address: 'editor@other.example', name: 'Editor' };
       const service = createService({
         getSendingDomain: () => null,
-        getDefaultEmail: () => defaultFrom,
+        // Production builds a new default sender object on every call.
+        getDefaultEmail: () => ({ address: 'noreply@ghost.org', name: 'Ghost' }),
       });
 
       const result = service.getAddress({ from: preferredFrom });
 
-      assert.equal(result.from, defaultFrom);
-      assert.equal(result.replyTo, preferredFrom);
-      assert.equal(defaultFrom.name, 'Editor');
+      assert.deepEqual(result, {
+        from: { address: 'noreply@ghost.org', name: 'Editor' },
+        replyTo: preferredFrom,
+      });
     });
 
     it('keeps mailbox parsing distinct from validation of a configured fallback', function () {
-      const service = createService({ getFallbackEmail: () => 'invalid' });
+      const service = createService({
+        getFallbackEmail: () => 'invalid',
+        // Reject the fallback's parsed address so applying validation would change the result.
+        isValidEmailAddress: (email: string) => email !== '',
+      });
       const preferred = { from: { address: 'editor@example.com' } };
 
       assert.deepEqual(service.getAddress(preferred, { useFallbackAddress: true }), {
