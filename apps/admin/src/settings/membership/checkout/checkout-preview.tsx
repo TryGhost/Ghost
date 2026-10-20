@@ -1,5 +1,9 @@
 import React from 'react';
-import type { StripeCheckoutBorderStyle } from '@tryghost/checkout';
+import {
+  COLLECTED_PARTS,
+  type CollectedPart,
+  type StripeCheckoutBorderStyle,
+} from '@tryghost/checkout';
 import type { StripeCheckoutDesign } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
 import { Color } from '@tryghost/color-utils';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -40,6 +44,59 @@ const SketchLabel: React.FC<{ label: string; audience: string }> = ({ label, aud
   </span>
 );
 
+/** What the sketch draws a part with: the tiers it's asked on, and the design's corners. */
+type PartSketchProps = { audience: string; radius: string; boxRadius: string };
+
+const ShippingSketch: React.FC<PartSketchProps> = ({ audience, boxRadius }) => (
+  <div className="flex flex-col gap-1.5">
+    <SketchLabel audience={audience} label="Shipping address" />
+    <div
+      className="flex flex-col border border-neutral-200 [&>*+*]:border-t [&>*+*]:border-neutral-200"
+      style={{ borderRadius: boxRadius }}
+    >
+      {['Full name', 'Country or region', 'Address'].map((placeholder) => (
+        <div key={placeholder} className="flex h-9 items-center px-3">
+          <Placeholder>{placeholder}</Placeholder>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const PhoneSketch: React.FC<PartSketchProps> = ({ audience, radius }) => (
+  <div className="flex flex-col gap-1.5">
+    <SketchLabel audience={audience} label="Phone" />
+    <div
+      className="flex h-9 items-center border border-neutral-200 px-3"
+      style={{ borderRadius: radius }}
+    >
+      <Placeholder>(201) 555-0123</Placeholder>
+    </div>
+  </div>
+);
+
+const TaxNumberSketch: React.FC<PartSketchProps> = ({ audience }) => (
+  <div className="flex items-center justify-between gap-2 text-[16px]">
+    <span className="flex items-center gap-2">
+      <span aria-hidden="true" className="size-4 shrink-0 rounded-sm border-2 border-neutral-300" />
+      {/* Stripe's own words for the box that asks for the tax ID. */}
+      I&apos;m purchasing as a business
+    </span>
+    {audience && (
+      <Badge className="font-sans" size="sm" variant="warning">
+        {audience}
+      </Badge>
+    )}
+  </div>
+);
+
+/** How the sketch draws each part checkout can ask for. */
+const PART_SKETCHES: { [Part in CollectedPart]: React.FC<PartSketchProps> } = {
+  shipping: ShippingSketch,
+  phone: PhoneSketch,
+  tax_number: TaxNumberSketch,
+};
+
 const Block: React.FC<{ className: string }> = ({ className }) => (
   <Skeleton className={className} containerClassName="block" />
 );
@@ -67,16 +124,12 @@ const CheckoutPreview: React.FC<{
   design: StripeCheckoutDesign;
   displayName: string;
   /**
-   * Set when checkout asks for a shipping address. `audience` names the tiers it is asked on,
-   * or is empty when every paid tier asks.
+   * The parts checkout asks the buyer for. `audience` names the tiers each is asked on, or is
+   * empty when every paid tier asks.
    */
-  shipping?: { audience: string };
-  /** Set when checkout asks for a phone number, like `shipping`. */
-  phone?: { audience: string };
-  /** Set when checkout lets business buyers give a tax ID, like `shipping`. */
-  taxNumber?: { audience: string };
+  asks?: { [Part in CollectedPart]?: { audience: string } };
   loading?: boolean;
-}> = ({ design, displayName, shipping, phone, taxNumber, loading }) => {
+}> = ({ design, displayName, asks = {}, loading }) => {
   const { radius, boxRadius } = CORNER_RADII[design.border_style];
 
   return (
@@ -130,49 +183,21 @@ const CheckoutPreview: React.FC<{
                   <Placeholder>email@example.com</Placeholder>
                 </div>
               </div>
-              {shipping && (
-                <div className="flex flex-col gap-1.5">
-                  <SketchLabel audience={shipping.audience} label="Shipping address" />
-                  <div
-                    className="flex flex-col border border-neutral-200 [&>*+*]:border-t [&>*+*]:border-neutral-200"
-                    style={{ borderRadius: boxRadius }}
-                  >
-                    {['Full name', 'Country or region', 'Address'].map((placeholder) => (
-                      <div key={placeholder} className="flex h-9 items-center px-3">
-                        <Placeholder>{placeholder}</Placeholder>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {phone && (
-                <div className="flex flex-col gap-1.5">
-                  <SketchLabel audience={phone.audience} label="Phone" />
-                  <div
-                    className="flex h-9 items-center border border-neutral-200 px-3"
-                    style={{ borderRadius: radius }}
-                  >
-                    <Placeholder>(201) 555-0123</Placeholder>
-                  </div>
-                </div>
-              )}
-              {taxNumber && (
-                <div className="flex items-center justify-between gap-2 text-[16px]">
-                  <span className="flex items-center gap-2">
-                    <span
-                      aria-hidden="true"
-                      className="size-4 shrink-0 rounded-sm border-2 border-neutral-300"
+              {/* In the shared list's order, which is the order Admin shows the parts in. */}
+              {COLLECTED_PARTS.map((part) => {
+                const asked = asks[part];
+                const Sketch = PART_SKETCHES[part];
+                return (
+                  asked && (
+                    <Sketch
+                      key={part}
+                      audience={asked.audience}
+                      boxRadius={boxRadius}
+                      radius={radius}
                     />
-                    {/* Stripe's own words for the box that asks for the tax ID. */}
-                    I&apos;m purchasing as a business
-                  </span>
-                  {taxNumber.audience && (
-                    <Badge className="font-sans" size="sm" variant="warning">
-                      {taxNumber.audience}
-                    </Badge>
-                  )}
-                </div>
-              )}
+                  )
+                );
+              })}
               <div className="flex flex-col gap-1.5">
                 <span className="text-[16px] font-semibold">Payment method</span>
                 <div
