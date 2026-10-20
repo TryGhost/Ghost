@@ -31,12 +31,16 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
   '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
+  '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
+  '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
+  '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
+  '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.

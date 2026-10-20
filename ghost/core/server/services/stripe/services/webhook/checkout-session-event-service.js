@@ -6,6 +6,7 @@ const {
   canWelcomeEmailReplaceSignupPaidEmail,
 } = require('../../../../lib/member-signup-contexts');
 const { collectedAnswers } = require('../checkout/completed-session');
+const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
@@ -88,7 +89,6 @@ module.exports = class CheckoutSessionEventService {
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
    * @param {{isSet(flag: string): boolean}} deps.labs
-   * @param {typeof import('../../../stripe-checkout-config')} deps.stripeCheckoutConfig
    * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
@@ -475,7 +475,7 @@ module.exports = class CheckoutSessionEventService {
    */
   async saveCollected(memberId, session, { canUpdateMember }) {
     try {
-      if (!this.deps.labs.isSet(this.deps.stripeCheckoutConfig.COLLECTION_FLAG)) {
+      if (!this.deps.labs.isSet(COLLECTION_FLAG)) {
         return;
       }
       const collected = collectedAnswers.parse(session);

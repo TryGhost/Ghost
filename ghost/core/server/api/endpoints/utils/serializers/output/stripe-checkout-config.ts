@@ -1,8 +1,6 @@
 import type { Frame } from '@tryghost/api-framework';
-import {
-  COLLECTION_FLAG,
-  toCheckoutConfigResponse,
-} from '../../../../../services/stripe-checkout-config';
+import { COLLECTION_FLAG } from '../../../../../services/stripe-checkout-config/models';
+import { toCheckoutConfigResponse } from '../../../../../services/stripe-checkout-config/serializers';
 import type { StripeCheckoutConfig } from '../../../../../services/stripe-checkout-config';
 
 const labs = require('../../../../../../shared/labs');

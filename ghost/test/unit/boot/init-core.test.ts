@@ -29,7 +29,7 @@ function createCoreHarness() {
     './server/services/export-requests': { default: { init() {} } },
     './server/services/invites': { default: { init() {} } },
     './server/services/support-requests': { default: { init() {} } },
-    './server/services/stripe-checkout-config': { init() {} },
+    './server/services/stripe-checkout-config': { default: { init() {} } },
   });
   return {
     init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),

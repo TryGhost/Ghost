@@ -1,14 +1,13 @@
 import errors from '@tryghost/errors';
 import { upperFirst } from 'lodash';
 import type { Controller, Frame } from '@tryghost/api-framework';
+import stripeCheckoutConfig from '../../services/stripe-checkout-config';
+import type { StripeCheckoutConfig } from '../../services/stripe-checkout-config';
 import {
   COLLECTED_NOUNS,
   COLLECTED_SECTIONS,
   COLLECTION_FLAG,
-  actingContext,
-  service as checkoutConfig,
-} from '../../services/stripe-checkout-config';
-import type { StripeCheckoutConfig } from '../../services/stripe-checkout-config';
+} from '../../services/stripe-checkout-config/models';
 
 const labs = require('../../../shared/labs');
 
@@ -42,7 +41,7 @@ const controller = {
     headers: { cacheInvalidate: false },
     permissions: { docName: 'products', method: 'read' },
     query(): Promise<StripeCheckoutConfig> {
-      return checkoutConfig!.read();
+      return stripeCheckoutConfig.service.config.read();
     },
   },
 
@@ -52,8 +51,9 @@ const controller = {
     async query(frame: EditFrame): Promise<StripeCheckoutConfig> {
       const [input] = frame.data.checkout_config;
       refuseCollectionWhileOff(input);
-      await checkoutConfig!.edit(actingContext(frame.options.context), input);
-      return checkoutConfig!.read();
+      const { config } = stripeCheckoutConfig.service;
+      await config.edit(stripeCheckoutConfig.extras.actingContext(frame.options.context), input);
+      return config.read();
     },
   },
 } satisfies Controller<{

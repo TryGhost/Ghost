@@ -9,7 +9,7 @@ const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
-const stripeCheckoutConfig = require('../stripe-checkout-config');
+const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafields = require('../members-metafields');
 
 /**
@@ -64,7 +64,7 @@ module.exports = class StripeService {
   }) {
     const api = new StripeAPI({
       labs,
-      // The module rather than its service: this runs when the module loads, before boot
+      // The root rather than its service: this runs when the module loads, before boot
       // creates the service. Checkouts only start once boot has finished, so the service
       // exists by the time the API reads it.
       stripeCheckoutConfig,
@@ -137,7 +137,6 @@ module.exports = class StripeService {
         return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
       },
       labs,
-      stripeCheckoutConfig,
       // Getters, because these services are built later in boot than this one.
       get metafieldBindings() {
         return metafields.bindings;
