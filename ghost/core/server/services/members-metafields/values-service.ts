@@ -58,6 +58,15 @@ const UPSERT_CHUNK = 400;
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbValueRow = z.infer<typeof DbMetafieldValue>;
 
+/**
+ * The columns a value row is keyed by, from the canonical schema, so a write's conflict target
+ * cannot fall behind the table's primary key. Only SQLite would notice if it did: MySQL ignores
+ * a conflict target, and SQLite refuses one that names no key.
+ */
+const VALUE_KEY = z
+  .array(DbMetafieldValue.keyof())
+  .parse(require('../../data/schema').tables[VALUES_TABLE]['@@PRIMARY_KEY@@']);
+
 const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
 const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
@@ -433,8 +442,7 @@ export class MetafieldValuesService {
         }
 
         rows.push(
-          ...set.map((row) => ({
-            id: new ObjectID().toHexString(),
+          ...set.map((row): DbValueRow => ({
             member_id: memberId,
             metafield_key: field.key,
             path: row.path,
@@ -476,7 +484,7 @@ export class MetafieldValuesService {
           .insert(rows.slice(from, from + UPSERT_CHUNK))
           // Naming the columns rather than giving values takes each from the row
           // that lost the conflict, so every part updates to its own value.
-          .onConflict(['member_id', 'metafield_key', 'path'])
+          .onConflict(VALUE_KEY)
           // The writer is merged with the value, so a row names who wrote what
           // it currently holds rather than who wrote its first value.
           .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
