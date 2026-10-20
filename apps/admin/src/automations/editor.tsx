@@ -6,7 +6,7 @@ import AutomationStatusDialog from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
-import { useFeatureFlag, useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
 import React from 'react';
 import {
@@ -102,7 +102,6 @@ const AutomationEditorContent: React.FC<{
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
-  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
@@ -183,7 +182,7 @@ const AutomationEditorContent: React.FC<{
     action: AutomationValidationAction,
   ): boolean => {
     setValidationFeedback(null);
-    if (automationsPerTierEnabled && !automationToValidate.name.trim()) {
+    if (!automationToValidate.name.trim()) {
       toast.error('Add an automation name.');
       return false;
     }
