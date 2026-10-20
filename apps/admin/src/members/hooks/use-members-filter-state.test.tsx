@@ -57,7 +57,8 @@ describe('shouldDelayMembersFilterHydration', () => {
   it('waits for the definitions a filter names, and only those', () => {
     // A custom field can only be read for what it holds once the site says what it holds, so
     // the page waits rather than reading it as text and answering a wider question.
-    const customFieldFilter = "(metafields.key:'custom.joined'+metafields.value:<'2024-01-01')";
+    const customFieldFilter =
+      "(metafields.identity:'custom.joined'+metafields.value:<'2024-01-01')";
 
     expect(
       shouldDelayMembersFilterHydration(customFieldFilter, {
@@ -93,7 +94,7 @@ describe('shouldDelayMembersFilterHydration', () => {
 
   it('does not wait for definitions that are never coming', () => {
     // An empty list means nothing is on its way, so waiting would never end.
-    const customFieldFilter = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
+    const customFieldFilter = "(metafields.identity:'custom.company'+metafields.value:'Ghost')";
 
     expect(
       shouldDelayMembersFilterHydration(customFieldFilter, { ...resolved, customFields: [] }),
@@ -444,7 +445,7 @@ describe('useMembersFilterState', () => {
 });
 
 describe('useMembersFilterState — once its sources have arrived', () => {
-  const CUSTOM_FIELD_FILTER = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
+  const CUSTOM_FIELD_FILTER = "(metafields.identity:'custom.company'+metafields.value:'Ghost')";
 
   function renderWithSources(sources: {
     newsletters?: { slug: string; name: string }[];
@@ -481,6 +482,8 @@ describe('useMembersFilterState — once its sources have arrived', () => {
 
     expect(result.current.filters[0].field).toBe('metafields.custom.company');
     expect(result.current.nql).toBe(CUSTOM_FIELD_FILTER);
-    expect(decodeURIComponent(result.current.query)).toContain("metafields.key:'custom.company'");
+    expect(decodeURIComponent(result.current.query)).toContain(
+      "metafields.identity:'custom.company'",
+    );
   });
 });

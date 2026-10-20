@@ -3,10 +3,10 @@
 // addressed as `namespace.key`, and a composite value such as an address names
 // one of its parts by appending it: `namespace.key.part`.
 //
-//   (metafields.key:'custom.company'+metafields.value:'Ghost')
-//   (metafields.key:'custom.shipping_address.country'+metafields.value:'GB')
-//   metafields.key:'custom.company'                     // has a value
-//   metafields.key:-'custom.shipping_address.country'   // that part is not set
+//   (metafields.identity:'custom.company'+metafields.value:'Ghost')
+//   (metafields.identity:'custom.shipping_address.country'+metafields.value:'GB')
+//   metafields.identity:'custom.company'                     // has a value
+//   metafields.identity:-'custom.shipping_address.country'   // that part is not set
 //
 // The values table holds one row per stored value: `metafield_key`, `path`
 // (empty for a plain field, the part's name for one part of a composite) and
@@ -20,7 +20,7 @@ import { ROOT_PATH, pathOf } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
-const KEY_ATTRIBUTE = `${PREFIX}key`;
+const IDENTITY_ATTRIBUTE = `${PREFIX}identity`;
 const VALUE_ATTRIBUTE = `${PREFIX}value`;
 
 type QueryNode = Record<string, unknown>;
@@ -45,17 +45,17 @@ function isMetafieldClause(node: unknown): node is QueryNode {
 }
 
 // A grouped compound: an $and whose clauses all target the relation and name exactly one
-// `key`. Its clauses describe one value row.
+// `identity`. Its clauses describe one value row.
 //
 // Exactly one, not at least one: two whole-field filters ANDed together arrive as a flat
-// `key:'a'+key:'b'`, since a bare key clause needs no group of its own. That is two
+// `identity:'a'+identity:'b'`, since a bare identity clause needs no group of its own. That is two
 // filters — a member with a value for both — not one row that is somehow both fields, so
 // it has to fall through and be transformed a clause at a time.
 function isMetafieldCompound(clauses: unknown): clauses is QueryNode[] {
   if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isMetafieldClause)) {
     return false;
   }
-  return clauses.filter((clause) => Object.keys(clause)[0] === KEY_ATTRIBUTE).length === 1;
+  return clauses.filter((clause) => Object.keys(clause)[0] === IDENTITY_ATTRIBUTE).length === 1;
 }
 
 // NQL compiles every negation in this grammar to `{$ne: <string>}`, so a negated clause
@@ -75,7 +75,7 @@ function targetOf(raw: unknown): Target {
   const identity = typeof raw === 'string' ? z.safeDecode(IdentityTextSchema, raw) : null;
   if (!identity?.success) {
     throw new errors.BadRequestError({
-      message: `A metafield filter names a field as namespace.key, for example (${KEY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
+      message: `A metafield filter names a field as namespace.key, for example (${IDENTITY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
     });
   }
   const { namespace, key, parts } = identity.data;
@@ -113,10 +113,10 @@ export function createMetafieldsFilterTransformer() {
     for (const clause of clauses) {
       const [attribute, clauseValue] = Object.entries(clause)[0];
 
-      if (attribute === KEY_ATTRIBUTE) {
+      if (attribute === IDENTITY_ATTRIBUTE) {
         if (negatedString(clauseValue) !== null) {
           throw new errors.BadRequestError({
-            message: `A negated "${KEY_ATTRIBUTE}" stands alone; it cannot be grouped with a value.`,
+            message: `A negated "${IDENTITY_ATTRIBUTE}" stands alone; it cannot be grouped with a value.`,
           });
         }
         target = targetOf(clauseValue);
@@ -137,16 +137,16 @@ export function createMetafieldsFilterTransformer() {
 
     if (!target) {
       throw new errors.BadRequestError({
-        message: `A metafield filter needs a "${KEY_ATTRIBUTE}" clause.`,
+        message: `A metafield filter needs a "${IDENTITY_ATTRIBUTE}" clause.`,
       });
     }
     return buildElemMatch(target, hasValue ? value : undefined, false);
   }
 
-  function fromKeyClause(value: unknown): QueryNode {
-    const negatedKey = negatedString(value);
-    if (negatedKey !== null) {
-      return buildElemMatch(targetOf(negatedKey), undefined, true);
+  function fromIdentityClause(value: unknown): QueryNode {
+    const negated = negatedString(value);
+    if (negated !== null) {
+      return buildElemMatch(targetOf(negated), undefined, true);
     }
     return buildElemMatch(targetOf(value), undefined, false);
   }
@@ -165,11 +165,11 @@ export function createMetafieldsFilterTransformer() {
 
     const out: QueryNode = {};
     for (const [key, value] of Object.entries(node)) {
-      if (key === KEY_ATTRIBUTE) {
-        Object.assign(out, fromKeyClause(value));
+      if (key === IDENTITY_ATTRIBUTE) {
+        Object.assign(out, fromIdentityClause(value));
       } else if (key.startsWith(PREFIX)) {
         throw new errors.BadRequestError({
-          message: `A "${key}" filter must be grouped with its "${KEY_ATTRIBUTE}" clause, for example (${KEY_ATTRIBUTE}:'custom.a_field'+${VALUE_ATTRIBUTE}:'a value').`,
+          message: `A "${key}" filter must be grouped with its "${IDENTITY_ATTRIBUTE}" clause, for example (${IDENTITY_ATTRIBUTE}:'custom.a_field'+${VALUE_ATTRIBUTE}:'a value').`,
         });
       } else {
         out[key] = transform(value);

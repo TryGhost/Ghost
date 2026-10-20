@@ -48,7 +48,7 @@ describe("a site's own definitions add precision, not correctness", () => {
   });
 
   it('keeps a clause naming a custom field that no longer exists', () => {
-    const nql = "(metafields.key:'custom.deleted'+metafields.value:~'x')";
+    const nql = "(metafields.identity:'custom.deleted'+metafields.value:~'x')";
 
     expect(roundTrip(resolved, nql)).toBe(nql);
   });
@@ -56,8 +56,8 @@ describe("a site's own definitions add precision, not correctness", () => {
   it('reads every shape before the definitions arrive, losing nothing', () => {
     for (const nql of [
       '(newsletters.slug:daily+email_disabled:0)',
-      "(metafields.key:'custom.company'+metafields.value:'Ghost')",
-      "metafields.key:'custom.company'",
+      "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
+      "metafields.identity:'custom.company'",
     ]) {
       expect(roundTrip(pending, nql)).toBe(nql);
     }
@@ -71,7 +71,7 @@ describe("a site's own definitions add precision, not correctness", () => {
 });
 
 describe('waiting protects precision, not the clauses', () => {
-  const customFieldFilter = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
+  const customFieldFilter = "(metafields.identity:'custom.company'+metafields.value:'Ghost')";
 
   it('waits while a source the filter names is in flight', () => {
     expect(canReadMemberFilter(customFieldFilter, { customFields: undefined })).toBe(false);
@@ -93,20 +93,20 @@ describe('waiting protects precision, not the clauses', () => {
 
   it('still waits when the source is named as a clause key, wherever it sits', () => {
     expect(
-      canReadMemberFilter("metafields.key:'custom.company'", { customFields: undefined }),
+      canReadMemberFilter("metafields.identity:'custom.company'", { customFields: undefined }),
     ).toBe(false);
     expect(
-      canReadMemberFilter("(status:paid+metafields.key:'custom.company')", {
+      canReadMemberFilter("(status:paid+metafields.identity:'custom.company')", {
         customFields: undefined,
       }),
     ).toBe(false);
     expect(
-      canReadMemberFilter("status:paid,metafields.key:'custom.company'", {
+      canReadMemberFilter("status:paid,metafields.identity:'custom.company'", {
         customFields: undefined,
       }),
     ).toBe(false);
     expect(
-      canReadMemberFilter("metafields.key:-'custom.company'", { customFields: undefined }),
+      canReadMemberFilter("metafields.identity:-'custom.company'", { customFields: undefined }),
     ).toBe(false);
   });
 

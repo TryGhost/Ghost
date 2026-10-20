@@ -121,7 +121,7 @@ describe('Members list', () => {
     // Still here: typing the value must not unmount the filter UI.
     await expect.element(valueInput).toBeVisible();
     await expect(membersApi).toHaveSentFilter(
-      "(metafields.key:'custom.employer'+metafields.value:~'Acme')",
+      "(metafields.identity:'custom.employer'+metafields.value:~'Acme')",
     );
     await expect(membersScreen.memberRows()).toHaveCount(1);
 
