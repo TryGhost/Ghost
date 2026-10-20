@@ -39,7 +39,13 @@ export type EditableEmailData = {
 // EMAIL_CARD_EASE's duration plus a frame or two.
 const TRANSITION_SETTLE_MS = 250;
 
-function getEmailWarning(email: EditableEmailData, errorMessage?: string) {
+function getEmailWarning(email: EditableEmailData, contentError: boolean, errorMessage?: string) {
+  if (contentError) {
+    return 'Email content could not be read. Open the email to check its content.';
+  }
+  if (email.suppressWarning && !errorMessage) {
+    return;
+  }
   const missingSubject = !email.subject.trim();
   const missingBody = isEmptyEmailLexical(email.lexical);
   if (missingSubject && missingBody) {
@@ -120,11 +126,7 @@ export const EditableEmailCard: React.FC<
     () => inspectEmailTk(email.subject, email.lexical),
     [email.subject, email.lexical],
   );
-  const warning = tk.contentError
-    ? 'Email content could not be read. Open the email to check its content.'
-    : email.suppressWarning && !errorMessage
-      ? undefined
-      : getEmailWarning(email, errorMessage);
+  const warning = getEmailWarning(email, tk.contentError, errorMessage);
   const text = useMemo(
     () => (tk.contentError ? '' : emailTextExcerpt(email.lexical)),
     [email.lexical, tk.contentError],

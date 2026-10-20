@@ -4,12 +4,14 @@ export function EmailTkIndicator({ inspection }: { inspection: EmailTkInspection
   if (!inspection.subject && !inspection.body) {
     return null;
   }
-  const explanation =
-    inspection.subject && inspection.body
-      ? 'Unresolved TK reminders in the subject and body of this email.'
-      : inspection.subject
-        ? 'Unresolved TK reminders in the subject of this email.'
-        : 'Unresolved TK reminders in the body of this email.';
+  const fields = [];
+  if (inspection.subject) {
+    fields.push('subject');
+  }
+  if (inspection.body) {
+    fields.push('body');
+  }
+  const explanation = `Unresolved TK reminders in the ${fields.join(' and ')} of this email.`;
   return (
     <span
       aria-label={explanation}

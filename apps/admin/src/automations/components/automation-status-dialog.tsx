@@ -34,6 +34,7 @@ const AutomationStatusDialog = ({
   onCloseAutoFocus,
   tkEmails = [],
 }: AutomationStatusDialogProps) => {
+  const hasTkWarning = status === 'active' && tkEmails.length > 0;
   const { title, description, buttonLabel, pendingLabel } = (() => {
     switch (status) {
       case 'active':
@@ -66,6 +67,13 @@ const AutomationStatusDialog = ({
       }
     }
   })();
+  let confirmLabel = buttonLabel;
+  if (hasTkWarning) {
+    confirmLabel = 'Publish anyway';
+  }
+  if (isError) {
+    confirmLabel = 'Retry';
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={(nextOpen) => !isPending && onOpenChange(nextOpen)}>
@@ -74,15 +82,15 @@ const AutomationStatusDialog = ({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>
             {description}
-            {status === 'active' && tkEmails.length > 0 && (
+            {hasTkWarning && (
               <span className="sr-only"> These emails contain unresolved TK reminders.</span>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {status === 'active' && <EmailTkWarning emails={tkEmails} />}
+        {hasTkWarning && <EmailTkWarning emails={tkEmails} />}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>
-            {status === 'active' && tkEmails.length ? 'Back to editing' : 'Cancel'}
+            {hasTkWarning ? 'Back to editing' : 'Cancel'}
           </AlertDialogCancel>
           <Button
             disabled={isPending}
@@ -94,12 +102,8 @@ const AutomationStatusDialog = ({
                 <LoadingIndicator color="light" size="sm" />
                 <span className="sr-only">{pendingLabel}</span>
               </>
-            ) : isError ? (
-              'Retry'
-            ) : status === 'active' && tkEmails.length ? (
-              'Publish anyway'
             ) : (
-              buttonLabel
+              confirmLabel
             )}
           </Button>
         </AlertDialogFooter>

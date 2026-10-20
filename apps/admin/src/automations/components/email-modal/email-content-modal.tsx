@@ -195,9 +195,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   }, [automationId, enterPreview, formState, initialMode]);
 
   const isDirty = saveState === 'unsaved';
-  const tk = React.useMemo(
-    () => inspectEmailTk(formState.subject, formState.lexical),
-    [formState.subject, formState.lexical],
+  const { contentError } = React.useMemo(
+    () => inspectEmailTk('', formState.lexical),
+    [formState.lexical],
   );
 
   useEffect(() => {
@@ -393,7 +393,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             title="Edit email"
           >
             <div className="flex grow flex-col items-center p-6">
-              {tk.contentError && (
+              {contentError && (
                 <span className="w-full max-w-[600px] text-sm text-muted-foreground" role="alert">
                   Email content could not be read. Check the email before publishing.
                 </span>

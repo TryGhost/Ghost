@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bodyTextHasTk, inspectEmailTk } from './email-tk';
+import { inspectEmailTk } from './email-tk';
 
 const lexical = (children: unknown[]) => JSON.stringify({ root: { children } });
 const paragraph = (text: string, type = 'extended-text') => ({
@@ -10,11 +10,11 @@ const paragraph = (text: string, type = 'extended-text') => ({
 describe('automation email TK inspection', () => {
   it.each(['TK', 'TKTK', '[TK],', '(TK)', 'tk', 'TkTk', 'word—TK—word', 'ATK then TK'])(
     'matches Koenig body markers: %s',
-    (text) => expect(bodyTextHasTk(text)).toBe(true),
+    (text) => expect(inspectEmailTk('', lexical([paragraph(text)])).body).toBe(true),
   );
   it.each(['', 'Talk', 'ATK', 'TKs', 'network', 'end.TK', 'TK.word', 'tK', 'éTK', 'TK2'])(
     'ignores non-markers: %s',
-    (text) => expect(bodyTextHasTk(text)).toBe(false),
+    (text) => expect(inspectEmailTk('', lexical([paragraph(text)])).body).toBe(false),
   );
   it('keeps post title semantics for subjects and Koenig semantics for bodies', () => {
     expect(inspectEmailTk('tk', lexical([paragraph('tk')]))).toEqual({
@@ -85,8 +85,8 @@ describe('automation email TK inspection', () => {
           { type: 'button', buttonText: 'TK', buttonUrl: 'TK' },
           { type: 'image', alt: 'TK', src: 'TK', id: 'TK' },
         ]),
-      ).body,
-    ).toBe(false);
+      ),
+    ).toEqual({ subject: false, body: false, contentError: false });
   });
   it.each([
     '{',

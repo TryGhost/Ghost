@@ -1,5 +1,4 @@
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { formatNumber } from '@tryghost/shade/utils';
 import type { emailsWithTk } from '@/automations/utils/email-tk';
 
 export function EmailTkWarning({ emails }: { emails: ReturnType<typeof emailsWithTk> }) {
@@ -19,7 +18,7 @@ export function EmailTkWarning({ emails }: { emails: ReturnType<typeof emailsWit
       >
         {emails.map((email) => (
           <li key={email.id} className="break-words">
-            {email.subject || `Email at step ${formatNumber(email.position)}`}
+            {email.subject}
           </li>
         ))}
       </ul>

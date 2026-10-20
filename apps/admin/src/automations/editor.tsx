@@ -131,7 +131,6 @@ const AutomationEditorContent: React.FC<{
   }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
   const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
-  const submittingRef = React.useRef(false);
   const publishTriggerRef = React.useRef<HTMLElement | null>(null);
   const restorePublishFocus = (event: Event) => {
     if (publishTriggerRef.current?.isConnected) {
@@ -218,7 +217,7 @@ const AutomationEditorContent: React.FC<{
   };
 
   const save = async (statusToSave?: AutomationStatus) => {
-    if (submittingRef.current || isEmailModalDirtyRef.current) {
+    if (editState.phase === 'submitting' || isEmailModalDirtyRef.current) {
       return;
     }
     if (!draft) {
@@ -264,7 +263,6 @@ const AutomationEditorContent: React.FC<{
     }
 
     const handleSaveError = (error: unknown) => {
-      submittingRef.current = false;
       if (error instanceof HostLimitError) {
         setEditState({ phase: 'idle' });
         setLimitError(error);
@@ -274,7 +272,6 @@ const AutomationEditorContent: React.FC<{
       toast.error('Automation couldn’t be saved');
     };
 
-    submittingRef.current = true;
     setEditState(requestState);
 
     // An existing active automation consumes its slot already. New active automations
@@ -297,7 +294,6 @@ const AutomationEditorContent: React.FC<{
       { ...draft, status: newStatus },
       {
         onSuccess: (response) => {
-          submittingRef.current = false;
           const savedDraft = response.automations[0];
           setSavedAutomation(savedDraft);
           setDraft(savedDraft);
@@ -454,7 +450,7 @@ const AutomationEditorContent: React.FC<{
   };
 
   const onPublish = (): void => {
-    if (submittingRef.current || isEmailModalDirtyRef.current) {
+    if (editState.phase === 'submitting' || isEmailModalDirtyRef.current) {
       return;
     }
     if (!draft) {

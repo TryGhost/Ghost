@@ -3,14 +3,12 @@ import { z } from 'zod';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 
 export function emailsWithTk(automation: AutomationDetail | undefined) {
-  return (automation?.actions ?? []).flatMap((action, index) => {
+  return (automation?.actions ?? []).flatMap((action) => {
     if (action.type !== 'send_email') {
       return [];
     }
     const tk = inspectEmailTk(action.data.email_subject, action.data.email_lexical);
-    return tk.subject || tk.body
-      ? [{ id: action.id, subject: action.data.email_subject, position: index + 1 }]
-      : [];
+    return tk.subject || tk.body ? [{ id: action.id, subject: action.data.email_subject }] : [];
   });
 }
 
@@ -18,7 +16,7 @@ export function emailsWithTk(automation: AutomationDetail | undefined) {
 const BODY_TK_REGEX = /(^|.)([^\p{L}\p{N}\s]*(TK|Tk|tk)+[^\p{L}\p{N}\s]*)(.)?/u;
 const WORD_CHAR_REGEX = /\p{L}|\p{N}/u;
 
-export function bodyTextHasTk(text: string): boolean {
+function bodyTextHasTk(text: string): boolean {
   let match = BODY_TK_REGEX.exec(text);
   while (match) {
     const invalidBefore = match[1] && WORD_CHAR_REGEX.test(match[1]) && !match[2].startsWith('—');
