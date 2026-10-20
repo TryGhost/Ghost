@@ -8,16 +8,16 @@ const valid = {
 };
 
 describe('getWebhookError', () => {
-  it('accepts an HTTPS URL with a JSON body using supported tags', () => {
-    expect(getWebhookError(valid)).toBeUndefined();
-  });
-
-  it.each(['', 'example.com', 'http://example.com', 'ftp://example.com', 'https://'])(
-    'rejects the URL %j',
+  it.each(['https://example.com/hook', 'http://localhost:4545/webhook'])(
+    'accepts the URL %j with a JSON body using supported tags',
     (url) => {
-      expect(getWebhookError({ ...valid, url })).toBe('Enter an HTTPS URL.');
+      expect(getWebhookError({ ...valid, url })).toBeUndefined();
     },
   );
+
+  it.each(['', 'example.com', 'ftp://example.com', 'https://'])('rejects the URL %j', (url) => {
+    expect(getWebhookError({ ...valid, url })).toBe('Enter an HTTP or HTTPS URL.');
+  });
 
   it.each(['', '{', '{"id": {{member.id}}}', "{'single': 'quotes'}"])(
     'rejects the body %j',

@@ -3,9 +3,9 @@ import type { AutomationSendWebhookAction } from '@tryghost/admin-x-framework/ap
 const TAG_PATTERN = /\{\{\s*([\w.]+)\s*\}\}/g;
 const SUPPORTED_TAGS = new Set(['member.id', 'member.email']);
 
-const isHttpsUrl = (url: string): boolean => {
+const isHttpUrl = (url: string): boolean => {
   try {
-    return new URL(url).protocol === 'https:';
+    return ['http:', 'https:'].includes(new URL(url).protocol);
   } catch {
     return false;
   }
@@ -23,8 +23,8 @@ const isJsonTemplate = (body: string): boolean => {
 
 // The API doesn't validate webhooks, so this is the only check before publishing.
 export const getWebhookError = (data: AutomationSendWebhookAction['data']): string | undefined => {
-  if (!isHttpsUrl(data.url.trim())) {
-    return 'Enter an HTTPS URL.';
+  if (!isHttpUrl(data.url.trim())) {
+    return 'Enter an HTTP or HTTPS URL.';
   }
   if (!isJsonTemplate(data.body)) {
     return 'Enter a valid JSON body.';

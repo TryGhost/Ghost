@@ -10,7 +10,7 @@ The database repository creates run(s) and queues their first step(s). Ghost's b
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
-A `send_webhook` action is a prototype. It sends a JSON `POST` or `PUT` request with a 15-second timeout. `{{member.id}}` and `{{member.email}}` in the body are replaced with JSON-escaped member values. Any failure, including a non-2xx response or redirect, permanently fails the step without a retry. Its URL, method and body are stored as JSON in the revision's `webhook_config` column. Only Admin validates them: the URL must be HTTPS and the body valid JSON.
+A `send_webhook` action is a prototype. It sends a JSON `POST` or `PUT` request with a 15-second timeout. `{{member.id}}` and `{{member.email}}` in the body are replaced with JSON-escaped member values. Any failure, including a non-2xx response or redirect, permanently fails the step without a retry. Its URL, method and body are stored as JSON in the revision's `webhook_config` column. Only Admin validates them: the URL must be HTTP or HTTPS and the body valid JSON.
 
 ## Where to look
 

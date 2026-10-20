@@ -53,16 +53,18 @@ describe('Inline webhook editing', () => {
     });
   });
 
-  it('blocks publishing a webhook without an HTTPS URL or valid JSON', async () => {
+  it('blocks publishing a webhook without an HTTP(S) URL or valid JSON', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
     const card = await addWebhook();
     const url = card.getByRole('textbox', { name: 'Webhook URL' });
     const body = card.getByRole('textbox', { name: 'Webhook JSON body' });
 
-    await url.fill('http://example.com/hook');
+    await url.fill('ftp://example.com/hook');
     await card.getByRole('button', { name: 'Why this step needs attention' }).click();
-    await expect.element(page.getByText('Enter an HTTPS URL.', { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByText('Enter an HTTP or HTTPS URL.', { exact: true }))
+      .toBeVisible();
 
     await url.fill('https://example.com/hook');
     await body.fill('{"id": {{member.id}}}');

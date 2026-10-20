@@ -94,8 +94,8 @@ an automation's webhook step. The port defaults to 4545. `POST` or `PUT` JSON to
 the URL, such as `/webhook?status=500`, to test a failing response. Payloads are
 kept in memory until the server stops.
 
-Admin only accepts HTTPS webhook URLs, so expose the server through an HTTPS
-tunnel, such as `cloudflared tunnel --url http://localhost:4545`.
+Use `http://localhost:4545/webhook` as the webhook URL when Ghost runs on the
+same machine.
 
 ## Recipient preparation benchmark
 
