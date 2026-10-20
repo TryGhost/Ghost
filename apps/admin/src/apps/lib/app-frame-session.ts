@@ -77,8 +77,6 @@ export interface AppFrameSession {
   pathChanged: (path: string, move?: number) => void;
   /** Called when Admin's theme changes. The session sends the new theme to the app. */
   themeChanged: (theme: Theme) => void;
-  /** Ends the session. The session releases the frame and ignores anything else it sends. */
-  dispose: () => void;
 }
 
 /**
@@ -128,7 +126,6 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
   const listeners = new Set<() => void>();
-  let disposed = false;
 
   let frame: HTMLIFrameElement | null = null;
   let host: AppFrameHost | null = null;
@@ -165,9 +162,6 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   };
 
   const restart = () => {
-    if (disposed) {
-      return;
-    }
     detach();
     update({
       status: 'loading',
@@ -207,7 +201,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
 
   /** Reloads the page because of something the page did, unless it keeps doing it. */
   const restartOnItsOwn = () => {
-    if (!disposed && documentEnded(true)) {
+    if (documentEnded(true)) {
       restart();
     }
   };
@@ -300,7 +294,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       };
     },
     attach: (element) => {
-      if (disposed || element === frame) {
+      if (element === frame) {
         return;
       }
       detach();
@@ -333,11 +327,6 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         appTheme = theme;
         host.themeChanged(theme);
       }
-    },
-    dispose: () => {
-      detach();
-      disposed = true;
-      listeners.clear();
     },
   };
 }

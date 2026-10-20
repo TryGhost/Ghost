@@ -239,8 +239,8 @@ const AppFrame: React.FC<{
   // Created once per `AppFrame`. A second session would bind to a frame whose page has already sent
   // its hello, and would mark the app unresponsive. Its inputs don't change: a new installation or
   // URL remounts `AppFrame` by key, and Ghost's version is fixed while Admin runs. Side effects
-  // start and stop with the frame, through `attach`, the frame's ref. Nothing calls `dispose` from
-  // an effect, because Strict Mode's double effects would end a live session.
+  // start and stop with the frame, through `attach`, the frame's ref, not an effect: Strict Mode's
+  // double effects would end a live session.
   const [frameSession] = useState(() =>
     createAppFrameSession({
       surfaceOrigin,

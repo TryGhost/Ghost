@@ -135,7 +135,7 @@ describe('createAppFrameSession', () => {
   });
 
   afterEach(() => {
-    session.dispose();
+    session.attach(null);
     appFrameTimeouts.ready = previousTimeout;
     vi.useRealTimers();
     vi.clearAllMocks();
@@ -785,7 +785,7 @@ describe('createAppFrameSession', () => {
     );
   });
 
-  it('sends the app’s validated request with a signal that aborts when the session ends', async () => {
+  it('sends the app’s validated request with a signal that aborts when the frame unmounts', async () => {
     const frame = await started();
     fetchAdminApi.mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' });
 
@@ -794,7 +794,7 @@ describe('createAppFrameSession', () => {
     const [request, signal] = fetchAdminApi.mock.calls[0];
     expect(request).toEqual({ path: '/posts/' });
     expect(signal.aborted).toBe(false);
-    session.dispose();
+    session.attach(null);
     expect(signal.aborted).toBe(true);
   });
 
@@ -807,13 +807,13 @@ describe('createAppFrameSession', () => {
     expect(fetchAdminApi).not.toHaveBeenCalled();
   });
 
-  it('rejects a running request with session_ended when the session ends', async () => {
+  it('rejects a running request with session_ended when the frame unmounts', async () => {
     const frame = await started();
     fetchAdminApi.mockImplementation(() => new Promise(() => {}));
 
     const request = frame.host.fetch({ path: '/posts/' });
     await vi.waitFor(() => expect(fetchAdminApi).toHaveBeenCalled());
-    session.dispose();
+    session.attach(null);
 
     await expect(request).rejects.toThrow('session_ended: The app’s session ended');
   });
@@ -843,23 +843,5 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     session.attach(null);
     await callUnheard(frame, 'Gone');
-  });
-
-  it('ignores everything once disposed', async () => {
-    const frame = await started();
-    const listener = vi.fn();
-    session.subscribe(listener);
-
-    session.dispose();
-
-    await callUnheard(frame, 'Gone');
-    session.restart();
-    const next = fakeFrame();
-    session.attach(next.element);
-    next.hello();
-    await settle();
-    expect(next.contentWindow.postMessage).not.toHaveBeenCalled();
-    expect(listener).not.toHaveBeenCalled();
-    expect(session.getState().status).toBe('ready');
   });
 });
