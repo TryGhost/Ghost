@@ -83,7 +83,13 @@ export function normalizeDocsBotMetadata(metadata: unknown): DocsBotMetadata {
     return {};
   }
 
-  return { ...metadata };
+  return {
+    ...metadata,
+    name: asOptionalString(metadata.name),
+    email: asOptionalString(metadata.email),
+    conversationId: asOptionalString(metadata.conversationId),
+    conversationUrl: asOptionalString(metadata.conversationUrl),
+  };
 }
 
 export function normalizeDocsBotTicket(ticket: unknown): DocsBotSupportTicket | null {

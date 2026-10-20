@@ -94,6 +94,20 @@ describe('normalizeDocsBotMetadata', () => {
       custom: { plan: 'pro' },
     });
   });
+
+  it('drops named fields that are not strings', () => {
+    const metadata = normalizeDocsBotMetadata({
+      name: 42,
+      email: { address: 'jamie@example.com' },
+      conversationId: null,
+      conversationUrl: ['https://docsbot.ai/c/1'],
+    });
+
+    expect(metadata.name).toBeUndefined();
+    expect(metadata.email).toBeUndefined();
+    expect(metadata.conversationId).toBeUndefined();
+    expect(metadata.conversationUrl).toBeUndefined();
+  });
 });
 
 describe('normalizeDocsBotTicket', () => {
