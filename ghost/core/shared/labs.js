@@ -33,7 +33,6 @@ const GA_FEATURES = [
   'automationsLifecycleTriggers',
   'selfServeArchives',
   'admin7EditorImprovements',
-  'stripeCheckoutDesign',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users

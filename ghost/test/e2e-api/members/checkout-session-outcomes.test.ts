@@ -72,7 +72,6 @@ describe('Checkout session outcomes', function () {
 
   beforeEach(function () {
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
     metrics = mockManager.mockMetrics();
   });
 

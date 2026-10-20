@@ -31,7 +31,6 @@ describe('Stripe Checkout Branding Admin API', function () {
 
   beforeEach(function () {
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
   });
 
   afterEach(async function () {
@@ -110,13 +109,6 @@ describe('Stripe Checkout Branding Admin API', function () {
 
     assert.equal(body.checkout_branding[0].display_name, 'The Daily Example');
     assert.equal(body.checkout_branding[0].design, null);
-  });
-
-  it('is not found while its flag is off', async function () {
-    mockManager.mockLabsDisabled('stripeCheckoutDesign');
-
-    await readBranding(404);
-    assert.equal(stripeMocker.checkoutSessions.length, 0);
   });
 
   describe('Permissions', function () {
