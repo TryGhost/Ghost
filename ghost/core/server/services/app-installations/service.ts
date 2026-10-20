@@ -5,10 +5,12 @@ import type { RecordAppInstallationAction, RequestContext } from './actions';
 import { AppInstallationsRepository, type WriteOutcome } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import {
+  approvalWrite,
   changesFrom,
   decideOnManifest,
+  recheckWrite,
   type AppManifestChange,
-  type ManifestDecision,
+  type ManifestWrite,
 } from './decide-on-manifest';
 import { approvalManifestIds, buildHistory } from './history';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
@@ -201,7 +203,7 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(current),
       loaded,
     });
-    const stored = await this.storeApproval(current, loaded, decision);
+    const stored = await this.store(current, loaded, approvalWrite(decision, current));
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
@@ -217,8 +219,8 @@ export class AppInstallationsService {
         details: {
           primary_name: loaded.manifest.name,
           app_id: loaded.manifest.id,
-          from_manifest_id: approved.from,
-          to_manifest_id: approved.to,
+          from_manifest_id: current.manifest_id,
+          to_manifest_id: approved,
         },
       });
     }
@@ -318,49 +320,42 @@ export class AppInstallationsService {
     });
   }
 
-  /** The installation's pending manifest, by its digest, if it has one. */
+  /** The installation's pending manifest, by its ID and digest, if it has one. */
   private async pendingManifestOf(installation: Installation) {
-    if (installation.pending_manifest_id === null) {
+    const id = installation.pending_manifest_id;
+    if (id === null) {
       return null;
     }
-    const digest = await this.repository.findDigest(installation.pending_manifest_id);
-    return digest === undefined ? null : { digest };
+    const digest = await this.repository.findDigest(id);
+    return digest === undefined ? null : { id, digest };
   }
 
   /**
-   * Stores a publisher's approval of the reviewed manifest, which becomes the approved
-   * manifest whatever changed. It's only written while the installation is as `current`,
-   * which the approval was decided from.
-   *
-   * The pending manifest and the approved one already have rows, so approving either adds
-   * none; approving the approved manifest lets go of the pending one. Any other manifest gets
-   * an `approval` row.
-   *
-   * Returns the approved manifest ID before and after, or null when it's the approved manifest
-   * with nothing pending, which writes nothing.
+   * Carries out a write decided from `current`, but only while the installation is as it was
+   * then. Returns the manifest that became the approved or pending one, or null when nothing
+   * was written.
    */
-  private storeApproval(
+  private store(
     current: Installation,
     loaded: LoadedManifest,
-    { kind, changes }: ManifestDecision,
-  ): Promise<WriteOutcome<{ from: string; to: string } | null>> {
+    write: ManifestWrite,
+  ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
-      if (kind === 'unchanged') {
-        return null;
+      switch (write.kind) {
+        case 'nothing':
+          return null;
+        case 'approve_existing':
+          await locked.activate(write.manifest.id);
+          return write.manifest.id;
+        case 'add': {
+          const added = await locked.addManifest(loaded, {
+            source: write.source,
+            requiresApproval: write.requiresApproval,
+          });
+          await (write.becomes === 'approved' ? locked.activate(added) : locked.suspend(added));
+          return added;
+        }
       }
-      let approved: string;
-      if (kind === 'use_pending' && current.pending_manifest_id !== null) {
-        approved = current.pending_manifest_id;
-      } else if (changes.length === 0) {
-        approved = current.manifest_id;
-      } else {
-        approved = await locked.addManifest(loaded, {
-          source: 'approval',
-          requiresApproval: changes.some((change) => change.requires_approval),
-        });
-      }
-      await locked.activate(approved);
-      return { from: current.manifest_id, to: approved };
     });
   }
 
@@ -421,7 +416,7 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(before),
       loaded,
     });
-    const stored = await this.storeRecheck(before, loaded, decision);
+    const stored = await this.store(before, loaded, recheckWrite(decision));
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }
@@ -447,48 +442,5 @@ export class AppInstallationsService {
       return;
     }
     throw unavailable(why);
-  }
-
-  /**
-   * Stores what a re-check found. It's only written while the installation is as `current`,
-   * which the re-check decided from. No person made these changes, so each gets a manifest
-   * row as its only record.
-   */
-  private storeRecheck(
-    current: Installation,
-    loaded: LoadedManifest,
-    { kind }: ManifestDecision,
-  ): Promise<WriteOutcome<void>> {
-    return this.repository.whileUnchanged(current, async (locked) => {
-      switch (kind) {
-        case 'unchanged':
-        case 'use_pending':
-          return;
-        // Silent changes are applied straight away. When the app reverted the pending changes,
-        // that lifts the suspension.
-        case 'apply':
-        case 'resume': {
-          const applied = await locked.addManifest(loaded, {
-            source: kind === 'resume' ? 'resume' : 'update',
-            requiresApproval: false,
-          });
-          return locked.activate(applied);
-        }
-        case 'suspend': {
-          // Any other change becomes the pending manifest, replacing an older one.
-          const pending = await locked.addManifest(loaded, {
-            source: 'update',
-            requiresApproval: true,
-          });
-          return locked.suspend(pending);
-        }
-        default: {
-          const _exhaustive: never = kind;
-          throw new errors.InternalServerError({
-            message: `Unhandled manifest decision: ${_exhaustive}`,
-          });
-        }
-      }
-    });
   }
 }
