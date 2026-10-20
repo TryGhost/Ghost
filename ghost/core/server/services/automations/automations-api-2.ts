@@ -70,7 +70,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
         return;
       }
 
-      await repository.withTransaction(async (trx) => {
+      const didEnroll = await repository.withTransaction(async (trx) => {
         await repository.lockMember(trx, memberId);
 
         const firstActions = await repository.findFirstActionRevisions(
@@ -121,9 +121,13 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
         await repository.insertRuns(trx, runsToInsert);
         await repository.insertRunSteps(trx, stepsToInsert);
+
+        return runsToInsert.length > 0;
       });
 
-      requestPoll();
+      if (didEnroll) {
+        requestPoll();
+      }
     },
   };
 };

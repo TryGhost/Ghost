@@ -273,6 +273,9 @@ describe('automations API', function () {
       expect(steps).toHaveLength(1);
       expect(steps[0]?.automation_action_revision_id).toBe(available.automation_action_revision_id);
       expect(steps[0]?.automation_run_id).toBe(runs[1]?.id);
+      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+        expect.any(StartAutomationsPollEvent),
+      );
     });
 
     it('inserts no runs or steps when there are no matching automations', async function () {
@@ -282,6 +285,7 @@ describe('automations API', function () {
 
       expect(runs).toHaveLength(0);
       expect(steps).toHaveLength(0);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('applies the fake wait-hours multiplier when scheduling a wait action', async function () {
