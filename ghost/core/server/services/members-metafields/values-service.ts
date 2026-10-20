@@ -5,7 +5,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
   FIELD_TYPES,
-  subFieldsOf,
+  partsOf,
   type FieldType,
   type MetafieldChangeEventField,
 } from '@tryghost/metafield-types';
@@ -21,7 +21,7 @@ import {
 import {
   DbMetafield,
   DbMetafieldChangeEventWithMember,
-  DbMetafieldLeaf,
+  DbStoredValueRow,
   DbMetafieldValue,
   FIELD_STATUS,
   StoredFieldList,
@@ -31,7 +31,7 @@ import {
 import { toDatabaseDate } from '../../lib/db-types/date';
 import { ACTIVE_ONLY, definitions, knexify, readableBy } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
-import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
+import { valueRowsToWrite, valuesFromRows, type StoredValueRow } from './storage';
 
 const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
@@ -56,12 +56,12 @@ const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE]
 const UPSERT_CHUNK = 400;
 
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
-type DbLeafRow = z.infer<typeof DbMetafieldValue>;
+type DbValueRow = z.infer<typeof DbMetafieldValue>;
 
 const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
 const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
-const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
+const wireProperty = (identity: string): string => [QUALIFIER, identity].join(SEPARATOR);
 
 /** One value the site will not accept, against the name the write gave it. */
 interface Refusal {
@@ -239,10 +239,10 @@ export class MetafieldValuesService {
         `${VALUES_TABLE}.value_text`,
       );
 
-    const leaves: StoredLeaf[] = [];
+    const stored: StoredValueRow[] = [];
     for (const row of rows) {
       try {
-        leaves.push(DbMetafieldLeaf.parse(row));
+        stored.push(DbStoredValueRow.parse(row));
       } catch (err) {
         logging.warn(
           {
@@ -257,7 +257,7 @@ export class MetafieldValuesService {
     }
 
     return new Map(
-      [...valuesFromLeaves(leaves)].map(([memberId, values]) => [
+      [...valuesFromRows(stored)].map(([memberId, values]) => [
         memberId,
         { [CUSTOM_NAMESPACE]: values },
       ]),
@@ -291,10 +291,12 @@ export class MetafieldValuesService {
       if (typeof values !== 'object' || values === null || Array.isArray(values)) {
         throw new errors.ValidationError({
           message: 'Metafield values must be an object keyed by field key.',
-          property: [QUALIFIER, namespace].join('.'),
+          property: [QUALIFIER, namespace].join(SEPARATOR),
         });
       }
       for (const [key, raw] of Object.entries(values as Record<string, unknown>)) {
+        // Joined as text, not written by the codec: these segments are unchecked, and a write
+        // naming a field that cannot exist is refused under the name it gave.
         identified[[namespace, key].join(SEPARATOR)] = raw;
       }
     }
@@ -350,7 +352,7 @@ export class MetafieldValuesService {
       // `null` clears any field, and `''` clears one with no parts. For a value
       // with parts `''` names nothing, so it is left to fail validation rather than
       // being read as a silent delete.
-      if (raw === null || (raw === '' && subFieldsOf(field.type) === null)) {
+      if (raw === null || (raw === '' && partsOf(field.type) === null)) {
         writes.push({ field });
         continue;
       }
@@ -366,7 +368,7 @@ export class MetafieldValuesService {
         for (const issue of value.error.issues) {
           refusals.push({
             message: issue.message,
-            property: [wireProperty(identity), ...issue.path].join('.'),
+            property: [wireProperty(identity), ...issue.path].join(SEPARATOR),
           });
         }
         continue;
@@ -417,7 +419,7 @@ export class MetafieldValuesService {
       const now = new Date();
       const clearedKeys: string[] = [];
       const clearedPaths: Array<{ fieldKey: string; paths: string[] }> = [];
-      const rows: DbLeafRow[] = [];
+      const rows: DbValueRow[] = [];
 
       for (const { field, value } of writes) {
         if (value === undefined) {
@@ -425,18 +427,18 @@ export class MetafieldValuesService {
           continue;
         }
 
-        const { set, cleared } = leavesToWrite(value);
+        const { set, cleared } = valueRowsToWrite(value);
         if (cleared.length > 0) {
           clearedPaths.push({ fieldKey: field.key, paths: cleared });
         }
 
         rows.push(
-          ...set.map((leaf) => ({
+          ...set.map((row) => ({
             id: new ObjectID().toHexString(),
             member_id: memberId,
             metafield_key: field.key,
-            path: leaf.path,
-            value_text: leaf.value_text,
+            path: row.path,
+            value_text: row.value_text,
             written_by_type: writtenBy.type,
             written_by_id: writtenBy.id,
             created_at: now,
@@ -470,12 +472,12 @@ export class MetafieldValuesService {
         // Typed as the plain row because `merge` takes its columns as `keyof` the
         // builder's record, which for a composite table registration is the scope
         // names rather than the columns.
-        await trx<DbLeafRow>(VALUES_TABLE)
+        await trx<DbValueRow>(VALUES_TABLE)
           .insert(rows.slice(from, from + UPSERT_CHUNK))
           // Naming the columns rather than giving values takes each from the row
           // that lost the conflict, so every part updates to its own value.
           .onConflict(['member_id', 'metafield_key', 'path'])
-          // The writer is merged with the value, so a leaf names who wrote what
+          // The writer is merged with the value, so a row names who wrote what
           // it currently holds rather than who wrote its first value.
           .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
       }

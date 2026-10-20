@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
-import { subFieldsOf } from '@tryghost/metafield-types';
+import { partsOf } from '@tryghost/metafield-types';
 
 const Collected = z
   .string()
@@ -39,7 +39,7 @@ const CompletedSession = z
   .loose();
 type CompletedSession = z.output<typeof CompletedSession>;
 
-const ADDRESS_PARTS = subFieldsOf('address') ?? [];
+const ADDRESS_PARTS = partsOf('address') ?? [];
 
 /**
  * The address as a value for an address custom field, or nothing when Stripe gave no part of

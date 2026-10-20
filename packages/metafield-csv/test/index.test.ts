@@ -49,7 +49,7 @@ describe('metafield CSV cells', function () {
     assert.equal(Object.hasOwn(cells, 'email'), false);
   });
 
-  it('expands a composite field into a column per sub-field', function () {
+  it('expands a composite field into a column per part', function () {
     const cells = csvCellsForFields([address], {
       custom: {
         shipping_address: {
@@ -91,7 +91,7 @@ describe('metafield CSV cells', function () {
     );
   });
 
-  it('leaves a cell empty for a sub-field the value omits', function () {
+  it('leaves a cell empty for a part the value omits', function () {
     const cells = csvCellsForFields([address], {
       custom: {
         shipping_address: {
@@ -119,18 +119,18 @@ describe('metafield CSV cells', function () {
 describe('metafield CSV columns', function () {
   it('gives a scalar field one namespaced column holding no particular part', function () {
     assert.deepEqual(csvColumnsForField(customField('nickname', 'short_text')), [
-      { column: 'metafields.custom.nickname', subField: null },
+      { column: 'metafields.custom.nickname', part: null },
     ]);
   });
 
-  it('gives a composite field one column per sub-field, each naming the part it holds', function () {
+  it('gives a composite field one column per part, each naming the part it holds', function () {
     assert.deepEqual(csvColumnsForField(customField('shipping_address', 'address')), [
-      { column: 'metafields.custom.shipping_address.line1', subField: 'line1' },
-      { column: 'metafields.custom.shipping_address.line2', subField: 'line2' },
-      { column: 'metafields.custom.shipping_address.city', subField: 'city' },
-      { column: 'metafields.custom.shipping_address.state', subField: 'state' },
-      { column: 'metafields.custom.shipping_address.postal_code', subField: 'postal_code' },
-      { column: 'metafields.custom.shipping_address.country', subField: 'country' },
+      { column: 'metafields.custom.shipping_address.line1', part: 'line1' },
+      { column: 'metafields.custom.shipping_address.line2', part: 'line2' },
+      { column: 'metafields.custom.shipping_address.city', part: 'city' },
+      { column: 'metafields.custom.shipping_address.state', part: 'state' },
+      { column: 'metafields.custom.shipping_address.postal_code', part: 'postal_code' },
+      { column: 'metafields.custom.shipping_address.country', part: 'country' },
     ]);
   });
 

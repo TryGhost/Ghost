@@ -80,7 +80,7 @@ type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
 // is what drops it.
-export const DbMetafieldLeaf = z.object({
+export const DbStoredValueRow = z.object({
   member_id: z.string(),
   key: KeySchema,
   type: FieldTypeSchema,

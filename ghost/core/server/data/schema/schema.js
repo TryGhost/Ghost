@@ -1153,8 +1153,8 @@ module.exports = {
       cascadeDelete: true,
     },
     // Which part of the field's value this row carries. A scalar has one part and
-    // stores it under the empty path; a composite stores one row per sub-field it
-    // fills, under that sub-field's key. Not nullable, because MySQL counts NULLs
+    // stores it under the empty path; a composite stores one row per part it
+    // fills, under that part's key. Not nullable, because MySQL counts NULLs
     // as distinct in a unique index and the constraint below would stop holding.
     path: { type: 'string', maxlength: 191, nullable: false, defaultTo: '' },
     // One row, one value: a part a member has not filled in has no row at all. The

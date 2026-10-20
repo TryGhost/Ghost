@@ -132,7 +132,7 @@ describe('getEditableCustomFieldValues', () => {
     ).toEqual({ 'custom.job_title': 'Editor' });
   });
 
-  it('normalizes address values: trims sub-fields, drops empty and unknown ones', () => {
+  it('normalizes address values: trims parts, drops empty and unknown ones', () => {
     expect(
       getEditableCustomFieldValues({
         custom: {
@@ -143,7 +143,7 @@ describe('getEditableCustomFieldValues', () => {
             state: '   ',
             postal_code: '10115',
             country: 'DE',
-            not_a_subfield: 'ignored',
+            not_a_part: 'ignored',
           },
         },
       }),
@@ -466,7 +466,7 @@ describe('getCustomFieldValidationErrors', () => {
     expect(getCustomFieldValidationErrors({ job_title: '', home_address: {} }, fields)).toEqual({});
   });
 
-  it('accepts a partial address — no sub-field is required', () => {
+  it('accepts a partial address — no part is required', () => {
     // The stored shape is fixed, but which parts of it exist is a per-country
     // question, so an address without a city or postal code is valid rather
     // than incomplete.
@@ -508,7 +508,7 @@ describe('getCustomFieldValidationErrors', () => {
     expect(errors).toEqual({ 'custom.job_title': 'Use 255 characters or fewer.' });
   });
 
-  it('reports an over-long address sub-field with the limit a person can act on', () => {
+  it('reports an over-long address part with the limit a person can act on', () => {
     const errors = getCustomFieldValidationErrors(
       { home_address: { ...validAddress, line1: 'x'.repeat(256) } },
       fields,
@@ -536,7 +536,7 @@ describe('getCustomFieldValidationErrors', () => {
     });
   });
 
-  it('lets a sub-field with a format be emptied, not just one with a bound', () => {
+  it('lets a part with a format be emptied, not just one with a bound', () => {
     // Emptying the country box is the one way a person removes a country while
     // keeping the address. Its rule is a pattern rather than a length, so unless the
     // catalog treats empty as a clear the save is refused and the box cannot be

@@ -19,15 +19,15 @@ const CORE_COLUMNS = [
   'gift_id',
 ];
 
-const ADDRESS_SUB_FIELDS = ['line1', 'line2', 'city', 'state', 'postal_code', 'country'];
+const ADDRESS_PARTS = ['line1', 'line2', 'city', 'state', 'postal_code', 'country'];
 
 /** Custom field columns are namespaced so a minted key can never take a core column. */
-function columnFor(key: string, subField?: string) {
-  return subField ? `metafields.custom.${key}.${subField}` : `metafields.custom.${key}`;
+function columnFor(key: string, part?: string) {
+  return part ? `metafields.custom.${key}.${part}` : `metafields.custom.${key}`;
 }
 
 function addressColumnsFor(key: string) {
-  return ADDRESS_SUB_FIELDS.map((sub) => columnFor(key, sub));
+  return ADDRESS_PARTS.map((part) => columnFor(key, part));
 }
 
 const FULL_ADDRESS = {
@@ -39,8 +39,8 @@ const FULL_ADDRESS = {
   country: 'GB',
 };
 
-// An address filling only some of its sub-fields; the export writes a column for every
-// sub-field regardless, so the ones left out come back as empty cells.
+// An address filling only some of its parts; the export writes a column for every
+// part regardless, so the ones left out come back as empty cells.
 const MINIMAL_ADDRESS = {
   line1: '9 Long Lane',
   city: 'Bristol',
@@ -121,7 +121,7 @@ describe('Members API — exportCSV with custom fields', function () {
       .del();
   });
 
-  it('adds a column per active field, expanding an address into its sub-fields', async function () {
+  it('adds a column per active field, expanding an address into its parts', async function () {
     const nickname = await createField('Nickname', 'short_text');
     const bio = await createField('Bio', 'long_text');
     const address = await createField('Shipping Address', 'address');
@@ -154,10 +154,10 @@ describe('Members API — exportCSV with custom fields', function () {
 
     assert.equal(row[columnFor(nickname.key)], 'Bex');
     assert.equal(row[columnFor(bio.key)], 'Writes about trains.');
-    for (const sub of ADDRESS_SUB_FIELDS) {
+    for (const part of ADDRESS_PARTS) {
       assert.equal(
-        row[columnFor(address.key, sub)],
-        FULL_ADDRESS[sub as keyof typeof FULL_ADDRESS],
+        row[columnFor(address.key, part)],
+        FULL_ADDRESS[part as keyof typeof FULL_ADDRESS],
       );
     }
   });
@@ -180,12 +180,12 @@ describe('Members API — exportCSV with custom fields', function () {
     const emptyRow = rowFor(empty.id);
     assert.equal(emptyRow[columnFor(nickname.key)], '');
     assert.equal(emptyRow[columnFor(bio.key)], '');
-    for (const sub of ADDRESS_SUB_FIELDS) {
-      assert.equal(emptyRow[columnFor(address.key, sub)], '');
+    for (const part of ADDRESS_PARTS) {
+      assert.equal(emptyRow[columnFor(address.key, part)], '');
     }
   });
 
-  it('leaves optional address sub-fields empty when the address omits them', async function () {
+  it('leaves optional address parts empty when the address omits them', async function () {
     const address = await createField('Shipping Address', 'address');
 
     const member = await createMember({ [address.key]: MINIMAL_ADDRESS });
