@@ -18,7 +18,7 @@ import type { CompoundMatch, PresenceAddressing } from '@/shared/filters';
 import { memberCustomFieldIdentity } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const RELATION = 'metafields';
-const KEY_ATTRIBUTE = `${RELATION}.key`;
+const IDENTITY_ATTRIBUTE = `${RELATION}.identity`;
 const VALUE_ATTRIBUTE = `${RELATION}.value`;
 
 export const METAFIELDS_FIELD_PREFIX = `${QUALIFIER}${SEPARATOR}` as const;
@@ -61,8 +61,8 @@ export function partOf(identity: Identity): string {
 
 export const CUSTOM_FIELD_SET_OPERATORS = PRESENCE_OPERATORS;
 
-function keyClause(identity: string): string {
-  return `${KEY_ATTRIBUTE}:${escapeNqlString(identity)}`;
+function identityClause(identity: string): string {
+  return `${IDENTITY_ATTRIBUTE}:${escapeNqlString(identity)}`;
 }
 
 // A predicate's values are the part first, then what it holds: one text, or the
@@ -101,17 +101,17 @@ export function customFieldAddressing(
 
       return {
         valueKey: VALUE_ATTRIBUTE,
-        companions: [keyClause(identity)],
+        companions: [identityClause(identity)],
         values: rest,
       };
     },
 
     // The shape of these clauses is not ours to choose. Ghost's members endpoint rewrites them
     // into a single lookup over the table holding custom-field values, and accepts only two
-    // forms: a key clause alone, or a key clause grouped with exactly one value clause. The
-    // key names the exact value — namespace, key, and for a multi-part value the part — so a
-    // part's presence is the bare key clause for that value, and its negation asks for members
-    // with no such value stored.
+    // forms: an identity clause alone, or an identity clause grouped with exactly one value
+    // clause. The identity names the exact value — namespace, key, and for a multi-part value
+    // the part — so a part's presence is the bare identity clause for that value, and its
+    // negation asks for members with no such value stored.
     addressPresence(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
       const { part } = readValues(predicate.values);
@@ -122,10 +122,10 @@ export function customFieldAddressing(
       }
 
       if (predicate.operator === 'is-set') {
-        return [keyClause(identity)];
+        return [identityClause(identity)];
       }
 
-      return [`${KEY_ATTRIBUTE}:-${escapeNqlString(identity)}`];
+      return [`${IDENTITY_ATTRIBUTE}:-${escapeNqlString(identity)}`];
     },
 
     match() {
@@ -140,7 +140,7 @@ export function customFieldAddressing(
       const children = getCompoundChildren(node, '$and');
 
       if (!children) {
-        const identity = parseIdentityValue(node[KEY_ATTRIBUTE]);
+        const identity = parseIdentityValue(node[IDENTITY_ATTRIBUTE]);
 
         if (identity) {
           if (!ownsIdentity(identity)) {
@@ -157,7 +157,7 @@ export function customFieldAddressing(
           };
         }
 
-        const negated = parseIdentityValue(readNegatedString(node[KEY_ATTRIBUTE]));
+        const negated = parseIdentityValue(readNegatedString(node[IDENTITY_ATTRIBUTE]));
 
         if (negated) {
           if (!ownsIdentity(negated)) {
@@ -186,7 +186,7 @@ export function customFieldAddressing(
       let hasValue = false;
 
       for (const child of children) {
-        const parsed = parseIdentityValue(child[KEY_ATTRIBUTE]);
+        const parsed = parseIdentityValue(child[IDENTITY_ATTRIBUTE]);
         if (parsed) {
           identity = parsed;
         }
