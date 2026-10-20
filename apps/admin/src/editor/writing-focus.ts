@@ -1,7 +1,8 @@
 /**
- * Writing focus: while the writer types, the editor's chrome (header, settings
- * toggle, word count and the empty feature image bar) fades away, and moving
- * the mouse brings it back.
+ * Writing focus: while the writer types, the editor's chrome (the header's
+ * status and actions, the settings toggle, the word count and the empty feature
+ * image bar) fades away, and moving the mouse brings it back. The back link
+ * stays, so the way out is always in view.
  */
 
 /** How the chrome stands: rendered as `data-writing-focus` on each piece of it. */

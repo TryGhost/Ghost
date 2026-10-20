@@ -34,7 +34,7 @@ function writingFocusOf(control: Locator) {
 
 function chrome() {
   return [
-    editorScreen.backLink('post'),
+    editorScreen.status(),
     editorScreen.publishButton(),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
@@ -54,6 +54,11 @@ describe('Writing focus', () => {
     await userEvent.click(editorScreen.body());
     await userEvent.keyboard('More');
     await expect.poll(() => chrome().map(writingFocusOf)).toEqual(chrome().map(() => 'hidden'));
+    // The way out stays in view, and takes the pointer.
+    expect(writingFocusOf(editorScreen.backLink('post'))).toBeUndefined();
+    expect(getComputedStyle(editorScreen.backLink('post').element()).pointerEvents).not.toBe(
+      'none',
+    );
 
     // The pointer travels from where it was, even in a single jump.
     await userEvent.hover(editorScreen.titleInput());

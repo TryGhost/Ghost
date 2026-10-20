@@ -452,39 +452,43 @@ function EditorContent({
               'screen-exit-chrome-top pointer-events-none relative z-20 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
-            data-writing-focus={writingFocus}
           >
+            {/* The back link stays while the writer types, so the way out is always in view. */}
             <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
-                <EditorStatus
-                  isDirty={session.isDirty()}
-                  pendingSave={session.pendingSave}
-                  record={statusRecord}
-                  state={session.state}
-                  onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                  onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-                  onRetrySave={session.retrySave}
-                />
+                <Box className="min-w-0" data-writing-focus={writingFocus}>
+                  <EditorStatus
+                    isDirty={session.isDirty()}
+                    pendingSave={session.pendingSave}
+                    record={statusRecord}
+                    state={session.state}
+                    onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                    onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                    onRetrySave={session.retrySave}
+                  />
+                </Box>
               ) : null}
-              <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                <EditorHeaderActions
-                  bottomBar={bottomBar}
-                  currentUser={currentUser}
-                  offersEmailRetry={offersEmailRetry}
-                  openFlow={openFlow}
-                  post={publishPost}
-                  postType={postType}
-                  revealInvalidField={revealInvalidField}
-                  session={session}
-                  siteUrl={cardConfig.siteUrl}
-                  tkCount={tkCount}
-                  onOpenFlow={setOpenFlow}
-                />
-                <Box
-                  aria-hidden="true"
-                  className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
-                />
-              </PageHeader.ActionGroup>
+              <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
+                <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
+                  <EditorHeaderActions
+                    bottomBar={bottomBar}
+                    currentUser={currentUser}
+                    offersEmailRetry={offersEmailRetry}
+                    openFlow={openFlow}
+                    post={publishPost}
+                    postType={postType}
+                    revealInvalidField={revealInvalidField}
+                    session={session}
+                    siteUrl={cardConfig.siteUrl}
+                    tkCount={tkCount}
+                    onOpenFlow={setOpenFlow}
+                  />
+                  <Box
+                    aria-hidden="true"
+                    className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
+                  />
+                </PageHeader.ActionGroup>
+              </Box>
             </EditorHeader>
           </Box>
           {/* The document reaches up behind the floating header. Isolated so a

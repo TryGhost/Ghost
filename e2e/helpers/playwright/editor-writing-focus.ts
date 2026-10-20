@@ -1,10 +1,11 @@
 import { BrowserContext, Page } from '@playwright/test';
 
 /**
- * While the writer types, the editor hides its chrome (the header, the settings
- * toggle, the word count) and the hidden chrome takes no pointer input until the
- * pointer travels. Playwright checks what a click would hit before it moves the
- * mouse, so a click on hidden chrome would never bring it back. Whenever hidden
+ * While the writer types, the editor hides its chrome (the header's actions,
+ * the settings toggle, the word count) and the hidden chrome takes no pointer
+ * input until the pointer travels. Playwright checks what a click would hit
+ * before it moves the mouse, so a click on hidden chrome would never bring it
+ * back. Whenever hidden
  * chrome is on screen before an action, the pointer moves, as a writer's does.
  */
 async function revealHiddenEditorChrome(page: Page): Promise<void> {
