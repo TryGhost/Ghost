@@ -9,7 +9,7 @@ import type {
 import { detail, setup, flags } from './run-history.test-utils';
 import { openAutomationSidebar } from './run-list.test-utils';
 
-const nameField = () => page.getByRole('textbox', { name: 'Name', exact: true });
+const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
 const descriptionField = () => page.getByRole('textbox', { name: 'Description', exact: true });
 
 describe('Automation settings', () => {
@@ -65,6 +65,31 @@ describe('Automation settings', () => {
       )
       .toBeDisabled();
     await expect.element(nameField()).toHaveValue('Updated welcome flow');
+  });
+
+  it('renames from the title, restores the previous name when left blank, and allows a name in use', async () => {
+    setup();
+    let saved: AutomationDetail = { ...detail('first'), status: 'inactive' };
+    fakeAdminEndpoint('GET', '/automations/first/', () => ({ automations: [saved] }));
+    const edit = fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => {
+      saved = { ...saved, ...(body as { automations: EditAutomationPayload[] }).automations[0] };
+      return { automations: [saved] };
+    });
+    await renderAdminApp('/automations/first', flags);
+
+    await nameField().fill('');
+    nameField().element().blur();
+    await expect.element(nameField()).toHaveValue('Welcome series');
+
+    // Names don't need to be unique
+    await nameField().fill('Taken flow');
+    nameField().element().blur();
+    await expect.element(nameField()).not.toHaveAttribute('aria-invalid');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(() => edit.requests.length).toBe(1);
+    expect(
+      (edit.requests[0].body as { automations: Partial<AutomationDetail>[] }).automations[0],
+    ).toMatchObject({ name: 'Taken flow' });
   });
 
   it('guards unsaved metadata and allows reverting edits', async () => {

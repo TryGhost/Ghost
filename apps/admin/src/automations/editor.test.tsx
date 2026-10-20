@@ -1047,17 +1047,16 @@ describe('AutomationEditor', () => {
     });
     mockStats.current = undefined;
     renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Automation name' }), {
       target: { value: 'New name' },
     });
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
       target: { value: 'New description' },
     });
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Hide automation sidebar' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
+    expect(screen.getByRole('textbox', { name: 'Automation name' })).toHaveValue('New name');
     fireEvent.click(screen.getByRole('button', { name: label }));
     if (label !== 'Save') {
       const dialog = await screen.findByRole('alertdialog');
@@ -1073,7 +1072,7 @@ describe('AutomationEditor', () => {
     );
     const [payload, options] = mockEditMutation.mutate.mock.calls[0];
     act(() => options.onSuccess?.({ automations: [{ ...automationDetail, ...payload }] }));
-    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
+    expect(screen.getByRole('textbox', { name: 'Automation name' })).toHaveValue('New name');
     switch (nextStatus) {
       case 'active':
         expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
@@ -1089,7 +1088,34 @@ describe('AutomationEditor', () => {
     }
   });
 
-  it.each(['', '   '])('blocks saving blank name %j but allows empty description', (name) => {
+  it.each(['', '   '])(
+    'blocks saving blank name %j and restores the previous name when left blank',
+    (name) => {
+      mockUseReadAutomation.mockReturnValue({
+        data: { automations: [{ ...automationDetail, status: 'inactive' }] },
+        isLoading: false,
+        isError: false,
+      });
+      mockStats.current = undefined;
+      renderEditor();
+      const input = screen.getByRole('textbox', { name: 'Automation name' });
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: name } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(mockToastError).toHaveBeenCalledWith('Add an automation name.');
+      expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+      fireEvent.blur(input);
+      expect(input).toHaveValue(automationDetail.name);
+      fireEvent.change(input, { target: { value: 'Valid name' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Valid name' }),
+        expect.any(Object),
+      );
+    },
+  );
+
+  it('allows saving an empty description', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'inactive' }] },
       isLoading: false,
@@ -1098,20 +1124,34 @@ describe('AutomationEditor', () => {
     mockStats.current = undefined;
     renderEditor();
     fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-    const input = screen.getByRole('textbox', { name: 'Name' });
-    fireEvent.change(input, { target: { value: name } });
     fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
       target: { value: '' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    expect(input).toHaveAttribute('aria-invalid', 'true');
-    expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-    fireEvent.change(input, { target: { value: 'Valid name' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Valid name', description: '' }),
+      expect.objectContaining({ description: '' }),
       expect.any(Object),
     );
+  });
+
+  it('leaves IME composition keys to the input method when renaming', () => {
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status: 'inactive' }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    const input = screen.getByRole('textbox', { name: 'Automation name' });
+    input.focus();
+    fireEvent.change(input, { target: { value: 'Draft name' } });
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue('Draft name');
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(input).not.toHaveFocus();
+    expect(input).toHaveValue(automationDetail.name);
   });
 
   it.each([false, true])(
@@ -1786,8 +1826,7 @@ describe('AutomationEditor', () => {
 
       expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-      fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-      fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+      fireEvent.change(screen.getByRole('textbox', { name: 'Automation name' }), {
         target: { value: 'Empty automation' },
       });
       expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
@@ -1812,8 +1851,7 @@ describe('AutomationEditor', () => {
 
     expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Automation name' }), {
       target: { value: 'Empty active automation' },
     });
     expect(screen.getByRole('button', { name: 'Publish changes' })).toBeDisabled();

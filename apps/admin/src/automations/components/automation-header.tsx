@@ -1,3 +1,4 @@
+import AutomationNameField from './automation-name-field';
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import { useShade } from '@tryghost/shade/app';
@@ -38,6 +39,8 @@ interface AutomationHeaderProps {
   onSave: () => void;
   onPublish: () => void;
   onTurnOff: () => void;
+  // Makes the title editable when provided
+  onNameChange?: (name: string) => void;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -55,6 +58,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onSave,
   onPublish,
   onTurnOff,
+  onNameChange,
 }) => {
   const { isAdmin7 } = useShade();
   const entering = useScreenEntrance();
@@ -144,7 +148,11 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
           <Skeleton className="h-5 w-40" />
         ) : (
           <>
-            <span className="truncate text-lg font-semibold">{name}</span>
+            {onNameChange && name !== undefined ? (
+              <AutomationNameField value={name} onChange={onNameChange} />
+            ) : (
+              <span className="truncate text-control font-medium">{name}</span>
+            )}
             {status && <AutomationStatusBadge status={status} />}
           </>
         )}
