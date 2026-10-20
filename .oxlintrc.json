@@ -208,6 +208,7 @@
         "ghost/core/server/services/posts-public/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
         "ghost/core/server/services/slack-ping/index.ts",
+        "ghost/core/server/services/support-requests/index.ts",
         "ghost/core/server/services/upgrades/index.ts"
       ],
       "rules": {

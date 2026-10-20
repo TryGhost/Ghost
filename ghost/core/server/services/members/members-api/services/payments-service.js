@@ -68,8 +68,8 @@ class PaymentsService {
    * @param {string} [params.email]
    * @param {import('../../../stripe-checkout-config').StripeCheckoutDesign | null} [params.design]
    *   Replaces the saved design, for a preview of one not saved yet. Null sends none.
-   * @param {import('../../../stripe-checkout-config').PreviewShipping} [params.shipping]
-   *   Replaces the saved shipping settings, for a preview of ones not saved yet.
+   * @param {Partial<import('../../../stripe-checkout-config').CheckoutCollection>} [params.collection]
+   *   Replaces the saved collected parts it names, for a preview of ones not saved yet.
    * @param {number} [params.expiresInSeconds] How long the checkout takes payment for, counted
    *   from when it's created, instead of a day.
    *
@@ -86,7 +86,7 @@ class PaymentsService {
     cancelUrl,
     email,
     design,
-    shipping,
+    collection,
     expiresInSeconds,
   }) {
     let coupon = null;
@@ -130,7 +130,7 @@ class PaymentsService {
       trialDays: trialDays ?? tier.trialDays,
       coupon: coupon?.id,
       design,
-      shipping,
+      collection,
       expiresInSeconds,
     };
 

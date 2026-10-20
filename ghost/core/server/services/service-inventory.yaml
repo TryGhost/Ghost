@@ -193,7 +193,7 @@ services:
         application. Existing row/helper tests do not make this root migration-ready.
   adapter-manager:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -240,9 +240,16 @@ services:
     entryPoints:
       - adapter-manager/index.ts
     notes: >-
-      Preserve boot validation, lazy adapter construction, lookup precedence and cached
-      identity. Consumers retain adapters outside the manager; disposal and replacement
-      must account for those references and adapter-specific resource owners.
+      Planned split and relocation out of services: reusable adapter loading, validation and
+      instance management belong in kernel; Ghost's adapter registry, search paths and
+      configuration wiring belong in boot. Keep Ghost's legacy scheduling/storage
+      normalization, import-storage isolation and content-path defaults in application
+      wiring, preserving live resolution on each lookup. No source has moved. Reassess
+      initialization after separating ownership rather than migrating this root in place.
+      Preserve boot validation, lazy adapter construction, lookup precedence, live
+      configuration resolution and cached identity. Consumers retain adapters outside the
+      manager; disposal and replacement must account for those references and adapter-
+      specific resource owners.
     contracts:
       exports:
         summary: >-
@@ -650,14 +657,17 @@ services:
         The guarded boot factory still composes one instance after database readiness. It
         holds no resources, but it keeps the manifest re-checks in flight, which starting
         app sessions together relies on to share one fetch, so it must stay the one retained
-        instance rather than be composed per request. Return that instance through the
-        initializer and update endpoint access, preserving schema gating and live
+        instance rather than be composed per request. Its repository holds only the knex
+        handle it's built from, and the response serializers are pure. Return that instance
+        through the initializer and update endpoint access, preserving schema gating and live
         manifest/configuration callbacks. The new history, detail, uninstall and app session
         behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 3c94513eb28f32663409d7990c74cccfb9528523
+      reviewedAt: 166037f8c6c59c3e7fa63e49c8a5a35101f31d67
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
+        - core/server/services/app-installations/app-installations-repository.ts
+        - core/server/services/app-installations/serializers.ts
         - core/server/services/app-installations/decide-on-manifest.ts
         - core/server/services/app-installations/history.ts
         - core/server/api/endpoints/app-installations.ts
@@ -2435,7 +2445,7 @@ services:
         selected rows and mail values, not exactly-once delivery or drain.
   email-address:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -2486,9 +2496,14 @@ services:
     entryPoints:
       - email-address/index.js
     notes: >-
-      Preserve the stable implementation and live configuration callbacks, together with
-      consumers that retain the implementation, wrapper or derived sender values. Keep parser
-      helpers available independently of service initialization.
+      Planned split and relocation out of services: the configured Ghost sender-policy
+      service belongs in shared; construction and live settings wiring belong in boot.
+      Mailbox parsing and formatting belong in an ordinary library, not kernel, while
+      delivery compatibility rules belong with sending. No source has moved. Reassess
+      initialization after separating ownership rather than migrating this root in place.
+      The policy remains a boot-owned service with dependency and readiness contracts.
+      Preserve stable identity, live callbacks and consumers that retain the implementation,
+      wrapper or derived sender values. Keep library helpers independent of service startup.
     contracts:
       exports:
         summary: >-
@@ -4495,7 +4510,7 @@ services:
         test config changes do not establish replacement behavior or production hot reload.
   i18n:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -4529,9 +4544,12 @@ services:
     entryPoints:
       - i18n/index.js
     notes: >-
-      Preserve the live delegating functions and translation options while establishing
-      ownership of repeated initialization and locale listeners. Other translation
-      instances have separate owners and are not consumers of this facade.
+      Planned relocation to core/shared/i18n: this is Ghost's configured translation facade, while
+      the reusable translation engine stays in @tryghost/i18n. Boot owns initialization and
+      locale-event wiring. This revisits the earlier move into services under the clarified Shared
+      boundary; no source has moved. Preserve the live delegating functions and translation
+      options while establishing ownership of repeated initialization and locale listeners. Other
+      translation instances have separate owners and are not consumers of this facade.
     contracts:
       exports:
         summary: >-
@@ -4701,7 +4719,7 @@ services:
         synchronous initialization and do not own pending language-change work.
   identity-tokens:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     migration:
@@ -4745,8 +4763,11 @@ services:
     entryPoints:
       - identity-tokens/index.js
     notes: >-
-      Staff identity-token issuance is boot-owned; preserve the captured issuer and identity
-      provider while keeping signing-key selection live.
+      Planned relocation to server/auth/identity-tokens: Admin issuer, staff email/role claims and
+      short token expiry are authentication policy. ActivityPub consumes that identity capability
+      rather than owning it. Preserve the configured service at its destination; no source has
+      moved. Staff identity-token issuance is boot-owned; preserve the captured issuer and
+      identity provider while keeping signing-key selection live.
     contracts:
       exports:
         summary: >-
@@ -5267,7 +5288,7 @@ services:
         evidence before introducing cleanup or promising rollback that does not exist today.
   internal-keys:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -5305,10 +5326,13 @@ services:
     entryPoints:
       - internal-keys/index.ts
     notes: >-
-      Initializer migration reviewed against main 326a1a3e711690149928fcb69e6fbc5516213ba9;
-      historical audit provenance is retained. The shared mutable map, lazy database reads
-      and explicit invalidation are unchanged. Promise retention or rotation changes need
-      separate tests and a decision.
+      Planned relocation to server/auth/internal-keys: the scheduler/frontend credential map is
+      authentication support, and authentication reset already owns its invalidation. The
+      initializer migration remains valid; moving ownership must preserve the same ready map. No
+      source has moved. Initializer migration reviewed against main
+      326a1a3e711690149928fcb69e6fbc5516213ba9; historical audit provenance is retained. The
+      shared mutable map, lazy database reads and explicit invalidation are unchanged. Promise
+      retention or rotation changes need separate tests and a decision.
     contracts:
       exports:
         summary: >-
@@ -5793,7 +5817,7 @@ services:
         authority, forwarded name/password and the expiry boundary without real persistence.
   jobs-service:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -5841,8 +5865,15 @@ services:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
     notes: >-
-      Retained process instance; per-boot handler reset, registration-before-start and
-      backend-specific shutdown need to remain explicit.
+      Planned split and relocation out of services: generic scheduling, dispatch, execution
+      and outbox machinery belong in kernel; application configuration, registration and
+      activation belong in boot; job definitions and handlers belong with their owning
+      services. The kernel boundary must exclude Ghost's config/schema imports and concrete
+      database wiring, including outbox availability checks and the jobs_outbox mapping. No
+      source has moved. Reassess initialization after separating ownership rather than
+      migrating this root in place. Preserve the retained process instance, per-boot handler
+      reset, registration-before-start and backend-specific shutdown. Relocation does not
+      remove the queue's dependency, readiness or lifetime contracts.
     contracts:
       exports:
         summary: >-
@@ -5998,7 +6029,7 @@ services:
         ordering and failures outside the tested jobs-start boundary remain open.
   limits.ts:
     kind: file
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -6040,9 +6071,13 @@ services:
     entryPoints:
       - limits.ts
     notes: >-
-      Boot loads host policy into an eagerly exported, widely retained instance. Preserve
-      per-consumer enforcement and existing configuration quirks; the route guard is HTTP
-      support alongside this application-owned instance, not a reason to move policy into API.
+      Planned split and relocation: Ghost-wide entitlement/quota policy belongs in
+      core/shared/limits; requireFeature belongs with web/API middleware. The reusable limit
+      engine stays in @tryghost/limit-service. Boot injects configuration and database
+      dependencies so Shared does not import server code. No source has moved. Boot loads host
+      policy into an eagerly exported, widely retained instance. Preserve per-consumer enforcement
+      and existing configuration quirks; the route guard is HTTP support alongside this
+      application-owned instance, not a reason to move policy into API.
     contracts:
       exports:
         summary: >-
@@ -10087,7 +10122,7 @@ services:
         and preserve the distinction between durable offer creation and later coupon provisioning.
   permissions:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -10110,14 +10145,14 @@ services:
         complexity: complex
         reason: >-
           canThis and its providers load the model registry directly while User.permissible calls
-          back into permissions through a deliberately deferred import. The action map and
-          parity-report state are module globals. Dependency injection needs an explicit shared
+          back into permissions through a deliberately deferred import. The action map is a
+          module global. Dependency injection needs an explicit shared
           authorization graph without turning the existing model/permissions cycle into eager
           construction.
         preparation:
           - >-
-            Create providers and canThis from injected models, model-rule helpers and logging,
-            sharing one owned action map and parity-report set.
+            Create providers and canThis from injected models and model-rule helpers, sharing one
+            owned action map.
           - >-
             Keep the User model callback deferred until authorization runs; cover both model-first
             and permission-first loading before switching consumers to a guarded service getter.
@@ -10132,9 +10167,12 @@ services:
     entryPoints:
       - permissions/index.js
     notes: >-
-      Preserve boot-loaded action definitions, per-check permission loading and model overrides.
-      Returned maps and retained checks have different lifetimes; reload, early calls and failures
-      still need focused contracts before changing initialization.
+      Planned relocation to server/auth/permissions: action maps, actor context and staff/API-key
+      roles belong with the existing authorization owner. This remains configured application
+      policy, not Kernel machinery. Boot still owns readiness; no source has moved. Preserve
+      boot-loaded action definitions, per-check permission loading and model overrides. Returned
+      maps and retained checks have different lifetimes; reload, early calls and failures still
+      need focused contracts before changing initialization.
     contracts:
       exports:
         summary: >-
@@ -10158,18 +10196,18 @@ services:
       construction:
         summary: >-
           Import loads shared models, providers and one module-level empty actions cache without
-          querying permissions or constructing a service class. Every init forwards the supplied
-          options, or a new empty object, to Permission.findAll and rebuilds the map on fulfillment.
-          Action/object pairs are deduplicated; object_id is not part of this map. canThis starts
+          querying permissions or constructing a service class. Every init rebuilds the map from
+          the permissions defined in code (role-permissions all()); it does no I/O.
+          Action/object pairs are deduplicated. canThis starts
           user/key loads and builds handlers against a cloned action map and model references at
-          check creation. Units use a stubbed Permission query and forged models to assert map
-          loading/deduplication; import purity, option identity and provider-query timing are source-only.
+          check creation. Units assert the map built from the static data; import purity and
+          provider-query timing are source-only.
         sources:
           - core/server/services/permissions/index.js
           - core/server/services/permissions/actions-map-cache.js
           - core/server/services/permissions/can-this.js
           - core/server/services/permissions/providers.js
-          - core/server/models/permission.js
+          - core/server/services/permissions/role-permissions.ts
         tests:
           - test/unit/server/services/permissions/index.test.js
           - test/unit/server/services/permissions/can-this.test.js
@@ -10202,8 +10240,10 @@ services:
         summary: >-
           Boot awaits init in its main service Promise.all after database setup, before readiness;
           imports and parseContext need no populated map. canThis throws synchronously when the
-          map is empty, including internal requests. An empty successful query therefore resolves
-          init but leaves checks unavailable; no explicit ready flag is set. The pre-init unit
+          map is empty, including internal requests. Init builds the map from static data, so a
+          successful init populates it; it is also empty before init, after a rebuild that throws
+          (see failures), or if a caller empties the mutable map init returns (see lifetime). No
+          explicit ready flag is set. The pre-init unit
           stubs empty() rather than loading a fresh root. Booted HTTP suites establish successful
           composition, not empty data, init rejection, frontend-disabled ordering or the absence
           of authorization calls from other concurrently initializing services.
@@ -10218,7 +10258,7 @@ services:
       lifetime:
         summary: >-
           There is no init guard, in-flight sharing, invalidation subscription or stop/reset hook.
-          Each successful load replaces the cache; overlapping queries publish in completion order.
+          Each init replaces the cache synchronously.
           getAll clones it, but init returns its mutable object directly. Existing checks retain
           their handler set and one user/key permissions promise; calling a handler again does not
           reload authorization. New checks load fresh user/key data, while action definitions stay
@@ -10232,9 +10272,10 @@ services:
         tests: []
       configuration:
         summary: >-
-          No config/settings/URL values are read by the root; database rows define available chains.
-          User providers require active status and merge/deduplicate individual and role permissions
-          by action/object/object_id; API-key providers use their single role. Authorization matches
+          No config/settings/URL values are read by the root; permissions-data.ts defines available
+          chains. User providers require active status and take the deduplicated union of their
+          roles' permissions from code; API-key providers use their single role, and content keys
+          (no role) get none. Authorization matches
           action/object, with model-specific rules responsible for resource restrictions. Owner
           user roles bypass the generic user-permission check. When both user and key exist, user
           permissions win and model overrides receive apiKey:null, although both providers load.
@@ -10273,8 +10314,8 @@ services:
         tests: []
       failures:
         summary: >-
-          A rejected Permission query propagates while preserving the previous map; a failure
-          during rebuilding can leave an empty/partial replacement. Missing users/keys and inactive
+          Init reads no data, so it cannot fail on I/O; a throwing rebuild can leave an
+          empty/partial replacement. Missing users/keys and inactive
           users reject, as do denied checks; model override errors/results propagate. API support
           rewrites NoPermission messages, preserves Ghost errors and wraps other failures; role
           serialization instead omits roles on any check failure. Provider and canThis units pin
@@ -10293,7 +10334,7 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin real uninitialized-root behavior, empty query results, init option forwarding, boot
+        Pin real uninitialized-root behavior, boot
         failure/recovery and authorization ordering against other boot tasks. The current pre-init
         test stubs cache.empty and does not establish a fresh module's state or readiness gate.
       - >-
@@ -10843,7 +10884,7 @@ services:
         Preserve their existing owners and behavior unless the migration changes them.
   posts-public:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -10875,12 +10916,15 @@ services:
     entryPoints:
       - posts-public/index.ts
     notes: >-
-      The prior auditedAt records the pre-migration baseline. The bounded migration was
-      inspected on main c538745fe27d8782fc3a6d847bb626d2b6ff130e; its existing root/binding,
-      member/gift-key and isolated cold-boot HTTP tests passed before production changes.
-      The default initializer replaces the wrapper without extras. Cache configuration,
-      identity and invalidation are unchanged; early controller imports now fail through
-      the readiness guard. Restart, adapter failures and asynchronous invalidation remain
+      Planned relocation to API-owned public-response-cache support: this root only selects the
+      posts cache and subscribes to site invalidation; query, access and cache-key policy already
+      live in the endpoint. Keep the boot-owned configured instance and readiness guard at the
+      destination. No source has moved. The prior auditedAt records the pre-migration baseline.
+      The bounded migration was inspected on main c538745fe27d8782fc3a6d847bb626d2b6ff130e; its
+      existing root/binding, member/gift-key and isolated cold-boot HTTP tests passed before
+      production changes. The default initializer replaces the wrapper without extras. Cache
+      configuration, identity and invalidation are unchanged; early controller imports now fail
+      through the readiness guard. Restart, adapter failures and asynchronous invalidation remain
       separate obligations below. Feature-local boolean parsing preserves legacy truthiness
       without tightening accepted configuration.
     contracts:
@@ -11375,7 +11419,7 @@ services:
         DNS guards, shared socket ownership or timeout completion.
   remote-flags:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -11414,8 +11458,12 @@ services:
     entryPoints:
       - remote-flags/index.ts
     notes: >-
-      Preserve config-gated background polling, stable rollout buckets and labs precedence.
-      Late startup, timer bounds and writes from stopped instances remain explicit blockers.
+      Planned relocation alongside core/shared/labs and its flag-override store: remote rollout
+      policy is part of the same Ghost-wide feature-flag capability. Boot injects runtime
+      dependencies and owns poller startup/shutdown; generic timers do not make the flag policy
+      Kernel code. No source has moved. Preserve config-gated background polling, stable rollout
+      buckets and labs precedence. Late startup, timer bounds and writes from stopped instances
+      remain explicit blockers.
     contracts:
       exports:
         summary: >-
@@ -11571,7 +11619,7 @@ services:
         404/apply failure and malformed-manifest replacement before relying on those contracts.
   route-settings:
     kind: directory
-    disposition: retain
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -11618,9 +11666,14 @@ services:
     entryPoints:
       - route-settings/index.js
     notes: >-
-      Preserve separate storage configuration and router start, verbatim YAML round trips,
-      live upload reload and adapters' independent parser imports. Restart, concurrent updates
-      and storage/client cleanup remain unresolved migration obligations.
+      Ownership needs review before an in-place initializer migration or relocation. Routing
+      activation has an existing owner, but this root also owns configured storage, API operations
+      and parsing used by server adapters. A whole-root move under frontend would violate
+      server/frontend dependency boundaries. Decide the backend-safe split first; no destination
+      or source move is approved. Preserve separate storage configuration and router start,
+      verbatim YAML round trips, live upload reload and adapters' independent parser imports.
+      Restart, concurrent updates and storage/client cleanup remain unresolved migration
+      obligations.
     contracts:
       exports:
         summary: >-
@@ -11862,7 +11915,7 @@ services:
         the comments case does not prove each uploaded collection is activated.
   settings:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -11915,8 +11968,15 @@ services:
       - settings/index.js
       - settings/settings-service.js
     notes: >-
-      Preserve per-boot cache rebuilding, synchronous retained readers and separate caller-owned
-      BREAD instances. Utility consumers also run before ordinary service boot.
+      Planned split and relocation: Ghost-wide settings/cache policy belongs in core/shared
+      with settings-cache; API presentation stays with its endpoint. Boot must inject
+      models, stores and delivery dependencies rather than introducing Shared imports of
+      server code. The cache and caller-owned settings operations retain their distinct
+      lifetimes. Settle ownership of protected setting mutations, verification delivery and
+      feature-specific side effects separately; these are not API presentation merely
+      because endpoints invoke them. No source has moved. Preserve per-boot cache
+      rebuilding, synchronous retained readers and separate caller-owned BREAD instances.
+      Utility consumers also run before ordinary service boot.
     contracts:
       exports:
         summary: >-
@@ -12115,7 +12175,7 @@ services:
         config snapshots/live reads and actual default-sender fallback without copying the stale name.
   settings-helpers:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12155,8 +12215,14 @@ services:
     entryPoints:
       - settings-helpers/index.js
     notes: >-
-      Preserve the shared facade, exposed cache reference and calculated-field bindings.
-      Helper reads, frozen URL inputs and caller-owned result caches have different lifetimes.
+      Planned split out of this catch-all root: member signup/unsubscribe/blocklist rules go to
+      Members; Stripe key selection to Stripe; donations, Social Web and analytics eligibility to
+      their existing feature owners; sender defaults to shared sender policy. Only common settings
+      access/calculated-field bindings stay with Shared settings. Boot injects feature-owned
+      calculation callbacks so Shared does not import server features. Preserve early evaluation
+      without forcing feature services to initialize first. No source has moved. Preserve the
+      shared facade, exposed cache reference and calculated-field bindings. Helper reads, frozen
+      URL inputs and caller-owned result caches have different lifetimes.
     contracts:
       exports:
         summary: >-
@@ -12366,7 +12432,7 @@ services:
         that guard. These source risks have not been reproduced by this audit.
   signing-keys:
     kind: directory
-    disposition: retain
+    disposition: relocate
     migrated: true
     extras:
       scheduleCheckJob:
@@ -12395,8 +12461,13 @@ services:
     entryPoints:
       - signing-keys/index.ts
     notes: >-
-      Publish only after the initial key check; preserve live key reads and purpose separation.
-      Shared initialization guards publication; recurrence, restart and drain ownership remain open.
+      Planned relocation to server/auth/signing-keys: staff/member key purposes, publication/grace
+      periods and persisted rotation are authentication policy. Ordinary public-key conversion
+      stays in server/lib/public-jwk; Boot owns construction and recurring-check activation, while
+      the handler stays auth-owned. Preserve the migrated initializer at its destination; no
+      source has moved. Publish only after the initial key check; preserve live key reads and
+      purpose separation. Shared initialization guards publication; recurrence, restart and drain
+      ownership remain open.
     contracts:
       exports:
         summary: >-
@@ -12573,7 +12644,7 @@ services:
         are evicted rather than returning the same rejected promise.
   slack-notifications:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12613,8 +12684,12 @@ services:
     entryPoints:
       - slack-notifications/index.js
     notes: >-
-      Preserve captured milestone notification settings and event delivery. Listener disposal,
-      shared HTTP resources and partial initialization remain migration blockers.
+      Planned relocation under Milestones as its private Slack notification handler:
+      subscriptions, thresholds and message content all concern milestone events. Boot retains
+      configuration/startup, and any reusable Slack transport can remain separate from milestone
+      policy. No source has moved. Preserve captured milestone notification settings and event
+      delivery. Listener disposal, shared HTTP resources and partial initialization remain
+      migration blockers.
     contracts:
       exports:
         summary: >-
@@ -13806,16 +13881,16 @@ services:
       - stripe-checkout-config/index.ts
     notes: >-
       Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
-      creates and by the checkout webhook to save a collected shipping address, previews of a
+      creates and by the checkout webhook to save what a checkout collected, previews of a
       design on a real Stripe Checkout page, and the branding set in the Stripe dashboard.
     contracts:
       exports:
         summary: >-
           Named exports include init, the mutable service, previewService and
           brandingService bindings, StripeCheckoutConfigService, CheckoutPreviewService,
-          CheckoutBrandingService, the wire serializers, the shipping rules
-          collectsShippingFor and shippingCountriesFor, and actingContext.
-          The bindings are undefined before init.
+          CheckoutBrandingService, the wire serializers, the collected parts with their
+          nouns and private flag, collectionParams for the Checkout session parameters that
+          ask for them, and actingContext. The bindings are undefined before init.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
         tests: []
@@ -13823,10 +13898,11 @@ services:
         summary: >-
           Boot calls synchronous init in initCore after the custom fields services, which
           builds the service with knex, its history recorder and the custom field bindings it
-          saves shipping into, and throws if those bindings aren't set up yet. It also builds
-          the preview service with lookups of Stripe, tiers and the members payments service
-          made per preview, and the branding service with lookups of Stripe made per read, as
-          those start later in boot. An existing service makes later calls return.
+          saves the shipping address and phone number into, and throws if those bindings aren't
+          set up yet. It also builds the preview service with lookups of Stripe, tiers and the
+          members payments service made per preview, and the branding service with lookups of
+          Stripe made per read, as those start later in boot. An existing service makes later
+          calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js
@@ -13839,9 +13915,87 @@ services:
       - resources
       - failures
     blockers: []
-  tags-public:
+  support-requests:
     kind: directory
     disposition: retain
+    status: auditing
+    migrated: true
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Added with the initializer: init composes one resource-free instance from config,
+        logging and the request transport. Configuration, signing and delivery happen per
+        request, mirroring export requests, so there is no startup work or cleanup.
+      reviewedAt: c538745fe27d8782fc3a6d847bb626d2b6ff130e
+      sources:
+        - core/server/services/support-requests/index.ts
+        - core/server/services/support-requests/support-requests-service.ts
+        - core/server/api/endpoints/support-requests.ts
+        - core/boot.js
+    entryPoints:
+      - support-requests/index.ts
+    notes: >-
+      Composition-only service that forwards a staff user's support request to the host as a
+      signed webhook. Root-level tests for init, identity and boot ordering are still to be
+      added.
+    contracts:
+      exports:
+        summary: >-
+          The root default-exports the shared initializer with async init and a guarded service
+          getter exposing SupportRequestsService, and re-exports the SupportRequest type.
+          send requires its receiver and resolves undefined after delivery; it does not inspect
+          the response body.
+        sources:
+          - core/server/services/support-requests/index.ts
+          - core/server/services/support-requests/support-requests-service.ts
+        tests:
+          - test/unit/server/services/support-requests/support-requests-service.test.ts
+          - test/e2e-api/admin/support-requests.test.ts
+      construction:
+        summary: >-
+          The factory constructs the service with shared config, logging and @tryghost/request
+          and performs no reads or delivery. Boot awaits init during core startup, after
+          Export Requests. POST /support_requests is the only runtime consumer.
+        sources:
+          - core/server/services/support-requests/index.ts
+          - core/server/api/endpoints/support-requests.ts
+          - core/boot.js
+        tests:
+          - test/e2e-api/admin/support-requests.test.ts
+      configuration:
+        summary: >-
+          hostSettings:supportRequest:webhookUrl, webhookSecret and hostSettings:siteId are read
+          on every send, not at construction. A missing URL is a NotFoundError; a missing secret
+          or site ID is logged and rejected as IncorrectUsageError before any delivery. The
+          secret is omitted from the public config endpoint.
+        sources:
+          - core/server/services/support-requests/support-requests-service.ts
+          - core/server/api/endpoints/utils/public-config/config.js
+        tests:
+          - test/unit/server/services/support-requests/support-requests-service.test.ts
+          - test/unit/server/api/endpoints/utils/public-config/config.test.js
+          - test/e2e-api/admin/support-requests.test.ts
+      failures:
+        summary: >-
+          Delivery uses no retries because a repeated delivery would duplicate the support
+          request. A transport
+          failure is logged with the URL reduced to its origin and surfaces as a generic 502.
+        sources:
+          - core/server/services/support-requests/support-requests-service.ts
+          - core/server/lib/signed-webhook.ts
+        tests:
+          - test/unit/server/services/support-requests/support-requests-service.test.ts
+          - test/e2e-api/admin/support-requests.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+    blockers: []
+  tags-public:
+    kind: directory
+    disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -13875,8 +14029,12 @@ services:
     entryPoints:
       - tags-public/index.js
     notes: >-
-      Preserve the optional tags browse cache and its endpoint/invalidation identity.
-      Existing cold-boot coverage does not establish restart or asynchronous adapter ownership.
+      Planned relocation to API-owned public-response-cache support alongside the posts cache.
+      This root only selects the tags cache and subscribes to site invalidation; tag querying is
+      endpoint-owned. Boot still owns configured cache readiness, and generic adapter mechanics
+      retain their own owner. No source has moved. Preserve the optional tags browse cache and its
+      endpoint/invalidation identity. Existing cold-boot coverage does not establish restart or
+      asynchronous adapter ownership.
     contracts:
       exports:
         summary: >-
@@ -14678,8 +14836,12 @@ services:
     entryPoints:
       - tinybird/index.js
     notes: >-
-      An optional token service is published through static methods. Preserve the different
-      lifetimes of request-time initialization, retained stats clients and automation lookups.
+      Retain as Ghost's configured analytics-access capability: allowed pipes and site scoping are
+      application policy across traffic, gifts and automation analytics. Reusable provider/JWT
+      mechanics could become library support without removing this owner; they are not Kernel
+      machinery. An optional token service is published through static methods. Preserve the
+      different lifetimes of request-time initialization, retained stats clients and automation
+      lookups.
     contracts:
       exports:
         summary: >-
@@ -14893,50 +15055,57 @@ services:
         provider acceptance, production deadlines or shared transport disposal on stop/reset.
   tinybird-sync:
     kind: directory
-    disposition: retain
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
-      complexity: straightforward
+      complexity: complex
       modelImpact: fits
       reason: >-
-        Move eager factory composition into the initializer and await it before boot
-        captures the sync handler. Keep job scheduling separate, including disabled
-        scheduling and retry after registration failure; sync reads its configuration when
-        invoked. This follows the existing signing-key split between a ready instance and
-        jobs-owned recurring work.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        A retained sync instance fits defineService, but ownership is undecided. Automations
+        defines the current disclosure targets; the sync capability also owns ingestion,
+        durable watermarks and recurring registration. Decide whether it belongs wholly to
+        Automations or remains a separate integration before migrating its composition.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/tinybird-sync/index.ts
         - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
+        - core/server/services/tinybird-sync/get-ingest-config.ts
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
       dependencies:
-        complexity: straightforward
+        complexity: complex
         reason: >-
-          The factory already receives config, settings, database, logger, randomness, clock, fetch
-          and ID creation. Its only non-allowlisted cross-service implementation import is the
-          stateless cron helper. Config is read on each sync and the jobs instance is supplied when
-          scheduling, so no service lookup cycle needs untangling.
+          Factory dependencies are already explicit, but the owner of the target list,
+          ingestion configuration and durable sync state must be settled together. A single
+          current feature dataset does not establish ownership of the entire integration.
+          After that decision, dependency wiring remains bounded and does not reveal a
+          defineService extension.
         preparation:
           - >-
-            Inject the cron-generation operation from index.ts or review an exact allowance for the
-            pure helper, keeping the existing allowed Job base import direct.
+            Decide whether Automations owns the whole sync pipeline or supplies disclosure
+            targets to a retained sync capability; keep provider transport and watermark
+            responsibilities explicit at the chosen boundary.
           - >-
-            Move factory invocation to boot-owned construction while preserving live ingest
-            configuration and jobs-service scheduling after startup.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Wire or allowlist the pure cron helper, preserve live ingest configuration,
+            and keep job registration separate from construction with retry after failure.
+        reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
         sources:
           - core/server/services/tinybird-sync/index.ts
           - core/server/services/tinybird-sync/tinybird-sync-service.ts
+          - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
           - core/server/services/tinybird-sync/get-ingest-config.ts
           - core/server/services/jobs-service/cron.ts
-          - core/boot.js
     entryPoints:
       - tinybird-sync/index.ts
     notes: >-
-      Eager composition exposes incremental automation-data sync and recurring registration.
-      Jobs-service owns scheduling; preserve cursor, retry and shutdown behavior before migration.
+      Ownership remains under review. Automations defines the current table and column
+      disclosure policy, while this capability owns incremental replication, durable watermarks,
+      ingestion configuration and recurring registration. Decide whether Automations owns the
+      complete pipeline or supplies targets to a retained sync service. One current feature
+      dataset does not establish the final owner. Preserve live configuration, cursor, retry
+      and shutdown contracts. No source has moved.
     contracts:
       exports:
         summary: >-
@@ -15120,47 +15289,58 @@ services:
         current units do not prove provider ingestion or clean resource release.
   update-check:
     kind: directory
-    disposition: relocate
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
-      complexity: not-applicable
-      modelImpact: not-applicable
+      complexity: complex
+      modelImpact: fits
       reason: >-
-        This is an invocation-local checker and job definition, with a new mail/check graph
-        for each call, rather than a retained application instance. Move the cohesive
-        capability to server/lib/update-check as directory cleanup, keeping scheduling with
-        jobs. Do not turn the check operation into a once-only initializer.
-      reviewedAt: ebe8d3df2068fbfccd8a671dc5cc1b0b8265b952
+        Ownership remains undecided between a standalone update-check capability and
+        Notifications-owned remote notice ingestion. Per-invocation construction does not
+        establish that this is non-service support. Either owner can expose a repeatable
+        check operation without changing defineService; preserve live configuration,
+        persisted due-date gating and caller-specific error policy when choosing its lifetime.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/update-check/index.js
+        - core/server/services/update-check/update-check-service.js
         - core/server/services/update-check/jobs/update-check-job.ts
+        - core/server/services/notifications/notifications.js
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
       dependencies:
-        complexity: not-applicable
+        complexity: complex
         reason: >-
-          The root creates a new checker and mail collaborators for each permitted invocation; jobs
-          own scheduling and call it as an operation. This confirmed relocation entry should keep
-          its API/request dependencies at that call boundary rather than acquire a retained service
-          initializer.
+          The root assembles settings, users and notifications API operations, request and
+          mail collaborators. Choose the capability owner and composition boundary before
+          moving those dependencies; creating a new graph per invocation does not justify
+          relocation to server/lib or skipping initialization assessment.
         preparation:
           - >-
-            Move the cohesive checker and job support to server/lib/update-check, updating boot
-            scheduling and handler imports while preserving per-invocation config and error policy.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Decide whether update-check remains a separate integration or becomes private
+            Notifications support, keeping request policy, group filtering and alert delivery
+            with that owner and job registration in boot.
+          - >-
+            Preserve per-invocation configuration and error modes, live due-date reads and
+            mail dependency readiness; keep repeated checking separate from initialization.
+        reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
         sources:
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
           - core/server/services/update-check/jobs/update-check-job.ts
+          - core/server/services/notifications/notification-email.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/boot.js
     entryPoints:
       - update-check/index.js
     notes: >-
-      Each permitted invocation constructs a checker and mail collaborators. Boot owns job
-      registration and scheduling; decide the final capability owner without moving this
-      business logic into the HTTP layer.
+      Ownership needs review: the checker owns remote request policy, persisted check timing,
+      notification-group filtering and administrator alert delivery. Notifications is a possible
+      owner, but consuming its API does not establish ownership. Per-call construction alone
+      is not a reason to relocate. Boot owns job registration and scheduling; preserve a
+      repeatable check operation and its dependency, readiness and error contracts at either
+      destination. No source has moved.
     contracts:
       exports:
         summary: >-
@@ -15408,7 +15588,7 @@ services:
     blockers: []
   url:
     kind: directory
-    disposition: retain
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -15453,9 +15633,14 @@ services:
     entryPoints:
       - url/index.js
     notes: >-
-      One eager LazyUrlService owns ordered router registrations. Preserve readiness,
-      real serializer/model composition and the different forward, reverse and enumeration
-      contracts; registration/reset and same-process restart still need lifecycle coverage.
+      Ownership needs review before an in-place initializer migration or relocation. Resource
+      visibility, permalink rules and router registration belong together, but this root binds
+      server models and has backend API consumers. Moving it wholesale into frontend routing would
+      violate current dependency rules. Decide a backend-safe routing/data-access split and
+      preserve backend-only availability first; no destination or source move is approved. One
+      eager LazyUrlService owns ordered router registrations. Preserve readiness, real
+      serializer/model composition and the different forward, reverse and enumeration contracts;
+      registration/reset and same-process restart still need lifecycle coverage.
     contracts:
       exports:
         summary: >-
@@ -15883,16 +16068,17 @@ services:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Settle the cohesive Members verification boundary with verification-trigger before
-        moving or wrapping this sender; ownership is still under review. The sender itself
-        is a small configured collaborator whose validation and request state are per call.
-        It can fit inside the chosen owner factory without a helper extension, but a
-        standalone migration would pre-empt that ownership decision.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        Review this sender with verification-trigger as one site email-verification capability.
+        Its specialized delivery payload and configuration do not establish exclusive Members
+        ownership. The configured collaborator can fit the chosen owner's factory without a
+        defineService extension; choose that owner before a standalone migration or relocation.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/verification/verification-webhook-service.ts
         - core/server/services/verification-trigger.js
         - core/server/services/members/service.js
+        - core/server/services/email-service/email-service.js
+        - core/server/api/endpoints/members.js
       dependencies:
         complexity: straightforward
         reason: >-
@@ -15917,9 +16103,12 @@ services:
     entryPoints:
       - verification/verification-webhook-service.ts
     notes: >-
-      Members retains this eager webhook sender through VerificationTrigger. Its owner remains
-      under review; preserve signed delivery and the trigger's delivery-before-persistence
-      contract without treating test config replacement as production hot reload.
+      Review ownership together with verification-trigger. The sender implements a configured
+      email-verification integration with threshold/count payloads; generic signing already
+      lives in server/lib/signed-webhook. Members is its current composition point, but that
+      alone does not establish private Members ownership of the site-wide email-verification
+      capability. Preserve live configuration, signed delivery and delivery-before-persistence
+      behavior while choosing the boundary. No source has moved.
     contracts:
       exports:
         summary: >-
@@ -16078,23 +16267,25 @@ services:
         introducing them during lifecycle migration needs separate compatibility evidence.
   verification-trigger.js:
     kind: file
-    disposition: relocate
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Review this together with the verification sender as a Members-owned capability, not
-        an independent initializer by default. Construction subscribes to member events,
-        Members retains the trigger, and Email captures it; partial Members startup must
-        clean up registration without breaking those consumers. The placement decision
-        remains open, while the retained collaborator itself fits an owner factory.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        Review this together with the verification sender. Member-list thresholds and signup
+        events feed a site-wide email-verification gate used by imports, welcome email and
+        newsletter delivery. Members currently constructs and retains the trigger, but that
+        does not settle the capability's owner. A retained collaborator fits the chosen owner
+        factory; preserve subscription cleanup and retained Email consumers when moving it.
+      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/verification-trigger.js
         - core/server/services/members/service.js
         - core/server/services/email-service/email-service-wrapper.js
+        - core/server/services/email-service/email-service.js
+        - core/server/api/endpoints/members.js
       dependencies:
         complexity: straightforward
         reason: >-
@@ -16118,9 +16309,12 @@ services:
     entryPoints:
       - verification-trigger.js
     notes: >-
-      Members owns this trigger and its event subscription. Preserve threshold calculations,
-      the webhook-before-persistence sequence and caller-specific failure behavior before
-      relocation; concurrent triggers and listener cleanup remain open contracts.
+      Ownership remains under review with the verification sender. Member signup/import and
+      removed-recipient checks drive site-wide email-verification state and sending restrictions.
+      Members currently constructs the trigger and Email retains it; these construction and
+      consumer relationships do not settle the final owner. Preserve thresholds, event
+      subscriptions, delivery-before-persistence and caller-specific failure behavior; concurrent
+      triggers and listener cleanup remain open contracts. No source has moved.
     contracts:
       exports:
         summary: >-

@@ -1,7 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
-import type { AddAutomationData } from './automations-api';
-import type { AutomationTriggerTierScope } from './automations-repository-2';
+import type { AddAutomationData, AutomationTriggerTierScope } from './automations-repository-2';
 
 export type Pagination = {
   page: number;

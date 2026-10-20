@@ -17,7 +17,6 @@ export const flags = {
   boot: performanceBoot,
   labs: {
     automations: true,
-    automationsPerTier: true,
   },
 };
 const detail = (id: string): AutomationDetail => ({

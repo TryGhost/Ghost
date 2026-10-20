@@ -1,3 +1,4 @@
+/* global vi */
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
 const { assertArrayContainsDeep, assertObjectMatches } = require('../../utils/assertions');
@@ -4271,7 +4272,7 @@ describe('Members API', function () {
     });
   });
 
-  describe('checkout.session.completed with a shipping address', function () {
+  describe('checkout.session.completed with what the checkout collected', function () {
     const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
     const address = {
       line1: '1 High Street',
@@ -4287,7 +4288,7 @@ describe('Members API', function () {
       membersAgent = agents.membersAgent;
       adminAgent = agents.adminAgent;
 
-      await fixtureManager.init('members');
+      await fixtureManager.init('members', 'integrations');
       await adminAgent.loginAsOwner();
 
       set(subscription, {
@@ -4325,6 +4326,7 @@ describe('Members API', function () {
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
+        { name: 'Contact phone', type: 'short_text' },
       ]) {
         await adminAgent
           .post('/members/metafields/custom/')
@@ -4341,6 +4343,7 @@ describe('Members API', function () {
                 address: { custom_field_key: 'delivery_address' },
                 name: { custom_field_key: 'recipient_name' },
               },
+              phone: { collect: true, custom_field_key: 'contact_phone' },
             },
           ],
         })
@@ -4349,6 +4352,7 @@ describe('Members API', function () {
 
     afterEach(async function () {
       mockManager.restore();
+      await models.Base.knex('webhooks').del();
       await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
@@ -4356,9 +4360,10 @@ describe('Members API', function () {
       await models.Base.knex('members_metafields').del();
     });
 
+    // What the checkout asked for, as Stripe reports it on the completed session.
     async function completeCheckout(
       email,
-      { asked = true, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
+      { asked = { shipping: true }, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
     ) {
       set(customer, {
         id: 'cus_shipping',
@@ -4375,8 +4380,10 @@ describe('Members API', function () {
             customer: customer.id,
             subscription: subscription.id,
             metadata,
-            shipping_address_collection: asked ? { allowed_countries: ['GB'] } : null,
+            shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
             shipping: { name: 'Jamie Doe', address },
+            phone_number_collection: { enabled: Boolean(asked.phone) },
+            customer_details: { email, phone: '+442079460000' },
           },
         },
       });
@@ -4425,12 +4432,53 @@ describe('Members API', function () {
       assert.equal(saved.recipient_name, undefined);
     });
 
-    it('saves nothing from a checkout that did not ask for an address', async function () {
-      // Stripe can return an address it wasn't asked for, such as one saved with Link.
+    it('saves nothing from a checkout that did not ask for it', async function () {
+      // Stripe can return what it wasn't asked for, such as an address saved with Link.
+      assert.deepEqual(await completeCheckout('shipping-unasked@example.com', { asked: {} }), {});
+    });
+
+    it('saves the phone number onto the member the checkout creates', async function () {
       assert.deepEqual(
-        await completeCheckout('shipping-unasked@example.com', { asked: false }),
-        {},
+        await completeCheckout('phone-new@example.com', { asked: { phone: true } }),
+        {
+          contact_phone: '+442079460000',
+        },
       );
+    });
+
+    it('saves the phone number beside the address when the checkout asked for both', async function () {
+      const saved = await completeCheckout('phone-and-address@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, 'Jamie Doe');
+    });
+
+    it('tells member webhooks about the phone number', async function () {
+      // Every delivery is kept, as the checkout's other edits to the member are sent too.
+      const delivered = [];
+      nock('https://test-webhook-receiver.com')
+        .persist()
+        .post('/checkout-member-edited/')
+        .reply(200, (uri, body) => {
+          delivered.push(typeof body === 'string' ? JSON.parse(body) : body);
+          return {};
+        });
+      await fixtureManager.insertWebhook({
+        event: 'member.edited',
+        url: 'https://test-webhook-receiver.com/checkout-member-edited/',
+      });
+
+      await completeCheckout('phone-webhook@example.com', { asked: { phone: true } });
+
+      const withPhone = await vi.waitUntil(
+        () => delivered.find(({ member }) => member.current.metafields?.custom?.contact_phone),
+        { timeout: 5000 },
+      );
+      assert.equal(withPhone.member.current.email, 'phone-webhook@example.com');
+      assert.equal(withPhone.member.current.metafields.custom.contact_phone, '+442079460000');
     });
 
     it('saves onto a member that signing in after paying created before this arrived', async function () {

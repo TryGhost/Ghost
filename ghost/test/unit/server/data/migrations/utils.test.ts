@@ -462,25 +462,19 @@ describe('migrations/utils/permissions', function () {
     });
 
     describe('Throws errors', function () {
-      it('Throws when permission cannot be found in up migration', async function () {
+      it('Does not throw when permission cannot be found in up migration', async function () {
         const knex = await setupPermissionsDb();
+        const relationsBefore = await knex('permissions_roles').count('id as count').first();
 
         const migration = utils.addPermissionToRole({
           permission: 'Unimaginable',
-          role: 'Not there',
+          role: 'Role Name',
         });
 
-        try {
-          await runUpMigration(knex, migration);
-          assert.fail('addPermissionToRole up migration did not throw');
-        } catch (err) {
-          assert(err instanceof Error);
-          assert.equal(errorUtils.isGhostError(err), true);
-          assert.equal(
-            err.message,
-            'Cannot add permission(Unimaginable) with role(Not there) - permission does not exist',
-          );
-        }
+        await runUpMigration(knex, migration);
+
+        const relationsAfter = await knex('permissions_roles').count('id as count').first();
+        assert.deepEqual(relationsAfter, relationsBefore);
       });
 
       it('Does not throw when permission cannot be found in down migration', async function () {

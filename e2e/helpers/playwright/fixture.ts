@@ -23,6 +23,7 @@ import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
+import { revealHiddenEditorChromeIn } from './editor-writing-focus';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -171,6 +172,7 @@ async function setupNewAuthenticatedPage(
       Origin: baseURL,
     },
   });
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
 
   // Sign in through the session API rather than the sign-in form. A UI sign-in
@@ -216,6 +218,7 @@ async function setupAuthenticatedPageFromStorageState(
     },
     storageState: authenticatedSession.storageState,
   });
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
   await page.goto('/ghost/#/');
   await waitForAdminHome(page);

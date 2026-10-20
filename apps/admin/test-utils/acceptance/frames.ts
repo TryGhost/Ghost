@@ -1,10 +1,18 @@
 import { commands } from 'vitest/browser';
 
+import type { RawAppFrameHooks } from './app-frame-raw';
+import type { AppFrameFlags, AppFrameHooks } from './app-frame-stand-in';
+
 declare module 'vitest/browser' {
   interface BrowserCommands {
+    bundleAppSdk: () => Promise<string>;
+    bundleFrameScript: (entry: string) => Promise<string>;
+    callInFrame: (origin: string, hook: string, args: unknown[]) => Promise<unknown>;
     fakeFrameOrigin: (origin: string, html: string, delayMs?: number) => Promise<void>;
     failFrameOrigin: (origin: string) => Promise<void>;
     guardFrameNavigations: () => Promise<void>;
+    postFrameForm: (origin: string, action: string) => Promise<void>;
+    reloadFrame: (origin: string) => Promise<void>;
     resetFakeFrameOrigins: () => Promise<void>;
   }
 }
@@ -23,6 +31,90 @@ export function fakeFrameOrigin(origin: string, html: string, delayMs = 0): Prom
 /** Refuses every iframe navigation to `origin`, standing in for an external app that is down. */
 export function failFrameOrigin(origin: string): Promise<void> {
   return commands.failFrameOrigin(origin);
+}
+
+/**
+ * The scripts an app's page runs. This is the only place that names them. `sdk` is an app built on
+ * the real SDK, exposing the hooks `callAppFrame` calls. `raw` uses the bridge without the SDK, for
+ * `callHostRaw`.
+ */
+const APP_FRAME_SCRIPTS = {
+  sdk: 'test-utils/acceptance/app-frame-stand-in.ts',
+  raw: 'test-utils/acceptance/app-frame-raw.ts',
+} as const;
+
+export type AppFramePageKind = keyof typeof APP_FRAME_SCRIPTS;
+
+/** Serialises a value as a script literal that can't end the script early. */
+const scriptLiteral = (value: unknown) => JSON.stringify(value).replaceAll('</', '<\\/');
+
+/**
+ * Builds an app page that uses the bridge, for `fakeFrameOrigin`. By default it's the SDK page (see
+ * app-frame-stand-in.ts), with `flags` set for it to read first and the SDK's built bundle for it
+ * to load. `raw` builds a page without the SDK (see app-frame-raw.ts), which doesn't read flags.
+ */
+export async function appFramePage(
+  flags: AppFrameFlags = {},
+  kind: AppFramePageKind = 'sdk',
+): Promise<string> {
+  const source = await commands.bundleFrameScript(APP_FRAME_SCRIPTS[kind]);
+  const sdk = kind === 'sdk' ? await commands.bundleAppSdk() : undefined;
+  return [
+    '<!doctype html>',
+    '<html><head><title>Podcast app</title>',
+    `<script>window.__appFlags = ${scriptLiteral(flags)};</script>`,
+    // The bundle as text, so the page can load it as a module. An inline module script can't be
+    // imported from.
+    sdk ? `<script>window.__appSdkSource = ${scriptLiteral(sdk)};</script>` : '',
+    '</head><body><h1>Podcast app</h1>',
+    // A closing tag inside the script would end it early.
+    `<script type="module">${source.replaceAll('</script', '<\\/script')}</script>`,
+    '</body></html>',
+  ].join('');
+}
+
+/**
+ * Calls one of the hooks of the SDK page framed from `origin` (see app-frame-stand-in.ts), acting
+ * as the app would. The frame is on another origin, so the call goes through the browser driver.
+ */
+export function callAppFrame<Hook extends keyof AppFrameHooks>(
+  origin: string,
+  hook: Hook,
+  ...args: Parameters<AppFrameHooks[Hook]>
+): Promise<Awaited<ReturnType<AppFrameHooks[Hook]>>> {
+  return commands.callInFrame(new URL(origin).origin, hook, args) as Promise<
+    Awaited<ReturnType<AppFrameHooks[Hook]>>
+  >;
+}
+
+/**
+ * Calls Admin's export `name` with `args` unchanged, from the raw page framed from `origin`
+ * (`appFramePage(flags, 'raw')`). This is what an app that skips the SDK could send.
+ */
+export function callHostRaw(
+  origin: string,
+  name: string,
+  ...args: unknown[]
+): ReturnType<RawAppFrameHooks['call']> {
+  return commands.callInFrame(new URL(origin).origin, 'call', [name, args]) as ReturnType<
+    RawAppFrameHooks['call']
+  >;
+}
+
+/**
+ * Reloads the page framed from `origin`, as the app's own `location.reload()` or a link in it
+ * would. The result is a new document in the same frame.
+ */
+export function reloadFrame(origin: string): Promise<void> {
+  return commands.reloadFrame(new URL(origin).origin);
+}
+
+/**
+ * Posts a form from the page framed from `origin` to `action`, as a form in the page would. The
+ * response is served the same way as the page, and becomes a new document in the same frame.
+ */
+export function postFrameForm(origin: string, action: string): Promise<void> {
+  return commands.postFrameForm(new URL(origin).origin, action);
 }
 
 /** Answers unfaked external iframe navigations with a 418 so no spec reaches the network. */

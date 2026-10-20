@@ -112,7 +112,7 @@ describe('App installations composition root', function () {
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
 
-    assert.deepEqual(await installations.browse.query(), { data: [] });
+    assert.deepEqual(await installations.browse.query(), []);
     const result = await previews.add.query({
       data: {
         app_installation_previews: [{ manifest_url: 'https://podcast.example/manifest.json' }],

@@ -5,9 +5,11 @@ import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/chec
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { SnakeDesign } from './codec';
 import {
+  type CollectedSection,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
-  type ShippingCollection,
+  type CheckoutCollection,
+  type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutDesign,
 } from './models';
@@ -53,14 +55,22 @@ const CountriesInput = z
   .transform((codes) => [...new Set(codes)]);
 
 const DESTINATION_REQUIRED = 'Choose the custom field this is saved into.';
+const CustomFieldKey = z
+  .string({ error: DESTINATION_REQUIRED })
+  .min(1, { error: DESTINATION_REQUIRED });
 const Destination = z.strictObject(
-  {
-    custom_field_key: z
-      .string({ error: DESTINATION_REQUIRED })
-      .min(1, { error: DESTINATION_REQUIRED }),
-  },
+  { custom_field_key: CustomFieldKey },
   { error: DESTINATION_REQUIRED },
 );
+
+/** Collecting a shipping address, as a request turns it on. */
+const ShippingOn = z.strictObject({
+  collect: z.literal(true),
+  tier_ids: TierIdsInput.optional(),
+  allowed_countries: CountriesInput.optional(),
+  address: Destination,
+  name: Destination,
+});
 
 /**
  * Shipping in a request.
@@ -69,16 +79,7 @@ const Destination = z.strictObject(
  * fields the address and the recipient's name are saved into.
  */
 const ShippingInput = z
-  .discriminatedUnion('collect', [
-    z.strictObject({ collect: z.literal(false) }),
-    z.strictObject({
-      collect: z.literal(true),
-      tier_ids: TierIdsInput.optional(),
-      allowed_countries: CountriesInput.optional(),
-      address: Destination,
-      name: Destination,
-    }),
-  ])
+  .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), ShippingOn])
   .transform((input): ShippingSettings | null =>
     input.collect
       ? {
@@ -90,12 +91,70 @@ const ShippingInput = z
       : null,
   );
 
+/** Collecting a phone number, as a request turns it on. */
+const PhoneOn = z.strictObject({
+  collect: z.literal(true),
+  tier_ids: TierIdsInput.optional(),
+  custom_field_key: CustomFieldKey,
+});
+
+/**
+ * The phone number in a request.
+ *
+ * `collect: false` means checkout doesn't ask for a phone number. `collect: true` names the
+ * custom field it is saved into.
+ */
+const PhoneInput = z
+  .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), PhoneOn])
+  .transform((input): PhoneSettings | null =>
+    input.collect
+      ? { tierIds: input.tier_ids ?? null, customFieldKey: input.custom_field_key }
+      : null,
+  );
+
+/** Each collected part in an edit request. */
+const CollectedInputs = {
+  shipping: ShippingInput.optional(),
+  phone: PhoneInput.optional(),
+} satisfies Record<CollectedSection, z.ZodType>;
+
 /** An edit request. Parts it leaves out are not changed. */
 export const CheckoutConfigInput = z.strictObject({
   design: DesignInput.optional(),
-  shipping: ShippingInput.optional(),
+  ...CollectedInputs,
 });
 export type CheckoutConfigInput = z.output<typeof CheckoutConfigInput>;
+
+/**
+ * Each collected part a preview can carry unsaved, asked as if it had somewhere to keep the
+ * answer. Left out, the checkout asks as the saved settings say.
+ */
+const CollectedPreviews = {
+  shipping: z
+    .discriminatedUnion('collect', [
+      z.strictObject({ collect: z.literal(false) }),
+      ShippingOn.omit({ address: true, name: true }),
+    ])
+    .transform((input): CheckoutCollection['shipping'] =>
+      input.collect
+        ? {
+            tierIds: input.tier_ids ?? null,
+            allowedCountries: input.allowed_countries ?? null,
+            collectable: true,
+          }
+        : null,
+    )
+    .optional(),
+  phone: z
+    .discriminatedUnion('collect', [
+      z.strictObject({ collect: z.literal(false) }),
+      PhoneOn.omit({ custom_field_key: true }),
+    ])
+    .transform((input): CheckoutCollection['phone'] =>
+      input.collect ? { tierIds: input.tier_ids ?? null, collectable: true } : null,
+    )
+    .optional(),
+} satisfies Record<CollectedSection, z.ZodType>;
 
 /**
  * A preview request: the paid tier to open a checkout for, and the design to show it in,
@@ -105,17 +164,7 @@ export const CheckoutPreviewInput = z.strictObject({
   tier_id: z.string().regex(/^[0-9a-f]{24}$/, { error: 'Choose a tier to preview checkout for.' }),
   cadence: z.enum(['month', 'year']).default('month'),
   design: DesignInput,
-  /** Unsaved shipping to preview. Left out, the checkout asks as the saved settings say. */
-  shipping: z
-    .discriminatedUnion('collect', [
-      z.strictObject({ collect: z.literal(false) }),
-      z.strictObject({
-        collect: z.literal(true),
-        tier_ids: TierIdsInput.optional(),
-        allowed_countries: CountriesInput.optional(),
-      }),
-    ])
-    .optional(),
+  ...CollectedPreviews,
 });
 export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
 
@@ -136,11 +185,8 @@ export function parseRequest<Schema extends z.ZodType>(
   });
 }
 
-const CheckoutConfigResource = z.object({
-  design: z.discriminatedUnion('customize', [
-    z.object({ customize: z.literal(false) }),
-    SnakeDesign.extend({ customize: z.literal(true) }),
-  ]),
+/** Each collected part as the Admin API returns it, left out while its flag is off. */
+const CollectedResources = {
   shipping: z
     .discriminatedUnion('collect', [
       z.object({ collect: z.literal(false) }),
@@ -153,10 +199,28 @@ const CheckoutConfigResource = z.object({
       }),
     ])
     .optional(),
+  phone: z
+    .discriminatedUnion('collect', [
+      z.object({ collect: z.literal(false) }),
+      z.object({
+        collect: z.literal(true),
+        tier_ids: z.array(z.string()).optional(),
+        custom_field_key: z.string(),
+      }),
+    ])
+    .optional(),
+} satisfies Record<CollectedSection, z.ZodType>;
+
+const CheckoutConfigResource = z.object({
+  design: z.discriminatedUnion('customize', [
+    z.object({ customize: z.literal(false) }),
+    SnakeDesign.extend({ customize: z.literal(true) }),
+  ]),
+  ...CollectedResources,
 });
 
 /** Shipping as the Admin API returns it, in the same shape a request gives it. */
-function shippingResource(shipping: ShippingCollection | null) {
+function shippingResource(shipping: ShippingSettings | null) {
   if (!shipping) {
     return { collect: false as const };
   }
@@ -169,24 +233,50 @@ function shippingResource(shipping: ShippingCollection | null) {
   };
 }
 
+/** The phone number as the Admin API returns it, in the same shape a request gives it. */
+function phoneResource(phone: PhoneSettings | null) {
+  if (!phone) {
+    return { collect: false as const };
+  }
+  return {
+    collect: true as const,
+    ...(phone.tierIds ? { tier_ids: phone.tierIds } : {}),
+    custom_field_key: phone.customFieldKey,
+  };
+}
+
+/** The collected parts a response carries: the ones the config it is given includes. */
+function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>): {
+  [Section in CollectedSection]: z.input<(typeof CollectedResources)[Section]>;
+} {
+  return {
+    shipping: settings.shipping === undefined ? undefined : shippingResource(settings.shipping),
+    phone: settings.phone === undefined ? undefined : phoneResource(settings.phone),
+  };
+}
+
+/** The collected parts, which a response leaves out while their flag is off. */
+const COLLECTED_OPTIONAL: Record<CollectedSection, true> = {
+  shipping: true,
+  phone: true,
+};
+
 const CheckoutConfigResponse = z.object({
   checkout_config: z.tuple([CheckoutConfigResource]),
 });
 
 /**
  * The config as the Admin API returns it. Every part says whether it is set, so a client can
- * save back exactly what it read. Shipping is left out while its flag is off.
+ * save back exactly what it read. The collected parts are left out while their flag is off.
  */
-export const toCheckoutConfigResponse = StripeCheckoutConfig.partial({ shipping: true })
+export const toCheckoutConfigResponse = StripeCheckoutConfig.partial(COLLECTED_OPTIONAL)
   .transform((settings): z.input<typeof CheckoutConfigResponse> => ({
     checkout_config: [
       {
         design: settings.design
           ? { customize: true as const, ...snakeKeys(settings.design) }
           : { customize: false as const },
-        ...(settings.shipping !== undefined
-          ? { shipping: shippingResource(settings.shipping) }
-          : {}),
+        ...collectedResources(settings),
       },
     ],
   }))

@@ -5,7 +5,7 @@ const {
   SIGNUP_CONTEXTS,
   canWelcomeEmailReplaceSignupPaidEmail,
 } = require('../../../../lib/member-signup-contexts');
-const { collectedShipping } = require('../checkout/completed-session');
+const { collectedAnswers } = require('../checkout/completed-session');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
@@ -442,7 +442,7 @@ module.exports = class CheckoutSessionEventService {
 
     // After the subscription work and apart from it: a throw here would fail the webhook, and
     // Stripe's retry could repeat the payment work.
-    await this.saveShippingDetails(member.id, session, { canUpdateMember });
+    await this.saveCollected(member.id, session, { canUpdateMember });
 
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
@@ -464,11 +464,7 @@ module.exports = class CheckoutSessionEventService {
   }
 
   /**
-   * Saves the shipping address, and the recipient's name, a checkout collected into the custom
-   * fields the site's config names. Only a checkout that asked for an address is saved from:
-   * Stripe can return one it wasn't asked for, such as one saved with Link, and that isn't the
-   * publisher's to keep. What the checkout asked is read from the checkout itself, because the
-   * config can change while it is open.
+   * Saves what a checkout asked the buyer for into the custom fields the site's config names.
    *
    * Never throws: a failed webhook makes Stripe retry it, which could repeat the payment work.
    *
@@ -477,40 +473,41 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} options
    * @param {boolean} options.canUpdateMember Whether this checkout may write to the member's record
    */
-  async saveShippingDetails(memberId, session, { canUpdateMember }) {
+  async saveCollected(memberId, session, { canUpdateMember }) {
     try {
-      const { SHIPPING_FLAG } = this.deps.stripeCheckoutConfig;
-      if (!session.shipping_address_collection || !this.deps.labs.isSet(SHIPPING_FLAG)) {
+      if (!this.deps.labs.isSet(this.deps.stripeCheckoutConfig.COLLECTION_FLAG)) {
+        return;
+      }
+      const collected = collectedAnswers.parse(session);
+      if (collected.length === 0) {
         return;
       }
 
       if (!canUpdateMember) {
         logging.warn(
           {
-            event: { name: 'stripe_checkout.shipping.save_skipped' },
+            event: { name: 'stripe_checkout.collection.save_skipped' },
             member_id: memberId,
             session_id: session.id,
           },
-          'Skipped saving the shipping details an unverified checkout collected for an existing member',
+          'Skipped saving what an unverified checkout collected for an existing member',
         );
         return;
       }
 
-      const { plans, failure } = await this.deps.metafieldBindings.planCollected(
-        collectedShipping.parse(session),
-      );
+      const { plans, failure } = await this.deps.metafieldBindings.planCollected(collected);
       if (plans.length > 0) {
         // Through the members service, like any other edit, so the change reaches webhooks.
         await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
       } else if (!failure) {
-        // The checkout asked, but shipping was switched off or its fields deleted since.
+        // The checkout asked, but collection was switched off or its fields deleted since.
         logging.warn(
           {
-            event: { name: 'stripe_checkout.shipping.no_destination' },
+            event: { name: 'stripe_checkout.collection.no_destination' },
             member_id: memberId,
             session_id: session.id,
           },
-          'Dropped the shipping details a checkout collected, as no custom field takes them now',
+          'Dropped what a checkout collected, as no custom field takes it now',
         );
       }
       if (failure) {
@@ -519,12 +516,12 @@ module.exports = class CheckoutSessionEventService {
     } catch (err) {
       logging.error(
         {
-          event: { name: 'stripe_checkout.shipping.save_failed' },
+          event: { name: 'stripe_checkout.collection.save_failed' },
           err,
           member_id: memberId,
           session_id: session.id,
         },
-        'Failed to save the shipping details a checkout collected',
+        'Failed to save what a checkout collected',
       );
     }
   }

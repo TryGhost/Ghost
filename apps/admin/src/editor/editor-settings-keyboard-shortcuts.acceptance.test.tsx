@@ -138,7 +138,7 @@ describe('Post settings keyboard shortcuts', () => {
     await expect.element(pane).toHaveTextContent('Application');
     await expect.element(pane).toHaveTextContent('Inserting');
 
-    expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
+    expect(editorScreen.settingsShortcutRows()).toHaveLength(51);
     await expect
       .poll(
         () => editorScreen.settingsSidebar().element().parentElement!.getBoundingClientRect().width,
@@ -210,7 +210,7 @@ describe('Post settings keyboard shortcuts', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
     await openShortcuts();
 
-    expect(editorScreen.settingsShortcutRows()).toHaveLength(50);
+    expect(editorScreen.settingsShortcutRows()).toHaveLength(51);
     expect(editorScreen.settingsShortcutRows()).toContain('Bold⌘B');
   });
 });
