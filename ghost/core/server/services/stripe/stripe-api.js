@@ -96,7 +96,7 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * The saved design, or null while its flag is off.
+   * The saved design, or null when there is none.
    *
    * @private
    * @param {import('../stripe-checkout-config').CheckoutSessionConfig | null} [config] The config
@@ -104,9 +104,6 @@ module.exports = class StripeAPI {
    * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutDesign | null>}
    */
   async _savedDesign(config) {
-    if (!this.labs.isSet('stripeCheckoutDesign')) {
-      return null;
-    }
     const read = config === undefined ? await this._readCheckoutConfig() : config;
     return read?.design ?? null;
   }
@@ -794,11 +791,8 @@ module.exports = class StripeAPI {
       hasCustomer: Boolean(customerId),
     });
 
-    // Read once for both the design and the collected parts. Collection only releases after
-    // the design, so nothing is read while the design flag is off.
-    const config = this.labs.isSet('stripeCheckoutDesign')
-      ? await this._readCheckoutConfig()
-      : null;
+    // Read once for both the design and the collected parts.
+    const config = await this._readCheckoutConfig();
 
     const session = await this._createCheckoutSession(stripeSessionOptions, undefined, {
       design: options.design,

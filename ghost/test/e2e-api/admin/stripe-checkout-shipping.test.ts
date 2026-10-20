@@ -76,7 +76,6 @@ describe('Stripe Checkout shipping address collection', function () {
   });
 
   beforeEach(async function () {
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
     mockManager.mockLabsEnabled('membersCustomFields');
     await createField('Delivery address', 'address');

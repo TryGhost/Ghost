@@ -51,7 +51,6 @@ describe('Stripe Checkout Config Admin API', function () {
   });
 
   beforeEach(function () {
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
     // The collected parts have their own tests, so these see the design alone.
     mockManager.mockLabsDisabled('stripeCheckoutCollection');
   });
@@ -60,16 +59,6 @@ describe('Stripe Checkout Config Admin API', function () {
     mockManager.restore();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('actions').where('resource_type', 'stripe_checkout_config').del();
-  });
-
-  it('is not found while its flag is off', async function () {
-    mockManager.mockLabsDisabled('stripeCheckoutDesign');
-
-    await agent.get('stripe/checkout/config/').expectStatus(404);
-    await agent
-      .put('stripe/checkout/config/')
-      .body({ checkout_config: [design()] })
-      .expectStatus(404);
   });
 
   it('starts with the design from the Stripe dashboard', async function () {

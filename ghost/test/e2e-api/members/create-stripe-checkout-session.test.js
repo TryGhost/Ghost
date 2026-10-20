@@ -747,7 +747,6 @@ describe('Create Stripe Checkout Session', function () {
 
     beforeEach(function () {
       mockManager.mockStripe();
-      mockManager.mockLabsEnabled('stripeCheckoutDesign');
     });
 
     afterEach(async function () {
@@ -799,13 +798,6 @@ describe('Create Stripe Checkout Session', function () {
       const session = stripeMocker.checkoutSessions.at(-1);
       assert.equal(session.mode, 'setup');
       assert.deepEqual(session.branding_settings, design);
-    });
-
-    it('sends no design while its flag is off, even when one is saved', async function () {
-      await setDesign({ customize: true, ...design });
-      mockManager.mockLabsDisabled('stripeCheckoutDesign');
-
-      assert.equal((await startCheckout()).branding_settings, undefined);
     });
 
     it('goes ahead unstyled when the saved design can no longer be read', async function () {

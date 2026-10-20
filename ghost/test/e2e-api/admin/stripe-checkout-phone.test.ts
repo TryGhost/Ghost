@@ -71,7 +71,6 @@ describe('Stripe Checkout phone number collection', function () {
   });
 
   beforeEach(async function () {
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
     mockManager.mockLabsEnabled('membersCustomFields');
     await createField('Contact phone', 'short_text');
