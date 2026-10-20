@@ -5,9 +5,10 @@ const stripe = require('stripe');
 const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
 const { z } = require('zod');
-const { checkoutSessionParams } = require('./checkout-session-params');
+const { checkoutSessionParts, taxSessionParams } = require('./checkout-session-params');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
+/** @import { CheckoutSessionParts } from './checkout-session-params' */
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -71,11 +72,10 @@ const refusalOf = (param) =>
     type: z.literal('StripeInvalidRequestError'),
     param: z.string().startsWith(param),
   });
-const DesignRefusal = refusalOf('branding_settings');
 
-/** Leaves out one parameter of a session. */
-const without = (params, key) =>
-  Object.fromEntries(Object.entries(params).filter(([name]) => name !== key));
+/** Leaves out one part of a checkout. */
+const without = (parts, part) =>
+  Object.fromEntries(Object.entries(parts).filter(([name]) => name !== part));
 
 /** A checkout goes ahead in Stripe's own design when Stripe refuses Ghost's. */
 const logRefusedDesign = (err) =>
@@ -128,56 +128,52 @@ module.exports = class StripeAPI {
     return this._createWithFallback(
       params,
       requestOptions,
-      checkoutSessionParams(checkout),
+      checkoutSessionParts(checkout),
       logRefusedDesign,
     );
   }
 
   /**
-   * Creates the session, and again without any parameter from Ghost's settings that Stripe
+   * Creates the session, and again without any part of Ghost's settings whose parameters Stripe
    * refuses. The retry reuses the idempotency key, which is safe because Stripe doesn't store a
    * result for a request it rejects as invalid.
    *
    * @private
    * @param {object} params
    * @param {object} [requestOptions]
-   * @param {object} optional Parameters from Ghost's settings that the session can go without.
+   * @param {CheckoutSessionParts} parts The parameters from Ghost's settings, by the part of the
+   *   checkout that adds them. The session can go without any of them.
    * @param {(err: unknown) => void} onDesignRefused Called when Stripe refuses the design, before
    *   the session is created again without it. Throwing stops the session being created.
    */
-  async _createWithFallback(params, requestOptions, optional, onDesignRefused) {
+  async _createWithFallback(params, requestOptions, parts, onDesignRefused) {
     try {
       return await this._stripe.checkout.sessions.create(
-        { ...optional, ...params },
+        Object.assign({}, ...Object.values(parts), params),
         requestOptions,
       );
     } catch (err) {
-      if (optional.branding_settings && DesignRefusal.safeParse(err).success) {
-        onDesignRefused(err);
-        return this._createWithFallback(
-          params,
-          requestOptions,
-          without(optional, 'branding_settings'),
-          onDesignRefused,
-        );
+      const refused = Object.entries(parts)
+        .flatMap(([part, partParams]) => Object.keys(partParams).map((param) => ({ part, param })))
+        .find(({ param }) => refusalOf(param).safeParse(err).success);
+      if (!refused) {
+        throw err;
       }
-      // Anything else from Ghost's settings is something the checkout asks the buyer for.
-      const refused = Object.keys(optional).find(
-        (param) => refusalOf(param).safeParse(err).success,
-      );
-      if (refused) {
+      if (refused.part === 'design') {
+        onDesignRefused(err);
+      } else {
+        // Any other part is something the checkout asks the buyer for.
         logging.error(
-          { event: { name: 'stripe_checkout.collection.refused' }, err, param: refused },
+          { event: { name: 'stripe_checkout.collection.refused' }, err, param: refused.param },
           'Stripe refused something the Stripe Checkout asks the buyer for',
         );
-        return this._createWithFallback(
-          params,
-          requestOptions,
-          without(optional, refused),
-          onDesignRefused,
-        );
       }
-      throw err;
+      return this._createWithFallback(
+        params,
+        requestOptions,
+        without(parts, refused.part),
+        onDesignRefused,
+      );
     }
   }
 
@@ -636,21 +632,6 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * Apply Automatic Tax related session options consistently.
-   * @param {object} stripeSessionOptions
-   * @param {{hasCustomer: boolean}} ctx
-   */
-  _applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer }) {
-    if (!this._config.enableAutomaticTax) {
-      return;
-    }
-    stripeSessionOptions.tax_id_collection = { enabled: true };
-    if (hasCustomer) {
-      stripeSessionOptions.customer_update = { address: 'auto', name: 'auto' };
-    }
-  }
-
-  /**
    * Create a new Stripe Checkout Session for a new subscription.
    *
    * @param {string} priceId
@@ -710,7 +691,7 @@ module.exports = class StripeAPI {
     return this._createWithFallback(
       stripeSessionOptions,
       undefined,
-      checkoutSessionParams(options.checkout),
+      checkoutSessionParts(options.checkout),
       reportRefusedDesign,
     );
   }
@@ -776,9 +757,10 @@ module.exports = class StripeAPI {
       success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
       cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
       allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
-      automatic_tax: {
-        enabled: this._config.enableAutomaticTax,
-      },
+      ...taxSessionParams({
+        automaticTax: this._config.enableAutomaticTax,
+        hasCustomer: Boolean(customerId),
+      }),
       metadata,
       discounts,
       /*
@@ -800,10 +782,6 @@ module.exports = class StripeAPI {
     } else {
       stripeSessionOptions.customer_email = customerEmail;
     }
-
-    this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {
-      hasCustomer: Boolean(customerId),
-    });
 
     return stripeSessionOptions;
   }
@@ -850,9 +828,10 @@ module.exports = class StripeAPI {
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl || this._config.checkoutSessionSuccessUrl,
       cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
-      automatic_tax: {
-        enabled: this._config.enableAutomaticTax,
-      },
+      ...taxSessionParams({
+        automaticTax: this._config.enableAutomaticTax,
+        hasCustomer: Boolean(customer),
+      }),
       metadata,
       customer: customer ? customer.id : undefined,
       customer_email: !customer && customerEmail ? customerEmail : undefined,
@@ -882,8 +861,6 @@ module.exports = class StripeAPI {
         },
       ],
     };
-
-    this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
     const session = await this._createCheckoutSession(stripeSessionOptions, undefined, checkout);
     return session;
@@ -935,9 +912,10 @@ module.exports = class StripeAPI {
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl,
       cancel_url: cancelUrl,
-      automatic_tax: {
-        enabled: this._config.enableAutomaticTax,
-      },
+      ...taxSessionParams({
+        automaticTax: this._config.enableAutomaticTax,
+        hasCustomer: Boolean(customer),
+      }),
       metadata,
       customer: customer ? customer.id : undefined,
       customer_email: !customer && customerEmail ? customerEmail : undefined,
@@ -958,8 +936,6 @@ module.exports = class StripeAPI {
         },
       ],
     };
-
-    this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
     const session = await this._createCheckoutSession(
       stripeSessionOptions,
