@@ -28,11 +28,11 @@ export const APP_FRAME_SANDBOX =
   'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads';
 
 /**
- * Features the app's page gets. `'src'` grants each one to the origin of the frame's `src`, the
- * app's own, so a page the frame is sent to on another origin doesn't get them.
+ * Features the app's page is allowed to use. `'src'` grants them only to the app's own origin, not
+ * pages on other origins the frame navigates to.
  *
- * Web Share, so an app can offer the device's share sheet as any site can. Each share needs a tap
- * in the app, the publisher picks where it goes, and the app only learns whether they shared.
+ * Web Share lets an app open the device's share sheet. It needs no approval because the publisher
+ * starts and finishes every share themselves.
  */
 const GRANTED = ['web-share'];
 
