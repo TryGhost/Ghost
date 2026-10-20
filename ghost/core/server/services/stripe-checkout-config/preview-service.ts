@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
-import type { CheckoutCollection, CollectedSection, StripeCheckoutDesign } from './models';
+import type { CheckoutService } from './checkout-service';
+import type { CheckoutDefinition, CollectedSection } from './models';
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutPreviewInput } from './serializers';
 
@@ -21,12 +22,11 @@ export interface PreviewableTier {
 export interface CheckoutPreviewDeps<Tier extends PreviewableTier> {
   stripeConnected: () => boolean;
   readTier: (id: string) => Promise<Tier | null>;
+  checkouts: Pick<CheckoutService, 'preview'>;
   createPreviewLink: (params: {
     tier: Tier;
     cadence: 'month' | 'year';
-    design: StripeCheckoutDesign | null;
-    /** The collected parts to ask as, in place of the saved ones. */
-    collection: Partial<CheckoutCollection>;
+    checkout: CheckoutDefinition;
     returnUrl: string;
     expiresInSeconds: number;
   }) => Promise<string | null>;
@@ -62,14 +62,15 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
       });
     }
 
+    const checkout = await this.deps.checkouts.preview(tierId, {
+      design,
+      shipping: request.shipping,
+      phone: request.phone,
+    } satisfies Record<CollectedSection | 'design', unknown>);
     const url = await this.deps.createPreviewLink({
       tier,
       cadence,
-      design,
-      collection: {
-        shipping: request.shipping,
-        phone: request.phone,
-      } satisfies Record<CollectedSection, unknown>,
+      checkout,
       returnUrl: this.deps.siteUrl(),
       expiresInSeconds: PREVIEW_LIFETIME_SECONDS,
     });

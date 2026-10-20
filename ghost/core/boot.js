@@ -415,6 +415,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const urlUtils = require('./shared/url-utils').default;
   const settingsCache = require('./shared/settings-cache');
   const internalKeys = require('./server/services/internal-keys').default.service;
+  const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
@@ -426,6 +427,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     apiUrl,
     schedulerAdapter,
     internalKeys,
+    checkouts,
   });
   const giftDeliveryService = giftService.deliveryService;
   assert(giftDeliveryService, 'Gift delivery service should be initialized');

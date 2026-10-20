@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  STRIPE_ALLOWED_COUNTRIES,
-  STRIPE_CHECKOUT_BORDER_STYLES,
-  STRIPE_CHECKOUT_FONTS,
-} from '@tryghost/checkout';
+import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
 import { KeySchema } from '@tryghost/metafield-types/identity';
 
 /**
@@ -95,7 +91,7 @@ export const COLLECTED_NOUNS = {
 export const COLLECTION_FLAG = 'stripeCheckoutCollection';
 
 /** What a checkout needs to know about every collected part to ask for it. */
-interface AskedPart extends z.infer<typeof CollectedPart> {
+export interface AskedPart extends z.infer<typeof CollectedPart> {
   /**
    * Whether checkouts can ask for it right now. A saved part can't while a field it can't do
    * without is archived or no longer holds what it collects, as the answer would have nowhere
@@ -108,7 +104,7 @@ interface AskedPart extends z.infer<typeof CollectedPart> {
  * What a checkout needs to know about each collected part to ask for it: which tiers ask and
  * how, without where the answers land.
  */
-interface AskedParts {
+export interface AskedParts {
   shipping: AskedPart & Pick<ShippingSettings, 'allowedCountries'>;
   phone: AskedPart;
 }
@@ -122,62 +118,21 @@ export type CheckoutCollection = { [Section in CollectedSection]: AskedParts[Sec
 /** The config as checkouts use it: the design, and what each collected part asks for. */
 export type CheckoutSessionConfig = Pick<StripeCheckoutConfig, 'design'> & CheckoutCollection;
 
-/** The Checkout session parameters that ask the buyer for something. */
-export interface CollectionParams {
-  shipping_address_collection?: { allowed_countries: string[] };
-  phone_number_collection?: { enabled: true };
+/** How a checkout asks for each collected part once it asks for it at all. */
+export interface Asking {
+  shipping: Pick<ShippingSettings, 'allowedCountries'>;
+  /** Asked the same way on every checkout. */
+  phone: Record<string, never>;
 }
 
-/** The Checkout session parameters that ask for each collected part. */
-const ASK: { [Section in CollectedSection]: (part: AskedParts[Section]) => CollectionParams } = {
-  shipping: (shipping) => ({
-    shipping_address_collection: {
-      // Stripe has no way to say everywhere, and a checkout without countries collects no
-      // address, so everywhere is every country Stripe accepts.
-      allowed_countries: shipping.allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES],
-    },
-  }),
-  phone: () => ({ phone_number_collection: { enabled: true } }),
-};
+/** How a checkout asks for each collected part, or null for each it doesn't ask for. */
+export type CheckoutAsks = { readonly [Section in CollectedSection]: Asking[Section] | null };
 
-/**
- * The Checkout session parameters that ask for what the collected parts collect on a checkout
- * for this paid tier: as saved, except for the parts a preview replaces. A part asks for
- * nothing on a tier it doesn't cover, or while it has nowhere to keep the answer.
- */
-export function collectionParams(
-  saved: CheckoutCollection | null,
-  tierId: string,
-  previewed: Partial<CheckoutCollection> = {},
-): CollectionParams {
-  const collection = withPreviewed(saved, previewed);
-  const ask = <Section extends CollectedSection>(
-    section: Section,
-    part: AskedParts[Section] | null,
-  ): CollectionParams => (part !== null && asksOn(part, tierId) ? ASK[section](part) : {});
-  return COLLECTED_SECTIONS.reduce<CollectionParams>(
-    (params, section) => ({ ...params, ...ask(section, collection[section]) }),
-    {},
-  );
-}
-
-/**
- * The collected parts as saved, with the parts a preview gives in their place. A part the
- * preview gives as undefined asks as saved, like one it leaves out.
- */
-function withPreviewed(
-  saved: CheckoutCollection | null,
-  previewed: Partial<CheckoutCollection>,
-): CheckoutCollection {
-  return {
-    shipping: previewed.shipping !== undefined ? previewed.shipping : (saved?.shipping ?? null),
-    phone: previewed.phone !== undefined ? previewed.phone : (saved?.phone ?? null),
-  };
-}
-
-/** Whether a checkout for this paid tier asks for what a collected part collects. */
-function asksOn(part: AskedPart, tierId: string) {
-  return part.collectable && (part.tierIds === null || part.tierIds.includes(tierId));
+/** How a Stripe Checkout page looks and what it asks the buyer for. */
+export interface CheckoutDefinition {
+  /** Null sends none, so Stripe shows the design set in the Stripe dashboard. */
+  readonly design: StripeCheckoutDesign | null;
+  readonly asks: CheckoutAsks;
 }
 
 /**

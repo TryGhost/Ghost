@@ -1843,6 +1843,7 @@ describe('RouterController', function () {
         tokenService: { decodeToken: sinon.stub().resolves({ sub: 'member@example.com' }) },
         memberRepository: { get: sinon.stub().resolves(memberStub) },
         urlUtils,
+        checkouts: { read: async () => null },
       });
     }
 

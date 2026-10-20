@@ -136,6 +136,7 @@ describe('PaymentsService', function () {
         StripeCustomer,
         offersAPI,
         stripeAPIService,
+        checkouts: { readForTier: async () => null, read: async () => null },
       });
 
       const tier = await Tier.create({
@@ -264,6 +265,7 @@ describe('PaymentsService', function () {
         StripeCustomer,
         offersAPI,
         stripeAPIService,
+        checkouts: { readForTier: async () => null, read: async () => null },
       });
 
       const tier = await Tier.create({
