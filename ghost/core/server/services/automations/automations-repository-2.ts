@@ -1,6 +1,23 @@
 import type { Promisable } from 'type-fest';
+import type { z } from 'zod';
+import { addAutomationDataSchema } from './automations-schemas';
 
 export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
+
+export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
+
+export type ActionToInsert = {
+  id: string;
+  created_at: Date;
+  updated_at: Date;
+  automation_id: string;
+  type: 'wait' | 'send_email';
+};
+
+export type EdgeRow = {
+  source_action_id: string;
+  target_action_id: string;
+};
 
 export type RunStepToInsert = {
   id: string;
@@ -52,6 +69,12 @@ export type AutomationsRepository2<Connection> = {
     memberId: string,
   ) => Promisable<boolean>;
 
+  /** Insert automation actions. */
+  insertActions: (
+    connection: Connection,
+    toInsert: ReadonlyArray<ActionToInsert>,
+  ) => Promisable<void>;
+
   /** Insert automation run steps. Typically coupled with the insertion of an equal number of runs. */
   insertRunSteps: (
     connection: Connection,
@@ -60,6 +83,18 @@ export type AutomationsRepository2<Connection> = {
 
   /** Insert automation runs. Typically coupled with the insertion of an equal number of steps. */
   insertRuns: (connection: Connection, toInsert: ReadonlyArray<RunToInsert>) => Promisable<void>;
+
+  /** Is this run's automation active? */
+  isAutomationActiveForRun: (
+    connection: Connection,
+    automationRunId: string,
+  ) => Promisable<boolean>;
+
+  /** Is this step's automation active? */
+  isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
+
+  /** Load the edges connecting (non-deleted) actions. */
+  loadEdgeRows: (connection: Connection, automationId: string) => Promisable<EdgeRow[]>;
 
   /**
    * Lock a member for the lifetime of this transaction. Useful to make sure a

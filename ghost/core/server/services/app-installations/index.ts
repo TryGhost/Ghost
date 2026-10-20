@@ -12,11 +12,13 @@ import {
   recordAppInstallationAction,
   type RecordAppInstallationAction,
 } from './actions';
+import { createAppFetcher } from './fetch-from-app';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
-export type { AppInstallation } from './codec';
+export type { Installation, InstallationWithHistory } from './codec';
+export type { AppInstallation } from './serializers';
 export type { AppInstallationPreview, AppSession } from './service';
 
 /**
@@ -49,18 +51,22 @@ export default defineService(
     const recordAction: RecordAppInstallationAction = (input) =>
       recordAppInstallationAction({ Action: models.Action, logging, ...input });
 
+    const fetchFromApp = createAppFetcher({
+      request: externalRequest,
+      getLocalhostAlias: localhostAlias,
+    });
+
     return new AppInstallationsService({
       knex,
       recordAction,
       loadManifest: createManifestLoader({
-        request: externalRequest,
+        fetchFromApp,
         logging,
-        // Read per load, not once at boot: both are config, which tests change.
+        // Read per load, not once at boot: it's config, which tests change.
         getManifestRules: () => ({
           ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
           allowLocalhost: isDevelopment(),
         }),
-        getLocalhostAlias: localhostAlias,
       }),
     });
   },

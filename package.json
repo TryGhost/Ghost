@@ -76,9 +76,7 @@
     "data:analytics:clear": "node tools/scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node tools/scripts/release/release.ts",
     "inventory:typescript": "node tools/scripts/ci/typescript-inventory.ts",
-    "gx": "node tools/gx/cli.ts",
-    "audit:services": "GHOST_SERVICE_DEPENDENCY_AUDIT=1 depcruise ghost/core/server/services --config .dependency-cruiser.cjs --output-type json | depcruise-fmt -",
-    "audit:services:summary": "pnpm --silent audit:services --output-type json | jq -er '[.summary.violations[] | select(.rule.name == \"service-dependencies\") | {target: (if (.dependencyTypes | any(startswith(\"npm\"))) then .unresolvedTo else .to end), from}] | unique_by([.target, .from]) | group_by(.target) | sort_by(-length, .[0].target) | ([\"FILES\", \"DEPENDENCY\"], (.[] | [length, .[0].target])) | @tsv'"
+    "gx": "node tools/gx/cli.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",

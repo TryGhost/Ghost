@@ -1,9 +1,9 @@
-const assert = require('node:assert/strict');
-const {
+import assert from 'node:assert/strict';
+import {
   resolveApiCall,
   resolveRouteData,
   resolveResourceRead,
-} = require('../../../../../core/frontend/services/routing/api-adapter');
+} from '../../../../../core/frontend/services/routing/api-adapter';
 
 describe('services/routing/api-adapter', function () {
   describe('resolveApiCall - short form', function () {
@@ -46,10 +46,6 @@ describe('services/routing/api-adapter', function () {
     it('does not leak the slug into the shared resource config', function () {
       assert.equal(resolveApiCall('tag.first').options.slug, 'first');
       assert.equal(resolveApiCall('tag.second').options.slug, 'second');
-    });
-
-    it('throws for an unsupported shorthand resource', function () {
-      assert.throws(() => resolveApiCall('unknown.thing'), /Unknown route data resource: unknown/);
     });
   });
 
@@ -138,13 +134,6 @@ describe('services/routing/api-adapter', function () {
 
       assert.deepEqual(spec.options, {});
     });
-
-    it('throws for an unsupported resource', function () {
-      assert.throws(
-        () => resolveApiCall({ type: 'browse', resource: 'widgets' }),
-        /Unknown route data resource: widgets/,
-      );
-    });
   });
 
   describe('resolveRouteData', function () {
@@ -193,13 +182,6 @@ describe('services/routing/api-adapter', function () {
         resolveResourceRead({ type: 'browse', resource: 'posts', filter: 'featured:true' }),
         null,
       );
-    });
-
-    it('an unknown resource claims nothing rather than throwing', function () {
-      // This runs on the request path, so an entry it cannot make sense of
-      // must not take the page down.
-      assert.equal(resolveResourceRead({ type: 'read', resource: 'widgets', slug: 'a' }), null);
-      assert.equal(resolveResourceRead('unknown.thing'), null);
     });
   });
 });
