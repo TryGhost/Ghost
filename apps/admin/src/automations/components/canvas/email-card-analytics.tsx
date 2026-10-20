@@ -84,11 +84,12 @@ const Metric: React.FC<{
   count?: string;
 }> = ({ icon: Icon, label, large, value, tracked = true, count }) => {
   const revealsCount = tracked && count !== undefined;
-  const spokenValue = !tracked
-    ? TRACKING_OFF_MESSAGE
-    : revealsCount
-      ? `${value}, ${count} members`
-      : value;
+  let spokenValue = value;
+  if (!tracked) {
+    spokenValue = TRACKING_OFF_MESSAGE;
+  } else if (revealsCount) {
+    spokenValue = `${value}, ${count} members`;
+  }
   return (
     <div
       className={cn(
