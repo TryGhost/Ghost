@@ -178,6 +178,48 @@ describe('Stripe Checkout Preview Admin API', function () {
     });
   });
 
+  describe('with an unsaved tax number', function () {
+    beforeEach(function () {
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      // Automatic tax offers a tax ID on every checkout by itself.
+      mockManager.mockLabsDisabled('stripeAutomaticTax');
+    });
+
+    function previewTaxNumber(taxNumber?: Record<string, unknown>) {
+      return preview({
+        tier_id: paidTierId,
+        design: { customize: false },
+        ...(taxNumber ? { tax_number: taxNumber } : {}),
+      });
+    }
+
+    const offered = () => stripeMocker.checkoutSessions.at(-1).tax_id_collection;
+
+    it('offers a tax ID as the settings being edited say', async function () {
+      await previewTaxNumber({ collect: true });
+      assert.deepEqual(offered(), { enabled: true });
+
+      await previewTaxNumber({ collect: true, tier_ids: [freeTierId] });
+      assert.equal(offered(), undefined);
+
+      await previewTaxNumber({ collect: false });
+      assert.equal(offered(), undefined);
+    });
+
+    it('offers it as the saved settings say when the preview leaves it out', async function () {
+      await agent
+        .put('stripe/checkout/config/')
+        .body({ checkout_config: [{ tax_number: { collect: true } }] })
+        .expectStatus(200);
+
+      await previewTaxNumber();
+      assert.deepEqual(offered(), { enabled: true });
+
+      await previewTaxNumber({ collect: false });
+      assert.equal(offered(), undefined);
+    });
+  });
+
   it('refuses a free tier, an unknown tier and a malformed tier id', async function () {
     for (const tierId of [freeTierId, '0123456789abcdef01234567', 'not-a-tier']) {
       const { body } = await preview({ tier_id: tierId, design: { customize: false } }, 422);

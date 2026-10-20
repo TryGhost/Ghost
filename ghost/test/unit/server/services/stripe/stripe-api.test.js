@@ -435,6 +435,29 @@ describe('StripeAPI', function () {
       sinon.assert.calledOnce(logged);
     });
 
+    it('creates the session again without the tax ID, or saving the business name, when Stripe refuses it', async function () {
+      const logged = sinon.stub(logging, 'error');
+      const refusal = Object.assign(new Error('Invalid tax_id_collection'), {
+        type: 'StripeInvalidRequestError',
+        param: 'tax_id_collection[enabled]',
+      });
+      mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
+      mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_tax_id' });
+
+      const customer = { id: 'cus_1', email: 'buyer@example.com' };
+      const session = await api.createCheckoutSession('priceId', customer, {
+        checkout: { design: null, asks: { ...NOTHING_COLLECTED, taxNumber: {} } },
+      });
+
+      assert.equal(session.id, 'cs_no_tax_id');
+      const [asking, plain] = mockStripe.checkout.sessions.create.getCalls();
+      assert.deepEqual(asking.firstArg.tax_id_collection, { enabled: true });
+      assert.deepEqual(asking.firstArg.customer_update, { name: 'auto' });
+      assert.equal(plain.firstArg.tax_id_collection, undefined);
+      assert.equal(plain.firstArg.customer_update, undefined);
+      sinon.assert.calledOnce(logged);
+    });
+
     it('does not retry a refusal that is not about the design', async function () {
       const refusal = Object.assign(new Error('No such customer'), {
         type: 'StripeInvalidRequestError',

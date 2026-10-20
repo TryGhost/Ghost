@@ -66,6 +66,7 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
       design,
       shipping: request.shipping,
       phone: request.phone,
+      taxNumber: request.tax_number,
     } satisfies Record<CollectedSection | 'design', unknown>);
     const url = await this.deps.createPreviewLink({
       tier,

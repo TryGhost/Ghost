@@ -7,6 +7,7 @@ import {
   COLLECTED_NOUNS,
   COLLECTED_SECTIONS,
   COLLECTION_FLAG,
+  SECTION_NAMES,
 } from '../../services/stripe-checkout-config/models';
 
 const labs = require('../../../shared/labs');
@@ -18,11 +19,11 @@ function refuseCollectionWhileOff(input: unknown): void {
   if (labs.isSet(COLLECTION_FLAG) || typeof input !== 'object' || input === null) {
     return;
   }
-  const section = COLLECTED_SECTIONS.find((candidate) => candidate in input);
+  const section = COLLECTED_SECTIONS.find((candidate) => SECTION_NAMES[candidate] in input);
   if (section) {
     throw new errors.ValidationError({
       message: `${upperFirst(COLLECTED_NOUNS[section])} collection is not available yet.`,
-      property: section,
+      property: SECTION_NAMES[section],
     });
   }
 }

@@ -7,7 +7,7 @@ type SnakeToCamel<S extends string> = S extends `${infer Head}_${infer Tail}`
   ? `${Head}${Capitalize<SnakeToCamel<Tail>>}`
   : S;
 
-type CamelToSnake<S extends string> = S extends `${infer Head}${infer Tail}`
+export type CamelToSnake<S extends string> = S extends `${infer Head}${infer Tail}`
   ? Head extends Uppercase<Head>
     ? Head extends Lowercase<Head>
       ? `${Head}${CamelToSnake<Tail>}` // non-letter (digit, etc.): leave as-is

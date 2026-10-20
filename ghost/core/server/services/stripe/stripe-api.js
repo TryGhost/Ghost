@@ -128,7 +128,7 @@ module.exports = class StripeAPI {
     return this._createWithFallback(
       params,
       requestOptions,
-      checkoutSessionParts(checkout),
+      checkoutSessionParts(checkout, params),
       logRefusedDesign,
     );
   }
@@ -691,7 +691,7 @@ module.exports = class StripeAPI {
     return this._createWithFallback(
       stripeSessionOptions,
       undefined,
-      checkoutSessionParts(options.checkout),
+      checkoutSessionParts(options.checkout, stripeSessionOptions),
       reportRefusedDesign,
     );
   }

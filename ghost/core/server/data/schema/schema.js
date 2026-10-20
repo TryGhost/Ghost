@@ -1561,6 +1561,7 @@ module.exports = {
     design: { type: 'text', maxlength: 65535, nullable: true },
     shipping: { type: 'text', maxlength: 65535, nullable: true },
     phone: { type: 'text', maxlength: 65535, nullable: true },
+    tax_number: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
@@ -1573,7 +1574,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['shipping', 'phone']] },
+      validations: { isIn: [['shipping', 'phone', 'tax_number']] },
     },
     product_id: {
       type: 'string',
