@@ -48,6 +48,8 @@ type AutomationAction = {
 };
 
 type Automation = {
+  trigger_type?: string;
+  subscription_transition?: { from: string | string[]; to: string | string[] };
   id: string;
   updated_at: string;
   name: string;
@@ -342,6 +344,109 @@ describe('Automations API', function () {
         [...tierIds].sort(),
       );
     });
+
+    const { trigger_tier_scope: _legacyScope, ...transitionPayload } = payload;
+
+    for (const fromScope of ['any_paid', 'selected_paid'] as const) {
+      for (const toScope of ['downgraded_to_free', 'selected_paid'] as const) {
+        it(`creates subscription transition ${fromScope} to ${toScope}`, async function () {
+          // Archived paid tiers remain valid transition endpoints.
+          await models.Base.knex('products').whereIn('id', tierIds).update({ active: false });
+          const subscription_transition = {
+            from: fromScope === 'any_paid' ? fromScope : [tierIds[0]],
+            to: toScope === 'downgraded_to_free' ? toScope : [tierIds[1]],
+          };
+          const { body } = await agent
+            .post('automations')
+            .body({
+              automations: [
+                {
+                  ...transitionPayload,
+                  trigger_type: 'paid_subscription_changed',
+                  subscription_transition,
+                },
+              ],
+            })
+            .expectStatus(201);
+          const created = body.automations[0];
+          assert.equal(created.trigger_type, 'paid_subscription_changed');
+          assert.deepEqual(created.subscription_transition, subscription_transition);
+          assert.equal('trigger_tier_scope' in created, false);
+          assert.equal('trigger_tier_ids' in created, false);
+          assert.equal(created.name, payload.name);
+          assert.deepEqual(created.edges, payload.edges);
+          const row = await models.Base.knex('automations').where({ id: created.id }).first();
+          assert.equal(row.trigger_type, 'paid_subscription_changed');
+          assert.equal(row.trigger_tier_scope, null);
+          assert.equal(
+            row.trigger_from_tier_scope,
+            fromScope === 'any_paid' ? 'all_paid' : 'selected_paid',
+          );
+          assert.equal(
+            row.trigger_to_tier_scope,
+            toScope === 'downgraded_to_free' ? 'free' : 'selected_paid',
+          );
+          assert.deepEqual(
+            await models.Base.knex('automation_trigger_tiers').where({ automation_id: created.id }),
+            [],
+          );
+          const expected = [
+            ...(Array.isArray(subscription_transition.from)
+              ? [{ direction: 'from', product_id: tierIds[0] }]
+              : []),
+            ...(Array.isArray(subscription_transition.to)
+              ? [{ direction: 'to', product_id: tierIds[1] }]
+              : []),
+          ];
+          assert.deepEqual(
+            await models.Base.knex('automation_trigger_transition_tiers')
+              .where({ automation_id: created.id })
+              .select('direction', 'product_id')
+              .orderBy('direction'),
+            expected,
+          );
+        });
+      }
+    }
+
+    it.each(['from', 'to'] as const)(
+      'rejects missing or free %s tiers atomically',
+      async function (direction) {
+        for (const invalidTier of ['missing', 'free']) {
+          if (invalidTier === 'missing') {
+            await models.Base.knex('products').where({ id: tierIds[1] }).delete();
+          } else {
+            await models.Base.knex('products').insert({
+              id: tierIds[1],
+              name: tierIds[1],
+              slug: tierIds[1],
+              type: 'free',
+              created_at: new Date(),
+            });
+          }
+          const { body } = await agent
+            .post('automations')
+            .body({
+              automations: [
+                {
+                  ...transitionPayload,
+                  trigger_type: 'paid_subscription_changed',
+                  subscription_transition: {
+                    from: direction === 'from' ? [tierIds[1]] : 'any_paid',
+                    to: direction === 'to' ? [tierIds[1]] : 'downgraded_to_free',
+                  },
+                },
+              ],
+            })
+            .expectStatus(422);
+          assert.equal(body.errors[0].property, 'subscription_transition');
+          assert.equal(
+            await models.Base.knex('automations').where({ name: payload.name }).first(),
+            undefined,
+          );
+        }
+      },
+    );
 
     it('trims name and description before saving', async function () {
       const { body } = await agent

@@ -75,7 +75,9 @@ describe('automations API', function () {
 
   describe('trigger', function () {
     type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
-    type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
+    type FirstAction = Awaited<
+      ReturnType<Repository['findFirstActionRevisionsForMembershipStart']>
+    >[number];
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
@@ -112,7 +114,7 @@ describe('automations API', function () {
 
       repository = createTestAutomationsRepository2({
         lockMember: noop,
-        findFirstActionRevisions: () => firstActions,
+        findFirstActionRevisionsForMembershipStart: () => firstActions,
         hasMemberEnteredAutomation: (_connection, automationId, memberId) =>
           runs.some((run) => run.automation_id === automationId && run.member_id === memberId),
         insertRuns: (_connection, toInsert) => {
@@ -167,7 +169,9 @@ describe('automations API', function () {
 
     it('locks the member before any other repository operation', async function () {
       const lockMember = vi.fn();
-      const findFirstActionRevisions = vi.fn().mockReturnValue([createFirstAction()]);
+      const findFirstActionRevisionsForMembershipStart = vi
+        .fn()
+        .mockReturnValue([createFirstAction()]);
       const hasMemberEnteredAutomation = vi.fn().mockReturnValue(false);
       const insertRuns = vi.fn();
       const insertRunSteps = vi.fn();
@@ -175,7 +179,7 @@ describe('automations API', function () {
       const api = createApi({
         repository: createTestAutomationsRepository2({
           lockMember,
-          findFirstActionRevisions,
+          findFirstActionRevisionsForMembershipStart,
           hasMemberEnteredAutomation,
           insertRuns,
           insertRunSteps,
@@ -185,7 +189,7 @@ describe('automations API', function () {
 
       await api.trigger(trigger);
 
-      expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisions);
+      expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisionsForMembershipStart);
       expect(lockMember).toHaveBeenCalledBefore(hasMemberEnteredAutomation);
       expect(lockMember).toHaveBeenCalledBefore(insertRunSteps);
       expect(lockMember).toHaveBeenCalledBefore(insertRuns);
@@ -237,21 +241,106 @@ describe('automations API', function () {
       'looks up matching automations for %s members',
       async function (memberStatus) {
         const memberTierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
-        const findFirstActionRevisions = vi.fn().mockReturnValue([]);
+        const findFirstActionRevisionsForMembershipStart = vi.fn().mockReturnValue([]);
         const api = createApi({
-          repository: { ...repository, findFirstActionRevisions },
+          repository: { ...repository, findFirstActionRevisionsForMembershipStart },
           domainEvents,
         });
 
         await api.trigger({ ...trigger, memberStatus, memberTierIds });
 
-        expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(
+        expect(findFirstActionRevisionsForMembershipStart).toHaveBeenCalledExactlyOnceWith(
           expect.anything(),
           memberStatus,
           memberTierIds,
         );
       },
     );
+
+    const subscriptionChange = {
+      event: 'paid_subscription_changed' as const,
+      memberId: 'member-change',
+      memberEmail: 'member@example.com',
+      previousMemberStatus: 'paid' as const,
+      previousMemberTierIds: ['bronze'],
+      memberStatus: 'paid' as const,
+      memberTierIds: ['silver'],
+    };
+
+    it('looks up subscription transitions even when no automation is configured', async function () {
+      const findFirstActionRevisionsForSubscriptionChange = vi.fn().mockReturnValue([]);
+      const api = createApi({
+        repository: { ...repository, findFirstActionRevisionsForSubscriptionChange },
+        domainEvents,
+      });
+      await api.trigger(subscriptionChange);
+      expect(findFirstActionRevisionsForSubscriptionChange).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        ['bronze'],
+        'paid',
+        ['silver'],
+      );
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { previousMemberStatus: 'free', previousMemberTierIds: [] },
+      { previousMemberStatus: 'gift' },
+      { previousMemberStatus: 'comped' },
+      { memberTierIds: ['bronze'] },
+      {
+        previousMemberTierIds: ['bronze', 'silver'],
+        memberTierIds: ['silver', 'bronze', 'silver'],
+      },
+      { memberStatus: 'comped' },
+    ] as const)(
+      'ignores non-transitions before opening a transaction: %j',
+      async function (overrides) {
+        const withTransaction = vi.fn();
+        const api = createApi({ repository: { ...repository, withTransaction }, domainEvents });
+        await api.trigger({ ...subscriptionChange, ...overrides });
+        expect(withTransaction).not.toHaveBeenCalled();
+        expect(domainEvents.dispatch).not.toHaveBeenCalled();
+      },
+    );
+
+    it('enrolls subscription-change members once ever and requests a poll only for new runs', async function () {
+      firstActions = [createFirstAction()];
+      const findFirstActionRevisionsForSubscriptionChange = vi.fn(() => firstActions);
+      const api = createApi({
+        repository: { ...repository, findFirstActionRevisionsForSubscriptionChange },
+        domainEvents,
+      });
+      await api.trigger(subscriptionChange);
+      await api.trigger(subscriptionChange);
+      expect(runs).toHaveLength(1);
+      expect(steps).toHaveLength(1);
+      expect(runs[0].member_id).toBe(subscriptionChange.memberId);
+      expect(steps[0].automation_run_id).toBe(runs[0].id);
+      expect(domainEvents.dispatch).toHaveBeenCalledOnce();
+    });
+
+    it('checks free destinations even if both tier sets are empty', async function () {
+      const findFirstActionRevisionsForSubscriptionChange = vi.fn().mockReturnValue([]);
+      const api = createApi({
+        repository: { ...repository, findFirstActionRevisionsForSubscriptionChange },
+        domainEvents,
+      });
+      await api.trigger({
+        ...subscriptionChange,
+        previousMemberTierIds: [],
+        memberStatus: 'free',
+        memberTierIds: [],
+      });
+      expect(findFirstActionRevisionsForSubscriptionChange).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        [],
+        'free',
+        [],
+      );
+    });
 
     it('skips automations the member has already entered while enrolling in new ones', async function () {
       const entered = createFirstAction();
@@ -282,6 +371,19 @@ describe('automations API', function () {
 
       expect(runs).toHaveLength(0);
       expect(steps).toHaveLength(0);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not request another poll when all matching membership automations were already entered', async function () {
+      firstActions = [createFirstAction()];
+      const api = createApi({ repository, domainEvents });
+
+      await api.trigger(trigger);
+      await api.trigger(trigger);
+
+      expect(runs).toHaveLength(1);
+      expect(steps).toHaveLength(1);
+      expect(domainEvents.dispatch).toHaveBeenCalledOnce();
     });
 
     it('applies the fake wait-hours multiplier when scheduling a wait action', async function () {
@@ -296,7 +398,7 @@ describe('automations API', function () {
 
     it.each([
       'lockMember',
-      'findFirstActionRevisions',
+      'findFirstActionRevisionsForMembershipStart',
       'hasMemberEnteredAutomation',
       'insertRuns',
       'insertRunSteps',

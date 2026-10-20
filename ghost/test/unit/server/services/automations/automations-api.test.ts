@@ -126,6 +126,76 @@ describe('automations API', function () {
       },
     );
 
+    it('accepts explicit membership_started', async function () {
+      await automationsApi.add({ ...valid, trigger_type: 'membership_started' });
+      expect(repositoryAdd).toHaveBeenCalledOnce();
+    });
+
+    const fromTier = ObjectId().toHexString();
+    const toTier = ObjectId().toHexString();
+    const transitionPayload = {
+      name: valid.name,
+      description: valid.description,
+      status: valid.status,
+      actions: valid.actions,
+      edges: valid.edges,
+      trigger_type: 'paid_subscription_changed',
+    };
+
+    it.each([
+      { from: 'any_paid', to: 'downgraded_to_free' },
+      { from: 'any_paid', to: [toTier] },
+      { from: [fromTier], to: 'downgraded_to_free' },
+      { from: [fromTier], to: [toTier] },
+    ])('accepts subscription transition %j', async function (subscription_transition) {
+      const data = { ...transitionPayload, subscription_transition };
+      await automationsApi.add(data);
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(data);
+    });
+
+    it.each([
+      undefined,
+      null,
+      {},
+      { from: [], to: [toTier] },
+      { from: [fromTier], to: [] },
+      { from: ['invalid'], to: [toTier] },
+      { from: [fromTier], to: ['invalid'] },
+      { from: [fromTier, fromTier], to: [toTier] },
+      { from: [fromTier], to: [toTier, toTier] },
+      { from: [fromTier], to: [fromTier, toTier] },
+      { from: 'downgraded_to_free', to: [toTier] },
+      { from: [fromTier], to: 'any_paid' },
+      { from: 'any_paid' },
+      { to: 'downgraded_to_free' },
+      { from: 'any_paid', to: null },
+      { from: 'any_paid', to: 'downgraded_to_free', extra: true },
+    ])('rejects invalid subscription transition %j', async function (subscription_transition) {
+      await assert.rejects(automationsApi.add({ ...transitionPayload, subscription_transition }), {
+        errorType: 'ValidationError',
+        statusCode: 422,
+      });
+      expect(repositoryAdd).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { trigger_tier_scope: 'free' },
+      { trigger_tier_ids: null },
+      { trigger_type: 'membership_started' },
+      { trigger_type: 'unknown' },
+      { trigger_type: null },
+    ])('rejects incompatible trigger fields %j', async function (overrides) {
+      await assert.rejects(
+        automationsApi.add({
+          ...transitionPayload,
+          subscription_transition: { from: 'any_paid', to: [toTier] },
+          ...overrides,
+        }),
+        { errorType: 'ValidationError', statusCode: 422 },
+      );
+      expect(repositoryAdd).not.toHaveBeenCalled();
+    });
+
     it('rejects invalid inputs', async function () {
       const invalidPayloads = [
         undefined,

@@ -52,10 +52,18 @@ type NextActionRevisionRow = {
  * NOTE: `AutomationsRepository2` will soon subsume `AutomationsRepository`. See NY-1704.
  */
 export type AutomationsRepository2<Connection> = {
-  /** Find the first action revision for all automations that match these trigger criteria. */
-  findFirstActionRevisions: (
+  /** Find first action revisions for matching membership-started automations. */
+  findFirstActionRevisionsForMembershipStart: (
     connection: Connection,
     memberStatus: 'free' | 'paid',
+    memberTierIds: ReadonlyArray<string>,
+  ) => Promisable<NextActionRevisionRow[]>;
+
+  /** Find first actions when a paid member newly enters a subscription destination category. */
+  findFirstActionRevisionsForSubscriptionChange: (
+    connection: Connection,
+    previousMemberTierIds: ReadonlyArray<string>,
+    memberStatus: 'free' | 'paid' | 'gift' | 'comped',
     memberTierIds: ReadonlyArray<string>,
   ) => Promisable<NextActionRevisionRow[]>;
 

@@ -28,7 +28,7 @@ describe('database automations repository', function () {
     name: `Test automation ${id}`,
     status: 'active',
     trigger_type: 'membership_started',
-    trigger_tier_scope: 'free',
+    trigger_tier_scope: 'free' as string | null,
     created_at: now,
   });
 
@@ -92,7 +92,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('findFirstActionRevisions', function () {
+  describe('findFirstActionRevisionsForMembershipStart', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationIds: string[];
     let actionIds: string[];
@@ -145,9 +145,16 @@ describe('database automations repository', function () {
       );
     };
 
-    const findFirstActionRevisions = (memberStatus: 'free' | 'paid', memberTierIds: string[]) =>
+    const findFirstActionRevisionsForMembershipStart = (
+      memberStatus: 'free' | 'paid',
+      memberTierIds: string[],
+    ) =>
       repository.withConnection((connection) =>
-        repository.findFirstActionRevisions(connection, memberStatus, memberTierIds),
+        repository.findFirstActionRevisionsForMembershipStart(
+          connection,
+          memberStatus,
+          memberTierIds,
+        ),
       );
 
     beforeEach(function () {
@@ -166,15 +173,127 @@ describe('database automations repository', function () {
       await knex('products').whereIn('id', tierIds).delete();
     });
 
+    describe('subscription changes', function () {
+      let bronze: string;
+      let silver: string;
+      let gold: string;
+      const findChanges = (
+        before: string[],
+        after: string[],
+        status: 'free' | 'paid' | 'gift' | 'comped' = 'paid',
+      ) =>
+        repository.withConnection((connection) =>
+          repository.findFirstActionRevisionsForSubscriptionChange(
+            connection,
+            before,
+            status,
+            after,
+          ),
+        );
+
+      const insertTransition = async (
+        from: 'all_paid' | string[],
+        to: 'free' | string[],
+        status = 'active',
+      ) => {
+        const action = await insertAutomation({
+          trigger_type: 'paid_subscription_changed',
+          trigger_tier_scope: null,
+          status,
+        });
+        await knex('automations')
+          .where({ id: action.automation_id })
+          .update({
+            trigger_from_tier_scope: Array.isArray(from) ? 'selected_paid' : from,
+            trigger_to_tier_scope: Array.isArray(to) ? 'selected_paid' : to,
+          });
+        const rows = [
+          ...(Array.isArray(from)
+            ? from.map((product_id) => ({
+                automation_id: action.automation_id,
+                direction: 'from',
+                product_id,
+              }))
+            : []),
+          ...(Array.isArray(to)
+            ? to.map((product_id) => ({
+                automation_id: action.automation_id,
+                direction: 'to',
+                product_id,
+              }))
+            : []),
+        ];
+        if (rows.length) {
+          await knex('automation_trigger_transition_tiers').insert(rows);
+        }
+        return action;
+      };
+
+      beforeEach(async function () {
+        bronze = await insertTier();
+        silver = await insertTier();
+        gold = await insertTier();
+      });
+
+      it('matches entering any To tier, but excludes movement within To or a pre-existing To subscription', async function () {
+        const action = await insertTransition('all_paid', [silver, gold]);
+        await expect(findChanges([bronze], [silver])).resolves.toEqual([action]);
+        await expect(findChanges([bronze], [silver, gold])).resolves.toEqual([action]);
+        await expect(findChanges([silver], [gold])).resolves.toEqual([]);
+        await expect(findChanges([bronze, silver], [silver, gold])).resolves.toEqual([]);
+        await expect(findChanges([silver, gold], [bronze])).resolves.toEqual([]);
+      });
+
+      it('matches any previous selected From tier even if that tier remains', async function () {
+        const action = await insertTransition([bronze], [gold]);
+        await expect(findChanges([silver], [gold])).resolves.toEqual([]);
+        await expect(findChanges([bronze, silver], [bronze, gold])).resolves.toEqual([action]);
+        await expect(findChanges([bronze], [silver])).resolves.toEqual([]);
+      });
+
+      it('matches free only after actual loss of paid access', async function () {
+        const anyPaid = await insertTransition('all_paid', 'free');
+        const selected = await insertTransition([bronze], 'free');
+        await expect(findChanges([bronze], [bronze])).resolves.toEqual([]);
+        await expect(findChanges([bronze, silver], [silver])).resolves.toEqual([]);
+        await expect(findChanges([bronze], [], 'free')).resolves.toEqual([anyPaid, selected]);
+        await expect(findChanges([silver], [], 'free')).resolves.toEqual([anyPaid]);
+        await expect(findChanges([bronze], [], 'comped')).resolves.toEqual([]);
+      });
+
+      it('uses active automations, live tiers, and graph roots with latest revisions', async function () {
+        await insertAutomation({ trigger_tier_scope: 'all_paid' });
+        await insertTransition('all_paid', [silver], 'inactive');
+        await insertTransition('all_paid', [silver], 'archived');
+        const first = await insertTransition('all_paid', [silver]);
+        const next = await insertAction(first.automation_id);
+        await knex('automation_action_edges').insert({
+          source_action_id: first.action_id,
+          target_action_id: next.action_id,
+        });
+        const latest = createRevision(first.action_id);
+        latest.created_at = later;
+        latest.wait_hours = 3;
+        await knex('automation_action_revisions').insert(latest);
+        await expect(findChanges([bronze], [silver])).resolves.toEqual([
+          { ...first, automation_action_revision_id: latest.id, wait_hours: 3 },
+        ]);
+        await knex('automation_trigger_transition_tiers')
+          .where({ automation_id: first.automation_id, direction: 'to' })
+          .delete();
+        await expect(findChanges([bronze], [silver])).resolves.toEqual([]);
+      });
+    });
+
     it('returns an empty array when there are no automations', async function () {
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([]);
     });
 
     it('rejects unknown action types from the database', async function () {
       const action = await insertAutomation();
       await knex('automation_actions').where('id', action.action_id).update({ type: 'unknown' });
 
-      await expect(findFirstActionRevisions('free', [])).rejects.toThrow();
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).rejects.toThrow();
     });
 
     it('rejects wait actions without wait hours', async function () {
@@ -183,14 +302,14 @@ describe('database automations repository', function () {
         .where('id', action.automation_action_revision_id)
         .update({ wait_hours: null });
 
-      await expect(findFirstActionRevisions('free', [])).rejects.toThrow();
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).rejects.toThrow();
     });
 
     it('rejects email actions with wait hours', async function () {
       const action = await insertAutomation();
       await knex('automation_actions').where('id', action.action_id).update({ type: 'send_email' });
 
-      await expect(findFirstActionRevisions('free', [])).rejects.toThrow();
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).rejects.toThrow();
     });
 
     it('returns only free automations for free members, even with tier IDs', async function () {
@@ -200,7 +319,9 @@ describe('database automations repository', function () {
       const tierId = await insertTier();
       await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
-      await expect(findFirstActionRevisions('free', [tierId])).resolves.toEqual([free]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [tierId])).resolves.toEqual([
+        free,
+      ]);
     });
 
     it('returns only all-paid automations for paid members without tier IDs', async function () {
@@ -208,7 +329,7 @@ describe('database automations repository', function () {
       const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
       await insertAutomation({ trigger_tier_scope: 'selected_paid' });
 
-      await expect(findFirstActionRevisions('paid', [])).resolves.toEqual([paid]);
+      await expect(findFirstActionRevisionsForMembershipStart('paid', [])).resolves.toEqual([paid]);
     });
 
     it('returns matching selected-tier and all-paid automations without duplicates', async function () {
@@ -223,17 +344,18 @@ describe('database automations repository', function () {
       await insertAutomationTriggerTiers(selected.automation_id, [firstTierId, secondTierId]);
       await insertAutomationTriggerTiers(unmatched.automation_id, [otherTierId]);
 
-      await expect(findFirstActionRevisions('paid', [firstTierId, secondTierId])).resolves.toEqual([
-        paid,
-        selected,
-      ]);
+      await expect(
+        findFirstActionRevisionsForMembershipStart('paid', [firstTierId, secondTierId]),
+      ).resolves.toEqual([paid, selected]);
     });
 
     it('excludes other trigger types', async function () {
       const matching = await insertAutomation();
       await insertAutomation({ trigger_type: 'another_trigger_type' });
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([matching]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([
+        matching,
+      ]);
     });
 
     it.each(['inactive', 'archived'])(
@@ -247,8 +369,12 @@ describe('database automations repository', function () {
         const tierId = await insertTier();
         await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
-        await expect(findFirstActionRevisions('free', [])).resolves.toEqual([free]);
-        await expect(findFirstActionRevisions('paid', [tierId])).resolves.toEqual([paid]);
+        await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([
+          free,
+        ]);
+        await expect(findFirstActionRevisionsForMembershipStart('paid', [tierId])).resolves.toEqual(
+          [paid],
+        );
       },
     );
 
@@ -260,7 +386,9 @@ describe('database automations repository', function () {
         target_action_id: next.action_id,
       });
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([first]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([
+        first,
+      ]);
     });
 
     it('excludes deleted actions and treats their successors as first actions', async function () {
@@ -272,7 +400,7 @@ describe('database automations repository', function () {
         target_action_id: next.action_id,
       });
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([next]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([next]);
     });
 
     it('excludes automations without actions', async function () {
@@ -280,7 +408,7 @@ describe('database automations repository', function () {
       automationIds.push(automation.id);
       await knex('automations').insert(automation);
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([]);
     });
 
     it('excludes actions without revisions', async function () {
@@ -291,7 +419,7 @@ describe('database automations repository', function () {
       actionIds.push(action.id);
       await knex('automation_actions').insert(action);
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([]);
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([]);
     });
 
     it('returns the latest revision of each first action', async function () {
@@ -304,7 +432,7 @@ describe('database automations repository', function () {
         { wait_hours: null },
       );
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([
         { ...first, automation_action_revision_id: latest.id, wait_hours: 24 },
         email,
       ]);
@@ -322,7 +450,7 @@ describe('database automations repository', function () {
         id: '000000000000000000000001',
       });
 
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([
+      await expect(findFirstActionRevisionsForMembershipStart('free', [])).resolves.toEqual([
         lowerId,
         higherId,
         laterAction,

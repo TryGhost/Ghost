@@ -20,7 +20,8 @@ export const createTestAutomationsRepository2 = (
     withConnection: (fn) => fn(fakeConnection),
     withTransaction: (fn) => fn(fakeConnection),
     ...errorIfCalled([
-      'findFirstActionRevisions',
+      'findFirstActionRevisionsForMembershipStart',
+      'findFirstActionRevisionsForSubscriptionChange',
       'getNumberOfAutomations',
       'hasMemberEnteredAutomation',
       'insertActions',

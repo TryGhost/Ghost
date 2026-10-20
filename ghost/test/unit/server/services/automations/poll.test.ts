@@ -94,6 +94,9 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
     locked_by: 'lock-id',
     automation_run_id: 'run-id',
     automation_id: 'automation-id',
+    automation_trigger_type: 'membership_started',
+    automation_trigger_to_tier_scope: null,
+    automation_trigger_to_tier_ids: [],
     automation_trigger_tier_scope: 'free',
     automation_trigger_tier_ids: [],
     automation_status: 'active',
@@ -393,6 +396,171 @@ describe('automations poll', function () {
       sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
     },
   );
+
+  for (const actionType of ['wait', 'send_email'] as const) {
+    it.each([
+      {
+        scope: 'selected_paid',
+        tiers: ['bronze', 'silver'],
+        status: 'paid',
+        products: ['bronze', 'gold'],
+        eligible: true,
+      },
+      {
+        scope: 'selected_paid',
+        tiers: ['bronze', 'silver'],
+        status: 'gift',
+        products: ['silver'],
+        eligible: true,
+      },
+      {
+        scope: 'selected_paid',
+        tiers: ['bronze'],
+        status: 'paid',
+        products: ['gold'],
+        eligible: false,
+      },
+      { scope: 'selected_paid', tiers: ['bronze'], status: 'paid', products: [], eligible: false },
+      { scope: 'selected_paid', tiers: [], status: 'paid', products: ['bronze'], eligible: false },
+      {
+        scope: 'selected_paid',
+        tiers: ['bronze'],
+        status: 'free',
+        products: ['bronze'],
+        eligible: false,
+      },
+      {
+        scope: 'selected_paid',
+        tiers: ['bronze'],
+        status: 'comped',
+        products: ['bronze'],
+        eligible: false,
+      },
+      { scope: 'free', tiers: [], status: 'free', products: [], eligible: true },
+      { scope: 'free', tiers: [], status: 'paid', products: ['bronze'], eligible: false },
+      { scope: 'free', tiers: [], status: 'gift', products: ['bronze'], eligible: false },
+      { scope: 'free', tiers: [], status: 'comped', products: [], eligible: false },
+    ] as const)(
+      `checks current subscription To category before ${actionType}: %j`,
+      async ({ scope, tiers, status, products, eligible }) => {
+        const step = {
+          ...(actionType === 'wait' ? buildWaitStep() : buildEmailStep()),
+          automation_trigger_type: 'paid_subscription_changed' as const,
+          automation_trigger_tier_scope: null,
+          automation_trigger_to_tier_scope: scope,
+          automation_trigger_to_tier_ids: tiers,
+        };
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+        Member.findOne.resolves(buildMember({ status, products: products.map((id) => ({ id })) }));
+
+        await poll(options);
+
+        if (eligible) {
+          sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+          sinon.assert.notCalled(automationsApi.markStepTerminal);
+          if (actionType === 'send_email') {
+            sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+            assert.equal(
+              memberWelcomeEmailService.api.sendAutomationEmail.firstCall.args[0].memberStatus,
+              scope === 'free' ? 'free' : 'paid',
+            );
+          }
+        } else {
+          sinon.assert.calledOnceWithExactly(
+            automationsApi.markStepTerminal,
+            step,
+            'member changed status',
+          );
+          sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+          sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+          sinon.assert.notCalled(automationsApi.retryStep);
+        }
+        sinon.assert.calledOnceWithExactly(
+          Member.findOne,
+          { id: step.member_id },
+          {
+            withRelated: scope === 'selected_paid' ? ['newsletters', 'products'] : ['newsletters'],
+          },
+        );
+      },
+    );
+  }
+
+  it('stops when the automation To tiers change even if member tiers do not', async function () {
+    const waitStep = {
+      ...buildWaitStep(),
+      automation_trigger_type: 'paid_subscription_changed' as const,
+      automation_trigger_tier_scope: null,
+      automation_trigger_to_tier_scope: 'selected_paid' as const,
+      automation_trigger_to_tier_ids: ['bronze'],
+    };
+    const emailStep = {
+      ...buildEmailStep(),
+      automation_trigger_type: waitStep.automation_trigger_type,
+      automation_trigger_tier_scope: null,
+      automation_trigger_to_tier_scope: waitStep.automation_trigger_to_tier_scope,
+      automation_trigger_to_tier_ids: ['gold'],
+    };
+    Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'bronze' }] }));
+    automationsApi.fetchAndLockSteps
+      .onFirstCall()
+      .resolves({ steps: [waitStep], nextStepReadyAt: null });
+    automationsApi.fetchAndLockSteps
+      .onSecondCall()
+      .resolves({ steps: [emailStep], nextStepReadyAt: null });
+
+    await poll(options);
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, waitStep);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      emailStep,
+      'member changed status',
+    );
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+  });
+
+  it('continues across matching To tiers, then stops when the member loses the last match', async function () {
+    const step = {
+      ...buildWaitStep(),
+      automation_trigger_type: 'paid_subscription_changed' as const,
+      automation_trigger_tier_scope: null,
+      automation_trigger_to_tier_scope: 'selected_paid' as const,
+      automation_trigger_to_tier_ids: ['bronze', 'silver'],
+    };
+    const products = [{ id: 'bronze' }];
+    Member.findOne.resolves(buildMember({ status: 'paid', products }));
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+    await poll(options);
+    products[0].id = 'silver';
+    await poll(options);
+    sinon.assert.calledTwice(automationsApi.finishStepAndEnqueueNext);
+    sinon.assert.notCalled(automationsApi.markStepTerminal);
+
+    products[0].id = 'gold';
+    await poll(options);
+    sinon.assert.calledTwice(automationsApi.finishStepAndEnqueueNext);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member changed status',
+    );
+  });
+
+  it('fails a subscription-change step with missing To scope', async function () {
+    const step = {
+      ...buildEmailStep(),
+      automation_trigger_type: 'paid_subscription_changed' as const,
+      automation_trigger_to_tier_scope: null,
+    };
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    await poll(options);
+    sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+    sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+  });
 
   it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
     const step = buildEmailStep();

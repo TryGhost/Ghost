@@ -64,7 +64,7 @@ const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
  * @internal
  * @typedef {object} MemberModel
  * @prop {string} id
- * @prop {(get: 'email') => string} get
+ * @prop {(key: 'email' | 'status') => string} get
  * @prop {(related: 'products') => {fetch: (options: {transacting: unknown}) => Promise<null | {models: {id: string}[]}>}} related
  */
 
@@ -1395,6 +1395,8 @@ module.exports = class MemberRepository {
       throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.id }) });
     }
 
+    const previousMemberStatus = memberModel.get('status');
+
     const memberStripeCustomerModel = await memberModel
       .related('stripeCustomers')
       .query({
@@ -2125,6 +2127,31 @@ module.exports = class MemberRepository {
 
     // Update the members_current_subscription lookup table
     await this._updateCurrentSubscription(data.id, options);
+
+    const source = this._resolveContextSource(options.context || {});
+    if (WELCOME_EMAIL_SOURCES.includes(source) && previousMemberStatus === 'paid') {
+      // Snapshot persisted access inside the transaction; a failed product edit
+      // can fall back to status-only, leaving the proposed tier changes unapplied.
+      const currentProducts = await memberModel.related('products').fetch(options);
+      const trigger = {
+        event: 'paid_subscription_changed',
+        memberId: memberModel.id,
+        memberEmail: memberModel.get('email'),
+        previousMemberStatus,
+        previousMemberTierIds: oldMemberProductIds,
+        memberStatus: updatedMember.get('status'),
+        memberTierIds: (currentProducts?.models ?? []).map((product) => product.id),
+      };
+      afterCommit(
+        options.transacting,
+        () => this._automationsApi.trigger(trigger),
+        (err) =>
+          logging.error({
+            err,
+            message: `Error triggering automation for member ${memberModel.id}`,
+          }),
+      );
+    }
   }
 
   async _updateCurrentSubscription(memberId, options) {
