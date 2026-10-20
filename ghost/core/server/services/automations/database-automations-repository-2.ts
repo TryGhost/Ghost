@@ -35,6 +35,38 @@ const selectExists = async (connection: Connection, query: Knex.QueryBuilder): P
   return Boolean(Number(row?.exists));
 };
 
+const firstActionRevisionsQuery = (connection: Connection) =>
+  connection('automations as automation')
+    .select(
+      'automation.id as automation_id',
+      'actions.id as action_id',
+      'revisions.id as automation_action_revision_id',
+      'actions.type as type',
+      'revisions.wait_hours as wait_hours',
+    )
+    .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
+    .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
+    .where('automation.status', 'active')
+    .whereNull('actions.deleted_at')
+    .whereNotExists(
+      connection('automation_action_edges as edge')
+        .select('edge.target_action_id')
+        .innerJoin(
+          'automation_actions as source_actions',
+          'source_actions.id',
+          'edge.source_action_id',
+        )
+        .whereNull('source_actions.deleted_at')
+        .where('edge.target_action_id', connection.ref('actions.id')),
+    )
+    .where(
+      'revisions.created_at',
+      connection('automation_action_revisions')
+        .max('created_at')
+        .where('action_id', connection.ref('actions.id')),
+    )
+    .orderBy(['actions.created_at', 'actions.id']);
+
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
  * for details on what should (and should not) be in here.
@@ -47,17 +79,8 @@ export const createDatabaseAutomationsRepository2 = ({
   knex: Knex;
 }>) => {
   return {
-    async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
-      const rows = await connection('automations as automation')
-        .select(
-          'automation.id as automation_id',
-          'actions.id as action_id',
-          'revisions.id as automation_action_revision_id',
-          'actions.type as type',
-          'revisions.wait_hours as wait_hours',
-        )
-        .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
-        .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
+    async findFirstActionRevisionsForMembershipStart(connection, memberStatus, memberTierIds) {
+      const rows = await firstActionRevisionsQuery(connection)
         .where((builder) => {
           builder.where(
             'automation.trigger_tier_scope',
@@ -76,27 +99,47 @@ export const createDatabaseAutomationsRepository2 = ({
             });
           }
         })
-        .where('automation.trigger_type', 'membership_started')
-        .where('automation.status', 'active')
-        .whereNull('actions.deleted_at')
-        .whereNotExists(
-          connection('automation_action_edges as edge')
-            .select('edge.target_action_id')
-            .innerJoin(
-              'automation_actions as source_actions',
-              'source_actions.id',
-              'edge.source_action_id',
-            )
-            .whereNull('source_actions.deleted_at')
-            .where('edge.target_action_id', connection.ref('actions.id')),
-        )
-        .where(
-          'revisions.created_at',
-          connection('automation_action_revisions')
-            .max('created_at')
-            .where('action_id', connection.ref('actions.id')),
-        )
-        .orderBy(['actions.created_at', 'actions.id']);
+        .where('automation.trigger_type', 'membership_started');
+      return rows.map((row) => nextActionRevisionRowSchema.parse(row));
+    },
+
+    async findFirstActionRevisionsForSubscriptionChange(
+      connection,
+      previousMemberTierIds,
+      memberStatus,
+      memberTierIds,
+    ) {
+      if (memberStatus === 'comped') {
+        return [];
+      }
+      const transitionTiers = (direction: 'from' | 'to', tierIds: ReadonlyArray<string>) =>
+        connection('automation_trigger_transition_tiers as transition_tier')
+          .select('transition_tier.automation_id')
+          .where('transition_tier.automation_id', connection.ref('automation.id'))
+          .where('transition_tier.direction', direction)
+          .whereIn('transition_tier.product_id', tierIds);
+
+      const rows = await firstActionRevisionsQuery(connection)
+        .where('automation.trigger_type', 'paid_subscription_changed')
+        .where((builder) => {
+          builder
+            .where('automation.trigger_from_tier_scope', 'all_paid')
+            .orWhere((selected) =>
+              selected
+                .where('automation.trigger_from_tier_scope', 'selected_paid')
+                .whereExists(transitionTiers('from', previousMemberTierIds)),
+            );
+        })
+        .where((builder) => {
+          if (memberStatus === 'free') {
+            builder.where('automation.trigger_to_tier_scope', 'free');
+          } else {
+            builder
+              .where('automation.trigger_to_tier_scope', 'selected_paid')
+              .whereExists(transitionTiers('to', memberTierIds))
+              .whereNotExists(transitionTiers('to', previousMemberTierIds));
+          }
+        });
       return rows.map((row) => nextActionRevisionRowSchema.parse(row));
     },
 

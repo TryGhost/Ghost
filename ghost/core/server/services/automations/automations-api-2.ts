@@ -44,40 +44,85 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
     requestPoll,
 
-    trigger: async ({
-      event,
-      memberEmail,
-      memberId,
-      memberStatus,
-      memberTierIds,
-    }: ReadonlyDeep<{
-      event: 'membership_started';
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-      memberTierIds: string[];
-    }>): Promise<void> => {
-      // TypeScript makes this impossible in theory, but in practice there are
-      // untyped callers (and TypeScript doesn't have a sound type system
-      // anyway). This check is defense-in-depth.
-      if (event !== 'membership_started') {
-        throw new errors.IncorrectUsageError({
-          message: 'Member signup is the only supported event right now. More may be added later',
-        });
+    trigger: async (
+      data: ReadonlyDeep<
+        {
+          memberEmail: string;
+          memberId: string;
+        } & (
+          | {
+              event: 'membership_started';
+              memberStatus: 'free' | 'paid';
+              memberTierIds: string[];
+            }
+          | {
+              event: 'paid_subscription_changed';
+              previousMemberStatus: 'free' | 'paid' | 'gift' | 'comped';
+              previousMemberTierIds: string[];
+              memberStatus: 'free' | 'paid' | 'gift' | 'comped';
+              memberTierIds: string[];
+            }
+        )
+      >,
+    ): Promise<void> => {
+      switch (data.event) {
+        case 'membership_started':
+          break;
+        case 'paid_subscription_changed': {
+          if (data.previousMemberStatus !== 'paid' || data.memberStatus === 'comped') {
+            return;
+          }
+          const previousTiers = new Set(data.previousMemberTierIds);
+          const currentTiers = new Set(data.memberTierIds);
+          if (
+            data.memberStatus === data.previousMemberStatus &&
+            previousTiers.size === currentTiers.size &&
+            [...previousTiers].every((id) => currentTiers.has(id))
+          ) {
+            return;
+          }
+          break;
+        }
+        default: {
+          // Untyped callers can still supply unsupported events.
+          const _exhaustive: never = data;
+          throw new errors.IncorrectUsageError({
+            message: `Unsupported automation event: ${_exhaustive}`,
+          });
+        }
       }
 
       if (!labs.isSet('automations')) {
         return;
       }
 
-      await repository.withTransaction(async (trx) => {
+      const { memberId, memberEmail } = data;
+      const didEnroll = await repository.withTransaction(async (trx) => {
         await repository.lockMember(trx, memberId);
 
-        const firstActions = await repository.findFirstActionRevisions(
-          trx,
-          memberStatus,
-          memberTierIds,
-        );
+        const firstActions = await (() => {
+          switch (data.event) {
+            case 'membership_started':
+              return repository.findFirstActionRevisionsForMembershipStart(
+                trx,
+                data.memberStatus,
+                data.memberTierIds,
+              );
+            case 'paid_subscription_changed':
+              return repository.findFirstActionRevisionsForSubscriptionChange(
+                trx,
+                data.previousMemberTierIds,
+                data.memberStatus,
+                data.memberTierIds,
+              );
+            default: {
+              const _exhaustive: never = data;
+              throw new errors.IncorrectUsageError({
+                message: `Unsupported automation event: ${_exhaustive}`,
+              });
+            }
+          }
+        })();
 
         const runsToInsert: RunToInsert[] = [];
         const stepsToInsert: RunStepToInsert[] = [];
@@ -121,9 +166,12 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
         await repository.insertRuns(trx, runsToInsert);
         await repository.insertRunSteps(trx, stepsToInsert);
+        return runsToInsert.length > 0;
       });
 
-      requestPoll();
+      if (didEnroll) {
+        requestPoll();
+      }
     },
   };
 };

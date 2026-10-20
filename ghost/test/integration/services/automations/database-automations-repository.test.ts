@@ -305,6 +305,74 @@ describe('database automations repository', function () {
     });
   });
 
+  describe('paid subscription triggering', function () {
+    it('enrolls once under duplicate events, ignores cadence changes, and supports actual free downgrades', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const api = createApi();
+      const createTransition = async (to: string[] | 'downgraded_to_free') =>
+        repo.add({
+          name: `Subscription change ${ObjectId().toHexString()}`,
+          description: '',
+          status: 'active',
+          trigger_type: 'paid_subscription_changed',
+          subscription_transition: { from: 'any_paid', to },
+          actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 1 } }],
+          edges: [],
+        });
+      const selected = await createTransition([selectedTierIds[1]]);
+      const free = await createTransition('downgraded_to_free');
+      const memberId = ObjectId().toHexString();
+      const memberEmail = await insertMember(memberId);
+      await knex('members').where({ id: memberId }).update({ status: 'paid' });
+      const trigger = {
+        event: 'paid_subscription_changed' as const,
+        memberId,
+        memberEmail,
+        previousMemberStatus: 'paid' as const,
+        previousMemberTierIds: [selectedTierIds[0]],
+        memberStatus: 'paid' as const,
+        memberTierIds: [selectedTierIds[1]],
+      };
+      await api.trigger({ ...trigger, memberTierIds: [selectedTierIds[0]] });
+      assert.deepEqual(await knex('automation_runs').where({ member_id: memberId }), []);
+
+      await Promise.all([api.trigger(trigger), api.trigger(trigger)]);
+      const selectedRuns = await knex('automation_runs').where({
+        member_id: memberId,
+        automation_id: selected.id,
+      });
+      assert.equal(selectedRuns.length, 1);
+      assert.equal(
+        (await knex('automation_run_steps').where({ automation_run_id: selectedRuns[0].id }))
+          .length,
+        1,
+      );
+      assert.deepEqual(
+        await knex('automation_runs').where({ member_id: memberId, automation_id: free.id }),
+        [],
+      );
+
+      await knex('members').where({ id: memberId }).update({ status: 'free' });
+      await api.trigger({
+        ...trigger,
+        previousMemberTierIds: [selectedTierIds[1]],
+        memberStatus: 'free',
+        memberTierIds: [],
+      });
+      assert.equal(
+        (await knex('automation_runs').where({ member_id: memberId, automation_id: free.id }))
+          .length,
+        1,
+      );
+      await api.trigger(trigger);
+      assert.equal(
+        (await knex('automation_runs').where({ member_id: memberId, automation_id: selected.id }))
+          .length,
+        1,
+      );
+    });
+  });
+
   describe('fetchAndLockSteps', function () {
     it('hydrates current subscription destination settings for queued steps', async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
