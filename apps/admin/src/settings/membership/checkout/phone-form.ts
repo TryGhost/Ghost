@@ -1,7 +1,4 @@
-import type {
-  StripeCheckoutPhoneSetting,
-  StripeCheckoutPreviewPhone,
-} from '@tryghost/admin-x-framework/api/stripe-checkout-config';
+import type { StripeCheckoutPhoneSetting } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
 import {
   type CollectFormState,
   asksNoTier,
@@ -44,12 +41,4 @@ export function phoneSettingOf(state: PhoneFormState): StripeCheckoutPhoneSettin
     throw new Error('The phone number was saved without the field it lands in');
   }
   return { collect: true, ...tierIdsSettingOf(state), custom_field_key: state.fieldKey };
-}
-
-/** The phone number as it's being edited, for Preview in Stripe, saved or not. */
-export function previewPhoneOf(state: PhoneFormState): StripeCheckoutPreviewPhone {
-  if (!state.collect || asksNoTier(state)) {
-    return { collect: false };
-  }
-  return { collect: true, ...tierIdsSettingOf(state) };
 }

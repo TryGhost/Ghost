@@ -43,6 +43,10 @@ function latestPhoneRequest(stripe: StripeTestService) {
   return latestCollectionRequest(stripe).phone_number_collection;
 }
 
+function latestTaxIdRequest(stripe: StripeTestService) {
+  return latestCollectionRequest(stripe).tax_id_collection;
+}
+
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
@@ -206,6 +210,55 @@ test.describe('Ghost Admin - Checkout fields', () => {
 
     expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
     expect(latestShippingRequest(stripe!)).toBeUndefined();
+  });
+
+  test('tax ID - a business buyer can give one at checkout, and still becomes a member', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Business');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectTaxId();
+    await expect(checkout.previewTaxId).toBeVisible();
+    await checkout.save();
+    await checkout.close();
+
+    const { name } = await startPaidSignupViaPortal(page, { tierName });
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
+
+    // Stripe keeps the tax ID on the customer, so there is nothing of it to see in Ghost.
+    await stripe!.completeLatestSubscriptionCheckout({
+      name,
+      collected: { taxId: 'GB123456789' },
+    });
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await expect(membersPage.getMemberLinkByName(name)).toBeVisible();
+  });
+
+  test('tax ID on specific tiers - only their checkouts offer it, previewed before saving', async ({
+    page,
+    stripe,
+  }) => {
+    const business = await paidTier(page, stripe!, 'Business');
+    const personal = await paidTier(page, stripe!, 'Personal');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectTaxId([business]);
+    await expect(checkout.previewTierTag(business)).toBeVisible();
+    const tab = await checkout.previewInStripe(business);
+    await tab.close();
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
+    await checkout.save();
+    await checkout.close();
+
+    await startPaidSignupViaPortal(page, { tierName: personal });
+    expect(latestTaxIdRequest(stripe!)).toBeUndefined();
+
+    await startPaidSignupViaPortal(page, { tierName: business });
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
   });
 
   test('incomplete - saving says which fields are missing, and saves nothing', async ({
