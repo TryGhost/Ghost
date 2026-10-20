@@ -5,7 +5,12 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
 import type { FieldStatus } from '../members-metafields/schema';
-import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
+import {
+  CUSTOM_NAMESPACE,
+  type Identity,
+  type Key,
+  KeySchema,
+} from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordCheckoutConfigAction, RequestContext } from './actions';
@@ -25,6 +30,8 @@ import { CONFIG_SLUG, CONFIG_TABLE, CONFIG_TIERS_TABLE, DbConfigParts, DbSection
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutConfigInput } from './serializers';
 
+// A `custom_field_key` is a key in the publisher's `custom` namespace, so the config reads and
+// checks only the bindings and fields there.
 const BINDINGS_TABLE = 'members_metafield_bindings';
 const FIELDS_TABLE = 'members_metafields';
 /** A custom field that can take a value: not archived. */
@@ -222,9 +229,14 @@ const LockedTier = z.object({ id: z.string(), type: z.string() });
 const LockedField = z.object({ key: KeySchema, type: z.string(), status: z.string() });
 const LockedBinding = z.object({ port: z.enum(STRIPE_PORTS), metafield_key: KeySchema });
 
-/** Points a port at a custom field, or stops it writing anywhere. */
+/** Points a port at a field, or stops it writing anywhere. */
 export interface PortBinder {
-  bind(db: Knex, port: string, customFieldKey: Key, now: Date): Promise<string>;
+  bind(
+    db: Knex,
+    port: string,
+    field: Pick<Identity, 'namespace' | 'key'>,
+    now: Date,
+  ): Promise<string>;
   remove(db: Knex, port: string): Promise<void>;
 }
 
@@ -308,10 +320,15 @@ export class StripeCheckoutConfigService {
           join.on('tier.id', '=', 'named.product_id').andOnVal('tier.type', '=', 'paid'),
         )
         .leftJoin(`${BINDINGS_TABLE} as binding`, (join) =>
-          join.onIn('binding.port', COLLECTED_PORTS),
+          join
+            .onIn('binding.port', COLLECTED_PORTS)
+            .andOnVal('binding.metafield_namespace', '=', CUSTOM_NAMESPACE),
         )
         .leftJoin(`${FIELDS_TABLE} as field`, (join) =>
-          join.on('field.key', '=', 'binding.metafield_key').andOnVal('field.status', '=', ACTIVE),
+          join
+            .on('field.namespace', '=', 'binding.metafield_namespace')
+            .andOn('field.key', '=', 'binding.metafield_key')
+            .andOnVal('field.status', '=', ACTIVE),
         )
         .where('config.slug', CONFIG_SLUG)
         .select(
@@ -411,7 +428,12 @@ export class StripeCheckoutConfigService {
 
     if (targets) {
       for (const { port, customFieldKey } of targets.destinations) {
-        await this.bindings.bind(trx, port, customFieldKey, now);
+        await this.bindings.bind(
+          trx,
+          port,
+          { namespace: CUSTOM_NAMESPACE, key: customFieldKey },
+          now,
+        );
       }
     } else {
       for (const { port } of PARTS[section].destinations) {
@@ -525,6 +547,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
   const destinations = switchedOn.flatMap((part) => part.destinations);
   const fields = z.array(LockedField).parse(
     await trx(FIELDS_TABLE)
+      .where('namespace', CUSTOM_NAMESPACE)
       .whereIn(
         'key',
         destinations.map((destination) => destination.customFieldKey),
@@ -537,6 +560,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
     .parse(
       await trx(BINDINGS_TABLE)
         .whereIn('port', COLLECTED_PORTS)
+        .where('metafield_namespace', CUSTOM_NAMESPACE)
         .select('port', 'metafield_key')
         .forUpdate(),
     );

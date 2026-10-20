@@ -8438,7 +8438,7 @@ services:
           Named runtime exports are synchronous init, mutable definitions/values/bindings,
           audience/access constants, canWrite, actingContext and adminWriteOrigin. Service
           bindings are undefined before init; class methods depend on their receiver. Definitions
-          exposes asynchronous CRUD/reorder and addOne/findByKey/recordCreated helpers; values
+          exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
           bind/remove/planning. HTTP tests assert selected serialized definitions, values, access
           rules and provenance; they do not pin the root export shape or init return timing.

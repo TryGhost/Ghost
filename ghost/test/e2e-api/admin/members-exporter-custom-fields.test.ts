@@ -138,6 +138,26 @@ describe('Members API — exportCSV with custom fields', function () {
     ]);
   });
 
+  // The import reads back the same fields, so a file exported and imported again can't
+  // rewrite the values another namespace's owner keeps.
+  it('leaves out fields in any namespace but the publisher’s', async function () {
+    const nickname = await createField('Nickname', 'short_text');
+    await models.Base.knex('members_metafields').insert({
+      id: '6600000000000000000000d1',
+      namespace: 'shop',
+      key: 'nickname',
+      name: 'Nickname',
+      type: 'short_text',
+      created_at: new Date(),
+    });
+
+    await createMember();
+
+    const { columns } = await exportCSV();
+
+    assert.deepEqual(columns, [...CORE_COLUMNS, columnFor(nickname.key)]);
+  });
+
   it('exports the values a member has set', async function () {
     const nickname = await createField('Nickname', 'short_text');
     const bio = await createField('Bio', 'long_text');
