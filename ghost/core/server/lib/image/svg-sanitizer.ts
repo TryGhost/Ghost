@@ -41,10 +41,55 @@ function standaloneSvg(body: HTMLElement, window: JSDOMModule.DOMWindow): string
   return new window.XMLSerializer().serializeToString(root);
 }
 
+// The attributes that size an <svg> in a page, the only ones its root keeps besides its
+// namespaces.
+const ROOT_SIZE = new Set(['viewBox', 'width', 'height', 'preserveAspectRatio']);
+// The other attributes only an <svg> has, which would do nothing on its content.
+const SVG_ONLY = new Set([
+  'x',
+  'y',
+  'version',
+  'baseProfile',
+  'zoomAndPan',
+  'contentScriptType',
+  'contentStyleType',
+]);
+
+/** Moves the root's styling onto a <g> around its content, which a page doesn't lay out. */
+const moveRootStyling: Svgo.CustomPlugin = {
+  name: 'moveRootStyling',
+  fn: () => ({
+    element: {
+      enter(node, parentNode) {
+        if (parentNode.type !== 'root') {
+          return;
+        }
+        const moved: Record<string, string> = {};
+        for (const [name, value] of Object.entries(node.attributes)) {
+          if (ROOT_SIZE.has(name) || name === 'xmlns' || name.startsWith('xmlns:')) {
+            continue;
+          }
+          if (!SVG_ONLY.has(name)) {
+            moved[name] = value;
+          }
+          delete node.attributes[name];
+        }
+        if (Object.keys(moved).length > 0) {
+          node.children = [
+            { type: 'element', name: 'g', attributes: moved, children: node.children },
+          ];
+        }
+      },
+    },
+  }),
+};
+
 /**
- * The SVG with its stylesheet moved onto the elements it styles, as `style` attributes.
- * The rules that can't be moved, since they depend on how the SVG is shown, such as
- * `:hover` or `@media (prefers-color-scheme: dark)`, are removed with the stylesheet.
+ * The SVG with all of its styling on elements a page doesn't lay out, so that inlined,
+ * nothing can move or grow the box the page gives it. The stylesheet is moved onto the
+ * elements it styles, as `style` attributes, and the rules that can't be moved, since they
+ * depend on how the SVG is shown, such as `:hover` or `@media (prefers-color-scheme:
+ * dark)`, are removed with it. The root's styling is then moved onto its content.
  */
 function flattenStyles(svg: string): string {
   // Loaded lazily, like jsdom.
@@ -54,6 +99,7 @@ function flattenStyles(svg: string): string {
       // Without removeMatchedSelectors, which drops IDs that are still referred to.
       { name: 'inlineStyles', params: { onlyMatchedOnce: false, removeMatchedSelectors: false } },
       'removeStyleElement',
+      moveRootStyling,
     ],
   }).data;
 }
@@ -93,8 +139,14 @@ function purify(
     contained ? content.replace(DOCTYPE_WITH_DECLARATIONS, '') : content,
     {
       USE_PROFILES: { svg: true, svgFilters: true },
-      FORBID_TAGS: [...(contained ? ['image', 'feImage'] : []), ...(flattened ? ['style'] : [])],
-      FORBID_ATTR: flattened ? ['class'] : [],
+      // Links, tab stops and data attributes only matter once it's inlined, where a page's
+      // focus, clicks and scripts would reach them. A link's content stays.
+      FORBID_TAGS: [
+        ...(contained ? ['image', 'feImage', 'a'] : []),
+        ...(flattened ? ['style'] : []),
+      ],
+      FORBID_ATTR: [...(contained ? ['tabindex'] : []), ...(flattened ? ['class'] : [])],
+      ALLOW_DATA_ATTR: !contained,
       // Some of them refer to elements by ID, which would be the page's if it's inlined.
       ALLOW_ARIA_ATTR: !contained,
       // DOMPurify leaves it out for its reference, which can only be a fragment here.
@@ -132,10 +184,10 @@ function purify(
  * a document of its own, which can be drawn as an image, or null if the content is
  * anything but a single SVG.
  *
- * It's also kept from reaching beyond its own elements if it's inlined into a page. Its
- * stylesheet is moved onto the elements it styles (see `flattenStyles`), and its IDs get a
- * prefix of its own, from a digest of it, so the page's elements and the SVG's never refer
- * to each other.
+ * It's also kept from reaching beyond its own elements if it's inlined into a page. All of
+ * its styling is moved onto elements the page doesn't lay out (see `flattenStyles`), its
+ * IDs get a prefix of its own, from a digest of it, so the page's elements and the SVG's
+ * never refer to each other, and its links, tab stops and data attributes are removed.
  */
 export function sanitizeSvgContent(
   content: string,
