@@ -211,6 +211,7 @@ catalog:
   storybook: 10.4.6
   stylelint: 17.14.1
   supertest: 7.3.1
+  svgo: 4.1.0
   tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
   tldts: ^7.4.4
