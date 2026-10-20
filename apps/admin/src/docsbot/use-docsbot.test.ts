@@ -84,12 +84,12 @@ describe('normalizeDocsBotMetadata', () => {
   it('preserves the full metadata object', () => {
     expect(
       normalizeDocsBotMetadata({
-        name: 'Ada',
+        name: 'Jamie',
         conversationUrl: 'https://docsbot.ai/c/1',
         custom: { plan: 'pro' },
       }),
     ).toEqual({
-      name: 'Ada',
+      name: 'Jamie',
       conversationUrl: 'https://docsbot.ai/c/1',
       custom: { plan: 'pro' },
     });
@@ -115,8 +115,8 @@ describe('toSupportRequestDraft', () => {
         { AI: 'Have you checked your permissions?', timestamp: '2025-05-08T22:56:30.645700' },
       ],
       {
-        name: 'Ada Lovelace',
-        email: 'ada@example.com',
+        name: 'Jamie Larson',
+        email: 'jamie@example.com',
         conversationId: 'conv-1',
         conversationUrl: 'https://docsbot.ai/conversation/conv-1',
       },
@@ -128,8 +128,8 @@ describe('toSupportRequestDraft', () => {
     );
 
     expect(draft).toEqual({
-      name: 'Ada Lovelace',
-      email: 'ada@example.com',
+      name: 'Jamie Larson',
+      email: 'jamie@example.com',
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.',
       source: 'chat',

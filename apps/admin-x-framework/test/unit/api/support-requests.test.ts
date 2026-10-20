@@ -11,8 +11,8 @@ describe('support requests api', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          name: 'Ada Lovelace',
-          email: 'ada@example.com',
+          name: 'Jamie Larson',
+          email: 'jamie@example.com',
           subject: 'Cannot publish a post',
           message: 'Please help',
           source: 'chat',
@@ -29,8 +29,8 @@ describe('support requests api', () => {
       expect(JSON.parse(options.body)).toEqual({
         support_requests: [
           {
-            name: 'Ada Lovelace',
-            email: 'ada@example.com',
+            name: 'Jamie Larson',
+            email: 'jamie@example.com',
             subject: 'Cannot publish a post',
             message: 'Please help',
             source: 'chat',

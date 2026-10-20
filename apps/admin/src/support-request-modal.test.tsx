@@ -35,8 +35,8 @@ vi.mock('@tryghost/admin-x-framework/api/current-user', async () => {
 });
 
 const draft: SupportRequestDraft = {
-  name: 'Ada Lovelace',
-  email: 'ada@example.com',
+  name: 'Jamie Larson',
+  email: 'jamie@example.com',
   subject: 'Cannot publish a post',
   message: 'I still cannot publish after checking permissions.',
   source: 'chat-provider',
@@ -74,8 +74,8 @@ describe('SupportRequestModal', () => {
   it('prefills name, email, subject, and message from the draft', () => {
     renderModal();
 
-    expect(screen.getByLabelText('Name')).toHaveValue('Ada Lovelace');
-    expect(screen.getByLabelText('Email')).toHaveValue('ada@example.com');
+    expect(screen.getByLabelText('Name')).toHaveValue('Jamie Larson');
+    expect(screen.getByLabelText('Email')).toHaveValue('jamie@example.com');
     expect(screen.getByLabelText('Subject')).toHaveValue('Cannot publish a post');
     expect(screen.getByLabelText('Message')).toHaveValue(
       'I still cannot publish after checking permissions.',
@@ -114,7 +114,7 @@ describe('SupportRequestModal', () => {
     expect(screen.getByText('Enter a message')).toBeInTheDocument();
     expect(mockSubmit).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Jamie' } });
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'not-an-email' } });
     fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'Help' } });
     fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Please help' } });
@@ -151,8 +151,8 @@ describe('SupportRequestModal', () => {
     });
 
     expect(mockSubmit).toHaveBeenCalledWith({
-      name: 'Ada Lovelace',
-      email: 'ada@example.com',
+      name: 'Jamie Larson',
+      email: 'jamie@example.com',
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.\n\nUsing Chrome.',
       source: 'chat-provider',
