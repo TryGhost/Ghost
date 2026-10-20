@@ -48,7 +48,9 @@ const selectedPaidTriggerShape = {
   trigger_tier_ids: z
     .array(objectIdSchema)
     .min(1)
-    .transform((ids) => [...new Set(ids)]),
+    .refine((ids) => new Set(ids).size === ids.length, {
+      error: 'Duplicate trigger_tier_ids are not allowed.',
+    }),
 };
 
 export const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [

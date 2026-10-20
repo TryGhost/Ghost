@@ -324,7 +324,7 @@ describe('Automations API', function () {
             {
               ...payload,
               trigger_tier_scope: 'selected_paid',
-              trigger_tier_ids: [...tierIds, tierIds[0]],
+              trigger_tier_ids: tierIds,
             },
           ],
         })
