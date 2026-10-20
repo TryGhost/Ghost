@@ -2177,7 +2177,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['membership_started']] },
+      validations: { isIn: [['membership_started', 'paid_subscription_changed']] },
     },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
@@ -2186,6 +2186,18 @@ module.exports = {
       maxlength: 50,
       nullable: true,
       validations: { isIn: [['free', 'all_paid', 'selected_paid']] },
+    },
+    trigger_from_tier_scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['all_paid', 'selected_paid']] },
+    },
+    trigger_to_tier_scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['free', 'selected_paid']] },
     },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
@@ -2205,6 +2217,33 @@ module.exports = {
       references: 'products.id',
     },
     '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
+  },
+  automation_trigger_transition_tiers: {
+    automation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'automations.id',
+      cascadeDelete: true,
+    },
+    direction: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['from', 'to']] },
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+    },
+    '@@UNIQUE_CONSTRAINTS@@': [
+      {
+        columns: ['automation_id', 'direction', 'product_id'],
+        indexName: 'automation_trigger_transition_tiers_unique',
+      },
+    ],
   },
   automation_actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
