@@ -9,7 +9,7 @@ import { type Part, SEPARATOR } from '@tryghost/metafield-types/identity';
 // and rows are rebuilt as what they were written as rather than as what the type says
 // today, so a type that changes shape does not rewrite what members already have.
 
-/** Empty rather than null: a unique index does not constrain nulls, which would let the same row be stored twice. */
+/** Empty rather than null, because the path is part of a value row's primary key. */
 export const ROOT_PATH = '';
 
 /** The path the value of these parts is stored under, written the way an identity writes them. */

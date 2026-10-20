@@ -57,13 +57,10 @@ export type WrittenBy = z.infer<typeof WrittenBy>;
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbMetafieldValue = z.object({
-  id: z.string(),
   metafield_key: z.string(),
   member_id: z.string(),
   path: z.string(),
-  // Nullable like the column, though nothing here writes a null: a part with no value
-  // has no row.
-  value_text: z.string().nullable(),
+  value_text: z.string(),
   // Plain columns rather than the `WrittenBy` union: the rule holds at the write
   // boundary, so one malformed row cannot throw away a member's whole profile on read.
   written_by_type: z.string(),

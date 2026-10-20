@@ -1133,7 +1133,6 @@ module.exports = {
     '@@INDEXES@@': [['metafield_key']],
   },
   members_metafield_values: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The field's stable key, not its id: a value is addressed by key everywhere it
     // matters (the write names it, a filter names it, the key is immutable), so the row
     // carries it directly and the read and filter paths skip an id-to-key join. Matches
@@ -1154,16 +1153,11 @@ module.exports = {
     },
     // Which part of the field's value this row carries. A scalar has one part and
     // stores it under the empty path; a composite stores one row per part it
-    // fills, under that part's key. Not nullable, because MySQL counts NULLs
-    // as distinct in a unique index and the constraint below would stop holding.
+    // fills, under that part's key. Empty rather than null, because it is part of
+    // the primary key.
     path: { type: 'string', maxlength: 191, nullable: false, defaultTo: '' },
-    // One row, one value: a part a member has not filled in has no row at all. The
-    // column stays nullable even so, because making it NOT NULL is only reachable
-    // through knex's dropNullable, which rewrites the column on MySQL and widens
-    // TEXT to MEDIUMTEXT — a migrated site would then accept sixteen megabytes in a
-    // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
-    // exactly is worth more than the schema restating what the write path enforces.
-    value_text: { type: 'text', maxlength: 65535, nullable: true },
+    // One row, one value: a part a member has not filled in has no row at all.
+    value_text: { type: 'text', maxlength: 65535, nullable: false },
     // Who wrote the value that is here now.
     //
     // Shaped like `actions`: a type and an id, no foreign key. A type because not every
@@ -1183,22 +1177,14 @@ module.exports = {
     written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    // Named rather than derived. The name knex builds from the table and all three
-    // columns used to overrun MySQL's 64-character identifier limit; the shorter table
-    // name now fits, but the index is named in a migration either way, so pinning it
-    // here keeps the two statements of it identical.
-    '@@UNIQUE_CONSTRAINTS@@': [
-      {
-        columns: ['member_id', 'metafield_key', 'path'],
-        indexName: 'members_metafield_values_leaf_unique',
-      },
-    ],
-    // What a segment filter looks up: every member holding a given value for a
-    // given part of a given field. The value itself is not in the index — it is
-    // TEXT, so MySQL would need a prefix length, and the schema's index builder
-    // applies one length to every column in a composite index rather than to a
-    // single chosen one.
-    '@@INDEXES@@': [['metafield_key', 'path']],
+    // A row is the value one member holds in one part of one field, so those three are its
+    // key and a surrogate id would only add an index. Field first, because a segment filter
+    // asks for every member holding a value in one part of one field, newsletter audiences on
+    // every send among them, and this order keeps those rows together. A member's own values
+    // are read through the index on member_id instead. The value is not in the key: it is
+    // TEXT, which MySQL can only index by a prefix.
+    '@@PRIMARY_KEY@@': ['metafield_key', 'path', 'member_id'],
+    '@@INDEXES@@': [['member_id']],
   },
   members_stripe_customers: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
