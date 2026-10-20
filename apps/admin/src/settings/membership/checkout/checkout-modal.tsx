@@ -3,25 +3,17 @@ import ColorPickerField from '@/settings/components/color-picker-field';
 import FormSection from '@/settings/components/form-section';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import React, { useEffect, useState } from 'react';
-import ShippingSettings from './shipping-settings';
+import { COLLECTED_PARTS, type CollectedPart } from '@tryghost/checkout';
 import {
-  SHIPPING_ERRORS,
-  type ShippingFormState,
-  shippingFormStateOf,
-  shippingSettingOf,
-  validateShipping,
-} from './shipping-form';
-import PhoneSettings from './phone-settings';
-import {
-  PHONE_ERRORS,
-  type PhoneFormState,
-  phoneFormStateOf,
-  phoneSettingOf,
-  validatePhone,
-} from './phone-form';
-import TaxNumberSettings from './tax-number-settings';
-import { TAX_NUMBER_ERRORS, type TaxNumberFormState, validateTaxNumber } from './tax-number-form';
-import { audienceOf, collectFormStateOf, collectSettingOf } from './collect-form';
+  CHECKOUT_PARTS,
+  type PartFormStates,
+  partErrorsOf,
+  partFieldsOf,
+  partFormStatesOf,
+  partSettingsOf,
+  withPartState,
+} from './checkout-parts';
+import { audienceOf } from './collect-form';
 import {
   Field,
   FieldContent,
@@ -101,11 +93,7 @@ const formStateOf = (
 const designSettingOf = ({ customize, design }: DesignFormState): StripeCheckoutDesignSetting =>
   customize ? { customize: true, ...design } : { customize: false };
 
-type CheckoutFormState = DesignFormState & {
-  shipping: ShippingFormState;
-  phone: PhoneFormState;
-  taxNumber: TaxNumberFormState;
-};
+type CheckoutFormState = DesignFormState & { parts: PartFormStates };
 
 type SketchBranding = Omit<StripeCheckoutBranding, 'design'> & { design: StripeCheckoutDesign };
 
@@ -354,21 +342,16 @@ const CheckoutEditor: React.FC<{
   const collecting = useFeatureFlag('stripeCheckoutCollection');
   // Automatic tax lets a business buyer give a tax ID on every checkout that takes payment.
   const automaticTax = useFeatureFlag('stripeAutomaticTax');
-  const offersShipping = collecting && config.shipping !== undefined;
-  const offersPhone = collecting && config.phone !== undefined;
-  const offersTaxNumber = collecting && config.tax_number !== undefined;
-  const offersFields = offersShipping || offersPhone || offersTaxNumber;
+  const offered = COLLECTED_PARTS.filter((part) => collecting && config[part] !== undefined);
   const { data: { tiers = [] } = {} } = useBrowseTiers();
   const { data: customFields = [] } = useBrowseMemberCustomFieldsIncludingArchived({
-    enabled: offersFields,
+    enabled: offered.length > 0,
   });
   const [tab, setTab] = useState<'design' | 'fields'>('design');
-  /** The settings as saving sends them: the design, and the collected parts on offer. */
+  /** The settings as saving sends them: the design, and the parts on offer. */
   const settingsOf = (state: CheckoutFormState): StripeCheckoutConfig => ({
     design: designSettingOf(state),
-    ...(offersShipping ? { shipping: shippingSettingOf(state.shipping) } : {}),
-    ...(offersPhone ? { phone: phoneSettingOf(state.phone) } : {}),
-    ...(offersTaxNumber ? { tax_number: collectSettingOf(state.taxNumber) } : {}),
+    ...partSettingsOf(state.parts, offered),
   });
   // Only the Fields tab can be incomplete, so a failed check shows it.
   const showIncomplete = () => setTab('fields');
@@ -376,16 +359,11 @@ const CheckoutEditor: React.FC<{
     useForm<CheckoutFormState>({
       initialState: {
         ...formStateOf(config.design, branding.design),
-        shipping: shippingFormStateOf(config.shipping),
-        phone: phoneFormStateOf(config.phone),
-        taxNumber: collectFormStateOf(config.tax_number),
+        parts: partFormStatesOf(config),
       },
       savingDelay: 500,
-      onValidate: (state) => ({
-        ...(offersShipping ? validateShipping(state.shipping) : {}),
-        ...(offersPhone ? validatePhone(state.phone) : {}),
-        ...(offersTaxNumber ? validateTaxNumber(state.taxNumber) : {}),
-      }),
+      // Only the parts on offer are checked and saved, as an older Ghost refuses the others.
+      onValidate: (state) => partErrorsOf(state.parts, offered),
       onSave: async (state) => {
         await editConfig(settingsOf(state));
       },
@@ -401,16 +379,40 @@ const CheckoutEditor: React.FC<{
   });
   // Every field a collected value has in this form, so no other value is offered it. A part
   // that is switched off still counts, as switching it back on brings its fields back.
-  const chosenFields = [
-    ...(offersShipping
-      ? [formState.shipping.addressFieldKey, formState.shipping.nameFieldKey]
-      : []),
-    ...(offersPhone ? [formState.phone.fieldKey] : []),
-  ];
+  const chosenFields = partFieldsOf(formState.parts, offered);
   // Cheapest first, like the Preview in Stripe menu.
   const paidTiers = tiers
     .filter((tier) => tier.type === 'paid')
     .sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
+  // What the sketch shows each part as, tagged with the tiers it's asked on.
+  const sketched: { [Part in CollectedPart]?: { audience: string } } = {};
+  for (const part of COLLECTED_PARTS) {
+    const state = formState.parts[part];
+    if (CHECKOUT_PARTS[part].alwaysAsked?.({ automaticTax })) {
+      sketched[part] = { audience: '' };
+    } else if (offered.includes(part) && state.collect) {
+      sketched[part] = { audience: audienceOf(state, paidTiers) };
+    }
+  }
+
+  const partRow = <Part extends CollectedPart>(part: Part) => {
+    const { Settings, errorKeys } = CHECKOUT_PARTS[part];
+    return (
+      <Settings
+        key={part}
+        automaticTax={automaticTax}
+        chosenFields={chosenFields}
+        errors={errors}
+        fields={customFields}
+        state={formState.parts[part]}
+        tiers={paidTiers}
+        onChange={(next) => {
+          errorKeys.forEach(clearError);
+          updateForm((state) => ({ ...state, parts: withPartState(state.parts, part, next) }));
+        }}
+      />
+    );
+  };
 
   const designSettings = (
     <DesignSettings
@@ -418,7 +420,7 @@ const CheckoutEditor: React.FC<{
       onChange={(next) => updateForm((state) => ({ ...state, ...next }))}
     />
   );
-  const sidebar = offersFields ? (
+  const sidebar = offered.length ? (
     <div className="pt-4">
       <Tabs
         value={tab}
@@ -433,46 +435,7 @@ const CheckoutEditor: React.FC<{
         <TabsContent className="mt-8" value="fields">
           <FieldSet>
             <FieldGroup>
-              <Stack gap="lg">
-                {offersShipping && (
-                  <ShippingSettings
-                    chosenFields={chosenFields}
-                    errors={errors}
-                    fields={customFields}
-                    state={formState.shipping}
-                    tiers={paidTiers}
-                    onChange={(shipping) => {
-                      SHIPPING_ERRORS.forEach(clearError);
-                      updateForm((state) => ({ ...state, shipping }));
-                    }}
-                  />
-                )}
-                {offersPhone && (
-                  <PhoneSettings
-                    chosenFields={chosenFields}
-                    errors={errors}
-                    fields={customFields}
-                    state={formState.phone}
-                    tiers={paidTiers}
-                    onChange={(phone) => {
-                      PHONE_ERRORS.forEach(clearError);
-                      updateForm((state) => ({ ...state, phone }));
-                    }}
-                  />
-                )}
-                {offersTaxNumber && (
-                  <TaxNumberSettings
-                    automaticTax={automaticTax}
-                    errors={errors}
-                    state={formState.taxNumber}
-                    tiers={paidTiers}
-                    onChange={(taxNumber) => {
-                      TAX_NUMBER_ERRORS.forEach(clearError);
-                      updateForm((state) => ({ ...state, taxNumber }));
-                    }}
-                  />
-                )}
-              </Stack>
+              <Stack gap="lg">{offered.map(partRow)}</Stack>
             </FieldGroup>
           </FieldSet>
         </TabsContent>
@@ -491,25 +454,9 @@ const CheckoutEditor: React.FC<{
       okVariant={okProps.variant}
       preview={
         <CheckoutPreview
+          asks={sketched}
           design={formState.customize ? formState.design : branding.design}
           displayName={branding.display_name}
-          phone={
-            offersPhone && formState.phone.collect
-              ? { audience: audienceOf(formState.phone, paidTiers) }
-              : undefined
-          }
-          shipping={
-            offersShipping && formState.shipping.collect
-              ? { audience: audienceOf(formState.shipping, paidTiers) }
-              : undefined
-          }
-          taxNumber={
-            automaticTax
-              ? { audience: '' }
-              : offersTaxNumber && formState.taxNumber.collect
-                ? { audience: audienceOf(formState.taxNumber, paidTiers) }
-                : undefined
-          }
         />
       }
       sidebar={sidebar}

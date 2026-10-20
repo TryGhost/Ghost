@@ -13,6 +13,7 @@ import {
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { StripeCheckoutConfig } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { COLLECTED_PARTS, type CollectedPart } from '@tryghost/checkout';
 
 const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'free', type: 'free' });
 const paidTier = tier({ id: '645453f4d254799990dd0e22', name: 'Supporter', slug: 'supporter' });
@@ -72,7 +73,78 @@ async function openCheckoutFields(
   return { modal, saveApi };
 }
 
+/** How each part shows in the Fields tab and the sketch. */
+const PARTS: { [Part in CollectedPart]: { label: string; sketched: string } } = {
+  shipping: { label: 'Shipping address', sketched: 'Shipping address' },
+  phone: { label: 'Phone', sketched: 'Phone' },
+  tax_number: { label: 'Tax ID or VAT', sketched: "I'm purchasing as a business" },
+};
+
+/** The config a Ghost reporting these parts gives while it collects nothing. */
+const collectingNothing = (parts: readonly CollectedPart[]): StripeCheckoutConfig => ({
+  design: { customize: false },
+  ...Object.fromEntries(parts.map((part) => [part, { collect: false }])),
+});
+
 describe('Checkout settings', () => {
+  describe.each(COLLECTED_PARTS)('%s', (part) => {
+    const { label, sketched } = PARTS[part];
+
+    it('shows in the sketch once switched on', async () => {
+      const { modal } = await openCheckoutFields(collectingNothing(COLLECTED_PARTS));
+      const sketch = modal.getByRole('figure', { name: 'Checkout preview' });
+
+      await expect(sketch.getByText(sketched, { exact: true })).toHaveCount(0);
+      await modal.getByRole('switch', { name: label, exact: true }).click();
+      await expect.element(sketch.getByText(sketched, { exact: true })).toBeVisible();
+    });
+
+    it('is collected for paid tiers only, as a free tier has no checkout', async () => {
+      const { modal } = await openCheckoutFields(collectingNothing(COLLECTED_PARTS));
+
+      await modal.getByRole('switch', { name: label, exact: true }).click();
+      await modal
+        .getByRole('group', { name: label, exact: true })
+        .getByRole('combobox', { name: 'Collect for' })
+        .click();
+
+      await expect.element(page.getByRole('option', { name: 'Supporter' })).toBeVisible();
+      await expect(page.getByRole('option', { name: 'Free' })).toHaveCount(0);
+    });
+
+    it("is neither offered nor saved while Ghost doesn't report it", async () => {
+      const olderConfig = collectingNothing(COLLECTED_PARTS.filter((other) => other !== part));
+      const { modal, saveApi } = await openCheckoutFields(olderConfig);
+
+      await expect
+        .element(modal.getByRole('tab', { name: 'Fields', selected: true }))
+        .toBeVisible();
+      await expect(modal.getByRole('switch', { name: label, exact: true })).toHaveCount(0);
+
+      await modal.getByRole('tab', { name: 'Design' }).click();
+      await modal.getByRole('switch', { name: 'Customize checkout design' }).click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      // An older Ghost refuses a request with a setting it doesn't know.
+      await expect
+        .poll(() => saveApi.lastRequest?.body)
+        .toEqual({
+          checkout_config: [
+            {
+              ...olderConfig,
+              design: {
+                customize: true,
+                button_color: '#0074d4',
+                background_color: '#ffffff',
+                border_style: 'rounded',
+                font_family: 'default',
+              },
+            },
+          ],
+        });
+    });
+  });
+
   it('asks for a phone number on every paid tier, saved into the field chosen for it', async () => {
     const { modal, saveApi } = await openCheckoutFields({
       design: { customize: false },
@@ -255,70 +327,6 @@ describe('Checkout settings', () => {
 
     await expect.element(modal.getByText('Choose at least one tier')).toBeVisible();
     expect(saveApi.lastRequest).toBeUndefined();
-  });
-
-  it('offers no tax ID on a Ghost too old to collect one, and saves none', async () => {
-    // The tax ID arrived after the phone number, so a Ghost can say what is saved for both but
-    // not for it.
-    const { modal, saveApi } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-      phone: { collect: false },
-    });
-
-    await expect.element(modal.getByRole('switch', { name: 'Phone' })).toBeVisible();
-    await expect(modal.getByRole('switch', { name: 'Tax ID or VAT' })).toHaveCount(0);
-
-    await modal.getByRole('switch', { name: 'Phone' }).click();
-    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
-    await page.getByRole('option', { name: 'Contact phone' }).click();
-    await modal.getByRole('button', { name: 'Save' }).click();
-
-    // An older Ghost refuses a request with a tax ID setting in it.
-    await expect
-      .poll(() => saveApi.lastRequest?.body)
-      .toEqual({
-        checkout_config: [
-          {
-            design: { customize: false },
-            shipping: { collect: false },
-            phone: { collect: true, custom_field_key: 'contact_phone' },
-          },
-        ],
-      });
-  });
-
-  it('offers no phone number on a Ghost too old to collect one, and saves none', async () => {
-    // Shipping arrived before the phone number, so a Ghost can say what is saved for one only.
-    const { modal, saveApi } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-    });
-
-    await expect.element(modal.getByRole('switch', { name: 'Shipping address' })).toBeVisible();
-    await expect(modal.getByRole('switch', { name: 'Phone' })).toHaveCount(0);
-
-    await modal.getByRole('tab', { name: 'Design' }).click();
-    await modal.getByRole('switch', { name: 'Customize checkout design' }).click();
-    await modal.getByRole('button', { name: 'Save' }).click();
-
-    // An older Ghost refuses a request with a phone number in it.
-    await expect
-      .poll(() => saveApi.lastRequest?.body)
-      .toEqual({
-        checkout_config: [
-          {
-            design: {
-              customize: true,
-              button_color: '#0074d4',
-              background_color: '#ffffff',
-              border_style: 'rounded',
-              font_family: 'default',
-            },
-            shipping: { collect: false },
-          },
-        ],
-      });
   });
 
   it('offers only the design on a Ghost too old to collect shipping, and saves no shipping', async () => {
