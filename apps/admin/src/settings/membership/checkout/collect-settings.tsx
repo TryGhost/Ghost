@@ -6,6 +6,7 @@ import {
   ComboboxValue,
   Field,
   FieldContent,
+  FieldDescription,
   FieldError,
   FieldLabel,
   MultiSelectCombobox,
@@ -113,29 +114,41 @@ export const Destination: React.FC<{
 
 /**
  * A part checkout can ask for: a switch, and while it's on, the paid tiers that ask for it
- * followed by the part's own settings.
+ * followed by the part's own settings, if it has any.
  */
 export const CollectRow: React.FC<{
   id: string;
   label: string;
+  /** Shown under the label. */
+  description?: string;
   state: CollectFormState;
   /** Paid tiers, archived ones included. */
   tiers: Tier[];
   tiersError?: string;
   onChange: (next: CollectFormState) => void;
-  children: React.ReactNode;
-}> = ({ id, label, state, tiers, tiersError, onChange, children }) => {
+  children?: React.ReactNode;
+}> = ({ id, label, description, state, tiers, tiersError, onChange, children }) => {
   const set = (next: Partial<CollectFormState>) => onChange({ ...state, ...next });
   const activeTierIds = tiers.filter((tier) => tier.active).map((tier) => tier.id);
+  const labelled = (
+    <FieldLabel htmlFor={id} id={`${id}-label`}>
+      {label}
+    </FieldLabel>
+  );
 
   return (
     // A group named by the part, so its "Collect for" and other settings are told apart from
     // another part's.
     <div aria-labelledby={`${id}-label`} className="flex flex-col gap-3" role="group">
       <Field orientation="horizontal">
-        <FieldLabel htmlFor={id} id={`${id}-label`}>
-          {label}
-        </FieldLabel>
+        {description ? (
+          <FieldContent>
+            {labelled}
+            <FieldDescription>{description}</FieldDescription>
+          </FieldContent>
+        ) : (
+          labelled
+        )}
         <Switch checked={state.collect} id={id} onCheckedChange={(collect) => set({ collect })} />
       </Field>
       {state.collect && (

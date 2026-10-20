@@ -44,6 +44,7 @@ const phoneField: MemberCustomField = {
 async function openCheckoutFields(
   config: StripeCheckoutConfig,
   fields: MemberCustomField[] = [phoneField],
+  labs: Record<string, boolean> = {},
 ) {
   fakeSettingsScreens();
   fakeTiers([freeTier, paidTier]);
@@ -57,7 +58,12 @@ async function openCheckoutFields(
     checkout_config: [config],
   });
   await renderAdminApp('/settings/tiers/checkout', {
-    labs: { stripeCheckoutDesign: true, stripeCheckoutCollection: true, membersCustomFields: true },
+    labs: {
+      stripeCheckoutDesign: true,
+      stripeCheckoutCollection: true,
+      membersCustomFields: true,
+      ...labs,
+    },
     boot: { browseSettings: { response: stripeSettings() } },
   });
 
@@ -136,6 +142,117 @@ describe('Checkout settings', () => {
     await modal.getByRole('combobox', { name: 'Save phone as' }).click();
     await expect.element(page.getByRole('option', { name: 'Contact phone' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Recipient name' })).toHaveCount(0);
+  });
+
+  it('lets business buyers give a tax ID on every paid tier, with no field to choose', async () => {
+    const { modal, saveApi } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+      tax_number: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Tax ID or VAT' }).click();
+    await expect
+      .element(
+        modal
+          .getByRole('figure', { name: 'Checkout preview' })
+          .getByText("I'm purchasing as a business"),
+      )
+      .toBeVisible();
+    // Stripe keeps the tax ID, so the tiers are all there is to choose.
+    const taxId = modal.getByRole('group', { name: 'Tax ID or VAT' });
+    await expect.element(taxId.getByRole('combobox', { name: 'Collect for' })).toBeVisible();
+    await expect(taxId.getByRole('combobox')).toHaveCount(1);
+
+    await modal.getByRole('button', { name: 'Save' }).click();
+    await expect
+      .poll(() => saveApi.lastRequest?.body)
+      .toEqual({
+        checkout_config: [
+          {
+            design: { customize: false },
+            shipping: { collect: false },
+            phone: { collect: false },
+            tax_number: { collect: true },
+          },
+        ],
+      });
+  });
+
+  it('shows a tax ID offered on every checkout while automatic tax is on', async () => {
+    const { modal } = await openCheckoutFields(
+      {
+        design: { customize: false },
+        shipping: { collect: false },
+        phone: { collect: false },
+        tax_number: { collect: false },
+      },
+      [phoneField],
+      { stripeAutomaticTax: true },
+    );
+
+    await expect
+      .element(
+        modal
+          .getByRole('figure', { name: 'Checkout preview' })
+          .getByText("I'm purchasing as a business"),
+      )
+      .toBeVisible();
+    await expect
+      .element(modal.getByText('Stripe Automatic Tax already asks for it on every checkout'))
+      .toBeVisible();
+  });
+
+  it('saves no tax ID setting that no tier offers', async () => {
+    const { modal, saveApi } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+      tax_number: { collect: true },
+    });
+
+    await modal
+      .getByRole('group', { name: 'Tax ID or VAT' })
+      .getByRole('combobox', { name: 'Collect for' })
+      .click();
+    await page.getByRole('option', { name: 'Supporter' }).click();
+    await userEvent.keyboard('{Escape}');
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(modal.getByText('Choose at least one tier')).toBeVisible();
+    expect(saveApi.lastRequest).toBeUndefined();
+  });
+
+  it('offers no tax ID on a Ghost too old to collect one, and saves none', async () => {
+    // The tax ID arrived after the phone number, so a Ghost can say what is saved for both but
+    // not for it.
+    const { modal, saveApi } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await expect.element(modal.getByRole('switch', { name: 'Phone' })).toBeVisible();
+    await expect(modal.getByRole('switch', { name: 'Tax ID or VAT' })).toHaveCount(0);
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Contact phone' }).click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    // An older Ghost refuses a request with a tax ID setting in it.
+    await expect
+      .poll(() => saveApi.lastRequest?.body)
+      .toEqual({
+        checkout_config: [
+          {
+            design: { customize: false },
+            shipping: { collect: false },
+            phone: { collect: true, custom_field_key: 'contact_phone' },
+          },
+        ],
+      });
   });
 
   it('offers no phone number on a Ghost too old to collect one, and saves none', async () => {

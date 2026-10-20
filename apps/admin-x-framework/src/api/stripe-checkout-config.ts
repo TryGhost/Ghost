@@ -43,6 +43,18 @@ export type StripeCheckoutPhoneSetting =
       custom_field_key: string;
     };
 
+/**
+ * `collect: false` means checkout doesn't let buyers give a tax ID. Stripe keeps a tax ID given
+ * at checkout on the customer, so no custom field is named.
+ */
+export type StripeCheckoutTaxNumberSetting =
+  | { collect: false }
+  | {
+      collect: true;
+      /** Left out, it covers every paid tier, including tiers added later. */
+      tier_ids?: string[];
+    };
+
 export type StripeCheckoutConfig = {
   design: StripeCheckoutDesignSetting;
   /**
@@ -55,6 +67,11 @@ export type StripeCheckoutConfig = {
    * older than the setting.
    */
   phone?: StripeCheckoutPhoneSetting;
+  /**
+   * Missing while a tax ID can't be collected: its private flag is off, or Ghost is older than
+   * the setting.
+   */
+  tax_number?: StripeCheckoutTaxNumberSetting;
 };
 
 export interface StripeCheckoutConfigResponseType {
@@ -120,6 +137,8 @@ export type StripeCheckoutPreviewRequest = {
   shipping?: StripeCheckoutPreviewShipping;
   /** Left out, the preview asks for a phone number as the saved settings say. */
   phone?: StripeCheckoutPreviewPhone;
+  /** Left out, the preview lets buyers give a tax ID as the saved settings say. */
+  tax_number?: StripeCheckoutTaxNumberSetting;
 };
 
 export interface StripeCheckoutPreviewResponseType {

@@ -73,8 +73,10 @@ const CheckoutPreview: React.FC<{
   shipping?: { audience: string };
   /** Set when checkout asks for a phone number, like `shipping`. */
   phone?: { audience: string };
+  /** Set when checkout lets business buyers give a tax ID, like `shipping`. */
+  taxNumber?: { audience: string };
   loading?: boolean;
-}> = ({ design, displayName, shipping, phone, loading }) => {
+}> = ({ design, displayName, shipping, phone, taxNumber, loading }) => {
   const { radius, boxRadius } = CORNER_RADII[design.border_style];
 
   return (
@@ -152,6 +154,23 @@ const CheckoutPreview: React.FC<{
                   >
                     <Placeholder>(201) 555-0123</Placeholder>
                   </div>
+                </div>
+              )}
+              {taxNumber && (
+                <div className="flex items-center justify-between gap-2 text-[16px]">
+                  <span className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="size-4 shrink-0 rounded-sm border-2 border-neutral-300"
+                    />
+                    {/* Stripe's own words for the box that asks for the tax ID. */}
+                    I&apos;m purchasing as a business
+                  </span>
+                  {taxNumber.audience && (
+                    <Badge className="font-sans" size="sm" variant="warning">
+                      {taxNumber.audience}
+                    </Badge>
+                  )}
                 </div>
               )}
               <div className="flex flex-col gap-1.5">
