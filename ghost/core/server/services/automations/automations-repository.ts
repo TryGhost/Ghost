@@ -89,6 +89,13 @@ export type Automation = AutomationSummary & {
         trigger_tier_scope: 'selected_paid';
         trigger_tier_ids: string[];
       }
+    | {
+        trigger_type: 'paid_subscription_changed';
+        subscription_transition: Extract<
+          AddAutomationData,
+          { trigger_type: 'paid_subscription_changed' }
+        >['subscription_transition'];
+      }
   );
 
 export type EditAutomationData = {

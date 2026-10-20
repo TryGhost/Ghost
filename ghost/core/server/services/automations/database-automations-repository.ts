@@ -108,7 +108,7 @@ type AutomationSummaryRow = {
 };
 
 type AutomationRow = AutomationSummaryRow & {
-  trigger_type: 'membership_started';
+  trigger_type: 'membership_started' | 'paid_subscription_changed';
   trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
@@ -369,22 +369,74 @@ export function createDatabaseAutomationsRepository({
     async add(data) {
       return await knex.transaction(async (trx) => {
         await lockAutomationLimit(trx, data.status);
-        if (data.status === 'active') {
-          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+        switch (data.status) {
+          case 'active':
+            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+            break;
+          case 'inactive':
+          case 'archived':
+            break;
+          default: {
+            const _exhaustive: never = data.status;
+            throw new errors.InternalServerError({
+              message: `Unexpected automation status: ${_exhaustive}`,
+            });
+          }
         }
-        const tierIds = data.trigger_tier_ids ?? [];
-        if (tierIds.length > 0) {
-          // Lock the products so they aren't archived or deleted while we're adding.
+        const trigger = (() => {
+          switch (data.trigger_type) {
+            case undefined:
+            case 'membership_started':
+              return {
+                tierIds: data.trigger_tier_ids ?? [],
+                tierFilter: { type: 'paid', active: true },
+                invalidTiersMessage: 'Trigger tiers must all be active paid tiers.',
+                invalidTiersProperty: 'trigger_tier_ids',
+                automationFields: {
+                  trigger_type: 'membership_started' as const,
+                  trigger_tier_scope: data.trigger_tier_scope ?? null,
+                },
+              };
+            case 'paid_subscription_changed': {
+              const transition = data.subscription_transition;
+              return {
+                tierIds: [
+                  ...(Array.isArray(transition.from) ? transition.from : []),
+                  ...(Array.isArray(transition.to) ? transition.to : []),
+                ],
+                tierFilter: { type: 'paid' },
+                invalidTiersMessage: 'Transition tiers must all be paid tiers.',
+                invalidTiersProperty: 'subscription_transition',
+                automationFields: {
+                  trigger_type: 'paid_subscription_changed' as const,
+                  trigger_tier_scope: null,
+                  trigger_from_tier_scope:
+                    transition.from === 'any_paid' ? 'all_paid' : 'selected_paid',
+                  trigger_to_tier_scope:
+                    transition.to === 'downgraded_to_free' ? 'free' : 'selected_paid',
+                },
+              };
+            }
+            default: {
+              const _exhaustive: never = data;
+              throw new errors.InternalServerError({
+                message: `Unexpected automation trigger: ${_exhaustive}`,
+              });
+            }
+          }
+        })();
+        if (trigger.tierIds.length > 0) {
+          // Lock products so their eligibility cannot change while creating the automation.
           const tiers = await trx('products')
             .select('id')
-            .whereIn('id', tierIds)
-            .where({ type: 'paid', active: true })
+            .whereIn('id', trigger.tierIds)
+            .where(trigger.tierFilter)
             .orderBy('id')
             .forUpdate();
-          if (tiers.length !== tierIds.length) {
+          if (tiers.length !== trigger.tierIds.length) {
             throw new errors.ValidationError({
-              message: 'Trigger tiers must all be active paid tiers.',
-              property: 'trigger_tier_ids',
+              message: trigger.invalidTiersMessage,
+              property: trigger.invalidTiersProperty,
             });
           }
         }
@@ -396,23 +448,71 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
-          trigger_type: 'membership_started',
-          trigger_tier_scope: data.trigger_tier_scope ?? null,
+          ...trigger.automationFields,
           created_at: now,
           updated_at: now,
         };
 
         await trx('automations').insert(automation);
 
-        if (tierIds.length > 0) {
-          await trx('automation_trigger_tiers').insert(
-            tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
-          );
+        switch (data.trigger_type) {
+          case undefined:
+          case 'membership_started':
+            if (trigger.tierIds.length > 0) {
+              await trx('automation_trigger_tiers').insert(
+                trigger.tierIds.map((productId) => ({
+                  automation_id: automation.id,
+                  product_id: productId,
+                })),
+              );
+            }
+            break;
+          case 'paid_subscription_changed':
+            if (trigger.tierIds.length > 0) {
+              await trx('automation_trigger_transition_tiers').insert(
+                (['from', 'to'] as const).flatMap((direction) => {
+                  const ids = data.subscription_transition[direction];
+                  return Array.isArray(ids)
+                    ? ids.map((productId) => ({
+                        automation_id: automation.id,
+                        direction,
+                        product_id: productId,
+                      }))
+                    : [];
+                }),
+              );
+            }
+            break;
+          default: {
+            const _exhaustive: never = data;
+            throw new errors.InternalServerError({
+              message: `Unexpected automation trigger: ${_exhaustive}`,
+            });
+          }
         }
 
         await replaceAutomationGraph(repository2, trx, automation.id, data.actions, data.edges);
 
-        return await buildAutomation(repository2, trx, automation);
+        const result = await buildAutomation(repository2, trx, automation);
+        switch (data.trigger_type) {
+          case undefined:
+          case 'membership_started':
+            return result;
+          case 'paid_subscription_changed':
+            return {
+              ...buildAutomationSummary(automation),
+              trigger_type: 'paid_subscription_changed' as const,
+              subscription_transition: data.subscription_transition,
+              actions: result.actions,
+              edges: result.edges,
+            };
+          default: {
+            const _exhaustive: never = data;
+            throw new errors.InternalServerError({
+              message: `Unexpected automation trigger: ${_exhaustive}`,
+            });
+          }
+        }
       });
     },
 
