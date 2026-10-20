@@ -149,8 +149,28 @@ const processStep = async ({
     return null;
   }
 
-  // NOTE: This will change once we support additional automation triggers.
-  const triggerTierScope = step.automation_trigger_tier_scope;
+  let triggerTierScope: null | AutomationTriggerTierScope;
+  let triggerTierIds: readonly string[];
+  switch (step.automation_trigger_type) {
+    case 'membership_started':
+      triggerTierScope = step.automation_trigger_tier_scope;
+      triggerTierIds = step.automation_trigger_tier_ids;
+      break;
+    case 'paid_subscription_changed':
+      // Eligibility follows the current destination, not the transition's origin.
+      triggerTierScope = step.automation_trigger_to_tier_scope;
+      triggerTierIds = step.automation_trigger_to_tier_ids;
+      break;
+    default: {
+      const _exhaustive: never = step.automation_trigger_type;
+      logging.error(
+        { system: { event: 'automations.poll.unsupported_trigger_type', step_id: step.id } },
+        `[AUTOMATIONS] Unsupported trigger type for step ${step.id}: ${_exhaustive}`,
+      );
+      await automationsApi.markStepTerminal(step, 'failed');
+      return null;
+    }
+  }
   if (!triggerTierScope) {
     logging.error(
       {
@@ -218,9 +238,7 @@ const processStep = async ({
   const doesMemberStatusStillMatchAutomation =
     eligibleStatuses.includes(member.get('status') ?? '') &&
     (triggerTierScope !== 'selected_paid' ||
-      member
-        .related('products')
-        .models.some((tier) => step.automation_trigger_tier_ids.includes(tier.id)));
+      member.related('products').models.some((tier) => triggerTierIds.includes(tier.id)));
   if (!doesMemberStatusStillMatchAutomation) {
     await automationsApi.markStepTerminal(step, 'member changed status');
     return null;
