@@ -59,6 +59,7 @@ const EmailEditor = ({
     darkMode = false,
     fileUploader,
     initialEditorState,
+    isTKEnabled = false,
     onChange,
     onError,
     children,
@@ -74,6 +75,7 @@ const EmailEditor = ({
             darkMode={darkMode}
             fileUploader={fileUploader}
             initialEditorState={initialEditorState}
+            isTKEnabled={isTKEnabled}
             nodes={EMAIL_EDITOR_NODES}
             onError={onError}
         >

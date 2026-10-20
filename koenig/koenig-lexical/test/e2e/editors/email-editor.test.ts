@@ -66,6 +66,16 @@ test.describe('Koenig Editor with email template nodes', async function () {
     });
 
     test.describe('Basic functionality', function () {
+        test('highlights TK reminders through paste and undo', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('TK draft');
+            await expect(page.locator('[data-kg-tk="true"]')).toHaveText('TK');
+            await pasteText(page, ' and tk');
+            await expect(page.locator('[data-kg-tk="true"]')).toHaveCount(2);
+            await page.keyboard.press(process.platform === 'darwin' ? 'Meta+z' : 'Control+z');
+            await expect(page.locator('[data-kg-tk="true"]')).toHaveCount(1);
+        });
+
         test('can navigate to email editor', async function () {
             await focusEditor(page);
             await expect(page.locator('[data-kg="editor"]')).toBeVisible();

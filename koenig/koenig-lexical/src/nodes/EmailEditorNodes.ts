@@ -9,6 +9,7 @@ import {
     ExtendedHeadingNode,
     ExtendedQuoteNode,
     ExtendedTextNode,
+    TKNode,
     extendedHeadingNodeReplacement,
     extendedQuoteNodeReplacement,
     extendedTextNodeReplacement
@@ -29,6 +30,7 @@ const EMAIL_EDITOR_NODES = [
     // Base text nodes
     ExtendedTextNode,
     extendedTextNodeReplacement,
+    TKNode,
     HeadingNode,
     ExtendedHeadingNode,
     extendedHeadingNodeReplacement,

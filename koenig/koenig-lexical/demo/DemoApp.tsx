@@ -377,6 +377,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
                             darkMode={darkMode}
                             fileUploader={fileUploader}
                             initialEditorState={initialContent}
+                            isTKEnabled={true}
                             registerAPI={setEditorAPI}
                         >
                             <WordCountPlugin onChange={setWordCount} />

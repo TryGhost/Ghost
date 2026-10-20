@@ -25,6 +25,10 @@ Now, if you open a post in Ghost Admin (http://localhost:2368/ghost in the main 
 
 ### Specific card setup
 
+`EmailEditor` accepts `isTKEnabled` (default `false`) to enable the same TK
+highlighting and nested-editor reminders as the post editor. Its node set can
+also load serialized TK nodes.
+
 #### Gif card
 
 To see this card locally, create a `.env.local` file in the `koenig-lexical` root package with a Klipy API key:
