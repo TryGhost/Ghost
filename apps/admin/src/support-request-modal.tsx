@@ -116,6 +116,7 @@ export function SupportRequestModal({
   const onSubmit = async () => {
     try {
       const success = await handleSave({ force: true });
+
       if (!success) {
         return;
       }
@@ -124,6 +125,7 @@ export function SupportRequestModal({
     }
 
     onOpenChange(false);
+
     onSent?.();
   };
 

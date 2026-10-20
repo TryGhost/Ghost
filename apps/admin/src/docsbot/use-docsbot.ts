@@ -100,6 +100,7 @@ export function normalizeDocsBotTicket(ticket: unknown): DocsBotSupportTicket | 
 function formatHistoryTimestamp(timestamp: string): string {
   const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(timestamp);
   const date = new Date(hasZone ? timestamp : `${timestamp}Z`);
+
   if (Number.isNaN(date.getTime())) {
     return timestamp;
   }
@@ -127,12 +128,14 @@ export function formatDocsBotHistory(history: DocsBotHistoryEntry[]): string {
     const assistantText = entry.AI?.trim();
     const role = userText ? 'User' : assistantText ? 'Assistant' : null;
     const text = userText || assistantText;
+
     if (!role || !text) {
       continue;
     }
 
     const timestamp = entry.timestamp ? formatHistoryTimestamp(entry.timestamp) : null;
     const heading = timestamp ? `**${role}** (${timestamp})` : `**${role}**`;
+
     blocks.push(`${heading}\n${text}`);
   }
 
@@ -161,40 +164,51 @@ export function toSupportRequestDraft(
 }
 
 type SupportRequestListener = (request: SupportRequestDraft) => void;
-let supportRequestListener: SupportRequestListener | null = null;
 
+let supportRequestListener: SupportRequestListener | null = null;
 let docsBotSDKPromise: Promise<void> | null = null;
+
 function loadDocsBotSDK(): Promise<void> {
   if (!docsBotSDKPromise) {
     docsBotSDKPromise = new Promise((resolve, reject) => {
       const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
+
       if (existingScript) {
         if (window.DocsBotAI?.mount) {
           resolve();
+
           return;
         }
+
         existingScript.addEventListener('load', () => resolve(), { once: true });
         existingScript.addEventListener('error', reject, { once: true });
+
         return;
       }
 
       const script = document.createElement('script');
+
       script.src = SDK_URL;
       script.async = true;
       script.onload = () => resolve();
       script.onerror = (event) => {
         script.remove();
+
         docsBotSDKPromise = null;
+
         const error = new Error(`[DocsBot] Failed to load SDK from ${SDK_URL}`, {
           cause: event,
         });
+
         // eslint-disable-next-line no-console
         console.error(error);
+
         reject(error);
       };
       document.head.appendChild(script);
     });
   }
+
   return docsBotSDKPromise;
 }
 
@@ -203,7 +217,9 @@ let widgetMounted = false;
 
 function enqueueWidgetOperation(operation: () => void | Promise<void>): Promise<void> {
   const next = widgetOperationChain.then(operation);
+
   widgetOperationChain = next.catch(() => {});
+
   return next;
 }
 
@@ -214,7 +230,9 @@ function handleSupportCallback(
   ticket: DocsBotSupportTicket | null,
 ): void {
   event.preventDefault();
+
   void window.DocsBotAI?.close?.();
+
   supportRequestListener?.(toSupportRequestDraft(history, metadata, ticket, window.location.href));
 }
 
@@ -222,15 +240,19 @@ async function ensureWidgetMounted(id: string, identify?: DocsBotIdentify): Prom
   if (widgetMounted) {
     return;
   }
+
   await loadDocsBotSDK();
+
   if (!window.DocsBotAI?.mount) {
     throw new Error('[DocsBot] SDK loaded but mount() is unavailable');
   }
+
   await window.DocsBotAI.mount({
     id,
     ...(identify && { identify }),
     supportCallback: handleSupportCallback,
   });
+
   widgetMounted = true;
 }
 
@@ -243,8 +265,10 @@ function unmountDocsBotWidget(): void {
     if (!widgetMounted) {
       return;
     }
+
     // DocsBot's unmount() promise never resolves, so awaiting it would block the queue
     void window.DocsBotAI?.unmount?.();
+
     widgetMounted = false;
   });
 }
@@ -277,12 +301,14 @@ export function useDocsBot(): DocsBot {
   // Identity is read through a ref so the callbacks stay referentially stable
   // across user refetches — a changed identity would remount the widget.
   const identifyRef = useRef<DocsBotIdentify | undefined>(undefined);
+
   identifyRef.current = currentUser
     ? { name: currentUser.name, email: currentUser.email }
     : undefined;
 
   useEffect(() => {
     supportRequestListener = setSupportRequest;
+
     return () => {
       supportRequestListener = null;
     };
@@ -292,6 +318,7 @@ export function useDocsBot(): DocsBot {
     if (!isAvailable || !id) {
       return;
     }
+
     mountDocsBotWidget(id, identifyRef.current).catch((err) => {
       // eslint-disable-next-line no-console
       console.error('[DocsBot] Failed to mount widget:', err);

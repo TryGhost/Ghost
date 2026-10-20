@@ -18,6 +18,7 @@ vi.mock('@tryghost/admin-x-framework/hooks', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
     '@tryghost/admin-x-framework/hooks',
   );
+
   return {
     ...actual,
     useHandleError: () => mockHandleError,
@@ -28,6 +29,7 @@ vi.mock('@tryghost/admin-x-framework/api/current-user', async () => {
   const actual = await vi.importActual<
     typeof import('@tryghost/admin-x-framework/api/current-user')
   >('@tryghost/admin-x-framework/api/current-user');
+
   return {
     ...actual,
     useCurrentUser: () => mockUseCurrentUser() as { data?: { name: string; email: string } },
@@ -65,7 +67,9 @@ function renderModal(overrides: Partial<ComponentProps<typeof SupportRequestModa
 describe('SupportRequestModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     mockSubmit.mockResolvedValue(undefined);
+
     mockUseCurrentUser.mockReturnValue({
       data: { name: 'Fallback Name', email: 'fallback@example.com' },
     });
@@ -166,6 +170,7 @@ describe('SupportRequestModal', () => {
 
   it('keeps the modal open and does not call onSent when sending fails', async () => {
     mockSubmit.mockRejectedValue(new Error('Something went wrong'));
+
     const { onSent, onOpenChange } = renderModal();
 
     fireEvent.click(screen.getByTestId('support-request-send'));

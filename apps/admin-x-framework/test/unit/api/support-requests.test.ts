@@ -23,7 +23,9 @@ describe('support requests api', () => {
       });
 
       expect(mock.calls).toHaveLength(1);
+
       const [url, options] = mock.calls[0];
+
       expect(new URL(url).pathname).toBe('/ghost/api/admin/support_requests/');
       expect(options.method).toBe('POST');
       expect(JSON.parse(options.body)).toEqual({

@@ -20,7 +20,9 @@ export function DocsBotWidgetHost() {
     if (!isAvailable) {
       return;
     }
+
     mountWidget();
+
     return unmountWidget;
   }, [isAvailable, mountWidget, unmountWidget]);
 
@@ -35,6 +37,7 @@ export function DocsBotWidgetHost() {
       // eslint-disable-next-line no-console
       console.error('[DocsBot] Failed to add confirmation message:', error);
     }
+
     void openWidget();
   };
 
