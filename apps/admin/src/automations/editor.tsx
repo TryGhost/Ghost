@@ -36,6 +36,9 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import ConceptSwitcher from './concepts/concept-switcher';
+import { pendingChangesKind } from './concepts/pending-changes';
+import { isConceptA, useConcept } from './concepts/concept';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
@@ -154,6 +157,9 @@ const AutomationEditorContent: React.FC<{
     isNew ||
     invalidWaitIds.size > 0 ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
+  const concept = useConcept();
+  const headerPendingChanges =
+    isConceptA(concept) && hasUnsavedChanges && draft ? pendingChangesKind(draft.status) : null;
 
   const onDraftChange = (next: AutomationDetail) => {
     setValidationFeedback(null);
@@ -496,6 +502,7 @@ const AutomationEditorContent: React.FC<{
         isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
         isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
         isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
+        pendingChanges={headerPendingChanges}
         publishButtonChildren={publishButtonChildren}
         publishButtonVariant={publishButtonVariant}
         saveButtonChildren={saveButtonChildren}
@@ -558,6 +565,7 @@ const AutomationEditorContent: React.FC<{
 
       <DirtyConfirmDialog {...discardDialogProps} />
       <DirtyConfirmDialog {...upgradeDialogProps} />
+      <ConceptSwitcher />
 
       {limitError && (
         <LimitModalContent

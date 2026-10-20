@@ -15,6 +15,8 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import ChangesIndicator from '@/automations/concepts/changes-indicator';
+import type { PendingChangesKind } from '@/automations/concepts/pending-changes';
 
 export type AutomationValidationAction = 'publish' | 'save' | 'unpublish';
 
@@ -41,6 +43,8 @@ interface AutomationHeaderProps {
   onTurnOff: () => void;
   // Makes the title editable when provided
   onNameChange?: (name: string) => void;
+  // NY-1715 concepts: unsaved or unpublished changes waiting on the buttons here.
+  pendingChanges?: PendingChangesKind | null;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -59,6 +63,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onPublish,
   onTurnOff,
   onNameChange,
+  pendingChanges = null,
 }) => {
   const { isAdmin7 } = useShade();
   const entering = useScreenEntrance();
@@ -158,6 +163,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         )}
       </Inline>
       <Inline className="shrink-0" gap="sm">
+        {pendingChanges && <ChangesIndicator className="mr-1" kind={pendingChanges} />}
         {statusAction}
         {withValidationFeedback(
           'publish',

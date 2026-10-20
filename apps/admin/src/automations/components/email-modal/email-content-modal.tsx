@@ -28,10 +28,14 @@ import { useEmailPreview } from './use-email-preview';
 import { useEmailSenderDetails } from './use-sender-details';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePreviewAutomationEmail } from '@tryghost/admin-x-framework/api/automations';
+import { isConceptA, useConcept } from '@/automations/concepts/concept';
+import { useExpandFromCard } from '@/automations/concepts/use-expand-from-card';
 import type { EmailModalMode } from '@/automations/components/types';
 
 interface EmailPreviewModalContentProps {
-  title: string;
+  title: React.ReactNode;
+  titleClassName?: string;
+  headerClassName?: string;
   centeredHeaderContent?: React.ReactNode;
   headerActions?: React.ReactNode;
   children: React.ReactNode;
@@ -41,7 +45,16 @@ interface EmailPreviewModalContentProps {
 
 const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewModalContentProps>(
   (
-    { title, centeredHeaderContent, headerActions, children, className, isEditMode = false },
+    {
+      title,
+      titleClassName,
+      headerClassName,
+      centeredHeaderContent,
+      headerActions,
+      children,
+      className,
+      isEditMode = false,
+    },
     ref,
   ) => (
     <div
@@ -53,8 +66,13 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
         className,
       )}
     >
-      <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-950">
-        <h3 className="justify-self-start text-xl font-semibold">{title}</h3>
+      <div
+        className={cn(
+          'sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-950',
+          headerClassName,
+        )}
+      >
+        <h3 className={cn('justify-self-start text-xl font-semibold', titleClassName)}>{title}</h3>
         <div className="justify-self-center">{centeredHeaderContent}</div>
         <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
       </div>
@@ -112,6 +130,8 @@ export interface EmailContentModalProps {
   onDiscardBlockedNavigation?: () => void;
   onKeepEditingAfterBlockedNavigation?: () => void;
   onSave: (data: { subject: string; lexical: string }) => void;
+  // NY-1715 concept A2: the email step whose card the editor grows out of.
+  originStepId?: string;
 }
 
 // Koenig popups (link input, emoji picker, card settings) handle Escape
@@ -132,7 +152,27 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   onDiscardBlockedNavigation,
   onKeepEditingAfterBlockedNavigation,
   onSave,
+  originStepId,
 }) => {
+  // Concept A applies edits straight to the automation, like edits made on the
+  // canvas, so the modal has no save step of its own. Read once so switching
+  // concepts mid-edit can't leave the modal half in each mode.
+  const conceptAtOpen = useConcept();
+  const [appliesEditsLive] = useState(isConceptA(conceptAtOpen));
+  // A2 and A3: the panel grows out of the email card. A2 settles as a narrower panel under
+  // the automation header.
+  const [expandsInPlace] = useState(conceptAtOpen === 'a2' || conceptAtOpen === 'a3');
+  // A3: same panel as A2, centred on a cleared canvas instead of over a scrim.
+  const [clearsCanvas] = useState(conceptAtOpen === 'a3');
+  const expandFromCard = useExpandFromCard({
+    enabled: expandsInPlace,
+    stepId: originStepId,
+    clearsCanvas,
+  });
+  const { close: closeIntoCard } = expandFromCard;
+  const closeEditor = useCallback(() => closeIntoCard(onClose), [closeIntoCard, onClose]);
+  // Live edits flow back in through initialLexical, so keep the content as it was on open.
+  const [lexicalAtOpen] = useState(initialLexical || '');
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
   const { data: automatedEmailsData } = useBrowseAutomatedEmails();
   const [showTestDropdown, setShowTestDropdown] = useState(false);
@@ -193,7 +233,22 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     void enterPreview(formState);
   }, [automationId, enterPreview, formState, initialMode]);
 
-  const isDirty = saveState === 'unsaved';
+  // With live edits, unsaved work belongs to the automation and its own guard covers it.
+  const isDirty = !appliesEditsLive && saveState === 'unsaved';
+
+  const formStateRef = useRef(formState);
+  useEffect(() => {
+    formStateRef.current = formState;
+  }, [formState]);
+
+  const applyLive = useCallback(
+    (next: { subject: string; lexical: string }) => {
+      if (appliesEditsLive) {
+        onSave(next);
+      }
+    },
+    [appliesEditsLive, onSave],
+  );
 
   useEffect(() => {
     onDirtyChange?.(isDirty && !allowDirtyCloseRef.current);
@@ -207,14 +262,19 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     if (isDirty) {
       setConfirmDiscardOpen(true);
     } else {
-      onClose();
+      closeEditor();
     }
-  }, [isDirty, onClose]);
+  }, [closeEditor, isDirty]);
 
   // Commit to the automation draft. The Close button is the only way out of the modal.
+  // Concept A has nothing to commit, so Done (and Cmd+S) just closes.
   const handleSaveClick = useCallback(async () => {
+    if (appliesEditsLive) {
+      closeEditor();
+      return;
+    }
     await handleSave({ fakeWhenUnchanged: true });
-  }, [handleSave]);
+  }, [appliesEditsLive, closeEditor, handleSave]);
 
   const handleSaveClickRef = useRef(handleSaveClick);
   useEffect(() => {
@@ -300,12 +360,15 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
       // Editor has been focused = compare to baseline
       if (lexical !== normalizedLexical.current) {
         updateForm((state) => ({ ...state, lexical }));
+        applyLive({ subject: formStateRef.current.subject, lexical });
       } else {
         // Content reverted to normalized state - don't mark dirty
         setFormState((state) => ({ ...state, lexical }));
+        // Hand back the content as it was on open, so the automation compares clean again.
+        applyLive({ subject: formStateRef.current.subject, lexical: lexicalAtOpen });
       }
     },
-    [setFormState, updateForm],
+    [applyLive, lexicalAtOpen, setFormState, updateForm],
   );
 
   return (
@@ -322,8 +385,30 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         <DialogContent
           ref={setDialogContentNode}
           aria-describedby={undefined}
-          className="top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]"
+          className={cn(
+            'top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none',
+            // Concept A: an inset panel over a scrim, so the editor reads as a temporary
+            // layer on top of the automation rather than a separate page. The scrim is its
+            // own layer, so this container skips the dialog's default fade and zoom — scaling
+            // it would show the scrim's edges moving.
+            appliesEditsLive
+              ? 'bg-transparent p-2 data-[state=open]:animate-none dark:bg-transparent'
+              : 'dark:bg-[#151719]',
+            expandsInPlace &&
+              // The panel grows out of the card, starting below the 56px automation header.
+              'p-4 pt-[4.5rem] sm:p-6 sm:pt-20',
+            // A2's height, centred now that the header slides away.
+            clearsCanvas && 'px-4 py-11 sm:px-6 sm:py-[52px]',
+          )}
           data-sentry-mask="true"
+          onClick={(event) => {
+            const isBackdrop =
+              event.target === event.currentTarget ||
+              (event.target instanceof HTMLElement && 'emailEditorScrim' in event.target.dataset);
+            if (appliesEditsLive && isBackdrop) {
+              attemptClose();
+            }
+          }}
           onEscapeKeyDown={(event) => {
             if (isKoenigPortalFocused()) {
               // prevent Radix dismissing the dialog but let the
@@ -346,7 +431,21 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           }}
         >
           <DialogTitle className="sr-only">Edit email</DialogTitle>
+          {appliesEditsLive &&
+            !clearsCanvas && (
+              // Covers the whole screen, header included, and only ever fades. In A2,
+              // useExpandFromCard fades it in step with the panel instead.
+              <div
+                aria-hidden="true"
+                className={cn(
+                  'absolute inset-0 bg-black/30 dark:bg-black/60',
+                  !expandsInPlace && 'animate-in duration-200 fade-in-0',
+                )}
+                data-email-editor-scrim=""
+              />
+            )}
           <EmailPreviewModalContent
+            ref={expandFromCard.panelRef}
             centeredHeaderContent={
               <Tabs
                 data-testid="email-mode-toggle"
@@ -360,7 +459,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     data-testid="email-mode-edit"
                     value="edit"
                   >
-                    Email content
+                    {appliesEditsLive ? 'Content' : 'Email content'}
                   </TabsTrigger>
                   <TabsTrigger
                     className="w-full justify-center"
@@ -374,18 +473,52 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 </TabsList>
               </Tabs>
             }
+            className={cn(
+              appliesEditsLive && 'relative rounded-xl border border-border-default shadow-xl',
+              // A keeps the dialog's usual entrance on the panel alone.
+              appliesEditsLive && !expandsInPlace && 'animate-in duration-200 fade-in-0 zoom-in-95',
+              expandsInPlace && 'mx-auto max-w-[860px]',
+            )}
             headerActions={
-              <>
-                <Button variant="outline" onClick={attemptClose}>
-                  Close
+              appliesEditsLive ? (
+                <Button
+                  aria-label="Minimize editor"
+                  size="icon"
+                  variant="ghost"
+                  onClick={closeEditor}
+                >
+                  <LucideIcon.Minimize2 />
                 </Button>
-                <Button disabled={okProps.disabled} onClick={() => void handleSaveClick()}>
-                  {saveButtonLabel}
-                </Button>
-              </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={attemptClose}>
+                    Close
+                  </Button>
+                  <Button disabled={okProps.disabled} onClick={() => void handleSaveClick()}>
+                    {saveButtonLabel}
+                  </Button>
+                </>
+              )
             }
+            headerClassName={cn(appliesEditsLive && 'px-6 py-5')}
             isEditMode={mode === 'edit'}
-            title="Edit email"
+            title={
+              appliesEditsLive ? (
+                // Concept A: mirrors the email card's header, so the editor reads as that card expanded.
+                <span className="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 rounded-md bg-muted p-2.5 text-foreground"
+                  >
+                    <LucideIcon.PenLine className="size-4" />
+                  </span>
+                  <span className="truncate">Edit email</span>
+                </span>
+              ) : (
+                'Edit email'
+              )
+            }
+            titleClassName={cn(appliesEditsLive && 'w-full min-w-0 pr-4 text-md font-medium')}
           >
             <div className="flex grow flex-col items-center p-6">
               {mode === 'preview' && (
@@ -435,6 +568,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                             const nextSubject = e.target.value;
                             setPreviewSubjectOverride(nextSubject);
                             updateForm((state) => ({ ...state, subject: nextSubject }));
+                            applyLive({
+                              subject: nextSubject,
+                              lexical: formStateRef.current.lexical,
+                            });
                             clearError('subject');
                           }}
                         />

@@ -16,6 +16,7 @@ import { AutomationCardMenu } from './automation-card-menu';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { EmailCardContent, EmailCardExcerpt, EmailCardMessage } from './email-card-content';
 import type { NodeContextMenuEntry } from './nodes';
+import { isConceptA, useConcept } from '@/automations/concepts/concept';
 
 export type EditableEmailData = {
   subject: string;
@@ -55,6 +56,8 @@ export const EditableEmailCard: React.FC<
   const warning =
     email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
+  // NY-1715 concept A: the editor opens as an expanded view of this card.
+  const EditIcon = isConceptA(useConcept()) ? LucideIcon.Maximize2 : LucideIcon.Pen;
   return (
     <AutomationCard
       aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
@@ -109,7 +112,7 @@ export const EditableEmailCard: React.FC<
               <EmailCardExcerpt className="line-clamp-4 min-h-[4lh] text-[length:var(--text-control)] text-muted-foreground">
                 {text || 'Message'}
               </EmailCardExcerpt>
-              <LucideIcon.Pen
+              <EditIcon
                 className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
                 strokeWidth={2}
               />

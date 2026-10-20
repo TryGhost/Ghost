@@ -1023,6 +1023,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           initialMode={emailModalMode}
           initialSubject={emailModalAction.data.email_subject}
           isDiscardNavigationBlocked={isEmailNavigationBlocked}
+          originStepId={emailModalAction.id}
           onClose={closeEmailModal}
           onDirtyChange={onEmailDirtyChange}
           onDiscardBlockedNavigation={() =>
