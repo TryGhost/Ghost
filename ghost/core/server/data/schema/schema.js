@@ -514,6 +514,10 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
+  staff_invite_usage: {
+    key: { type: 'string', maxlength: 191, nullable: false, primary: true },
+    count: { type: 'integer', nullable: false, defaultTo: 0 },
+  },
   brute: {
     key: { type: 'string', maxlength: 191, primary: true },
     firstRequest: { type: 'bigInteger' },

@@ -4,6 +4,7 @@ const BACKUP_TABLES = [
   'api_keys',
   'automated_email_recipients',
   'brute',
+  'staff_invite_usage',
   'donation_payment_events',
   'email_design_settings',
   'emails',
