@@ -79,7 +79,8 @@ const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
 export function fakeSessionStart(id: string, answer: AppInstallation | Response) {
   let next = answer;
   const capture = fakeAdminEndpoint('POST', sessionsPath(id), () =>
-    next instanceof Response ? next : { app_sessions: [{ installation: next }] },
+    // A body can only be read once, so each request gets its own copy of a `Response`.
+    next instanceof Response ? next.clone() : { app_sessions: [{ installation: next }] },
   );
   return Object.assign(capture, {
     set: (nextAnswer: AppInstallation | Response) => {
