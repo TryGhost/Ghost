@@ -44,16 +44,11 @@ class RecommendationServiceWrapper {
   incomingRecommendationService;
 
   init() {
-    const config = require('../../../shared/config');
-    if (config.get('services:recommendations:enabled') === false) {
-      logging.info('[Recommendations] Service is disabled via config');
-      return;
-    }
-
     if (this.repository) {
       return;
     }
 
+    const config = require('../../../shared/config');
     const urlUtils = require('../../../shared/url-utils').default;
     const models = require('../../models');
     const sentry = require('../../../shared/sentry');
@@ -164,8 +159,12 @@ class RecommendationServiceWrapper {
       service: this.incomingRecommendationService,
     });
 
-    this.service.init().catch(logging.error);
-    this.incomingRecommendationService.init().catch(logging.error);
+    if (config.get('services:recommendations:enabled') === false) {
+      logging.info('[Recommendations] Background refreshes are disabled via config');
+    } else {
+      this.service.init().catch(logging.error);
+      this.incomingRecommendationService.init().catch(logging.error);
+    }
 
     const PATH_SUFFIX = '/.well-known/recommendations.json';
 

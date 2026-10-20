@@ -13,7 +13,7 @@ describe('WellknownService', function () {
     },
   });
 
-  it('Can serialize recommendations', function () {
+  it('Can format recommendations', function () {
     const recommendations = [
       Recommendation.create({
         title: 'My Blog',
@@ -39,11 +39,19 @@ describe('WellknownService', function () {
       }),
     ];
 
-    assert.equal(
-      service.serialize(recommendations),
-      '[{"url":"https://example.com/blog","updated_at":"2021-02-01T00:00:00.000Z","created_at":"2021-01-01T00:00:00.000Z"},{"url":"https://example.com/blog2","updated_at":"2021-01-01T00:00:00.000Z","created_at":"2021-01-01T00:00:00.000Z"}]',
-    );
-    assert.equal(service.serialize([]), '[]');
+    assert.deepEqual(service.format(recommendations), [
+      {
+        url: 'https://example.com/blog',
+        updated_at: '2021-02-01T00:00:00.000Z',
+        created_at: '2021-01-01T00:00:00.000Z',
+      },
+      {
+        url: 'https://example.com/blog2',
+        updated_at: '2021-01-01T00:00:00.000Z',
+        created_at: '2021-01-01T00:00:00.000Z',
+      },
+    ]);
+    assert.deepEqual(service.format([]), []);
   });
 
   it('Can get URL', async function () {

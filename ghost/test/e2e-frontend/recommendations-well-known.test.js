@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
@@ -19,8 +18,6 @@ describe('Recommendations well-known file', function () {
   });
 
   afterEach(async function () {
-    sinon.restore();
-
     for (const recommendation of await recommendationsService.repository.getAll()) {
       recommendation.delete();
       await recommendationsService.repository.save(recommendation);
@@ -47,7 +44,7 @@ describe('Recommendations well-known file', function () {
 
     const res = await request.get('/.well-known/recommendations.json').expect(200);
 
-    assert.equal(res.headers['content-type'], 'application/json; charset=UTF-8');
+    assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     assert.equal(res.headers['cache-control'], 'public, max-age=0');
     assert.equal(
       res.text,
@@ -89,11 +86,5 @@ describe('Recommendations well-known file', function () {
       .get('/.well-known/recommendations.json')
       .set('If-None-Match', headers.etag)
       .expect(200);
-  });
-
-  it('responds 404 when the recommendations service is not running', async function () {
-    sinon.stub(recommendationsService, 'wellknownController').value(undefined);
-
-    await request.get('/.well-known/recommendations.json').expect(404);
   });
 });

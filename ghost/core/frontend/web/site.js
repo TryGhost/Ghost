@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('frontend');
-const errors = require('@tryghost/errors');
 const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
@@ -73,9 +72,6 @@ module.exports = function setupSiteApp(routerConfig) {
   siteApp.get(
     '/.well-known/recommendations.json',
     function lazyRecommendationsWellKnownMw(req, res, next) {
-      if (!recommendationsService.wellknownController) {
-        return next(new errors.NotFoundError());
-      }
       return recommendationsService.wellknownController.getRecommendations(req, res, next);
     },
   );

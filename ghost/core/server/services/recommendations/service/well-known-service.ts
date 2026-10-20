@@ -7,6 +7,12 @@ type Options = {
   urlUtils: UrlUtils;
 };
 
+export type WellknownRecommendation = {
+  url: string;
+  updated_at: string;
+  created_at: string;
+};
+
 export class WellknownService {
   urlUtils: UrlUtils;
 
@@ -14,16 +20,16 @@ export class WellknownService {
     this.urlUtils = urlUtils;
   }
 
-  #formatRecommendation(recommendation: Recommendation) {
+  #formatRecommendation(recommendation: Recommendation): WellknownRecommendation {
     return {
-      url: recommendation.url,
+      url: recommendation.url.toString(),
       updated_at: (recommendation.updatedAt ?? recommendation.createdAt).toISOString(),
       created_at: recommendation.createdAt.toISOString(),
     };
   }
 
-  serialize(recommendations: Recommendation[]): string {
-    return JSON.stringify(recommendations.map((r) => this.#formatRecommendation(r)));
+  format(recommendations: Recommendation[]): WellknownRecommendation[] {
+    return recommendations.map((r) => this.#formatRecommendation(r));
   }
 
   getURL(): URL {

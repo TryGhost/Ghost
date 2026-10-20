@@ -8,7 +8,7 @@ import { ClickEvent } from './click-event';
 import { AddRecommendation, Recommendation, RecommendationPlain } from './recommendation';
 import { RecommendationRepository } from './recommendation-repository';
 import { SubscribeEvent } from './subscribe-event';
-import { WellknownService } from './well-known-service';
+import { WellknownRecommendation, WellknownService } from './well-known-service';
 import { RecommendationMetadataService } from './recommendation-metadata-service';
 
 type MentionSendingService = {
@@ -93,8 +93,8 @@ export class RecommendationService {
     }
   }
 
-  async getWellknownJson(): Promise<string> {
-    return this.wellknownService.serialize(await this.#listRecommendations());
+  async getWellknownRecommendations(): Promise<WellknownRecommendation[]> {
+    return this.wellknownService.format(await this.#listRecommendations());
   }
 
   async updateRecommendationsEnabledSetting(recommendations: Recommendation[]) {

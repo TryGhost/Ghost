@@ -10,12 +10,9 @@ export class WellknownController {
 
   async getRecommendations(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = await this.service.getWellknownJson();
-      res.set({
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Cache-Control': 'public, max-age=0',
-      });
-      res.send(Buffer.from(body));
+      const recommendations = await this.service.getWellknownRecommendations();
+      res.set('Cache-Control', 'public, max-age=0');
+      res.json(recommendations);
     } catch (err) {
       next(err);
     }
