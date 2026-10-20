@@ -68,6 +68,24 @@ describe('Stripe Checkout phone number collection', function () {
       .del();
   });
 
+  // A `custom_field_key` names a key among the publisher's own fields, so another namespace's
+  // field of that key is not one the settings can choose.
+  it('refuses a key that only another namespace has', async function () {
+    await models.Base.knex('members_metafields').insert({
+      id: '6600000000000000000000c1',
+      namespace: 'shop',
+      key: 'mobile',
+      name: 'Mobile',
+      type: 'short_text',
+      created_at: new Date(),
+    });
+
+    assert.deepEqual(await refusal(phone({ custom_field_key: 'mobile' })), {
+      property: 'phone.custom_field_key',
+      message: 'Choose a custom field the site already has.',
+    });
+  });
+
   it('refuses a custom field that cannot hold a phone number', async function () {
     assert.deepEqual(await refusal(phone({ custom_field_key: 'not_a_field' })), {
       property: 'phone.custom_field_key',
