@@ -58,12 +58,13 @@ export function AuthorsPicker({
 
   return (
     <ChipPicker<User, AuthorOption>
-      chipClassName={() => 'text-(length:--text-control)'}
-      chipVariant={() => 'secondary'}
       describedBy={describedBy}
       emptyMessage={loading ? 'Loading authors...' : 'No authors found'}
+      // Names are not unique; the email, on hover, tells two people apart.
+      getChipTitle={(author) => author.email}
       getKey={(person) => person.id}
       getLabel={authorName}
+      getOptionTitle={(person) => person.email}
       inputId={inputId}
       inputLabel="Authors"
       inputRef={inputRef}
@@ -82,12 +83,6 @@ export function AuthorsPicker({
       }
       options={staff}
       placeholder="Select authors..."
-      renderOption={(person) => (
-        <>
-          <span className="truncate">{authorName(person)}</span>
-          <span className="ms-auto truncate text-xs text-muted-foreground">{person.email}</span>
-        </>
-      )}
       selected={selected}
       testIds={{
         field: settingsAuthorsPicker,

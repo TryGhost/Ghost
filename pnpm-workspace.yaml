@@ -35,15 +35,16 @@ allowBuilds:
   # optionalDependency.
   '@sentry/cli': false
   'better-sqlite3@12.11.1': true
-  cpu-features: false
   'esbuild@0.25.12 || 0.28.2': true
-  'fsevents@2.3.2 || 2.3.3': true
-  'msw@2.14.6': true
+  'fsevents@2.3.3': true
   'nx@23.3.0': true
-  'protobufjs@7.6.6': true
-  're2@1.26.1': true
   'sharp@0.35.5': true
+  # result of build step not used
+  msw: false
+  # pulled in via docker-modem, not used
   ssh2: false
+  cpu-features: false
+  protobufjs: false
 
 catalog:
   '@codemirror/autocomplete': 6.20.3
@@ -63,7 +64,7 @@ catalog:
   '@eslint/js': 9.39.5
   '@extractus/oembed-extractor': 6.0.0
   '@faker-js/faker': 10.5.0
-  '@playwright/test': 1.61.1
+  '@playwright/test': 1.64.0
   '@radix-ui/react-avatar': 1.2.1
   '@radix-ui/react-checkbox': 1.3.6
   '@radix-ui/react-context-menu': 2.3.2
@@ -92,31 +93,35 @@ catalog:
   '@testing-library/preact': 3.2.4
   '@testing-library/react': 16.3.2
   '@tryghost/brute-knex': 3.2.2
-  '@tryghost/color-utils': 0.2.21
-  '@tryghost/custom-fonts': 1.0.12
-  '@tryghost/debug': 2.3.16
-  '@tryghost/domain-events': 3.3.18
-  '@tryghost/errors': 3.4.2
-  '@tryghost/helpers': 1.1.107
-  '@tryghost/logging': 5.4.8
+  '@tryghost/color-utils': 0.2.23
+  '@tryghost/custom-fonts': 1.0.14
+  '@tryghost/debug': 2.3.18
+  '@tryghost/domain-events': 3.3.20
+  '@tryghost/errors': 3.4.4
+  '@tryghost/helpers': 1.1.109
+  '@tryghost/logging': 6.0.1
   '@tryghost/mg-clean-html': 0.12.6
-  '@tryghost/metrics': 3.6.2
+  '@tryghost/metrics': 3.7.1
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/promise': 2.3.16
-  '@tryghost/request': 4.0.10
-  '@tryghost/string': 0.3.6
-  '@tryghost/timezone-data': 1.0.1
-  '@tryghost/tpl': 2.3.16
-  '@tryghost/url-utils': 5.4.0
+  '@tryghost/pretty-cli': 3.3.18
+  '@tryghost/promise': 2.3.18
+  '@tryghost/request': 4.0.12
+  '@tryghost/string': 0.3.8
+  '@tryghost/timezone-data': 1.0.3
+  '@tryghost/tpl': 2.3.18
+  '@tryghost/url-utils': 5.4.1
+  '@types/csso': 5.0.5
   '@types/express': 4.17.25
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4
   '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
+  '@types/js-yaml': 4.0.9
   '@types/jsonwebtoken': 9.0.10
   '@types/node': 22.20.1
+  '@types/picomatch': 4.0.3
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
@@ -135,7 +140,10 @@ catalog:
   body-parser: 1.20.8
   bson-objectid: 2.0.4
   chai: 4.5.0
+  chalk: 4.1.2
   cheerio: 1.2.0
+  chrono-node: 2.10.1
+  cli-progress: 3.12.0
   clsx: 2.1.1
   concurrently: 10.0.6
   country-flag-icons: 1.6.20
@@ -146,7 +154,7 @@ catalog:
   entities: 4.5.0
   esbuild: 0.28.2
   eslint: 9.39.5
-  eslint-plugin-ghost: 4.0.0
+  eslint-plugin-ghost: 4.0.1
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
@@ -157,12 +165,16 @@ catalog:
   glob: 13.0.6
   globals: 17.7.0
   got: 16.0.0
+  html-minifier-next: 8.10.7
+  html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
   jose: 6.2.12
   js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
+  jsonrepair: 3.15.0
+  inquirer: 8.2.7
   jsonwebtoken: 8.5.1
   juice: 11.1.1
   knex: 2.4.2
@@ -178,6 +190,8 @@ catalog:
   nock: 14.0.17
   node-html-markdown: 2.0.0
   oxfmt: 0.63.0
+  '@oxlint/plugins': 1.86.0
+  oxlint: 1.86.0
   postcss: 8.5.26
   preact: ^10.29.2
   prettier: 3.9.9
@@ -220,6 +234,7 @@ catalog:
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2
   '@dnd-kit/utilities': 3.2.2
+  '@floating-ui/react-dom': 2.1.8
   shell-quote: 1.11.0
   unidecode: 1.1.0
   mppx: 0.6.20
@@ -247,7 +262,7 @@ catalog:
   cron-validate: 1.4.5
   '@types/stoppable': 1.1.3
   '@types/express-brute': 1.0.6
-  '@tryghost/validator': 3.2.17
+  '@tryghost/validator': 3.2.19
   '@types/probability-distributions': 0.1.3
   d3-geo: 3.1.1
 
@@ -312,6 +327,8 @@ overrides:
   'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
   'source-map-js@<1.2.2': ^1.2.2
   'tinypool@<2.1.2': ^2.1.2
+  # nx 23.3.0 pins undici before the 7.29.1 security fixes
+  'nx>undici': 7.29.1
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'
@@ -381,6 +398,7 @@ packageExtensions:
         optional: true
   '@dnd-kit/sortable': *types-react
   '@dnd-kit/utilities': *types-react
+  '@floating-ui/react-dom': *types-react
   '@number-flow/react': *types-react
   '@sentry/react': *types-react
   '@tanstack/react-query': *types-react
@@ -411,48 +429,22 @@ minimumReleaseAgeExclude:
   # of nx itself still gates them
   - '@nx/nx-*'
 
-# configuration for pnpm's changeset functionality
+# configuration for pnpm's native versioning (changesets). Private packages opt out
+# by carrying the non-semver placeholder version "private", so only published
+# packages that are versioned by their own release scripts are listed here.
+# `pnpm lint:versioning` enforces both.
 versioning:
   ignore:
-    # ignore root ghost-monorepo package
-    - ghost-monorepo
-    # ignore ghost since it's manually versioned by release scripts
+    # ghost is versioned by the release scripts
     - ghost
-    # ignore public apps since they're deployed outside pnpm's changelog versioning
+    # continuous-lane packages are versioned from npm by the publish job
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'
     - '@tryghost/portal'
+    - '@tryghost/shade'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
-    # ignore private packages, which are never published. pnpm bumps them
-    # otherwise; `pnpm lint:versioning` enforces this list
-    - '@internal/cfg-eslint'
-    - '@internal/cfg-eslint-react'
-    - '@internal/cfg-typescript'
-    - '@internal/cfg-vite-public-app'
-    - '@internal/cfg-vitest'
-    - '@internal/gx'
-    - '@internal/scripts'
-    - '@tryghost/activitypub'
-    - '@tryghost/adapter-base-jobs'
-    - '@tryghost/adapter-base-redirects'
-    - '@tryghost/adapter-base-route-settings'
-    - '@tryghost/admin'
-    - '@tryghost/admin-api-schema'
-    - '@tryghost/admin-x-framework'
-    - '@tryghost/api-framework'
-    - '@tryghost/app-contracts'
-    - '@tryghost/checkout'
-    - '@tryghost/e2e'
-    - '@tryghost/i18n'
-    - '@tryghost/image-transform'
-    - '@tryghost/limit-service'
-    - '@tryghost/metafield-csv'
-    - '@tryghost/nql-string'
-    - '@tryghost/parse-email-address'
-    - '@tryghost/shade'
-    - '@tryghost/test-data'
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The

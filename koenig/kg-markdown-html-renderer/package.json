@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
-  "version": "7.2.8",
+  "version": "7.2.9",
   "description": "Markdown to HTML rendering for Ghost's markdown card",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -10,7 +10,8 @@
     "directory": "koenig/kg-markdown-html-renderer"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",

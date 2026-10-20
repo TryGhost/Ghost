@@ -105,8 +105,22 @@ credentials.
 
 As a quick health check, confirm that the site and Admin load.
 
-To use the [ActivityPub](https://github.com/TryGhost/ActivityPub) project's
-local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
+Admin's development server proxies `/.ghost/activitypub/*` and
+`/.well-known/webfinger|nodeinfo` to the
+[ActivityPub](https://github.com/TryGhost/ActivityPub) project's local service
+at `127.0.0.1:8080` by default. Override the target with
+`ACTIVITYPUB_PROXY_TARGET` if needed. When nothing is listening, those routes
+still return 404 so Ghost treats the site as having no ActivityPub service.
+
+Federation and the reader need a public site URL. `pnpm dev` sets `url` itself,
+so a `url` in `ghost/config.local.json` has no effect. Expose Admin's development
+port (2368 in the main checkout, or `GHOST_DEV_PORT` from `.ghost-dev.env` in a
+worktree) and restart with the forwarding URL:
+
+```bash
+tailscale funnel --bg 2368
+url=https://<your-tailnet-url>/ pnpm dev
+```
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops

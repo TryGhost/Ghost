@@ -4,9 +4,8 @@ import { cp, readFile, writeFile, readdir, stat, rm, mkdir } from 'node:fs/promi
 import { existsSync } from 'node:fs';
 import { join, dirname, relative, resolve, sep } from 'node:path';
 
-import { ROOT_DIR } from '../scripts/lib/constants.js';
-import { applyPackageTemplateTokens, isValidPackageName } from '../scripts/lib/package-template.js';
-import { addPrivatePackageToVersioningIgnore } from '../scripts/lib/versioning-ignore.js';
+import { ROOT_DIR } from '../scripts/lib/constants.ts';
+import { applyPackageTemplateTokens, isValidPackageName } from '../scripts/lib/package-template.ts';
 
 const TEMPLATE_DIR = join(ROOT_DIR, 'packages', '_template');
 const PACKAGES_DIR = join(ROOT_DIR, 'packages');
@@ -47,10 +46,7 @@ if (values.help) {
   process.exit(0);
 }
 
-const name = positionals[0];
-if (!name) {
-  fail('Missing package name.');
-}
+const name = positionals[0] || fail('Missing package name.');
 if (!isValidPackageName(name)) {
   fail(
     `Invalid package name "${name}". Use lowercase kebab-case, e.g. "email-utils" (no @scope — it becomes @tryghost/${name}).`,
@@ -112,9 +108,6 @@ for (const file of await walk(targetDir)) {
 
 // Clean any stray build artifacts the template dir may have accumulated.
 await rm(join(targetDir, 'build'), { recursive: true, force: true });
-
-// Private packages must be excluded from `pnpm version` (see check-versioning-ignore.js).
-await addPrivatePackageToVersioningIgnore(`@tryghost/${name}`);
 
 process.stdout.write(
   `\n\x1b[32m✓ Created @tryghost/${name}\x1b[0m at ${packageDir} (ESM-only)\n\nNext steps:\n  1. pnpm install                     # link the new workspace member\n  2. cd ${packageDir} && pnpm test\n  3. Add real code in ${packageDir}/src/index.ts\n\n`,

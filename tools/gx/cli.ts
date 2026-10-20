@@ -1,30 +1,147 @@
 #!/usr/bin/env node
+import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+// @ts-expect-error This module lacks type definitions.
+import prettyCli from '@tryghost/pretty-cli';
+import { runGhostCommand } from './run-ghost-command.ts';
+
+type Command = { flags: string; desc: string; run: () => void | Promise<void> };
+type CommandGroup = { command: (command: Command) => unknown };
 
 const args = process.argv.slice(2);
-const usage =
-  'Usage:\n  pnpm gx generate package <name> [options]\n  pnpm gx generate golden-email <segment> <output-path>\n  pnpm gx generate migration <slug>';
+let commandRun = false;
+const cli = prettyCli.Api.get({ name: 'pnpm gx' })
+  .help('-h, --help')
+  .style(prettyCli.styles)
+  .preface('Ghost Dev Tools')
+  .strict();
 
-if (args[0] === 'generate' && args[1] === 'package') {
-  // Forward the original generator's arguments and exit behavior unchanged.
-  process.argv = [...process.argv.slice(0, 2), ...args.slice(2)];
-  await import('./create-package.ts');
-} else if (args[0] === 'generate' && ['golden-email', 'migration'].includes(args[1] ?? '')) {
-  const command = fileURLToPath(
-    new URL(
-      args[1] === 'migration' ? './create-migration.js' : './generate-golden-email.ts',
-      import.meta.url,
-    ),
-  );
-  const result = spawnSync(process.execPath, [command, ...args.slice(2)], { stdio: 'inherit' });
-  if (result.error) {
-    throw result.error;
-  }
-  process.exitCode = result.status ?? 1;
-} else if (args.length === 0 || (args.length === 1 && ['--help', '-h'].includes(args[0] ?? ''))) {
-  process.stdout.write(`Ghost Dev Tools\n\n${usage}\n`);
-} else {
-  process.stderr.write(`Unknown command: ${args.join(' ')}\n${usage}\n`);
-  process.exitCode = 1;
+cli.command({
+  flags: 'generate',
+  desc: 'Generate a package, golden-email or migration.',
+  setup(group: CommandGroup) {
+    group.command({
+      flags: 'package',
+      desc: 'Scaffold an internal workspace package.',
+      async run() {
+        commandRun = true;
+        // Keep the existing generator's argument parser and exit behavior.
+        process.argv = [...process.argv.slice(0, 2), ...args.slice(2)];
+        await import('./create-package.ts');
+      },
+    });
+    for (const command of [
+      {
+        flags: 'golden-email',
+        desc: 'Render the golden email.',
+        file: './generate-golden-email.ts',
+      },
+      { flags: 'migration', desc: 'Scaffold a database migration.', file: './create-migration.ts' },
+    ]) {
+      group.command({
+        flags: command.flags,
+        desc: command.desc,
+        run() {
+          commandRun = true;
+          const file = fileURLToPath(new URL(command.file, import.meta.url));
+          const result = spawnSync(process.execPath, [file, ...args.slice(2)], {
+            stdio: 'inherit',
+          });
+          if (result.error) {
+            throw result.error;
+          }
+          process.exitCode = result.status ?? 1;
+        },
+      });
+    }
+  },
+});
+
+cli.command({
+  flags: 'db',
+  desc: 'Development database tools.',
+  setup(group: CommandGroup) {
+    group.command({
+      flags: 'rebuild-development-tables',
+      desc: 'Drop and recreate development-only tables.',
+      run() {
+        commandRun = true;
+        runGhostCommand('./rebuild-in-development-tables.ts', args.slice(2));
+      },
+    });
+  },
+});
+
+cli.command({
+  flags: 'data',
+  desc: 'Generate development data and verification scenarios.',
+  setup(group: CommandGroup) {
+    for (const command of [
+      { flags: 'generate', desc: 'Generate a development dataset.', file: './generate-data.ts' },
+      {
+        flags: 'shift-dates',
+        desc: 'Shift database dates for testing.',
+        file: './shift-dates.ts',
+      },
+      {
+        flags: 'multi-sub-scenarios',
+        desc: 'Seed multi-subscription scenarios.',
+        file: './multi-sub-scenarios.ts',
+      },
+    ]) {
+      group.command({
+        flags: command.flags,
+        desc: command.desc,
+        run() {
+          commandRun = true;
+          runGhostCommand(command.file, args.slice(2), true);
+        },
+      });
+    }
+  },
+});
+
+cli.command({
+  flags: 'benchmark',
+  desc: 'Run development benchmarks.',
+  setup(group: CommandGroup) {
+    group.command({
+      flags: 'recipient-preparation',
+      desc: 'Measure email recipient preparation with synthetic members.',
+      run() {
+        commandRun = true;
+        runGhostCommand('./benchmark-recipient-preparation.ts', args.slice(2), true, [
+          '--expose-gc',
+        ]);
+      },
+    });
+  },
+});
+
+cli.command({
+  flags: 'repl',
+  desc: 'Open a REPL with Ghost models and database access.',
+  run() {
+    commandRun = true;
+    runGhostCommand('./repl.ts', args.slice(1), true);
+  },
+});
+
+// Parse only the command path; tool arguments and help flags pass through untouched.
+const rootHelp =
+  args.length === 0 || (args.length === 1 && ['--help', '-h'].includes(args[0] ?? ''));
+const result: unknown = await cli.parse(
+  rootHelp ? ['--help'] : args.slice(0, args[0] === 'repl' ? 1 : 2),
+);
+assert(result && typeof result === 'object' && 'code' in result && typeof result.code === 'number');
+assert('output' in result && typeof result.output === 'string');
+if (!commandRun) {
+  process.exitCode = rootHelp ? result.code : result.code || 1;
+  const output = result.output || cli.getHelp();
+  const stream = process.exitCode === 0 ? process.stdout : process.stderr;
+  stream.write(`${output}\n`);
+} else if (result.code !== 0) {
+  process.exitCode = result.code;
+  process.stderr.write(`${result.output}\n`);
 }

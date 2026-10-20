@@ -21,7 +21,7 @@ import {
   type ButtonProps,
   LoadingIndicator,
 } from '@tryghost/shade/components';
-import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
+import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
@@ -89,6 +89,7 @@ const AutomationEditorContent: React.FC<{
   automationId: string | null;
   creation?: {
     initialAutomation: AutomationDetail;
+    triggerTop?: number;
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -97,6 +98,7 @@ const AutomationEditorContent: React.FC<{
   const limiter = useLimiter({ limits: AUTOMATION_LIMITS });
   const { data: configData } = useBrowseConfig();
   const [limitError, setLimitError] = React.useState<HostLimitError | null>(null);
+  const { confirm: confirmUpgrade, dialogProps: upgradeDialogProps } = useDirtyConfirmation();
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
@@ -521,13 +523,14 @@ const AutomationEditorContent: React.FC<{
         automation={draft}
         initialSidebar={
           creation
-            ? 'settings'
+            ? 'closed'
             : !draft || !configData
               ? 'unknown'
               : draft.status === 'active' && configData.config.stats
                 ? 'performance'
                 : 'closed'
         }
+        initialTriggerTop={creation?.triggerTop}
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
@@ -556,6 +559,7 @@ const AutomationEditorContent: React.FC<{
       />
 
       <DirtyConfirmDialog {...discardDialogProps} />
+      <DirtyConfirmDialog {...upgradeDialogProps} />
 
       {limitError && (
         <LimitModalContent
@@ -565,7 +569,10 @@ const AutomationEditorContent: React.FC<{
             limitError.message
           }
           onOk={() => {
-            navigateTo(upgradeRoute(configData?.config));
+            setLimitError(null);
+            confirmUpgrade(hasUnsavedChanges || isEmailModalDirty, () => {
+              navigateTo(upgradeRoute(configData?.config));
+            });
           }}
           onRemove={() => setLimitError(null)}
         />
@@ -627,11 +634,12 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation) => (
+          {(initialAutomation, triggerTop) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
+                triggerTop,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

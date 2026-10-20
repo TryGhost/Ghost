@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-cards",
-  "version": "10.3.8",
+  "version": "10.3.9",
   "description": "Mobiledoc card definitions for Ghost's editor",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -12,7 +12,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",

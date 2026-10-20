@@ -1,6 +1,6 @@
 {
   "name": "@internal/gx",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Ghost contributor CLI",
   "license": "MIT",
@@ -13,14 +13,28 @@
   },
   "dependencies": {
     "@internal/scripts": "workspace:*",
+    "@tryghost/errors": "catalog:",
+    "@tryghost/logging": "catalog:",
+    "@tryghost/pretty-cli": "catalog:",
+    "bson-objectid": "catalog:",
+    "chalk": "catalog:",
+    "cli-progress": "catalog:",
+    "inquirer": "catalog:",
     "jsonwebtoken": "catalog:",
-    "semver": "catalog:"
+    "knex": "catalog:",
+    "knex-migrator": "catalog:",
+    "luxon": "catalog:",
+    "semver": "catalog:",
+    "tsx": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@types/jsonwebtoken": "catalog:",
+    "@types/luxon": "catalog:",
     "@types/node": "catalog:",
+    "@types/semver": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:"
   },
@@ -31,6 +45,17 @@
       ],
       "goldenEmailCommand": [
         "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
+      ],
+      "developmentTablesCommand": [
+        "{workspaceRoot}/ghost/core/server/data/schema/in-development.ts",
+        "{workspaceRoot}/ghost/core/server/data/schema/schema.js",
+        "{workspaceRoot}/ghost/tsconfig.json",
+        "{workspaceRoot}/ghost/types/**/*.d.ts"
+      ],
+      "dataCommands": [
+        "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
+        "{workspaceRoot}/ghost/core/server/data/schema/**/*",
+        "{workspaceRoot}/ghost/core/server/models/**/*"
       ]
     },
     "targets": {
@@ -39,7 +64,20 @@
           "default",
           "^default",
           "packageTemplate",
+          "developmentTablesCommand",
           "goldenEmailCommand",
+          "dataCommands",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      },
+      "test:types": {
+        "inputs": [
+          "default",
+          "^default",
+          "developmentTablesCommand",
+          "dataCommands",
           {
             "runtime": "node -v"
           }

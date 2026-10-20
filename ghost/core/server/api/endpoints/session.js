@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const auth = require('../../services/auth');
+const auth = require('../../auth');
 const api = require('./index');
 
 const messages = {

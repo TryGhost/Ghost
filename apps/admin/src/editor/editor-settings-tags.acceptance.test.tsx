@@ -173,7 +173,8 @@ describe('Post settings tags', () => {
 
     await editorScreen.removeSettingsTag('News').click();
     await openTagList();
-    await editorScreen.settingsTagOption(/news-2/).click();
+    // The rows read the same; the second is the other tag, in the order the site holds them.
+    await editorScreen.settingsTagOption('News').nth(1).click();
 
     await expect.poll(() => submittedTags(saveApi), POLL).toEqual([{ id: 'tag4' }]);
     await expect.element(editorScreen.updateButton()).toBeDisabled();

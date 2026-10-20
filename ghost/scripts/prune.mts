@@ -67,7 +67,7 @@ const SELF = 'scripts/prune.mts';
  */
 const bucketOf = (rel: string): string => {
   const match = /^node_modules\/\.pnpm\/([^/]+)\//.exec(rel);
-  return match ? match[1] : '(app)';
+  return match ? match[1]! : '(app)';
 };
 
 // Script files are never build inputs, whatever directory they sit in.
@@ -250,8 +250,8 @@ export async function prune(
       await fs.rm(absolute);
     }
 
-    byRule[rule.name].files += 1;
-    byRule[rule.name].bytes += size;
+    byRule[rule.name]!.files += 1;
+    byRule[rule.name]!.bytes += size;
     removed += 1;
     bytes += size;
   }

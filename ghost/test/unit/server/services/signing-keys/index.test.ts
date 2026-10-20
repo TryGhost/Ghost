@@ -29,7 +29,7 @@ describe('signing-keys root', function () {
   const sandbox = sinon.createSandbox();
   let originalModule: NodeJS.Module | undefined;
   let root: SigningKeysModule['default'];
-  let scheduleCheckJob: SigningKeysModule['scheduleCheckJob'];
+  let scheduleCheckJob: SigningKeysModule['default']['extras']['scheduleCheckJob'];
   let check: sinon.SinonStub;
   let entries: Record<string, Entry>;
   let scheduleRecurring: sinon.SinonStub;
@@ -44,7 +44,8 @@ describe('signing-keys root', function () {
     check = sandbox.stub(SigningKeyService.prototype, 'check').resolves();
     scheduleRecurring = sandbox.stub().resolves();
     jobs = { scheduleRecurring } as unknown as JobsService;
-    ({ default: root, scheduleCheckJob } = require(ROOT_PATH));
+    root = require(ROOT_PATH).default;
+    scheduleCheckJob = root.extras.scheduleCheckJob;
     vi.stubEnv('NODE_ENV', 'production');
   });
 

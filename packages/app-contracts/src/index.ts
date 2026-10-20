@@ -29,4 +29,5 @@ export type {
   ManifestError,
   ParseManifestOptions,
   ParseManifestResult,
+  ParseManifestUrlResult,
 } from './manifest/index.ts';

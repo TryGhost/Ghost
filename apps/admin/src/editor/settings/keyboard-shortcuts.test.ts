@@ -73,6 +73,16 @@ describe('keyboardShortcutGroups', () => {
     ]);
   });
 
+  it('lists the settings panel shortcut only where the editor offers it', () => {
+    const withSettings = { settingsShortcut: true };
+    expect(keys(keyboardShortcutGroups(true, withSettings), 'Toggle settings')).toEqual(['⌘', '.']);
+    expect(keys(keyboardShortcutGroups(false, withSettings), 'Toggle settings')).toEqual([
+      'Ctrl',
+      '.',
+    ]);
+    expect(() => find(mac, 'Toggle settings')).toThrow();
+  });
+
   it('shows the formatting labels as the formatting they produce', () => {
     expect(find(mac, 'Bold').style).toBe('bold');
     expect(find(mac, 'Emphasize').style).toBe('italic');

@@ -7,19 +7,20 @@ those targets whenever anything here changes.
 
 New automation belongs here by default, whether it runs locally, in CI, or both.
 The old `.github/scripts` split tracked nothing real — `release-apps` is run by
-devs via `pnpm ship`, while `release.js` is run by a workflow.
+devs via `pnpm ship`, while `release.ts` is run by a workflow.
 
 ## Adding a script
 
-Write new scripts in TypeScript (`.ts`, ESM) and parse arguments with
-`node:util`'s `parseArgs`. Declare any dependency in `tools/scripts/package.json`;
+Everything here is TypeScript (`.ts`, ESM); don't add JavaScript. Parse
+arguments with `node:util`'s `parseArgs`. Declare any dependency in
+`tools/scripts/package.json`;
 `semver` is already there. Keep it cheap: everything here lands in every dev's
 `pnpm install`, so prefer `node:` built-ins.
 
 Put logic shared by several scripts in `lib/`. A script that is its own
 entrypoint can just export the parts worth testing and guard the CLI path with
-`import.meta.main` — see `build-public-apps-matrix.js`. Either way, cover it in
-`test/`: tests use `node --test` with explicit JS/TS globs. TypeScript runs directly on
+`import.meta.main` — see `build-publish-matrix.ts`. Either way, cover it in
+`test/`: tests use `node --test`. TypeScript runs directly on
 the pinned Node version; `test:types` checks source, renderer and tests with the
 shared strict configuration. Note this
 package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
@@ -39,20 +40,9 @@ renderer next to it. Admin’s build invokes it after Vite; its separate
 keeps the embed renderer outside Admin’s assets and normalizes Admin output
 permissions for Nx caches.
 
-## The `.cjs` files
-
-`.cjs` marks a script that predates the ESM default and hasn't been converted.
-Nothing is wrong with them; they just haven't been touched. Migrating one is a
-self-contained change: rename `foo.cjs` → `foo.js`, swap `require` for `import`,
-and update its call sites (workflows, root `package.json`, or an app's `ship`
-script). No config change is needed — `tools/scripts/eslint.config.mjs` keys off the
-extension. When the last one is gone, that config drops to a single block.
-
-Don't add new `.cjs` files.
-
 ## Two things that don't live by these rules
 
-**`enforce-package-manager.js`** is the root `preinstall` hook, so it runs
+**`enforce-package-manager.ts`** is the root `preinstall` hook, so it runs
 _before_ `node_modules` exists. It can never import anything — not even from
 `lib/` — and must stay runnable by plain `node` on a literal path. The
 ghost-dev image copies it (and only it) out of this directory for the same
@@ -63,6 +53,20 @@ stays where it is. It carries its own lockfile, eslint config and CI workflow so
 its `pull_request_target` job can install from a sparse checkout of `main`
 without the root lockfile, and so its CI-only deps never reach a dev's install.
 See that directory's README before changing anything about how it's wired.
+
+## Service dependency audit
+
+`pnpm audit:services` reports implementation dependencies across the services
+directory using Dependency Cruiser's built-in terminal report. Use
+`--output-type markdown` or `--output-type json` for saved reports.
+`pnpm --silent audit:services:summary` uses `jq` to count distinct implementation files
+with forbidden imports of each dependency, largest counts first. It requires
+`jq` locally and only summarises the `service-dependencies` rule; use the detailed
+audit for unresolved imports and other findings. The rules and
+allowlist live in the root `.dependency-cruiser.cjs`; `lint:boundaries` applies
+them to migrated services. There is no separate audit script.
+The [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
+defines the boundary, allowlist and interpretation of findings.
 
 ## TypeScript inventory
 

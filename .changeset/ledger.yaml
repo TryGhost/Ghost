@@ -47,6 +47,10 @@
   intents:
     - eager-maps-decide
     - framework-deps-bump-errors-dates
+"@tryghost/adapter-base-scheduling@0.2.7":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - framework-bump-adapters
 "@tryghost/adapter-base-sso@0.1.1":
   dir: packages/adapters/sso-base
   intents:
@@ -71,6 +75,10 @@
   intents:
     - eager-maps-decide
     - framework-deps-bump-errors-dates
+"@tryghost/adapter-base-sso@0.1.6":
+  dir: packages/adapters/sso-base
+  intents:
+    - framework-bump-adapters
 "@tryghost/kg-card-factory@5.2.4":
   dir: koenig/kg-card-factory
   intents:
@@ -83,6 +91,10 @@
   dir: koenig/kg-card-factory
   intents:
     - wet-icons-tease
+"@tryghost/kg-card-factory@5.2.8":
+  dir: koenig/kg-card-factory
+  intents:
+    - bright-falcons-clean
 "@tryghost/kg-clean-basic-html@4.3.4":
   dir: koenig/kg-clean-basic-html
   intents:
@@ -96,6 +108,10 @@
   dir: koenig/kg-clean-basic-html
   intents:
     - wet-icons-tease
+"@tryghost/kg-clean-basic-html@4.3.8":
+  dir: koenig/kg-clean-basic-html
+  intents:
+    - bright-falcons-clean
 "@tryghost/kg-converters@1.2.4":
   dir: koenig/kg-converters
   intents:
@@ -112,6 +128,10 @@
   dir: koenig/kg-converters
   intents:
     - wet-icons-tease
+"@tryghost/kg-converters@1.2.8":
+  dir: koenig/kg-converters
+  intents:
+    - bright-falcons-clean
 "@tryghost/kg-default-cards@10.3.4":
   dir: koenig/kg-default-cards
   intents:
@@ -136,6 +156,11 @@
   intents:
     - patched-handlebars-security
     - wet-icons-tease
+"@tryghost/kg-default-cards@10.3.9":
+  dir: koenig/kg-default-cards
+  intents:
+    - bright-falcons-clean
+    - clean-beans-tie
 "@tryghost/kg-default-nodes@2.1.4":
   dir: koenig/kg-default-nodes
   intents:
@@ -170,6 +195,11 @@
     - kg-default-nodes-jsdom-dev
     - quiet-bookmark-endings
     - wet-icons-tease
+"@tryghost/kg-default-nodes@2.2.5":
+  dir: koenig/kg-default-nodes
+  intents:
+    - bright-falcons-clean
+    - clean-beans-tie
 "@tryghost/kg-default-transforms@1.3.4":
   dir: koenig/kg-default-transforms
   intents:
@@ -182,6 +212,10 @@
   dir: koenig/kg-default-transforms
   intents:
     - wet-icons-tease
+"@tryghost/kg-default-transforms@1.3.8":
+  dir: koenig/kg-default-transforms
+  intents:
+    - bright-falcons-clean
 "@tryghost/kg-html-to-lexical@1.4.0":
   dir: koenig/kg-html-to-lexical
   intents:
@@ -195,6 +229,10 @@
   dir: koenig/kg-html-to-lexical
   intents:
     - wet-icons-tease
+"@tryghost/kg-html-to-lexical@1.4.3":
+  dir: koenig/kg-html-to-lexical
+  intents:
+    - bright-falcons-clean
 "@tryghost/kg-lexical-html-renderer@1.5.0":
   dir: koenig/kg-lexical-html-renderer
   intents:
@@ -230,6 +268,10 @@
   dir: koenig/kg-markdown-html-renderer
   intents:
     - wet-icons-tease
+"@tryghost/kg-markdown-html-renderer@7.2.9":
+  dir: koenig/kg-markdown-html-renderer
+  intents:
+    - bright-falcons-clean
 "@tryghost/kg-simplemde@3.1.5":
   dir: koenig/kg-simplemde
   intents:
@@ -275,6 +317,10 @@
   dir: koenig/kg-utils
   intents:
     - wet-icons-tease
+"@tryghost/kg-utils@1.1.8":
+  dir: koenig/kg-utils
+  intents:
+    - bright-falcons-clean
 "@tryghost/koenig-lexical@1.10.0":
   dir: koenig/koenig-lexical
   intents:
@@ -313,6 +359,12 @@
     - quiet-fonts-wander
     - wet-icons-tease
     - wise-tools-enjoy
+"@tryghost/koenig-lexical@1.13.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - clean-beans-tie
+    - fresh-chairs-know
+    - snug-code-sizes
 "@tryghost/koenig-lexical@1.9.0":
   dir: koenig/koenig-lexical
   intents:

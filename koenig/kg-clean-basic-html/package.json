@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-clean-basic-html",
-  "version": "4.3.7",
+  "version": "4.3.8",
   "description": "Sanitises and normalises the basic HTML snippets used in Ghost's editor cards",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -10,7 +10,8 @@
     "directory": "koenig/kg-clean-basic-html"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",

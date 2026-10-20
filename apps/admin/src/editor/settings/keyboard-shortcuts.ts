@@ -34,8 +34,15 @@ function typed(text: string): ShortcutKey {
   return { text, mono: true };
 }
 
-/** Every shortcut the editor offers, in the order they are shown. */
-export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
+/**
+ * Every shortcut the editor offers, in the order they are shown. The settings
+ * panel's shortcut is listed only where the editor offers it
+ * (admin7EditorImprovements).
+ */
+export function keyboardShortcutGroups(
+  isMac: boolean,
+  { settingsShortcut = false }: { settingsShortcut?: boolean } = {},
+): ShortcutGroup[] {
   const cmd: ShortcutKey = isMac ? { text: '⌘', tooltip: 'Command' } : { text: 'Ctrl', mono: true };
   const ctrl: ShortcutKey = isMac
     ? { text: '⌃', tooltip: 'Control' }
@@ -81,6 +88,7 @@ export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
         { label: 'Save', keys: [cmd, typed('S')] },
         { label: 'Preview', keys: [cmd, typed('P')] },
         { label: 'Publish', keys: [cmd, shift, typed('P')] },
+        ...(settingsShortcut ? [{ label: 'Toggle settings', keys: [cmd, typed('.')] }] : []),
       ],
     },
     {

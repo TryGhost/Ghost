@@ -38,6 +38,9 @@ and provider adapters as private implementation details.
   Caller-constructed archive builders belong there with their component definitions.
 - Put HTTP routing and middleware in the appropriate part of `server/web/`.
 - Keep API-specific support with its API owner rather than making it a service.
+- Keep the existing authentication subsystem together in
+  [`server/auth/`](../auth/README.md) while its longer-term ownership is settled.
+  Relocation preserves its current composition and does not complete lifecycle work.
 
 For example:
 
@@ -73,6 +76,84 @@ Entries marked `migrated: true` use the
 The inventory's `exemplaryMigration` points to IndexNow as the example to follow.
 The marker tracks adoption independently of audit completeness or remaining
 lifecycle work.
+
+### Dependency boundaries
+
+For migrated services, the root `index.ts` wires runtime dependencies and passes
+them to the implementation. Other files in that service may import:
+
+- Files within the same service, except its root `index.ts`.
+- Types, using explicit type-only imports.
+- The libraries and individual shared files in the
+  [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
+
+The shared [clock](../../kernel/clock.ts) is allowed directly, including its
+deprecated `moment` export for existing date logic. Service migration does not
+require rewriting those date operations.
+
+Import allowlisted libraries directly where they are used; do not pass the
+library or its exports through the service's dependencies. Local use in the
+root is fine, including validating configuration with Zod and passing computed
+values such as `getUnixTime()`.
+
+`pnpm lint:oxlint` enforces direct constructor wiring with
+`ghost/no-injected-service-libraries`. In migrated root `index.ts` files, it
+rejects allowlisted imports and `const require()` bindings passed to constructors
+imported from within that service, including values in literal options objects
+and arrays. It reads the same allowlist and service scope as the boundary rule.
+Factories, forwarding callbacks, indirect aliases and separately assembled
+options objects still need review; this is not general data-flow analysis.
+
+Logging, settings, models, event buses and other service instances belong in the
+root wiring. Nested `index.ts` files are implementation files, not extra wiring
+roots. The rule covers static imports, `require()`, literal dynamic imports and
+re-exports. All implementation source inside a service is checked, including
+nested folders named `test` or `fixtures`.
+
+Where JavaScript has a matching TypeScript sibling, the audit and boundary
+checks inspect the TypeScript source and resolve imports back to it. This keeps
+adjacent `build:tsc` output out of the report; ordinary JavaScript implementations
+remain checked. Package exports resolve through their `source` condition when
+available, so workspace contracts are checked without relying on build output.
+
+`pnpm lint:boundaries`, also run by `pnpm check` and CI, enforces these rules as
+errors for every entry marked `migrated: true`. New implementation files inherit
+the same rules. Marking a service migrated opts it into enforcement; review
+changes to that marker as part of the migration.
+
+The allowlist names individual packages or files, with a reason for each.
+Review additions individually; do not allow whole shared directories or all
+`@tryghost/*` packages.
+
+To inspect the remaining work across **all** entries:
+
+```bash
+pnpm audit:services
+pnpm --silent audit:services:summary
+pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
+```
+
+The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
+all entries, including those absent from the inventory. It uses Dependency
+Cruiser's built-in terminal report, with Markdown and JSON also available.
+The audit returns success even when it finds violations; the normal lint
+command fails on violations in migrated services. Reports list source files and
+dependency targets, without custom inventory grouping. Legacy root `index.js`
+files are treated as wiring
+candidates; imports there do not prove readiness for migration.
+
+The optional summary requires `jq`. It groups `service-dependencies` findings
+by dependency and counts distinct importing implementation files, largest first.
+Multiple imports of the same target in one file count once. It does not include
+unresolved-import or own-root findings; use the detailed audit for those.
+
+Counts in the detailed report describe rule violations; one import can appear
+under more than one rule. Review whether each dependency needs injection, a
+library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
+by this static check and are not separately scanned. Unresolved imports,
+globals, runtime state and initialization behavior still need tests and review.
+
+### Migration assessment
 
 Each entry also has a source-based `migration` assessment:
 
@@ -140,11 +221,12 @@ Record missing coverage and known bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
-The unit test checks the inventory's shape, example, paths and directory coverage. It
-does not import services or drive initialization. `README.md` and the inventory
+The unit test checks the inventory's shape, example, paths, directory coverage
+and extras catalogue. It reads declared extras without importing services or
+driving initialization. Oxlint separately enforces the public root shape. `README.md` and the inventory
 itself are the only metadata exclusions. Retire the inventory after migration;
-keep the behavioral tests and replace the legacy check with a check for the
-established service convention.
+keep the behavioral tests and carry the established service convention check
+forward independently of the catalogue.
 
 Follow an existing service in the same area when extending established code,
 without treating its legacy placement or lifecycle shortcuts as requirements.
@@ -155,6 +237,47 @@ Donations uses a TypeScript default export for its service initializer, while
 its implementation keeps named exports. Existing CommonJS callers read
 `require('./donations').default`; a CommonJS wrapper is not needed merely
 because boot still uses `require()`.
+
+## Migrated root contract
+
+Roots marked `migrated: true` default-export a `defineService` initializer with
+`init`, a guarded `service` getter, and optional typed `extras`. Type-only named
+exports are allowed; other runtime exports belong in `extras` during migration.
+Implementation files may still export their classes and supporting contracts.
+
+Use the kernel helper directly, or default-export a local `const` created by it:
+
+```ts
+const extras = { isAvailable };
+export default defineService('Example', createService, extras);
+```
+
+Declare extras as an explicit object literal, directly or through a local `const`.
+Use named helper references or function definitions; do not invoke helpers or
+construct extra instances on import. Do not mutate declared extras or spread, reconstruct or extend an
+initializer: spreading it evaluates the guarded getter before initialization.
+
+Extras are a temporary home for concerns whose shared interfaces are not yet
+established. They do not imply readiness or automatic invocation by boot.
+Availability, request identity conversion and later background activation have
+different callers and timing requirements; putting them in one object does not
+change their behaviour or ownership.
+
+Catalogue every member under the service's `extras` inventory entry, recording:
+
+- `purpose` and production `callers` (paths relative to `ghost`).
+- `timing`, including whether a ready instance is needed and whether configuration
+  is read live or at startup.
+- `dependencies` and `failurePolicy`, including retry and background-failure behaviour.
+- `destination`: the intended future owner or the interface still to be decided.
+
+The Oxlint rule `ghost/service-root-shape` enforces default initializers,
+explicit extras and the absence of other runtime exports or container mutations.
+Its configuration lists migrated roots explicitly; a tooling test keeps that list
+in sync with `migrated: true` in the inventory. Update `.oxlintrc.json` when marking
+a root migrated. Legacy roots remain outside the rule until migrated. The separate inventory test requires declared extras
+names to match the catalogue exactly. Behavioural tests still establish readiness,
+boot ordering, resource cleanup and each extra's semantics.
 
 ## Initialization
 

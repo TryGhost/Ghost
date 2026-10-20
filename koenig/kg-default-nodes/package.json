@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-nodes",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "Lexical node definitions and HTML renderers for Ghost's Koenig editor cards",
   "repository": {
     "type": "git",
@@ -43,7 +43,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "publishConfig": {
     "access": "public"
@@ -52,7 +53,6 @@
     "@eslint/js": "catalog:",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
-    "@prettier/sync": "0.6.1",
     "@types/jsdom": "catalog:",
     "@types/lodash": "catalog:",
     "@types/luxon": "catalog:",
@@ -60,7 +60,7 @@
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "html-minifier": "4.0.0",
+    "html-minifier-next": "catalog:",
     "jsdom": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:",

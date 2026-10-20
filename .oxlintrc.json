@@ -1,0 +1,289 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "off",
+    "suspicious": "off",
+    "pedantic": "off",
+    "perf": "off",
+    "style": "off",
+    "restriction": "off",
+    "nursery": "off"
+  },
+  "jsPlugins": [
+    {
+      "name": "ghost",
+      "specifier": "./tools/configs/oxlint/plugin.ts"
+    },
+    {
+      "name": "local",
+      "specifier": "./tools/configs/oxlint/local-plugin.ts"
+    },
+    {
+      "name": "local-filenames",
+      "specifier": "./tools/configs/oxlint/filenames-plugin.ts"
+    }
+  ],
+  "overrides": [
+    {
+      "files": ["apps/admin/src/**/*.{ts,tsx}"],
+      "rules": {
+        "local/no-hardcoded-ghost-paths": "error"
+      },
+      "excludeFiles": ["apps/admin/src/**/*.test.*"]
+    },
+    {
+      "files": ["e2e/tests/**/*.ts"],
+      "rules": {
+        "local/no-unsafe-reset-environment": "error"
+      }
+    },
+    {
+      "files": [
+        "ghost/core/server/**/*.js",
+        "ghost/core/kernel/**/*.js",
+        "ghost/core/shared/**/*.js",
+        "ghost/core/frontend/**/*.js",
+        "ghost/core/*.js",
+        "ghost/bin/**/*.js",
+        "ghost/scripts/**/*.js",
+        "ghost/*.js",
+        "ghost/core/**/*.ts",
+        "ghost/*.ts",
+        "packages/adapters/cache-base/src/**/*.ts",
+        "packages/adapters/cache-base/test/**/*.ts",
+        "packages/adapters/jobs-base/src/**/*.ts",
+        "packages/adapters/redirects-base/src/**/*.ts",
+        "packages/adapters/redirects-base/test/**/*.ts",
+        "packages/adapters/route-settings-base/src/**/*.ts",
+        "packages/adapters/route-settings-base/test/**/*.ts",
+        "packages/adapters/scheduling-base/src/**/*.ts",
+        "packages/adapters/scheduling-base/test/**/*.ts",
+        "packages/adapters/sso-base/src/**/*.ts",
+        "packages/adapters/sso-base/test/**/*.ts",
+        "packages/adapters/storage-base/src/**/*.ts",
+        "packages/admin-api-schema/src/**/*.ts",
+        "packages/admin-api-schema/test/**/*.ts",
+        "packages/api-framework/src/**/*.ts",
+        "packages/app-contracts/src/**/*.ts",
+        "packages/app-contracts/test/**/*.ts",
+        "packages/checkout/src/**/*.ts",
+        "packages/checkout/test/**/*.ts",
+        "packages/i18n/src/**/*.ts",
+        "packages/i18n/*.js",
+        "packages/image-transform/src/**/*.ts",
+        "packages/image-transform/test/**/*.ts",
+        "packages/limit-service/src/**/*.ts",
+        "packages/metafield-csv/src/**/*.ts",
+        "packages/metafield-csv/test/**/*.ts",
+        "packages/metafield-types/src/**/*.ts",
+        "packages/metafield-types/test/**/*.ts",
+        "packages/nql-string/src/**/*.ts",
+        "packages/nql-string/test/**/*.ts",
+        "packages/parse-email-address/src/**/*.ts",
+        "packages/parse-email-address/test/**/*.ts",
+        "packages/testing/test-data/src/**/*.ts",
+        "packages/testing/test-data/test/**/*.ts",
+        "tools/gx/test/**/*.ts"
+      ],
+      "rules": {
+        "ghost/ghost-custom/no-native-error": "error",
+        "ghost/ghost-custom/ghost-error-usage": "error",
+        "ghost/ghost-custom/ghost-tpl-usage": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/server/api/endpoints/*"],
+      "rules": {
+        "ghost/ghost-custom/max-api-complexity": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/server/data/migrations/versions/**"],
+      "rules": {
+        "local-filenames/match-regex": [
+          "error",
+          "^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z0-9]+){2,}$",
+          true
+        ]
+      },
+      "excludeFiles": [
+        "ghost/core/server/data/migrations/versions/1.*/*",
+        "ghost/core/server/data/migrations/versions/2.*/*",
+        "ghost/core/server/data/migrations/versions/3.*/*"
+      ]
+    },
+    {
+      "files": ["ghost/core/**/*.{js,ts}"],
+      "rules": {
+        "local-filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
+      },
+      "excludeFiles": ["ghost/core/server/adapters/**"]
+    },
+    {
+      "files": ["ghost/core/frontend/helpers/**", "ghost/core/frontend/apps/*/lib/helpers/**"],
+      "rules": {
+        "local-filenames/match-regex": ["error", "^[a-z0-9_.-]+$", false]
+      }
+    },
+    {
+      "files": ["ghost/core/frontend/src/admin-auth/**/*.js"],
+      "rules": {
+        "ghost/ghost-custom/no-native-error": "off"
+      }
+    },
+    {
+      "files": ["ghost/test/**/*.{js,ts}"],
+      "rules": {
+        "local-filenames/match-regex": ["error", "^[a-z0-9-.]+$", false]
+      }
+    },
+    {
+      "files": [
+        "koenig/kg-card-factory/test/**/*.ts",
+        "koenig/kg-clean-basic-html/test/**/*.ts",
+        "koenig/kg-converters/test/**/*.ts",
+        "koenig/kg-default-cards/test/**/*.ts",
+        "koenig/kg-default-nodes/test/**/*.ts",
+        "koenig/kg-default-transforms/test/**/*.ts",
+        "koenig/kg-html-to-lexical/test/**/*.ts",
+        "koenig/kg-lexical-html-renderer/test/**/*.ts",
+        "koenig/kg-markdown-html-renderer/test/**/*.ts",
+        "koenig/kg-unsplash-selector/test/**/*.ts",
+        "koenig/kg-utils/test/**/*.ts"
+      ],
+      "rules": {
+        "ghost/ghost-custom/node-assert-strict": ["error"]
+      }
+    },
+    {
+      "files": [
+        "packages/adapters/jobs-base/test/**/*.ts",
+        "packages/adapters/storage-base/test/**/*.ts",
+        "packages/api-framework/test/**/*.ts",
+        "packages/limit-service/test/**/*.ts",
+        "tools/gx/cli.ts",
+        "tools/gx/create-package.ts",
+        "tools/gx/generate-golden-email.ts",
+        "tools/gx/create-migration.ts",
+        "tools/gx/rebuild-in-development-tables.ts",
+        "tools/gx/generate-data.ts",
+        "tools/gx/multi-sub-scenarios.ts",
+        "tools/gx/repl.ts",
+        "tools/gx/shift-dates.ts",
+        "tools/gx/benchmark-recipient-preparation.ts",
+        "tools/gx/run-ghost-command.ts",
+        "tools/scripts/*.ts",
+        "tools/scripts/lib/**/*.ts",
+        "tools/scripts/test/**/*.test.ts"
+      ],
+      "rules": {
+        "ghost/ghost-custom/no-native-error": "off",
+        "ghost/ghost-custom/ghost-error-usage": "error",
+        "ghost/ghost-custom/ghost-tpl-usage": "error"
+      }
+    },
+    {
+      "files": ["packages/i18n/test/**/*.ts", "packages/i18n/test/**/*.js"],
+      "rules": {
+        "ghost/ghost-custom/no-native-error": "error",
+        "ghost/ghost-custom/ghost-error-usage": "error",
+        "ghost/ghost-custom/ghost-tpl-usage": "error",
+        "ghost/ghost-custom/node-assert-strict": "error"
+      }
+    },
+    {
+      "files": [
+        "ghost/core/server/services/app-installations/index.ts",
+        "ghost/core/server/services/donations/index.ts",
+        "ghost/core/server/services/export-requests/index.ts",
+        "ghost/core/server/services/indexnow-ping/index.ts",
+        "ghost/core/server/services/signing-keys/index.ts",
+        "ghost/core/server/services/slack-ping/index.ts"
+      ],
+      "rules": {
+        "ghost/service-root-shape": [
+          "error",
+          {
+            "helperImport": "../../../kernel/define-service"
+          }
+        ]
+      }
+    },
+    {
+      "files": ["ghost/core/server/services/*/index.ts"],
+      "rules": {
+        "ghost/no-injected-service-libraries": "error"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "apps/admin/dist/**/*",
+    "apps/admin/test-utils/acceptance/public/**/*",
+    "e2e/build/**",
+    "e2e/data/**",
+    "e2e/playwright/**",
+    "e2e/playwright-report/**",
+    "e2e/test-results/**",
+    "ghost/core/frontend/src/**/*.js",
+    "ghost/core/frontend/public/**/*.js",
+    "ghost/core/built/**",
+    "ghost/test/coverage/**",
+    "ghost/test/utils/fixtures/themes/casper/assets/**",
+    "ghost/test/utils/fixtures/themes/source/assets/**",
+    "!ghost/core/frontend/src/member-attribution/**/*.js",
+    "koenig/kg-card-factory/build/**",
+    "koenig/kg-card-factory/cjs/**",
+    "koenig/kg-card-factory/es/**",
+    "koenig/kg-clean-basic-html/build/**",
+    "koenig/kg-clean-basic-html/cjs/**",
+    "koenig/kg-clean-basic-html/es/**",
+    "koenig/kg-converters/build/**",
+    "koenig/kg-converters/cjs/**",
+    "koenig/kg-converters/es/**",
+    "koenig/kg-default-cards/build/**",
+    "koenig/kg-default-cards/cjs/**",
+    "koenig/kg-default-cards/es/**",
+    "koenig/kg-default-nodes/build/**",
+    "koenig/kg-default-transforms/build/**",
+    "koenig/kg-default-transforms/cjs/**",
+    "koenig/kg-default-transforms/es/**",
+    "koenig/kg-html-to-lexical/build/**",
+    "koenig/kg-html-to-lexical/cjs/**",
+    "koenig/kg-html-to-lexical/es/**",
+    "koenig/kg-lexical-html-renderer/build/**",
+    "koenig/kg-markdown-html-renderer/build/**",
+    "koenig/kg-markdown-html-renderer/cjs/**",
+    "koenig/kg-markdown-html-renderer/es/**",
+    "koenig/kg-unsplash-selector/dist/**",
+    "koenig/kg-unsplash-selector/types/**",
+    "koenig/kg-utils/build/**",
+    "koenig/kg-utils/cjs/**",
+    "koenig/kg-utils/es/**",
+    "packages/adapters/cache-base/build/**/*",
+    "packages/adapters/jobs-base/build/**/*",
+    "packages/adapters/redirects-base/build/**/*",
+    "packages/adapters/route-settings-base/build/**/*",
+    "packages/adapters/scheduling-base/build/**/*",
+    "packages/adapters/sso-base/build/**/*",
+    "packages/adapters/storage-base/build/**/*",
+    "packages/admin-api-schema/build/**/*",
+    "packages/api-framework/build/**/*",
+    "packages/app-contracts/build/**/*",
+    "packages/checkout/build/**/*",
+    "packages/i18n/build/**/*",
+    "packages/image-transform/build/**/*",
+    "packages/limit-service/build/**/*",
+    "packages/metafield-csv/build/**/*",
+    "packages/metafield-types/build/**/*",
+    "packages/nql-string/build/**/*",
+    "packages/parse-email-address/build/**/*",
+    "packages/testing/test-data/build/**/*",
+    "tools/gx/build/**/*",
+    "tools/scripts/build/**/*"
+  ],
+  "rules": {
+    "ghost/ghost-custom/max-api-lines": "off",
+    "ghost/ghost-custom/node-assert-methods": "off",
+    "ghost/ghost-custom/node-assert-params": "off"
+  }
+}

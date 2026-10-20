@@ -93,7 +93,22 @@ export interface MetaDataSectionProps {
  * The post's search-engine metadata: a meta title and description that stand in
  * for the post's own, and the result they produce.
  */
-export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
+export function MetaDataSection(props: MetaDataSectionProps) {
+  return (
+    <SettingsSubview
+      closeLabel="Close meta data panel"
+      icon={<LucideIcon.Search />}
+      id="meta-data"
+      label="Meta data"
+      title="Meta data"
+    >
+      <MetaDataFields {...props} />
+    </SettingsSubview>
+  );
+}
+
+/** The search-engine fields and preview, without the pane around them. */
+export function MetaDataFields({ session, siteUrl }: MetaDataSectionProps) {
   const titleHintId = useId();
   const descriptionHintId = useId();
 
@@ -113,13 +128,7 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
   });
 
   return (
-    <SettingsSubview
-      closeLabel="Close meta data panel"
-      icon={<LucideIcon.Search />}
-      id="meta-data"
-      label="Meta data"
-      title="Meta data"
-    >
+    <>
       <Field>
         <FieldLabel htmlFor={title.fieldProps.id}>Meta title</FieldLabel>
         <Input
@@ -165,6 +174,6 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
         </Text>
         <SearchPreview description={previewDescription} title={previewTitle} url={previewUrl} />
       </Stack>
-    </SettingsSubview>
+    </>
   );
 }

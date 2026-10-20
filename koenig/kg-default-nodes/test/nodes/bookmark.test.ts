@@ -3,7 +3,6 @@ import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
-import Prettier from '@prettier/sync';
 
 import {BookmarkNode, $createBookmarkNode, $isBookmarkNode, type BookmarkData} from '../../src/index.js';
 
@@ -17,11 +16,10 @@ describe('BookmarkNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -160,7 +158,7 @@ describe('BookmarkNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('creates an bookmark card', editorTest(function () {
+        it('creates an bookmark card', editorTest(async function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const result = bookmarkNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
@@ -186,9 +184,7 @@ describe('BookmarkNode', function () {
                 </figure>
             `;
 
-            const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
-
-            assertPrettifiesTo(element.outerHTML, prettyExpectedHtml);
+            await assertPrettifiesTo(element.outerHTML, expectedHtml);
         }));
 
         it('renders email target', editorTest(function () {

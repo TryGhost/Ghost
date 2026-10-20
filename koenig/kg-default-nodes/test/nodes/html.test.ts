@@ -15,11 +15,10 @@ describe('HtmlNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -149,12 +148,12 @@ describe('HtmlNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('creates a html card', editorTest(function () {
+        it('creates a html card', editorTest(async function () {
             const htmlNode = $createHtmlNode(dataset);
             const result = htmlNode.exportDOM(editor, exportOptions);
             expect(result.type).toBe('value');
             const element = result.element as HTMLTextAreaElement;
-            assertPrettifiesTo(element.value, html`
+            await assertPrettifiesTo(element.value, html`
                 <!--kg-card-begin: html-->
                 <p>Paragraph with:</p>
                 <ul>
@@ -165,12 +164,12 @@ describe('HtmlNode', function () {
             `);
         }));
 
-        it('creates a html card for email', editorTest(function () {
+        it('creates a html card for email', editorTest(async function () {
             const htmlNode = $createHtmlNode(dataset);
             const result = htmlNode.exportDOM(editor, {...exportOptions, target: 'email'});
             expect(result.type).toBe('value');
             const element = result.element as HTMLTextAreaElement;
-            assertPrettifiesTo(element.value, html`
+            await assertPrettifiesTo(element.value, html`
                 <!--kg-card-begin: html-->
                 <p>Paragraph with:</p>
                 <ul>

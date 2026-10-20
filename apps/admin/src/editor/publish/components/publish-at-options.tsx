@@ -21,7 +21,7 @@ export function PublishAtOptions({
   const id = useId();
 
   return (
-    <Grid align="end" className="grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)]" gap="sm">
+    <Grid align="end" className="grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)]" gap="sm">
       <RadioGroup
         value={state.isScheduled ? 'schedule' : 'now'}
         onValueChange={(value) => onToggleScheduled(value === 'schedule')}
@@ -38,11 +38,11 @@ export function PublishAtOptions({
 
       {state.isScheduled ? (
         <DateTimePicker
-          className="w-full sm:w-70 sm:translate-y-2 sm:justify-self-end"
+          className="w-full max-w-70 md:translate-y-2 md:justify-self-end"
           dateLabel="Publish date"
           dateTestId={publishScheduleDate}
           // A row of its own, so the fields stay level with their radio.
-          errorClassName="sm:col-start-2 sm:w-70 sm:translate-y-2 sm:justify-self-end"
+          errorClassName="w-full max-w-70 md:col-start-2 md:translate-y-2 md:justify-self-end"
           minDate={state.minScheduledAt}
           timeLabel="Publish time"
           timeTestId={publishScheduleTime}

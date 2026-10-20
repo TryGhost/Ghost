@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/e2e",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",

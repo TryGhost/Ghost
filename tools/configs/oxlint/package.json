@@ -1,0 +1,29 @@
+{
+  "name": "@internal/cfg-oxlint",
+  "version": "private",
+  "private": true,
+  "description": "Ghost custom Oxlint rules",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test:types": "tsc6 --noEmit"
+  },
+  "devDependencies": {
+    "@internal/cfg-typescript": "workspace:*",
+    "@oxlint/plugins": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "test:types": {
+        "inputs": [
+          "default",
+          "^default",
+          "{workspaceRoot}/.dependency-cruiser.cjs",
+          "{workspaceRoot}/tools/scripts/lib/service-dependency-resolver.mjs"
+        ]
+      }
+    }
+  }
+}

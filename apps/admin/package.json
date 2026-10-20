@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "type": "module",
   "scripts": {
@@ -29,6 +29,7 @@
     "@dnd-kit/core": "catalog:",
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
+    "@floating-ui/react-dom": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",

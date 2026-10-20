@@ -30,8 +30,8 @@ const messages = {
 // Admin no longer reads selfServeArchives; it stays enabled for older Admin builds
 // during independent deployments.
 const GA_FEATURES = [
-  'automationAnalytics',
-  'automationRunAnalytics',
+  'automationsArchive',
+  'automationsPerTier',
   'selfServeArchives',
   'editorReact',
   'billingReact',
@@ -49,8 +49,7 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
   'automations',
-  'automationsArchive',
-  'automationsPerTier',
+  'automationsLifecycleTriggers',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',

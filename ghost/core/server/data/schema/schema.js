@@ -1595,6 +1595,7 @@ module.exports = {
     // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
     context: { type: 'text', maxlength: 1000000000, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
+    '@@INDEXES@@': [['resource_type', 'resource_id']],
   },
   emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2679,18 +2680,30 @@ module.exports = {
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
     // The validated manifest, with its URLs resolved, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
+    // SHA-256 of `manifest_url` and `manifest` together, in hex: what a publisher confirms,
+    // and what tells two versions apart without parsing them. Defined by
+    // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: when the app was installed, when an Administrator approved
-    // changes, or when Ghost picked up a newer version by itself.
+    // changes, when Ghost picked up a newer version by itself, or when Ghost ran a suspended
+    // app again because the app went back on the changes that waited.
     source: {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['install', 'approval', 'update']] },
+      validations: { isIn: [['install', 'approval', 'update', 'resume']] },
     },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
+  },
+  // Committed dispatches waiting for the relay to hand them to the jobs backend. Still in
+  // development: see ./in-development.ts.
+  jobs_outbox: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    envelope: { type: 'text', maxlength: 65535, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    available_at: { type: 'dateTime', nullable: false },
+    '@@INDEXES@@': [['available_at']],
   },
 };

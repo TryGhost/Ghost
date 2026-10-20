@@ -100,8 +100,12 @@ describe('PostEmailHandler', function () {
       status = 'draft',
       newsletterId = null,
       emailRecipientFilter = 'all',
+      emailStatus = null,
     } = {}) {
-      const post = { get: sinon.stub() };
+      const email = emailStatus
+        ? { get: sinon.stub().withArgs('status').returns(emailStatus) }
+        : undefined;
+      const post = { get: sinon.stub(), getLazyRelation: sinon.stub().resolves(email) };
       post.get.withArgs('status').returns(status);
       post.get.withArgs('newsletter_id').returns(newsletterId);
       post.get.withArgs('email_recipient_filter').returns(emailRecipientFilter);
@@ -169,11 +173,37 @@ describe('PostEmailHandler', function () {
     });
 
     it('skips validation when post is already published', async function () {
-      setupExistingPost({ status: 'published', newsletterId: 'newsletter-456' });
+      const post = setupExistingPost({ status: 'published', newsletterId: 'newsletter-456' });
 
       await postEmailHandler.validateBeforeSave(createFrame('published'));
 
+      sinon.assert.notCalled(post.getLazyRelation);
       sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+    });
+
+    for (const emailStatus of ['pending', 'submitting', 'submitted']) {
+      it(`skips validation when the post already has an email that was not failed (${emailStatus})`, async function () {
+        const post = setupExistingPost({ newsletterId: 'newsletter-456', emailStatus });
+        const transacting = {};
+
+        const result = await postEmailHandler.validateBeforeSave(
+          createFrame('published', { newsletter: 'weekly', transacting }),
+        );
+
+        assert.equal(result, null);
+        sinon.assert.calledOnceWithExactly(post.getLazyRelation, 'email', { transacting });
+        sinon.assert.notCalled(mockModels.Newsletter.findOne);
+        sinon.assert.notCalled(mockEmailService.checkCanSendEmail);
+      });
+    }
+
+    it('validates when the post has a failed email that publishing will retry', async function () {
+      setupExistingPost({ newsletterId: 'newsletter-456', emailStatus: 'failed' });
+      const newsletter = setupNewsletter('newsletter-456');
+
+      await postEmailHandler.validateBeforeSave(createFrame('published'));
+
+      sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
     });
 
     it('skips validation when no newsletter specified', async function () {

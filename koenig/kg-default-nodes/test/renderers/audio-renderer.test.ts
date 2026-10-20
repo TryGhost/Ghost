@@ -22,12 +22,12 @@ describe('renderers/audio-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-audio-card">
                     <img src="/content/images/2022/11/koenig-audio-lexical.jpg" alt="audio-thumbnail" class="kg-audio-thumbnail">
                     <div class="kg-audio-thumbnail placeholder kg-audio-hide">
@@ -80,12 +80,12 @@ describe('renderers/audio-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                     <tbody>
                         <tr>

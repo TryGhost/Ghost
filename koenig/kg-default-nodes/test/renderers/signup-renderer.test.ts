@@ -50,12 +50,12 @@ describe('renderers/signup-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display: none">
                     <picture>
                         <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="" />
@@ -129,10 +129,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('removes empty elements', function () {
+        it('removes empty elements', async function () {
             const result = renderForWeb(getTestData({header: '', subheader: '', disclaimer: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                     <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
                     <div class="kg-signup-card-content">
@@ -156,10 +156,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders accent classes', function () {
+        it('renders accent classes', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', buttonColor: 'accent', backgroundImageSrc: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
@@ -185,10 +185,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders split classes', function () {
+        it('renders split classes', async function () {
             const result = renderForWeb(getTestData({layout: 'split', textColor: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -215,10 +215,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders split card swapped', function () {
+        it('renders split card swapped', async function () {
             const result = renderForWeb(getTestData({layout: 'split', swapped: true, textColor: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -245,10 +245,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders background size', function () {
+        it('renders background size', async function () {
             const result = renderForWeb(getTestData({layout: 'split', backgroundSize: 'contain', textColor: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-content-wide" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -275,10 +275,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders text color styles with non-transparent background', function () {
+        it('renders text color styles with non-transparent background', async function () {
             const result = renderForWeb(getTestData({backgroundColor: '#ffffff'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                 <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                     <div class="kg-signup-card-content">
@@ -305,10 +305,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('applies the accent color class if there is no background image', function () {
+        it('applies the accent color class if there is no background image', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', backgroundImageSrc: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
@@ -334,10 +334,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('applies the accent color class with a split layout', function () {
+        it('applies the accent color class with a split layout', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', layout: 'split'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -364,10 +364,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it(`doesn't apply the accent color class if there is a background image`, function () {
+        it(`doesn't apply the accent color class if there is a background image`, async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', backgroundImageSrc: 'https://example.com/image.jpg'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                     <picture>
                         <img

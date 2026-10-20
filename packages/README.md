@@ -15,7 +15,7 @@ consumers. Record and justify exceptions in the package README and configuration
 New internal packages are private, TypeScript-only ESM libraries:
 
 - use an `@tryghost/<name>` package name;
-- set `"version": "0.0.0"` and `"private": true`;
+- set `"version": "private"` and `"private": true` (the non-semver version keeps the package out of `pnpm version`);
 - set `"ghostPackage": {"goldenPath": "compliant"}`;
 - set `"type": "module"`;
 - keep authored code in `src/**/*.ts` and tests in `test/**/*.ts`;

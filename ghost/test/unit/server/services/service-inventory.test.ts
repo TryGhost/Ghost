@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { z } from 'zod';
+import ts from 'typescript';
 
 const coreRoot = path.resolve(__dirname, '../../../..');
 const servicesRoot = path.join(coreRoot, 'core/server/services');
@@ -35,12 +36,23 @@ const migration = z
     sources: z.array(description).min(1),
   })
   .strict();
+const extraSchema = z
+  .object({
+    purpose: description,
+    callers: z.array(description).min(1),
+    timing: description,
+    dependencies: z.array(description),
+    failurePolicy: description,
+    destination: description,
+  })
+  .strict();
 const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
     status: z.enum(['pending', 'auditing', 'audited']),
     migrated: z.literal(true).optional(),
+    extras: z.record(description, extraSchema).optional(),
     auditedAt: z
       .string()
       .regex(/^[0-9a-f]{40}$/)
@@ -70,8 +82,77 @@ function assertFileWithin(root: string, relativePath: string) {
   assert.ok(statSync(resolved).isFile(), `Expected a file: ${relativePath}`);
 }
 
+// Extract catalogue names only. Oxlint separately enforces the root's source shape.
+function declaredExtras(fileName: string): string[] {
+  const source = ts.createSourceFile(
+    fileName,
+    readFileSync(fileName, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const constants = new Map<string, ts.Expression>();
+  let exported: ts.Expression | undefined;
+  for (const statement of source.statements) {
+    if (ts.isExportAssignment(statement)) {
+      exported = statement.expression;
+    }
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.initializer) {
+          constants.set(declaration.name.text, declaration.initializer);
+        }
+      }
+    }
+  }
+  function resolve(
+    expression: ts.Expression | undefined,
+    seen = new Set<string>(),
+  ): ts.Expression | undefined {
+    if (!expression) {
+      return;
+    }
+    if (
+      ts.isParenthesizedExpression(expression) ||
+      ts.isAsExpression(expression) ||
+      ts.isTypeAssertionExpression(expression) ||
+      ts.isSatisfiesExpression(expression) ||
+      ts.isNonNullExpression(expression)
+    ) {
+      return resolve(expression.expression, seen);
+    }
+    if (!ts.isIdentifier(expression)) {
+      return expression;
+    }
+    if (seen.has(expression.text)) {
+      return;
+    }
+    seen.add(expression.text);
+    return resolve(constants.get(expression.text), seen);
+  }
+  const initializer = resolve(exported);
+  assert.ok(
+    initializer && ts.isCallExpression(initializer),
+    `Cannot read initializer arguments: ${fileName}`,
+  );
+  if (!initializer.arguments[2]) {
+    return [];
+  }
+  const extras = resolve(initializer.arguments[2]);
+  assert.ok(
+    extras && ts.isObjectLiteralExpression(extras),
+    `Cannot read declared extras: ${fileName}`,
+  );
+  return extras.properties
+    .flatMap((property) =>
+      property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name))
+        ? [property.name.text]
+        : [],
+    )
+    .sort();
+}
+
 describe('service migration inventory', function () {
-  // Read metadata only: importing the catalogue could construct resources or
+  // Read metadata and source only: importing the catalogue could construct resources or
   // require a database before a service's real owner has initialized it.
   const inventory = inventorySchema.parse(
     yaml.load(readFileSync(path.join(servicesRoot, 'service-inventory.yaml'), 'utf8')),
@@ -102,6 +183,20 @@ describe('service migration inventory', function () {
   });
 
   for (const [name, service] of Object.entries(inventory.services)) {
+    if (service.migrated) {
+      it(`${name} has exactly the catalogued extras`, function () {
+        const rootFile = path.join(
+          servicesRoot,
+          service.kind === 'directory' ? `${name}/index.ts` : name,
+        );
+        const actual = declaredExtras(rootFile);
+        assert.deepEqual(
+          actual,
+          Object.keys(service.extras ?? {}).sort(),
+          'Catalogue every extra and remove stale catalogue entries',
+        );
+      });
+    }
     it(`${name} has valid evidence, migration assessment and explicit audit gaps`, function () {
       assert.equal(
         service.migration.complexity === 'not-applicable',
@@ -128,6 +223,11 @@ describe('service migration inventory', function () {
           'not-applicable',
           'A migrated service cannot be classified as a non-service',
         );
+      }
+      for (const extra of Object.values(service.extras ?? {})) {
+        for (const caller of extra.callers) {
+          assertFileWithin(coreRoot, caller);
+        }
       }
       for (const source of service.migration.sources) {
         assertFileWithin(coreRoot, source);

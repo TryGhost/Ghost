@@ -7,7 +7,7 @@ const internalKeys: InternalKeys =
 const models = require('../../../../../core/server/models');
 const { getFrontendKey } = require('../../../../../core/frontend/services/proxy');
 const { default: resetAuthentication } =
-  require('../../../../../core/server/services/auth/reset-authentication') as typeof import('../../../../../core/server/services/auth/reset-authentication');
+  require('../../../../../core/server/auth/reset-authentication') as typeof import('../../../../../core/server/auth/reset-authentication');
 
 describe('Internal keys root', function () {
   const sandbox = sinon.createSandbox();

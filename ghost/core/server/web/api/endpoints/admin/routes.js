@@ -2,12 +2,12 @@ const errors = require('@tryghost/errors');
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const { http } = require('@tryghost/api-framework');
-const auth = require('../../../../services/auth');
+const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 const limits = require('../../../../services/limits');
-const appInstallations = require('../../../../services/app-installations');
+const appInstallations = require('../../../../services/app-installations').default;
 
 const shared = require('../../../shared');
 
@@ -255,7 +255,7 @@ module.exports = function apiRoutes() {
   appsRouter.use(labs.enabledMiddleware('apps'));
   // Answers as if apps did not exist wherever the table does not.
   appsRouter.use((req, res, next) => {
-    next(appInstallations.isAvailable() ? undefined : new errors.NotFoundError());
+    next(appInstallations.extras.isAvailable() ? undefined : new errors.NotFoundError());
   });
 
   appsRouter.post('/installations/preview', http(api.appInstallationPreviews.add));
@@ -263,6 +263,7 @@ module.exports = function apiRoutes() {
   appsRouter.post('/installations', http(api.appInstallations.add));
   appsRouter.get('/installations/:id', http(api.appInstallations.read));
   appsRouter.put('/installations/:id', http(api.appInstallations.edit));
+  appsRouter.post('/installations/:id/sessions', http(api.appSessions.start));
   appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));

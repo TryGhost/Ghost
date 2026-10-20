@@ -174,6 +174,11 @@ async function initCore({ ghostServer, config }) {
   await appInstallationsService.init();
   debug('End: App Installations Service');
 
+  debug('Begin: Export Requests Service');
+  const exportRequests = require('./server/services/export-requests').default;
+  await exportRequests.init();
+  debug('End: Export Requests Service');
+
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
   const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
@@ -584,8 +589,8 @@ async function initBackgroundServices({ config }) {
   }
 
   try {
-    const signingKeys = require('./server/services/signing-keys');
-    await signingKeys.scheduleCheckJob(jobsService);
+    const signingKeys = require('./server/services/signing-keys').default;
+    await signingKeys.extras.scheduleCheckJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -763,7 +768,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
-    const jobsService = require('./server/services/jobs-service').init();
+    const knex = require('./server/data/db').knex;
+    const jobsService = require('./server/services/jobs-service').init({ knex, config });
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 
