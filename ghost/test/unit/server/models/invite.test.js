@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const { Invite } = require('../../../../core/server/models/invite');
 const { Role } = require('../../../../core/server/models/role');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const { limitService } = require('../../../../core/server/services/limits');
 
 describe('Unit: models/invite', function () {
   beforeEach(function () {
@@ -60,6 +61,34 @@ describe('Unit: models/invite', function () {
         beforeEach(function () {
           loadedPermissions.user.roles = [{ name: 'Owner' }];
         });
+
+        for (const previousRole of [null, 'Contributor', 'Author']) {
+          it(`counts the seat change correctly when replacing ${previousRole || 'no invitation'}`, async function () {
+            const targetRole = { get: () => 'Author' };
+            const findRole = sinon.stub(Role, 'findOne');
+            findRole.withArgs({ id: 'role_id' }).resolves(targetRole);
+            findRole.withArgs({ id: 'previous-role' }).resolves({ get: () => previousRole });
+            sinon
+              .stub(Invite, 'findOne')
+              .resolves(previousRole ? { get: () => 'previous-role' } : null);
+            sinon.stub(limitService, 'isLimited').withArgs('staff').returns(true);
+            const check = sinon.stub(limitService, 'errorIfWouldGoOverLimit').resolves();
+
+            await Invite.permissible(
+              inviteModel,
+              'add',
+              context,
+              { role_id: 'role_id', email: 'recipient@example.com' },
+              loadedPermissions,
+              true,
+              true,
+            );
+
+            sinon.assert.calledOnceWithExactly(check, 'staff', {
+              addedCount: previousRole === 'Author' ? 0 : 1,
+            });
+          });
+        }
 
         it('invite administrator', function () {
           sinon.stub(Role, 'findOne').withArgs({ id: 'role_id' }).resolves(roleModel);

@@ -132,7 +132,7 @@ describe('Staff invitations', () => {
     expect(addApi.requests).toHaveLength(1);
   });
 
-  it('resends an invitation by revoking and recreating it', async () => {
+  it('retains the legacy resend flow when invitation limits are absent', async () => {
     const existing = invite();
     const { boot } = fakeStaffWorld({ invites: [existing] });
     const deleteApi = fakeAdminEndpoint('DELETE', `/invites/${existing.id}/`, {});
@@ -148,6 +148,65 @@ describe('Staff invitations', () => {
     expect(addApi.lastRequest?.body).toMatchObject({
       invites: [{ email: existing.email, role_id: existing.role_id }],
     });
+  });
+
+  it('resends a limited invitation without revoking it first', async () => {
+    const existing = invite();
+    const { boot } = fakeStaffWorld({ invites: [existing] });
+    const deleteApi = fakeAdminEndpoint('DELETE', `/invites/${existing.id}/`, {});
+    const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [existing] });
+    const config = configResponse();
+    config.config.hostSettings = { staffInvites: { maxPerDay: 10, cooldownSeconds: 300 } };
+    await renderAdminApp('/settings/staff?tab=invited', {
+      boot: {
+        ...boot,
+        browseConfig: { response: config },
+      },
+    });
+    const item = settingsScreen.users().getByTestId('user-invite');
+    await item.hover();
+    await item.getByRole('button', { name: 'Resend' }).click();
+    await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation resent');
+    expect(deleteApi.requests).toHaveLength(0);
+    expect(addApi.requests).toHaveLength(1);
+  });
+
+  it('preserves the invitation and displays the wait when a resend is rate limited', async () => {
+    const existing = invite();
+    const { boot } = fakeStaffWorld({ invites: [existing] });
+    const deleteApi = fakeAdminEndpoint('DELETE', `/invites/${existing.id}/`, {});
+    fakeAdminEndpoint(
+      'POST',
+      '/invites/',
+      {
+        errors: [
+          {
+            type: 'TooManyRequestsError',
+            code: 'STAFF_INVITE_COOLDOWN',
+            message: 'An invitation was recently sent to this address. Try again in 300 seconds.',
+          },
+        ],
+      },
+      { status: 429 },
+    );
+    const config = configResponse();
+    config.config.hostSettings = { staffInvites: { cooldownSeconds: 300 } };
+    await renderAdminApp('/settings/staff?tab=invited', {
+      boot: {
+        ...boot,
+        browseConfig: { response: config },
+      },
+    });
+
+    const item = settingsScreen.users().getByTestId('user-invite');
+    await item.hover();
+    await item.getByRole('button', { name: 'Resend' }).click();
+
+    await expect
+      .element(settingsScreen.errorToast())
+      .toHaveTextContent('Try again in 300 seconds.');
+    await expect.element(item.getByText(existing.email)).toBeVisible();
+    expect(deleteApi.requests).toHaveLength(0);
   });
 
   it('revokes an invitation and removes it from the list', async () => {

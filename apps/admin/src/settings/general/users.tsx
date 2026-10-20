@@ -197,6 +197,7 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
 };
 
 const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
+  const { config } = useGlobalData();
   const [revokeState, setRevokeState] = useState<'progress' | ''>('');
   const [resendState, setResendState] = useState<'progress' | ''>('');
 
@@ -228,7 +229,11 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
   const resendInvite = async () => {
     try {
       setResendState('progress');
-      await deleteInvite(invite.id);
+      // Hosts enable this policy after deploying server-side resend admission.
+      // Retain the legacy flow for older backends without invitation limits.
+      if (!config?.hostSettings?.staffInvites) {
+        await deleteInvite(invite.id);
+      }
       await addInvite({
         email: invite.email,
         roleId: invite.role_id,
