@@ -16,6 +16,8 @@ const { normalizeEmail } = require('../utils/normalize-email');
 const { hasActiveOffer } = require('../utils/has-active-offer');
 const { getInboxLinks } = require('../../../../lib/get-inbox-links');
 const { SIGNUP_CONTEXTS } = require('../../../../lib/member-signup-contexts');
+
+/** @import { CheckoutService } from '../../../stripe-checkout-config' */
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
@@ -153,6 +155,7 @@ module.exports = class RouterController {
    * @param {any} deps.settingsHelpers
    * @param {any} deps.urlUtils
    * @param {any} deps.emailAddressService
+   * @param {Pick<CheckoutService, 'read'>} deps.checkouts Decides the checkout a card update opens.
    */
   constructor({
     offersAPI,
@@ -173,6 +176,7 @@ module.exports = class RouterController {
     urlUtils,
     emailAddressService,
     giftService,
+    checkouts,
   }) {
     this._offersAPI = offersAPI;
     this._paymentsService = paymentsService;
@@ -192,6 +196,7 @@ module.exports = class RouterController {
     this._urlUtils = urlUtils;
     this._emailAddressService = emailAddressService;
     this._giftService = giftService;
+    this._checkouts = checkouts;
   }
 
   async ensureStripe(_req, res, next) {
@@ -270,6 +275,7 @@ module.exports = class RouterController {
       cancelUrl: sanitizeReturnUrl(req.body.cancelUrl, siteUrl),
       subscription_id: req.body.subscription_id,
       currency,
+      checkout: await this._checkouts.read(),
     });
     const publicKey = this._stripeAPIService.getPublicKey();
     const sessionInfo = {

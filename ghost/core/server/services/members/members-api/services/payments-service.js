@@ -7,6 +7,9 @@ const OfferCreatedEvent = require('../../../offers/domain/events/offer-created-e
 const { BadRequestError } = require('@tryghost/errors');
 const { t } = require('../../../i18n');
 
+/** @import { CheckoutDefinition, CheckoutService } from '../../../stripe-checkout-config' */
+/** @import Tier from '../../../tiers/tier' */
+
 class PaymentsService {
   /**
    * @param {object} deps
@@ -14,6 +17,8 @@ class PaymentsService {
    * @param {import('../../../offers/application/offers-api')} deps.offersAPI
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {{get(key: string): any}} deps.settingsCache
+   * @param {Pick<CheckoutService, 'readForTier' | 'read'>} deps.checkouts Decides the checkout
+   *   each payment opens.
    */
   constructor(deps) {
     /** @private */
@@ -30,6 +35,8 @@ class PaymentsService {
     this.stripeAPIService = deps.stripeAPIService;
     /** @private */
     this.settingsCache = deps.settingsCache;
+    /** @private */
+    this.checkouts = deps.checkouts;
     DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
       await this.getCouponForOffer(event.data.offer.id);
     });
@@ -66,12 +73,6 @@ class PaymentsService {
    * @param {string} params.successUrl
    * @param {string} params.cancelUrl
    * @param {string} [params.email]
-   * @param {import('../../../stripe-checkout-config').StripeCheckoutDesign | null} [params.design]
-   *   Replaces the saved design, for a preview of one not saved yet. Null sends none.
-   * @param {Partial<import('../../../stripe-checkout-config').CheckoutCollection>} [params.collection]
-   *   Replaces the saved collected parts it names, for a preview of ones not saved yet.
-   * @param {number} [params.expiresInSeconds] How long the checkout takes payment for, counted
-   *   from when it's created, instead of a day.
    *
    * @returns {Promise<URL>}
    */
@@ -85,9 +86,6 @@ class PaymentsService {
     successUrl,
     cancelUrl,
     email,
-    design,
-    collection,
-    expiresInSeconds,
   }) {
     let coupon = null;
     let trialDays = null;
@@ -124,14 +122,11 @@ class PaymentsService {
 
     const data = {
       metadata,
-      tierId: tier.id.toHexString(),
       successUrl: successUrl,
       cancelUrl: cancelUrl,
       trialDays: trialDays ?? tier.trialDays,
       coupon: coupon?.id,
-      design,
-      collection,
-      expiresInSeconds,
+      checkout: await this.checkouts.readForTier(tier.id.toHexString()),
     };
 
     // If we already have a coupon, we don't want to give trial days over it
@@ -144,6 +139,33 @@ class PaymentsService {
     }
 
     const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
+
+    return session.url;
+  }
+
+  /**
+   * A Stripe Checkout page that previews checkout settings not saved yet, for the checkout a
+   * signup by someone who isn't a member yet gets on this tier.
+   *
+   * @param {object} params
+   * @param {Tier} params.tier
+   * @param {'month' | 'year'} params.cadence
+   * @param {CheckoutDefinition} params.checkout The settings being previewed.
+   * @param {string} params.returnUrl Where Stripe sends the publisher back to.
+   * @param {number} params.expiresInSeconds How long the checkout takes payment for, counted
+   *   from when it's created, instead of a day.
+   *
+   * @returns {Promise<URL>}
+   */
+  async getPreviewLink({ tier, cadence, checkout, returnUrl, expiresInSeconds }) {
+    const price = await this.getPriceForTierCadence(tier, cadence);
+    const session = await this.stripeAPIService.createPreviewCheckoutSession(price.id, {
+      successUrl: returnUrl,
+      cancelUrl: returnUrl,
+      trialDays: tier.trialDays,
+      expiresInSeconds,
+      checkout,
+    });
 
     return session.url;
   }
@@ -181,6 +203,7 @@ class PaymentsService {
       customer,
       customerEmail: !customer && email ? email : null,
       personalNote: personalNote,
+      checkout: await this.checkouts.read(),
     };
 
     const session = await this.stripeAPIService.createDonationCheckoutSession(data);

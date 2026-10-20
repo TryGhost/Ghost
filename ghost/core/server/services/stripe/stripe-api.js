@@ -4,11 +4,10 @@ const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
 const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
-const { snakeKeys } = require('../../lib/case-keys');
 const { z } = require('zod');
-const { COLLECTION_FLAG, collectionParams } = require('../stripe-checkout-config/models');
+const { checkoutSessionParams } = require('./checkout-session-params');
 
-/** @import stripeCheckoutConfig from '../stripe-checkout-config' */
+/** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -78,6 +77,22 @@ const DesignRefusal = refusalOf('branding_settings');
 const without = (params, key) =>
   Object.fromEntries(Object.entries(params).filter(([name]) => name !== key));
 
+/** A checkout goes ahead in Stripe's own design when Stripe refuses Ghost's. */
+const logRefusedDesign = (err) =>
+  logging.error(
+    { event: { name: 'stripe_checkout.design.refused' }, err },
+    'Stripe refused the Stripe Checkout design',
+  );
+
+/** A preview must show the design it was asked to, so Stripe refusing it is reported. */
+const reportRefusedDesign = (err) => {
+  throw new ValidationError({
+    message: 'Stripe refused this checkout design.',
+    context: err instanceof Error ? err.message : undefined,
+    property: 'design',
+  });
+};
+
 module.exports = class StripeAPI {
   static API_VERSION = STRIPE_API_VERSION;
 
@@ -86,98 +101,51 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
-   * @param {typeof stripeCheckoutConfig} deps.stripeCheckoutConfig
-   *   Its service's config is read for every Checkout session.
    */
   constructor(deps) {
     /** @type {Stripe} */
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
-    this._stripeCheckoutConfig = deps.stripeCheckoutConfig;
   }
 
   /**
-   * The saved design, or null while its flag is off.
+   * Creates a Checkout session in a checkout's design, asking the buyer for what it asks for.
+   * Every Checkout session Ghost creates goes through here or, for a preview,
+   * `createPreviewCheckoutSession`.
    *
-   * @private
-   * @param {import('../stripe-checkout-config').CheckoutSessionConfig | null} [config] The config
-   *   if it has already been read for this checkout.
-   * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutDesign | null>}
-   */
-  async _savedDesign(config) {
-    if (!this.labs.isSet('stripeCheckoutDesign')) {
-      return null;
-    }
-    const read = config === undefined ? await this._readCheckoutConfig() : config;
-    return read?.design ?? null;
-  }
-
-  /**
-   * Reads the site's Stripe Checkout config as checkouts use it.
-   *
-   * If reading it fails, this logs the error and returns null. A checkout without the config
-   * still takes payment, while a failed checkout doesn't.
-   *
-   * @private
-   * @returns {Promise<import('../stripe-checkout-config').CheckoutSessionConfig | null>}
-   */
-  async _readCheckoutConfig() {
-    try {
-      return await this._stripeCheckoutConfig.service.config.readForCheckout();
-    } catch (err) {
-      logging.error(
-        { event: { name: 'stripe_checkout.config.read_failed' }, err },
-        'Failed to read the Stripe Checkout config',
-      );
-      return null;
-    }
-  }
-
-  /**
-   * Creates a Checkout session with the saved design as its `branding_settings`, and the
-   * collection parameters it is given. Every Checkout session Ghost creates goes through here.
-   *
-   * If Stripe refuses the saved design or something the checkout asks the buyer for, the
-   * session is created again without it, as a checkout that looks plainer or asks for less
-   * still takes payment.
-   * The retry reuses the idempotency key, which is safe because Stripe doesn't store a result
-   * for a request it rejects as invalid. A design given in place of the saved one is a preview
-   * of one not saved yet, so Stripe refusing that is reported instead of hidden.
+   * If Stripe refuses the design or something the checkout asks the buyer for, the session is
+   * created again without it, as a checkout that looks plainer or asks for less still takes
+   * payment.
    *
    * @private
    * @param {object} params
    * @param {object} [requestOptions]
-   * @param {object} [options]
-   * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
-   *   A design to use instead of the saved one, such as an unsaved design being previewed.
-   *   Null sends no design; undefined uses the saved one.
-   * @param {import('../stripe-checkout-config').CheckoutSessionConfig | null} [options.config]
-   *   The config if it has already been read for this checkout.
-   * @param {import('../stripe-checkout-config').CollectionParams} [options.collection] What the
-   *   checkout asks the buyer for.
+   * @param {CheckoutDefinition | null} checkout How the checkout looks and what it asks the
+   *   buyer for. Null sends nothing from Ghost's settings, so Stripe uses the merchant's own.
    */
-  async _createCheckoutSession(
-    params,
-    requestOptions,
-    { design: previewed, config, collection = {} } = {},
-  ) {
-    const design = previewed !== undefined ? previewed : await this._savedDesign(config);
-    const optional = {
-      ...(design ? { branding_settings: snakeKeys(design) } : {}),
-      ...collection,
-    };
-    return this._createWithFallback(params, requestOptions, optional, previewed !== undefined);
+  async _createCheckoutSession(params, requestOptions, checkout) {
+    return this._createWithFallback(
+      params,
+      requestOptions,
+      checkoutSessionParams(checkout),
+      logRefusedDesign,
+    );
   }
 
   /**
+   * Creates the session, and again without any parameter from Ghost's settings that Stripe
+   * refuses. The retry reuses the idempotency key, which is safe because Stripe doesn't store a
+   * result for a request it rejects as invalid.
+   *
    * @private
    * @param {object} params
    * @param {object} [requestOptions]
-   * @param {object} optional Parameters from the config that the session can go without.
-   * @param {boolean} previewing Whether the design is a preview of one not saved yet.
+   * @param {object} optional Parameters from Ghost's settings that the session can go without.
+   * @param {(err: unknown) => void} onDesignRefused Called when Stripe refuses the design, before
+   *   the session is created again without it. Throwing stops the session being created.
    */
-  async _createWithFallback(params, requestOptions, optional, previewing) {
+  async _createWithFallback(params, requestOptions, optional, onDesignRefused) {
     try {
       return await this._stripe.checkout.sessions.create(
         { ...optional, ...params },
@@ -185,25 +153,15 @@ module.exports = class StripeAPI {
       );
     } catch (err) {
       if (optional.branding_settings && DesignRefusal.safeParse(err).success) {
-        if (previewing) {
-          throw new ValidationError({
-            message: 'Stripe refused this checkout design.',
-            context: err instanceof Error ? err.message : undefined,
-            property: 'design',
-          });
-        }
-        logging.error(
-          { event: { name: 'stripe_checkout.design.refused' }, err },
-          'Stripe refused the Stripe Checkout design',
-        );
+        onDesignRefused(err);
         return this._createWithFallback(
           params,
           requestOptions,
           without(optional, 'branding_settings'),
-          previewing,
+          onDesignRefused,
         );
       }
-      // Anything else from the config is something the checkout asks the buyer for.
+      // Anything else from Ghost's settings is something the checkout asks the buyer for.
       const refused = Object.keys(optional).find(
         (param) => refusalOf(param).safeParse(err).success,
       );
@@ -216,7 +174,7 @@ module.exports = class StripeAPI {
           params,
           requestOptions,
           without(optional, refused),
-          previewing,
+          onDesignRefused,
         );
       }
       throw err;
@@ -705,23 +663,77 @@ module.exports = class StripeAPI {
    * @param {string} options.customerEmail
    * @param {number} options.trialDays
    * @param {string} [options.coupon]
-   * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
-   *   Replaces the saved design, for a preview of an unsaved one. Null sends no design.
-   * @param {number} [options.expiresInSeconds] How long the checkout takes payment for, counted
-   *   from when it's created, instead of Stripe's default of a day.
-   * @param {string} [options.tierId] The tier being bought, which decides what the checkout
-   *   asks the buyer for.
-   * @param {Partial<import('../stripe-checkout-config').CheckoutCollection>} [options.collection]
-   *   Replaces the saved collected parts it names, for a preview of ones not saved yet.
+   * @param {CheckoutDefinition | null} options.checkout How the checkout looks and what it asks
+   *   the buyer for. Null sends nothing from Ghost's settings.
    *
    * @returns {Promise<ICheckoutSession>}
    */
   async createCheckoutSession(priceId, customer, options) {
+    await this._rateLimitBucket.throttle();
+    const session = await this._createCheckoutSession(
+      this._subscriptionSessionOptions(priceId, customer, options),
+      undefined,
+      options.checkout,
+    );
+
+    return session;
+  }
+
+  /**
+   * Create a Stripe Checkout Session that previews checkout settings not saved yet: the same
+   * checkout a signup by someone who isn't a member yet gets, marked as a preview. Stripe
+   * refusing its design is reported rather than hidden, as the preview must show the design
+   * it was asked to.
+   *
+   * @param {string} priceId
+   * @param {object} options
+   * @param {string} options.successUrl
+   * @param {string} options.cancelUrl
+   * @param {number} options.trialDays
+   * @param {number} options.expiresInSeconds How long the checkout takes payment for, counted
+   *   from when it's created, instead of Stripe's default of a day.
+   * @param {CheckoutDefinition} options.checkout The settings being previewed.
+   *
+   * @returns {Promise<ICheckoutSession>}
+   */
+  async createPreviewCheckoutSession(priceId, options) {
+    await this._rateLimitBucket.throttle();
+    const stripeSessionOptions = {
+      ...this._subscriptionSessionOptions(priceId, null, {
+        successUrl: options.successUrl,
+        cancelUrl: options.cancelUrl,
+        trialDays: options.trialDays,
+        metadata: { ghost_checkout_preview: true },
+      }),
+      expires_at: Math.floor(Date.now() / 1000) + options.expiresInSeconds,
+    };
+    return this._createWithFallback(
+      stripeSessionOptions,
+      undefined,
+      checkoutSessionParams(options.checkout),
+      reportRefusedDesign,
+    );
+  }
+
+  /**
+   * The parameters of a Checkout session for a new subscription.
+   *
+   * @private
+   * @param {string} priceId
+   * @param {ICustomer | null} customer
+   * @param {object} options
+   * @param {Object.<String, any>} [options.metadata]
+   * @param {string} [options.successUrl]
+   * @param {string} [options.cancelUrl]
+   * @param {string} [options.customerEmail]
+   * @param {number} [options.trialDays]
+   * @param {string} [options.coupon]
+   */
+  _subscriptionSessionOptions(priceId, customer, options) {
     const metadata = options.metadata || undefined; // https://docs.stripe.com/api/metadata some limits to how much can be passed
     const customerId = customer ? customer.id : undefined;
     const customerEmail = customer ? customer.email : options.customerEmail;
 
-    await this._rateLimitBucket.throttle();
     let discounts;
     if (options.coupon) {
       discounts = [{ coupon: options.coupon }];
@@ -769,9 +781,6 @@ module.exports = class StripeAPI {
       },
       metadata,
       discounts,
-      expires_at: options.expiresInSeconds
-        ? Math.floor(Date.now() / 1000) + options.expiresInSeconds
-        : undefined,
       /*
             line_items: [{
                 price: priceId
@@ -796,22 +805,7 @@ module.exports = class StripeAPI {
       hasCustomer: Boolean(customerId),
     });
 
-    // Read once for both the design and the collected parts. Collection only releases after
-    // the design, so nothing is read while the design flag is off.
-    const config = this.labs.isSet('stripeCheckoutDesign')
-      ? await this._readCheckoutConfig()
-      : null;
-
-    const session = await this._createCheckoutSession(stripeSessionOptions, undefined, {
-      design: options.design,
-      config,
-      collection:
-        options.tierId && this.labs.isSet(COLLECTION_FLAG)
-          ? collectionParams(config, options.tierId, options.collection)
-          : {},
-    });
-
-    return session;
+    return stripeSessionOptions;
   }
 
   /**
@@ -825,6 +819,8 @@ module.exports = class StripeAPI {
    * @param {ICustomer} [options.customer]
    * @param {string} [options.customerEmail]
    * @param {string} [options.personalNote]
+   * @param {CheckoutDefinition | null} options.checkout How the checkout looks. Null sends nothing
+   *   from Ghost's settings.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -836,6 +832,7 @@ module.exports = class StripeAPI {
     customer,
     customerEmail,
     personalNote,
+    checkout,
   }) {
     await this._rateLimitBucket.throttle();
 
@@ -888,7 +885,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._createCheckoutSession(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions, undefined, checkout);
     return session;
   }
 
@@ -907,6 +904,8 @@ module.exports = class StripeAPI {
    * @param {ICustomer|null} options.customer
    * @param {string} [options.customerEmail]
    * @param {string} options.idempotencyKey
+   * @param {CheckoutDefinition | null} options.checkout How the checkout looks. Null sends nothing
+   *   from Ghost's settings.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -922,6 +921,7 @@ module.exports = class StripeAPI {
     customer,
     customerEmail,
     idempotencyKey,
+    checkout,
   }) {
     await this._rateLimitBucket.throttle();
 
@@ -961,9 +961,11 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._createCheckoutSession(stripeSessionOptions, {
-      idempotencyKey,
-    });
+    const session = await this._createCheckoutSession(
+      stripeSessionOptions,
+      { idempotencyKey },
+      checkout,
+    );
 
     return session;
   }
@@ -976,11 +978,13 @@ module.exports = class StripeAPI {
    * @param {string} options.successUrl
    * @param {string} options.cancelUrl
    * @param {string} options.currency - 3-letter ISO code in lowercase, e.g. `usd`
+   * @param {CheckoutDefinition | null} options.checkout How the checkout looks. Null sends nothing
+   *   from Ghost's settings.
    * @returns {Promise<ICheckoutSession>}
    */
   async createCheckoutSetupSession(customer, options) {
     await this._rateLimitBucket.throttle();
-    const session = await this._createCheckoutSession({
+    const stripeSessionOptions = {
       mode: 'setup',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       payment_method_types: this.PAYMENT_METHOD_TYPES,
@@ -996,7 +1000,12 @@ module.exports = class StripeAPI {
       // Note: this is required for dynamic payment methods
       // https://docs.stripe.com/api/checkout/sessions/create#create_checkout_session-currency
       currency: this.labs.isSet('additionalPaymentMethods') ? options.currency : undefined,
-    });
+    };
+    const session = await this._createCheckoutSession(
+      stripeSessionOptions,
+      undefined,
+      options.checkout,
+    );
 
     return session;
   }
@@ -1023,7 +1032,7 @@ module.exports = class StripeAPI {
         metadata: { ghost_checkout_preview: true },
       },
       undefined,
-      { design: null },
+      null,
     );
 
     try {
