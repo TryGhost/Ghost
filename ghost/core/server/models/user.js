@@ -1,6 +1,6 @@
 const validator = require('@tryghost/validator');
 const config = require('../../shared/config');
-const { lockTrialUsage, checkTrialStaffLimit } = require('../lib/staff-invite-usage');
+const { lockStaffInvites, checkTrialStaffLimit } = require('../lib/staff-invite-usage');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
@@ -673,7 +673,7 @@ const User = ghostBookshelf.Model.extend(
         return this.addWithRoles(dataToClone, unfilteredOptions);
       }
       const create = async (transacting) => {
-        await lockTrialUsage(transacting);
+        await lockStaffInvites(transacting);
         await checkTrialStaffLimit(
           transacting,
           policy.maxStaff,

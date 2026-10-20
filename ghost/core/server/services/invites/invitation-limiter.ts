@@ -3,9 +3,9 @@ import errors from '@tryghost/errors';
 import { MaxLimit } from '@tryghost/limit-service';
 
 import {
-  lockTrialUsage,
+  lockStaffInvites,
   checkTrialStaffLimit,
-  TRIAL_USAGE_KEY,
+  STAFF_INVITE_RATE_KEY,
 } from '../../lib/staff-invite-usage';
 
 export interface InvitationLimits {
@@ -13,8 +13,6 @@ export interface InvitationLimits {
   maxInvites: number;
   minIntervalSeconds: number;
 }
-
-const RATE_KEY = 'staff-invites:requests';
 
 /** A host-enabled trial allowance, independent of the mutable invitation list. */
 export default class InvitationLimiter {
@@ -58,24 +56,14 @@ export default class InvitationLimiter {
       return 0;
     }
     return this.knex.transaction(async (transaction) => {
-      await transaction('brute')
-        .insert({
-          key: RATE_KEY,
-          firstRequest: 0,
-          lastRequest: 0,
-          lifetime: 0,
-          count: 0,
-        })
-        .onConflict('key')
-        .merge(['key']);
-      const row = await transaction('brute').where({ key: RATE_KEY }).forUpdate().first();
+      const row = await lockStaffInvites(transaction);
       const now = this.now();
       const nextRequest = Number(row.lastRequest) + limits.minIntervalSeconds * 1000;
       if (Number(row.count) > 0 && now < nextRequest) {
         return Math.ceil((nextRequest - now) / 1000);
       }
       await transaction('brute')
-        .where({ key: RATE_KEY })
+        .where({ key: STAFF_INVITE_RATE_KEY })
         .update({
           firstRequest: now,
           lastRequest: now,
@@ -88,7 +76,7 @@ export default class InvitationLimiter {
 
   async lockStaffUsage(transaction: Knex.Transaction): Promise<void> {
     if (this.policy()) {
-      await lockTrialUsage(transaction);
+      await lockStaffInvites(transaction);
     }
   }
 
@@ -98,7 +86,7 @@ export default class InvitationLimiter {
       return prepare();
     }
     return this.knex.transaction(async (transaction) => {
-      const usage = await lockTrialUsage(transaction);
+      await lockStaffInvites(transaction);
       const helpLink = this.getUpgradeUrl();
       const emailLimit = new MaxLimit({
         name: 'staffInvites',
@@ -106,16 +94,36 @@ export default class InvitationLimiter {
         helpLink,
         config: {
           max: limits.maxInvites,
-          currentCountQuery: async () => Number(usage.count),
+          // Only the threshold matters. The (resource_type, event) index lets
+          // this stop after maxInvites entries without counting the full log.
+          currentCountQuery: async () => {
+            const query = transaction('actions')
+              .select('id')
+              .where({ resource_type: 'invite', event: 'added' })
+              .limit(limits.maxInvites)
+              .forUpdate();
+            if (['mysql', 'mysql2'].includes(transaction.client.config.client)) {
+              // With skewed histories MySQL can prefer the resource-id index
+              // and scan thousands of edited/deleted entries before 15 adds.
+              query.from(
+                transaction.raw('?? FORCE INDEX (??)', [
+                  'actions',
+                  'actions_resource_type_event_index',
+                ]),
+              );
+            }
+            const actions = await query;
+            return actions.length;
+          },
           error:
             'Your trial allows {{max}} staff invitation emails in total, including resends. Upgrade to send more invitations.',
         },
       });
       await emailLimit.errorIfWouldGoOverLimit();
       await checkTrialStaffLimit(transaction, limits.maxStaff, helpLink, email);
-      const result = await prepare(transaction);
-      await transaction('staff_invite_usage').where({ key: TRIAL_USAGE_KEY }).increment('count', 1);
-      return result;
+      // Invite.onCreated writes the quota's audit entry inside this transaction.
+      // Preparation or audit failures roll back both records before mail is sent.
+      return prepare(transaction);
     });
   }
 }

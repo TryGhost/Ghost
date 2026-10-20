@@ -22,20 +22,32 @@ and suspended users), and pending invitations. Resending an existing invitation
 uses the same seat. Existing sites above the cap retain their staff; subsequent
 invitations are checked against the cap. Imports use the same seat guard. Paid-plan role exemptions are unchanged.
 
-The `staff_invite_usage` table holds one `trial` row per site database. Its count
-never expires. All roles, authenticated staff, API keys and resends share the
-allowance. Deleting staff, revoking invitations, extending the trial, changing
-domains and restarting Ghost do not restore it. Removing the policy on upgrade
-stops enforcement without deleting the count. Reapplying it does not grant a
-fresh allowance. Existing trials start counting at rollout; past sends are not
-reconstructed from the current invitation list.
+The existing `actions` audit log is the durable allowance: each
+`resource_type = 'invite', event = 'added'` entry consumes one invitation.
+Resending replaces the invitation and records another creation. All roles,
+authenticated staff and API keys share the allowance. Deleting staff, revoking
+invitations, extending the trial, changing domains and restarting Ghost do not
+remove those entries. Upgrading stops enforcement without deleting history;
+reapplying the policy does not grant a fresh allowance.
 
-Admission locks this row before checking the standard `MaxLimit` rules. The
-email reservation and invitation replacement commit together. Invalid
-preparation rolls both back, preserving the original invitation. Mail is sent
-after commit. A transport failure retains its reservation because a timeout
-cannot establish that the provider did not accept the message. These are
-admitted sending attempts, not confirmed deliveries.
+Existing invitation audit entries count immediately on rollout, including
+entries for invitations that no longer exist. This conservatively counts all
+recorded invitation creations, including any earlier paid period, rather than
+using a moving date window. Historical audit failures cannot be reconstructed.
+Audit entries record creation attempts, not confirmed delivery.
+
+Admission locks the existing `brute` request-limiter row before checking the
+standard `MaxLimit` rules. The query reads at most `maxInvites` matching entries
+using the `(resource_type, event)` index, without counting the entire log or
+parsing JSON. MySQL explicitly uses this index: on skewed invitation histories,
+its optimizer can otherwise prefer the resource-ID index and scan many edits
+before reaching the creation entries. The invitation model makes only trial invitation creation audit
+writes mandatory and transactional; the shared best-effort audit logger and
+other events remain unchanged. The audit reservation and invitation replacement
+commit together. Invalid preparation or audit failure rolls both back,
+preserving the original invitation. Mail is sent after commit. A transport
+failure retains its reservation because a timeout cannot establish that the
+provider did not accept the message.
 
 ## Request rate and errors
 
@@ -44,7 +56,8 @@ the entire trial site, regardless of IP, recipient or API key. It uses a
 namespaced row in the existing `brute` table with a transaction to serialize
 concurrent admissions, including the first requests. Rejected requests do not
 extend the wait. Invalid authenticated requests consume the minute, but do not
-consume the email allowance. GET and DELETE requests remain unaffected.
+consume the email allowance. Expiring or cleaning rate-limit rows cannot reset
+the audit history. GET and DELETE requests remain unaffected.
 
 The rate limiter returns HTTP 429, `STAFF_INVITE_RATE_LIMIT`, and `Retry-After`.
 The staff and email caps use the existing HTTP 403 `HostLimitError` and explain
@@ -54,8 +67,14 @@ without the policy retain their legacy resend flow.
 
 ## Rollout
 
-Deploy the schema migration, Ghost enforcement and matching Admin before
+Deploy the actions index migration, Ghost enforcement and matching Admin before
 turning on the Daisy/Zuul policy. Backport or upgrade older supported Ghost
 versions before enabling it there. Regenerate existing trial configurations,
 and verify that the normal upgrade flow regenerates configuration without the
 trial policy. No production policy is enabled merely by pushing these branches.
+
+Performance-test the index migration on representative staging database servers
+before rollout: it indexes the existing audit table, which can be large. Verify
+the bounded query with `EXPLAIN ANALYZE` on both normal and abuse-heavy histories.
+Audit retention must preserve invitation creation entries while a site's trial
+allowance can be enforced; pruning them would restore allowance.

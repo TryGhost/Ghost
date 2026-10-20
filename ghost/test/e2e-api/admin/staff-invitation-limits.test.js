@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const sinon = require('sinon');
+const ObjectId = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
@@ -25,7 +26,7 @@ describe('Trial staff invitation limits', function () {
 
   beforeEach(async function () {
     await dbUtils.truncate('brute');
-    await dbUtils.truncate('staff_invite_usage');
+    await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
     config.set('hostSettings:staffInvites', {
       maxStaff: 10,
@@ -65,6 +66,10 @@ describe('Trial staff invitation limits', function () {
       .update({ lastRequest: Date.now() - 60_001 });
   }
 
+  function invitationActions() {
+    return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
+  }
+
   it('counts Contributor resends and stops the sixteenth email with an upgrade message', async function () {
     for (let index = 0; index < 15; index++) {
       await invite('quota@example.com').expect(201);
@@ -76,6 +81,11 @@ describe('Trial staff invitation limits', function () {
     assert.match(rejected.body.errors[0].context, /15 staff invitation emails.*Upgrade/);
     assert.equal((await models.Invite.findOne({ email: 'quota@example.com' })).id, original.id);
     sinon.assert.callCount(send, 15);
+    assert.equal(
+      (await invitationActions()).length,
+      15,
+      'one audit entry per send, including resends',
+    );
   });
 
   it('counts the owner, existing users and pending Contributors toward ten seats', async function () {
@@ -102,12 +112,15 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.calledOnce(send);
     await nextMinute();
     await invite('other@example.com', 'Author').expect(201);
+    const recorded = await invitationActions();
+    assert.equal(recorded.length, 2);
+    assert.deepEqual(recorded.map((action) => action.actor_type).sort(), ['integration', 'user']);
   });
 
   it('rate limits invalid authenticated requests without consuming the email allowance', async function () {
     await invite('not-an-email').expect(422);
     await invite('valid@example.com').expect(429);
-    assert.equal(await db.knex('staff_invite_usage').first(), undefined);
+    assert.deepEqual(await invitationActions(), []);
     sinon.assert.notCalled(send);
   });
 
@@ -138,19 +151,30 @@ describe('Trial staff invitation limits', function () {
   it('retains a reservation when mail transport fails', async function () {
     send.rejects(new errors.EmailError({ message: 'Transport timed out' }));
     await invite('transport@example.com').expect(500);
-    assert.equal((await db.knex('staff_invite_usage').first()).count, 1);
+    assert.equal((await invitationActions()).length, 1);
     await invite('transport@example.com').expect(429);
     sinon.assert.calledOnce(send);
   });
 
   it('removes trial caps and rate limiting when the host removes the trial policy', async function () {
-    await db.knex('staff_invite_usage').insert({ key: 'trial', count: 15 });
+    const actor = await db.knex('users').first();
+    await db.knex('actions').insert(
+      Array.from({ length: 15 }, () => ({
+        id: ObjectId().toHexString(),
+        resource_type: 'invite',
+        resource_id: ObjectId().toHexString(),
+        event: 'added',
+        actor_type: 'user',
+        actor_id: actor.id,
+        created_at: new Date(),
+      })),
+    );
     config.set('hostSettings:staffInvites', undefined);
     await invite('paid-1@example.com').expect(201);
     await invite('paid-2@example.com').expect(201);
     sinon.assert.calledTwice(send);
   });
-  it('enforces the same seat cap for imported staff and keeps the email counter unchanged', async function () {
+  it('enforces the same seat cap for imported staff without consuming invitations', async function () {
     const users = await db.knex('users').count('id', { as: 'count' }).first();
     const remaining = 10 - Number(users.count);
     for (let i = 0; i < remaining; i++) {
@@ -172,7 +196,7 @@ describe('Trial staff invitation limits', function () {
       ),
       /10 staff/,
     );
-    assert.equal((await db.knex('staff_invite_usage').first()).count, 0);
+    assert.deepEqual(await invitationActions(), []);
     sinon.assert.notCalled(send);
   });
 
@@ -200,6 +224,59 @@ describe('Trial staff invitation limits', function () {
       Number((await db.knex('users').count('id', { as: 'count' }).first()).count) +
       Number((await db.knex('invites').count('id', { as: 'count' }).first()).count);
     assert.equal(total, 10);
-    assert.equal((await db.knex('staff_invite_usage').first()).count, remaining);
+    assert.equal((await invitationActions()).length, remaining);
+  });
+
+  it('commits the audit entry before attempting delivery', async function () {
+    send.callsFake(async () => {
+      const recorded = await invitationActions();
+      assert.equal(recorded.length, 1);
+      assert.equal(
+        recorded[0].resource_id,
+        (await models.Invite.findOne({ email: 'durable@example.com' })).id,
+      );
+      return 'Mail is disabled';
+    });
+    await invite('durable@example.com').expect(201);
+    sinon.assert.calledOnce(send);
+  });
+
+  it('does not send or create an invitation if its audit entry cannot be saved', async function () {
+    sinon
+      .stub(models.Action, 'add')
+      .rejects(new errors.InternalServerError({ message: 'Audit insert failed' }));
+    await invite('audit-failed@example.com').expect(500);
+    assert.equal(await models.Invite.findOne({ email: 'audit-failed@example.com' }), null);
+    assert.deepEqual(await invitationActions(), []);
+    sinon.assert.notCalled(send);
+  });
+
+  it('preserves the original invitation and allowance when recording a resend fails', async function () {
+    await invite('resend-audit@example.com').expect(201);
+    const original = await models.Invite.findOne({ email: 'resend-audit@example.com' });
+    await nextMinute();
+    const recordAction = models.Action.add;
+    sinon.stub(models.Action, 'add').callsFake(function (action, options) {
+      if (action.resource_type === 'invite' && action.event === 'added') {
+        return Promise.reject(new errors.InternalServerError({ message: 'Audit insert failed' }));
+      }
+      return recordAction.call(this, action, options);
+    });
+    await invite('resend-audit@example.com').expect(500);
+    const retained = await models.Invite.findOne({ email: 'resend-audit@example.com' });
+    assert.equal(retained.id, original.id);
+    assert.equal(retained.get('token'), original.get('token'));
+    assert.equal((await invitationActions()).length, 1);
+    sinon.assert.calledOnce(send);
+  });
+
+  it('retains best-effort audit logging when the trial policy is absent', async function () {
+    config.set('hostSettings:staffInvites', undefined);
+    sinon
+      .stub(models.Action, 'add')
+      .rejects(new errors.InternalServerError({ message: 'Audit insert failed' }));
+    await invite('paid-audit@example.com').expect(201);
+    assert.deepEqual(await invitationActions(), []);
+    sinon.assert.calledOnce(send);
   });
 });
