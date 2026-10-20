@@ -204,23 +204,24 @@ keeps its first line level with the back link and grows downward.
 
 Below Tailwind's `sm` breakpoint the status stays on the header row beside the
 back link, and the header's actions move to the bottom bar: the word count sits
-in the bottom-left corner and the actions in the bottom right. The bar's rightmost action, Publish, Update or Save, is a primary
-button there, and the bar names no shortcuts,
-which still work. `editor-header-actions.tsx` builds one list of controls and,
-below the breakpoint, portals them into a slot `post-editor.tsx` keeps in its
-footer, so the header and the bar share order, disabled states, refusals and
-flows. Only the controls move; the flows they open stay mounted, so crossing
-the breakpoint keeps an open flow. A failed publish inputs load shows its
-message and Retry there too. While the on-screen keyboard is open the bar's
-actions are hidden with the word count.
+in the bottom-left corner and the actions in the bottom right. The bar's
+rightmost action, Publish, Update or Save, is a primary button there, and the
+bar names no shortcuts, which still work. `editor-header-actions.tsx` builds one
+list of controls and, below the breakpoint, portals them into a slot
+`post-editor.tsx` keeps in its footer, so the header and the bar share order,
+disabled states, refusals and flows. Only the controls move; the flows they open
+stay mounted, so crossing the breakpoint keeps an open flow. A failed publish
+inputs load shows its message and Retry there too. While the on-screen keyboard
+is open the bar's actions are hidden with the word count.
 
 ## Editor font
 
-The settings panel's Editor font row offers a choice of three fonts to read the post in while editing (see the
-[settings README](settings/README.md#editor-font)): the editor's own serif
-(Georgia), sans (Inter) and mono (the system's monospace font: SF Mono on
-Apple devices, Consolas on Windows). Only the editor changes; the theme, the
-preview and the email never do.
+The settings panel's Editor font row offers a choice of three fonts to read the
+post in while editing (see the [settings
+README](settings/README.md#editor-font)): the editor's own serif (Georgia), sans
+(Inter) and mono (the system's monospace font: SF Mono on Apple devices,
+Consolas on Windows). Only the editor changes; the theme, the preview and the
+email never do.
 
 A choice applies at once, so the writer can compare, and is saved as it is
 made, as `editor.bodyFont` in the user's preferences, so it follows the writer
