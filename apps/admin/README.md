@@ -201,8 +201,8 @@ on live automations. The badge describes the current editing draft, not the
 published revision. Historical run cards have no draft reminder.
 
 The email modal keeps changes local until Save; discarding changes leaves the
-canvas unchanged. Koenig highlights body reminders, and the modal also identifies
-subject/body reminders. Publication and reactivation use the existing confirmation
+canvas unchanged. Koenig highlights body reminders using the same markers as
+posts. Publication and reactivation use the existing confirmation
 to list affected emails and offer Back to editing or Publish anyway. Updating a
 live automation retains the warning about members already in progress. There is
 no persisted acknowledgment: each confirmation describes the current draft, and

@@ -30,8 +30,6 @@ import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePreviewAutomationEmail } from '@tryghost/admin-x-framework/api/automations';
 import type { EmailModalMode } from '@/automations/components/types';
 import { inspectEmailTk } from '@/automations/utils/email-tk';
-import { EmailTkIndicator } from '@/automations/components/email-tk-indicator';
-import { Inline } from '@tryghost/shade/primitives';
 
 interface EmailPreviewModalContentProps {
   title: string;
@@ -395,21 +393,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             title="Edit email"
           >
             <div className="flex grow flex-col items-center p-6">
-              <Inline
-                aria-live="polite"
-                className="w-full max-w-[600px] text-sm text-muted-foreground"
-                gap="sm"
-              >
-                <EmailTkIndicator inspection={tk} />
-                {(tk.subject || tk.body) && (
-                  <span>Unresolved TK reminders. You can save this email and finish it later.</span>
-                )}
-                {tk.contentError && (
-                  <span role="alert">
-                    Email content could not be read. Check the email before publishing.
-                  </span>
-                )}
-              </Inline>
+              {tk.contentError && (
+                <span className="w-full max-w-[600px] text-sm text-muted-foreground" role="alert">
+                  Email content could not be read. Check the email before publishing.
+                </span>
+              )}
               {mode === 'preview' && (
                 <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
                   <div className="flex flex-col gap-2">

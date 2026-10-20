@@ -301,9 +301,7 @@ describe('Automation TK reminders', () => {
     await boot();
     await card().getByRole('button', { name: 'Edit email content' }).click();
     await modal().getByRole('textbox').fill('TK draft');
-    await expect
-      .element(modal().getByRole('img', { name: /Unresolved TK reminders/ }))
-      .toBeVisible();
+    await expect.poll(() => modal().element().querySelector('[data-kg-tk="true"]')).not.toBeNull();
     await modal().getByRole('button', { name: 'Close', exact: true }).click();
     await dialog().getByRole('button', { name: 'Discard', exact: true }).click();
     await expect(modal()).toHaveCount(0);
