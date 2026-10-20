@@ -1354,7 +1354,7 @@ describe('Member Custom Fields Admin API', function () {
         );
       });
 
-      it("gives a sub-field failure the sub-field's own limit, not the field's", async function () {
+      it("gives a part failure the part's own limit, not the field's", async function () {
         // postal_code is bounded well under the 255 its siblings carry, and the
         // reason has to name the bound that actually stopped the save.
         const field = await createField({ name: 'Home address', type: 'address' });
@@ -1778,7 +1778,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
     });
 
-    it('points at the offending sub-field of a composite value', async function () {
+    it('points at the offending part of a composite value', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
@@ -1791,7 +1791,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(body.errors[0].property, `metafields.custom.${field.key}.country`);
     });
 
-    it('round-trips an address that omits the sub-fields its country has no use for', async function () {
+    it('round-trips an address that omits the parts its country has no use for', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
       // Hong Kong has no postal code, so an address without one is complete.
@@ -1967,7 +1967,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal((await readValues(memberId))[field.key].length, 21845);
     });
 
-    it('rejects an over-long address sub-field', async function () {
+    it('rejects an over-long address part', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 

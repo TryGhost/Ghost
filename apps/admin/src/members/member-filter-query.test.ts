@@ -441,7 +441,7 @@ describe('member-filter-query - custom fields', () => {
   const cases: Array<{
     field: string;
     operator: string;
-    values: [subfield: string, ...values: string[]];
+    values: [part: string, ...values: string[]];
     nql: string;
   }> = [
     {

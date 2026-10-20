@@ -16,21 +16,21 @@ const composite = { line1: 'a', line2: 'b', city: 'c', state: 'd', postal_code: 
 const labelled: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
-  subFields: composite,
+  partLabels: composite,
 };
 
 const missingPart: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
   // @ts-expect-error a composite missing one of the parts its value schema declares
-  subFields: { line1: 'a', line2: 'b', city: 'c', state: 'd', country: 'f' },
+  partLabels: { line1: 'a', line2: 'b', city: 'c', state: 'd', country: 'f' },
 };
 
 const unknownPart: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
   // @ts-expect-error a composite naming a part its value schema does not declare
-  subFields: { ...composite, county: 'g' },
+  partLabels: { ...composite, county: 'g' },
 };
 
 // @ts-expect-error a composite with no part labels at all
@@ -40,7 +40,7 @@ const scalarWithParts: FieldTypePresentation<'short_text'> = {
   label: 'Short text',
   input: 'text',
   // @ts-expect-error a type whose value is one thing has no parts to name
-  subFields: { line1: 'a' },
+  partLabels: { line1: 'a' },
 };
 
 // A run is how the one-line form is told which parts read together. It names parts rather
@@ -95,7 +95,7 @@ describe('member custom fields api helpers', () => {
       ]);
     });
 
-    it('expands a composite field into one target per sub-field', () => {
+    it('expands a composite field into one target per part', () => {
       const columns = memberCustomFieldCsvColumns([
         field({ key: 'shipping_address', name: 'Shipping Address', type: 'address' }),
       ]);

@@ -57,10 +57,10 @@ const PART_SEMANTICS: { [T in PartFilterType]: () => ValueSemantics<string> } = 
 
 export function partFilterType(
   type: MemberCustomField['type'],
-  subfield: string,
+  part: string,
 ): PartFilterType | undefined {
-  const part = memberCustomFieldParts(type)?.find((candidate) => candidate.key === subfield);
-  return part ? PART_FILTER_TYPE[part.type] : undefined;
+  const declared = memberCustomFieldParts(type)?.find((candidate) => candidate.key === part);
+  return declared ? PART_FILTER_TYPE[declared.type] : undefined;
 }
 
 function usedPartTypes(type: MemberCustomField['type']): readonly PartFilterType[] {

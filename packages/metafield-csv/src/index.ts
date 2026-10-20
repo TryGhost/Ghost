@@ -1,5 +1,5 @@
 import * as z from 'zod/mini';
-import { subFieldsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import { partsOf, type FieldType } from '@tryghost/metafield-types/structure';
 import {
   IdentityTextSchema,
   type Key,
@@ -13,9 +13,9 @@ import {
  * How a field's value maps onto CSV columns.
  *
  * CSV is flat and a value need not be, so a composite occupies one column per
- * sub-field. That shape is derived from the type's own value schema rather than
- * declared alongside it: the two cannot drift, and it stays correct as sub-fields
- * are added, removed, or made optional — an optional sub-field is still a column,
+ * part. That shape is derived from the type's own value schema rather than
+ * declared alongside it: the two cannot drift, and it stays correct as parts
+ * are added, removed, or made optional — an optional part is still a column,
  * it just holds an empty cell more often.
  *
  * The same column names are the vocabulary the importer maps onto, so an exported
@@ -71,16 +71,16 @@ function isBlank(cell: string): boolean {
 export interface CsvFieldColumn {
   column: string;
   /** The part this column holds, or null where the field's whole value is one column. */
-  subField: string | null;
+  part: string | null;
 }
 
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  const subFields = subFieldsOf(field.type);
-  return subFields
-    ? subFields.map((sub) => ({ column: columnOf(field, sub), subField: sub }))
-    : [{ column: columnOf(field), subField: null }];
+  const parts = partsOf(field.type);
+  return parts
+    ? parts.map((part) => ({ column: columnOf(field, part), part }))
+    : [{ column: columnOf(field), part: null }];
 }
 
 export function isMetafieldColumn(column: string): boolean {
@@ -93,9 +93,9 @@ export function isMetafieldColumn(column: string): boolean {
 function cellFor(
   row: Record<string, unknown>,
   field: CsvField,
-  tail: string | null,
+  part: string | null,
 ): string | undefined {
-  const cell = row[columnOf(field, tail)];
+  const cell = row[columnOf(field, part)];
   return typeof cell === 'string' ? cell : undefined;
 }
 
@@ -107,16 +107,16 @@ export function csvCellsForFields(
 
   for (const field of fields) {
     const value = values[field.namespace]?.[field.key];
-    const subFields = subFieldsOf(field.type);
+    const parts = partsOf(field.type);
 
-    if (!subFields) {
+    if (!parts) {
       cells[columnOf(field)] = toCell(value);
       continue;
     }
 
     const composite = (value ?? {}) as Record<string, unknown>;
-    for (const sub of subFields) {
-      cells[columnOf(field, sub)] = toCell(composite[sub]);
+    for (const part of parts) {
+      cells[columnOf(field, part)] = toCell(composite[part]);
     }
   }
 
@@ -138,9 +138,9 @@ export function csvCellsForFields(
  * note, so re-importing a partly-filled export can't wipe values a publisher didn't
  * touch. A composite whose every cell is blank is omitted too, because the export writes
  * "no address" and an all-blank address identically; one with any filled cell is read
- * from its non-blank cells and validated whole (a malformed sub-field fails the row).
- * No sub-field is required, so a row carrying only some of an address reads as only
- * those sub-fields. A blank sub-field cell reads as no data for that sub-field, the
+ * from its non-blank cells and validated whole (a malformed part fails the row).
+ * No part is required, so a row carrying only some of an address reads as only
+ * those parts. A blank part's cell reads as no data for that part, the
  * same way a blank cell reads as no data for a whole field.
  */
 export function fieldValuesFromCsvRow(
@@ -151,9 +151,9 @@ export function fieldValuesFromCsvRow(
   const values: Record<string, unknown> = {};
 
   for (const field of fields) {
-    const subFields = subFieldsOf(field.type);
+    const parts = partsOf(field.type);
 
-    if (!subFields) {
+    if (!parts) {
       const cell = cellFor(row, field, null);
       if (cell !== undefined) {
         const decoded = decodeCell(cell);
@@ -166,15 +166,15 @@ export function fieldValuesFromCsvRow(
 
     let anyColumnPresent = false;
     const composite: Record<string, string> = {};
-    for (const sub of subFields) {
-      const cell = cellFor(row, field, sub);
+    for (const part of parts) {
+      const cell = cellFor(row, field, part);
       if (cell === undefined) {
         continue;
       }
       anyColumnPresent = true;
       const decoded = decodeCell(cell);
       if (!isBlank(decoded)) {
-        composite[sub] = decoded;
+        composite[part] = decoded;
       }
     }
 

@@ -4,7 +4,7 @@ const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-
 const models = require('../../../core/server/models');
 
 // Filtering members by their custom field values over the real browse endpoint. Values are
-// stored one row per leaf — a composite like an address stores one row per part — and a
+// stored one row per value — a composite like an address stores one row per part — and a
 // filter names the field by namespace and key (plus part), pairing it with a value in one
 // group: (metafields.key:'custom.company'+metafields.value:'Ghost').
 describe('Members filtering by custom fields', function () {
@@ -132,7 +132,7 @@ describe('Members filtering by custom fields', function () {
   });
 
   describe('address fields', function () {
-    it('filters by a subfield inside the address (country)', async function () {
+    it('filters by a part inside the address (country)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const uk = await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -153,7 +153,7 @@ describe('Members filtering by custom fields', function () {
       assert.deepEqual(matched, [uk.email]);
     });
 
-    it('filters a subfield by any of a list of values (is any of)', async function () {
+    it('filters a part by any of a list of values (is any of)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const uk = await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -182,7 +182,7 @@ describe('Members filtering by custom fields', function () {
       assert.deepEqual(matched.sort(), [uk.email, de.email].sort());
     });
 
-    it('excludes a subfield holding any of a list of values (is none of)', async function () {
+    it('excludes a part holding any of a list of values (is none of)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -222,7 +222,7 @@ describe('Members filtering by custom fields', function () {
       assert.deepEqual(matched, [noAddress.email]);
     });
 
-    it('finds members who have a value for a subfield (part is set)', async function () {
+    it('finds members who have a value for a part (part is set)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const withCountry = await createMember({
         shipping_address: { city: 'London', country: 'GB' },
@@ -234,7 +234,7 @@ describe('Members filtering by custom fields', function () {
       assert.deepEqual(matched, [withCountry.email]);
     });
 
-    it('finds members missing a subfield (part is not set), including those with no address', async function () {
+    it('finds members missing a part (part is not set), including those with no address', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       await createMember({ shipping_address: { city: 'London', country: 'GB' } });
       const cityOnly = await createMember({ shipping_address: { city: 'Boston' } });
@@ -244,7 +244,7 @@ describe('Members filtering by custom fields', function () {
       assert.deepEqual(matched.sort(), [cityOnly.email, noAddress.email].sort());
     });
 
-    it('matches a subfield case-insensitively (contains)', async function () {
+    it('matches a part case-insensitively (contains)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const london = await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -296,7 +296,7 @@ describe('Members filtering by custom fields', function () {
     // "country is not GB" asks for members who HAVE an address whose country
     // isn't GB. A member with the GB address is excluded, and so is a member with
     // no address at all — the key discriminator requires the field to be present.
-    it('excludes an address subfield value (is-not) and members with no address', async function () {
+    it('excludes an address part value (is-not) and members with no address', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const us = await createMember({
         shipping_address: {
@@ -331,7 +331,7 @@ describe('Members filtering by custom fields', function () {
 
   describe('invalid grammar', function () {
     // A value or path clause names no field on its own — it means something only paired
-    // with a key in the same leaf, which arrives as a group. An unpaired one is rejected
+    // with a key for the same value, which arrives as a group. An unpaired one is rejected
     // rather than passed through to a storage column that does not exist.
     it('rejects a value clause with no field key', async function () {
       await agent
@@ -345,7 +345,7 @@ describe('Members filtering by custom fields', function () {
         .expectStatus(400);
     });
 
-    // A recognised (key + …) compound that also carries a clause naming no leaf
+    // A recognised (key + …) compound that also carries a clause naming no value
     // column is rejected rather than silently dropped, which would leave a wider
     // match on the key alone.
     it('rejects an unsupported clause inside a field compound', async function () {
@@ -401,7 +401,7 @@ describe('Members filtering by custom fields', function () {
 
     // Two whole-field is-set filters carry no value, so neither needs a group of its
     // own and they arrive as one flat conjunction of key clauses. That reads as a
-    // compound describing a single leaf unless the transformer counts the keys.
+    // compound describing a single value unless the transformer counts the keys.
     it('combines two whole-field is-set filters using AND', async function () {
       await createField({ name: 'Company' });
       await createField({ name: 'Industry' });

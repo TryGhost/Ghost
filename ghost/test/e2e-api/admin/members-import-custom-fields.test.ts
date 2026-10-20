@@ -67,7 +67,7 @@ describe('Members import — custom fields', function () {
 
   // The rows behind a member's values, which is the only place the storage model is
   // visible: the API hands back an assembled value either way.
-  const storedLeaves = async (
+  const storedRows = async (
     email: string,
   ): Promise<Array<{ path: string; value_text: string }>> => {
     const member = await findMember(email);
@@ -163,7 +163,7 @@ describe('Members import — custom fields', function () {
 
     const member = await findMember(email);
     assert.equal(member.metafields?.custom?.[key], undefined);
-    assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
+    assert.deepEqual(await storedRows(email), [], 'nothing was written for the emptied column');
   });
 
   // The same column mapped and then emptied, so the emptying is what changes the outcome
@@ -197,7 +197,7 @@ describe('Members import — custom fields', function () {
     );
   });
 
-  it('reads an address from its sub-field columns', async function () {
+  it('reads an address from its part columns', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address@example.com';
 
@@ -220,9 +220,9 @@ describe('Members import — custom fields', function () {
     });
   });
 
-  // No sub-field is required, so a spreadsheet carrying only part of an address
+  // No part is required, so a spreadsheet carrying only part of an address
   // imports the part it has instead of failing the row.
-  it('imports a row whose address fills only some sub-fields', async function () {
+  it('imports a row whose address fills only some parts', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-partial-address@example.com';
 
@@ -234,8 +234,8 @@ describe('Members import — custom fields', function () {
     assert.deepEqual(member.metafields?.custom?.[key], { city: 'London' });
   });
 
-  // The sub-field equivalent of the blank-cell rule above: a sub-field is a field, so a
-  // row writes the ones it fills and leaves the rest alone. Without this a file naming
+  // The blank-cell rule above, for parts: each part is read like a field of its own, so a
+  // row writes the parts it fills and leaves the rest alone. Without this a file naming
   // one column would replace the whole address, clearing five it never mentioned.
   it('leaves the rest of a stored address alone when a file names only some of its columns', async function () {
     const key = await createField('Shipping Address', 'address');
@@ -264,10 +264,10 @@ describe('Members import — custom fields', function () {
   });
 
   // The case worth pinning, because it surprises people: emptying a cell does not clear
-  // the stored sub-field. A sub-field is a field, and a blank cell reads as "no data for
+  // the stored part. A part is read like a field of its own, and a blank cell reads as "no data for
   // this row" there exactly as it does for a blank `name` column. No field, core or
   // custom, can be cleared through an import.
-  it('keeps a stored sub-field when its column is present but blank', async function () {
+  it('keeps a stored part when its column is present but blank', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address-blank-cell@example.com';
     const columns = ['line1', 'city', 'postal_code', 'country']
@@ -324,13 +324,13 @@ describe('Members import — custom fields', function () {
   // two cases look identical.
   it('writes one row per part, and touches only the parts a file names', async function () {
     const key = await createField('Shipping Address', 'address');
-    const email = 'cf-leaf-rows@example.com';
+    const email = 'cf-value-rows@example.com';
     const columns = ['line1', 'city', 'country']
       .map((sub) => `metafields.custom.${key}.${sub}`)
       .join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London,GB\n`);
-    assert.deepEqual(await storedLeaves(email), [
+    assert.deepEqual(await storedRows(email), [
       { path: 'city', value_text: 'London' },
       { path: 'country', value_text: 'GB' },
       { path: 'line1', value_text: '1 High Street' },
@@ -338,7 +338,7 @@ describe('Members import — custom fields', function () {
 
     await importCSV(`email,metafields.custom.${key}.city\n${email},Bristol\n`);
     assert.deepEqual(
-      await storedLeaves(email),
+      await storedRows(email),
       [
         { path: 'city', value_text: 'Bristol' },
         { path: 'country', value_text: 'GB' },
@@ -349,7 +349,7 @@ describe('Members import — custom fields', function () {
   });
 
   // A composite can still be invalid, and when it is the whole row fails like any other.
-  it('fails a row whose address has a malformed sub-field', async function () {
+  it('fails a row whose address has a malformed part', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-bad-address@example.com';
 
@@ -357,7 +357,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 0);
     assert.equal(res.body.meta.stats.invalid.length, 1);
-    // Read next to a spreadsheet, so it names the column down to the sub-field.
+    // Read next to a spreadsheet, so it names the column down to the part.
     assert.equal(
       res.body.meta.stats.invalid[0].error,
       `metafields.custom.${key}.country: Enter a 2-letter country code, like US.`,

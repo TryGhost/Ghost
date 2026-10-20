@@ -16,13 +16,12 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { CUSTOM_NAMESPACE, IdentityTextSchema } from '@tryghost/metafield-types/identity';
-import { pathOf } from './storage';
+import { ROOT_PATH, pathOf } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
 const KEY_ATTRIBUTE = `${PREFIX}key`;
 const VALUE_ATTRIBUTE = `${PREFIX}value`;
-const ROOT_PATH = '';
 
 type QueryNode = Record<string, unknown>;
 
@@ -46,11 +45,11 @@ function isMetafieldClause(node: unknown): node is QueryNode {
 }
 
 // A grouped compound: an $and whose clauses all target the relation and name exactly one
-// `key`. Its clauses describe one leaf row.
+// `key`. Its clauses describe one value row.
 //
 // Exactly one, not at least one: two whole-field filters ANDed together arrive as a flat
 // `key:'a'+key:'b'`, since a bare key clause needs no group of its own. That is two
-// filters — a member with a value for both — not one leaf that is somehow both fields, so
+// filters — a member with a value for both — not one row that is somehow both fields, so
 // it has to fall through and be transformed a clause at a time.
 function isMetafieldCompound(clauses: unknown): clauses is QueryNode[] {
   if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isMetafieldClause)) {
@@ -67,12 +66,12 @@ function negatedString(value: unknown): string | null {
 
 const ANY_PATH = null;
 
-interface LeafTarget {
+interface Target {
   key: string;
   path: string | typeof ANY_PATH;
 }
 
-function parseLeafAddress(raw: unknown): LeafTarget {
+function targetOf(raw: unknown): Target {
   const identity = typeof raw === 'string' ? z.safeDecode(IdentityTextSchema, raw) : null;
   if (!identity?.success) {
     throw new errors.BadRequestError({
@@ -90,9 +89,9 @@ function parseLeafAddress(raw: unknown): LeafTarget {
 }
 
 export function createMetafieldsFilterTransformer() {
-  // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
-  // by these matches", `$not` is "no leaf does".
-  function buildElemMatch(target: LeafTarget, value: unknown, negate: boolean): QueryNode {
+  // One (maybe-negated) $elemMatch over the value row columns: positive is "a row pinned
+  // by these matches", `$not` is "no row does".
+  function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
     const match: QueryNode = { metafield_key: target.key };
     if (value !== undefined) {
       match.path = target.path ?? ROOT_PATH;
@@ -107,7 +106,7 @@ export function createMetafieldsFilterTransformer() {
   }
 
   function toElemMatch(clauses: QueryNode[]): QueryNode {
-    let target: LeafTarget | undefined;
+    let target: Target | undefined;
     let value: unknown;
     let hasValue = false;
 
@@ -120,7 +119,7 @@ export function createMetafieldsFilterTransformer() {
             message: `A negated "${KEY_ATTRIBUTE}" stands alone; it cannot be grouped with a value.`,
           });
         }
-        target = parseLeafAddress(clauseValue);
+        target = targetOf(clauseValue);
       } else if (attribute === VALUE_ATTRIBUTE) {
         if (hasValue) {
           throw new errors.BadRequestError({
@@ -147,9 +146,9 @@ export function createMetafieldsFilterTransformer() {
   function fromKeyClause(value: unknown): QueryNode {
     const negatedKey = negatedString(value);
     if (negatedKey !== null) {
-      return buildElemMatch(parseLeafAddress(negatedKey), undefined, true);
+      return buildElemMatch(targetOf(negatedKey), undefined, true);
     }
-    return buildElemMatch(parseLeafAddress(value), undefined, false);
+    return buildElemMatch(targetOf(value), undefined, false);
   }
 
   function transform(node: unknown): unknown {
@@ -183,7 +182,7 @@ export function createMetafieldsFilterTransformer() {
 }
 
 /**
- * The Member filter relation that exposes metafield values. A member has many leaf
+ * The Member filter relation that exposes metafield values. A member has many value
  * rows (one per field, or per part of a composite field), and a predicate asks whether
  * one of them matches, so this joins the values table on member_id and mongo-knex emits
  * it as a correlated `members.id IN (…)` subquery — composing with every other member

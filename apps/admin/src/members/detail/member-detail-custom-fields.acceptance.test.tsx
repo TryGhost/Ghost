@@ -195,7 +195,7 @@ describe('Member detail custom fields', () => {
     expect(editApi.requests).toHaveLength(0);
   });
 
-  it('saves an address that leaves sub-fields the country does not use empty', async () => {
+  it('saves an address that leaves parts the country does not use empty', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {});
     await renderAdminApp(`/members/${m.id}`);

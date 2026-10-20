@@ -5,6 +5,7 @@ import {
   IdentitySchema,
   IdentityTextSchema,
   PartSchema,
+  QUALIFIER,
   SEPARATOR,
 } from '@tryghost/metafield-types/identity';
 import {
@@ -14,22 +15,18 @@ import {
   toComparator,
 } from '@/shared/filters';
 import type { CompoundMatch, PresenceAddressing } from '@/shared/filters';
+import { memberCustomFieldIdentity } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const RELATION = 'metafields';
 const KEY_ATTRIBUTE = `${RELATION}.key`;
 const VALUE_ATTRIBUTE = `${RELATION}.value`;
 
-export const METAFIELDS_FIELD_PREFIX = 'metafields.';
+export const METAFIELDS_FIELD_PREFIX = `${QUALIFIER}${SEPARATOR}` as const;
 
 export function metafieldFieldId(
   field: Pick<Identity, 'namespace' | 'key'>,
 ): `${typeof METAFIELDS_FIELD_PREFIX}${string}` {
-  const identity = z.encode(IdentityTextSchema, {
-    namespace: field.namespace,
-    key: field.key,
-    parts: [],
-  });
-  return `${METAFIELDS_FIELD_PREFIX}${identity}`;
+  return `${METAFIELDS_FIELD_PREFIX}${memberCustomFieldIdentity(field)}`;
 }
 
 export function parseMetafieldFieldId(id: string): Identity | null {
@@ -48,27 +45,18 @@ export function fieldFromParams(params: Record<string, string>): Identity | null
   return IdentitySchema.safeParse(params).data ?? null;
 }
 
-function identityOf(field: Pick<Identity, 'namespace' | 'key'>, subfield: string): string | null {
-  const parts = z.array(PartSchema).safeParse(subfield ? subfield.split(SEPARATOR) : []);
-  if (!parts.success) {
-    return null;
-  }
-  return z.encode(IdentityTextSchema, {
-    namespace: field.namespace,
-    key: field.key,
-    parts: parts.data,
-  });
+function identityOf(field: Pick<Identity, 'namespace' | 'key'>, part: string): string | null {
+  const parts = z.array(PartSchema).safeParse(part ? part.split(SEPARATOR) : []);
+  return parts.success ? memberCustomFieldIdentity(field, parts.data) : null;
 }
 
-function parseIdentityValue(
-  raw: unknown,
-): (Pick<Identity, 'namespace' | 'key'> & { subfield: string }) | null {
-  const identity = typeof raw === 'string' ? z.safeDecode(IdentityTextSchema, raw) : null;
-  if (!identity?.success) {
-    return null;
-  }
-  const { namespace, key, parts } = identity.data;
-  return { namespace, key, subfield: parts.join(SEPARATOR) };
+function parseIdentityValue(raw: unknown): Identity | null {
+  return typeof raw === 'string' ? (z.safeDecode(IdentityTextSchema, raw).data ?? null) : null;
+}
+
+/** The part an identity is about, or '' for the whole field. A filter predicate holds it as its first value. */
+export function partOf(identity: Identity): string {
+  return identity.parts.join(SEPARATOR);
 }
 
 export const CUSTOM_FIELD_SET_OPERATORS = PRESENCE_OPERATORS;
@@ -80,11 +68,11 @@ function keyClause(identity: string): string {
 // A predicate's values are the part first, then what it holds: one text, or the
 // codes an "is any of" lists. An empty string is no value: a presence pill carries
 // one as its value slot, and switching it to "is any of" must not send `['']`.
-function readValues(values: unknown[]): { subfield: string; rest: unknown[] } {
-  const [subfield, ...rest] = values;
+function readValues(values: unknown[]): { part: string; rest: unknown[] } {
+  const [part, ...rest] = values;
 
   return {
-    subfield: typeof subfield === 'string' ? subfield : '',
+    part: typeof part === 'string' ? part : '',
     rest: rest.filter((value) => value !== ''),
   };
 }
@@ -104,8 +92,8 @@ export function customFieldAddressing(
 
     address(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
-      const { subfield, rest } = readValues(predicate.values);
-      const identity = field && identityOf(field, subfield);
+      const { part, rest } = readValues(predicate.values);
+      const identity = field && identityOf(field, part);
 
       if (!identity) {
         return null;
@@ -121,13 +109,13 @@ export function customFieldAddressing(
     // The shape of these clauses is not ours to choose. Ghost's members endpoint rewrites them
     // into a single lookup over the table holding custom-field values, and accepts only two
     // forms: a key clause alone, or a key clause grouped with exactly one value clause. The
-    // key names the exact leaf — namespace, key, and for a multi-part value the part — so a
-    // part's presence is the bare key clause for that leaf, and its negation asks for members
-    // with no such leaf stored.
+    // key names the exact value — namespace, key, and for a multi-part value the part — so a
+    // part's presence is the bare key clause for that value, and its negation asks for members
+    // with no such value stored.
     addressPresence(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
-      const { subfield } = readValues(predicate.values);
-      const identity = field && identityOf(field, subfield);
+      const { part } = readValues(predicate.values);
+      const identity = field && identityOf(field, part);
 
       if (!identity) {
         return null;
@@ -164,7 +152,7 @@ export function customFieldAddressing(
             predicate: {
               field: metafieldFieldId(identity),
               operator: 'is-set',
-              values: [identity.subfield, ''],
+              values: [partOf(identity), ''],
             },
           };
         }
@@ -181,7 +169,7 @@ export function customFieldAddressing(
             predicate: {
               field: metafieldFieldId(negated),
               operator: 'is-not-set',
-              values: [negated.subfield, ''],
+              values: [partOf(negated), ''],
             },
           };
         }
@@ -193,7 +181,7 @@ export function customFieldAddressing(
         return null;
       }
 
-      let identity: (Pick<Identity, 'namespace' | 'key'> & { subfield: string }) | undefined;
+      let identity: Identity | undefined;
       let valueRaw: unknown;
       let hasValue = false;
 
@@ -221,7 +209,7 @@ export function customFieldAddressing(
       return {
         kind: 'value',
         field: metafieldFieldId(identity),
-        leadingValues: [identity.subfield],
+        leadingValues: [partOf(identity)],
         comparator,
       };
     },
