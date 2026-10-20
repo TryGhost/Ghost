@@ -117,7 +117,7 @@ function formatHistoryTimestamp(timestamp: string): string {
 
 /**
  * Turns DocsBot's `{ Human | AI, timestamp }` history into a markdown
- * transcript suitable for attaching to a support ticket as a comment.
+ * transcript suitable for attaching to a support request as a comment.
  */
 export function formatDocsBotHistory(history: DocsBotHistoryEntry[]): string {
   const blocks: string[] = [];
