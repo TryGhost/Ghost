@@ -7,7 +7,6 @@ import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory
 import {
   approvalWrite,
   changesFrom,
-  decideOnManifest,
   recheckWrite,
   type AppManifestChange,
   type ManifestWrite,
@@ -198,12 +197,12 @@ export class AppInstallationsService {
         : uninstalled();
     }
 
-    const decision = decideOnManifest({
+    const write = approvalWrite({
       current,
       pending: await this.pendingManifestOf(current),
       loaded,
     });
-    const stored = await this.store(current, loaded, approvalWrite(decision, current));
+    const stored = await this.store(current, write);
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
@@ -331,29 +330,33 @@ export class AppInstallationsService {
   }
 
   /**
-   * Carries out a write decided from `current`, but only while the installation is as it was
-   * then. Returns the manifest that became the approved or pending one, or null when nothing
-   * was written.
+   * Carries out a write planned from `current`, unless the installation has changed since.
+   * The value it returns is the ID of the new approved or pending manifest, or null for a
+   * `nothing` write.
    */
-  private store(
-    current: Installation,
-    loaded: LoadedManifest,
-    write: ManifestWrite,
-  ): Promise<WriteOutcome<string | null>> {
+  private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
       switch (write.kind) {
         case 'nothing':
           return null;
         case 'approve_existing':
-          await locked.activate(write.manifest.id);
-          return write.manifest.id;
-        case 'add': {
-          const added = await locked.addManifest(loaded, {
-            source: write.source,
-            requiresApproval: write.requiresApproval,
-          });
-          await (write.becomes === 'approved' ? locked.activate(added) : locked.suspend(added));
+          await locked.activate(write.manifestId);
+          return write.manifestId;
+        case 'add_approved': {
+          const added = await locked.addManifest(write.manifest);
+          await locked.activate(added);
           return added;
+        }
+        case 'add_pending': {
+          const added = await locked.addManifest(write.manifest);
+          await locked.suspend(added);
+          return added;
+        }
+        default: {
+          const _exhaustive: never = write;
+          throw new errors.InternalServerError({
+            message: `Unhandled manifest write: ${JSON.stringify(_exhaustive)}`,
+          });
         }
       }
     });
@@ -411,12 +414,12 @@ export class AppInstallationsService {
       );
     }
 
-    const decision = decideOnManifest({
+    const write = recheckWrite({
       current: before,
       pending: await this.pendingManifestOf(before),
       loaded,
     });
-    const stored = await this.store(before, loaded, recheckWrite(decision));
+    const stored = await this.store(before, write);
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }
