@@ -28,9 +28,18 @@ export const APP_FRAME_SANDBOX =
   'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads';
 
 /**
+ * Features the app's page gets. `'src'` grants each one to the origin of the frame's `src`, the
+ * app's own, so a page the frame is sent to on another origin doesn't get them.
+ *
+ * Web Share, so an app can offer the device's share sheet as any site can. Each share needs a tap
+ * in the app, the publisher picks where it goes, and the app only learns whether they shared.
+ */
+const GRANTED = ['web-share'];
+
+/**
  * Features that default to the top document's own origin. Being cross-origin already
  * keeps them from the frame; they're listed so that granting one is a deliberate change
- * here, with the app's origin, rather than an omission.
+ * to `GRANTED` rather than an omission.
  */
 const SELF_BY_DEFAULT = [
   'autoplay',
@@ -44,7 +53,6 @@ const SELF_BY_DEFAULT = [
   'publickey-credentials-get',
   'screen-wake-lock',
   'usb',
-  'web-share',
 ];
 
 /**
@@ -69,10 +77,11 @@ const EVERYONE_BY_DEFAULT = [
   'unload',
 ];
 
-/** Which browser features the frame gets: none. */
-export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
-  .map((feature) => `${feature} 'none'`)
-  .join('; ');
+/** Which browser features the frame gets: the granted ones, on the app's origin, and no others. */
+export const APP_FRAME_ALLOW = [
+  ...GRANTED.map((feature) => `${feature} 'src'`),
+  ...[...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT].map((feature) => `${feature} 'none'`),
+].join('; ');
 
 /**
  * Whether a page is on an origin Ghost itself is served from. Ghost refuses such a URL

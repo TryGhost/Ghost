@@ -205,6 +205,10 @@ describe('Managing apps', () => {
       'allow-scripts',
     ]);
     await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
+    // The device's share sheet, for the app's own origin only.
+    await expect
+      .element(frame)
+      .toHaveAttribute('allow', expect.stringContaining("web-share 'src'"));
     // On for every origin unless refused, so the frame must say so.
     await expect
       .element(frame)
