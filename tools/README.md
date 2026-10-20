@@ -37,6 +37,21 @@ Keep command implementations with their owner. A gx wrapper around a developer
 command left in an automation folder does not complete a move. Keep underlying
 Core logic in Core, and test fixtures beside their tests.
 
+## Tools needed in a checkout and an installed release
+
+Keep both entrypoints when a tool serves both environments: `tools/gx` owns the
+contributor command, while `ghost/bin` owns the compiled, shipped command. Keep
+the shared operation, option validation and normalization in its owning Core
+subsystem. Each entrypoint handles its own CLI presentation, environment setup,
+logging and process lifecycle; neither should duplicate the shared behavior.
+Installed tools must not import private tooling workspaces.
+
+The data generator is an example: both commands use
+[Core's option handling](../ghost/core/server/data/seeders/schema.ts) and generator.
+Test their common option contract through both entrypoints, including the
+compiled bin command without gx or a source loader. Preserve intentional
+environment differences and existing installed command paths.
+
 ## Shared and private support
 
 Private helpers and tests belong to their tool's owner. In repository automation,

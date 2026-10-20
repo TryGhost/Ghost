@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { cp, mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 import { tmpdir } from 'node:os';
 
 const roots: string[] = [];
@@ -34,6 +36,10 @@ async function fixture() {
   await cp(
     new URL('../../scripts/with-ghost-dev-env.ts', import.meta.url),
     join(root, 'tools/scripts/with-ghost-dev-env.ts'),
+  );
+  await cp(
+    new URL('../../../ghost/core/server/data/seeders/schema.ts', import.meta.url),
+    join(root, 'ghost/core/server/data/seeders/schema.ts'),
   );
   await writeFile(join(root, 'package.json'), '{"type":"module"}');
   await writeFile(join(root, 'ghost/package.json'), '{"type":"commonjs","version":"6.0.0"}');
@@ -107,6 +113,61 @@ function run(root: string, args: string[], env: Record<string, string> = {}) {
     env: { NO_COLOR: '1', database__connection__port: '3333', ...env },
     timeout: 10000,
   });
+}
+
+// A compiled installed tree with only its production schema dependency: no gx or source loader.
+async function installedFixture(root: string) {
+  const installed = await mkdtemp(join(tmpdir(), 'ghost-data-installed-'));
+  roots.push(installed);
+  for (const file of ['bin/generate-data.ts', 'core/server/data/seeders/schema.ts']) {
+    const source = await readFile(new URL(`../../../ghost/${file}`, import.meta.url), 'utf8');
+    const { outputText } = ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2024,
+        esModuleInterop: true,
+      },
+    });
+    const output = join(installed, file.replace(/\.ts$/, '.js'));
+    await mkdir(dirname(output), { recursive: true });
+    await writeFile(output, outputText);
+  }
+  for (const file of [
+    'package.json',
+    'core/server/data/db/index.js',
+    'core/server/data/schema/index.js',
+    'core/server/data/seeders/data-generator.js',
+  ]) {
+    const output = join(installed, file);
+    await mkdir(dirname(output), { recursive: true });
+    await cp(join(root, 'ghost', file), output);
+  }
+  await mkdir(join(installed, 'core/shared/config'), { recursive: true });
+  await cp(
+    join(root, 'ghost/core/shared/config/index.ts'),
+    join(installed, 'core/shared/config/index.js'),
+  );
+  await cp(
+    dirname(fileURLToPath(import.meta.resolve('zod/package.json'))),
+    join(installed, 'node_modules/zod'),
+    { recursive: true },
+  );
+  return installed;
+}
+
+function runInstalled(root: string, args: string[]) {
+  return spawnSync(process.execPath, [join(root, 'bin/generate-data.js'), ...args], {
+    cwd: root,
+    env: { NODE_ENV: 'testing', NO_COLOR: '1', url: 'http://fixture.local:2400/' },
+    encoding: 'utf8',
+    timeout: 10000,
+  });
+}
+
+function generatedOptions(stdout: string) {
+  const output = stdout.split('\n').find((line) => line.startsWith('{'));
+  assert(output, stdout);
+  return JSON.parse(output).options;
 }
 
 test('data generate forwards all options and uses the checkout environment from another directory', async () => {
@@ -213,4 +274,52 @@ test('data generate validates quantities before Core setup and releases the conn
   assert.equal(failed.status, 1);
   assert.match(failed.stdout, /fixture setup failure/);
   assert.match(failed.stdout, /DESTROYED/);
+});
+
+test('gx and the compiled installed entrypoint share defaults, options and zero quantities', async () => {
+  const root = await fixture();
+  const installed = await installedFixture(root);
+  for (const args of [
+    [],
+    ['--tables=members:0,posts', '--quantities=posts:0', '--seed=0'],
+    [
+      '--base-data-pack=/tmp/example.json',
+      '--clear-database',
+      '--tables=members:7,posts',
+      '--quantities=posts:3',
+      '--with-default',
+      '--print-dependencies',
+      '--seed=123',
+    ],
+  ]) {
+    const gx = run(root, ['generate', ...args]);
+    const bin = runInstalled(installed, args);
+    assert.equal(gx.status, 0, gx.stdout + gx.stderr);
+    assert.equal(bin.status, 0, bin.stdout + bin.stderr);
+    assert.deepEqual(generatedOptions(bin.stdout), generatedOptions(gx.stdout));
+    assert.match(bin.stdout, /"env":"testing"/);
+    assert.match(bin.stdout, /DESTROYED/);
+  }
+  const zero = runInstalled(installed, ['--tables=members:0', '--quantities=posts:0', '--seed=0']);
+  assert.equal(zero.status, 0, zero.stdout + zero.stderr);
+  const options = generatedOptions(zero.stdout);
+  assert.deepEqual(options.tables, [{ name: 'members', quantity: 0 }]);
+  assert.deepEqual(options.quantities, { posts: 0 });
+  assert.equal(options.seed, 0);
+});
+
+test('both entrypoints reject invalid quantities and seeds before loading the database', async () => {
+  const root = await fixture();
+  const installed = await installedFixture(root);
+  for (const args of [
+    ['--quantities=posts:invalid'],
+    ['--quantities=posts'],
+    ['--tables=members:invalid'],
+    ['--seed=invalid'],
+  ]) {
+    for (const result of [run(root, ['generate', ...args]), runInstalled(installed, args)]) {
+      assert.equal(result.status, 1, result.stdout + result.stderr);
+      assert.doesNotMatch(result.stdout, /DB_LOADED/);
+    }
+  }
 });

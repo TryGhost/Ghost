@@ -1,9 +1,14 @@
 # Data Generator
 
-The development data generator populates related Ghost tables in dependency
-order. Its CLI entry point is `pnpm gx data generate`; contributors
-normally use the root `reset:data` scripts described in the
-[test-data guide](../../../../../docs/contributing/test-data.md).
+The data generator populates related Ghost tables in dependency order.
+Contributors use `pnpm gx data generate` or the root `reset:data` scripts in the
+[test-data guide](../../../../../docs/contributing/test-data.md). Installed trees
+use [bin/generate-data.js](../../../../bin/README.md#data-generation).
+
+Both entrypoints use [schema.ts](schema.ts) to validate parsed CLI values and
+normalize generator options. Table and quantity overrides preserve explicit zero
+values; invalid quantities and seeds fail before loading the database. CLI help,
+environment setup, logging and connection cleanup belong to each entrypoint.
 
 ## How It Works
 

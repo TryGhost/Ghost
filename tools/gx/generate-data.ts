@@ -1,17 +1,8 @@
 #!/usr/bin/env node
-import { z } from 'zod';
+import { parseDataGeneratorOptions } from '../../ghost/core/server/data/seeders/schema.ts';
 import prettyCli from '@tryghost/pretty-cli';
 
 const logging = prettyCli.ui.log;
-const options = z.object({
-  'base-data-pack': z.string().default(''),
-  'clear-database': z.boolean().default(false),
-  tables: z.string().optional(),
-  quantities: z.string().optional(),
-  'with-default': z.boolean().default(false),
-  'print-dependencies': z.boolean().default(false),
-  seed: z.union([z.number(), z.nan(), z.literal('')]).optional(),
-});
 
 async function main() {
   const env = process.env.NODE_ENV || 'development';
@@ -59,32 +50,11 @@ async function main() {
   });
   cli.option('--seed', {
     type: 'number',
-    defaultValue: '',
     desc: 'Use a seed to reliably generate the same data on multiple runs (timestamps will still change a little bit to remain up to date)',
   });
-  const argv = options.parse(await cli.parseAndExit());
+  const options = parseDataGeneratorOptions(await cli.parseAndExit());
   // If we can't stream, throw an error while creating the connection
   process.env.REQUIRE_INFILE_STREAM = '1';
-
-  const tables = (argv.tables ? argv.tables.split(',') : []).map((table) => {
-    const [name = '', quantity] = table.split(':');
-    return { name, quantity: parseInt(quantity ?? '') || undefined };
-  });
-
-  const quantities: Record<string, number> = {};
-
-  if (argv.quantities) {
-    for (const quantity of argv.quantities.split(',')) {
-      const [table = '', amount] = quantity.split(':');
-
-      if (amount === undefined || !isFinite(parseInt(amount))) {
-        logging.fatal(`Missing quantity for table ${table}`);
-        return;
-      }
-
-      quantities[table] = parseInt(amount);
-    }
-  }
 
   const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   const knex = db.knex;
@@ -98,7 +68,7 @@ async function main() {
     const schemaTables = schema.tables;
 
     const dataGenerator = new DataGenerator({
-      baseDataPack: argv['base-data-pack'],
+      ...options,
       knex,
       logger: {
         log: logging,
@@ -110,13 +80,7 @@ async function main() {
         debug: logging.debug,
       },
       baseUrl: config.getSiteUrl(),
-      clearDatabase: argv['clear-database'],
-      tables,
       schemaTables,
-      withDefault: argv['with-default'],
-      printDependencies: argv['print-dependencies'],
-      quantities,
-      seed: argv.seed || undefined,
     });
     try {
       await dataGenerator.importData();
