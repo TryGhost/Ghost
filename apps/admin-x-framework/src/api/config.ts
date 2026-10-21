@@ -40,7 +40,8 @@ export type Config = {
     staffInvites?: {
       maxStaff: number;
       maxInvites: number;
-      minIntervalSeconds: number;
+      maxRequests: number;
+      rateWindowSeconds: number;
     };
     limits?: {
       // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.
