@@ -76,7 +76,11 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
     }
   }
 
-  if (!url.match(/\/$/) && !url.match(/[.#?]/)) {
+  if (
+    ['http:', 'https:'].includes(parsedUrl.protocol) &&
+    !url.match(/\/$/) &&
+    !url.match(/[.#?]/)
+  ) {
     url = `${url}/`;
   }
 
