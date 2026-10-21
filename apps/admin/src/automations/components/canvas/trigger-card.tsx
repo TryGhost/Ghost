@@ -15,8 +15,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
-import type { SubscriptionTransition } from '@/automations/types';
-import { isTransitionSideUnanswered } from '@/automations/utils/subscription-transition';
+import type { TierSelection } from '@/automations/types';
+import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
@@ -25,9 +25,9 @@ export type TriggerData = {
   savedTierIds: readonly string[];
   onUpdate: (trigger: AutomationTrigger) => void;
   // Set for the `paid_subscription_changed` trigger, which replaces the tier scope with From and To.
-  transition?: {
-    value: SubscriptionTransition;
-    onChange: (next: SubscriptionTransition) => void;
+  tierSelection?: {
+    value: TierSelection;
+    onChange: (next: TierSelection) => void;
   };
 };
 
@@ -127,12 +127,12 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
 };
 
 const SubscriptionChangedPicker: React.FC<{
-  transition: NonNullable<TriggerData['transition']>;
+  tierSelection: NonNullable<TriggerData['tierSelection']>;
   tierQuery: TriggerData['tierQuery'];
   errorMessage?: string;
-}> = ({ transition, tierQuery, errorMessage }) => {
+}> = ({ tierSelection, tierQuery, errorMessage }) => {
   const id = useId();
-  const { value, onChange } = transition;
+  const { value, onChange } = tierSelection;
   const tiers = (tierQuery.data?.tiers ?? [])
     .filter((tier) => tier.type === 'paid' && tier.active)
     .map((tier) => ({ id: tier.id, name: tier.name }));
@@ -155,22 +155,13 @@ const SubscriptionChangedPicker: React.FC<{
           emptyMessage={emptyMessage}
           inputId={`${id}-from`}
           inputLabel="From"
-          invalid={Boolean(errorMessage) && isTransitionSideUnanswered(value.from)}
+          invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.from)}
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'any_paid', label: 'Any paid tier' }}
           tiers={tiers}
           value={value.from}
-          onChange={(from) =>
-            onChange({
-              from,
-              // A tier can't be both where a member starts and where they move to.
-              to:
-                typeof value.to === 'string' || typeof from === 'string'
-                  ? value.to
-                  : value.to.filter((tierId) => !from.includes(tierId)),
-            })
-          }
+          onChange={(from) => onChange(updateFromSelection(value, from))}
         />
       </Stack>
       <Stack gap="sm">
@@ -182,7 +173,7 @@ const SubscriptionChangedPicker: React.FC<{
           emptyMessage={emptyMessage}
           inputId={`${id}-to`}
           inputLabel="To"
-          invalid={Boolean(errorMessage) && isTransitionSideUnanswered(value.to)}
+          invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.to)}
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'downgraded_to_free', label: 'Free' }}
@@ -228,7 +219,7 @@ export const TriggerCard: React.FC<
       throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
     }
   }
-  const title = trigger.transition
+  const title = trigger.tierSelection
     ? 'Paid subscription changed'
     : paid
       ? 'Paid subscription started'
@@ -245,7 +236,7 @@ export const TriggerCard: React.FC<
     >
       <AutomationCardHeader
         icon={
-          trigger.transition ? (
+          trigger.tierSelection ? (
             <LucideIcon.ArrowRightLeft className="size-4" />
           ) : paid ? (
             <LucideIcon.CreditCard className="size-4" />
@@ -256,11 +247,11 @@ export const TriggerCard: React.FC<
         iconClassName="p-2.5 text-foreground"
         title={title}
       />
-      {trigger.transition ? (
+      {trigger.tierSelection ? (
         <SubscriptionChangedPicker
           errorMessage={errorMessage}
           tierQuery={trigger.tierQuery}
-          transition={trigger.transition}
+          tierSelection={trigger.tierSelection}
         />
       ) : paid ? (
         <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />
