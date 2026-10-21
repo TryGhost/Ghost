@@ -108,7 +108,14 @@ Local docs with Storybook:
 
 - `pnpm storybook` — run Storybook and view docs under `src/docs/`
 - `pnpm build-storybook` — build a static export
-- `pnpm build` — build the JavaScript and type declarations
+- `pnpm build` — build the JavaScript, type declarations and Markdown docs
+
+### Docs for agents
+
+The package ships its Storybook docs as Markdown in `docs/`, starting at
+`docs/index.md`, so agents read the rules for the installed version.
+`scripts/build-docs.ts` generates them from `src/**/*.mdx` during `pnpm build`
+(or `pnpm build:docs`). Edit the `.mdx` sources, never the generated `.md` files.
 
 ### Source exports
 
