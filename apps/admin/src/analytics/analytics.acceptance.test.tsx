@@ -179,6 +179,29 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
   });
 
+  it('counts days in the site’s timezone, whoever is looking', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', {
+      boot: {
+        ...webAnalyticsBootOverrides(),
+        browseSettings: {
+          response: settingsResponse({
+            settings: { web_analytics_enabled: true, timezone: 'Asia/Tokyo' },
+          }),
+        },
+      },
+    });
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('timezone')).toBe('Asia/Tokyo');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('timezone'),
+      )
+      .toBe('Asia/Tokyo');
+  });
+
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();
     seedTopPostsViews();
