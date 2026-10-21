@@ -11,7 +11,8 @@ import {
 export interface InvitationLimits {
   maxStaff: number;
   maxInvites: number;
-  minIntervalSeconds: number;
+  maxRequests: number;
+  rateWindowSeconds: number;
 }
 
 /** A host-enabled trial allowance, independent of the mutable invitation list. */
@@ -41,8 +42,10 @@ export default class InvitationLimiter {
         limits.maxStaff < 1 ||
         !Number.isSafeInteger(limits.maxInvites) ||
         limits.maxInvites < 0 ||
-        !Number.isSafeInteger(limits.minIntervalSeconds) ||
-        limits.minIntervalSeconds < 1)
+        !Number.isSafeInteger(limits.maxRequests) ||
+        limits.maxRequests < 1 ||
+        !Number.isSafeInteger(limits.rateWindowSeconds) ||
+        limits.rateWindowSeconds < 1)
     ) {
       throw new errors.IncorrectUsageError({ message: 'Invalid staff invitation limits.' });
     }
@@ -58,17 +61,18 @@ export default class InvitationLimiter {
     return this.knex.transaction(async (transaction) => {
       const row = await lockStaffInvites(transaction);
       const now = this.now();
-      const nextRequest = Number(row.lastRequest) + limits.minIntervalSeconds * 1000;
-      if (Number(row.count) > 0 && now < nextRequest) {
-        return Math.ceil((nextRequest - now) / 1000);
+      const windowEnds = Number(row.firstRequest) + limits.rateWindowSeconds * 1000;
+      const inWindow = Number(row.count) > 0 && now < windowEnds;
+      if (inWindow && Number(row.count) >= limits.maxRequests) {
+        return Math.ceil((windowEnds - now) / 1000);
       }
       await transaction('brute')
         .where({ key: STAFF_INVITE_RATE_KEY })
         .update({
-          firstRequest: now,
+          firstRequest: inWindow ? row.firstRequest : now,
           lastRequest: now,
-          lifetime: now + limits.minIntervalSeconds * 1000,
-          count: 1,
+          lifetime: inWindow ? windowEnds : now + limits.rateWindowSeconds * 1000,
+          count: inWindow ? Number(row.count) + 1 : 1,
         });
       return 0;
     });

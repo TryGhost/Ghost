@@ -6,7 +6,8 @@ Hosts can configure `hostSettings.staffInvites`:
 {
   "maxStaff": 10,
   "maxInvites": 15,
-  "minIntervalSeconds": 60
+  "maxRequests": 3,
+  "rateWindowSeconds": 60
 }
 ```
 
@@ -20,7 +21,7 @@ are unaffected unless their host enables it.
 The trial staff cap counts the owner, all other users (including Contributors
 and suspended users), and pending invitations. Resending an existing invitation
 uses the same seat. Existing sites above the cap retain their staff; subsequent
-invitations are checked against the cap. Imports use the same seat guard. Paid-plan role exemptions are unchanged.
+invitations are checked against the cap. Content imports bypass the seat guard to preserve author attribution, but imported users count toward subsequent invitations. Paid-plan role exemptions are unchanged.
 
 The existing `actions` audit log is the durable allowance: each
 `resource_type = 'invite', event = 'added'` entry consumes one invitation.
@@ -51,12 +52,11 @@ provider did not accept the message.
 
 ## Request rate and errors
 
-The authenticated POST invitation route allows one request per minute across
+The POST invitation endpoint allows a burst of three requests per minute across
 the entire trial site, regardless of IP, recipient or API key. It uses a
 namespaced row in the existing `brute` table with a transaction to serialize
 concurrent admissions, including the first requests. Rejected requests do not
-extend the wait. Invalid authenticated requests consume the minute, but do not
-consume the email allowance. Expiring or cleaning rate-limit rows cannot reset
+extend the wait. Validation and permission checks run before rate admission, so requests rejected there do not consume burst capacity. Later model validation errors still consume a request. Failures after admission still consume a request, but only recorded invitation creations consume the email allowance. Expiring or cleaning rate-limit rows cannot reset
 the audit history. GET and DELETE requests remain unaffected.
 
 The rate limiter returns HTTP 429, `STAFF_INVITE_RATE_LIMIT`, and `Retry-After`.

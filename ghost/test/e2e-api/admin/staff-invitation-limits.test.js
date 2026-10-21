@@ -31,7 +31,8 @@ describe('Trial staff invitation limits', function () {
     config.set('hostSettings:staffInvites', {
       maxStaff: 10,
       maxInvites: 15,
-      minIntervalSeconds: 60,
+      maxRequests: 3,
+      rateWindowSeconds: 60,
     });
     send = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
   });
@@ -63,7 +64,7 @@ describe('Trial staff invitation limits', function () {
     await db
       .knex('brute')
       .where({ key: 'staff-invites:requests' })
-      .update({ lastRequest: Date.now() - 60_001 });
+      .update({ firstRequest: Date.now() - 60_001, lastRequest: Date.now() - 60_001 });
   }
 
   function invitationActions() {
@@ -200,33 +201,72 @@ describe('Trial staff invitation limits', function () {
 
   it('shares the minute across recipients, API keys and staff sessions', async function () {
     await invite('integration@example.com', 'Contributor', true).expect(201);
+    await invite('burst-2@example.com').expect(201);
+    await invite('burst-3@example.com').expect(201);
     const rejected = await invite('other@example.com', 'Author').expect(429);
     assert.equal(rejected.body.errors[0].code, 'STAFF_INVITE_RATE_LIMIT');
     assert.ok(Number(rejected.headers['retry-after']) > 0);
-    sinon.assert.calledOnce(send);
+    sinon.assert.callCount(send, 3);
     await nextMinute();
     await invite('other@example.com', 'Author').expect(201);
     const recorded = await invitationActions();
-    assert.equal(recorded.length, 2);
-    assert.deepEqual(recorded.map((action) => action.actor_type).sort(), ['integration', 'user']);
+    assert.equal(recorded.length, 4);
+    assert.deepEqual(recorded.map((action) => action.actor_type).sort(), [
+      'integration',
+      'user',
+      'user',
+      'user',
+    ]);
   });
 
-  it('rate limits invalid authenticated requests without consuming the email allowance', async function () {
-    await invite('not-an-email').expect(422);
-    await invite('valid@example.com').expect(429);
-    assert.deepEqual(await invitationActions(), []);
-    sinon.assert.notCalled(send);
+  it('does not consume burst capacity for registered addresses or permission denials', async function () {
+    for (let i = 0; i < 4; i++) {
+      await invite(testUtils.DataGenerator.Content.users[0].email).expect(422);
+      await invite('owner-role@example.com', 'Owner').expect(403);
+    }
+    for (let i = 0; i < 3; i++) {
+      await invite(`valid-${i}@example.com`).expect(201);
+    }
+    await invite('burst-full@example.com').expect(429);
+    assert.equal((await invitationActions()).length, 3);
+    sinon.assert.callCount(send, 3);
+  });
+
+  it('does not let a Contributor consume the owner burst allowance', async function () {
+    const ownerRole = await db.knex('roles').where({ name: 'Owner' }).first();
+    const contributorRole = await db.knex('roles').where({ name: 'Contributor' }).first();
+    const ownerAssignment = await db.knex('roles_users').where({ role_id: ownerRole.id }).first();
+    await db
+      .knex('roles_users')
+      .where({ id: ownerAssignment.id })
+      .update({ role_id: contributorRole.id });
+    try {
+      for (let i = 0; i < 4; i++) {
+        await invite(`unauthorized-${i}@example.com`).expect(403);
+      }
+    } finally {
+      await db
+        .knex('roles_users')
+        .where({ id: ownerAssignment.id })
+        .update({ role_id: ownerRole.id });
+    }
+    for (let i = 0; i < 3; i++) {
+      await invite(`owner-${i}@example.com`).expect(201);
+    }
+    sinon.assert.callCount(send, 3);
   });
 
   it('keeps the existing invitation and token when a resend is rate limited', async function () {
     const email = 'rate@example.com';
     await invite(email).expect(201);
+    await invite('burst-2@example.com').expect(201);
+    await invite('burst-3@example.com').expect(201);
     const original = await models.Invite.findOne({ email });
     await invite(email).expect(429);
     const retained = await models.Invite.findOne({ email });
     assert.equal(retained.id, original.id);
     assert.equal(retained.get('token'), original.get('token'));
-    sinon.assert.calledOnce(send);
+    sinon.assert.callCount(send, 3);
   });
 
   it('revoking invites cannot restore the fifteen-email allowance', async function () {
@@ -246,8 +286,11 @@ describe('Trial staff invitation limits', function () {
     send.rejects(new errors.EmailError({ message: 'Transport timed out' }));
     await invite('transport@example.com').expect(500);
     assert.equal((await invitationActions()).length, 1);
+    await invite('transport@example.com').expect(500);
+    await invite('transport@example.com').expect(500);
     await invite('transport@example.com').expect(429);
-    sinon.assert.calledOnce(send);
+    assert.equal((await invitationActions()).length, 3);
+    sinon.assert.callCount(send, 3);
   });
 
   it('removes trial caps and rate limiting when the host removes the trial policy', async function () {

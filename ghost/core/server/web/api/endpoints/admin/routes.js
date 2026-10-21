@@ -529,8 +529,8 @@ module.exports = function apiRoutes() {
   router.post(
     '/invites',
     mw.authAdminApi,
-    shared.middleware.brute.staffInviteLimiter,
     http(api.invites.add),
+    shared.middleware.brute.staffInviteRateLimitError,
   );
   router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
 

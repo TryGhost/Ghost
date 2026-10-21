@@ -30,7 +30,7 @@ describe('Trial invitation admission', function () {
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
     now = Date.parse('2026-10-20T12:00:00Z');
-    limits = { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 };
+    limits = { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 };
     config.set('hostSettings:staffInvites', limits);
     limiter = new InvitationLimiter(
       db.knex,
@@ -56,7 +56,7 @@ describe('Trial invitation admission', function () {
     return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
   }
 
-  it('admits exactly one of twenty concurrent requests across instances', async function () {
+  it('admits exactly three of twenty concurrent requests across instances', async function () {
     const other = new InvitationLimiter(
       db.knex,
       () => limits,
@@ -65,11 +65,13 @@ describe('Trial invitation admission', function () {
     const results = await Promise.all(
       Array.from({ length: 20 }, (_, index) => (index % 2 ? limiter : other).rateLimit()),
     );
-    assert.equal(results.filter((wait) => wait === 0).length, 1);
-    assert.equal(results.filter((wait) => wait === 60).length, 19);
+    assert.equal(results.filter((wait) => wait === 0).length, 3);
+    assert.equal(results.filter((wait) => wait === 60).length, 17);
   });
 
   it('does not extend the minute when requests are rejected and survives restarts', async function () {
+    assert.equal(await limiter.rateLimit(), 0);
+    assert.equal(await limiter.rateLimit(), 0);
     assert.equal(await limiter.rateLimit(), 0);
     now += 59_000;
     assert.equal(await limiter.rateLimit(), 1);
@@ -162,7 +164,7 @@ describe('Trial invitation admission', function () {
       assert.equal(transaction, undefined),
     );
     assert.equal((await actions()).length, 1);
-    limits = { maxStaff: 10, maxInvites: 1, minIntervalSeconds: 60 };
+    limits = { maxStaff: 10, maxInvites: 1, maxRequests: 3, rateWindowSeconds: 60 };
     await assert.rejects(
       limiter.run('trial-again@example.com', async () => assert.fail()),
       /Upgrade/,

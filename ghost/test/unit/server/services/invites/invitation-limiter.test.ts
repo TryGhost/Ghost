@@ -15,11 +15,12 @@ describe('Invitation limiter configuration', function () {
 
   for (const limits of [
     {},
-    { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 0 },
-    { maxStaff: 10, maxInvites: -1, minIntervalSeconds: 60 },
-    { maxStaff: 0, maxInvites: 15, minIntervalSeconds: 60 },
-    { maxStaff: 10, maxInvites: 1.5, minIntervalSeconds: 60 },
-    { maxStaff: 10, maxInvites: 15, minIntervalSeconds: '60' },
+    { maxStaff: 10, maxInvites: 15, maxRequests: 0, rateWindowSeconds: 60 },
+    { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 0 },
+    { maxStaff: 10, maxInvites: -1, maxRequests: 3, rateWindowSeconds: 60 },
+    { maxStaff: 0, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+    { maxStaff: 10, maxInvites: 1.5, maxRequests: 3, rateWindowSeconds: 60 },
+    { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: '60' },
   ]) {
     it(`rejects invalid configured policy ${JSON.stringify(limits)}`, async function () {
       const limiter = new InvitationLimiter(noDatabase, () => limits as InvitationLimits);

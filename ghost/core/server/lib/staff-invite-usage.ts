@@ -7,7 +7,7 @@ export const STAFF_INVITE_RATE_KEY = 'staff-invites:requests';
 /** All trial staff creation and invitation replacement use the same lock order. */
 export async function lockStaffInvites(
   transaction: Knex.Transaction,
-): Promise<{ count: number; lastRequest: number }> {
+): Promise<{ count: number; firstRequest: number; lastRequest: number }> {
   // Reuse the request limiter's row as the site-wide lock. Its expiry is safe:
   // the durable allowance lives in actions, not in this temporary rate state.
   await transaction('brute')

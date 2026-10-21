@@ -6,24 +6,11 @@ const spamPrevention = require('./api/spam-prevention');
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {
-  async staffInviteLimiter(req, res, next) {
-    try {
-      const invites = require('../../../services/invites').default;
-      const wait = await invites.service.rateLimit();
-      if (wait > 0) {
-        const errors = require('@tryghost/errors');
-        res.set('Retry-After', String(wait));
-        return next(
-          new errors.TooManyRequestsError({
-            code: 'STAFF_INVITE_RATE_LIMIT',
-            message: `Trial sites can send one invitation request per minute. Try again in ${wait} seconds.`,
-          }),
-        );
-      }
-      return next();
-    } catch (err) {
-      return next(err);
+  staffInviteRateLimitError(err, req, res, next) {
+    if (err.code === 'STAFF_INVITE_RATE_LIMIT' && err.errorDetails?.retryAfter > 0) {
+      res.set('Retry-After', String(err.errorDetails.retryAfter));
     }
+    next(err);
   },
   // Limit authentication work across all upgrade routes, before staff identity
   // is available. This is separate from the stricter per-user POST budget.

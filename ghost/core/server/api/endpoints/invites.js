@@ -94,7 +94,16 @@ const controller = {
     permissions: {
       unsafeAttrs: UNSAFE_ATTRS,
     },
-    query(frame) {
+    async query(frame) {
+      // Validation and invite permissions have passed before consuming the site's burst budget.
+      const wait = await invites.service.rateLimit();
+      if (wait > 0) {
+        throw new errors.TooManyRequestsError({
+          code: 'STAFF_INVITE_RATE_LIMIT',
+          message: `Too many invitation requests. Try again in ${wait} seconds.`,
+          errorDetails: { retryAfter: wait },
+        });
+      }
       return invites.service.add({
         api,
         InviteModel: models.Invite,
