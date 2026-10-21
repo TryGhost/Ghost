@@ -18,6 +18,7 @@ The Member Attribution Service tracks how members discover and sign up to a Ghos
 - **Manual Creation**: Tracks members created via Admin UI, API, or import tools
 - **Integration Attribution**: Associates members created via integrations with the integration name
 - **Newsletter Links**: Adds attribution tracking to outbound links in newsletters with `?ref=` parameters
+- **Portal Links**: Reads attribution parameters from the `#/portal/...?...` fragment; those parameters take precedence over a page query when both are present
 
 ### Settings
 

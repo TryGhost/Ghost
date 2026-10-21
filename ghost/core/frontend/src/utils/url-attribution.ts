@@ -63,8 +63,11 @@ export function parseReferrerData(url?: string): AttributionData {
 
   // Handle portal hash URLs - extract params from hash instead
   if (currentUrl.hash && currentUrl.hash.includes('#/portal')) {
-    const hashUrl = new URL(currentUrl.href.replace('/#/portal', ''));
-    searchParams = hashUrl.searchParams;
+    const queryIndex = currentUrl.hash.indexOf('?');
+    searchParams =
+      queryIndex === -1
+        ? new URLSearchParams()
+        : new URLSearchParams(currentUrl.hash.slice(queryIndex + 1));
   }
 
   return extractParams(searchParams);
