@@ -46,7 +46,7 @@ describe('chart-helpers', () => {
         { value: 91, expected: 'in the last 90 days' },
         { value: 372, expected: 'in the last 12 months' },
         { value: -1, expected: 'year to date' },
-        { value: 1000, expected: '(all time)' },
+        { value: STATS_RANGES.allTime.value, expected: '(all time)' },
       ];
 
       ranges.forEach(({ value, expected }) => {
@@ -177,7 +177,10 @@ describe('chart-helpers', () => {
     });
 
     it('falls back to the full all time window without data', () => {
-      expect(resolveEffectiveRangeDays(STATS_RANGES.allTime.value)).toBe(1000);
+      const { startDate, endDate } = getRangeDates(STATS_RANGES.allTime.value);
+      expect(resolveEffectiveRangeDays(STATS_RANGES.allTime.value)).toBe(
+        endDate.diff(startDate, 'days') + 1,
+      );
     });
   });
 
@@ -506,6 +509,15 @@ describe('chart-helpers', () => {
       expect(getRangeForStartDate(publishedAt)).toBe(expectedRange);
     });
 
+    it('never lands on the All time marker, however old the post', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-10-21T12:00:00Z'));
+
+      // 999 days ago: a 1,000-day range, which All time used to be
+      expect(getRangeForStartDate('2024-01-26T12:00:00Z')).toBe(1000);
+      expect(getRangeForStartDate('2024-01-26T12:00:00Z')).not.toBe(STATS_RANGES.allTime.value);
+    });
+
     it('produces a date range that includes the publish calendar day', () => {
       vi.useFakeTimers();
       vi.setSystemTime(currentTime);
@@ -517,6 +529,18 @@ describe('chart-helpers', () => {
       const { startDate } = getRangeDates(range);
 
       expect(formatQueryDate(startDate)).toBe(formatQueryDate(expectedStartDate));
+    });
+  });
+
+  describe('All time', () => {
+    it('starts on 1 January 2013, so a site’s whole history shows', () => {
+      const { startDate } = getRangeDates(STATS_RANGES.allTime.value);
+      expect(formatQueryDate(startDate)).toBe('2013-01-01');
+    });
+
+    it('charts a long history as months', () => {
+      const data = createDateRange(3000, '2017-06-01', () => 5);
+      expect(getAggregationStrategy(STATS_RANGES.allTime.value, data)).toBe('monthly');
     });
   });
 });
