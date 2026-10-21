@@ -20,14 +20,42 @@ module.exports = class TierRepository {
   /** @type {import('@tryghost/domain-events')} */
   #DomainEvents;
 
+  /** @type {import('./requirements').TierRequirements} */
+  #requirements;
+
   /**
    * @param {object} deps
    * @param {object} deps.ProductModel Bookshelf Model
    * @param {import('@tryghost/domain-events')} deps.DomainEvents
+   * @param {import('./requirements').TierRequirements} deps.requirements
    */
   constructor(deps) {
     this.#ProductModel = deps.ProductModel;
     this.#DomainEvents = deps.DomainEvents;
+    this.#requirements = deps.requirements;
+  }
+
+  /**
+   * Copies of these stored tiers, each with what its members must give when asked for.
+   * Requirements are read from the database on every call, as the checkout settings change them
+   * without saving a tier.
+   *
+   * @param {import('./tier')[]} stored
+   * @param {import('./tiers-api').ReadOptions} options
+   * @returns {Promise<import('./tier')[]>}
+   */
+  async #copiesOf(stored, options) {
+    if (!options.withRequirements) {
+      return Promise.all(stored.map((tier) => Tier.create(tier)));
+    }
+    const requirements = await this.#requirements.forTiers(
+      stored.map((tier) => ({ id: tier.id.toHexString(), type: tier.type })),
+    );
+    return Promise.all(
+      stored.map((tier) =>
+        Tier.create({ ...tier.toJSON(), requirements: requirements.get(tier.id.toHexString()) }),
+      ),
+    );
   }
 
   async init() {
@@ -82,30 +110,26 @@ module.exports = class TierRepository {
   }
 
   /**
-   * @param {object} [options]
-   * @param {string} [options.filter]
+   * @param {import('./tiers-api').ReadOptions & {filter?: string}} [options]
    * @returns {Promise<import('./tier')[]>}
    */
   async getAll(options = {}) {
     const filter = nql();
     filter.filter = options.filter || {};
-    return Promise.all(
-      this.#store
-        .slice()
-        .filter((item) => {
-          return filter.queryJSON(this.toPrimitive(item));
-        })
-        .map((tier) => {
-          return Tier.create(tier);
-        }),
+    return this.#copiesOf(
+      this.#store.filter((item) => {
+        return filter.queryJSON(this.toPrimitive(item));
+      }),
+      options,
     );
   }
 
   /**
    * @param {import('bson-objectid').default} id
+   * @param {import('./tiers-api').ReadOptions} [options]
    * @returns {Promise<import('./tier')>}
    */
-  async getById(id) {
+  async getById(id, options = {}) {
     const found = this.#store.find((item) => {
       return item.id.equals(id);
     });
@@ -114,7 +138,8 @@ module.exports = class TierRepository {
       return null;
     }
 
-    return Tier.create(found);
+    const [tier] = await this.#copiesOf([found], options);
+    return tier;
   }
 
   /**

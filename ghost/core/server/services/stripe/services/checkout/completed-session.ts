@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
+import { CHECKOUT_PORT, CHECKOUT_PORTS, type CheckoutPort } from '@tryghost/checkout';
 import { partsOf } from '@tryghost/metafield-types';
 
 const Collected = z
@@ -70,15 +70,15 @@ function shippingAsked(session: CompletedSession) {
  * returns the recipient's name beside the shipping address rather than as part of it, so it is
  * saved separately.
  */
-const ANSWERS: { [Port in StripePort]: (session: CompletedSession) => unknown } = {
-  [STRIPE_PORT.shippingAddress]: (session) => addressValue(shippingAsked(session)?.address),
-  [STRIPE_PORT.shippingName]: (session) => shippingAsked(session)?.name,
-  [STRIPE_PORT.phone]: (session) =>
+const ANSWERS: { [Port in CheckoutPort]: (session: CompletedSession) => unknown } = {
+  [CHECKOUT_PORT.shippingAddress]: (session) => addressValue(shippingAsked(session)?.address),
+  [CHECKOUT_PORT.shippingName]: (session) => shippingAsked(session)?.name,
+  [CHECKOUT_PORT.phone]: (session) =>
     session.phone_number_collection?.enabled ? session.customer_details?.phone : undefined,
 };
 
 export interface CollectedByPort {
-  port: StripePort;
+  port: CheckoutPort;
   value: unknown;
 }
 
@@ -89,7 +89,7 @@ export interface CollectedByPort {
  * asked is read from the checkout itself, because the config can change while it is open.
  */
 export const collectedAnswers = CompletedSession.transform((session): CollectedByPort[] =>
-  STRIPE_PORTS.map((port) => ({ port, value: ANSWERS[port](session) })).filter(
+  CHECKOUT_PORTS.map((port) => ({ port, value: ANSWERS[port](session) })).filter(
     (entry) => entry.value !== undefined,
   ),
 );

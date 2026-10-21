@@ -791,6 +791,42 @@ module.exports = {
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
   },
+  // What a tier's members must give, each named by the port a checkout collects it under, such
+  // as `checkout.shipping`: on every paid tier, including tiers added later, or only on the tiers
+  // listed for it. The port is a fixed name in code, not a reference to a row, and the custom
+  // field each part of it is kept in is its binding. Stored as a choice rather than read off an
+  // empty list, so a requirement limited to some tiers never quietly widens to all of them.
+  tier_requirements: {
+    port: { type: 'string', maxlength: 191, nullable: false, primary: true },
+    tier_scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['all_paid', 'selected_paid']] },
+    },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The tiers a requirement is limited to, when it is limited to some rather than every paid
+  // tier. Deleting a tier takes it out of every list, so a requirement never stops a tier being
+  // deleted. One whose last tier is deleted requires nothing, rather than widening to every tier.
+  tier_requirement_tiers: {
+    port: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      references: 'tier_requirements.port',
+      cascadeDelete: true,
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    '@@PRIMARY_KEY@@': ['port', 'product_id'],
+  },
   members_products: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     member_id: {
@@ -1571,21 +1607,22 @@ module.exports = {
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
     shipping: { type: 'text', maxlength: 65535, nullable: true },
-    phone: { type: 'text', maxlength: 65535, nullable: true },
     tax_number: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
   // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to some
-  // rather than every paid tier. Deleting a tier takes it out of every list, so the config never
-  // stops a tier being deleted and never names one that is gone. A section whose last tier is
-  // deleted reads as switched off, rather than widening to every tier.
+  // rather than every paid tier. Only a section that saves into no custom field keeps its tiers
+  // here: the others' tiers are the requirements on their fields. Deleting a tier takes it out of
+  // every list, so the config never stops a tier being deleted and never names one that is gone.
+  // A section whose last tier is deleted reads as switched off, rather than widening to every
+  // tier.
   stripe_checkout_config_tiers: {
     section: {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['shipping', 'phone', 'tax_number']] },
+      validations: { isIn: [['tax_number']] },
     },
     product_id: {
       type: 'string',
