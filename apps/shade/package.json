@@ -137,6 +137,7 @@
     "dev": "vite build --watch",
     "build": "node scripts/build-docs.ts && tsc -p tsconfig.declaration.json && tsc-alias -p tsconfig.declaration.json && node scripts/check-declarations.ts && vite build",
     "build:docs": "node scripts/build-docs.ts",
+    "pack:local": "node scripts/pack-local.ts",
     "test": "pnpm test:types && vitest run --coverage",
     "test:unit": "vitest run",
     "test:types": "tsc --noEmit",

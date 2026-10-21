@@ -127,6 +127,16 @@ The library build remains required for those consumers. Published exports only
 refer to compiled modules and declarations; the workspace-only `source`
 conditions are removed when packing.
 
+### Test in an external app
+
+`pnpm pack:local <app-dir>` builds Shade, packs it exactly as CI publishes it,
+stamps the version as `<x.y.z>-local.<YYYYMMDD-HHMMSS>`, installs it into an npm
+app with `npm install --no-save` and clears the app's Vite cache. The app's
+`package.json` and lockfile don't change. Restart the app's dev server to pick
+it up. `--watch` also runs the app's `npm run dev` and repeats the install on
+every change under `src/` (add `-- <args>` to pass arguments to the dev server).
+Run `npm install` in the app to go back to the published release.
+
 ## Test
 
 - `pnpm test` — type-checks and runs Vitest with coverage
