@@ -4,28 +4,33 @@ import { useSyncExternalStore } from 'react';
 // (Explorations). Unlike the mock switches, a change applies live: the screen
 // re-renders, no reload.
 
-export const EMAIL_CARD_VARIANTS = [
+// The automation editor's chrome. Current build is main's left-hand sidebar; the
+// other two are from the 1498 proto: Docked is the phase-2/5 lanes' header bar and
+// full-height sidebar, Floating is the GA lane's controls over a full-screen canvas,
+// with the sidebar as an inset card.
+export const EDITOR_CHROME_VARIANTS = [
   { id: 'current', label: 'A. Current build' },
-  { id: 'content-switch', label: 'B. Content switch' },
+  { id: 'docked', label: 'B. Docked' },
+  { id: 'floating', label: 'C. Floating' },
 ] as const;
 
-export type EmailCardVariant = (typeof EMAIL_CARD_VARIANTS)[number]['id'];
+export type EditorChromeVariant = (typeof EDITOR_CHROME_VARIANTS)[number]['id'];
 
-const EMAIL_CARD_KEY = 'shaping.variant.emailCard';
+const EDITOR_CHROME_KEY = 'shaping.variant.editorChrome';
 const CHANGE_EVENT = 'shaping:variant-change';
 
-const readEmailCardVariant = (): EmailCardVariant => {
+const readEditorChromeVariant = (): EditorChromeVariant => {
   try {
-    const stored = localStorage.getItem(EMAIL_CARD_KEY);
-    return EMAIL_CARD_VARIANTS.find((variant) => variant.id === stored)?.id ?? 'current';
+    const stored = localStorage.getItem(EDITOR_CHROME_KEY);
+    return EDITOR_CHROME_VARIANTS.find((variant) => variant.id === stored)?.id ?? 'current';
   } catch {
     return 'current';
   }
 };
 
-export const setEmailCardVariant = (variant: EmailCardVariant) => {
+export const setEditorChromeVariant = (variant: EditorChromeVariant) => {
   try {
-    localStorage.setItem(EMAIL_CARD_KEY, variant);
+    localStorage.setItem(EDITOR_CHROME_KEY, variant);
   } catch {
     // Storage blocked: the change still applies until the page reloads.
   }
@@ -41,4 +46,5 @@ const subscribe = (onChange: () => void) => {
   };
 };
 
-export const useEmailCardVariant = () => useSyncExternalStore(subscribe, readEmailCardVariant);
+export const useEditorChromeVariant = () =>
+  useSyncExternalStore(subscribe, readEditorChromeVariant);

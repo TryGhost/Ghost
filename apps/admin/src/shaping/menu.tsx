@@ -29,10 +29,10 @@ import {
   switchMocks,
 } from './mode';
 import {
-  EMAIL_CARD_VARIANTS,
-  type EmailCardVariant,
-  setEmailCardVariant,
-  useEmailCardVariant,
+  EDITOR_CHROME_VARIANTS,
+  type EditorChromeVariant,
+  setEditorChromeVariant,
+  useEditorChromeVariant,
 } from './variants';
 
 // The prototype menu: the old prototype's hot corner, carried over. A 64px
@@ -56,7 +56,7 @@ export const ShapingMenu: React.FC<{ mocked: boolean }> = ({ mocked }) => {
   const [open, setOpen] = useState(false);
   const dark = useSyncExternalStore(subscribeToTheme, isDark);
   const fakeStripe = readFakeStripe();
-  const emailCardVariant = useEmailCardVariant();
+  const editorChrome = useEditorChromeVariant();
 
   // Close on a press anywhere else. Radix listens for that on the document,
   // but the canvas stops pointer events before they get there, so listen in
@@ -164,16 +164,16 @@ export const ShapingMenu: React.FC<{ mocked: boolean }> = ({ mocked }) => {
                 </Field>
               ))}
               <Field>
-                <FieldLabel htmlFor="shaping-email-card">Email card</FieldLabel>
+                <FieldLabel htmlFor="shaping-editor-chrome">Editor chrome</FieldLabel>
                 <Select
-                  value={emailCardVariant}
-                  onValueChange={(value) => setEmailCardVariant(value as EmailCardVariant)}
+                  value={editorChrome}
+                  onValueChange={(value) => setEditorChromeVariant(value as EditorChromeVariant)}
                 >
-                  <SelectTrigger id="shaping-email-card">
+                  <SelectTrigger id="shaping-editor-chrome">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {EMAIL_CARD_VARIANTS.map((variant) => (
+                    {EDITOR_CHROME_VARIANTS.map((variant) => (
                       <SelectItem key={variant.id} value={variant.id}>
                         {variant.label}
                       </SelectItem>

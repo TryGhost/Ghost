@@ -15,6 +15,8 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
+// SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
+import { useEditorChromeVariant } from '@/shaping/variants';
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
@@ -23,10 +25,13 @@ const TriggerPicker: React.FC<{
 }> = ({ automation, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
   const cardRef = React.useRef<HTMLDivElement>(null);
+  // SHAPING PROTOTYPE ONLY — never merge.
+  const chrome = useEditorChromeVariant();
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
       <AutomationHeader
         automation={automation}
+        chrome={chrome}
         isLoadingAutomation={false}
         isPublishButtonEnabled={false}
         isSaveButtonEnabled={false}
@@ -35,6 +40,7 @@ const TriggerPicker: React.FC<{
         publishButtonVariant="default"
         saveButtonChildren="Save"
         saveButtonVariant="outline"
+        sidebar={{ available: false, open: false, animated: false }}
         validationFeedback={null}
         onDismissValidationFeedback={() => {}}
         onPublish={() => {}}

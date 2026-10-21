@@ -36,6 +36,13 @@ off, or reset it from the ⋯ menu. The choice is remembered in this browser
 There are no `?mock=` URL switches: Admin's dev server only serves Admin at
 exactly `/ghost/`, so a query string there sends the page to Ghost instead.
 
+## Design options
+
+The menu's Explorations section switches between design options live, without
+a reload (`variants.ts`). Today: **Editor chrome**, Current build, Docked or Floating. The real
+files that read it (`automation-canvas.tsx`, `new-automation.tsx`) mark those
+lines "SHAPING PROTOTYPE ONLY"; never merge them.
+
 ## Adding to it
 
 When a design needs something the backend can't do yet (a new trigger type, a

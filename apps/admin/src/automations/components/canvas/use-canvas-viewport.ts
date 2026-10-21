@@ -57,9 +57,12 @@ const constrainViewport = (
 export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends Edge = Edge>({
   contentBounds,
   initialViewport,
+  rightInset = 0,
 }: {
   contentBounds?: CanvasContentBounds;
   initialViewport: Viewport;
+  // Width covered by a panel floating over the canvas's right edge.
+  rightInset?: number;
 }) => {
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<
@@ -69,6 +72,7 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
   const [zoom, setZoom] = useState(initialViewport.zoom);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const previousCanvasWidth = useRef<number | null>(null);
+  const previousRightInset = useRef(rightInset);
 
   const measureCanvas = useCallback((element: HTMLDivElement | null) => {
     resizeObserverRef.current?.disconnect();
@@ -93,12 +97,17 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
     resizeObserverRef.current = observer;
   }, []);
 
+  const visibleSize = useMemo(
+    () => ({ width: Math.max(0, canvasSize.width - rightInset), height: canvasSize.height }),
+    [canvasSize, rightInset],
+  );
+
   const translateExtent = useMemo(
     () =>
-      contentBounds && canvasSize.width && canvasSize.height
-        ? getPanTranslateExtent(contentBounds, canvasSize, { y: initialViewport.y, zoom })
+      contentBounds && visibleSize.width && visibleSize.height
+        ? getPanTranslateExtent(contentBounds, visibleSize, { y: initialViewport.y, zoom })
         : undefined,
-    [canvasSize, contentBounds, initialViewport.y, zoom],
+    [visibleSize, contentBounds, initialViewport.y, zoom],
   );
 
   const onInit = useCallback<OnInit<NodeType, EdgeType>>((instance) => {
@@ -119,8 +128,8 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
   useEffect(() => {
     if (
       !reactFlowInstance ||
-      !canvasSize.width ||
-      !canvasSize.height ||
+      !visibleSize.width ||
+      !visibleSize.height ||
       contentBottom === undefined ||
       contentLeft === undefined ||
       contentRight === undefined
@@ -137,29 +146,32 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
         left: contentLeft,
         right: contentRight,
       },
-      canvasSize,
+      visibleSize,
       { y: initialViewport.y, zoom },
     );
-    // Preserve the visible center when a docked sidebar changes the canvas width.
-    const widthChange = canvasSize.width - (previousCanvasWidth.current ?? canvasSize.width);
-    previousCanvasWidth.current = canvasSize.width;
+    // Preserve the visible center when a sidebar changes the visible width.
+    const widthChange = visibleSize.width - (previousCanvasWidth.current ?? visibleSize.width);
+    previousCanvasWidth.current = visibleSize.width;
+    const insetChanged = previousRightInset.current !== rightInset;
+    previousRightInset.current = rightInset;
     const nextViewport = constrainViewport(
       { ...currentViewport, x: currentViewport.x + widthChange / 2 },
-      canvasSize,
+      visibleSize,
       nextExtent,
     );
 
     if (nextViewport.x !== currentViewport.x || nextViewport.y !== currentViewport.y) {
       void reactFlowInstance.setViewport(nextViewport, {
-        // Width already animates in CSS. A second animation would trail each resize
-        // frame and make the flow jump ahead, then drift back after the panel stops.
-        duration: widthChange === 0 ? 250 : 0,
+        // A docked sidebar's width already animates in CSS, so a second animation would
+        // trail each resize frame. A floating one slides over a canvas that doesn't resize.
+        duration: insetChanged ? 300 : widthChange === 0 ? 250 : 0,
         interpolate: 'linear',
       });
     }
   }, [
-    canvasSize.height,
-    canvasSize.width,
+    visibleSize.height,
+    visibleSize.width,
+    rightInset,
     contentBottom,
     contentLeft,
     contentRight,

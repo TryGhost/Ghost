@@ -14,6 +14,8 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type { EditorChrome } from './types';
+import { CHROME_EASE } from './canvas/automation-sidebar';
 
 export type AutomationValidationAction = 'publish' | 'save' | 'unpublish';
 
@@ -38,6 +40,8 @@ interface AutomationHeaderProps {
   onSave: () => void;
   onPublish: () => void;
   onTurnOff: () => void;
+  chrome: EditorChrome;
+  sidebar: { available: boolean; open: boolean; animated: boolean };
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -55,8 +59,15 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onSave,
   onPublish,
   onTurnOff,
+  chrome,
+  sidebar,
 }) => {
-  const { isAdmin7 } = useShade();
+  const { isAdmin7, controlShape } = useShade();
+  const floating = chrome === 'floating';
+  // Floating over the canvas, ghost controls need a surface to read as buttons.
+  const floatingSurface = floating ? 'bg-surface-elevated' : undefined;
+  const sidebarMotion =
+    sidebar.animated && `duration-300 ${CHROME_EASE} motion-reduce:transition-none`;
   const entering = useScreenEntrance();
   const name = automation?.name;
   const status = automation?.status;
@@ -100,6 +111,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       statusAction = withValidationFeedback(
         'unpublish',
         <Button
+          className={floatingSurface}
           disabled={!isTurnOffButtonEnabled}
           variant={isAdmin7 ? 'ghost' : 'outline'}
           onClick={onTurnOff}
@@ -113,6 +125,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       statusAction = withValidationFeedback(
         'save',
         <Button
+          className={saveButtonVariant === 'outline' ? floatingSurface : undefined}
           disabled={!isSaveButtonEnabled}
           variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
           onClick={onSave}
@@ -127,6 +140,77 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     }
   }
 
+  const backButton = (
+    <Button
+      className={floatingSurface}
+      size={isAdmin7 ? 'icon' : undefined}
+      variant="ghost"
+      asChild
+    >
+      <Link aria-label="Back to automations" to="/automations">
+        <LucideIcon.ArrowLeft strokeWidth={2} />
+      </Link>
+    </Button>
+  );
+
+  const actions = (
+    <>
+      {statusAction}
+      {withValidationFeedback(
+        'publish',
+        <Button
+          disabled={!isPublishButtonEnabled}
+          variant={publishButtonVariant}
+          onClick={onPublish}
+        >
+          {publishButtonChildren}
+        </Button>,
+      )}
+    </>
+  );
+
+  if (floating) {
+    return (
+      <header
+        className={cn(
+          'screen-exit-chrome-top pointer-events-none absolute inset-x-0 top-0 z-30 h-0',
+          entering && 'screen-enter-from-top',
+        )}
+      >
+        <Inline className="pointer-events-auto absolute top-5 left-6 max-w-[50%] min-w-0" gap="sm">
+          {backButton}
+          {isLoadingAutomation ? (
+            <Skeleton className="h-5 w-40" />
+          ) : (
+            <>
+              <span
+                className={cn(
+                  'flex h-(--control-height) min-w-0 items-center bg-surface-elevated',
+                  isAdmin7 ? 'px-3' : 'px-2.5',
+                  controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
+                )}
+              >
+                <span className="min-w-0 truncate text-control font-medium">{name}</span>
+              </span>
+              {status && <AutomationStatusBadge status={status} />}
+            </>
+          )}
+        </Inline>
+        {/* Keeps clear of the sidebar card, sliding with it, and of the toggle. */}
+        <Inline
+          className={cn(
+            'pointer-events-auto absolute top-5 shrink-0',
+            sidebarMotion && `transition-[right] ${sidebarMotion}`,
+            !sidebar.available ? 'right-6' : sidebar.open ? 'right-[496px]' : 'right-16',
+          )}
+          gap="sm"
+        >
+          {actions}
+        </Inline>
+      </header>
+    );
+  }
+
   return (
     <header
       className={cn(
@@ -135,11 +219,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       )}
     >
       <Inline className="min-w-0" gap="sm">
-        <Button size={isAdmin7 ? 'icon' : undefined} variant="ghost" asChild>
-          <Link aria-label="Back to automations" to="/automations">
-            <LucideIcon.ArrowLeft strokeWidth={2} />
-          </Link>
-        </Button>
+        {backButton}
         {isLoadingAutomation ? (
           <Skeleton className="h-5 w-40" />
         ) : (
@@ -150,16 +230,17 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         )}
       </Inline>
       <Inline className="shrink-0" gap="sm">
-        {statusAction}
-        {withValidationFeedback(
-          'publish',
-          <Button
-            disabled={!isPublishButtonEnabled}
-            variant={publishButtonVariant}
-            onClick={onPublish}
-          >
-            {publishButtonChildren}
-          </Button>,
+        {actions}
+        {/* The sidebar toggle's footprint while it sits over this row. */}
+        {chrome === 'docked' && sidebar.available && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'shrink-0',
+              sidebarMotion && `transition-[width,margin] ${sidebarMotion}`,
+              sidebar.open ? '-ml-2 w-0' : 'w-(--control-height)',
+            )}
+          />
         )}
       </Inline>
     </header>

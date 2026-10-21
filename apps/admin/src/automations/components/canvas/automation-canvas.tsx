@@ -34,23 +34,22 @@ import type { AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry } from './n
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge, NodeChange } from '@xyflow/react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { Box, Inline } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import { RunHistory } from './run-history';
 import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import type { TriggerData } from './trigger-card';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
-import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
-import type { EmailModalMode } from '@/automations/components/types';
+import type { EditorChrome, EmailModalMode } from '@/automations/components/types';
+// SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
+import { useEditorChromeVariant } from '@/shaping/variants';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
-// SHAPING PROTOTYPE ONLY — never merge.
-import { useEmailCardVariant } from '@/shaping/variants';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -70,6 +69,7 @@ const INITIAL_VIEWPORT_Y = 40;
 // reveals canvas rather than an empty band.
 const HEADER_UNDERLAP_Y = 56;
 const NODE_ENTER_ANIMATION_DURATION = 250;
+const FLOATING_SIDEBAR_WIDTH = 480;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 export const EMAIL_STEP_QUERY_PARAM = 'emailStep';
@@ -188,9 +188,7 @@ type BuildGraphParams = {
   onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
   onPreviewEmail: (stepId: string) => void;
   onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
-  onSelectStep: (stepId: string) => void;
   newStepId: string | null;
-  selectedStepId: string | null;
 };
 
 const buildGraph = ({
@@ -211,9 +209,7 @@ const buildGraph = ({
   onEditEmailBody,
   onPick,
   onPreviewEmail,
-  onSelectStep,
   newStepId,
-  selectedStepId,
 }: BuildGraphParams): {
   nodes: AutomationFlowNode[];
   edges: Edge[];
@@ -228,6 +224,8 @@ const buildGraph = ({
     connectable: false,
     focusable: false,
     measured: nodeSizes[id],
+    // React Flow disables pointer events on nodes that aren't selectable or clicked.
+    style: { pointerEvents: 'all' as const },
   });
   const disabledReason = disabled ? DISABLED_REASON : undefined;
 
@@ -265,14 +263,16 @@ const buildGraph = ({
     const editableEmail = action.type === 'send_email';
     const editableWait = action.type === 'wait';
     const errorMessage = actionErrors[action.id];
-    const showStatsFooter = action.type === 'send_email' && Boolean(action.stats);
 
     nodes.push({
       id: action.id,
       type: 'step',
       position: { x: nodeX, y: cursorY },
       data: {
-        stats: action.type === 'send_email' ? action.stats : undefined,
+        analytics:
+          action.type === 'send_email' && action.stats
+            ? { automationId: automation.id, actionId: action.id, stats: action.stats }
+            : undefined,
         ...(editableEmail
           ? {
               email: {
@@ -282,7 +282,6 @@ const buildGraph = ({
                 onInteract: () => onInteract(action.id),
                 onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),
-                onToggleAnalytics: action.stats ? () => onSelectStep(action.id) : undefined,
               },
             }
           : {}),
@@ -306,8 +305,6 @@ const buildGraph = ({
         }),
         errorMessage,
         isNew: newStepId === action.id,
-        selected: selectedStepId === action.id,
-        showStatsFooter,
       },
       ...nodeProps(action.id),
     });
@@ -394,7 +391,15 @@ const getInitialViewport = (
   zoom: 1,
 });
 
+export type AutomationEditorChrome = {
+  chrome: EditorChrome;
+  sidebar: { available: boolean; open: boolean; animated: boolean };
+};
+
 type AutomationCanvasProps = {
+  // The editor's header, laid out in the canvas's column so the sidebar can run
+  // full height beside it.
+  renderHeader: (layout: AutomationEditorChrome) => React.ReactNode;
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
   // Set when a trigger was just picked: the canvas opens with the trigger where the
   // picker's card was, and the flow below it plays in.
@@ -414,10 +419,6 @@ type AutomationCanvasProps = {
   onKeepEditingAfterBlockedEmailNavigation?: () => void;
 };
 
-type SelectedStep = {
-  id: string;
-};
-
 const insertActionByType = {
   wait: insertWaitAction,
   send_email: insertSendEmailAction,
@@ -430,6 +431,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
   typeof state.automationEmailModal === 'boolean';
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
+  renderHeader,
   initialSidebar,
   initialTriggerTop,
   actionErrors = {},
@@ -473,7 +475,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   }, []);
   const [newStepId, setNewStepId] = useState<string | null>(null);
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
-  const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const triggerTierScope = automation?.trigger_tier_scope;
@@ -507,10 +508,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
     [tierData, tiersLoading, tiersError, refetchTiers],
   );
-  const selectedStepId = selectedStep?.id ?? null;
-  // SHAPING PROTOTYPE ONLY — never merge: with an in-card analytics option, the
-  // right-hand email panel stays closed and doesn't compete with the sidebar.
-  const analyticsInCard = useEmailCardVariant() !== 'current';
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
     hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
@@ -542,9 +539,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       setNewEmailWithoutWarningsId(
         insertedAction?.type === 'send_email' ? insertedAction.id : null,
       );
-      if (insertedAction) {
-        setSelectedStep(null);
-      }
       onChange(next);
     },
     [automation, onChange],
@@ -570,7 +564,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       if (emailModalStepId === actionId) {
         removeEmailStepParam();
       }
-      setSelectedStep(null);
       setDeleteConfirmationActionId(null);
       onChange(next);
     },
@@ -645,19 +638,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     [location.state, searchParams, setSearchParams],
   );
 
-  const handleContextMenuEditEmail = useCallback(
-    (actionId: string, mode: EmailModalMode = 'edit') => {
-      setSelectedStep(null);
-      handleEditEmail(actionId, mode);
+  const handlePreviewEmail = useCallback(
+    (actionId: string) => {
+      handleEditEmail(actionId, 'preview');
     },
     [handleEditEmail],
-  );
-
-  const handleContextMenuPreviewEmail = useCallback(
-    (actionId: string) => {
-      handleContextMenuEditEmail(actionId, 'preview');
-    },
-    [handleContextMenuEditEmail],
   );
 
   const emailModalAction =
@@ -705,9 +690,31 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     }));
   }, []);
   const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
+  // SHAPING PROTOTYPE ONLY — never merge: the design option picked in the prototype menu.
+  const chrome: EditorChrome = useEditorChromeVariant();
+  const floating = chrome === 'floating';
+  // Animate the sidebar only once it has drawn at its starting width.
+  const [sidebarAnimated, setSidebarAnimated] = useState(false);
+  const sidebarResolved = sidebar.tab !== 'unknown' && Boolean(automation);
+  useEffect(() => {
+    if (sidebarResolved) {
+      setSidebarAnimated(true);
+    }
+  }, [sidebarResolved]);
+  const header = renderHeader({
+    chrome,
+    sidebar: {
+      available: isAutomationSidebarAvailable,
+      open: isAutomationSidebarOpen,
+      animated: sidebarAnimated,
+    },
+  });
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
-    initialTriggerTop,
+    // The picker measures from its canvas, which a floating header doesn't push down.
+    initialTriggerTop !== undefined && floating
+      ? initialTriggerTop - HEADER_UNDERLAP_Y
+      : initialTriggerTop,
   );
   const isHistoryOpen = selectedRunId !== null;
 
@@ -761,18 +768,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       onUpdateWait: handleUpdateWait,
       disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
       onDelete: handleRequestDelete,
-      onEditEmailBody: handleContextMenuEditEmail,
+      onEditEmailBody: handleEditEmail,
       onPick: handlePick,
-      onPreviewEmail: handleContextMenuPreviewEmail,
-      onSelectStep: (id) => {
-        showWarningsForOtherSteps(id);
-        setSelectedStep((current) => (current?.id === id ? null : { id }));
-        if (!analyticsInCard) {
-          setAutomationSidebarOpen(false);
-        }
-      },
+      onPreviewEmail: handlePreviewEmail,
       newStepId,
-      selectedStepId,
     });
   }, [
     actionErrors,
@@ -787,57 +786,36 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     onWaitValidityChange,
     handleUpdateSubject,
     handleUpdateWait,
-    handleContextMenuEditEmail,
-    handleContextMenuPreviewEmail,
+    handleEditEmail,
+    handlePreviewEmail,
     handlePick,
     handleRequestDelete,
     newStepId,
-    selectedStepId,
-    analyticsInCard,
   ]);
 
   const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
     contentBounds: graph?.contentBounds,
     initialViewport,
+    rightInset: floating && isAutomationSidebarOpen ? FLOATING_SIDEBAR_WIDTH : 0,
   });
 
-  const clearDetail = useCallback(() => {
-    setSelectedStep(null);
-  }, []);
-
-  const handleCloseEmailPerformance = useCallback(() => {
-    editingCanvasRef.current
-      ?.querySelector<HTMLButtonElement>('[aria-label="Hide email analytics"]')
-      ?.focus({ preventScroll: true });
-    clearDetail();
-  }, [clearDetail]);
-
   useEffect(() => {
-    if (
-      emailModalAction ||
-      deleteConfirmationAction ||
-      (!isAutomationSidebarOpen && !selectedStepId)
-    ) {
+    if (emailModalAction || deleteConfirmationAction || !isAutomationSidebarOpen) {
       return;
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (isAutomationSidebarOpen) {
-          setAutomationSidebarOpen(false);
-        } else {
-          handleCloseEmailPerformance();
-        }
+        setAutomationSidebarOpen(false);
       }
     };
     // Menus, popovers, and search consume Escape before it reaches window.
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [
-    handleCloseEmailPerformance,
     deleteConfirmationAction,
     emailModalAction,
     isAutomationSidebarOpen,
-    selectedStepId,
+    setAutomationSidebarOpen,
   ]);
 
   const closeEmailModal = () => {
@@ -887,158 +865,221 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
   if (isLoading) {
     return (
-      <div
-        className="-mt-14 flex flex-1 items-center justify-center bg-surface-page pt-14"
-        data-testid="automation-canvas-loading"
-      >
-        <div className="delayed-fade-in">
-          <LoadingIndicator size="lg" />
+      <Stack className="relative min-h-0 flex-1" gap="none">
+        {header}
+        <div
+          className={cn(
+            'flex flex-1 items-center justify-center bg-surface-page',
+            !floating && '-mt-14 pt-14',
+          )}
+          data-testid="automation-canvas-loading"
+        >
+          <div className="delayed-fade-in">
+            <LoadingIndicator size="lg" />
+          </div>
         </div>
-      </div>
+      </Stack>
     );
   }
 
   if (isError || !automation || !graph) {
     return (
-      <div className="flex flex-1 items-start justify-center bg-surface-page px-4 py-8">
-        <Banner className="max-w-md" role="alert" variant="destructive">
-          <div className="flex items-start gap-3">
-            <LucideIcon.CircleAlert className="mt-0.5 size-5 text-red" />
-            <div>
-              <strong className="block">Couldn&apos;t load automation</strong>
-              <p className="text-sm text-muted-foreground">Try refreshing the page.</p>
+      <Stack className="relative min-h-0 flex-1" gap="none">
+        {header}
+        <div
+          className={cn(
+            'flex flex-1 items-start justify-center bg-surface-page px-4 py-8',
+            floating && 'pt-20',
+          )}
+        >
+          <Banner className="max-w-md" role="alert" variant="destructive">
+            <div className="flex items-start gap-3">
+              <LucideIcon.CircleAlert className="mt-0.5 size-5 text-red" />
+              <div>
+                <strong className="block">Couldn&apos;t load automation</strong>
+                <p className="text-sm text-muted-foreground">Try refreshing the page.</p>
+              </div>
             </div>
-          </div>
-        </Banner>
-      </div>
+          </Banner>
+        </div>
+      </Stack>
+    );
+  }
+
+  const canvasRegion = (
+    <Box
+      ref={viewport.measureCanvas}
+      className={cn(
+        'relative min-h-0 min-w-0 flex-1',
+        !floating && isAutomationSidebarOpen && '@max-[960px]/automation:invisible',
+      )}
+    >
+      <Box
+        ref={(element) => {
+          editingCanvasRef.current = element;
+          if (element) {
+            element.inert = isHistoryOpen;
+          }
+        }}
+        aria-hidden={isHistoryOpen}
+        aria-label="Editing canvas"
+        className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
+        role="region"
+        tabIndex={-1}
+      >
+        {/* Only the pane reaches up behind a docked header; the region keeps the visible bounds */}
+        <Box className={floating ? 'absolute inset-0' : 'absolute inset-x-0 -top-14 bottom-0'}>
+          <ReactFlow
+            className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
+            defaultViewport={initialViewport}
+            edges={graph.edges}
+            edgesFocusable={false}
+            edgeTypes={edgeTypes}
+            maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+            minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+            nodes={graph.nodes}
+            nodesConnectable={false}
+            nodesDraggable={false}
+            nodesFocusable={false}
+            nodeTypes={nodeTypes}
+            proOptions={{ hideAttribution: true }}
+            translateExtent={viewport.translateExtent}
+            zoomOnDoubleClick={false}
+            zoomOnScroll={false}
+            panOnScroll
+            onInit={viewport.onInit}
+            onMove={viewport.onMove}
+            onNodeDoubleClick={handleNodeDoubleClick}
+            onNodesChange={handleNodesChange}
+          >
+            <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
+            <AutomationCanvasControls />
+          </ReactFlow>
+        </Box>
+      </Box>
+      {isHistoryOpen && (
+        <RunHistory
+          key={selectedRunId}
+          automationId={automation.id}
+          automationSlug={automation.slug}
+          clearsLeftToggle={chrome === 'current'}
+          isAutomationSidebarOpen={isAutomationSidebarOpen}
+          isUnderFloatingHeader={floating}
+          memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
+          runId={selectedRunId}
+          onClose={handleCloseHistory}
+        />
+      )}
+    </Box>
+  );
+
+  const sidebarPanel = isAutomationSidebarAvailable ? (
+    <AutomationSidebar
+      animated={sidebarAnimated}
+      automationId={automation.id}
+      chrome={chrome}
+      description={automation.description}
+      isOpen={isAutomationSidebarOpen}
+      isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+      metadata={!automationsPerTierEnabled ? 'hidden' : isHistoryOpen ? 'readonly' : 'editable'}
+      name={automation.name}
+      performanceEnabled={isPerformanceEnabled}
+      selectedRunId={selectedRunId}
+      selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
+      tiers={tierData?.tiers ?? []}
+      triggerTierIds={automation.trigger_tier_ids ?? []}
+      triggerTierScope={automation.trigger_tier_scope}
+      onDetailsChange={(details) => onChange({ ...automation, ...details })}
+      onOpenChange={setAutomationSidebarOpen}
+      onSelectRun={handleSelectRun}
+      onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
+    />
+  ) : null;
+
+  const layoutProps = {
+    ref: layoutRef,
+    align: 'stretch' as const,
+    className: '@container/automation relative min-h-0 flex-1 overflow-x-clip bg-background',
+    'data-testid': 'automation-canvas',
+    gap: 'none' as const,
+  };
+
+  // The current build: a full-width header over a left-hand sidebar.
+  if (chrome === 'current') {
+    return (
+      <Stack className="relative min-h-0 flex-1" gap="none">
+        {header}
+        <Inline {...layoutProps}>
+          {sidebarPanel}
+          {canvasRegion}
+          {emailModalAction && automation && (
+            <EmailContentModal
+              automationId={automation.id}
+              initialLexical={emailModalAction.data.email_lexical}
+              initialMode={emailModalMode}
+              initialSubject={emailModalAction.data.email_subject}
+              isDiscardNavigationBlocked={isEmailNavigationBlocked}
+              onClose={closeEmailModal}
+              onDirtyChange={onEmailDirtyChange}
+              onDiscardBlockedNavigation={() =>
+                onDiscardBlockedEmailNavigation?.(closeEmailModalWithoutHistoryNavigation)
+              }
+              onKeepEditingAfterBlockedNavigation={onKeepEditingAfterBlockedEmailNavigation}
+              onSave={({ subject, lexical }) => {
+                onChange(
+                  updateSendEmailAction({
+                    detail: automation,
+                    actionId: emailModalAction.id,
+                    emailSubject: subject,
+                    emailLexical: lexical,
+                  }),
+                );
+              }}
+            />
+          )}
+          <AlertDialog
+            open={Boolean(deleteConfirmationAction)}
+            onOpenChange={(open) => {
+              if (!open) {
+                setDeleteConfirmationActionId(null);
+              }
+            }}
+          >
+            <AlertDialogContent onEscapeKeyDown={(event) => event.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This email will be removed from the automation. Save or publish the automation to
+                  apply this change.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (deleteConfirmationAction) {
+                      handleDelete(deleteConfirmationAction.id);
+                    }
+                  }}
+                >
+                  Delete email
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Inline>
+      </Stack>
     );
   }
 
   return (
-    <Inline
-      ref={layoutRef}
-      align="stretch"
-      className="@container/automation relative min-h-0 flex-1 overflow-x-clip bg-background"
-      data-testid="automation-canvas"
-      gap="none"
-    >
-      {isAutomationSidebarAvailable && (
-        <AutomationSidebar
-          automationId={automation.id}
-          description={automation.description}
-          isOpen={isAutomationSidebarOpen}
-          isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-          metadata={!automationsPerTierEnabled ? 'hidden' : isHistoryOpen ? 'readonly' : 'editable'}
-          name={automation.name}
-          performanceEnabled={isPerformanceEnabled}
-          selectedRunId={selectedRunId}
-          selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
-          tiers={tierData?.tiers ?? []}
-          triggerTierIds={automation.trigger_tier_ids ?? []}
-          triggerTierScope={automation.trigger_tier_scope}
-          onDetailsChange={(details) => onChange({ ...automation, ...details })}
-          onOpenChange={(open) => {
-            setAutomationSidebarOpen(open);
-            if (open && !analyticsInCard) {
-              clearDetail();
-            }
-          }}
-          onSelectRun={handleSelectRun}
-          onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
-        />
-      )}
-      <Box
-        ref={viewport.measureCanvas}
-        className={cn(
-          'relative min-w-0 flex-1',
-          isAutomationSidebarOpen && '@max-[960px]/automation:invisible',
-        )}
-      >
-        <Box
-          ref={(element) => {
-            editingCanvasRef.current = element;
-            if (element) {
-              element.inert = isHistoryOpen;
-            }
-          }}
-          aria-hidden={isHistoryOpen}
-          aria-label="Editing canvas"
-          className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
-          role="region"
-          tabIndex={-1}
-        >
-          {/* Only the pane reaches up behind the header; the region keeps the visible bounds */}
-          <Box className="absolute inset-x-0 -top-14 bottom-0">
-            <ReactFlow
-              className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
-              defaultViewport={initialViewport}
-              edges={graph.edges}
-              edgesFocusable={false}
-              edgeTypes={edgeTypes}
-              maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
-              minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-              nodes={graph.nodes}
-              nodesConnectable={false}
-              nodesDraggable={false}
-              nodesFocusable={false}
-              nodeTypes={nodeTypes}
-              proOptions={{ hideAttribution: true }}
-              translateExtent={viewport.translateExtent}
-              zoomOnDoubleClick={false}
-              zoomOnScroll={false}
-              panOnScroll
-              onInit={viewport.onInit}
-              onMove={viewport.onMove}
-              onNodeClick={(event, node) => {
-                if (event.button !== 0) {
-                  return;
-                }
-                if (
-                  node.id !== TAIL_CANVAS_ID &&
-                  node.id !== TRIGGER_CANVAS_ID &&
-                  !('email' in node.data && node.data.email) &&
-                  !('wait' in node.data && node.data.wait)
-                ) {
-                  showWarningsForOtherSteps(node.id);
-                  setSelectedStep({ id: node.id });
-                }
-              }}
-              onNodeDoubleClick={handleNodeDoubleClick}
-              onNodesChange={handleNodesChange}
-            >
-              <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-              <AutomationCanvasControls />
-            </ReactFlow>
-          </Box>
-        </Box>
-        {isHistoryOpen && (
-          <RunHistory
-            key={selectedRunId}
-            automationId={automation.id}
-            automationSlug={automation.slug}
-            isAutomationSidebarOpen={isAutomationSidebarOpen}
-            memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
-            runId={selectedRunId}
-            onClose={handleCloseHistory}
-          />
-        )}
-      </Box>
-      <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
-        {!isHistoryOpen && (
-          <EmailPerformanceSidebar
-            automationId={automation.id}
-            email={
-              analyticsInCard
-                ? undefined
-                : automation.actions.find(
-                    (action): action is AutomationSendEmailAction =>
-                      action.id === selectedStepId && action.type === 'send_email',
-                  )
-            }
-            onClose={handleCloseEmailPerformance}
-          />
-        )}
-      </Box>
+    <Inline {...layoutProps}>
+      <Stack className="relative min-h-0 min-w-0 flex-1" gap="none">
+        {header}
+        {canvasRegion}
+      </Stack>
+      {sidebarPanel}
       {emailModalAction && automation && (
         <EmailContentModal
           automationId={automation.id}

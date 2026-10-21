@@ -776,15 +776,24 @@ describe('AutomationEditor', () => {
     ]);
   });
 
+  const welcomeEmailCard = () =>
+    screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
+  const analyticsToggle = () =>
+    within(welcomeEmailCard()).getByRole('button', { name: 'Email analytics' });
+  const linkRequests = () =>
+    mockUseBrowseAutomationActionLinks.mock.calls.filter(
+      ([, , options]) => (options as { enabled?: boolean }).enabled,
+    );
+  const OFF = 'Tracking is off in Analytics settings.';
+
   it('renders send-email node stats when stats are available', () => {
     mockAutomationWithEmailStats();
 
     renderEditor();
 
-    const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
-    expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('65%');
-    expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('20%');
+    expect(within(welcomeEmailCard()).getByText('Sent: 1,247')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('Opened: 65%, 780 members')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('Clicked: 20%, 249 members')).toBeInTheDocument();
   });
 
   it.each([
@@ -793,7 +802,7 @@ describe('AutomationEditor', () => {
     { emailTrackOpens: false, emailTrackClicks: true },
     { emailTrackOpens: false, emailTrackClicks: false },
   ])(
-    'shows a muted Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks',
+    'shows Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks',
     ({ emailTrackOpens, emailTrackClicks }) => {
       mockEmailTracking.emailTrackOpens = emailTrackOpens;
       mockEmailTracking.emailTrackClicks = emailTrackClicks;
@@ -801,23 +810,21 @@ describe('AutomationEditor', () => {
 
       renderEditor();
 
-      const emailStep = screen.getByRole('article', {
-        name: 'Send email: Welcome to The Blueprint',
-      });
-      expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
-      expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent(
-        emailTrackOpens ? '65%' : 'Off',
-      );
-      expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent(
-        emailTrackClicks ? '20%' : 'Off',
-      );
+      expect(within(welcomeEmailCard()).getByText('Sent: 1,247')).toBeInTheDocument();
+      expect(
+        within(welcomeEmailCard()).getByText(
+          emailTrackOpens ? 'Opened: 65%, 780 members' : `Opened: ${OFF}`,
+        ),
+      ).toBeInTheDocument();
+      expect(
+        within(welcomeEmailCard()).getByText(
+          emailTrackClicks ? 'Clicked: 20%, 249 members' : `Clicked: ${OFF}`,
+        ),
+      ).toBeInTheDocument();
 
-      fireEvent.click(within(emailStep).getByRole('button', { name: 'View email analytics' }));
-      const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
-      expect(within(sidebar).queryAllByText('65%').length > 0).toBe(emailTrackOpens);
-      expect(within(sidebar).queryAllByText('20%').length > 0).toBe(emailTrackClicks);
-      expect(within(sidebar).queryAllByText('Off')).toHaveLength(
-        Number(!emailTrackOpens) + Number(!emailTrackClicks),
+      fireEvent.click(analyticsToggle());
+      expect(Boolean(within(welcomeEmailCard()).queryByText('Click tracking is off'))).toBe(
+        !emailTrackClicks,
       );
     },
   );
@@ -829,16 +836,11 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('Off');
-    expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('Off');
-
-    fireEvent.click(within(emailStep).getByRole('button', { name: 'View email analytics' }));
-    const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
-    expect(within(sidebar).queryAllByText('Off')).toHaveLength(2);
+    expect(within(welcomeEmailCard()).getByText(`Opened: ${OFF}`)).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText(`Clicked: ${OFF}`)).toBeInTheDocument();
   });
 
-  it('does not render send-email node stats when the action has no stats', () => {
+  it('does not render send-email node stats or the analytics toggle without stats', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -847,23 +849,35 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(within(emailStep).queryByText('Sent')).not.toBeInTheDocument();
+    expect(within(welcomeEmailCard()).queryByText(/^Sent: /)).not.toBeInTheDocument();
+    expect(
+      within(welcomeEmailCard()).queryByRole('button', { name: 'Email analytics' }),
+    ).not.toBeInTheDocument();
   });
 
-  it('renders clicked performance in the send-email sidebar', () => {
+  it('switches the card between the email and its analytics with a pressed toggle', () => {
     mockAutomationWithEmailStats();
+    mockUseBrowseAutomationActionLinks.mockReturnValue({
+      data: { automation_action_links: [{ url: 'https://example.com', clicked_count: 249 }] },
+      isLoading: false,
+      isError: false,
+    });
 
     renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
+    const subject = within(welcomeEmailCard()).getByRole('textbox', { name: 'Subject line' });
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'false');
+    expect(subject.closest('[inert]')).toBeNull();
 
-    const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
-    const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
-    expect(within(clickedKpi!).getByText('20%')).toBeInTheDocument();
-    expect(within(clickedKpi!).getByText('249')).toBeInTheDocument();
+    fireEvent.click(analyticsToggle());
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'true');
+    expect(subject.closest('[inert]')).not.toBeNull();
     expect(
-      within(sidebar).getByRole('img', { name: 'Clicked rate chart ring' }),
-    ).toBeInTheDocument();
+      within(welcomeEmailCard()).getByText('Unique clicks per link').closest('[inert]'),
+    ).toBeNull();
+
+    fireEvent.click(analyticsToggle());
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'false');
+    expect(subject.closest('[inert]')).toBeNull();
   });
 
   it('renders zero sends and unavailable email rates when there are no sends', () => {
@@ -877,19 +891,31 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('0');
-    expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('—');
-    expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('—');
-
-    fireEvent.click(within(emailStep).getByRole('button', { name: 'View email analytics' }));
-    const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
-    const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
-    expect(within(clickedKpi!).getByText('—')).toBeInTheDocument();
-    expect(within(clickedKpi!).getByText('0')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('Sent: 0')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('Opened: —')).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByText('Clicked: —')).toBeInTheDocument();
   });
 
-  it('renders a tracked zero click rate and count', () => {
+  it('renders a tracked zero click rate for an email with links', () => {
+    mockAutomationWithEmailStats({
+      email_clicked_count: 0,
+      email_sent_count: 10,
+      email_opened_count: 5,
+      opened_rate: 50,
+      clicked_rate: 0,
+    });
+    mockUseBrowseAutomationActionLinks.mockReturnValue({
+      data: { automation_action_links: [{ url: 'https://example.com', clicked_count: 0 }] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+
+    expect(within(welcomeEmailCard()).getByText('Clicked: 0%, 0 members')).toBeInTheDocument();
+  });
+
+  it('shows no click rate and a no-links state for an email without links', () => {
     mockAutomationWithEmailStats({
       email_clicked_count: 0,
       email_sent_count: 10,
@@ -900,17 +926,18 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('0%');
-
-    fireEvent.click(within(emailStep).getByRole('button', { name: 'View email analytics' }));
-    const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
-    const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
-    expect(within(clickedKpi!).getByText('0%')).toBeInTheDocument();
-    expect(within(clickedKpi!).getByText('0')).toBeInTheDocument();
+    // With no clicks, the card asks whether the email had links at all.
+    expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith(
+      'automation-id-1',
+      'action-email',
+      { defaultErrorHandler: false, enabled: true },
+    );
+    expect(within(welcomeEmailCard()).getByText('Clicked: —')).toBeInTheDocument();
+    fireEvent.click(analyticsToggle());
+    expect(within(welcomeEmailCard()).getByText('No links in this email')).toBeInTheDocument();
   });
 
-  it('renders up to ten top clicked links with counts, clamped percentages, and full destinations', () => {
+  it('pages through clicked links with counts, clamped percentages, and full destinations', () => {
     mockAutomationWithEmailStats({
       email_clicked_count: 5,
       email_sent_count: 10,
@@ -930,34 +957,61 @@ describe('AutomationEditor', () => {
     });
 
     renderEditor();
-    expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
+    // An email with clicks has links, so nothing is requested until it opens.
+    expect(linkRequests()).toHaveLength(0);
+    fireEvent.click(analyticsToggle());
 
-    const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
     expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith(
       'automation-id-1',
       'action-email',
       { defaultErrorHandler: false, enabled: true, refetchOnMount: 'always' },
     );
-    expect(within(sidebar).getAllByRole('link')).toHaveLength(10);
+    expect(within(welcomeEmailCard()).getAllByRole('link')).toHaveLength(10);
 
-    const firstLink = within(sidebar).getByRole('link', { name: 'example.com/link-1' });
+    const firstLink = within(welcomeEmailCard()).getByRole('link', { name: 'example.com/link-1' });
     expect(firstLink).toHaveAttribute('href', 'https://example.com/link-1');
     const firstRow = firstLink.parentElement?.parentElement;
     expect(firstRow).not.toBeNull();
     expect(within(firstRow!).getByText('6')).toBeInTheDocument();
     expect(within(firstRow!).getByText('100%')).toBeInTheDocument();
     expect(firstRow?.querySelector('[style="width: 100%;"]')).toBeInTheDocument();
-    const zeroClickRow = within(sidebar).getByRole('link', { name: 'example.com/link-3' })
-      .parentElement?.parentElement;
+    const zeroClickRow = within(welcomeEmailCard()).getByRole('link', {
+      name: 'example.com/link-3',
+    }).parentElement?.parentElement;
     expect(within(zeroClickRow!).getByText('0')).toBeInTheDocument();
     expect(within(zeroClickRow!).getByText('0%')).toBeInTheDocument();
+
     expect(
-      within(sidebar).queryByRole('link', { name: 'example.com/link-11' }),
+      within(welcomeEmailCard()).getByRole('button', { name: 'Previous page' }),
+    ).toBeDisabled();
+    fireEvent.click(within(welcomeEmailCard()).getByRole('button', { name: 'Next page' }));
+    expect(within(welcomeEmailCard()).getAllByRole('link')).toHaveLength(2);
+    expect(
+      within(welcomeEmailCard()).getByRole('link', { name: 'example.com/link-11' }),
+    ).toBeInTheDocument();
+    expect(within(welcomeEmailCard()).getByRole('button', { name: 'Next page' })).toBeDisabled();
+  });
+
+  it('does not paginate ten or fewer clicked links', () => {
+    mockAutomationWithEmailStats();
+    mockUseBrowseAutomationActionLinks.mockReturnValue({
+      data: {
+        automation_action_links: [{ url: 'https://example.com/only', clicked_count: 249 }],
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+    fireEvent.click(analyticsToggle());
+
+    expect(within(welcomeEmailCard()).getAllByRole('link')).toHaveLength(1);
+    expect(
+      within(welcomeEmailCard()).queryByRole('button', { name: 'Next page' }),
     ).not.toBeInTheDocument();
   });
 
-  it('renders top clicked link loading, error, and empty states', () => {
+  it('renders clicked link loading and error states', () => {
     mockAutomationWithEmailStats({
       email_clicked_count: 2,
       email_sent_count: 10,
@@ -972,7 +1026,7 @@ describe('AutomationEditor', () => {
       isError: false,
     });
     const { unmount } = renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
+    fireEvent.click(analyticsToggle());
     expect(screen.getByTestId('automation-action-links-loading')).toBeInTheDocument();
     unmount();
 
@@ -981,19 +1035,9 @@ describe('AutomationEditor', () => {
       isLoading: false,
       isError: true,
     });
-    const secondRender = renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
-    expect(screen.getByRole('alert')).toHaveTextContent("Couldn't load clicked links.");
-    secondRender.unmount();
-
-    mockUseBrowseAutomationActionLinks.mockReturnValue({
-      data: { automation_action_links: [] },
-      isLoading: false,
-      isError: false,
-    });
     renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
-    expect(screen.getByText('No link data to show.')).toBeInTheDocument();
+    fireEvent.click(analyticsToggle());
+    expect(screen.getByRole('alert')).toHaveTextContent("Couldn't load clicked links.");
   });
 
   it('disables the links request and shows a no-sends state when no emails were sent', () => {
@@ -1006,35 +1050,24 @@ describe('AutomationEditor', () => {
     });
 
     renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
+    fireEvent.click(analyticsToggle());
 
     expect(screen.getByText('No emails sent yet.')).toBeInTheDocument();
-    expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith(
-      'automation-id-1',
-      'action-email',
-      { defaultErrorHandler: false, enabled: false, refetchOnMount: 'always' },
-    );
+    expect(linkRequests()).toHaveLength(0);
   });
 
-  it('hides clicked links and skips the request when click tracking is off', () => {
+  it('shows a click-tracking-off state and skips the request when click tracking is off', () => {
     mockEmailTracking.emailTrackClicks = false;
-    mockAutomationWithEmailStats();
+    mockAutomationWithEmailStats({ email_clicked_count: 0, clicked_rate: 0 });
 
     renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'View email analytics' }));
+    fireEvent.click(analyticsToggle());
 
-    const sidebar = screen.getByRole('complementary', { name: 'Email performance' });
-    expect(within(sidebar).queryByText('Top clicked links')).not.toBeInTheDocument();
-    expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
-  });
-
-  it('does not request clicked links for a closed or non-email sidebar', () => {
-    mockAutomationWithEmailStats();
-
-    renderEditor();
-    expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('article', { name: 'Wait: 1 day' }));
-    expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+    expect(within(welcomeEmailCard()).getByText('Click tracking is off')).toBeInTheDocument();
+    expect(
+      within(welcomeEmailCard()).queryByText('Unique clicks per link'),
+    ).not.toBeInTheDocument();
+    expect(linkRequests()).toHaveLength(0);
   });
 
   it.each([
