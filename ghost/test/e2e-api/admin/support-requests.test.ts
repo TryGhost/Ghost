@@ -101,8 +101,8 @@ describe('Support requests API', function () {
               source: 'help-chat',
               page_url: 'https://example.com/ghost/#/settings',
               context: {
-                conversation_url: 'https://chat.example.com/conversations/1',
-                transcript: '**User**\nHow do I connect my domain?',
+                chat_url: 'https://chat.example.com/conversations/1',
+                chat_transcript: '**User**\nHow do I connect my domain?',
               },
             },
           ],
@@ -119,8 +119,8 @@ describe('Support requests API', function () {
         source: 'help-chat',
         pageUrl: 'https://example.com/ghost/#/settings',
         context: {
-          conversation_url: 'https://chat.example.com/conversations/1',
-          transcript: '**User**\nHow do I connect my domain?',
+          chat_url: 'https://chat.example.com/conversations/1',
+          chat_transcript: '**User**\nHow do I connect my domain?',
         },
       });
 
@@ -236,8 +236,8 @@ describe('Support requests API', function () {
       ['an unknown field is sent', { attachments: [] }],
       ['the context is not an object', { context: 'transcript' }],
       ['a context key is not a slug', { context: { 'Conversation URL': 'x' } }],
-      ['a context value is not a string', { context: { transcript: 42 } }],
-      ['a context value is blank', { context: { transcript: '   ' } }],
+      ['a context value is not a string', { context: { chat_transcript: 42 } }],
+      ['a context value is blank', { context: { chat_transcript: '   ' } }],
     ] as const) {
       it(`Returns 422 when ${description}`, async function () {
         configureHost();

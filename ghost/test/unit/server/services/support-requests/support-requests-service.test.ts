@@ -28,8 +28,8 @@ describe('SupportRequestsService', function () {
     source: 'help-chat',
     pageUrl: 'https://example.com/ghost/#/settings',
     context: {
-      conversation_url: 'https://chat.example.com/conversations/1',
-      transcript: '**User**\nHow do I connect my domain?',
+      chat_url: 'https://chat.example.com/conversations/1',
+      chat_transcript: '**User**\nHow do I connect my domain?',
     },
   };
 
