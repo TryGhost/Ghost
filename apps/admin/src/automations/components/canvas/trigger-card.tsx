@@ -31,17 +31,22 @@ export type TriggerData = {
   };
 };
 
-const tierQueryNotice = ({ isLoading, isError, refetch }: TriggerData['tierQuery']) =>
-  isLoading ? (
-    <Text size="md">Loading tiers...</Text>
-  ) : isError ? (
-    <Stack gap="sm">
-      <Text size="md">Could not load tiers.</Text>
-      <Button size="sm" variant="outline" onClick={() => void refetch()}>
-        Retry
-      </Button>
-    </Stack>
-  ) : undefined;
+function tierQueryNotice({ isLoading, isError, refetch }: TriggerData['tierQuery']) {
+  if (isLoading) {
+    return <Text size="md">Loading tiers...</Text>;
+  }
+  if (isError) {
+    return (
+      <Stack gap="sm">
+        <Text size="md">Could not load tiers.</Text>
+        <Button size="sm" variant="outline" onClick={() => void refetch()}>
+          Retry
+        </Button>
+      </Stack>
+    );
+  }
+  return undefined;
+}
 
 const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
   trigger,
@@ -197,6 +202,47 @@ const SubscriptionChangedPicker: React.FC<{
   );
 };
 
+function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
+  if (trigger.tierSelection) {
+    return {
+      title: 'Paid subscription changed',
+      Icon: LucideIcon.ArrowRightLeft,
+      content: (
+        <SubscriptionChangedPicker
+          errorMessage={errorMessage}
+          tierQuery={trigger.tierQuery}
+          tierSelection={trigger.tierSelection}
+        />
+      ),
+    };
+  }
+
+  switch (trigger.scope) {
+    case 'all_paid':
+    case 'selected_paid':
+      return {
+        title: 'Paid subscription started',
+        Icon: LucideIcon.CreditCard,
+        content: <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />,
+      };
+    case 'free':
+    case null:
+      return {
+        title: 'Free member signed up',
+        Icon: LucideIcon.UserPlus,
+        content: (
+          <Text as="p" size="md" tone="secondary">
+            Triggered when someone signs up as a free member
+          </Text>
+        ),
+      };
+    default: {
+      const _exhaustive: never = trigger.scope;
+      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+    }
+  }
+}
+
 export const TriggerCard: React.FC<
   React.PropsWithChildren<{
     trigger: TriggerData;
@@ -204,26 +250,7 @@ export const TriggerCard: React.FC<
     onInteract?: () => void;
   }>
 > = ({ trigger, errorMessage, onInteract, children }) => {
-  let paid: boolean;
-  switch (trigger.scope) {
-    case 'all_paid':
-    case 'selected_paid':
-      paid = true;
-      break;
-    case 'free':
-    case null:
-      paid = false;
-      break;
-    default: {
-      const _exhaustive: never = trigger.scope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
-    }
-  }
-  const title = trigger.tierSelection
-    ? 'Paid subscription changed'
-    : paid
-      ? 'Paid subscription started'
-      : 'Free member signed up';
+  const { title, Icon, content } = getTriggerPresentation(trigger, errorMessage);
   return (
     <AutomationCard
       aria-label={title}
@@ -235,31 +262,11 @@ export const TriggerCard: React.FC<
       onPointerDownCapture={onInteract}
     >
       <AutomationCardHeader
-        icon={
-          trigger.tierSelection ? (
-            <LucideIcon.ArrowRightLeft className="size-4" />
-          ) : paid ? (
-            <LucideIcon.CreditCard className="size-4" />
-          ) : (
-            <LucideIcon.UserPlus className="size-4" />
-          )
-        }
+        icon={<Icon className="size-4" />}
         iconClassName="p-2.5 text-foreground"
         title={title}
       />
-      {trigger.tierSelection ? (
-        <SubscriptionChangedPicker
-          errorMessage={errorMessage}
-          tierQuery={trigger.tierQuery}
-          tierSelection={trigger.tierSelection}
-        />
-      ) : paid ? (
-        <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />
-      ) : (
-        <Text as="p" size="md" tone="secondary">
-          Triggered when someone signs up as a free member
-        </Text>
-      )}
+      {content}
       {children}
     </AutomationCard>
   );
