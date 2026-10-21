@@ -8,9 +8,9 @@ export type AutomationEditState =
 
 export type RunSortDirection = 'asc' | 'desc';
 
-// The `paid_subscription_changed` trigger's tiers; an empty list is unanswered.
+// The From and To selections for a paid subscription change; an empty list means no selection.
 // Local until the API can hold it (NY-1733).
-export type SubscriptionTransition = {
+export type TierSelection = {
   from: 'any_paid' | string[];
   to: string[] | 'downgraded_to_free';
 };

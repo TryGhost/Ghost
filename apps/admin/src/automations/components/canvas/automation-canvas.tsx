@@ -171,7 +171,7 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
-  subscriptionTransition?: TriggerData['transition'];
+  tierSelection?: TriggerData['tierSelection'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -193,7 +193,7 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
-  subscriptionTransition,
+  tierSelection,
   tierQuery,
   onChange,
   nodeSizes,
@@ -247,7 +247,7 @@ const buildGraph = ({
           tierIds: automation.trigger_tier_ids ?? [],
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
-          transition: subscriptionTransition,
+          tierSelection,
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -399,7 +399,7 @@ type AutomationCanvasProps = {
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
-  subscriptionTransition?: TriggerData['transition'];
+  tierSelection?: TriggerData['tierSelection'];
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
   isError: boolean;
@@ -427,7 +427,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
-  subscriptionTransition,
+  tierSelection,
   onWaitValidityChange,
   automation,
   isEmailNavigationBlocked = false,
@@ -725,7 +725,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
-      subscriptionTransition,
+      tierSelection,
       tierQuery,
       onChange,
       nodeSizes,
@@ -745,7 +745,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors,
     connecting,
     savedTriggerTierIds,
-    subscriptionTransition,
+    tierSelection,
     tierQuery,
     onChange,
     automation,
