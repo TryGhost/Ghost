@@ -14,7 +14,7 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
-import type { SubscriptionTransition } from './types';
+import type { TierSelection } from './types';
 
 type PickedTrigger = 'free' | 'all_paid' | 'paid_subscription_changed';
 
@@ -127,11 +127,11 @@ const NewAutomationLoading: React.FC = () => {
 
 type NewAutomationProps = {
   // `triggerTop`: where the picker's card was, when a trigger was picked on it.
-  // `subscriptionTransition`: set when the picked trigger was "Paid subscription changed".
+  // `tierSelection`: set when the picked trigger was "Paid subscription changed".
   children: (
     automation: AutomationDetail,
     triggerTop?: number,
-    subscriptionTransition?: SubscriptionTransition,
+    tierSelection?: TierSelection,
   ) => React.ReactNode;
 };
 
@@ -145,8 +145,7 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
-  const [subscriptionTransition, setSubscriptionTransition] =
-    React.useState<SubscriptionTransition>();
+  const [tierSelection, setTierSelection] = React.useState<TierSelection>();
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -172,7 +171,7 @@ const NewAutomationSession: React.FC<
           setTriggerTop(cardTop);
           if (trigger === 'paid_subscription_changed') {
             // A stand-in paid scope loads the paid tiers; the editor never saves it (NY-1733).
-            setSubscriptionTransition({ from: [], to: [] });
+            setTierSelection({ from: [], to: [] });
             setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'all_paid' });
           } else {
             setInitialAutomation({
@@ -188,7 +187,7 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children(initialAutomation, triggerTop, subscriptionTransition)}
+      {children(initialAutomation, triggerTop, tierSelection)}
     </ScreenEntranceContext.Provider>
   ) : (
     children(initialAutomation)
