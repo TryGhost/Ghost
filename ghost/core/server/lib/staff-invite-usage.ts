@@ -32,6 +32,12 @@ export async function checkTrialStaffLimit(
   if (!Number.isSafeInteger(maxStaff) || maxStaff < 1) {
     throw new errors.IncorrectUsageError({ message: 'Invalid trial staff limit.' });
   }
+  if (
+    replacingEmail &&
+    (await transaction('invites').where('email', replacingEmail.trim()).forUpdate().first('id'))
+  ) {
+    return;
+  }
   const limit = new MaxLimit({
     name: 'staff',
     errors,
@@ -39,18 +45,13 @@ export async function checkTrialStaffLimit(
     config: {
       max: maxStaff,
       currentCountQuery: async () => {
-        // All roles and statuses occupy a trial seat. Replacing an invitation
-        // reuses its slot; accepting one deletes it in the same transaction.
+        // All roles and statuses occupy a trial seat.
         // Locking reads see current rows even if an import transaction already has a snapshot.
         const users = await transaction('users')
           .select('id')
           .limit(maxStaff + 1)
           .forUpdate();
-        const invitesQuery = transaction('invites');
-        if (replacingEmail) {
-          invitesQuery.whereNot('email', replacingEmail.trim());
-        }
-        const invites = await invitesQuery
+        const invites = await transaction('invites')
           .select('id')
           .limit(maxStaff + 1)
           .forUpdate();

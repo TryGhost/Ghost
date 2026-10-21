@@ -46,7 +46,7 @@ describe('Unit: services/invites/accept', function () {
     sinon.stub(models.Base, 'transaction').callsFake(transactionStub);
     sinon.stub(models.Invite, 'findOne').callsFake(findOneInviteStub);
     sinon.stub(models.User, 'findOne').callsFake(findOneUserStub);
-    sinon.stub(models.User, 'add').callsFake(addUserStub);
+    sinon.stub(models.User, 'addWithRoles').callsFake(addUserStub);
   });
 
   afterEach(function () {

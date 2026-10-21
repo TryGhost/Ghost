@@ -45,7 +45,8 @@ async function accept(invitation, models, lockStaffUsage) {
 
     await invite.destroy(options);
 
-    await models.User.add(
+    // The validated invitation already occupies this seat, even after a large import.
+    await models.User.addWithRoles(
       {
         email,
         name: data.name,

@@ -367,6 +367,46 @@ describe('Trial staff invitation limits', function () {
     assert.equal((await invitationActions()).length, remaining);
   });
 
+  it('allows resending and accepting an existing invite after imports exceed the cap', async function () {
+    const email = 'trial-created-coeditor@example.com';
+    await invite(email).expect(201);
+    for (let i = 0; i < 11; i++) {
+      await models.User.add(
+        {
+          name: `Imported ${i}`,
+          email: `trial-created-import-${i}@example.com`,
+          roles: ['Contributor'],
+        },
+        { importing: true, context: { internal: true } },
+      );
+    }
+    const seatsBefore =
+      Number((await db.knex('users').count('id', { as: 'count' }).first()).count) + 1;
+    await invite(email).expect(201);
+    assert.equal((await invitationActions()).length, 2);
+    sinon.assert.calledTwice(send);
+    await invite('new-after-import@example.com').expect(403);
+    const pending = await models.Invite.findOne({ email });
+    const security = require('@tryghost/security');
+    const invitesService = require('../../../core/server/services/invites').default;
+    await invitesService.service.accept({
+      invitation: [
+        {
+          token: security.url.encodeBase64(pending.get('token')),
+          name: 'Accepted contributor',
+          password: 'Sl1m3rson99',
+        },
+      ],
+    });
+    assert.equal(await models.Invite.findOne({ email }), null);
+    assert.equal(
+      Number((await db.knex('users').count('id', { as: 'count' }).first()).count),
+      seatsBefore,
+    );
+    assert.equal((await invitationActions()).length, 2);
+    sinon.assert.calledTwice(send);
+  });
+
   it('commits the audit entry before attempting delivery', async function () {
     send.callsFake(async () => {
       const recorded = await invitationActions();
