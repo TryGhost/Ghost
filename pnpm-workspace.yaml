@@ -108,6 +108,7 @@ catalog:
   '@tryghost/pretty-cli': 3.4.0
   '@tryghost/promise': 2.3.18
   '@tryghost/request': 4.0.12
+  '@tryghost/security': 4.0.0
   '@tryghost/string': 0.3.8
   '@tryghost/timezone-data': 1.0.3
   '@tryghost/tpl': 2.3.18
