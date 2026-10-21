@@ -62,7 +62,7 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         scroll === 'overlay'
-          ? 'pointer-events-auto relative'
+          ? 'pointer-events-auto relative rounded-lg'
           : 'fixed top-[8vmin] left-[50%] translate-x-[-50%]',
         dialogPanelClassName,
         className,
