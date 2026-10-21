@@ -33,7 +33,8 @@ import { toast } from 'sonner';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { AutomationEditState } from './types';
+import type { AutomationEditState, SubscriptionTransition } from './types';
+import { isTransitionUnanswered } from './utils/subscription-transition';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 
@@ -53,10 +54,19 @@ const editableSlice = (automation: AutomationDetail) => ({
   edges: automation.edges,
 });
 
-const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
-  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+const getTriggerErrors = (
+  automation: AutomationDetail,
+  subscriptionTransition: SubscriptionTransition | undefined,
+): Record<string, string> => {
+  if (subscriptionTransition) {
+    return isTransitionUnanswered(subscriptionTransition)
+      ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
+      : {};
+  }
+  return automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
     ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
     : {};
+};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';
@@ -90,6 +100,7 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
+    subscriptionTransition?: SubscriptionTransition;
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -136,6 +147,10 @@ const AutomationEditorContent: React.FC<{
   const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
     creation?.initialAutomation,
   );
+  // Kept outside the draft until the API can hold it (NY-1733).
+  const [subscriptionTransition, setSubscriptionTransition] = React.useState(
+    creation?.subscriptionTransition,
+  );
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -169,13 +184,36 @@ const AutomationEditorContent: React.FC<{
         return oldErrors;
       }
 
-      const nextErrors = { ...getActionErrors(next), ...getTriggerErrors(next) };
+      const nextErrors = {
+        ...getActionErrors(next),
+        ...getTriggerErrors(next, subscriptionTransition),
+      };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
       );
     });
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
   };
+
+  const onSubscriptionTransitionChange = React.useCallback((next: SubscriptionTransition) => {
+    setValidationFeedback(null);
+    setSubscriptionTransition(next);
+    setActionErrors((oldErrors) =>
+      oldErrors[TRIGGER_CANVAS_ID] && !isTransitionUnanswered(next)
+        ? Object.fromEntries(
+            Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
+          )
+        : oldErrors,
+    );
+    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+  }, []);
+  const triggerTransition = React.useMemo(
+    () =>
+      subscriptionTransition
+        ? { value: subscriptionTransition, onChange: onSubscriptionTransitionChange }
+        : undefined,
+    [subscriptionTransition, onSubscriptionTransitionChange],
+  );
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -188,7 +226,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate),
+      ...getTriggerErrors(automationToValidate, subscriptionTransition),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -252,6 +290,14 @@ const AutomationEditorContent: React.FC<{
       setEditState(errorState);
       toast.error('Automation couldn’t be saved');
     };
+
+    // The API would save the draft's stand-in scope instead, until NY-1733.
+    if (subscriptionTransition) {
+      handleSaveError(
+        new Error('Saving a paid subscription changed trigger is not supported yet.'),
+      );
+      return;
+    }
 
     setEditState(requestState);
 
@@ -534,6 +580,7 @@ const AutomationEditorContent: React.FC<{
         isLoading={isEditorLoading}
         savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
         selectedRunId={selectedRunId}
+        subscriptionTransition={triggerTransition}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
@@ -632,12 +679,13 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop) => (
+          {(initialAutomation, triggerTop, subscriptionTransition) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
+                subscriptionTransition,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

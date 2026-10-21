@@ -13,7 +13,10 @@ import {
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
+import type { SubscriptionTransition } from '@/automations/types';
+import { isTransitionSideUnanswered } from '@/automations/utils/subscription-transition';
 
 export type TriggerData = {
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
@@ -21,14 +24,31 @@ export type TriggerData = {
   tierIds: readonly string[];
   savedTierIds: readonly string[];
   onUpdate: (trigger: AutomationTrigger) => void;
+  // Set for the `paid_subscription_changed` trigger, which replaces the tier scope with From and To.
+  transition?: {
+    value: SubscriptionTransition;
+    onChange: (next: SubscriptionTransition) => void;
+  };
 };
+
+const tierQueryNotice = ({ isLoading, isError, refetch }: TriggerData['tierQuery']) =>
+  isLoading ? (
+    <Text size="md">Loading tiers...</Text>
+  ) : isError ? (
+    <Stack gap="sm">
+      <Text size="md">Could not load tiers.</Text>
+      <Button size="sm" variant="outline" onClick={() => void refetch()}>
+        Retry
+      </Button>
+    </Stack>
+  ) : undefined;
 
 const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
   trigger,
   errorMessage,
 }) => {
   const id = useId();
-  const { data, isLoading, isError, refetch } = trigger.tierQuery;
+  const { data, isLoading } = trigger.tierQuery;
   const tiers = (data?.tiers ?? []).filter(
     (tier) =>
       tier.type === 'paid' &&
@@ -81,18 +101,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           inputLabel="Tiers"
           invalid={Boolean(errorMessage)}
           matches={(tier, term) => tier.name.toLowerCase().includes(term.toLowerCase())}
-          notice={
-            isLoading ? (
-              <Text size="md">Loading tiers...</Text>
-            ) : isError ? (
-              <Stack gap="sm">
-                <Text size="md">Could not load tiers.</Text>
-                <Button size="sm" variant="outline" onClick={() => void refetch()}>
-                  Retry
-                </Button>
-              </Stack>
-            ) : undefined
-          }
+          notice={tierQueryNotice(trigger.tierQuery)}
           options={tiers.map((tier) => ({ id: tier.id, name: tierName(tier) }))}
           placeholder="Select tiers..."
           renderOption={(tier, { chosen }) => (
@@ -108,6 +117,86 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           }
         />
       )}
+      {errorMessage && (
+        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
+          {errorMessage}
+        </Text>
+      )}
+    </Stack>
+  );
+};
+
+const SubscriptionChangedPicker: React.FC<{
+  transition: NonNullable<TriggerData['transition']>;
+  tierQuery: TriggerData['tierQuery'];
+  errorMessage?: string;
+}> = ({ transition, tierQuery, errorMessage }) => {
+  const id = useId();
+  const { value, onChange } = transition;
+  const tiers = (tierQuery.data?.tiers ?? [])
+    .filter((tier) => tier.type === 'paid' && tier.active)
+    .map((tier) => ({ id: tier.id, name: tier.name }));
+  const fromTierIds = value.from === 'any_paid' ? [] : value.from;
+  const notice = tierQueryNotice(tierQuery);
+  const emptyMessage = tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found';
+  const describedBy = errorMessage ? `${id}-error` : undefined;
+
+  return (
+    <Stack aria-labelledby={`${id}-label`} className="nowheel" gap="lg" role="group">
+      <Text as="p" id={`${id}-label`} size="sm">
+        Triggered when a member&apos;s subscription changes:
+      </Text>
+      <Stack gap="sm">
+        <Label className="leading-normal font-normal" htmlFor={`${id}-from`}>
+          From
+        </Label>
+        <TierScopePicker<'any_paid'>
+          describedBy={describedBy}
+          emptyMessage={emptyMessage}
+          inputId={`${id}-from`}
+          inputLabel="From"
+          invalid={Boolean(errorMessage) && isTransitionSideUnanswered(value.from)}
+          notice={notice}
+          placeholder="Select tiers..."
+          standalone={{ value: 'any_paid', label: 'Any paid tier' }}
+          tiers={tiers}
+          value={value.from}
+          onChange={(from) =>
+            onChange({
+              from,
+              // A tier can't be both where a member starts and where they move to.
+              to:
+                typeof value.to === 'string' || typeof from === 'string'
+                  ? value.to
+                  : value.to.filter((tierId) => !from.includes(tierId)),
+            })
+          }
+        />
+      </Stack>
+      <Stack gap="sm">
+        <Label className="leading-normal font-normal" htmlFor={`${id}-to`}>
+          To
+        </Label>
+        <TierScopePicker<'downgraded_to_free'>
+          describedBy={describedBy}
+          emptyMessage={emptyMessage}
+          inputId={`${id}-to`}
+          inputLabel="To"
+          invalid={Boolean(errorMessage) && isTransitionSideUnanswered(value.to)}
+          notice={notice}
+          placeholder="Select tiers..."
+          standalone={{ value: 'downgraded_to_free', label: 'Free' }}
+          tiers={tiers.filter((tier) => !fromTierIds.includes(tier.id))}
+          value={value.to}
+          onChange={(to) => onChange({ ...value, to })}
+        />
+        {/* A subscription can end long after the member cancels. */}
+        {value.to === 'downgraded_to_free' && (
+          <Text as="p" size="sm" tone="secondary">
+            Members start this automation when their subscription expires, not when they cancel.
+          </Text>
+        )}
+      </Stack>
       {errorMessage && (
         <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
           {errorMessage}
@@ -139,7 +228,11 @@ export const TriggerCard: React.FC<
       throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
     }
   }
-  const title = paid ? 'Paid subscription started' : 'Free member signed up';
+  const title = trigger.transition
+    ? 'Paid subscription changed'
+    : paid
+      ? 'Paid subscription started'
+      : 'Free member signed up';
   return (
     <AutomationCard
       aria-label={title}
@@ -152,7 +245,9 @@ export const TriggerCard: React.FC<
     >
       <AutomationCardHeader
         icon={
-          paid ? (
+          trigger.transition ? (
+            <LucideIcon.ArrowRightLeft className="size-4" />
+          ) : paid ? (
             <LucideIcon.CreditCard className="size-4" />
           ) : (
             <LucideIcon.UserPlus className="size-4" />
@@ -161,7 +256,13 @@ export const TriggerCard: React.FC<
         iconClassName="p-2.5 text-foreground"
         title={title}
       />
-      {paid ? (
+      {trigger.transition ? (
+        <SubscriptionChangedPicker
+          errorMessage={errorMessage}
+          tierQuery={trigger.tierQuery}
+          transition={trigger.transition}
+        />
+      ) : paid ? (
         <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />
       ) : (
         <Text as="p" size="md" tone="secondary">
