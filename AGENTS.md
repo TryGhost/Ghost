@@ -42,6 +42,10 @@ matching `.claude/skills/<name>` symlink to
 Use the relevant repository skill before adding an Admin API endpoint, database
 migration, private feature flag, Shade component, or internal package.
 
+Shade's design skills live in [`apps/shade/skills/`](apps/shade/skills/) and
+ship with `@tryghost/shade`. Before building or changing UI with Shade, use the
+`shade-design` repository skill to find the matching one.
+
 ## Task routing and important warnings
 
 - **Admin UI:** read [`apps/admin/README.md`](apps/admin/README.md) and

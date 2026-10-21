@@ -9,29 +9,11 @@ export async function checkAgentSkillLinks(rootDirectory: string): Promise<strin
   const entries = await readdir(agentsDirectory, { withFileTypes: true });
 
   for (const entry of entries) {
-    const name = entry.name;
-
-    // A skill can live elsewhere (a package that ships it) and be linked in.
-    if (entry.isSymbolicLink()) {
-      const linkPath = path.join(agentsDirectory, name);
-      try {
-        const targetStats = await stat(linkPath);
-        if (!targetStats.isDirectory()) {
-          errors.push(
-            `${path.relative(rootDirectory, linkPath)} links to ${await readlink(linkPath)}, which is not a directory`,
-          );
-          continue;
-        }
-      } catch {
-        errors.push(
-          `${path.relative(rootDirectory, linkPath)} links to ${await readlink(linkPath)}, which is missing`,
-        );
-        continue;
-      }
-    } else if (!entry.isDirectory()) {
+    if (!entry.isDirectory()) {
       continue;
     }
 
+    const name = entry.name;
     const skillFile = path.join(agentsDirectory, name, 'SKILL.md');
     const claudeLink = path.join(claudeDirectory, name);
     const expectedTarget = `../../.agents/skills/${name}`;
@@ -101,13 +83,6 @@ if (isMain) {
     console.error(`Agent skill discovery check failed:\n\n${errors.join('\n\n')}`);
     process.exitCode = 1;
   } else {
-    const skills = (
-      await readdir(path.join(process.cwd(), '.agents', 'skills'), { withFileTypes: true })
-    )
-      .filter((entry) => entry.isDirectory() || entry.isSymbolicLink())
-      .map((entry) => (entry.isSymbolicLink() ? `${entry.name} (linked)` : entry.name));
-    console.log(
-      `All ${skills.length} repository agent skills are discoverable by Claude:\n${skills.join('\n')}`,
-    );
+    console.log('All repository agent skills are discoverable by Claude.');
   }
 }

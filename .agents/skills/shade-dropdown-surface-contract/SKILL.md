@@ -35,7 +35,7 @@ In light mode the three surface tokens (`background` / `surface-elevated` / `sur
 
 The shadow split is intentional: the top-level `DropdownMenuContent` opens straight out of an unelevated trigger (a button on the page canvas) and needs the stronger drop. `DropdownMenuSubContent` already pops from inside a floating menu, so it uses the lighter `shadow-md` to avoid double-stacking elevation. `Select` and `Popover` also open from low-elevation triggers but their content sits closer to the trigger surface, so `shadow-md` is enough.
 
-The `dark:border-border/30` is a legitimate exception to the no-`dark:`-for-colour rule — it's an opacity modifier on an existing semantic token. See `shade-no-dark-variants`.
+The `dark:border-border/30` is a legitimate exception to the no-`dark:`-for-colour rule — it's an opacity modifier on an existing semantic token. See [`shade-no-dark-variants`](../../../apps/shade/skills/shade-no-dark-variants/SKILL.md).
 
 ## Changing the surface
 
@@ -68,7 +68,7 @@ Hover state on menu items uses `--interactive-hover` (`bg-interactive-hover`) �
 
 ## Related skill
 
-Hover/active/selected state tokens (`--interactive-hover`, `--button-hover`, `--tab-hover`, `--table-row-hover`): see `shade-tokens-not-hex`.
+Hover/active/selected state tokens (`--interactive-hover`, `--button-hover`, `--tab-hover`, `--table-row-hover`): see [`shade-tokens-not-hex`](../../../apps/shade/skills/shade-tokens-not-hex/SKILL.md).
 
 ## Source of truth
 

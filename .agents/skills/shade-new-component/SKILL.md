@@ -107,7 +107,7 @@ For form controls, drive chrome through the **`inputSurface` recipe** — don't 
 - No hex values. No `bg-gray-200`-style raw palette utilities for UI chrome.
 - No `dark:` variants for colour — semantic tokens handle dark mode.
 
-See `shade-tokens-not-hex` and `shade-no-dark-variants`.
+See [`shade-tokens-not-hex`](../../../apps/shade/skills/shade-tokens-not-hex/SKILL.md) and [`shade-no-dark-variants`](../../../apps/shade/skills/shade-no-dark-variants/SKILL.md).
 
 ## Before marking done
 
