@@ -27,17 +27,17 @@ const history = (days: number): AutomationPerformanceStats => {
 describe('automation entry chart mapping', () => {
   afterEach(() => moment.tz.setDefault());
   it.each([
+    { days: 89, displayRange: 89 },
     { days: 90, displayRange: 90 },
-    { days: 91, displayRange: 91 },
-    { days: 270, displayRange: 91 },
-    { days: 271, displayRange: 366 },
-    { days: 1500, displayRange: 366 },
+    { days: 270, displayRange: 90 },
+    { days: 271, displayRange: 365 },
+    { days: 1500, displayRange: 365 },
   ])('groups $days days without losing entries', ({ days, displayRange }) => {
     const mapped = mapAutomationEntryStats(history(days));
     expect(mapped.range).toBe(displayRange);
     expect(mapped.points.reduce((sum, point) => sum + point.value, 0)).toBe(days);
     expect(mapped.points[0].date).toBe('2020-01-01');
-    if (days < 91) {
+    if (days < 90) {
       expect(mapped.points).toHaveLength(days);
     } else {
       expect(mapped.points.length).toBeLessThan(days);
