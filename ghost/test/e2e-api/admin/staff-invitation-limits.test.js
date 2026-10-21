@@ -70,6 +70,100 @@ describe('Trial staff invitation limits', function () {
     return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
   }
 
+  describe('with a two-staff plan', function () {
+    const planLimits = require('../../../core/server/services/limits');
+    let originalPlanLimits;
+    let userStatuses;
+
+    beforeEach(async function () {
+      originalPlanLimits = config.get('hostSettings:limits');
+      config.set('hostSettings:limits', {
+        staff: { max: 2, error: 'Your plan supports up to {{max}} staff users.' },
+      });
+      planLimits.init();
+      userStatuses = await db.knex('users').select('id', 'status');
+      const ownerRole = await db.knex('roles').where({ name: 'Owner' }).first();
+      const owner = await db.knex('roles_users').where({ role_id: ownerRole.id }).first();
+      await db.knex('users').whereNot('id', owner.user_id).update({ status: 'inactive' });
+    });
+
+    afterEach(async function () {
+      for (const user of userStatuses) {
+        await db.knex('users').where({ id: user.id }).update({ status: user.status });
+      }
+      config.set('hostSettings:limits', originalPlanLimits);
+      planLimits.init();
+    });
+
+    it('keeps the plan cap for Editors while Contributors still count toward the trial cap', async function () {
+      await invite('plan-editor@example.com', 'Editor').expect(201);
+      await nextMinute();
+      const rejected = await invite('plan-admin@example.com', 'Administrator').expect(403);
+      assert.match(rejected.body.errors[0].context, /plan supports up to 2 staff/);
+      assert.equal(await models.Invite.findOne({ email: 'plan-admin@example.com' }), null);
+      assert.equal((await invitationActions()).length, 1);
+
+      const users = await db.knex('users').count('id', { as: 'count' }).first();
+      const remaining = 10 - Number(users.count) - 1;
+      assert.ok(remaining > 0);
+      for (let index = 0; index < remaining; index++) {
+        await nextMinute();
+        await invite(`plan-contributor-${index}@example.com`).expect(201);
+      }
+      await nextMinute();
+      const full = await invite('plan-extra-contributor@example.com').expect(403);
+      assert.match(full.body.errors[0].context, /10 staff.*Contributors/);
+      sinon.assert.callCount(send, remaining + 1);
+    });
+
+    it('does not let a Contributor promotion bypass the plan cap', async function () {
+      const contributor = await models.User.add(
+        {
+          name: 'Trial contributor',
+          email: 'trial-created-promotion@example.com',
+          roles: ['Contributor'],
+        },
+        { context: { internal: true } },
+      );
+      await invite('promotion-editor@example.com', 'Editor').expect(201);
+      const role = testUtils
+        .getExistingData()
+        .roles.find((entry) => entry.name === 'Administrator');
+      const rejected = await request
+        .put(localUtils.API.getApiQuery(`users/${contributor.id}/`))
+        .set('Origin', config.get('url'))
+        .send({ users: [{ roles: [{ id: role.id }] }] })
+        .expect(403);
+      assert.match(rejected.body.errors[0].context, /plan supports up to 2 staff/);
+      const retained = await models.User.findOne(
+        { id: contributor.id },
+        { withRelated: ['roles'] },
+      );
+      assert.equal(retained.hasRole('Contributor'), true);
+    });
+
+    it('does not let unsuspending staff bypass the plan cap', async function () {
+      const author = await models.User.add(
+        {
+          name: 'Suspended trial author',
+          email: 'trial-created-unsuspend@example.com',
+          roles: ['Author'],
+          status: 'inactive',
+        },
+        { context: { internal: true } },
+      );
+      await invite('unsuspend-editor@example.com', 'Editor').expect(201);
+      const rejected = await request
+        .put(localUtils.API.getApiQuery(`users/${author.id}/`))
+        .set('Origin', config.get('url'))
+        .send({ users: [{ status: 'active' }] })
+        .expect(403);
+      assert.match(rejected.body.errors[0].context, /plan supports up to 2 staff/);
+      const retained = await db.knex('users').where({ id: author.id }).first();
+      assert.equal(retained.status, 'inactive');
+    });
+  });
+
   it('counts Contributor resends and stops the sixteenth email with an upgrade message', async function () {
     for (let index = 0; index < 15; index++) {
       await invite('quota@example.com').expect(201);

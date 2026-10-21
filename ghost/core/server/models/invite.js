@@ -120,7 +120,6 @@ const Invite = ghostBookshelf.Model.extend(
 
           if (
             isAdd &&
-            !config.get('hostSettings:staffInvites') &&
             limitService.isLimited('staff') &&
             roleToInvite.get('name') !== 'Contributor'
           ) {

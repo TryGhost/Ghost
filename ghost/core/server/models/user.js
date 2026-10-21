@@ -950,7 +950,6 @@ const User = ghostBookshelf.Model.extend(
 
       // If we have a staff user limit & the staff user is being unsuspended (don't count contributors)
       if (
-        !config.get('hostSettings:staffInvites') &&
         limitService.isLimited('staff') &&
         action === 'edit' &&
         isUnsuspending &&
@@ -1020,7 +1019,6 @@ const User = ghostBookshelf.Model.extend(
         }
 
         if (
-          !config.get('hostSettings:staffInvites') &&
           limitService.isLimited('staff') &&
           userModel.hasRole('Contributor') &&
           role.name !== 'Contributor'
