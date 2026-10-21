@@ -37,7 +37,8 @@ import type { FetchMethod } from './rules.ts';
  * - Content: a write can put HTML and script in a post or page, in a Lexical card or a caption
  *   for one, which Ghost serves on the site's own origin, and on Admin's where the two share
  *   one. It can also put HTML in `feature_image_caption`, which emails show as it is, so it
- *   reaches members when the post is sent as a newsletter. Only code injection is refused.
+ *   reaches members when the post is sent as a newsletter. Only code injection and a mobiledoc
+ *   that isn't `null` are refused.
  *
  * Routes are written as `METHOD /path`, in path segments. `:id` matches only an object ID: 24
  * lowercase hexadecimal characters. Any other `:name` matches any one segment, such as a slug.
