@@ -7,6 +7,7 @@ const {
 const { mockStripe, stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const { anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength } = matchers;
 const assert = require('node:assert/strict');
+const moment = require('moment-timezone');
 
 let agent;
 
@@ -82,6 +83,91 @@ describe('Stats API', function () {
         'content-version': anyContentVersion,
         etag: anyEtag,
       });
+  });
+
+  describe('Histories in the viewer’s timezone and by the hour', function () {
+    const timezone = 'Asia/Kolkata';
+    const today = () => moment().tz(timezone).format('YYYY-MM-DD');
+    const hourLabel = /^\d{4}-\d{2}-\d{2}T\d{2}:00$/;
+    // Hours from the timezone's midnight up to the current hour
+    const hoursSoFar = () => moment().tz(timezone).hours() + 1;
+
+    it('Can fetch member count history in local days', async function () {
+      const from = moment().tz(timezone).subtract(6, 'days').format('YYYY-MM-DD');
+      await agent
+        .get(`/stats/member_count?date_from=${from}&timezone=${timezone}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          const dates = body.stats.map((stat) => stat.date);
+          assert.equal(dates[0], from);
+          assert.equal(dates.at(-1), today());
+          assert.equal(dates.length, 7);
+          const last = body.stats.at(-1);
+          const totals = body.meta.totals;
+          assert.equal(
+            last.paid + last.free + last.comped + last.gift,
+            totals.paid + totals.free + totals.comped + totals.gift,
+          );
+        });
+    });
+
+    it('Can fetch today’s member count by the hour', async function () {
+      await agent
+        .get(`/stats/member_count?interval=hour&timezone=${timezone}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.meta.interval, 'hour');
+          assert.equal(body.stats.length, hoursSoFar());
+          assert.equal(body.stats[0].date, `${today()}T00:00`);
+          for (const stat of body.stats) {
+            assert.match(stat.date, hourLabel);
+          }
+          const last = body.stats.at(-1);
+          const totals = body.meta.totals;
+          assert.deepEqual(
+            { paid: last.paid, free: last.free, comped: last.comped, gift: last.gift },
+            totals,
+          );
+        });
+    });
+
+    it('Can fetch today’s MRR by the hour', async function () {
+      await agent
+        .get(`/stats/mrr?interval=hour&timezone=${timezone}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.meta.interval, 'hour');
+          const currencies = body.meta.totals.map((total) => total.currency);
+          assert.equal(body.stats.length, hoursSoFar() * currencies.length);
+          for (const total of body.meta.totals) {
+            const last = body.stats.filter((stat) => stat.currency === total.currency).at(-1);
+            assert.equal(last.mrr, Math.max(0, total.mrr));
+          }
+        });
+    });
+
+    it('Can fetch today’s newsletter subscribers by the hour', async function () {
+      const { body: newsletters } = await agent.get('/newsletters/').expectStatus(200);
+      const newsletterId = newsletters.newsletters[0].id;
+
+      await agent
+        .get(
+          `/stats/subscriber-count?newsletter_id=${newsletterId}&interval=hour&timezone=${timezone}`,
+        )
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.meta.interval, 'hour');
+          const [stat] = body.stats;
+          assert.equal(stat.values.length, hoursSoFar());
+          assert.equal(stat.values.at(-1).value, stat.total);
+        });
+    });
+
+    it('Keeps UTC days when no timezone is asked for', async function () {
+      const { body } = await agent.get(`/stats/member_count`).expectStatus(200);
+      assert.equal(body.meta.interval, undefined);
+      assert.equal(body.stats.at(-1).date, moment.utc().format('YYYY-MM-DD'));
+    });
   });
 
   describe('Subscriptions history', function () {
