@@ -1,4 +1,6 @@
 const validator = require('@tryghost/validator');
+const config = require('../../shared/config');
+const { lockStaffInvites, checkTrialStaffLimit } = require('../lib/staff-invite-usage');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
@@ -661,7 +663,28 @@ const User = ghostBookshelf.Model.extend(
      * @extends ghostBookshelf.Model.add to manage all aspects of user signup
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
-    add: function add(dataToClone, unfilteredOptions) {
+    add: async function add(dataToClone, unfilteredOptions = {}) {
+      const policy = config.get('hostSettings:staffInvites');
+      if (!policy) {
+        return this.addWithRoles(dataToClone, unfilteredOptions);
+      }
+      const create = async (transacting) => {
+        await lockStaffInvites(transacting);
+        await checkTrialStaffLimit(
+          transacting,
+          policy.maxStaff,
+          config.get('hostSettings:billing:url'),
+        );
+        return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
+      };
+      // Imports and invitation acceptance already have a transaction. Reusing it
+      // keeps the seat check and user insertion atomic with the surrounding work.
+      return unfilteredOptions.transacting
+        ? create(unfilteredOptions.transacting)
+        : ghostBookshelf.transaction(create);
+    },
+
+    addWithRoles: function addWithRoles(dataToClone, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'add');
       const self = this;
       const data = JSON.parse(JSON.stringify(dataToClone));
@@ -927,6 +950,7 @@ const User = ghostBookshelf.Model.extend(
 
       // If we have a staff user limit & the staff user is being unsuspended (don't count contributors)
       if (
+        !config.get('hostSettings:staffInvites') &&
         limitService.isLimited('staff') &&
         action === 'edit' &&
         isUnsuspending &&
@@ -996,6 +1020,7 @@ const User = ghostBookshelf.Model.extend(
         }
 
         if (
+          !config.get('hostSettings:staffInvites') &&
           limitService.isLimited('staff') &&
           userModel.hasRole('Contributor') &&
           role.name !== 'Contributor'
