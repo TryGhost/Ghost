@@ -15,6 +15,7 @@ const security = require('@tryghost/security');
 const { resolveResourceRead } = require('./api-adapter');
 const urlUtils = require('../../../shared/url-utils').default;
 const registry = require('./registry');
+const { getMarkdownPath } = require('../llms/markdown');
 
 /**
  * @description Inherited express router, which gives control to us.
@@ -108,11 +109,14 @@ class ParentRouter {
       // e.g. /bacon/welcome/     -> '' (nothing to append)
       const matchPath = this.permalinks.getValue().replace(/:\w+/g, '[a-zA-Z0-9-_]+');
       const toAppend = req.url.replace(new RegExp(matchPath), '');
+      const targetPath = req.route?.path.endsWith('.md')
+        ? getMarkdownPath(targetRoute)
+        : urlUtils.urlJoin(targetRoute, toAppend);
 
       return urlUtils.redirect301(
         res,
         url.format({
-          pathname: urlUtils.createUrl(urlUtils.urlJoin(targetRoute, toAppend), false, false, true),
+          pathname: urlUtils.createUrl(targetPath, false, false, true),
           search: url.parse(req.originalUrl).search,
         }),
       );

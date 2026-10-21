@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const FormData = require('form-data');
+const sinon = require('sinon');
+const settingsCache = require('../../core/shared/settings-cache');
 const configUtils = require('../utils/config-utils');
 const { agentProvider, fixtureManager } = require('../utils/e2e-framework');
 
@@ -15,12 +17,14 @@ const entries = [
 
 describe('llms.txt with data-bound custom routes', function () {
   let request;
+  let adminAgent;
   let ghostServer;
   let siteUrl;
 
   beforeAll(async function () {
     const agents = await agentProvider.getAgentsWithFrontend();
     request = agents.frontendAgent;
+    adminAgent = agents.adminAgent;
     ghostServer = agents.ghostServer;
     siteUrl = configUtils.config.get('url').replace(/\/$/, '');
 
@@ -53,8 +57,53 @@ taxonomies:
     await agents.adminAgent.post('settings/routes/yaml/').body(routes).expectStatus(200);
   });
 
+  afterEach(function () {
+    sinon.restore();
+  });
+
   afterAll(async function () {
     await ghostServer?.stop();
+  });
+
+  it('redirects custom Markdown URLs to HTML when llms.txt is disabled', async function () {
+    sinon.stub(settingsCache, 'get').callThrough().withArgs('llms_enabled').returns(false);
+    await request
+      .get('/questions/about-this-site.md?source=llms')
+      .expect(302)
+      .expect('Location', '/questions/about-this-site/?source=llms');
+  });
+
+  it('strips gift tokens from custom Markdown URLs', async function () {
+    await request
+      .get('/questions/getting-started.md?gift=invalid&source=llms')
+      .expect(301)
+      .expect('Location', '/questions/getting-started.md?source=llms');
+  });
+
+  it('keeps members-only content gated on custom Markdown URLs', async function () {
+    const response = await adminAgent.get('pages/?filter=slug:about').expectStatus(200);
+    const page = response.body.pages[0];
+    const gated = await adminAgent
+      .put(`pages/${page.id}/`)
+      .body({
+        pages: [{ id: page.id, updated_at: page.updated_at, visibility: 'members' }],
+      })
+      .expectStatus(200);
+    try {
+      const res = await request.get('/questions/about-this-site.md').expect(200);
+      assert.match(res.headers['content-type'], /text\/markdown/);
+      assert.match(res.text, /This page is for subscribers only/);
+      assert.doesNotMatch(res.text, /An about page is a great example/);
+    } finally {
+      await adminAgent
+        .put(`pages/${page.id}/`)
+        .body({
+          pages: [
+            { id: page.id, updated_at: gated.body.pages[0].updated_at, visibility: 'public' },
+          ],
+        })
+        .expectStatus(200);
+    }
   });
 
   for (const { kind, slug, route, title } of entries) {
@@ -83,21 +132,19 @@ taxonomies:
       }
     });
 
-    // Known failures: custom Markdown URLs are not supported yet.
-    // Vitest runs these assertions and fails the suite if they unexpectedly pass.
-    it.fails(`publishes the ${kind}'s custom Markdown URL in llms.txt`, async function () {
+    it(`publishes the ${kind}'s custom Markdown URL in llms.txt`, async function () {
       const index = await request.get('/llms.txt').expect(200);
       assert.ok(index.text.includes(`[${title}](${siteUrl}${customMarkdownPath})`));
     });
 
-    it.fails(`serves Markdown at the ${kind}'s custom route`, async function () {
+    it(`serves Markdown at the ${kind}'s custom route`, async function () {
       const res = await request.get(customMarkdownPath).expect(200);
       assert.match(res.headers['content-type'], /text\/markdown/);
       assert.equal(res.headers['content-location'], customMarkdownPath);
       assert.ok(res.text.includes(`# ${title}`));
     });
 
-    it.fails(`preserves Markdown and query parameters when redirecting the ${kind}`, async function () {
+    it(`preserves Markdown and query parameters when redirecting the ${kind}`, async function () {
       await request
         .get(`/${slug}.md?source=llms`)
         .expect(301)

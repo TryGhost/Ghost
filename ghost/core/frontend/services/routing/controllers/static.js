@@ -2,6 +2,8 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const renderer = require('../../rendering');
 const { resolveRouteData } = require('../api-adapter');
+const { isMdRequest, serveMdRequest } = require('./entry/markdown');
+const { isGiftRequest, stripGiftAndRedirect } = require('./entry/gift-links');
 
 function processQuery(query, locals) {
   const api = require('../../proxy').api;
@@ -36,6 +38,10 @@ function processQuery(query, locals) {
 module.exports = function staticController(req, res, next) {
   debug('staticController', res.routerOptions);
 
+  if (isMdRequest(res) && isGiftRequest(req)) {
+    return stripGiftAndRedirect(req, res);
+  }
+
   const apiCalls = resolveRouteData(res.routerOptions.data);
 
   const promises = _.map(apiCalls, function (apiCall) {
@@ -44,6 +50,11 @@ module.exports = function staticController(req, res, next) {
 
   return Promise.all(promises)
     .then(function handleResult(result) {
+      if (isMdRequest(res)) {
+        const entry = result[0]?.[res.routerOptions.resourceType]?.[0];
+        return entry ? serveMdRequest(req, res, entry) : next();
+      }
+
       const response = {};
 
       if (res.routerOptions.data) {
