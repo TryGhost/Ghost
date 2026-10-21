@@ -13,7 +13,7 @@ function isUnsplashImage(url) {
 }
 const { DateTime } = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const emailAddressParser = require('../email-address/email-address-parser');
+const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
 const { getEmailDesign } = require('../../lib/email-rendering/email-design');
 const { registerHelpers } = require('./helpers/register-helpers');
 const crypto = require('crypto');
@@ -352,7 +352,7 @@ class EmailRenderer {
   }
 
   #getRawFromAddress(post, newsletter) {
-    // Pass the raw name through; emailAddressParser.stringify() is the single
+    // Pass the raw name through; formatAddressForDelivery() is the single
     // point that escapes it for the RFC5322 quoted-string From header. Escaping
     // here too would double-escape (e.g. a title containing a double quote).
     let senderName = this.#settingsCache.get('title') || '';
@@ -409,7 +409,7 @@ class EmailRenderer {
       { useFallbackAddress },
     );
 
-    return emailAddressParser.stringify(addresses.from);
+    return formatAddressForDelivery(addresses.from);
   }
 
   /**
@@ -438,7 +438,7 @@ class EmailRenderer {
     );
 
     if (addresses.replyTo) {
-      return emailAddressParser.stringify(addresses.replyTo);
+      return formatAddressForDelivery(addresses.replyTo);
     }
     return null;
   }
