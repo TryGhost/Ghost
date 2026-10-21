@@ -18,16 +18,19 @@ describe('SupportRequestsService', function () {
   const webhookSecret = 'not-a-live-secret';
 
   const supportRequest: SupportRequest = {
-    requestedByUserId: '1',
-    requestedByEmail: 'owner@example.com',
-    name: 'Jamie Larson',
-    email: 'jamie@example.com',
+    requestedBy: {
+      id: '1',
+      name: 'Jamie Larson',
+      email: 'jamie@example.com',
+    },
     subject: 'Cannot connect my domain',
     message: 'The DNS check keeps failing.',
     source: 'help-chat',
     pageUrl: 'https://example.com/ghost/#/settings',
-    conversationUrl: 'https://chat.example.com/conversations/1',
-    transcript: '**User**\nHow do I connect my domain?',
+    context: {
+      chat_url: 'https://chat.example.com/conversations/1',
+      chat_transcript: '**User**\nHow do I connect my domain?',
+    },
   };
 
   const defaultConfig = {
