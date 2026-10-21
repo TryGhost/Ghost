@@ -327,14 +327,25 @@ function InviteUserModal() {
                   );
                 })}
               </RadioGroup>
-              <FieldError id="invite-role-error">{errors.role}</FieldError>
-              {invitationError && <FieldError>{invitationError}</FieldError>}
-              {(errors.role || invitationError) && trialInvites && (
-                <Link asChild>
-                  <button type="button" onClick={() => navigateTo(upgradeRoute)}>
-                    Upgrade your plan
-                  </button>
-                </Link>
+              {(errors.role || invitationError) && (
+                <FieldError id="invite-role-error">
+                  {trialInvites
+                    ? (invitationError || errors.role)?.replace(
+                        /\s*Upgrade to (?:invite more people|send more invitations)\.?$/,
+                        '',
+                      )
+                    : invitationError || errors.role}
+                  {(errors.role || invitationError) && trialInvites && (
+                    <>
+                      <br />
+                      <Link asChild>
+                        <button type="button" onClick={() => navigateTo(upgradeRoute)}>
+                          Upgrade to invite more people →
+                        </button>
+                      </Link>
+                    </>
+                  )}
+                </FieldError>
               )}
             </FieldSet>
           </Stack>
