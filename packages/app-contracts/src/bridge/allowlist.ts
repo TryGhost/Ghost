@@ -19,9 +19,10 @@ import type { FetchMethod } from './rules.ts';
  * - The search index of posts, pages and tags, and slug generation, which Admin's own editor
  *   uses to pick a slug before saving.
  *
- * Writes of posts, pages and tags are checked further, so an app can't ask Ghost to email a post
- * or put script on the site: a write may carry only the query parameters its scope lists, which
- * leaves out `newsletter`, `email_segment` and `source`, and `refusedContent` checks its body.
+ * Writes of posts, pages and tags are checked further, so an app can't ask Ghost to email a post,
+ * set code injection or write mobiledoc: a write may carry only the query parameters its scope
+ * lists, which leaves out `newsletter`, `email_segment` and `source`, and `refusedContent`
+ * checks its body.
  * These checks are a stopgap for the private beta behind a flag. The security review re-reviews
  * them before anyone outside the team gets access (BER-3992), and Permissions and auth replaces
  * them with checks on the server.
@@ -33,8 +34,10 @@ import type { FetchMethod } from './rules.ts';
  *   can read it (`visibility`, `tiers`), with no confirmation from the publisher. Publishing a
  *   scheduled post that already has a newsletter sends its email then, with no parameter.
  * - Staff emails: `GET /users/` returns every staff user's email.
- * - Anything in a post, page or tag that renders as HTML or script which `refusedContent` doesn't
- *   catch, and any Lexical node Ghost adds later.
+ * - Content: a write can put HTML and script in a post or page, in a Lexical card or a caption
+ *   for one, which Ghost serves on the site's own origin, and on Admin's where the two share
+ *   one. It can also put HTML in `feature_image_caption`, which emails show as it is, so it
+ *   reaches members when the post is sent as a newsletter. Only code injection is refused.
  *
  * Routes are written as `METHOD /path`, in path segments. `:id` matches only an object ID: 24
  * lowercase hexadecimal characters. Any other `:name` matches any one segment, such as a slug.
@@ -56,8 +59,8 @@ export interface AdminApiScope {
    * can't slip a parameter past the check. A scope without this list allows any parameter.
    */
   readonly allowedParameters?: readonly string[];
-  /** The kind of content a write in this scope sends, which `refusedContent` checks. */
-  readonly content?: 'posts' | 'pages' | 'tags';
+  /** Whether a write in this scope sends content, whose body `refusedContent` checks. */
+  readonly checksContent?: true;
 }
 
 // What Ghost reads on a post or page write, minus `newsletter` and `email_segment`, which send
@@ -73,10 +76,10 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
   },
   {
     name: 'posts:write',
-    description: 'Create, edit and delete posts, one at a time, without email or script.',
+    description: 'Create, edit and delete posts, one at a time, without email or code injection.',
     routes: ['POST /posts', 'PUT /posts/:id', 'DELETE /posts/:id'],
     allowedParameters: POST_WRITE_PARAMETERS,
-    content: 'posts',
+    checksContent: true,
   },
   {
     name: 'pages:read',
@@ -85,10 +88,10 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
   },
   {
     name: 'pages:write',
-    description: 'Create, edit and delete pages, one at a time, without script.',
+    description: 'Create, edit and delete pages, one at a time, without code injection.',
     routes: ['POST /pages', 'PUT /pages/:id', 'DELETE /pages/:id'],
     allowedParameters: POST_WRITE_PARAMETERS,
-    content: 'pages',
+    checksContent: true,
   },
   {
     name: 'tags:read',
@@ -97,10 +100,10 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
   },
   {
     name: 'tags:write',
-    description: 'Create, edit and delete tags, one at a time, without script.',
+    description: 'Create, edit and delete tags, one at a time, without code injection.',
     routes: ['POST /tags', 'PUT /tags/:id', 'DELETE /tags/:id'],
     allowedParameters: ['include'],
-    content: 'tags',
+    checksContent: true,
   },
   {
     name: 'users:read',
