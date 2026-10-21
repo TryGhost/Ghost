@@ -60,6 +60,23 @@ describe('the page’s history, once Admin owns it', () => {
     expect(moved).toHaveBeenCalledWith('/search?q=a%20b', 'push');
   });
 
+  it('preserves state set on the initial route before the SDK takes over history', () => {
+    watch?.stop();
+    const initialState = { restoreScroll: 450, draft: 'editor-7' };
+    window.history.replaceState(initialState, '', '/start');
+    watch = watchHistory(moved, load);
+    window.history.pushState({ route: 'next' }, '', '/next');
+    const popped = vi.fn();
+    window.addEventListener('popstate', popped);
+
+    watch.follow('/start');
+
+    window.removeEventListener('popstate', popped);
+    expect(currentRoute()).toBe('/start');
+    expect(window.history.state).toEqual(initialState);
+    expect((popped.mock.calls[0]?.[0] as PopStateEvent).state).toEqual(initialState);
+  });
+
   it('follows Admin: replaces the entry with the state the app gave that route, then dispatches popstate', () => {
     window.history.pushState({ n: 1 }, '', '/a');
     window.history.pushState({ n: 2 }, '', '/b');
