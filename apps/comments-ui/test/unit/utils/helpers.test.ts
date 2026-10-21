@@ -96,12 +96,6 @@ describe('formatNumber', function () {
 });
 
 describe('formatRelativeTime', () => {
-  let clock: sinon.SinonFakeTimers;
-
-  afterEach(() => {
-    clock?.restore();
-  });
-
   const t = (key: string, vars?: Record<string, string | number>) => {
     if (vars) {
       return key.replace('{amount}', vars.amount.toString());
@@ -116,13 +110,9 @@ describe('formatRelativeTime', () => {
     now?: Date,
   ) {
     it(`${humanDiff} = ${expected}`, function () {
-      if (now) {
-        clock = sinon.useFakeTimers(now);
-      } else {
-        clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-      }
-      const time = moment().subtract(duration);
-      expect(helpers.formatRelativeTime(time.toISOString(), t)).toEqual(expected);
+      const referenceTime = now ?? new Date('2024-02-15T15:00:00.000Z');
+      const time = moment.utc(referenceTime).subtract(duration);
+      expectFormatInTimezone('Etc/UTC', referenceTime.toISOString(), time.toISOString(), expected);
     });
   }
 
