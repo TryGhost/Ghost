@@ -121,6 +121,52 @@ describe('URL Attribution Utils', function () {
       assert.equal(result.utmContent, 'banner');
       assert.equal(result.source, 'google'); // source should be utm_source
     });
+
+    it('should read signup and signin parameters from the portal fragment with or without trailing slash', function () {
+      const cases = [
+        [
+          'https://example.com/?ref=outer&utm_source=outer#/portal/signup?ref=signup-fragment',
+          'signup-fragment',
+        ],
+        [
+          'https://example.com/?ref=outer&utm_source=outer#/portal/signup/?ref=signup-slash-fragment',
+          'signup-slash-fragment',
+        ],
+        [
+          'https://example.com?ref=outer&utm_source=outer#/portal/signin?ref=signin-fragment',
+          'signin-fragment',
+        ],
+        [
+          'https://example.com?ref=outer&utm_source=outer#/portal/signin/?ref=signin-slash-fragment',
+          'signin-slash-fragment',
+        ],
+      ];
+
+      cases.forEach(([url, expectedSource]) => {
+        assert.equal(parseReferrerData(url).source, expectedSource);
+      });
+    });
+
+    it('should preserve ref, source, and utm_source priority within the portal fragment', function () {
+      const result = parseReferrerData(
+        'https://example.com/?ref=outer-ref&source=outer-source&utm_source=outer-utm#/portal/signup?ref=portal-ref&source=portal-source&utm_source=portal-utm',
+      );
+
+      assert.equal(result.source, 'portal-ref');
+      assert.equal(result.utmSource, 'portal-utm');
+      const sourceResult = parseReferrerData(
+        'https://example.com/?ref=outer-ref#/portal/signin?source=portal-source&utm_source=portal-utm',
+      );
+
+      assert.equal(sourceResult.source, 'portal-source');
+    });
+
+    it('should ignore the page query when a portal fragment has no query', function () {
+      const result = parseReferrerData('https://example.com/?ref=outer#/portal/signup');
+
+      assert.equal(result.source, null);
+      assert.equal(result.utmSource, null);
+    });
   });
 
   describe('getReferrer prioritization logic', function () {
