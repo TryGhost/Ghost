@@ -2618,14 +2618,11 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // One site's approval of one app. Still in development: see ./in-development.ts.
+  // One site's approval of one app.
   //
   // A row is never deleted and never revived. Uninstalling ends it, and installing the same
   // app again adds a new row, so every past install stays on record. Who installed or
   // uninstalled an app, and when, is in `actions`.
-  //
-  // TODO: before these tables leave development, add an index on `actions` for
-  // `resource_type` and `resource_id`. An app's history reads `actions` by those columns.
   app_installations: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The ID from the app's manifest. Kept on every row, installed or not.
@@ -2651,8 +2648,7 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // Every manifest an installation has run or been asked to approve. Still in development:
-  // see ./in-development.ts.
+  // Every manifest an installation has run or been asked to approve.
   //
   // Append-only: a row is added when a manifest becomes an installation's approved or
   // pending one, and never changed, so the site can always tell exactly what was approved.
