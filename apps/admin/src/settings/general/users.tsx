@@ -241,6 +241,7 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
       await addInvite({
         email: invite.email,
         roleId: invite.role_id,
+        replacingId: invite.id,
       });
       toast.success(`Invitation resent`, { description: invite.email });
     } catch (e) {

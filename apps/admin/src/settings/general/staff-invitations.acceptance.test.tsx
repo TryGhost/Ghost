@@ -154,7 +154,9 @@ describe('Staff invitations', () => {
     const existing = invite();
     const { boot } = fakeStaffWorld({ invites: [existing] });
     const deleteApi = fakeAdminEndpoint('DELETE', `/invites/${existing.id}/`, {});
-    const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [existing] });
+    const replacement = { ...existing, id: 'replacement-invite' };
+    const revokeApi = fakeAdminEndpoint('DELETE', `/invites/${replacement.id}/`, {});
+    const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [replacement] });
     const config = configResponse();
     config.config.hostSettings = {
       staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
@@ -171,6 +173,10 @@ describe('Staff invitations', () => {
     await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation resent');
     expect(deleteApi.requests).toHaveLength(0);
     expect(addApi.requests).toHaveLength(1);
+    await expect.poll(() => settingsScreen.users().getByTestId('user-invite').all().length).toBe(1);
+    await item.getByRole('button', { name: 'Revoke' }).click();
+    await expect.poll(() => revokeApi.requests.length).toBe(1);
+    await expect.element(settingsScreen.users().getByTestId('user-invite')).not.toBeInTheDocument();
   });
 
   it('offers an upgrade on rejected resends without a billing iframe URL', async () => {
@@ -372,6 +378,9 @@ describe('Staff invitations', () => {
     await modal.getByLabelText('Email address').fill('new@example.com');
     await modal.getByRole('button', { name: 'Send invitation' }).click();
     await expect.element(modal).toHaveTextContent('Your trial allows 15 staff invitation emails');
+    await modal.getByRole('radio', { name: 'Editor', exact: true }).click();
+    await expect.element(modal).toHaveTextContent('Your trial allows 15 staff invitation emails');
+    await expect.element(modal.getByRole('button', { name: 'Send invitation' })).toBeDisabled();
     await modal.getByRole('button', { name: 'Upgrade your plan' }).click();
     await expect.poll(() => window.location.hash).toBe('#/pro/custom-upgrade');
   });

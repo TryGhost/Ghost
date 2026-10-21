@@ -57,6 +57,7 @@ function InviteUserModal() {
 
   const { updateRoute } = useSettingsNavigation();
   const editorBeta = useFeatureFlag('superEditors');
+  const [invitationError, setInvitationError] = useState<string>();
   const [email, setEmail] = useState<string>('');
   const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
   const [role, setRole] = useState<RoleType>('contributor');
@@ -118,7 +119,7 @@ function InviteUserModal() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (saveState === 'saving') {
+    if (saveState === 'saving' || invitationError) {
       return;
     }
 
@@ -172,7 +173,7 @@ function InviteUserModal() {
 
       if (e instanceof JSONError && e.data?.errors?.[0]?.type === 'HostLimitError') {
         setSaveState('');
-        setErrors({ role: getErrorMessage(e, e.data.errors[0].message) });
+        setInvitationError(getErrorMessage(e, e.data.errors[0].message));
         return;
       }
       if (e instanceof APIError && e.response?.status === 429) {
@@ -327,7 +328,8 @@ function InviteUserModal() {
                 })}
               </RadioGroup>
               <FieldError id="invite-role-error">{errors.role}</FieldError>
-              {errors.role && trialInvites && (
+              {invitationError && <FieldError>{invitationError}</FieldError>}
+              {(errors.role || invitationError) && trialInvites && (
                 <Link asChild>
                   <button type="button" onClick={() => navigateTo(upgradeRoute)}>
                     Upgrade your plan
@@ -341,7 +343,7 @@ function InviteUserModal() {
               Close
             </Button>
             <Button
-              disabled={saveState === 'saving'}
+              disabled={saveState === 'saving' || !!invitationError}
               type="submit"
               variant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             >
