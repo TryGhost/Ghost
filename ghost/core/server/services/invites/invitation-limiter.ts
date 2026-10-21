@@ -98,25 +98,14 @@ export default class InvitationLimiter {
         helpLink,
         config: {
           max: limits.maxInvites,
-          // Only the threshold matters. The (resource_type, event) index lets
-          // this stop after maxInvites entries without counting the full log.
+          // Only the threshold matters. LIMIT bounds returned rows, not rows scanned;
+          // use the existing schema and let the database choose its query plan.
           currentCountQuery: async () => {
-            const query = transaction('actions')
+            const actions = await transaction('actions')
               .select('id')
               .where({ resource_type: 'invite', event: 'added' })
               .limit(limits.maxInvites)
               .forUpdate();
-            if (['mysql', 'mysql2'].includes(transaction.client.config.client)) {
-              // With skewed histories MySQL can prefer the resource-id index
-              // and scan thousands of edited/deleted entries before 15 adds.
-              query.from(
-                transaction.raw('?? FORCE INDEX (??)', [
-                  'actions',
-                  'actions_resource_type_event_index',
-                ]),
-              );
-            }
-            const actions = await query;
             return actions.length;
           },
           error:

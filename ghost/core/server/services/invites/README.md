@@ -38,11 +38,11 @@ using a moving date window. Historical audit failures cannot be reconstructed.
 Audit entries record creation attempts, not confirmed delivery.
 
 Admission locks the existing `brute` request-limiter row before checking the
-standard `MaxLimit` rules. The query reads at most `maxInvites` matching entries
-using the `(resource_type, event)` index, without counting the entire log or
-parsing JSON. MySQL explicitly uses this index: on skewed invitation histories,
-its optimizer can otherwise prefer the resource-ID index and scan many edits
-before reaching the creation entries. The invitation model makes only trial invitation creation audit
+standard `MaxLimit` rules. The query returns at most `maxInvites` matching entries,
+without counting the entire log or parsing JSON. It uses the existing schema
+without adding or forcing an index. `LIMIT` bounds the results, not the rows
+scanned: large histories with few invitation creations can require more work.
+The invitation model makes only trial invitation creation audit
 writes mandatory and transactional; the shared best-effort audit logger and
 other events remain unchanged. The audit reservation and invitation replacement
 commit together. Invalid preparation or audit failure rolls both back,
@@ -67,14 +67,14 @@ without the policy retain their legacy resend flow.
 
 ## Rollout
 
-Deploy the actions index migration, Ghost enforcement and matching Admin before
+Deploy Ghost enforcement and matching Admin before
 turning on the Daisy/Zuul policy. Backport or upgrade older supported Ghost
 versions before enabling it there. Regenerate existing trial configurations,
 and verify that the normal upgrade flow regenerates configuration without the
 trial policy. No production policy is enabled merely by pushing these branches.
 
-Performance-test the index migration on representative staging database servers
-before rollout: it indexes the existing audit table, which can be large. Verify
-the bounded query with `EXPLAIN ANALYZE` on both normal and abuse-heavy histories.
+No database migration is required. Check the query with `EXPLAIN ANALYZE` on
+representative large histories before rollout, including histories with few
+invitation creations, and measure transaction duration and lock contention.
 Audit retention must preserve invitation creation entries while a site's trial
 allowance can be enforced; pruning them would restore allowance.

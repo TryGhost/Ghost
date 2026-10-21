@@ -1583,10 +1583,7 @@ module.exports = {
     // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
     context: { type: 'text', maxlength: 1000000000, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
-    '@@INDEXES@@': [
-      ['resource_type', 'resource_id'],
-      ['resource_type', 'event'],
-    ],
+    '@@INDEXES@@': [['resource_type', 'resource_id']],
   },
   emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
