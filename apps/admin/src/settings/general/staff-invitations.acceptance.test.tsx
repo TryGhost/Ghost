@@ -346,7 +346,7 @@ describe('Staff invitations', () => {
     });
     const modal = await openInviteModal();
     await expect.element(modal).toHaveTextContent('Your trial supports up to 10 staff');
-    await modal.getByRole('button', { name: 'Upgrade to invite more people →' }).click();
+    await modal.getByRole('link', { name: 'Upgrade to invite more people →' }).click();
     await expect.poll(() => window.location.hash).toBe('#/pro');
   });
 
@@ -382,7 +382,7 @@ describe('Staff invitations', () => {
     await modal.getByRole('radio', { name: 'Editor', exact: true }).click();
     await expect.element(modal).toHaveTextContent('Your trial allows 15 staff invitation emails');
     await expect.element(modal.getByRole('button', { name: 'Send invitation' })).toBeDisabled();
-    await modal.getByRole('button', { name: 'Upgrade to invite more people →' }).click();
+    await modal.getByRole('link', { name: 'Upgrade to invite more people →' }).click();
     await expect.poll(() => window.location.hash).toBe('#/pro/custom-upgrade');
   });
 });

@@ -337,11 +337,16 @@ function InviteUserModal() {
                     : invitationError || errors.role}
                   {(errors.role || invitationError) && trialInvites && (
                     <>
-                      <br />
-                      <Link asChild>
-                        <button type="button" onClick={() => navigateTo(upgradeRoute)}>
-                          Upgrade to invite more people →
-                        </button>
+                      {' '}
+                      <Link
+                        className="text-inherit decoration-current hover:decoration-current"
+                        href={upgradeRoute.startsWith('/') ? `#${upgradeRoute}` : upgradeRoute}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          navigateTo(upgradeRoute);
+                        }}
+                      >
+                        Upgrade to invite more people →
                       </Link>
                     </>
                   )}
