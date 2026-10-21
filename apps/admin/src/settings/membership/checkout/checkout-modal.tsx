@@ -7,7 +7,6 @@ import ShippingSettings from './shipping-settings';
 import {
   SHIPPING_ERRORS,
   type ShippingFormState,
-  previewShippingOf,
   shippingFormStateOf,
   shippingSettingOf,
   validateShipping,
@@ -52,7 +51,6 @@ import {
   type StripeCheckoutConfig,
   type StripeCheckoutDesign,
   type StripeCheckoutDesignSetting,
-  type StripeCheckoutPreviewRequest,
   useCreateStripeCheckoutPreview,
   useEditStripeCheckoutConfig,
   useReadStripeCheckoutBranding,
@@ -137,13 +135,15 @@ function useStripeBranding(): { branding: SketchBranding; loading: boolean } {
 
 /**
  * "Preview in Stripe": one item per active paid tier, each opening a real Stripe Checkout page
- * for that tier in the design and collected parts being edited, saved or not. Undefined while
- * there is nothing to preview: Stripe isn't connected, or there are no paid tiers.
+ * for that tier from the settings being edited, saved or not. Undefined while there is nothing
+ * to preview: Stripe isn't connected, or there are no paid tiers.
  */
 function useStripePreviewMenu(
-  design: StripeCheckoutDesignSetting,
-  /** The collected parts being edited. One left out asks as saved. */
-  collection: Pick<StripeCheckoutPreviewRequest, 'shipping' | 'phone' | 'tax_number'>,
+  /**
+   * The settings being edited as saving sends them, or null once the form shows why they can't
+   * be saved yet. A collected part left out asks as saved.
+   */
+  checkedSettings: () => StripeCheckoutConfig | null,
 ) {
   const { settings, config } = useGlobalData();
   const { data: { tiers = [] } = {} } = useBrowseTiers();
@@ -159,6 +159,10 @@ function useStripePreviewMenu(
   }
 
   const open = async (tier: Tier) => {
+    const previewed = checkedSettings();
+    if (!previewed) {
+      return;
+    }
     // Opened inside the click, so the browser doesn't block it as a popup, and cut off from
     // Admin before Stripe's page loads in it. A blocked tab can't be opened later, after the
     // checkout is created, so the preview stops here.
@@ -175,8 +179,7 @@ function useStripePreviewMenu(
       const response = await createPreview({
         tier_id: tier.id,
         cadence: tier.monthly_price ? 'month' : 'year',
-        design,
-        ...collection,
+        ...previewed,
       });
       const url = response.checkout_preview[0]?.url;
       if (!url) {
@@ -360,7 +363,16 @@ const CheckoutEditor: React.FC<{
     enabled: offersFields,
   });
   const [tab, setTab] = useState<'design' | 'fields'>('design');
-  const { formState, saveState, updateForm, handleSave, okProps, errors, clearError } =
+  /** The settings as saving sends them: the design, and the collected parts on offer. */
+  const settingsOf = (state: CheckoutFormState): StripeCheckoutConfig => ({
+    design: designSettingOf(state),
+    ...(offersShipping ? { shipping: shippingSettingOf(state.shipping) } : {}),
+    ...(offersPhone ? { phone: phoneSettingOf(state.phone) } : {}),
+    ...(offersTaxNumber ? { tax_number: collectSettingOf(state.taxNumber) } : {}),
+  });
+  // Only the Fields tab can be incomplete, so a failed check shows it.
+  const showIncomplete = () => setTab('fields');
+  const { formState, saveState, updateForm, handleSave, okProps, errors, clearError, validate } =
     useForm<CheckoutFormState>({
       initialState: {
         ...formStateOf(config.design, branding.design),
@@ -375,19 +387,17 @@ const CheckoutEditor: React.FC<{
         ...(offersTaxNumber ? validateTaxNumber(state.taxNumber) : {}),
       }),
       onSave: async (state) => {
-        await editConfig({
-          design: designSettingOf(state),
-          ...(offersShipping ? { shipping: shippingSettingOf(state.shipping) } : {}),
-          ...(offersPhone ? { phone: phoneSettingOf(state.phone) } : {}),
-          ...(offersTaxNumber ? { tax_number: collectSettingOf(state.taxNumber) } : {}),
-        });
+        await editConfig(settingsOf(state));
       },
       onSaveError: handleError,
     });
-  const previewMenu = useStripePreviewMenu(designSettingOf(formState), {
-    ...(offersShipping ? { shipping: previewShippingOf(formState.shipping) } : {}),
-    ...(offersPhone ? { phone: collectSettingOf(formState.phone) } : {}),
-    ...(offersTaxNumber ? { tax_number: collectSettingOf(formState.taxNumber) } : {}),
+  // Previewed only once the settings could be saved, so a preview is what saving would give.
+  const previewMenu = useStripePreviewMenu(() => {
+    if (validate()) {
+      return settingsOf(formState);
+    }
+    showIncomplete();
+    return null;
   });
   // Every field a collected value has in this form, so no other value is offered it. A part
   // that is switched off still counts, as switching it back on brings its fields back.
@@ -509,8 +519,7 @@ const CheckoutEditor: React.FC<{
         try {
           const saved = await handleSave({ fakeWhenUnchanged: true });
           if (!saved) {
-            // Only the Fields tab can be incomplete, so show it.
-            setTab('fields');
+            showIncomplete();
           }
         } catch {
           // Already shown by onSaveError; handleSave re-throws after it.

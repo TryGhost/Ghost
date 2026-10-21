@@ -28,14 +28,11 @@ export const asksNoTier = (state: CollectFormState): boolean =>
   state.collect && !state.allTiers && !state.tierIds.length;
 
 /**
- * Whether a part is on and the tiers it is asked on, as it is being edited: for Preview in
- * Stripe, and for saving a part with nothing else to set. Switched on for no tier, it asks
- * nothing, as validation stops that being saved.
+ * Whether a part is on and the tiers it is asked on, for saving or previewing a part with
+ * nothing else to set. Only called once validation has stopped it being on for no tier.
  */
 export const collectSettingOf = (state: CollectFormState): CollectSetting =>
-  state.collect && !asksNoTier(state)
-    ? { collect: true, ...tierIdsSettingOf(state) }
-    : { collect: false };
+  state.collect ? { collect: true, ...tierIdsSettingOf(state) } : { collect: false };
 
 /**
  * The tiers the sketch tags a part with: empty when it is asked on every paid tier, so there

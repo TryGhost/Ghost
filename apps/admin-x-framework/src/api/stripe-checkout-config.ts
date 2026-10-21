@@ -118,34 +118,21 @@ export const useReadStripeCheckoutBranding = createQuery<StripeCheckoutBrandingR
   path: '/stripe/checkout/branding/',
 });
 
-/** Shipping as a preview asks for it. Where the answers are saved doesn't matter there. */
-export type StripeCheckoutPreviewShipping =
-  | { collect: false }
-  | { collect: true; tier_ids?: string[]; allowed_countries?: string[] };
-
-/** A phone number as a preview asks for it. Where the answer is saved doesn't matter there. */
-export type StripeCheckoutPreviewPhone =
-  | { collect: false }
-  | { collect: true; tier_ids?: string[] };
-
-/** A preview of the design on a real Stripe Checkout page for one paid tier. */
+/**
+ * A preview of the settings being edited on a real Stripe Checkout page for one paid tier, given
+ * as saving gives them, though they need not be saved. Collected parts left out are asked as
+ * saved.
+ */
 export type StripeCheckoutPreviewRequest = {
   tier_id: string;
   cadence: 'month' | 'year';
-  design: StripeCheckoutDesignSetting;
-  /** Left out, the preview asks for an address as the saved settings say. */
-  shipping?: StripeCheckoutPreviewShipping;
-  /** Left out, the preview asks for a phone number as the saved settings say. */
-  phone?: StripeCheckoutPreviewPhone;
-  /** Left out, the preview lets buyers give a tax ID as the saved settings say. */
-  tax_number?: StripeCheckoutTaxNumberSetting;
-};
+} & StripeCheckoutConfig;
 
 export interface StripeCheckoutPreviewResponseType {
   checkout_preview: Array<{ url: string }>;
 }
 
-/** Creates the checkout page to open; the design in it need not be saved. */
+/** Creates the checkout page to open; the settings in it need not be saved. */
 export const useCreateStripeCheckoutPreview = createMutation<
   StripeCheckoutPreviewResponseType,
   StripeCheckoutPreviewRequest
