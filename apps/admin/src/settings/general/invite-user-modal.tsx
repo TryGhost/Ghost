@@ -339,14 +339,18 @@ function InviteUserModal() {
                     <>
                       {' '}
                       <Link
-                        className="text-inherit decoration-current hover:decoration-current"
+                        className="border-b border-current text-inherit no-underline"
                         href={upgradeRoute.startsWith('/') ? `#${upgradeRoute}` : upgradeRoute}
                         onClick={(event) => {
                           event.preventDefault();
                           navigateTo(upgradeRoute);
                         }}
                       >
-                        Upgrade to invite more people →
+                        Upgrade to invite more people{' '}
+                        <LucideIcon.ArrowRight
+                          aria-hidden="true"
+                          className="inline size-3 align-middle"
+                        />
                       </Link>
                     </>
                   )}
