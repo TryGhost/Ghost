@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { hasHourlyInterval } from '@/shared/analytics/chart-helpers';
+import { getStatsTimezone, hasHourlyInterval } from '@/shared/analytics/chart-helpers';
 import { useMemberCountHistory } from '@tryghost/admin-x-framework/api/stats';
 
 /**
@@ -12,7 +12,7 @@ import { useMemberCountHistory } from '@tryghost/admin-x-framework/api/stats';
  * Asks once, for today, which also warms the cache for the Today view.
  */
 export const useHourlyHistorySupport = (): { isLoading: boolean; supportsHourly: boolean } => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getStatsTimezone();
   const today = moment().tz(timezone).format('YYYY-MM-DD');
   const { data, isLoading, isError } = useMemberCountHistory({
     searchParams: {
