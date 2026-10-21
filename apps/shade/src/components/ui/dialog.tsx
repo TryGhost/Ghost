@@ -4,7 +4,14 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 
-const Dialog = DialogPrimitive.Root;
+// Radix keeps whether a dialog is modal to itself, and the overlay scroll layout needs to know.
+const DialogModalContext = React.createContext(true);
+
+const Dialog = ({ modal = true, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) => (
+  <DialogModalContext.Provider value={modal}>
+    <DialogPrimitive.Root modal={modal} {...props} />
+  </DialogModalContext.Provider>
+);
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
@@ -48,11 +55,15 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(({ className, children, scroll = 'fixed', ...props }, ref) => {
+  const modal = React.useContext(DialogModalContext);
+
   const panel = (
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        scroll === 'overlay' ? 'relative' : 'fixed top-[8vmin] left-[50%] translate-x-[-50%]',
+        scroll === 'overlay'
+          ? 'pointer-events-auto relative'
+          : 'fixed top-[8vmin] left-[50%] translate-x-[-50%]',
         dialogPanelClassName,
         className,
       )}
@@ -62,18 +73,26 @@ const DialogContent = React.forwardRef<
     </DialogPrimitive.Content>
   );
 
+  // The space around the dialog is padding on this wrapper, not on the scroll container:
+  // browsers leave a scroll container's own bottom padding out of what it scrolls, which
+  // would leave the dialog flush with the bottom of the window.
+  const scrollingPanel = (
+    <div className="flex min-h-full items-start justify-center px-4 py-[8vmin]">{panel}</div>
+  );
+
   return (
     <DialogPortal>
       <ShadeScope>
         {scroll === 'overlay' ? (
-          <DialogOverlay className="overflow-y-auto">
-            {/* The space around the dialog is padding on this wrapper, not on the backdrop:
-                browsers leave a scroll container's own bottom padding out of what it scrolls,
-                which would leave the dialog flush with the bottom of the window. */}
-            <div className="flex min-h-full items-start justify-center px-4 py-[8vmin]">
-              {panel}
+          modal ? (
+            <DialogOverlay className="overflow-y-auto">{scrollingPanel}</DialogOverlay>
+          ) : (
+            // Radix renders no backdrop for a non-modal dialog, and the page behind stays
+            // usable, so this scroll container lets presses beside the dialog through.
+            <div className="pointer-events-none fixed inset-0 z-50 overflow-y-auto">
+              {scrollingPanel}
             </div>
-          </DialogOverlay>
+          )
         ) : (
           <>
             <DialogOverlay />

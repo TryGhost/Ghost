@@ -71,6 +71,26 @@ describe('Dialog Components', () => {
     assert.ok(overlay.className.includes('fixed'), 'The backdrop should cover the window');
   });
 
+  it('shows a non-modal overlay dialog and leaves the page behind it usable', () => {
+    render(
+      <Dialog modal={false} open>
+        <DialogContent data-testid="dialog-content" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByTestId('dialog-content');
+    const scroller = content.closest<HTMLElement>('.overflow-y-auto');
+    assert.ok(scroller, 'The dialog should sit in a scroll container');
+    assert.ok(
+      scroller.className.includes('pointer-events-none'),
+      'Presses beside the dialog should reach the page',
+    );
+    assert.ok(content.className.includes('pointer-events-auto'), 'The dialog should take presses');
+  });
+
   it('closes an overlay dialog only when the backdrop is clicked, not just pressed', async () => {
     const onOpenChange = vi.fn();
     render(
