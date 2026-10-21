@@ -274,7 +274,6 @@ const Web: React.FC = () => {
     <DateRangeSelect
       earliestDate={post?.published_at ? new Date(post.published_at) : undefined}
       range={range}
-      allowCustomRange
       onRangeChange={setRange}
     />
   );

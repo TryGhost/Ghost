@@ -20,14 +20,7 @@ const StatsDateRangeSelect: React.FC<StatsDateRangeSelectProps> = ({
   const excluded =
     chartsDailyTotals && !supportsHourly ? [...excludeRanges, 'today' as const] : excludeRanges;
 
-  return (
-    <DateRangeSelect
-      excludeRanges={excluded}
-      range={range}
-      allowCustomRange
-      onRangeChange={setRange}
-    />
-  );
+  return <DateRangeSelect excludeRanges={excluded} range={range} onRangeChange={setRange} />;
 };
 
 export default StatsDateRangeSelect;
