@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -240,20 +241,14 @@ describe('Analytics overview', () => {
     const to = localDaysAgo(3);
 
     await analyticsScreen.dateRangeSelect().click();
-    await analyticsScreen.rangeOption('Custom range…').click();
     await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
-    await expect.element(analyticsScreen.customRangeApply()).toBeDisabled();
 
-    // Overview has no single-day ranges, so a lone start date can't be applied
+    // The first click starts the range, the second applies it
     await analyticsScreen.calendarDay(from)!.click();
     await expect
       .element(analyticsScreen.customRangePicker())
       .toHaveTextContent('Select an end date');
-    await expect.element(analyticsScreen.customRangeApply()).toBeDisabled();
-
     await analyticsScreen.calendarDay(to)!.click();
-    await expect.element(analyticsScreen.customRangePicker()).toHaveTextContent('8 days');
-    await analyticsScreen.customRangeApply().click();
 
     await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
     await expect
@@ -262,10 +257,12 @@ describe('Analytics overview', () => {
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(from);
     expect(kpisApi.lastRequest?.params.get('date_to')).toBe(to);
 
-    // Reopening the calendar and cancelling keeps the applied range
+    // Reopening shows the applied range, and closing without a second click
+    // keeps it
     await analyticsScreen.dateRangeSelect().click();
-    await analyticsScreen.rangeOption('Custom range…').click();
-    await analyticsScreen.customRangeCancel().click();
+    await expect.element(analyticsScreen.customRangePicker()).toHaveTextContent('8 days');
+    await analyticsScreen.calendarDay(localDaysAgo(20))!.click();
+    await userEvent.keyboard('{Escape}');
     await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
     await expect
       .element(analyticsScreen.dateRangeSelect())
@@ -274,6 +271,24 @@ describe('Analytics overview', () => {
     // Presets still apply after a custom range
     await analyticsScreen.dateRangeSelect().click();
     await analyticsScreen.rangeOption('Last 7 days').click();
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(localDaysAgo(6));
+  });
+
+  it('picks a preset with its key from anywhere on the page', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+
+    // The picker shows each preset's key
+    await analyticsScreen.dateRangeSelect().click();
+    await expect
+      .element(analyticsScreen.rangeOption('Last 7 days'))
+      .toHaveAttribute('aria-keyshortcuts', 'w');
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.keyboard('w');
     await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(localDaysAgo(6));
   });
@@ -289,7 +304,6 @@ describe('Analytics overview', () => {
     const [year, month] = earliest.split('-');
 
     await analyticsScreen.dateRangeSelect().click();
-    await analyticsScreen.rangeOption('Custom range…').click();
     await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
 
     const yearOptions = Array.from(
@@ -322,7 +336,6 @@ describe('Analytics overview', () => {
     const thisMonth = new Date().getMonth();
 
     await analyticsScreen.dateRangeSelect().click();
-    await analyticsScreen.rangeOption('Custom range…').click();
     await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
 
     // The right-hand month is this month, so there's nowhere further to go
@@ -507,11 +520,10 @@ describe('Analytics web traffic', () => {
     const day = localDaysAgo(2);
 
     await analyticsScreen.dateRangeSelect().click();
-    await analyticsScreen.rangeOption('Custom range…').click();
     await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+    // Clicking the same day twice picks just that day
     await analyticsScreen.calendarDay(day)!.click();
-    await expect.element(analyticsScreen.customRangePicker()).toHaveTextContent('1 day');
-    await analyticsScreen.customRangeApply().click();
+    await analyticsScreen.calendarDay(day)!.click();
 
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(day);
     expect(kpisApi.lastRequest?.params.get('date_to')).toBe(day);

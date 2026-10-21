@@ -190,7 +190,9 @@ function Calendar({
           defaultClassNames.week_number,
         ),
         day: cn(
-          'group/day relative aspect-square size-full p-0 text-center select-none [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md',
+          // A range rounds off where it wraps onto the next week; a day picked
+          // on its own keeps its full shape on any weekday
+          'group/day relative aspect-square size-full p-0 text-center select-none [&:first-child[data-selected=true]_button[data-range-middle=true]]:rounded-l-md [&:last-child[data-selected=true]_button[data-range-middle=true]]:rounded-r-md',
           defaultClassNames.day,
         ),
         range_start: cn('rounded-l-md bg-accent', defaultClassNames.range_start),

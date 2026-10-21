@@ -48,14 +48,11 @@ export const analyticsScreen = {
 
   // Header
   activeVisitors: () => page.getByText(/\d+ online/),
-  // The header's date-range select (the only combobox on the stats views).
-  dateRangeSelect: () => page.getByRole('combobox'),
-  rangeOption: (name: string) => page.getByRole('option', { name }),
-  customRangePicker: () => page.getByRole('dialog', { name: 'Custom date range' }),
-  customRangeApply: () =>
-    analyticsScreen.customRangePicker().getByRole('button', { name: 'Apply' }),
-  customRangeCancel: () =>
-    analyticsScreen.customRangePicker().getByRole('button', { name: 'Cancel' }),
+  // The header's date range button, and the picker it opens: presets beside
+  // a calendar
+  dateRangeSelect: () => page.getByRole('button', { name: 'Date range' }),
+  rangeOption: (name: string) => page.getByRole('option', { name, exact: true }),
+  customRangePicker: () => page.getByRole('dialog', { name: 'Date range' }),
   /** A month's dropdowns in the custom range calendar: 0 is the left-hand month. */
   calendarYearSelect: (month = 0) =>
     analyticsScreen

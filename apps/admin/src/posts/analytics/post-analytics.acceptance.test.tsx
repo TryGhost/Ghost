@@ -884,8 +884,7 @@ describe('Post analytics web custom range', () => {
     const publishedOn = localDate(new Date(`${daysAgo(10)}T10:00:00.000Z`));
     const to = localDaysAgo(3);
 
-    await page.getByRole('combobox', { name: 'Date range' }).click();
-    await analyticsScreen.rangeOption('Custom range…').click();
+    await analyticsScreen.dateRangeSelect().click();
     await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
 
     await expect.element(analyticsScreen.calendarDay(publishedOn)!).toBeEnabled();
@@ -896,7 +895,6 @@ describe('Post analytics web custom range', () => {
 
     await analyticsScreen.calendarDay(publishedOn)!.click();
     await analyticsScreen.calendarDay(to)!.click();
-    await analyticsScreen.customRangeApply().click();
 
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(publishedOn);
     expect(kpisApi.lastRequest?.params.get('date_to')).toBe(to);
