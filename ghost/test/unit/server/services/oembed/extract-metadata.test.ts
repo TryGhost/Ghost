@@ -65,6 +65,26 @@ describe('extractMetadata', function () {
     assert.equal(metadata.publisher, 'The Publisher');
   });
 
+  it('reads the first JSON-LD image when image is an array of URLs', function () {
+    for (const images of [
+      ['https://example.com/cover.jpg'],
+      ['https://example.com/cover.jpg', 'https://example.com/alternate.jpg'],
+    ]) {
+      const metadata = extractMetadata(
+        page(
+          `<script type="application/ld+json">${JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            image: images,
+          })}</script>`,
+        ),
+        'https://example.com/post',
+      );
+
+      assert.equal(metadata.image, 'https://example.com/cover.jpg');
+    }
+  });
+
   it('ignores invalid JSON-LD', function () {
     const metadata = extractMetadata(
       page('<title>Title</title><script type="application/ld+json">{nope</script>'),
