@@ -15,8 +15,6 @@ const WEBHOOK_SECRET = 'test-support-request-webhook-secret';
 const SITE_ID = 'test-site-id';
 
 const SUPPORT_REQUEST = {
-  name: 'Jamie Larson',
-  email: 'jamie@example.com',
   subject: 'Cannot connect my domain',
   message: 'The DNS check keeps failing.',
 };
@@ -102,8 +100,10 @@ describe('Support requests API', function () {
               ...SUPPORT_REQUEST,
               source: 'help-chat',
               page_url: 'https://example.com/ghost/#/settings',
-              conversation_url: 'https://chat.example.com/conversations/1',
-              transcript: '**User**\nHow do I connect my domain?',
+              context: {
+                conversation_url: 'https://chat.example.com/conversations/1',
+                transcript: '**User**\nHow do I connect my domain?',
+              },
             },
           ],
         })
@@ -114,13 +114,14 @@ describe('Support requests API', function () {
       assert.deepEqual(captured.body, {
         type: 'support_request',
         siteId: SITE_ID,
-        requestedByUserId: owner.id,
-        requestedByEmail: owner.email,
+        requestedBy: { id: owner.id, name: owner.name, email: owner.email },
         ...SUPPORT_REQUEST,
         source: 'help-chat',
         pageUrl: 'https://example.com/ghost/#/settings',
-        conversationUrl: 'https://chat.example.com/conversations/1',
-        transcript: '**User**\nHow do I connect my domain?',
+        context: {
+          conversation_url: 'https://chat.example.com/conversations/1',
+          transcript: '**User**\nHow do I connect my domain?',
+        },
       });
 
       assert.ok(captured.headers, 'Expected the outbound request headers to be captured');
@@ -140,7 +141,7 @@ describe('Support requests API', function () {
       );
     });
 
-    it('Sends null for optional fields that were not provided', async function () {
+    it('Sends null and an empty context for optional fields that were not provided', async function () {
       configureHost();
 
       const captured = mockHost();
@@ -153,24 +154,27 @@ describe('Support requests API', function () {
       assert.ok(captured.body, 'Expected an outbound request to the host');
       assert.equal(captured.body.source, null);
       assert.equal(captured.body.pageUrl, null);
-      assert.equal(captured.body.conversationUrl, null);
-      assert.equal(captured.body.transcript, null);
+      assert.deepEqual(captured.body.context, {});
     });
 
-    it('Rejects requester fields supplied in the request body', async function () {
-      configureHost();
+    for (const field of [
+      { name: 'Someone Else' },
+      { email: 'attacker@example.com' },
+      { requested_by: { email: 'attacker@example.com' } },
+    ]) {
+      it(`Rejects requester details supplied as ${Object.keys(field)[0]}`, async function () {
+        configureHost();
 
-      const captured = mockHost();
+        const captured = mockHost();
 
-      await agent
-        .post('/support_requests/')
-        .body({
-          support_requests: [{ ...SUPPORT_REQUEST, requested_by_email: 'attacker@example.com' }],
-        })
-        .expectStatus(422);
+        await agent
+          .post('/support_requests/')
+          .body({ support_requests: [{ ...SUPPORT_REQUEST, ...field }] })
+          .expectStatus(422);
 
-      assert.equal(captured.body, undefined, 'Expected no outbound request');
-    });
+        assert.equal(captured.body, undefined, 'Expected no outbound request');
+      });
+    }
 
     it('Returns 404 when no host is configured', async function () {
       await agent
@@ -225,12 +229,15 @@ describe('Support requests API', function () {
 
     for (const [description, override] of [
       ['the body has no support_requests array', null],
-      ['the email is invalid', { email: 'not-an-email' }],
       ['the subject is blank', { subject: '   ' }],
       ['the message is missing', { message: undefined }],
       ['a URL is not http(s)', { page_url: 'javascript:alert(1)' }],
       ['the source is not a slug', { source: 'Help Chat!' }],
       ['an unknown field is sent', { attachments: [] }],
+      ['the context is not an object', { context: 'transcript' }],
+      ['a context key is not a slug', { context: { 'Conversation URL': 'x' } }],
+      ['a context value is not a string', { context: { transcript: 42 } }],
+      ['a context value is blank', { context: { transcript: '   ' } }],
     ] as const) {
       it(`Returns 422 when ${description}`, async function () {
         configureHost();
@@ -283,7 +290,8 @@ describe('Support requests API', function () {
         .expectStatus(202);
 
       assert.ok(captured.body, 'Expected an outbound request to the host');
-      assert.notEqual(captured.body.requestedByUserId, fixtureManager.get('users', 0).id);
+      assert.ok(isRecord(captured.body.requestedBy), 'Expected the requester details');
+      assert.notEqual(captured.body.requestedBy.id, fixtureManager.get('users', 0).id);
     });
   });
 

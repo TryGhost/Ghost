@@ -6,16 +6,16 @@ import {
 const errors = require('@tryghost/errors');
 
 export interface SupportRequest {
-  requestedByUserId: string;
-  requestedByEmail: string;
-  name: string;
-  email: string;
+  requestedBy: {
+    id: string;
+    name: string;
+    email: string;
+  };
   subject: string;
   message: string;
   source: string | null;
   pageUrl: string | null;
-  conversationUrl: string | null;
-  transcript: string | null;
+  context: Record<string, string>;
 }
 
 interface SupportRequestBody extends SupportRequest {
