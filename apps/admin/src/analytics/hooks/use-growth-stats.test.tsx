@@ -642,7 +642,12 @@ describe('useGrowthStats', () => {
             paid_canceled: 1,
           },
         ],
-        meta: { totals: { paid: 55, free: 110, comped: 5, gift: 8 }, interval: 'hour' },
+        meta: {
+          totals: { paid: 55, free: 110, comped: 5, gift: 8 },
+          interval: 'hour',
+          // The day opened at 98 free members; two joined before 1am
+          start: { paid: 50, free: 98, comped: 5, gift: 0 },
+        },
       });
 
       const { result } = renderHook(() => useGrowthStats({ from: '2024-06-26', to: '2024-06-26' }));
@@ -660,6 +665,9 @@ describe('useGrowthStats', () => {
       expect(result.current.chartData.at(-1)).toEqual(
         expect.objectContaining({ date: '2024-06-26T02:00', free: 103 }),
       );
+      // The day's change counts from where it opened, including the first hour:
+      // 153 members at midnight to 158 now, not 155 at 1am
+      expect(result.current.totals.percentChanges.total).toBe('3.3%');
     });
 
     it('charts a single past day like Today', async () => {

@@ -19,12 +19,17 @@ import { useMemo } from 'react';
 // Type for direction values
 export type DiffDirection = 'up' | 'down' | 'same';
 
+type MemberCountTotals = { paid: number; free: number; comped: number; gift: number };
+
 // Calculate totals from member data
 const calculateTotals = (
   memberData: MemberStatusItem[],
   mrrData: MrrHistoryItem[],
   dateFrom: string,
   memberCountTotals?: { paid: number; free: number; comped: number; gift: number },
+  // Where a single day started, when it came back hour by hour: each hour holds
+  // the totals at its end, so the day's change is measured from here
+  dayStart?: { members?: MemberCountTotals; mrr?: number },
 ) => {
   if (!memberData.length) {
     return {
@@ -77,9 +82,9 @@ const calculateTotals = (
     mrr: 'same' as DiffDirection,
   };
 
-  if (memberData.length > 1) {
-    // Get first day in range
-    const first = memberData[0];
+  if (dayStart?.members || memberData.length > 1) {
+    // Where the range started: the day's opening totals, or the first day
+    const first = dayStart?.members ?? memberData[0];
     const firstTotal = first.free + first.paid + first.comped + (first.gift ?? 0);
 
     if (firstTotal > 0) {
@@ -104,7 +109,16 @@ const calculateTotals = (
     }
   }
 
-  if (mrrData.length > 1) {
+  if (dayStart?.mrr !== undefined) {
+    const mrrChange =
+      dayStart.mrr === 0
+        ? totalMrr > 0
+          ? 100
+          : 0
+        : ((totalMrr - dayStart.mrr) / dayStart.mrr) * 100;
+    percentChanges.mrr = formatPercentage(mrrChange / 100);
+    directions.mrr = mrrChange > 0 ? 'up' : mrrChange < 0 ? 'down' : 'same';
+  } else if (mrrData.length > 1) {
     // Find the first ACTUAL data point within the selected date range (not synthetic boundary points)
     const actualStartDate = moment(dateFrom).format('YYYY-MM-DD');
     const firstActualPoint = mrrData.find((point) =>
@@ -415,9 +429,26 @@ export const useGrowthStats = (range: StatsRange) => {
   // the counts on their last day
   const currentTotals = endsBeforeToday ? undefined : memberCountResponse?.meta?.totals;
 
+  // Where a single day started, from hourly history
+  const dayStart = useMemo(() => {
+    const members = isHourly
+      ? (memberCountResponse as { meta?: { start?: MemberCountTotals } } | undefined)?.meta?.start
+      : undefined;
+    const mrrStarts = isMrrHourly
+      ? (
+          mrrHistoryResponse as
+            | { meta?: { start?: { currency: string; mrr: number }[] } }
+            | undefined
+        )?.meta?.start
+      : undefined;
+    const mrr = mrrStarts?.find((start) => start.currency === selectedCurrency)?.mrr;
+    // MRR stays in cents, like the totals it's compared with
+    return { members, mrr };
+  }, [isHourly, isMrrHourly, memberCountResponse, mrrHistoryResponse, selectedCurrency]);
+
   // Calculate totals
   const totalsData = useMemo(
-    () => calculateTotals(memberData, mrrData, dateFrom, currentTotals),
+    () => calculateTotals(memberData, mrrData, dateFrom, currentTotals, dayStart),
     [memberData, mrrData, dateFrom, currentTotals],
   );
 
