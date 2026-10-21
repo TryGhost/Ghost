@@ -4,15 +4,16 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { INTERNAL } from './access';
+import { INTERNAL, MEMBERS } from './access';
 import {
+  ACTIVE_ONLY,
   FIELDS_TABLE,
   fieldReference,
   onField,
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
+import { DbBoundField, DbNamedBinding, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
@@ -81,6 +82,44 @@ export class MetafieldBindingsService {
       updated_at: now,
     });
     return bindingId;
+  }
+
+  /**
+   * Each of these ports that writes into a field, whatever that field's status, with the field
+   * it names, such as `custom.delivery_address`, or null when it names none. A port names its
+   * field while that field is active and open to members, as that's when a member can read what
+   * they hold there: a field kept from members isn't theirs to know of, and an archived one holds
+   * nothing they can read. Deleting a field deletes its bindings, so a port bound here always has
+   * one.
+   */
+  async boundPorts(db: Knex, ports: readonly string[]): Promise<Map<string, string | null>> {
+    if (!ports.length) {
+      return new Map();
+    }
+
+    const binding = z
+      .array(z.string())
+      .parse(await db(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
+    const bound = new Map<string, string | null>(binding.map((port) => [port, null]));
+    // Read the way a member's own reads ask for fields, so a port names exactly the fields their
+    // record holds values for.
+    const named = await this.fields
+      .definitions(db, { audience: MEMBERS, status: ACTIVE_ONLY })
+      .read.join(BINDINGS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
+      .whereIn(`${BINDINGS_TABLE}.port`, ports)
+      .select(`${BINDINGS_TABLE}.port`, `${FIELDS_TABLE}.namespace`, `${FIELDS_TABLE}.key`);
+    for (const row of named) {
+      const read = DbNamedBinding.safeParse(row);
+      if (read.success) {
+        bound.set(read.data.port, identityOf(read.data));
+      }
+    }
+    return bound;
+  }
+
+  /** Whether any port writes into this field. */
+  async isBound(field: FieldIdentity): Promise<boolean> {
+    return (await this.knex(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
   }
 
   /** Stops the writing. Whatever hangs off the binding cascades with it. */
@@ -212,4 +251,9 @@ export class MetafieldBindingsService {
       type: bound.data.type,
     };
   }
+}
+
+/** A field's identity as text, such as `custom.delivery_address`. */
+function identityOf(field: { namespace: Namespace; key: Key }): string {
+  return z.encode(IdentityTextSchema, { namespace: field.namespace, key: field.key, parts: [] });
 }

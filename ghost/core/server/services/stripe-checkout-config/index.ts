@@ -55,6 +55,7 @@ export default defineService(
         message: 'The custom fields services must be set up before the Stripe Checkout config.',
       });
     }
+    const tiersRoot: typeof import('../tiers') = require('../tiers');
     const recordAction: RecordCheckoutConfigAction = (input) =>
       recordCheckoutConfigAction({ Action: models.Action, logging, ...input });
 
@@ -63,6 +64,8 @@ export default defineService(
       recordAction,
       bindings: metafields.bindings,
       fields: metafields.fields,
+      // Looked up on each use: tiers are set up later in boot, and throw if they aren't.
+      requirements: () => tiersRoot.default.service.requirements,
       logging,
     });
     const checkouts = new CheckoutService({ config, labs, logging });
@@ -73,7 +76,7 @@ export default defineService(
       // Looked up on each use: Stripe, tiers and members are set up later in boot.
       previews: new CheckoutPreviewService({
         stripeConnected: () => require('../stripe').api.configured,
-        readTier: (id) => require('../tiers').default.service.api.read(id),
+        readTier: (id) => tiersRoot.default.service.api.read(id),
         checkouts,
         createPreviewLink: (params) =>
           require('../members').api.paymentsService.getPreviewLink(params),

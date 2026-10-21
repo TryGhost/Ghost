@@ -11,6 +11,10 @@ const TierCreatedEvent = require('../../../../../core/server/services/tiers/tier
 
 const rootPath = require.resolve('../../../../../core/server/services/tiers');
 const tiersApiPath = require.resolve('../../../../../core/server/services/tiers/tiers-api');
+const metafieldsPath = require.resolve('../../../../../core/server/services/members-metafields');
+// The real check, which refuses until boot has set the custom fields services up. No unit test
+// sets them up.
+const { booted: bootedBeforeInit } = require(metafieldsPath);
 
 const FREE_ID = '0000000000000000000000a1';
 const PAID_ID = '0000000000000000000000a2';
@@ -78,6 +82,7 @@ describe('Tiers root', function () {
   const cached = new Map<string, NodeJS.Module | undefined>();
   let Product: ReturnType<typeof fakeProductModel>;
   let dispatch: sinon.SinonStub;
+  let metafields: { booted: () => unknown };
 
   /** A fresh root, so each case starts uninitialized. */
   function loadRoot() {
@@ -90,6 +95,12 @@ describe('Tiers root', function () {
     Product = fakeProductModel();
     sandbox.replace(models, 'Product', Product);
     dispatch = sandbox.stub(DomainEvents, 'dispatch');
+    // Boot sets up the custom fields services before tiers.
+    metafields = { booted: () => ({ bindings: {} }) };
+    require(metafieldsPath);
+    const metafieldsModule = require.cache[metafieldsPath];
+    assert.ok(metafieldsModule);
+    sandbox.replace(metafieldsModule, 'exports', metafields);
   });
 
   afterEach(function () {
@@ -107,6 +118,15 @@ describe('Tiers root', function () {
     const root = loadRoot();
 
     assert.equal(typeof root.init, 'function');
+    assert.throws(() => root.service, IncorrectUsageError);
+    sinon.assert.notCalled(Product.findAll);
+  });
+
+  it('refuses to start before the custom fields services are set up', async function () {
+    metafields.booted = bootedBeforeInit;
+    const root = loadRoot();
+
+    await assert.rejects(root.init(), IncorrectUsageError);
     assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(Product.findAll);
   });
@@ -253,7 +273,7 @@ describe('Tiers root', function () {
     assert.equal(Product.add.firstCall.args[0].slug, 'generated-slug');
     sinon.assert.calledOnce(dispatch);
     assert.ok(dispatch.firstCall.args[0] instanceof TierCreatedEvent);
-    assert.equal(dispatch.firstCall.args[0].data.tier, tier);
+    assert.equal(dispatch.firstCall.args[0].data.tier.id.toHexString(), tier.id.toHexString());
 
     // Slugs look the model up on each call; the repository keeps the model from init.
     const replacement = fakeProductModel();

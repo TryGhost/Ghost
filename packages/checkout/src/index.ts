@@ -15,8 +15,23 @@
 export { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from './allowed-countries.ts';
 export type { StripeAllowedCountry } from './allowed-countries.ts';
 
-export { STRIPE_PORT, STRIPE_PORTS, isStripePort } from './field-ports.ts';
-export type { StripePort } from './field-ports.ts';
+export {
+  CHECKOUT_PORT,
+  CHECKOUT_PORTS,
+  REQUIREMENTS,
+  isCheckoutPort,
+  isRequirementName,
+  matchRequirement,
+  portsOf,
+} from './field-ports.ts';
+export type {
+  CheckoutPort,
+  ListedPort,
+  ListedRequirement,
+  RequirementHandlers,
+  RequirementName,
+  RequirementSettings,
+} from './field-ports.ts';
 
 export { PORT_FIELD } from './destinations.ts';
 
