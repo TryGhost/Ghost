@@ -1,5 +1,6 @@
 import { defineService } from '../../../kernel/define-service';
 import InvitationLimiter from './invitation-limiter';
+import { getHelpLink } from '../limits';
 // @ts-expect-error The existing CommonJS implementation has no type declarations.
 import Invites from './invites';
 
@@ -24,7 +25,7 @@ export default defineService('Invites', () => {
       db.knex,
       () => config.get('hostSettings:staffInvites'),
       Date.now,
-      () => config.get('hostSettings:billing:url'),
+      getHelpLink,
     ),
   });
 });

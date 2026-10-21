@@ -4,7 +4,7 @@ const { lockStaffInvites, checkTrialStaffLimit } = require('../lib/staff-invite-
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
-const { limitService } = require('../services/limits');
+const { limitService, getHelpLink } = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
@@ -671,11 +671,7 @@ const User = ghostBookshelf.Model.extend(
       }
       const create = async (transacting) => {
         await lockStaffInvites(transacting);
-        await checkTrialStaffLimit(
-          transacting,
-          policy.maxStaff,
-          config.get('hostSettings:billing:url'),
-        );
+        await checkTrialStaffLimit(transacting, policy.maxStaff, getHelpLink());
         return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
       };
       // Invitation acceptance already has a transaction. Reusing it
