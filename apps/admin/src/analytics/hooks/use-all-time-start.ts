@@ -27,9 +27,10 @@ const firstPublished = {
  *
  * A lookup that fails (an older server without the first-visit endpoint, a
  * missing permission) just doesn't count. Returns isLoading until all have
- * settled, so ranges are worked out once, with the start known.
+ * settled; only All time and the calendar need the answer, so nothing else
+ * waits for it.
  */
-export const useAllTimeStart = (timezone: string): { isLoading: boolean } => {
+export const useAllTimeStart = (timezone: string): { isLoading: boolean; start: string | null } => {
   const { statsConfig } = useAnalyticsData();
   const firstPost = useBrowsePosts({ ...quiet, searchParams: firstPublished });
   const firstPage = useBrowsePages({ ...quiet, searchParams: firstPublished });
@@ -71,5 +72,5 @@ export const useAllTimeStart = (timezone: string): { isLoading: boolean } => {
     setAllTimeStart(start);
   }
 
-  return { isLoading };
+  return { isLoading, start };
 };
