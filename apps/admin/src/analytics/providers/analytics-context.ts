@@ -12,6 +12,9 @@ export interface AnalyticsViewState {
   // Whether the server answers a single day by the hour; without it, views
   // that chart members, revenue or subscribers don't offer single days
   supportsHourly: boolean;
+  // Where the site's history starts, once known (null until then, or when
+  // there's none); views that use it re-render when it arrives
+  allTimeStart: string | null;
 }
 
 export const AnalyticsContext = createContext<AnalyticsViewState | undefined>(undefined);
