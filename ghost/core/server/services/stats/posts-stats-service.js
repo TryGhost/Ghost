@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 
@@ -1120,10 +1121,21 @@ class PostsStatsService {
       // In the viewer's timezone the range is its own local days; the UTC
       // boundaries can fall on the day before
       const local = isKnownTimezone(options.timezone);
+      let fillFrom = local ? (options.date_from ?? null) : dateFrom ? dateFrom.split('T')[0] : null;
+      const fillTo = local ? (options.date_to ?? null) : dateTo ? dateTo.split('T')[0] : null;
+      // A range that starts long before the newsletter had subscribers (All
+      // time reaches back to 2013) begins the day before its first change
+      // instead of returning years of empty days
+      if (fillFrom && startingTotal === 0 && values.length > 0) {
+        const firstChange = moment.utc(values[0].date).subtract(1, 'day').format('YYYY-MM-DD');
+        if (firstChange > fillFrom) {
+          fillFrom = firstChange;
+        }
+      }
       const completeValues = this._fillMissingDates(
         values,
-        local ? (options.date_from ?? null) : dateFrom ? dateFrom.split('T')[0] : null,
-        local ? (options.date_to ?? null) : dateTo ? dateTo.split('T')[0] : null,
+        fillFrom,
+        fillTo,
         timezone,
         startingTotal,
       );
@@ -1202,8 +1214,6 @@ class PostsStatsService {
    * @returns {Array<{date: string, value: number}>} Dense array with all dates filled
    */
   _fillMissingDates(values, startDate, endDate, timezone = 'UTC', startingValue = 0) {
-    const moment = require('moment-timezone');
-
     // If no date range provided, return as-is
     if (!startDate || !endDate) {
       return values || [];

@@ -264,6 +264,21 @@ class MembersStatsService {
       gift: Math.max(0, runningGift),
     };
 
+    // A range that starts long before the site had members (All time reaches
+    // back to 2013) begins the day before its first change instead of
+    // returning years of empty days
+    const hadNoMembers = Object.values(lastKnownTotals).every((total) => total === 0);
+    if (hadNoMembers && rows.length > 0) {
+      const firstChange = moment.utc(rows[0].date).subtract(1, 'day');
+      if (firstChange.isAfter(currentDate)) {
+        currentDate.set({
+          year: firstChange.year(),
+          month: firstChange.month(),
+          date: firstChange.date(),
+        });
+      }
+    }
+
     while (currentDate.isSameOrBefore(endDateMoment)) {
       const dateStr = currentDate.format('YYYY-MM-DD');
 
