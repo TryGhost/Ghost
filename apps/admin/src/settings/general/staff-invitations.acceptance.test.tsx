@@ -173,6 +173,38 @@ describe('Staff invitations', () => {
     expect(addApi.requests).toHaveLength(1);
   });
 
+  it('offers an upgrade on rejected resends without a billing iframe URL', async () => {
+    const existing = invite();
+    const { boot } = fakeStaffWorld({ invites: [existing] });
+    const config = configResponse();
+    config.config.hostSettings = {
+      staffInvites: { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 },
+    };
+    fakeAdminEndpoint(
+      'POST',
+      '/invites/',
+      {
+        errors: [
+          {
+            type: 'HostLimitError',
+            message: 'Trial invitation allowance exhausted. Upgrade to continue.',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp('/settings/staff?tab=invited', {
+      boot: { ...boot, browseConfig: { response: config } },
+    });
+    const item = settingsScreen.users().getByTestId('user-invite');
+    await item.hover();
+    await item.getByRole('button', { name: 'Resend' }).click();
+    const toast = settingsScreen.errorToast();
+    await expect.element(toast).toHaveTextContent('Trial invitation allowance exhausted');
+    await toast.getByRole('button', { name: 'Upgrade', exact: true }).click();
+    await expect.poll(() => window.location.hash).toBe('#/pro');
+  });
+
   it('preserves the invitation and displays the wait when a resend is rate limited', async () => {
     const existing = invite();
     const { boot } = fakeStaffWorld({ invites: [existing] });
@@ -308,17 +340,16 @@ describe('Staff invitations', () => {
     });
     const modal = await openInviteModal();
     await expect.element(modal).toHaveTextContent('Your trial supports up to 10 staff');
-    await expect
-      .element(modal.getByRole('link', { name: 'Upgrade your plan' }))
-      .toHaveAttribute('href', 'https://billing.example.com');
+    await modal.getByRole('button', { name: 'Upgrade your plan' }).click();
+    await expect.poll(() => window.location.hash).toBe('#/pro');
   });
 
-  it('explains an exhausted email allowance and offers an upgrade', async () => {
+  it('uses a configured upgrade route without requiring a billing iframe URL', async () => {
     const { boot } = fakeStaffWorld();
     const config = configResponse();
     config.config.hostSettings = {
       staffInvites: { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 },
-      billing: { enabled: true, url: 'https://billing.example.com' },
+      billing: { enabled: true, upgradeUrl: '#/pro/custom-upgrade' },
     };
     fakeAdminEndpoint(
       'POST',
@@ -342,6 +373,7 @@ describe('Staff invitations', () => {
     await modal.getByLabelText('Email address').fill('new@example.com');
     await modal.getByRole('button', { name: 'Send invitation' }).click();
     await expect.element(modal).toHaveTextContent('Your trial allows 15 staff invitation emails');
-    await expect.element(modal.getByRole('link', { name: 'Upgrade your plan' })).toBeVisible();
+    await modal.getByRole('button', { name: 'Upgrade your plan' }).click();
+    await expect.poll(() => window.location.hash).toBe('#/pro/custom-upgrade');
   });
 });

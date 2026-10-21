@@ -1,3 +1,5 @@
+import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 import validator from 'validator';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import {
@@ -49,6 +51,7 @@ function InviteUserModal() {
     searchParams: { limit: '100', permissions: 'assign' },
   });
   const limiter = useLimiter();
+  const upgradeRoute = useUpgradeRoute();
   const { config } = useGlobalData();
   const trialInvites = config?.hostSettings?.staffInvites;
 
@@ -324,8 +327,12 @@ function InviteUserModal() {
                 })}
               </RadioGroup>
               <FieldError id="invite-role-error">{errors.role}</FieldError>
-              {errors.role && trialInvites && config?.hostSettings?.billing?.url && (
-                <Link href={config.hostSettings.billing.url}>Upgrade your plan</Link>
+              {errors.role && trialInvites && (
+                <Link asChild>
+                  <button type="button" onClick={() => navigateTo(upgradeRoute)}>
+                    Upgrade your plan
+                  </button>
+                </Link>
               )}
             </FieldSet>
           </Stack>

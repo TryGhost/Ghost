@@ -1,3 +1,5 @@
+import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 import React, { useEffect, useState } from 'react';
 import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import TopLevelGroup from '@/settings/components/top-level-group';
@@ -198,6 +200,7 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
 };
 
 const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
+  const upgradeRoute = useUpgradeRoute();
   const { config } = useGlobalData();
   const [revokeState, setRevokeState] = useState<'progress' | ''>('');
   const [resendState, setResendState] = useState<'progress' | ''>('');
@@ -242,10 +245,9 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
       toast.success(`Invitation resent`, { description: invite.email });
     } catch (e) {
       const error = e instanceof JSONError ? e.data?.errors?.[0] : undefined;
-      if (error?.type === 'HostLimitError' && config?.hostSettings?.billing?.url) {
-        const upgradeUrl = config.hostSettings.billing.url;
+      if (error?.type === 'HostLimitError') {
         toast.error(getErrorMessage(e, error.message), {
-          action: { label: 'Upgrade', onClick: () => window.location.assign(upgradeUrl) },
+          action: { label: 'Upgrade', onClick: () => navigateTo(upgradeRoute) },
         });
       } else {
         handleError(e);
