@@ -12,6 +12,9 @@ const options = z.object({
 
 const quantity = z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().nonnegative());
 
+const tableEntry = z.tuple([z.string().min(1), quantity.optional()]);
+const quantityEntry = z.tuple([z.string().min(1), quantity]);
+
 /** Validate parsed CLI values and normalize them for Core's data generator. */
 export function parseDataGeneratorOptions(value: unknown) {
   const argv = options.parse(value);
@@ -19,15 +22,15 @@ export function parseDataGeneratorOptions(value: unknown) {
     .split(',')
     .filter(Boolean)
     .map((entry) => {
-      const [name = '', amount] = entry.split(':');
-      return { name, quantity: amount ? quantity.parse(amount) : undefined };
+      const [name, amount] = tableEntry.parse(entry.split(':'));
+      return { name, quantity: amount };
     });
   const quantities: Record<string, number> = {};
   for (const entry of argv.quantities.split(',').filter(Boolean)) {
-    const [name = '', amount] = entry.split(':');
-    quantities[name] = quantity.parse(amount, {
-      error: () => `Missing quantity for table ${name}`,
+    const [name, amount] = quantityEntry.parse(entry.split(':'), {
+      error: () => `Invalid quantity override: ${entry}`,
     });
+    quantities[name] = amount;
   }
 
   return {

@@ -268,7 +268,7 @@ test('multi-sub-scenarios help and invalid options do not load the database', as
 test('data generate validates quantities before Core setup and releases the connection on setup failure', async () => {
   const root = await fixture();
   const invalid = run(root, ['generate', '--quantities', 'posts:invalid']);
-  assert.match(invalid.stdout, /Missing quantity for table posts/);
+  assert.match(invalid.stdout, /Invalid quantity override: posts:invalid/);
   assert.doesNotMatch(invalid.stdout, /DB_LOADED/);
   const failed = run(root, ['generate'], { FAIL_GENERATOR_SETUP: '1' });
   assert.equal(failed.status, 1);
@@ -315,6 +315,11 @@ test('both entrypoints reject invalid quantities and seeds before loading the da
     ['--quantities=posts:invalid'],
     ['--quantities=posts'],
     ['--tables=members:invalid'],
+    ['--tables=members:'],
+    ['--tables=members:1:bad'],
+    ['--quantities=posts:1:bad'],
+    ['--tables=:1'],
+    ['--quantities=:1'],
     ['--quantities=posts:10k'],
     ['--quantities=posts:-5'],
     ['--quantities=posts:1.5'],
