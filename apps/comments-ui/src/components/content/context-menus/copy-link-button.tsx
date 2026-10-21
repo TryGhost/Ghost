@@ -18,8 +18,15 @@ const CopyLinkButton: React.FC<Props> = ({ comment, close, className, iconClassN
   const { t } = useAppContext();
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const closeTimeout = useRef<number>();
+  const isMounted = useRef(true);
 
-  useEffect(() => () => window.clearTimeout(closeTimeout.current), []);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      window.clearTimeout(closeTimeout.current);
+    };
+  }, []);
 
   const copyLink = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const url = buildCommentShareUrl(comment.id, window.location.href);
@@ -27,14 +34,21 @@ const CopyLinkButton: React.FC<Props> = ({ comment, close, className, iconClassN
     // click's user activation, so write through that frame's clipboard
     const frameWindow = event.currentTarget.ownerDocument.defaultView || window;
 
+    let copied = false;
     try {
       await frameWindow.navigator.clipboard.writeText(url);
-      setStatus('copied');
+      copied = true;
     } catch (e) {
       console.error('[Comments] Failed to copy comment link:', e); // eslint-disable-line no-console
-      setStatus('failed');
     }
 
+    // The menu may have closed while the clipboard write was pending; a
+    // late timer would otherwise close it again after it's reopened
+    if (!isMounted.current) {
+      return;
+    }
+
+    setStatus(copied ? 'copied' : 'failed');
     window.clearTimeout(closeTimeout.current);
     closeTimeout.current = window.setTimeout(close, CLOSE_DELAY_MS);
   };

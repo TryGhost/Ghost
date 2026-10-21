@@ -100,8 +100,10 @@ describe('<CommentContextMenu>', () => {
 
   describe('copy link', () => {
     let writeText;
+    let originalClipboard;
 
     beforeEach(() => {
+      originalClipboard = Object.getOwnPropertyDescriptor(window.navigator, 'clipboard');
       writeText = sinon.stub().resolves();
       Object.defineProperty(window.navigator, 'clipboard', {
         configurable: true,
@@ -110,7 +112,11 @@ describe('<CommentContextMenu>', () => {
     });
 
     afterEach(() => {
-      delete window.navigator.clipboard;
+      if (originalClipboard) {
+        Object.defineProperty(window.navigator, 'clipboard', originalClipboard);
+      } else {
+        delete window.navigator.clipboard;
+      }
     });
 
     it('shows copy link for comments by other members', () => {
@@ -191,6 +197,29 @@ describe('<CommentContextMenu>', () => {
 
       await clock.tickAsync(1000);
       expect(close.calledOnce).toBe(true);
+    });
+
+    it('does not close the menu later if it was closed while copying', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      let finishCopy;
+      writeText.returns(
+        new Promise((resolve) => {
+          finishCopy = resolve;
+        }),
+      );
+      const close = sinon.spy();
+      const comment = buildComment();
+
+      const { unmount } = contextualRender(<CommentContextMenu close={close} comment={comment} />, {
+        appContext: { member: { uuid: 'viewer-uuid' } },
+      });
+
+      fireEvent.click(screen.getByTestId('copy-link-button'));
+      unmount();
+      finishCopy();
+      await clock.tickAsync(1000);
+
+      expect(close.called).toBe(false);
     });
 
     it('tells the reader when the link could not be copied', async () => {
