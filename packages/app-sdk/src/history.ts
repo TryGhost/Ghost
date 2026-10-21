@@ -54,8 +54,8 @@ export function watchHistory(
   const { history } = window;
   const { pushState, replaceState } = history;
   // The state the app gave each route, so following Admin back to one gives it back.
-  const states = new Map<string, unknown>();
   let route = currentRoute();
+  const states = new Map<string, unknown>([[route, history.state]]);
 
   const report = (move: PathMove) => {
     const next = currentRoute();
