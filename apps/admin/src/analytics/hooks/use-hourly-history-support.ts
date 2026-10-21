@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { hasHourlyInterval } from '@/analytics/hooks/use-growth-stats';
+import { hasHourlyInterval } from '@/shared/analytics/chart-helpers';
 import { useMemberCountHistory } from '@tryghost/admin-x-framework/api/stats';
 
 /**

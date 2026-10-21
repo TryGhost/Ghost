@@ -139,6 +139,7 @@ describe('PaidMembersChangeChart Component', () => {
         memberData={hourlyMemberData}
         range={{ from: '2024-01-12', to: '2024-01-12' }}
         subscriptionData={undefined}
+        isHourly
       />,
     );
 
