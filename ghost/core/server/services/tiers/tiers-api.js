@@ -3,10 +3,15 @@ const { BadRequestError, IncorrectUsageError } = require('@tryghost/errors');
 const Tier = require('./tier');
 
 /**
+ * @typedef {object} ReadOptions
+ * @prop {boolean} [withRequirements] - Reads what each tier's members must give
+ */
+
+/**
  * @typedef {object} ITierRepository
- * @prop {(id: ObjectID) => Promise<Tier>} getById
+ * @prop {(id: ObjectID, options?: ReadOptions) => Promise<Tier>} getById
  * @prop {(tier: Tier) => Promise<void>} save
- * @prop {(options?: {filter?: string}) => Promise<Tier[]>} getAll
+ * @prop {(options?: ReadOptions & {filter?: object}) => Promise<Tier[]>} getAll
  */
 
 /**
@@ -41,8 +46,7 @@ module.exports = class TiersAPI {
   }
 
   /**
-   * @param {object} [options]
-   * @param {any} [options.filter] - A mongo query object
+   * @param {ReadOptions & {filter?: any}} [options] - The filter is a mongo query object
    *
    * @returns {Promise<Page<Tier>>}
    */
@@ -71,12 +75,13 @@ module.exports = class TiersAPI {
 
   /**
    * @param {string} idString
+   * @param {ReadOptions} [options]
    *
    * @returns {Promise<Tier>}
    */
-  async read(idString) {
+  async read(idString, options = {}) {
     const id = ObjectID.createFromHexString(idString);
-    const tier = await this.#repository.getById(id);
+    const tier = await this.#repository.getById(id, options);
 
     return tier;
   }
@@ -101,9 +106,10 @@ module.exports = class TiersAPI {
   /**
    * @param {string} idString
    * @param {object} data
-   * @returns {Promise<Tier>}
+   * @param {ReadOptions} [options] - How the edited tier is read back
+   * @returns {Promise<Tier>} The tier as saved
    */
-  async edit(idString, data) {
+  async edit(idString, data, options = {}) {
     const id = ObjectID.createFromHexString(idString);
     const tier = await this.#repository.getById(id);
 
@@ -131,14 +137,15 @@ module.exports = class TiersAPI {
 
     await this.#repository.save(tier);
 
-    return tier;
+    return this.#repository.getById(id, options);
   }
 
   /**
    * @param {object} data
-   * @returns {Promise<Tier>}
+   * @param {ReadOptions} [options] - How the added tier is read back
+   * @returns {Promise<Tier>} The tier as saved
    */
-  async add(data) {
+  async add(data, options = {}) {
     if (data.type === 'free') {
       throw new BadRequestError({
         message: 'Cannot create free Tier',
@@ -163,6 +170,6 @@ module.exports = class TiersAPI {
 
     await this.#repository.save(tier);
 
-    return tier;
+    return this.#repository.getById(tier.id, options);
   }
 };

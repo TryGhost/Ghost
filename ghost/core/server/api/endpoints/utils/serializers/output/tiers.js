@@ -70,6 +70,15 @@ function serializeTier(tier, options) {
     serialized.benefits = null;
   }
 
+  // Only when read with the tier: other readers of tiers don't ask for them.
+  if (Array.isArray(json.requirements)) {
+    serialized.requirements = json.requirements.map(({ name, ports, countries }) => ({
+      name,
+      ports: { ...ports },
+      ...(countries ? { countries: [...countries] } : {}),
+    }));
+  }
+
   if (serialized.type === 'free') {
     delete serialized.currency;
     delete serialized.monthly_price;
@@ -107,6 +116,18 @@ function createSerializer(debugString, serialize) {
  * @prop {Date} created_at
  * @prop {Date} updated_at
  * @prop {string[]} [benefits]
+ * @prop {SerializedRequirement[]} [requirements]
+ */
+
+/**
+ * What a tier's members must give, such as `shipping`, and the port each of its answers is
+ * collected under, by the role it plays, such as `recipient`, with the countries an address must
+ * be in when fewer than everywhere Stripe ships.
+ *
+ * @typedef {Object} SerializedRequirement
+ * @prop {string} name
+ * @prop {Record<string, string>} ports
+ * @prop {string[]} [countries]
  */
 
 /**

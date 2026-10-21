@@ -82,6 +82,8 @@ const BACKUP_TABLES = [
   'tinybird_syncs',
   'stripe_checkout_config',
   'stripe_checkout_config_tiers',
+  'tier_requirements',
+  'tier_requirement_tiers',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

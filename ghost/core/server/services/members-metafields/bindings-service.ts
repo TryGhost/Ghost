@@ -83,6 +83,22 @@ export class MetafieldBindingsService {
     return bindingId;
   }
 
+  /**
+   * Which of these ports write into a field, whatever that field's status. Deleting a field
+   * deletes its bindings, so a port bound here always has one.
+   */
+  async boundPorts(db: Knex, ports: readonly string[]): Promise<Set<string>> {
+    if (!ports.length) {
+      return new Set();
+    }
+    return new Set(await db(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
+  }
+
+  /** Whether any port writes into this field. */
+  async isBound(field: FieldIdentity): Promise<boolean> {
+    return (await this.knex(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
+  }
+
   /** Stops the writing. Whatever hangs off the binding cascades with it. */
   async remove(db: Knex, port: string): Promise<void> {
     await db(BINDINGS_TABLE).where({ port }).del();
