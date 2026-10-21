@@ -9,6 +9,7 @@ export default defineService('Invites', () => {
   const urlUtils = require('../../../shared/url-utils').default;
   const models = require('../../models');
   const logging = require('@tryghost/logging');
+  const { limitService } = require('../limits');
 
   return new Invites({
     settingsCache,
@@ -17,5 +18,6 @@ export default defineService('Invites', () => {
     urlUtils,
     models,
     logging,
+    limitService,
   });
 });

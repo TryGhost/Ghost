@@ -1,6 +1,7 @@
 const security = require('@tryghost/security');
 const tpl = require('@tryghost/tpl');
 const accept = require('./accept');
+const errors = require('@tryghost/errors');
 
 const messages = {
   invitedByName: '{invitedByName} has invited you to join {blogName}',
@@ -12,13 +13,22 @@ const messages = {
 };
 
 class Invites {
-  constructor({ settingsCache, settingsHelpers, mailService, urlUtils, models, logging }) {
+  constructor({
+    settingsCache,
+    settingsHelpers,
+    mailService,
+    urlUtils,
+    models,
+    logging,
+    limitService,
+  }) {
     this.settingsCache = settingsCache;
     this.settingsHelpers = settingsHelpers;
     this.mailService = mailService;
     this.urlUtils = urlUtils;
     this.models = models;
     this.logging = logging;
+    this.limitService = limitService;
   }
 
   accept(invitation) {
@@ -29,17 +39,41 @@ class Invites {
     let invite;
     let emailData;
 
-    return InviteModel.findOne({ email: invites[0].email }, options)
-      .then((existingInvite) => {
-        if (!existingInvite) {
-          return;
-        }
+    const replace = async (transacting) => {
+      const writeOptions = { ...options, transacting, forUpdate: true };
+      const existingInvite = await InviteModel.findOne({ email: invites[0].email }, writeOptions);
+      const registered = await this.models.User.findOne({ email: invites[0].email }, writeOptions);
+      if (registered) {
+        throw new errors.ValidationError({
+          message: 'User is already registered.',
+          code: 'USER_ALREADY_REGISTERED',
+        });
+      }
+      if (existingInvite) {
+        await existingInvite.destroy(writeOptions);
+      }
+      const role = await this.models.Role.findOne({ id: invites[0].role_id }, writeOptions);
+      if (role.get('name') !== 'Contributor') {
+        await this.limitService.errorIfWouldGoOverLimit('staff', { transacting });
+      }
+      return InviteModel.add(invites[0], writeOptions);
+    };
 
-        return existingInvite.destroy(options);
-      })
-      .then(() => {
-        return InviteModel.add(invites[0], options);
-      })
+    const createInvite = this.limitService.isLimited('staff')
+      ? this.models.Base.transaction(replace)
+      : InviteModel.findOne({ email: invites[0].email }, options)
+          .then((existingInvite) => {
+            if (!existingInvite) {
+              return;
+            }
+
+            return existingInvite.destroy(options);
+          })
+          .then(() => {
+            return InviteModel.add(invites[0], options);
+          });
+
+    return createInvite
       .then((createdInvite) => {
         invite = createdInvite;
 
