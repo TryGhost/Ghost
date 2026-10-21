@@ -17,6 +17,7 @@ workflow and self-check before finishing:
 | Choosing colours for surfaces, text, borders or hovers | [`shade-tokens-not-hex`](../../../apps/shade/skills/shade-tokens-not-hex/SKILL.md)     |
 | Writing `dark:` classes, or a dark-mode-only problem   | [`shade-no-dark-variants`](../../../apps/shade/skills/shade-no-dark-variants/SKILL.md) |
 | Importing from `@tryghost/shade` or adding Shade       | [`shade-imports`](../../../apps/shade/skills/shade-imports/SKILL.md)                   |
+| Setting up Shade in a Ghost app, or checking a screen  | [`shade-in-ghost-app`](../../../apps/shade/skills/shade-in-ghost-app/SKILL.md)         |
 
 A screen usually needs several: start with page templates, then the rest as
 you reach them.

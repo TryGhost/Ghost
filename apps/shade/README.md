@@ -21,6 +21,10 @@ export function Example() {
 
 ## Usage in standalone surfaces
 
+Building a Ghost app, which runs framed inside Admin? Follow `docs/ghost-apps.md`
+in the installed package instead: it also covers fonts, Admin's theme and the
+page frame.
+
 Shade requires React 18 and Tailwind CSS 4.1+. The app compiles Shade's
 `styles.css` together with its own styles using Tailwind's Vite or PostCSS
 integration. Shade does not ship a compiled stylesheet.
@@ -122,6 +126,15 @@ says when to apply which doc and links into `docs/`, so the rules stay in one
 place. In an app, point the agent at `node_modules/@tryghost/shade/skills/`.
 The skills link to `../../docs/`, so read them in place rather than copying
 them out of the package.
+
+Agents don't load skills from `node_modules`, so a Ghost app starts from the
+entry skill in `entry-skill/shade-for-ghost-apps/`. It installs Shade and points
+the agent at the shipped skills and docs. It isn't in the package; install it
+from GitHub with the [`skills` CLI](https://github.com/vercel-labs/skills):
+
+```sh
+npx skills add TryGhost/Ghost/apps/shade/entry-skill/shade-for-ghost-apps
+```
 
 ### Source exports
 

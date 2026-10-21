@@ -37,7 +37,10 @@ Read the human documentation before changing Shade:
   Storybook.
 - Update the Storybook human documentation when a shared Shade convention
   changes; do not make this file the only source.
-- The design skills in [`skills/`](./skills/) ship in the npm package, and
-  `.agents/skills` links to them. They hold no rules: each routes to the
+- The design skills in [`skills/`](./skills/) ship in the npm package, and the
+  `shade-design` repository skill points to them. They hold no rules: each routes to the
   generated docs, so a rule change belongs in the `.mdx` source. Keep their
   links relative to the published layout (`../../docs/<doc>.md`).
+- `entry-skill/shade-for-ghost-apps` is installed into Ghost apps from GitHub
+  and doesn't ship. It holds no rules either: it installs Shade and names files
+  under `node_modules/@tryghost/shade/`, which `skills.test.ts` checks.

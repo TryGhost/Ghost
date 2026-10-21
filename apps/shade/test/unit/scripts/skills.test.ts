@@ -9,13 +9,20 @@ import { buildDocs } from '../../../scripts/build-docs';
  * `docs/`, which is gitignored. These tests resolve every skill link against
  * the published layout, building the docs in memory, so a broken link fails
  * here without a prior `pnpm build`.
+ *
+ * The entry skills in `entry-skill/` don't ship: they're installed from GitHub
+ * and name files inside `node_modules/@tryghost/shade/`, which must exist in
+ * the published layout.
  */
 
 const packageRoot = join(import.meta.dirname, '../../..');
-const skillNames = readdirSync(join(packageRoot, 'skills'), { withFileTypes: true })
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name)
-  .sort();
+const folders = (dir: string): string[] =>
+  readdirSync(join(packageRoot, dir), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+const skillNames = folders('skills');
+const entrySkillNames = folders('entry-skill');
 
 /** Markdown files in the published layout, keyed by package-relative path. */
 function publishedMarkdown(): Map<string, string> {
@@ -98,5 +105,45 @@ describe('shipped skills', () => {
       }
     }
     expect(broken).toEqual([]);
+  });
+});
+
+describe('entry skills', () => {
+  const files = publishedMarkdown();
+  const packageJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')) as {
+    files: string[];
+  };
+  const read = (name: string): string =>
+    readFileSync(join(packageRoot, 'entry-skill', name, 'SKILL.md'), 'utf8');
+
+  it('are not shipped in the package', () => {
+    expect(entrySkillNames.length).toBeGreaterThan(0);
+    expect(packageJson.files.filter((file) => file.startsWith('entry-skill'))).toEqual([]);
+  });
+
+  it.each(entrySkillNames)(
+    '%s is named after its folder and has a one-line description',
+    (name) => {
+      const frontmatter = /^---\n([\s\S]*?)\n---\n/.exec(read(name));
+      expect(frontmatter?.[1]).toMatch(new RegExp(`^name: ${name}$`, 'm'));
+      expect(frontmatter?.[1]).toMatch(/^description: \S.*$/m);
+    },
+  );
+
+  it.each(entrySkillNames)('%s names only files the published package has', (name) => {
+    const paths = [...read(name).matchAll(/node_modules\/@tryghost\/shade\/([^\s`)]*)/g)].map(
+      (match) => match[1]!,
+    );
+    expect(paths.length).toBeGreaterThan(0);
+    const missing = paths.filter((path) => {
+      const target = path.replace(/\/$/, '');
+      return (
+        target !== '' &&
+        target !== 'package.json' &&
+        !files.has(target) &&
+        ![...files.keys()].some((file) => file.startsWith(`${target}/`))
+      );
+    });
+    expect(missing).toEqual([]);
   });
 });

@@ -19,8 +19,8 @@ package's `build:docs` script.
 2. When adding Shade to an app, decide whether it is embedded or standalone
    with
    [Embedded and standalone setup](../../docs/introduction.md#embedded-and-standalone-setup).
-3. For a standalone app, follow the package README's
-   [standalone setup](../../README.md#usage-in-standalone-surfaces).
+3. For a standalone app, such as a Ghost app, follow
+   [`shade-in-ghost-app`](../shade-in-ghost-app/SKILL.md).
 
 ## Self-check
 

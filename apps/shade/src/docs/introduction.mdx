@@ -55,10 +55,9 @@ Never import from the root `@tryghost/shade` barrel or from a deep path into the
 Where Shade's stylesheet and `ShadeApp` come from depends on who owns the document:
 
 - **Embedded Admin apps** are bundled into Ghost Admin and render in Admin's own document. Admin owns the single stylesheet and application wrapper, so these apps import neither `@tryghost/shade/styles.css` nor `ShadeApp`; they only import components.
-- **Standalone surfaces** own their document. This includes a Ghost app running in an iframe inside Admin, because an iframe doesn't inherit Admin's styles. Install `@tryghost/shade@alpha` with React 18 and Tailwind CSS 4.1+, import `@tryghost/shade/styles.css` once in the app stylesheet, and wrap the app in `ShadeApp`. The published stylesheet registers Shade's sources with Tailwind automatically.
+- **Standalone surfaces** own their document. This includes a Ghost app running in an iframe inside Admin, because an iframe doesn't inherit Admin's styles. They import `@tryghost/shade/styles.css` once, in the app stylesheet, and wrap the app in `ShadeApp`.
 
-See the [Shade README](https://github.com/TryGhost/Ghost/blob/main/apps/shade/README.md#usage-in-standalone-surfaces)
-for the Vite setup example.
+To set up a standalone surface, follow [Using Shade in a Ghost app](?path=/docs/overview-ghost-apps--docs): install, Tailwind, fonts, `ShadeApp`, theme and page frame.
 
 ## Admin 7 milestones
 

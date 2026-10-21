@@ -48,7 +48,7 @@ const SECTION_ORDER = [
   'Page Templates',
   'Recipes',
 ];
-const PAGE_ORDER = ['Introduction', 'Layers', 'Contributing'];
+const PAGE_ORDER = ['Introduction', 'Ghost Apps', 'Layers', 'Contributing'];
 
 const GITHUB_SHADE_PREFIX =
   /^https:\/\/github\.com\/TryGhost\/Ghost\/(?:blob|tree)\/[^/]+\/apps\/shade\//;
