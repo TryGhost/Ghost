@@ -462,6 +462,12 @@ const Newsletters: React.FC = () => {
             <CardContent>
               <NewsletterKPIs
                 avgsData={avgsData}
+                dayStart={
+                  hasHourlyInterval(subscriberStatsData)
+                    ? (subscriberStatsData as { meta?: { start?: number } } | undefined)?.meta
+                        ?.start
+                    : undefined
+                }
                 initialTab={initialTab}
                 isAvgsLoading={false}
                 isHourly={hasHourlyInterval(subscriberStatsData)}
