@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
-import { describe, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { describe, it, vi } from 'vitest';
+import { fireEvent, screen, within } from '@testing-library/react';
 import {
   Dialog,
   DialogContent,
@@ -69,6 +69,35 @@ describe('Dialog Components', () => {
       'The backdrop should be the scroll container',
     );
     assert.ok(overlay.className.includes('fixed'), 'The backdrop should cover the window');
+  });
+
+  it('closes an overlay dialog only when the backdrop is clicked, not just pressed', async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={onOpenChange}>
+        <DialogContent data-testid="dialog-content" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+    // Radix starts listening for outside presses on the next tick.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    const overlay = screen
+      .getByTestId('dialog-content')
+      .closest<HTMLElement>('[data-slot="dialog-overlay"]');
+    assert.ok(overlay);
+
+    // Dragging the backdrop's scrollbar presses the backdrop but never clicks it.
+    fireEvent.pointerDown(overlay, { button: 0 });
+    fireEvent.pointerUp(overlay, { button: 0 });
+    assert.equal(onOpenChange.mock.calls.length, 0, 'A press alone should keep the dialog open');
+
+    fireEvent.pointerDown(overlay, { button: 0 });
+    fireEvent.click(overlay);
+    assert.deepEqual(onOpenChange.mock.calls, [[false]], 'A click on the backdrop should close');
   });
 
   it('applies custom className to DialogHeader correctly', () => {

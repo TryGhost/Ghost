@@ -47,9 +47,7 @@ export interface DialogContentProps extends React.ComponentPropsWithoutRef<
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, scroll = 'fixed', onPointerDownOutside, ...props }, ref) => {
-  const overlayRef = React.useRef<HTMLDivElement>(null);
-
+>(({ className, children, scroll = 'fixed', ...props }, ref) => {
   const panel = (
     <DialogPrimitive.Content
       ref={ref}
@@ -58,18 +56,6 @@ const DialogContent = React.forwardRef<
         dialogPanelClassName,
         className,
       )}
-      onPointerDownOutside={(event) => {
-        // Grabbing the backdrop's scrollbar isn't a click outside the dialog.
-        const overlay = overlayRef.current;
-        if (
-          overlay &&
-          event.target === overlay &&
-          event.detail.originalEvent.offsetX > overlay.clientWidth
-        ) {
-          event.preventDefault();
-        }
-        onPointerDownOutside?.(event);
-      }}
       {...props}
     >
       {children}
@@ -80,7 +66,7 @@ const DialogContent = React.forwardRef<
     <DialogPortal>
       <ShadeScope>
         {scroll === 'overlay' ? (
-          <DialogOverlay ref={overlayRef} className="overflow-y-auto">
+          <DialogOverlay className="overflow-y-auto">
             {/* The space around the dialog is padding on this wrapper, not on the backdrop:
                 browsers leave a scroll container's own bottom padding out of what it scrolls,
                 which would leave the dialog flush with the bottom of the window. */}
