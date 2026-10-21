@@ -152,6 +152,23 @@ describe('TierScopePicker', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
+  it('consumes Escape only while its list is open', () => {
+    const onEscape = vi.fn();
+    window.addEventListener('keydown', onEscape);
+    try {
+      render(<Picker />);
+      open();
+      fireEvent.keyDown(field(), { key: 'Escape' });
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      expect(onEscape).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(field(), { key: 'Escape' });
+      expect(onEscape).toHaveBeenCalledOnce();
+    } finally {
+      window.removeEventListener('keydown', onEscape);
+    }
+  });
+
   it('shows a notice in place of the rows', () => {
     render(
       <TierScopePicker<'any_paid'>
