@@ -21,14 +21,14 @@ function buildHourlyTotals({ date, timezone = 'UTC', current, events, apply }) {
   const dayStart = moment.tz(date, 'YYYY-MM-DD', tz).startOf('day');
   const dayEnd = moment.min(dayStart.clone().add(1, 'day'), moment().tz(tz));
 
-  const sorted = [...events].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-  );
+  const sorted = events
+    .map((event) => ({ event, at: eventTime(event.created_at) }))
+    .sort((a, b) => a.at.valueOf() - b.at.valueOf());
 
   // Undo the day's changes to get where the day began
   let totals = current;
   for (let i = sorted.length - 1; i >= 0; i -= 1) {
-    totals = apply(totals, sorted[i], -1);
+    totals = apply(totals, sorted[i].event, -1);
   }
   const start = totals;
 
@@ -37,15 +37,36 @@ function buildHourlyTotals({ date, timezone = 'UTC', current, events, apply }) {
   for (let hour = dayStart.clone(); hour.isBefore(dayEnd); hour = hour.clone().add(1, 'hour')) {
     const hourEnd = hour.clone().add(1, 'hour');
     const inHour = [];
-    while (next < sorted.length && moment(sorted[next].created_at).isBefore(hourEnd)) {
-      totals = apply(totals, sorted[next], 1);
-      inHour.push(sorted[next]);
+    while (next < sorted.length && sorted[next].at.isBefore(hourEnd)) {
+      totals = apply(totals, sorted[next].event, 1);
+      inHour.push(sorted[next].event);
       next += 1;
     }
     hours.push({ date: hour.format('YYYY-MM-DDTHH:mm'), totals, events: inHour });
   }
 
   return { hours, start };
+}
+
+/**
+ * When an event happened. MySQL returns dates; SQLite returns UTC timestamps
+ * as zone-less text, which would otherwise be read in the process's timezone
+ * @param {Date|string} createdAt
+ */
+function eventTime(createdAt) {
+  return typeof createdAt === 'string'
+    ? moment.utc(createdAt, ['YYYY-MM-DD HH:mm:ss', moment.ISO_8601])
+    : moment(createdAt);
+}
+
+/**
+ * Whether a day has ended, so changes can have been made since. Today hasn't,
+ * and there's nothing to look up after it
+ * @param {string} date - YYYY-MM-DD
+ * @param {string} [timezone]
+ */
+function hasDayEnded(date, timezone = 'UTC') {
+  return moment.utc(dayEndUtc(date, timezone), 'YYYY-MM-DD HH:mm:ss').isSameOrBefore(moment());
 }
 
 /**
@@ -163,6 +184,7 @@ module.exports = {
   buildHourlyTotals,
   dayStartUtc,
   dayEndUtc,
+  hasDayEnded,
   utcBucketExpression,
   sumByLocalDay,
   todayIn,

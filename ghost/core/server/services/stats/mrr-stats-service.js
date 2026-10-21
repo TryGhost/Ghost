@@ -3,6 +3,7 @@ const {
   buildHourlyTotals,
   dayStartUtc,
   dayEndUtc,
+  hasDayEnded,
   utcBucketExpression,
   sumByLocalDay,
   todayIn,
@@ -94,11 +95,13 @@ class MrrStatsService {
         .select('created_at', 'currency', 'mrr_delta')
         .where('created_at', '>=', dayStartUtc(date, timezone))
         .where('created_at', '<', dayEnd),
-      knex('members_paid_subscription_events')
-        .select('currency')
-        .select(knex.raw('SUM(mrr_delta) as delta'))
-        .where('created_at', '>=', dayEnd)
-        .groupBy('currency'),
+      hasDayEnded(date, timezone)
+        ? knex('members_paid_subscription_events')
+            .select('currency')
+            .select(knex.raw('SUM(mrr_delta) as delta'))
+            .where('created_at', '>=', dayEnd)
+            .groupBy('currency')
+        : [],
     ]);
 
     /** @type {Object.<string, number>} */

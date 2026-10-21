@@ -1,11 +1,19 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const {
   buildHourlyTotals,
   dayStartUtc,
+  hasDayEnded,
   sumByLocalDay,
   utcBucketExpression,
 } = require('../../../../../../core/server/services/stats/utils/hourly-history');
+
+const HOURLY_HISTORY = path.resolve(
+  __dirname,
+  '../../../../../../core/server/services/stats/utils/hourly-history',
+);
 
 const apply = (total, event, direction) => total + direction * event.delta;
 
@@ -47,6 +55,36 @@ describe('Hourly history', function () {
         ['2026-10-21T10:00', 103],
       ],
     );
+  });
+
+  it('reads zone-less timestamps (SQLite) as UTC, whatever the process timezone', function () {
+    // Test workers share one timezone, so this runs in a process of its own
+    // in New York, where reading the text as local time would shift it 4 hours
+    const script = `
+      const { buildHourlyTotals } = require(${JSON.stringify(HOURLY_HISTORY)});
+      const { hours } = buildHourlyTotals({
+        date: '2026-10-20',
+        timezone: 'UTC',
+        current: 101,
+        events: [{ created_at: '2026-10-20 03:36:00', delta: 1 }],
+        apply: (total, event, direction) => total + direction * event.delta,
+      });
+      process.stdout.write(JSON.stringify(hours.slice(2, 5).map((hour) => hour.totals)));
+    `;
+    const output = execFileSync(process.execPath, ['-e', script], {
+      env: { ...process.env, TZ: 'America/New_York' },
+    });
+
+    assert.deepEqual(JSON.parse(String(output)), [100, 101, 101]);
+  });
+
+  it('knows a day has ended only once its last hour is over', function () {
+    sinon.useFakeTimers(new Date('2026-10-21T10:30:00Z').getTime());
+
+    assert.equal(hasDayEnded('2026-10-20', 'UTC'), true);
+    assert.equal(hasDayEnded('2026-10-21', 'UTC'), false);
+    // Already the 22nd in Kiritimati (UTC+14)
+    assert.equal(hasDayEnded('2026-10-21', 'Pacific/Kiritimati'), true);
   });
 
   it('labels hours in the given timezone', function () {

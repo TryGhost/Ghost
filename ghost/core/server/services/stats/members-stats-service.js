@@ -3,6 +3,7 @@ const {
   buildHourlyTotals,
   dayStartUtc,
   dayEndUtc,
+  hasDayEnded,
   utcBucketExpression,
   sumByLocalDay,
   todayIn,
@@ -133,15 +134,17 @@ class MembersStatsService {
         .select('created_at', 'from_status', 'to_status')
         .where('created_at', '>=', dayStartUtc(date, timezone))
         .where('created_at', '<', dayEnd),
-      knex('members_status_events')
-        .select(
-          ...['paid', 'free', 'comped', 'gift'].map((status) =>
-            knex.raw(
-              `SUM(CASE WHEN to_status='${status}' THEN 1 WHEN from_status='${status}' THEN -1 ELSE 0 END) as ${status}`,
-            ),
-          ),
-        )
-        .where('created_at', '>=', dayEnd),
+      hasDayEnded(date, timezone)
+        ? knex('members_status_events')
+            .select(
+              ...['paid', 'free', 'comped', 'gift'].map((status) =>
+                knex.raw(
+                  `SUM(CASE WHEN to_status='${status}' THEN 1 WHEN from_status='${status}' THEN -1 ELSE 0 END) as ${status}`,
+                ),
+              ),
+            )
+            .where('created_at', '>=', dayEnd)
+        : [],
     ]);
 
     const apply = (totals, event, direction) => {
@@ -257,7 +260,7 @@ class MembersStatsService {
 
     // Generate complete date range from startDate to today
     const results = [];
-    const currentDate = moment(startDateMoment);
+    let currentDate = moment(startDateMoment);
 
     // Track the last known values for forward-filling
     let lastKnownTotals = {
@@ -274,11 +277,7 @@ class MembersStatsService {
     if (hadNoMembers && rows.length > 0) {
       const firstChange = moment.utc(rows[0].date).subtract(1, 'day');
       if (firstChange.isAfter(currentDate)) {
-        currentDate.set({
-          year: firstChange.year(),
-          month: firstChange.month(),
-          date: firstChange.date(),
-        });
+        currentDate = firstChange;
       }
     }
 

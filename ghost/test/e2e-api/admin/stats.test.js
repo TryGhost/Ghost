@@ -91,6 +91,13 @@ describe('Stats API', function () {
     const hourLabel = /^\d{4}-\d{2}-\d{2}T\d{2}:00$/;
     // Hours from the timezone's midnight up to the current hour
     const hoursSoFar = () => moment().tz(timezone).hours() + 1;
+    // Counted before the request: the hour can tick over while it runs, adding one
+    const assertHours = (count, before, perHour = 1) => {
+      assert.ok(
+        count === before * perHour || count === (before + 1) * perHour,
+        `expected ${before * perHour} or ${(before + 1) * perHour} rows, got ${count}`,
+      );
+    };
 
     it('Can fetch member count history in local days', async function () {
       const from = moment().tz(timezone).subtract(6, 'days').format('YYYY-MM-DD');
@@ -112,12 +119,13 @@ describe('Stats API', function () {
     });
 
     it('Can fetch today’s member count by the hour', async function () {
+      const before = hoursSoFar();
       await agent
         .get(`/stats/member_count?interval=hour&timezone=${timezone}`)
         .expectStatus(200)
         .expect(({ body }) => {
           assert.equal(body.meta.interval, 'hour');
-          assert.equal(body.stats.length, hoursSoFar());
+          assertHours(body.stats.length, before);
           assert.equal(body.stats[0].date, `${today()}T00:00`);
           for (const stat of body.stats) {
             assert.match(stat.date, hourLabel);
@@ -136,13 +144,14 @@ describe('Stats API', function () {
     });
 
     it('Can fetch today’s MRR by the hour', async function () {
+      const before = hoursSoFar();
       await agent
         .get(`/stats/mrr?interval=hour&timezone=${timezone}`)
         .expectStatus(200)
         .expect(({ body }) => {
           assert.equal(body.meta.interval, 'hour');
           const currencies = body.meta.totals.map((total) => total.currency);
-          assert.equal(body.stats.length, hoursSoFar() * currencies.length);
+          assertHours(body.stats.length, before, currencies.length);
           for (const total of body.meta.totals) {
             const last = body.stats.filter((stat) => stat.currency === total.currency).at(-1);
             assert.equal(last.mrr, Math.max(0, total.mrr));
@@ -158,6 +167,7 @@ describe('Stats API', function () {
       const { body: newsletters } = await agent.get('/newsletters/').expectStatus(200);
       const newsletterId = newsletters.newsletters[0].id;
 
+      const before = hoursSoFar();
       await agent
         .get(
           `/stats/subscriber-count?newsletter_id=${newsletterId}&interval=hour&timezone=${timezone}`,
@@ -166,7 +176,7 @@ describe('Stats API', function () {
         .expect(({ body }) => {
           assert.equal(body.meta.interval, 'hour');
           const [stat] = body.stats;
-          assert.equal(stat.values.length, hoursSoFar());
+          assertHours(stat.values.length, before);
           assert.equal(stat.values.at(-1).value, stat.total);
           assert.equal(typeof body.meta.start, 'number');
         });
