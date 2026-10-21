@@ -59,7 +59,7 @@ function generateToken(email, settingsAPI, transaction) {
         expires: moment().add(1, 'days').valueOf(),
         email: email,
         dbHash: dbHash,
-        password: user.get('password'),
+        passwordHash: user.get('password'),
       });
 
       return {
@@ -118,7 +118,7 @@ function doReset(options, tokenParts, settingsAPI) {
       const compareResult = security.tokens.resetToken.compare({
         token: resetToken,
         dbHash: dbHash,
-        password: user.get('password'),
+        passwordHash: user.get('password'),
       });
 
       if (!compareResult.correct) {

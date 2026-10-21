@@ -133,7 +133,7 @@
     "@tryghost/referrer-parser": "0.1.25",
     "@tryghost/request": "catalog:",
     "@tryghost/root-utils": "2.3.18",
-    "@tryghost/security": "3.3.18",
+    "@tryghost/security": "catalog:",
     "@tryghost/social-urls": "0.1.66",
     "@tryghost/string": "catalog:",
     "@tryghost/tpl": "catalog:",

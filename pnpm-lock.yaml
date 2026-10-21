@@ -377,6 +377,9 @@ catalogs:
     '@tryghost/request':
       specifier: 4.0.12
       version: 4.0.12
+    '@tryghost/security':
+      specifier: 4.0.0
+      version: 4.0.0
     '@tryghost/string':
       specifier: 0.3.8
       version: 0.3.8
@@ -2278,8 +2281,8 @@ importers:
         specifier: 2.3.18
         version: 2.3.18
       '@tryghost/security':
-        specifier: 3.3.18
-        version: 3.3.18
+        specifier: 'catalog:'
+        version: 4.0.0
       '@tryghost/social-urls':
         specifier: 0.1.66
         version: 0.1.66
@@ -8727,8 +8730,8 @@ packages:
   '@tryghost/root-utils@2.3.18':
     resolution: {integrity: sha512-4BPotmr+7+IGwqbvgCSKpO4/JUNci1YjSMJx22XjgWa38lM+coeNwr/uToGkcBbdxfaZBmFSig086FkCwlvDMg==}
 
-  '@tryghost/security@3.3.18':
-    resolution: {integrity: sha512-rHkH+GQwVynzux7aZgyn52qTBrtToq2Ch8kARXiJfoOmnahzPuccVDfMT0X/s7cKvI51o5OwE8yRgcs7s2MU5A==}
+  '@tryghost/security@4.0.0':
+    resolution: {integrity: sha512-SP04r1gUrmrsxG1RCU3NCh9je7yWrfbeHUf7HVh14X2CQWn6+dPaEYQke9t7zKVkjSYhe2TL/byoTBnTu16yYw==}
 
   '@tryghost/social-urls@0.1.66':
     resolution: {integrity: sha512-XcnhiRkvr1nhv+bq7pS78MrrLPCtJt/CzLq1FCUWRWAV+akIo2TT3Fo2WpCb0iLM4Zy+pwoGKDaXXebVww/3AQ==}
@@ -20994,7 +20997,7 @@ snapshots:
       caller: 1.1.0
       find-root: 1.1.0
 
-  '@tryghost/security@3.3.18':
+  '@tryghost/security@4.0.0':
     dependencies:
       '@tryghost/string': 0.3.8
       bcryptjs: 3.0.3
