@@ -211,6 +211,7 @@ const Growth: React.FC = () => {
         {paidMembersEnabled && currentKpiTab === 'paid-members' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]">
             <PaidMembersChangeChart
+              isHourly={isHourly}
               isLoading={isPageLoading}
               memberData={chartData}
               range={range}

@@ -41,11 +41,11 @@ import {
   formatQueryDate,
   getPeriodText,
   getRangeDates,
+  hasHourlyInterval,
 } from '@/shared/analytics/chart-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
-import { hasHourlyInterval } from '@/analytics/hooks/use-growth-stats';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import {
   useNewsletterStatsWithRangeSplit,

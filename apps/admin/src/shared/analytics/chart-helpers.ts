@@ -84,6 +84,10 @@ export const formatCustomRange = (range: CustomDateRange): string => {
   return range.from === range.to ? end : `${start} – ${end}`;
 };
 
+// Servers that can answer a single day by the hour say so in the response
+export const hasHourlyInterval = (response: unknown): boolean =>
+  (response as { meta?: { interval?: string } } | undefined)?.meta?.interval === 'hour';
+
 // Return the start and end dates for a range selection
 export const getRangeDates = (range: StatsRange) => {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;

@@ -12,6 +12,7 @@ import {
   formatQueryDate,
   getRangeDates,
   getSingleDay,
+  hasHourlyInterval,
 } from '@/shared/analytics/chart-helpers';
 import { getSymbol } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
@@ -238,10 +239,6 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
     };
   });
 };
-
-// Servers that can answer a single day by the hour say so in the response
-export const hasHourlyInterval = (response: unknown): boolean =>
-  (response as { meta?: { interval?: string } } | undefined)?.meta?.interval === 'hour';
 
 export const useGrowthStats = (range: StatsRange) => {
   // Calculate date range using Shade's timezone-aware getRangeDates

@@ -43,6 +43,8 @@ type PaidMembersChangeChartProps = {
   }[];
   range: StatsRange;
   isLoading: boolean;
+  // A single day's member data came back by the hour
+  isHourly?: boolean;
 };
 
 // Helper function to fill missing data points with zeros
@@ -184,6 +186,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
   memberData,
   range,
   isLoading,
+  isHourly = false,
 }) => {
   // State for user-selected resolution
   const [selectedResolution, setSelectedResolution] = useState<ResolutionOption>(() =>
@@ -297,7 +300,6 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
       // spreads the day's changes over its hours, so they're added up; older
       // servers' two daily points carry the day's own counts on the last one
       if (singleDay) {
-        const isHourly = memberData.some((item) => item.date.includes('T'));
         const dayData = isHourly ? memberData : memberData.slice(-1);
         const sum = (field: 'paid_subscribed' | 'paid_canceled') =>
           dayData.reduce((total, item) => total + (item[field] || 0), 0);
@@ -363,7 +365,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         };
       });
     }
-  }, [memberData, subscriptionData, range, aggregationStrategy, displayRange]);
+  }, [memberData, subscriptionData, range, aggregationStrategy, displayRange, isHourly]);
 
   const paidChangeChartConfig = {
     new: {
