@@ -245,9 +245,7 @@ describe('Analytics overview', () => {
 
     // The first click starts the range, the second applies it
     await analyticsScreen.calendarDay(from)!.click();
-    await expect
-      .element(analyticsScreen.customRangePicker())
-      .toHaveTextContent('Select an end date');
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
     await analyticsScreen.calendarDay(to)!.click();
 
     await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
@@ -260,7 +258,12 @@ describe('Analytics overview', () => {
     // Reopening shows the applied range, and closing without a second click
     // keeps it
     await analyticsScreen.dateRangeSelect().click();
-    await expect.element(analyticsScreen.customRangePicker()).toHaveTextContent('8 days');
+    await expect
+      .element(analyticsScreen.calendarDay(from)!)
+      .toHaveAttribute('data-range-start', 'true');
+    await expect
+      .element(analyticsScreen.calendarDay(to)!)
+      .toHaveAttribute('data-range-end', 'true');
     await analyticsScreen.calendarDay(localDaysAgo(20))!.click();
     await userEvent.keyboard('{Escape}');
     await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();

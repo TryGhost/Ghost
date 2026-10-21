@@ -90,17 +90,7 @@ interface DateRangePickerContentProps extends Omit<
   maxDate?: Date;
   /** The fewest days a picked range can cover. */
   minDays?: number;
-  /** How a range reads below the calendar. */
-  formatRange?: (range: DateRangePickerRange) => string;
 }
-
-const defaultFormatRange = (range: DateRangePickerRange) => {
-  const format = (date: Date) =>
-    date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-  return sameDay(range.from, range.to)
-    ? format(range.from)
-    : `${format(range.from)} – ${format(range.to)}`;
-};
 
 const DateRangePickerContent = React.forwardRef<
   React.ElementRef<typeof PopoverContent>,
@@ -117,7 +107,6 @@ const DateRangePickerContent = React.forwardRef<
       minDate,
       maxDate,
       minDays = 1,
-      formatRange = defaultFormatRange,
       align = 'end',
       ...props
     },
@@ -178,16 +167,6 @@ const DateRangePickerContent = React.forwardRef<
           : { from: draft.from, to: hoveredDate }
         : undefined;
 
-    let summary: string;
-    if (draft?.from) {
-      summary = 'Select an end date';
-    } else if (value) {
-      const days = dayCount(value);
-      summary = `${formatRange(value)} · ${days.toLocaleString()} ${days === 1 ? 'day' : 'days'}`;
-    } else {
-      summary = 'Select a start date';
-    }
-
     return (
       <PopoverContent
         ref={ref}
@@ -234,51 +213,46 @@ const DateRangePickerContent = React.forwardRef<
             );
           })}
         </div>
-        <div className="flex flex-col">
-          <div onMouseLeave={() => setHoveredDay(undefined)}>
-            <Calendar
-              // Month and year dropdowns, so earlier years are one pick away
-              captionLayout="dropdown"
-              className={cn(
-                // Arrows that lead nowhere are hidden rather than disabled
-                String.raw`[&_.rdp-button\_next[aria-disabled=true]]:invisible [&_.rdp-button\_previous[aria-disabled=true]]:invisible`,
-                // A lone start date has the same shape as the ends of a range
-                '[&_[data-selected-single=true]]:rounded-md',
-              )}
-              defaultMonth={defaultMonth}
-              disabled={[...(minDate ? [{ before: minDate }] : []), { after: lastDay }]}
-              endMonth={lastDay}
-              min={minDays - 1}
-              mode="range"
-              modifiers={
-                previewRange && {
-                  preview: previewRange,
-                  previewStart: previewRange.from,
-                  previewEnd: previewRange.to,
-                }
+        <div onMouseLeave={() => setHoveredDay(undefined)}>
+          <Calendar
+            // Month and year dropdowns, so earlier years are one pick away
+            captionLayout="dropdown"
+            className={cn(
+              // Arrows that lead nowhere are hidden rather than disabled
+              String.raw`[&_.rdp-button\_next[aria-disabled=true]]:invisible [&_.rdp-button\_previous[aria-disabled=true]]:invisible`,
+              // A lone start date has the same shape as the ends of a range
+              '[&_[data-selected-single=true]]:rounded-md',
+            )}
+            defaultMonth={defaultMonth}
+            disabled={[...(minDate ? [{ before: minDate }] : []), { after: lastDay }]}
+            endMonth={lastDay}
+            min={minDays - 1}
+            mode="range"
+            modifiers={
+              previewRange && {
+                preview: previewRange,
+                previewStart: previewRange.from,
+                previewEnd: previewRange.to,
               }
-              modifiersClassNames={{
-                preview: 'bg-accent',
-                previewStart: 'rounded-l-md',
-                previewEnd: 'rounded-r-md',
-              }}
-              numberOfMonths={numberOfMonths}
-              selected={draft ?? value}
-              // Side-by-side months would otherwise show the days where they
-              // meet twice
-              showOutsideDays={false}
-              startMonth={minDate}
-              // A click after a complete range starts a new one
-              resetOnSelect
-              onDayMouseEnter={(day, modifiers) => {
-                setHoveredDay(modifiers.disabled ? undefined : day.getTime());
-              }}
-              onSelect={handleSelect}
-            />
-          </div>
-          <p className="border-t border-border-default px-3 py-2.5 text-sm text-muted-foreground">
-            {summary}
-          </p>
+            }
+            modifiersClassNames={{
+              preview: 'bg-accent',
+              previewStart: 'rounded-l-md',
+              previewEnd: 'rounded-r-md',
+            }}
+            numberOfMonths={numberOfMonths}
+            selected={draft ?? value}
+            // Side-by-side months would otherwise show the days where they
+            // meet twice
+            showOutsideDays={false}
+            startMonth={minDate}
+            // A click after a complete range starts a new one
+            resetOnSelect
+            onDayMouseEnter={(day, modifiers) => {
+              setHoveredDay(modifiers.disabled ? undefined : day.getTime());
+            }}
+            onSelect={handleSelect}
+          />
         </div>
       </PopoverContent>
     );

@@ -162,7 +162,6 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
       <DateRangePickerContent
         activePresetId={isCustomRange(range) ? undefined : String(range)}
         aria-label="Date range"
-        formatRange={(picked) => formatCustomRange(toCustomRange(picked))}
         maxDate={maxDate}
         minDate={minDate}
         minDays={minCustomDays}
