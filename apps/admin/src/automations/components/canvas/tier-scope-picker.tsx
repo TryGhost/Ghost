@@ -115,6 +115,7 @@ export function TierScopePicker<TStandalone extends string>({
       }
       if (event.key === 'Escape') {
         event.preventDefault();
+        event.stopPropagation();
         close();
       }
     };
