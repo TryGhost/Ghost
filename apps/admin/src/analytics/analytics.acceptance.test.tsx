@@ -6,6 +6,7 @@ import {
   fakeAdminEndpoint,
   fakeAdminStats,
   fakeAnalyticsOverview,
+  fakeHourlyHistory,
   fakeSiteHistoryStart,
   fakeNewsletters,
   fakePosts,
@@ -590,6 +591,56 @@ describe('Analytics growth', () => {
       .toHaveTextContent('Which sources drove the most growth in the last 30 days');
     await expect.element(contentCard).toHaveTextContent('No conversions');
   });
+});
+
+describe('Analytics on servers without hourly history', () => {
+  // Admin ships ahead of the server on Ghost(Pro). A server that can't chart
+  // a day by the hour only has daily totals for members, revenue and
+  // subscribers, so those views don't offer a single day until it can
+  function seedViews() {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers();
+    fakeAdminStats.newsletterBasic();
+    fakeAdminStats.newsletterClicks();
+    fakeAdminStats.topPosts();
+    fakeAdminStats.topContent();
+    fakeTinybirdPipe('api_top_sources', []);
+    fakeTinybirdPipe('api_top_locations', []);
+  }
+
+  it.each(['/analytics', '/analytics/growth', '/analytics/newsletters'])(
+    'leaves Today out of %s',
+    async (route) => {
+      seedViews();
+      await renderAdminApp(route, { boot: webAnalyticsBootOverrides() });
+
+      await analyticsScreen.dateRangeSelect().click();
+      await expect.element(analyticsScreen.rangeOption('Last 7 days')).toBeVisible();
+      await expect.element(analyticsScreen.rangeOption('Today')).not.toBeInTheDocument();
+    },
+  );
+
+  it('still offers Today on Web traffic, which charts visitors by the hour', async () => {
+    seedViews();
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await expect.element(analyticsScreen.rangeOption('Today')).toBeVisible();
+  });
+
+  it.each(['/analytics', '/analytics/growth', '/analytics/newsletters'])(
+    'offers Today on %s once the server charts days by the hour',
+    async (route) => {
+      seedViews();
+      fakeHourlyHistory();
+      await renderAdminApp(route, { boot: webAnalyticsBootOverrides() });
+
+      await analyticsScreen.dateRangeSelect().click();
+      await expect.element(analyticsScreen.rangeOption('Today')).toBeVisible();
+    },
+  );
 });
 
 describe('Analytics newsletters', () => {
