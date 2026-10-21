@@ -36,7 +36,7 @@ import {
   useEmailTrackOpens,
   useNewslettersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
@@ -393,18 +393,16 @@ const Newsletters: React.FC = () => {
     // If we only have one data point, create two points spanning the range
     if (values.length === 1) {
       const singlePoint = values[0];
-      const now = new Date();
-      const rangeInDays = range;
-      const startDate = new Date(now.getTime() - rangeInDays * 24 * 60 * 60 * 1000);
+      const { startDate, endDate } = getRangeDates(range);
 
       return [
         {
           ...singlePoint,
-          date: startDate.toISOString().split('T')[0], // Start of range
+          date: formatQueryDate(startDate), // Start of range
         },
         {
           ...singlePoint,
-          date: now.toISOString().split('T')[0], // End of range (today)
+          date: formatQueryDate(endDate), // End of range
         },
       ];
     }
