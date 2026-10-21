@@ -49,57 +49,50 @@ const DialogContent = React.forwardRef<
 >(({ className, children, scroll = 'fixed', onPointerDownOutside, ...props }, ref) => {
   const overlayRef = React.useRef<HTMLDivElement>(null);
 
-  if (scroll === 'overlay') {
-    return (
-      <DialogPortal>
-        <ShadeScope>
+  const panel = (
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        scroll === 'overlay' ? 'relative' : 'fixed top-[8vmin] left-[50%] translate-x-[-50%]',
+        dialogPanelClassName,
+        className,
+      )}
+      onPointerDownOutside={(event) => {
+        // Grabbing the backdrop's scrollbar isn't a click outside the dialog.
+        const overlay = overlayRef.current;
+        if (
+          overlay &&
+          event.target === overlay &&
+          event.detail.originalEvent.offsetX > overlay.clientWidth
+        ) {
+          event.preventDefault();
+        }
+        onPointerDownOutside?.(event);
+      }}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Content>
+  );
+
+  return (
+    <DialogPortal>
+      <ShadeScope>
+        {scroll === 'overlay' ? (
           <DialogOverlay ref={overlayRef} className="overflow-y-auto">
             {/* The space around the dialog is padding on this wrapper, not on the backdrop:
                 browsers leave a scroll container's own bottom padding out of what it scrolls,
                 which would leave the dialog flush with the bottom of the window. */}
             <div className="flex min-h-full items-start justify-center px-4 py-[8vmin]">
-              <DialogPrimitive.Content
-                ref={ref}
-                className={cn('relative', dialogPanelClassName, className)}
-                onPointerDownOutside={(event) => {
-                  // Grabbing the backdrop's scrollbar isn't a click outside the dialog.
-                  const overlay = overlayRef.current;
-                  if (
-                    overlay &&
-                    event.target === overlay &&
-                    event.detail.originalEvent.offsetX > overlay.clientWidth
-                  ) {
-                    event.preventDefault();
-                  }
-                  onPointerDownOutside?.(event);
-                }}
-                {...props}
-              >
-                {children}
-              </DialogPrimitive.Content>
+              {panel}
             </div>
           </DialogOverlay>
-        </ShadeScope>
-      </DialogPortal>
-    );
-  }
-
-  return (
-    <DialogPortal>
-      <ShadeScope>
-        <DialogOverlay />
-        <DialogPrimitive.Content
-          ref={ref}
-          className={cn(
-            'fixed top-[8vmin] left-[50%] translate-x-[-50%]',
-            dialogPanelClassName,
-            className,
-          )}
-          onPointerDownOutside={onPointerDownOutside}
-          {...props}
-        >
-          {children}
-        </DialogPrimitive.Content>
+        ) : (
+          <>
+            <DialogOverlay />
+            {panel}
+          </>
+        )}
       </ShadeScope>
     </DialogPortal>
   );
