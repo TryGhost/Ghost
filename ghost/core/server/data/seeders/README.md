@@ -6,9 +6,10 @@ Contributors use `pnpm gx data generate` or the root `reset:data` scripts in the
 use [bin/generate-data.js](../../../../bin/README.md#data-generation).
 
 Both entrypoints use [schema.ts](schema.ts) to validate parsed CLI values and
-normalize generator options. Table and quantity overrides preserve explicit zero
-values; invalid quantities and seeds fail before loading the database. CLI help,
-environment setup, logging and connection cleanup belong to each entrypoint.
+normalize generator options. Quantity overrides must be non-negative safe integers
+written as digits; explicit zero values are preserved. Invalid quantities and
+seeds fail before loading the database. CLI help, environment setup, logging and
+connection cleanup belong to each entrypoint.
 
 ## How It Works
 

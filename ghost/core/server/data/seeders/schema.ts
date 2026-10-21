@@ -10,10 +10,7 @@ const options = z.object({
   seed: z.union([z.number(), z.string()]).optional(),
 });
 
-const quantity = z
-  .string()
-  .transform((value) => parseInt(value))
-  .pipe(z.number());
+const quantity = z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().nonnegative());
 
 /** Validate parsed CLI values and normalize them for Core's data generator. */
 export function parseDataGeneratorOptions(value: unknown) {

@@ -315,6 +315,14 @@ test('both entrypoints reject invalid quantities and seeds before loading the da
     ['--quantities=posts:invalid'],
     ['--quantities=posts'],
     ['--tables=members:invalid'],
+    ['--quantities=posts:10k'],
+    ['--quantities=posts:-5'],
+    ['--quantities=posts:1.5'],
+    ['--tables=members:10k'],
+    ['--tables=members:-5'],
+    ['--tables=members:1.5'],
+    ['--quantities=posts:9007199254740992'],
+    ['--tables=members:9007199254740992'],
     ['--seed=invalid'],
   ]) {
     for (const result of [run(root, ['generate', ...args]), runInstalled(installed, args)]) {
