@@ -1024,7 +1024,7 @@ describe('Create Stripe Checkout Session', function () {
       assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
     });
 
-    it('stops asking while its field is archived', async function () {
+    it('stops asking while its field is archived, and so does a preview of it', async function () {
       await setCheckout(collect());
       await adminAgent
         .put('/members/metafields/custom/contact_phone/')
@@ -1032,6 +1032,14 @@ describe('Create Stripe Checkout Session', function () {
         .expectStatus(200);
 
       assert.equal((await startCheckout()).phone_number_collection, undefined);
+
+      await adminAgent
+        .post('/stripe/checkout/preview/')
+        .body({
+          checkout_preview: [{ tier_id: paidTierId, design: { customize: false }, ...collect() }],
+        })
+        .expectStatus(200);
+      assert.equal(stripeMocker.checkoutSessions.at(-1).phone_number_collection, undefined);
     });
 
     it('asks nothing while its flag is off, even when it is on', async function () {

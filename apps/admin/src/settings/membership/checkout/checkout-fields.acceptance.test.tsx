@@ -107,6 +107,39 @@ describe('Checkout settings', () => {
       });
   });
 
+  it('previews on paid tiers only, as a free tier has no checkout', async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('button', { name: 'Preview in Stripe' }).click();
+
+    await expect.element(page.getByRole('menuitem', { name: 'Supporter' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Free' })).toHaveCount(0);
+  });
+
+  it('previews only settings that could be saved, showing what is missing on the Fields tab', async () => {
+    const previewApi = fakeAdminEndpoint('POST', '/stripe/checkout/preview/', {
+      checkout_preview: [{ url: 'https://checkout.stripe.com/c/pay/cs_test_123' }],
+    });
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('tab', { name: 'Design' }).click();
+    await modal.getByRole('button', { name: 'Preview in Stripe' }).click();
+    await page.getByRole('menuitem', { name: 'Supporter' }).click();
+
+    await expect.element(modal.getByRole('tab', { name: 'Fields', selected: true })).toBeVisible();
+    await expect.element(modal.getByText('Choose a field')).toBeVisible();
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
   it('does not offer the field the recipient name is saved into, as one would overwrite the other', async () => {
     const { modal } = await openCheckoutFields(
       {

@@ -1,19 +1,40 @@
+import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/checkout';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { KeySchema } from '@tryghost/metafield-types/identity';
 import { SnakeDesign } from './codec';
 import {
+  COLLECTED_NOUNS,
+  COLLECTED_SECTIONS,
+  SECTION_NAMES,
   type CollectedSection,
   type SectionName,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
-  type CheckoutCollection,
   type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutDesign,
   type TaxNumberSettings,
 } from './models';
+
+/**
+ * Refuses a request, to save or to preview, that names a collected part while their flag is
+ * off, as the collected parts are still in development.
+ */
+export function refuseCollectionWhileOff(input: unknown, collecting: boolean): void {
+  if (collecting || typeof input !== 'object' || input === null) {
+    return;
+  }
+  const section = COLLECTED_SECTIONS.find((candidate) => SECTION_NAMES[candidate] in input);
+  if (section) {
+    const noun = COLLECTED_NOUNS[section];
+    throw new errors.ValidationError({
+      message: `${noun[0].toUpperCase()}${noun.slice(1)} collection is not available yet.`,
+      property: SECTION_NAMES[section],
+    });
+  }
+}
 
 /**
  * The design in a request.
@@ -154,52 +175,20 @@ export const CheckoutConfigInput = z
 export type CheckoutConfigInput = z.output<typeof CheckoutConfigInput>;
 
 /**
- * Each collected part a preview can carry unsaved, asked as if it had somewhere to keep the
- * answer. Left out, the checkout asks as the saved settings say.
+ * A preview request: the paid tier to open a checkout for, the design to show it in, and the
+ * collected parts to ask for, each as an edit request gives it, though none need be saved.
+ * Parts it leaves out are asked as saved.
  */
-const CollectedPreviews = {
-  shipping: z
-    .discriminatedUnion('collect', [
-      z.strictObject({ collect: z.literal(false) }),
-      ShippingOn.omit({ address: true, name: true }),
-    ])
-    .transform((input): CheckoutCollection['shipping'] =>
-      input.collect
-        ? {
-            tierIds: input.tier_ids ?? null,
-            allowedCountries: input.allowed_countries ?? null,
-            collectable: true,
-          }
-        : null,
-    )
-    .optional(),
-  phone: z
-    .discriminatedUnion('collect', [
-      z.strictObject({ collect: z.literal(false) }),
-      PhoneOn.omit({ custom_field_key: true }),
-    ])
-    .transform((input): CheckoutCollection['phone'] =>
-      input.collect ? { tierIds: input.tier_ids ?? null, collectable: true } : null,
-    )
-    .optional(),
-  tax_number: z
-    .discriminatedUnion('collect', [z.strictObject({ collect: z.literal(false) }), TaxNumberOn])
-    .transform((input): CheckoutCollection['taxNumber'] =>
-      input.collect ? { tierIds: input.tier_ids ?? null, collectable: true } : null,
-    )
-    .optional(),
-} satisfies Record<SectionName, z.ZodType>;
-
-/**
- * A preview request: the paid tier to open a checkout for, and the design to show it in,
- * which need not be saved.
- */
-export const CheckoutPreviewInput = z.strictObject({
-  tier_id: z.string().regex(/^[0-9a-f]{24}$/, { error: 'Choose a tier to preview checkout for.' }),
-  cadence: z.enum(['month', 'year']).default('month'),
-  design: DesignInput,
-  ...CollectedPreviews,
-});
+export const CheckoutPreviewInput = z
+  .strictObject({
+    tier_id: z
+      .string()
+      .regex(/^[0-9a-f]{24}$/, { error: 'Choose a tier to preview checkout for.' }),
+    cadence: z.enum(['month', 'year']).default('month'),
+    design: DesignInput,
+    ...CollectedInputs,
+  })
+  .transform((input) => camelKeys(input));
 export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
 
 /** Each collected part as the Admin API returns it, left out while its flag is off. */
