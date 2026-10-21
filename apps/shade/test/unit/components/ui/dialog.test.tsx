@@ -62,12 +62,13 @@ describe('Dialog Components', () => {
 
     const content = screen.getByTestId('dialog-content');
     assert.ok(!content.className.includes('fixed'), 'Should sit in the backdrop, not the window');
-    const overlay = content.parentElement?.parentElement;
+    const overlay = content.closest('[data-slot="dialog-overlay"]');
+    assert.ok(overlay, 'The dialog should sit inside the backdrop');
     assert.ok(
-      overlay?.className.includes('overflow-y-auto'),
+      overlay.className.includes('overflow-y-auto'),
       'The backdrop should be the scroll container',
     );
-    assert.ok(overlay?.className.includes('fixed'), 'The backdrop should cover the window');
+    assert.ok(overlay.className.includes('fixed'), 'The backdrop should cover the window');
   });
 
   it('applies custom className to DialogHeader correctly', () => {
