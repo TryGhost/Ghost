@@ -104,4 +104,26 @@ describe('PaidMembersChangeChart Component', () => {
     expect(dropdown).toBeInTheDocument();
     expect(dropdown).toHaveTextContent('Weekly');
   });
+
+  it("shows Today's own changes, not yesterday's, when only member data is available", () => {
+    const today = moment().format('YYYY-MM-DD');
+    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
+    // useGrowthStats dates Today's points by the start of each day: yesterday's
+    // counts open today, today's own counts close it (dated tomorrow)
+    const todayMemberData = [
+      { date: today, paid_subscribed: 4, paid_canceled: 1 },
+      { date: tomorrow, paid_subscribed: 0, paid_canceled: 0 },
+    ];
+
+    render(
+      <PaidMembersChangeChart
+        isLoading={false}
+        memberData={todayMemberData}
+        range={1}
+        subscriptionData={undefined}
+      />,
+    );
+
+    expect(screen.getByText('No paid member changes')).toBeInTheDocument();
+  });
 });
