@@ -4,6 +4,7 @@ import type {
   AutomationsRepository2,
   AutomationTriggerTierScope,
 } from './automations-repository-2';
+import { toDatabaseDateWithMilliseconds } from '../../lib/db-types/date';
 
 type Connection = Knex | Knex.Transaction;
 
@@ -46,6 +47,11 @@ export const createDatabaseAutomationsRepository2 = ({
 }: Readonly<{
   knex: Knex;
 }>) => {
+  const dateForDatabase = (date: Date): Date | string =>
+    ['mysql', 'mysql2'].includes(knex.client.config.client)
+      ? date
+      : toDatabaseDateWithMilliseconds(date);
+
   return {
     async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
       const rows = await connection('automations as automation')
@@ -122,9 +128,9 @@ export const createDatabaseAutomationsRepository2 = ({
         await connection('automation_run_steps').insert(
           toInsert.map((step) => ({
             ...step,
-            created_at: step.created_at,
-            updated_at: step.updated_at,
-            ready_at: step.ready_at,
+            created_at: dateForDatabase(step.created_at),
+            updated_at: dateForDatabase(step.updated_at),
+            ready_at: dateForDatabase(step.ready_at),
           })),
         );
       }
@@ -135,8 +141,8 @@ export const createDatabaseAutomationsRepository2 = ({
         await connection('automation_runs').insert(
           toInsert.map((run) => ({
             ...run,
-            created_at: run.created_at,
-            updated_at: run.updated_at,
+            created_at: dateForDatabase(run.created_at),
+            updated_at: dateForDatabase(run.updated_at),
           })),
         );
       }
