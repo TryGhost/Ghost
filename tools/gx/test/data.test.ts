@@ -332,6 +332,25 @@ test('both entrypoints preserve empty lists and ignore blank comma-separated ent
   }
 });
 
+test('both entrypoints preserve finite numeric seeds', async () => {
+  const root = await fixture();
+  const installed = await installedFixture(root);
+  for (const { value, seed } of [
+    { value: '0', seed: 0 },
+    { value: '-123', seed: -123 },
+    { value: '1.5', seed: 1.5 },
+  ]) {
+    const args = [`--seed=${value}`];
+    for (const result of [run(root, ['generate', ...args]), runInstalled(installed, args)]) {
+      assert.equal(result.status, 0, result.stdout + result.stderr);
+      assert.equal(generatedOptions(result.stdout).seed, seed);
+    }
+  }
+  const empty = runInstalled(installed, ['--seed=']);
+  assert.equal(empty.status, 0, empty.stdout + empty.stderr);
+  assert.equal(generatedOptions(empty.stdout).seed, undefined);
+});
+
 test('both entrypoints reject invalid quantities and seeds before loading the database', async () => {
   const root = await fixture();
   const installed = await installedFixture(root);
@@ -353,6 +372,11 @@ test('both entrypoints reject invalid quantities and seeds before loading the da
     ['--quantities=posts:9007199254740992'],
     ['--tables=members:9007199254740992'],
     ['--seed=invalid'],
+    ['--seed= '],
+    ['--seed=\t'],
+    ['--seed=\n'],
+    ['--seed=Infinity'],
+    ['--seed=NaN'],
   ]) {
     for (const result of [run(root, ['generate', ...args]), runInstalled(installed, args)]) {
       assert.equal(result.status, 1, result.stdout + result.stderr);

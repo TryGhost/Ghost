@@ -14,6 +14,7 @@ const quantity = z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int
 
 const tableEntry = z.tuple([z.string().min(1), quantity.optional()]);
 const quantityEntry = z.tuple([z.string().min(1), quantity]);
+const seedValue = z.union([z.number(), z.string().trim().min(1).pipe(z.coerce.number())]);
 
 /** Validate parsed CLI values and normalize them for Core's data generator. */
 export function parseDataGeneratorOptions(value: unknown) {
@@ -40,7 +41,6 @@ export function parseDataGeneratorOptions(value: unknown) {
     quantities,
     withDefault: argv['with-default'],
     printDependencies: argv['print-dependencies'],
-    seed:
-      argv.seed === undefined || argv.seed === '' ? undefined : z.coerce.number().parse(argv.seed),
+    seed: argv.seed === undefined || argv.seed === '' ? undefined : seedValue.parse(argv.seed),
   };
 }
