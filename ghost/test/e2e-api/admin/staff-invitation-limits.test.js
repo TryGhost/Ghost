@@ -268,7 +268,7 @@ describe('Trial staff invitation limits', function () {
     await invite('paid-2@example.com').expect(201);
     sinon.assert.calledTwice(send);
   });
-  it('enforces the same seat cap for imported staff without consuming invitations', async function () {
+  it('counts imported staff toward subsequent invitations without emailing them', async function () {
     const users = await db.knex('users').count('id', { as: 'count' }).first();
     const remaining = 10 - Number(users.count);
     for (let i = 0; i < remaining; i++) {
@@ -283,13 +283,16 @@ describe('Trial staff invitation limits', function () {
         );
       });
     }
-    await assert.rejects(
-      models.User.add(
-        { name: 'One too many', email: 'trial-created-extra@example.com', roles: ['Contributor'] },
-        { importing: true, context: { internal: true } },
-      ),
-      /10 staff/,
+    await models.User.add(
+      {
+        name: 'Imported extra author',
+        email: 'trial-created-extra@example.com',
+        roles: ['Contributor'],
+      },
+      { importing: true, context: { internal: true } },
     );
+    const response = await invite('blocked-after-import@example.com').expect(403);
+    assert.match(response.body.errors[0].context, /10 staff/);
     assert.deepEqual(await invitationActions(), []);
     sinon.assert.notCalled(send);
   });

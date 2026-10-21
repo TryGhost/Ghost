@@ -665,7 +665,8 @@ const User = ghostBookshelf.Model.extend(
      */
     add: async function add(dataToClone, unfilteredOptions = {}) {
       const policy = config.get('hostSettings:staffInvites');
-      if (!policy) {
+      // Content imports preserve author attribution without sending invitation emails.
+      if (!policy || unfilteredOptions.importing) {
         return this.addWithRoles(dataToClone, unfilteredOptions);
       }
       const create = async (transacting) => {
@@ -677,7 +678,7 @@ const User = ghostBookshelf.Model.extend(
         );
         return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
       };
-      // Imports and invitation acceptance already have a transaction. Reusing it
+      // Invitation acceptance already has a transaction. Reusing it
       // keeps the seat check and user insertion atomic with the surrounding work.
       return unfilteredOptions.transacting
         ? create(unfilteredOptions.transacting)
