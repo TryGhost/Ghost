@@ -37,6 +37,11 @@ export type Config = {
   hostSettings?: {
     siteId?: string;
     forceUpgrade?: boolean;
+    staffInvites?: {
+      maxStaff: number;
+      maxInvites: number;
+      minIntervalSeconds: number;
+    };
     limits?: {
       // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.
       customIntegrations?: {

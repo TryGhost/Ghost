@@ -1,5 +1,12 @@
 import validator from 'validator';
-import { APIError, HostLimitError, ValidationError } from '@tryghost/admin-x-framework/errors';
+import { useGlobalData } from '@/settings/providers/global-data-context';
+import {
+  APIError,
+  JSONError,
+  HostLimitError,
+  ValidationError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
 import {
   Button,
   Dialog,
@@ -42,6 +49,8 @@ function InviteUserModal() {
     searchParams: { limit: '100', permissions: 'assign' },
   });
   const limiter = useLimiter();
+  const { config } = useGlobalData();
+  const trialInvites = config?.hostSettings?.staffInvites;
 
   const { updateRoute } = useSettingsNavigation();
   const editorBeta = useFeatureFlag('superEditors');
@@ -67,7 +76,7 @@ function InviteUserModal() {
   }, [saveState]);
 
   useEffect(() => {
-    if (role !== 'contributor' && limiter?.isLimited('staff')) {
+    if ((trialInvites || role !== 'contributor') && limiter?.isLimited('staff')) {
       limiter
         .errorIfWouldGoOverLimit('staff')
         .then(() => {
@@ -84,7 +93,7 @@ function InviteUserModal() {
     } else {
       setErrors((e) => ({ ...e, role: undefined }));
     }
-  }, [limiter, role]);
+  }, [limiter, role, trialInvites]);
 
   if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
     return null;
@@ -157,6 +166,16 @@ function InviteUserModal() {
         return;
       }
 
+      if (e instanceof JSONError && e.data?.errors?.[0]?.type === 'HostLimitError') {
+        setSaveState('');
+        setErrors({ role: getErrorMessage(e, e.data.errors[0].message) });
+        return;
+      }
+      if (e instanceof APIError && e.response?.status === 429) {
+        setSaveState('error');
+        handleError(e);
+        return;
+      }
       setSaveState('error');
       const title = 'Failed to send invitation';
       let message = (
@@ -304,6 +323,9 @@ function InviteUserModal() {
                 })}
               </RadioGroup>
               <FieldError id="invite-role-error">{errors.role}</FieldError>
+              {errors.role && trialInvites && config?.hostSettings?.billing?.url && (
+                <Link href={config.hostSettings.billing.url}>Upgrade your plan</Link>
+              )}
             </FieldSet>
           </Stack>
           <DialogFooter className="shrink-0">

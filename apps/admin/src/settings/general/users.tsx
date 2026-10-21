@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '@/settings/hooks/use-query-params';
@@ -197,6 +198,7 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
 };
 
 const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
+  const { config } = useGlobalData();
   const [revokeState, setRevokeState] = useState<'progress' | ''>('');
   const [resendState, setResendState] = useState<'progress' | ''>('');
 
@@ -228,14 +230,26 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
   const resendInvite = async () => {
     try {
       setResendState('progress');
-      await deleteInvite(invite.id);
+      // Hosts enable this policy after deploying server-side resend admission.
+      // Retain the legacy flow for older backends without invitation limits.
+      if (!config?.hostSettings?.staffInvites) {
+        await deleteInvite(invite.id);
+      }
       await addInvite({
         email: invite.email,
         roleId: invite.role_id,
       });
       toast.success(`Invitation resent`, { description: invite.email });
     } catch (e) {
-      handleError(e);
+      const error = e instanceof JSONError ? e.data?.errors?.[0] : undefined;
+      if (error?.type === 'HostLimitError' && config?.hostSettings?.billing?.url) {
+        const upgradeUrl = config.hostSettings.billing.url;
+        toast.error(getErrorMessage(e, error.message), {
+          action: { label: 'Upgrade', onClick: () => window.location.assign(upgradeUrl) },
+        });
+      } else {
+        handleError(e);
+      }
     } finally {
       setResendState('');
     }
