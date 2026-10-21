@@ -125,12 +125,32 @@ describe('Staff actions', () => {
       .element(settingsScreen.limitModal())
       .toHaveTextContent('Your plan does not support more staff');
   });
+  it('preserves the plan limit when un-suspending during a trial', async () => {
+    const owner = user('Owner');
+    const author = user('Author', { status: 'inactive' });
+    const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
+    const config = configResponse();
+    config.config.hostSettings = {
+      staffInvites: { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 },
+      limits: { staff: { max: 1, error: 'Your plan does not support more staff' } },
+    };
+    await renderAdminApp(`/settings/staff/${author.slug}`, {
+      boot: { ...boot, browseConfig: { response: config } },
+    });
+
+    await chooseAction('Un-suspend user');
+
+    await expect
+      .element(settingsScreen.limitModal())
+      .toHaveTextContent('Your plan does not support more staff');
+  });
   it('reactivates an existing user at the trial staff cap without needing another seat', async () => {
     const owner = user('Owner');
     const author = user('Author', { status: 'inactive' });
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
     const config = configResponse();
     config.config.hostSettings = {
+      limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
       staffInvites: { maxStaff: 2, maxInvites: 15, minIntervalSeconds: 60 },
     };
     const editApi = fakeAdminEndpoint('PUT', `/users/${author.id}/?include=roles`, {

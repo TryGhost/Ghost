@@ -271,6 +271,26 @@ describe('Staff invitations', () => {
     await modal.getByRole('radio', { name: /^Contributor\b/ }).click();
     await expect(modal.getByText('Your plan does not support more staff')).toHaveCount(0);
   });
+  it('preserves a two-staff plan cap during trials while permitting Contributors', async () => {
+    const owner = user('Owner');
+    const editor = user('Editor');
+    const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, editor] });
+    const config = configResponse();
+    config.config.hostSettings = {
+      staffInvites: { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 },
+      limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
+    };
+    await renderAdminApp('/settings/staff', {
+      boot: { ...boot, browseConfig: { response: config } },
+    });
+
+    const modal = await openInviteModal();
+    await modal.getByRole('radio', { name: /^Author\b/ }).click();
+    await expect.element(modal).toHaveTextContent('Your plan does not support more staff');
+
+    await modal.getByRole('radio', { name: /^Contributor\b/ }).click();
+    await expect(modal.getByText('Your plan does not support more staff')).toHaveCount(0);
+  });
   it('blocks Contributors at the trial staff cap and offers an upgrade', async () => {
     const owner = user('Owner');
     const contributors = Array.from({ length: 9 }, (_, i) =>
@@ -279,6 +299,7 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, ...contributors] });
     const config = configResponse();
     config.config.hostSettings = {
+      limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
       staffInvites: { maxStaff: 10, maxInvites: 15, minIntervalSeconds: 60 },
       billing: { enabled: true, url: 'https://billing.example.com' },
     };

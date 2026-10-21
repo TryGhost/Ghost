@@ -10,7 +10,7 @@ import type { EmailsResponseType } from '../api/emails';
 import { apiUrl, useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
 import { HostLimitError } from '../utils/errors';
 
-import { LimitService, type LimitConfig } from '@tryghost/limit-service';
+import { LimitService, MaxLimit, type LimitConfig } from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
@@ -119,16 +119,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     const limiter = new LimitService();
 
     const trialInvites = config.hostSettings?.staffInvites;
-    if (trialInvites && wantsStaff) {
-      limits.staff = {
-        max: trialInvites.maxStaff,
-        error:
-          'Your trial supports up to {{max}} staff, including pending invitations and Contributors. Upgrade to invite more people.',
-        currentCountQuery: () => Promise.resolve(users.length + invites.length),
-      };
-    }
-
-    if (limits.staff && !trialInvites) {
+    if (limits.staff) {
       limits.staff.currentCountQuery = () => {
         // Keep the existing first-page behavior for this move. Full pagination is tracked in
         // PLA-369 because excluded users/invites can push countable staff onto later pages.
@@ -196,6 +187,21 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
         IncorrectUsageError,
       },
     });
+
+    // Trial seats include Contributors and inactive users; plan seats retain their own rules.
+    if (trialInvites && wantsStaff) {
+      limiter.limits.trialStaff = new MaxLimit({
+        name: 'trialStaff',
+        helpLink,
+        errors: { HostLimitError, IncorrectUsageError },
+        config: {
+          max: trialInvites.maxStaff,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors. Upgrade to invite more people.',
+          currentCountQuery: () => Promise.resolve(users.length + invites.length),
+        },
+      });
+    }
 
     return {
       isLimited: (limitName: string): boolean => limiter.isLimited(limitName),

@@ -76,24 +76,25 @@ function InviteUserModal() {
   }, [saveState]);
 
   useEffect(() => {
-    if ((trialInvites || role !== 'contributor') && limiter?.isLimited('staff')) {
-      limiter
-        .errorIfWouldGoOverLimit('staff')
-        .then(() => {
-          setErrors((e) => ({ ...e, role: undefined }));
-        })
-        .catch((error) => {
-          if (error instanceof HostLimitError) {
-            setErrors((e) => ({ ...e, role: error.message }));
-            return;
-          } else {
-            throw error;
-          }
-        });
-    } else {
-      setErrors((e) => ({ ...e, role: undefined }));
-    }
-  }, [limiter, role, trialInvites]);
+    const checkLimits = async () => {
+      try {
+        if (limiter?.isLimited('trialStaff')) {
+          await limiter.errorIfWouldGoOverLimit('trialStaff');
+        }
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+          await limiter.errorIfWouldGoOverLimit('staff');
+        }
+        setErrors((e) => ({ ...e, role: undefined }));
+      } catch (error) {
+        if (error instanceof HostLimitError) {
+          setErrors((e) => ({ ...e, role: error.message }));
+        } else {
+          throw error;
+        }
+      }
+    };
+    void checkLimits();
+  }, [limiter, role]);
 
   if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
     return null;
