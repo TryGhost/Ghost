@@ -56,13 +56,14 @@ export function booted(): {
   namespaces: Namespaces;
   definitions: MetafieldDefinitionsService;
   values: MetafieldValuesService;
+  bindings: MetafieldBindingsService;
 } {
-  if (!namespaces || !definitions || !values) {
+  if (!namespaces || !definitions || !values || !bindings) {
     throw new errors.IncorrectUsageError({
       message: 'Members metafields were used before boot initialised them.',
     });
   }
-  return { namespaces, definitions, values };
+  return { namespaces, definitions, values, bindings };
 }
 
 export function init(): void {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PORT_FIELD, STRIPE_PORT } from '@tryghost/checkout';
+import { PORT_FIELD, CHECKOUT_PORT } from '@tryghost/checkout';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { CollectRow, Destination } from './collect-settings';
@@ -38,7 +38,7 @@ const PhoneSettings: React.FC<{
         error={errors.phoneField}
         fields={fields}
         label="Save phone as"
-        type={PORT_FIELD[STRIPE_PORT.phone].type}
+        type={PORT_FIELD[CHECKOUT_PORT.phone].type}
         value={state.fieldKey}
         onChange={(fieldKey) => set({ fieldKey })}
       />

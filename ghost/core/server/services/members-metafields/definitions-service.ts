@@ -21,6 +21,7 @@ import type { Namespaces } from './namespaces';
 import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
 import {
   ADMIN,
+  MEMBERS,
   MEMBER_ACCESS,
   MemberAccessSchema,
   type Audience,
@@ -121,6 +122,16 @@ const EditFieldInput = z.object({
   key: z.optional(KeySchema),
   type: FieldTypeSchema.optional(),
 });
+
+/** A field as an edit left it. */
+export interface EditedField {
+  field: Metafield;
+  /**
+   * Whether the edit started or stopped members reading the field: archiving or restoring it, or
+   * keeping it from members or opening it to them.
+   */
+  changedForMembers: boolean;
+}
 
 export class MetafieldDefinitionsService {
   private knex: Knex;
@@ -618,7 +629,7 @@ export class MetafieldDefinitionsService {
     namespace: Namespace,
     key: Key,
     input: unknown,
-  ): Promise<Metafield> {
+  ): Promise<EditedField> {
     return this.tracking.definition('edit', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = EditFieldInput.safeParse(input);
@@ -637,6 +648,7 @@ export class MetafieldDefinitionsService {
         throw new errors.NotFoundError({ message: 'Custom field not found.' });
       }
       attempt.fields([existing]);
+      const readByMembers = await this.isReadByMembers({ namespace, key });
 
       // Key and type are immutable after creation: values are addressed by namespace and key
       // and interpreted by type, so changing either would silently orphan or
@@ -739,8 +751,21 @@ export class MetafieldDefinitionsService {
         });
       }
 
-      return this.read(namespace, key, ADMIN);
+      return {
+        field: await this.read(namespace, key, ADMIN),
+        changedForMembers: (await this.isReadByMembers({ namespace, key })) !== readByMembers,
+      };
     });
+  }
+
+  /** Whether members can read this field, asked the way their own reads ask. */
+  private async isReadByMembers(field: FieldIdentity): Promise<boolean> {
+    const read = this.fields.definitions(this.knex, {
+      audience: MEMBERS,
+      status: ACTIVE_ONLY,
+      field,
+    }).read;
+    return (await read.first('key')) !== undefined;
   }
 
   /**

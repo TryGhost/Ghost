@@ -170,6 +170,13 @@ export const DbBoundField = z.object({
   type: FieldTypeSchema,
 });
 
+/** A binding joined to the field it points at, by that field's identity. */
+export const DbNamedBinding = z.object({
+  port: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+});
+
 /**
  * Where a write was made (`MetafieldChangeSource`, shared with Admin): the entry point,
  * where `WrittenBy` is who answers for it.
