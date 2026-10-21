@@ -117,6 +117,12 @@ The package ships its Storybook docs as Markdown in `docs/`, starting at
 `scripts/build-docs.ts` generates them from `src/**/*.mdx` during `pnpm build`
 (or `pnpm build:docs`). Edit the `.mdx` sources, never the generated `.md` files.
 
+The package also ships agent skills in `skills/`, one folder per skill. Each
+says when to apply which doc and links into `docs/`, so the rules stay in one
+place. In an app, point the agent at `node_modules/@tryghost/shade/skills/`.
+The skills link to `../../docs/`, so read them in place rather than copying
+them out of the package.
+
 ### Source exports
 
 Admin’s Vite development, production and test configurations select the `source`

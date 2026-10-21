@@ -17,7 +17,7 @@ Read the human documentation before changing Shade:
   [tokens](./src/docs/tokens.mdx) provide layer-specific guidance.
 
 - When constructing or changing page headers or their actions, use the
-  [Shade page header skill](../../.agents/skills/shade-page-header/SKILL.md).
+  [Shade page header skill](./skills/shade-page-header/SKILL.md).
 
 ## Required workflow
 
@@ -36,3 +36,7 @@ Read the human documentation before changing Shade:
   Storybook.
 - Update the Storybook human documentation when a shared Shade convention
   changes; do not make this file the only source.
+- The design skills in [`skills/`](./skills/) ship in the npm package, and
+  `.agents/skills` links to them. They hold no rules: each routes to the
+  generated docs, so a rule change belongs in the `.mdx` source. Keep their
+  links relative to the published layout (`../../docs/<doc>.md`).

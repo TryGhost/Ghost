@@ -10,20 +10,47 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Use a primitive when
 
+A `<div>` whose classes are only `flex`, `grid`, `gap`, `items-*` or `justify-*` utilities is a primitive call site.
+
 - You need a column of children → `Stack`
-- You need a row → `Inline`
-- You need padding or a radius around content → `Box`
+- You need a row → `Inline`, with `wrap` to let it wrap and `as` to change the element
+- You need padding or a radius around content → `Box`, with `padding`, `paddingX`, `paddingY` and `radius`
 - You need a width-constrained shell → `Container`
 - You need a two-dimensional layout → `Grid`
-- You're rendering text with a size/tone/weight → `Text`
+- You're rendering text with a size/tone/weight → `Text`, with `as`, `size`, `tone` and `weight`
 
-Use semantic gaps (`gap="md"`), not raw numbers (`gap-4`). Map: see [Tokens / Spacing](?path=/docs/tokens-spacing--docs).
+```tsx
+import {Box, Container, Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
+```
+
+## Spacing scale
+
+Use semantic gaps (`gap="md"`), not raw numbers (`gap-4`). The steps resolve to the shared spacing scale:
+
+| Step   | Tailwind | Use for                        |
+| ------ | -------- | ------------------------------ |
+| `none` | `gap-0`  | Flush                          |
+| `xs`   | `gap-1`  | Inline icons next to text      |
+| `sm`   | `gap-2`  | Dense lists, badges            |
+| `md`   | `gap-3`  | Default row and column spacing |
+| `lg`   | `gap-5`  | Section spacing                |
+| `xl`   | `gap-6`  | Between major blocks           |
+| `2xl`  | `gap-8`  | Page-level rhythm              |
+
+Padding uses the same steps: `<Box padding="md">` is `p-3`, and `paddingX`/`paddingY` on `Box` and `paddingX` on `Container` follow suit.
+
+## `className`
+
+Primitives forward `className` and merge it with `cn()`. Use it for one-offs the props don't cover, such as `className="border border-border-default"`. Set direction, gap, alignment and justification through the props, not through `className`.
 
 ## Don't
 
-- Reach for a pattern first if one exists. Building a page header? Use `PageHeader`. Building a list page? Use `ListPage`.
+- Reach for a primitive when a pattern exists for the shape. Building a page header? Use `PageHeader`. Building a list page? Use `ListPage`.
 - Put product logic inside a primitive. If a wrapper is starting to know about Ghost data, it's a Pattern.
 - Wrap content in a bare `<div>` carrying only `flex / grid / gap` utilities — that's exactly what primitives replace.
+- Pass raw spacing classes to a primitive, such as `<Stack className="gap-4">`. Use `gap="md"`.
+
+The one place for a layout-only element is inside a primitive's own implementation in Shade.
 
 Full rules and decision flow: [Layers](?path=/docs/overview-layers--docs).
 
@@ -44,6 +71,15 @@ import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
         <Switch />
     </Inline>
 </Box>
+```
+
+Without primitives, the same layout reads as a class string. This is what they replace:
+
+```tsx
+<div className="flex flex-col gap-2">
+    <div className="font-semibold">Email notifications</div>
+    <div className="text-sm text-gray-600">Get notified when your posts get engagement.</div>
+</div>
 ```
 
 Browse the sidebar for each primitive's props and live stories.
