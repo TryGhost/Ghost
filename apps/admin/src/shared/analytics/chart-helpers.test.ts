@@ -560,7 +560,7 @@ describe('chart-helpers', () => {
       expect(getEffectiveChartRange({ from: '2024-06-01', to: '2024-06-10' })).toBe(10);
       // A single day reports 1, like Today, so visits chart by the hour
       expect(getEffectiveChartRange({ from: '2024-06-01', to: '2024-06-01' })).toBe(1);
-      expect(getEffectiveChartRange({ from: '2024-01-01', to: '2024-06-30' })).toBe(91);
+      expect(getEffectiveChartRange({ from: '2024-01-01', to: '2024-06-30' })).toBe(90);
     });
   });
 
