@@ -48,7 +48,8 @@ inventory is a reporting tool, although contributors can run it locally.
 ### Build support — build/
 
 Cross-workspace asset assembly, build-cache inputs and post-build artifacts.
-Ghost-owned browser asset builds stay in [ghost/scripts](../../ghost/scripts/README.md).
+Build steps for the `ghost/` server workspace's own browser assets stay in
+[ghost/scripts](../../ghost/scripts/README.md).
 
 | Current file                                                       | Purpose                                                      | Caller                                        |
 | ------------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |

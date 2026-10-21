@@ -54,31 +54,30 @@ reviews:
       - name: 'Tooling ownership'
         mode: 'error'
         instructions: |
-          Review new, moved or substantially changed tooling wherever it appears in
-          the PR. Use tools/README.md and the owning folder README as the source of
-          truth; classify by purpose and execution environment, not the caller alone.
-          Fail only when the diff introduces or worsens one of these violations:
-          - Shared tooling configuration/policy belongs in tools/configs; repository
-            setup, validation, cross-workspace builds and releases in tools/scripts (ci/,
-            build/, release/, or root setup/repair); contributor commands and their
-            implementations in tools/gx, exposed through pnpm gx.
-          - Ghost-owned build, packaging and checkout policy-export tools belong in
-            ghost/scripts; tools requiring an installed Ghost tree belong in
-            ghost/bin. Production/installed tools must not depend on the private
-            gx/scripts workspaces or checkout-only loaders and dependencies.
-          - A move breaks actual callers, path-derived roots, sparse checkouts,
-            Docker copies, Nx inputs or compiled/shipped entrypoints; or makes
-            bootstrap, repair, direct shutdown or lifecycle hooks require installed
-            CLI dependencies where their documented contract is dependency-free.
-          Respect documented exceptions: workspace-local config/build/test helpers,
-          nearby tests/fixtures, shared scripts/lib helpers used by gx, isolated CI
-          install boundaries, loader adapters and the shipped scripts/prune.mts path.
-          A CI caller does not make a contributor task CI-owned; a manual caller
-          does not make release automation a gx command. Do not request cosmetic
-          moves, unrelated migrations or findings already covered by static checks.
-          For a failure, cite the changed file, the ownership rule and the actual
-          caller/runtime evidence, and state the correct home or broken contract.
-          Pass when no tooling changes or no concrete violation is established.
+          Review tooling anywhere in the diff, including scripts/** and **/scripts/**,
+          even when the PR introduces the directory. Use tools/README.md and the
+          relevant folder README. Choose by purpose and execution environment:
+          - tools/configs: reusable lint, test, compiler and build presets/rules
+            imported by development tools.
+          - tools/scripts: repository setup, validation, cross-workspace builds and
+            release automation; use ci/, build/, release/ or root setup/repair.
+          - tools/gx: contributor commands and their implementations, run with pnpm gx.
+          - ghost/scripts: build/package the ghost/ server workspace's own assets,
+            assemble/prune release trees, or export its Core policy from a checkout.
+          - ghost/bin: shipped commands that run against an installed Ghost release.
+          Fail when new or moved tooling violates these homes. Allow app/package-local
+          build/test/config helpers and documented execution/isolation exceptions.
+          A new scripts directory alone is not an exception.
+          Preserve callers, path-derived roots, sparse checkouts, Docker/Nx inputs
+          and shipped paths. Keep bootstrap, repair and direct shutdown callable
+          without installed CLI dependencies. Installed tools must not require
+          private tooling workspaces or checkout-only loaders/dependencies.
+          Respect documented exceptions, nearby tests/fixtures, shared scripts/lib
+          helpers and the shipped scripts/prune.mts path. Do not turn an existing
+          placement question into a new rule or request unrelated moves.
+          Fail only for a concrete violation introduced or worsened by the diff;
+          cite the file, actual caller/runtime and correct home or broken contract.
+          Pass if there is no such violation. Do not repeat static-check findings.
   path_instructions:
     - path: '**/*'
       instructions: |
@@ -94,6 +93,12 @@ reviews:
         from being correct. Treat nearby AGENTS.md files and mapped codebase
         documentation as authoritative; do not enforce proposals, plans, or
         historical guidance as current policy.
+    - path: '{**/scripts/**,.*/**/scripts/**}'
+      instructions: |
+        Apply the Tooling ownership check and tools/README.md at every directory
+        depth, including the first file in a new scripts directory. Allow local
+        build/test/config helpers and documented execution/isolation exceptions;
+        a scripts folder alone does not justify its placement.
     - path: '**/*.{ts,tsx,mts,cts}'
       instructions: |
         Review lens: "where does this data become trusted?"

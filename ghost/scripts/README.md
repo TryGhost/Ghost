@@ -1,8 +1,10 @@
 # Ghost build and packaging scripts
 
-Ghost-owned asset generation, release archive assembly, pruning and policy
-exports. Repository builds invoke these through Ghost's package/Nx targets;
-downstream image builds can also use the shipped prune helper. See [tooling ownership](../../tools/README.md)
+Executable checkout tools for the `ghost/` server workspace: generate browser
+assets, assemble release archives, prune built trees and export Core policy for
+external integrations. Run them through package/Nx targets or the commands
+documented below. Downstream image builds can also use the shipped prune helper.
+See [tooling ownership](../../tools/README.md)
 for the boundary with repository automation, contributor commands and installed
 tools.
 
@@ -59,7 +61,7 @@ releases. See the
 source, schema and invocation. Tests exercise the exporter itself; middleware
 and policy tests use Core's policy directly.
 
-For another Ghost-owned policy export:
+For another export of Core policy:
 
 - Keep the canonical policy, schema and contract documentation in its owning Core
   subsystem. Runtime code and the exporter should share that validation.
