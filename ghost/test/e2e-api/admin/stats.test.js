@@ -128,6 +128,10 @@ describe('Stats API', function () {
             { paid: last.paid, free: last.free, comped: last.comped, gift: last.gift },
             totals,
           );
+          // Where the day started, before its first hour's changes
+          for (const status of ['paid', 'free', 'comped', 'gift']) {
+            assert.equal(typeof body.meta.start[status], 'number');
+          }
         });
     });
 
@@ -143,6 +147,10 @@ describe('Stats API', function () {
             const last = body.stats.filter((stat) => stat.currency === total.currency).at(-1);
             assert.equal(last.mrr, Math.max(0, total.mrr));
           }
+          assert.deepEqual(
+            body.meta.start.map((start) => start.currency),
+            currencies,
+          );
         });
     });
 
@@ -160,6 +168,7 @@ describe('Stats API', function () {
           const [stat] = body.stats;
           assert.equal(stat.values.length, hoursSoFar());
           assert.equal(stat.values.at(-1).value, stat.total);
+          assert.equal(typeof body.meta.start, 'number');
         });
     });
 

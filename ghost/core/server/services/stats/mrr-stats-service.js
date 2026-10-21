@@ -120,7 +120,7 @@ class MrrStatsService {
       return { ...mrr, [event.currency]: mrr[event.currency] + direction * event.mrr_delta };
     };
 
-    const { hours } = buildHourlyTotals({ date, timezone, current, events, apply });
+    const { hours, start } = buildHourlyTotals({ date, timezone, current, events, apply });
 
     return {
       data: hours.flatMap(({ date: hour, totals: mrr }) =>
@@ -133,6 +133,9 @@ class MrrStatsService {
       meta: {
         totals,
         interval: 'hour',
+        // MRR per currency where the day started: each hour holds the MRR at
+        // its end, so the day's change is measured from here
+        start: totals.map(({ currency }) => ({ currency, mrr: Math.max(0, start[currency]) })),
       },
     };
   }

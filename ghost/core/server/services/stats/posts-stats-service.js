@@ -1046,7 +1046,7 @@ class PostsStatsService {
     ]);
     const total = parseInt(String(totalResult[0] ? totalResult[0].total : 0), 10);
 
-    const { hours } = buildHourlyTotals({
+    const { hours, start } = buildHourlyTotals({
       date,
       timezone,
       current: total - (Number(later?.delta) || 0),
@@ -1056,7 +1056,9 @@ class PostsStatsService {
 
     return {
       data: [{ total, values: hours.map((hour) => ({ date: hour.date, value: hour.totals })) }],
-      meta: { interval: 'hour' },
+      // Subscribers where the day started: each hour holds the total at its
+      // end, so the day's change is measured from here
+      meta: { interval: 'hour', start },
     };
   }
 

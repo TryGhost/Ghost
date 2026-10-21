@@ -163,7 +163,7 @@ class MembersStatsService {
       comped: now.comped - (Number(later?.comped) || 0),
       gift: now.gift - (Number(later?.gift) || 0),
     };
-    const { hours } = buildHourlyTotals({ date, timezone, current, events, apply });
+    const { hours, start } = buildHourlyTotals({ date, timezone, current, events, apply });
 
     return {
       data: hours.map(({ date: hour, totals, events: inHour }) => ({
@@ -175,6 +175,9 @@ class MembersStatsService {
       meta: {
         totals: now,
         interval: 'hour',
+        // Where the day started: each hour holds the totals at its end, so
+        // the day's change is measured from here, not from the first hour
+        start,
       },
     };
   }
