@@ -112,6 +112,8 @@ function buildMarkdownCommands(files) {
 
   const quotedFiles = shellQuote(relativeFiles);
   return [
+    // Shade's shipped skills link into its generated, gitignored docs/.
+    'pnpm --filter @tryghost/shade build:docs',
     `pnpm exec markdownlint-cli2 --config .markdownlint-cli2.jsonc ${quotedFiles}`,
     `pnpm exec remark --use remark-validate-links --frail --quiet --no-stdout ${quotedFiles}`,
   ];

@@ -47,7 +47,7 @@
     "lint:oxlint": "oxlint --deny-warnings",
     "lint:agent-guidance": "node tools/scripts/ci/check-agent-guidance.ts",
     "lint:agent-skills": "node tools/scripts/ci/check-agent-skill-links.ts",
-    "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
+    "lint:doc-links": "pnpm --filter @tryghost/shade build:docs && git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
     "lint:markdown": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 markdownlint-cli2 --config .markdownlint-cli2.jsonc",
     "lint:boundaries": "depcruise ghost/core apps --config .dependency-cruiser.cjs",
     "lint:packages": "node tools/scripts/ci/check-internal-packages.ts",
