@@ -172,6 +172,27 @@ describe('Stats API', function () {
         });
     });
 
+    it('Rejects a day by the hour that isn’t a real date', async function () {
+      const { body: newsletters } = await agent.get('/newsletters/').expectStatus(200);
+      const newsletterId = newsletters.newsletters[0].id;
+
+      for (const path of [
+        '/stats/member_count?interval=hour&date_to=2026-13-45',
+        '/stats/mrr?interval=hour&date_to=banana',
+        `/stats/subscriber-count?newsletter_id=${newsletterId}&interval=hour&date_to=2026-02-30`,
+      ]) {
+        await agent
+          .get(path)
+          .expectStatus(422)
+          .expect(({ body }) => {
+            assert.equal(body.errors[0].type, 'ValidationError');
+            // Caught before the database sees it, rather than by MySQL
+            // refusing the date (SQLite would answer with an empty day)
+            assert.match(body.errors[0].message, /date_to/);
+          });
+      }
+    });
+
     it('Keeps UTC days when no timezone is asked for', async function () {
       const { body } = await agent.get(`/stats/member_count`).expectStatus(200);
       assert.equal(body.meta.interval, undefined);

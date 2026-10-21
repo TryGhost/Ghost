@@ -4,7 +4,28 @@ const SubscriptionStatsService = require('./subscription-stats-service');
 const ReferrersStatsService = require('./referrers-stats-service');
 const PostsStatsService = require('./posts-stats-service');
 const ContentStatsService = require('./content-stats-service');
+const errors = require('@tryghost/errors');
+const moment = require('moment-timezone');
 const { todayIn } = require('./utils/hourly-history');
+
+/**
+ * The day to chart by the hour: date_to's, or today's in the timezone when
+ * left out. A date_to that isn't a real YYYY-MM-DD day is rejected rather
+ * than answered with an empty day
+ * @param {string} [dateTo]
+ * @param {string} [timezone]
+ */
+function hourlyDay(dateTo, timezone) {
+  if (dateTo === undefined) {
+    return todayIn(timezone);
+  }
+  if (!moment(dateTo, 'YYYY-MM-DD', true).isValid()) {
+    throw new errors.ValidationError({
+      message: 'date_to must be a date in YYYY-MM-DD format',
+    });
+  }
+  return dateTo;
+}
 class StatsService {
   /**
    * @param {object} deps
@@ -29,7 +50,7 @@ class StatsService {
     // never ask, and older servers ignore the ask and answer by day
     if (options.interval === 'hour') {
       return this.mrr.getHourlyHistory({
-        date: options.dateTo ?? todayIn(options.timezone),
+        date: hourlyDay(options.dateTo, options.timezone),
         timezone: options.timezone,
       });
     }
@@ -44,7 +65,7 @@ class StatsService {
   async getMemberCountHistory(options = {}) {
     if (options.interval === 'hour') {
       return this.members.getHourlyCountHistory({
-        date: options.dateTo ?? todayIn(options.timezone),
+        date: hourlyDay(options.dateTo, options.timezone),
         timezone: options.timezone,
       });
     }
@@ -167,7 +188,7 @@ class StatsService {
 
     if (otherOptions.interval === 'hour') {
       return this.posts.getHourlyNewsletterSubscriberStats(newsletterId, {
-        date: otherOptions.date_to ?? todayIn(otherOptions.timezone),
+        date: hourlyDay(otherOptions.date_to, otherOptions.timezone),
         timezone: otherOptions.timezone,
       });
     }
