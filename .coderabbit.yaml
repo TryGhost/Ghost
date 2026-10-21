@@ -71,6 +71,10 @@ reviews:
           Fail when new or moved tooling violates these homes. Allow app/package-local
           build/test/config helpers and documented execution/isolation exceptions.
           A new scripts directory alone is not an exception.
+          For a tool needed in both a checkout and an installed release, allow thin
+          gx and ghost/bin entrypoints sharing Core's operation and option validation/
+          normalization. Keep presentation, environment setup, logging and lifecycle
+          in each entrypoint; fail for new duplication of the shared behavior.
           Preserve callers, path-derived roots, sparse checkouts, Docker/Nx inputs
           and shipped paths. Keep bootstrap, repair and direct shutdown callable
           without installed CLI dependencies. Installed tools must not require

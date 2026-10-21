@@ -69,8 +69,10 @@ Both reuse the checkout's development-environment runner and Ghost working
 directory. They use the source loader, with the data-generation engine remaining
 in Core. The generator preserves its existing environment permissions and
 options. `node index.js generate-data` now reports its gx replacement. Installed
-trees ship a dependency-light equivalent at
-[`ghost/bin/generate-data.js`](../../ghost/bin/README.md#data-generation).
+trees ship a dependency-light entrypoint at
+[`ghost/bin/generate-data.js`](../../ghost/bin/README.md#data-generation). Both
+entrypoints share Core's option validation and normalization; their environment
+setup and logging stay separate. See the [shared-tool pattern](../README.md#tools-needed-in-a-checkout-and-an-installed-release).
 
 ## REPL and date shifting
 
