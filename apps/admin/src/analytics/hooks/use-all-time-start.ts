@@ -10,12 +10,20 @@ import { useMemo } from 'react';
 // One row each, and no error toast: a lookup that fails simply doesn't count
 const first = { limit: '1' };
 const quiet = { defaultErrorHandler: false } as const;
+// Posts and pages are looked up the same way
+const firstPublished = {
+  ...first,
+  filter: 'status:published',
+  order: 'published_at asc',
+  fields: 'id,published_at',
+};
 
 /**
  * Finds where the site's history starts, so All time and the custom range
  * calendar start there: the earliest of its first published post or page,
  * first member and first visit. Imports keep their original dates, so a
- * migrated publication's history counts. Each lookup reads a single row.
+ * migrated publication's history counts. Each lookup reads a single row
+ * (the members API ignores fields, so that one comes back whole).
  *
  * A lookup that fails (an older server without the first-visit endpoint, a
  * missing permission) just doesn't count. Returns isLoading until all have
@@ -23,27 +31,11 @@ const quiet = { defaultErrorHandler: false } as const;
  */
 export const useAllTimeStart = (): { isLoading: boolean } => {
   const { statsConfig } = useAnalyticsData();
-  const firstPost = useBrowsePosts({
-    ...quiet,
-    searchParams: {
-      ...first,
-      filter: 'status:published',
-      order: 'published_at asc',
-      fields: 'id,published_at',
-    },
-  });
-  const firstPage = useBrowsePages({
-    ...quiet,
-    searchParams: {
-      ...first,
-      filter: 'status:published',
-      order: 'published_at asc',
-      fields: 'id,published_at',
-    },
-  });
+  const firstPost = useBrowsePosts({ ...quiet, searchParams: firstPublished });
+  const firstPage = useBrowsePages({ ...quiet, searchParams: firstPublished });
   const firstMember = useBrowseMembers({
     ...quiet,
-    searchParams: { ...first, order: 'created_at asc', fields: 'id,created_at' },
+    searchParams: { ...first, order: 'created_at asc' },
   });
   const firstVisit = useTinybirdQuery({
     endpoint: 'api_first_visit',
