@@ -1,4 +1,3 @@
-import validator from 'validator';
 import {
   Button,
   Dialog,
@@ -22,14 +21,10 @@ import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { SupportRequestDraft } from './support-request';
 
 // The support requests endpoint rejects anything longer
-const NAME_MAX = 191;
-const EMAIL_MAX = 191;
 const SUBJECT_MAX = 255;
 const MESSAGE_MAX = 10_000;
 
 interface FormState {
-  name: string;
-  email: string;
   subject: string;
   message: string;
 }
@@ -41,13 +36,8 @@ interface SupportRequestModalProps {
   onSent?: () => void;
 }
 
-function initialFormState(
-  draft: SupportRequestDraft,
-  currentUser?: { name?: string; email?: string },
-): FormState {
+function initialFormState(draft: SupportRequestDraft): FormState {
   return {
-    name: draft.name || currentUser?.name || '',
-    email: draft.email || currentUser?.email || '',
     subject: draft.subject || '',
     message: draft.message || '',
   };
@@ -64,36 +54,19 @@ export function SupportRequestModal({
   const { mutateAsync: sendSupportRequest } = useSendSupportRequest();
 
   const { formState, updateForm, handleSave, saveState, errors, clearError } = useForm<FormState>({
-    initialState: initialFormState(draft, currentUser),
+    initialState: initialFormState(draft),
     onSave: async (state) => {
       await sendSupportRequest({
-        name: state.name.trim(),
-        email: state.email.trim(),
         subject: state.subject.trim(),
         message: state.message.trim(),
         source: draft.source,
         pageUrl: draft.pageUrl,
-        conversationUrl: draft.conversationUrl || null,
-        transcript: draft.transcript || null,
+        context: draft.context ?? {},
       });
     },
     onSaveError: handleError,
     onValidate: (state) => {
       const newErrors: Record<string, string> = {};
-
-      if (!state.name.trim()) {
-        newErrors.name = 'Enter your name';
-      } else if (state.name.trim().length > NAME_MAX) {
-        newErrors.name = `Name cannot be longer than ${NAME_MAX} characters`;
-      }
-
-      if (!state.email.trim()) {
-        newErrors.email = 'Enter your email';
-      } else if (state.email.trim().length > EMAIL_MAX) {
-        newErrors.email = `Email cannot be longer than ${EMAIL_MAX} characters`;
-      } else if (!validator.isEmail(state.email.trim())) {
-        newErrors.email = 'Enter a valid email address';
-      }
 
       if (!state.subject.trim()) {
         newErrors.subject = 'Enter a subject';
@@ -147,30 +120,18 @@ export function SupportRequestModal({
           </DialogDescription>
         </DialogHeader>
         <Stack gap="lg">
-          <Field data-invalid={Boolean(errors.name) || undefined}>
+          <Field>
             <FieldLabel htmlFor="support-request-name">Name</FieldLabel>
-            <Input
-              aria-invalid={Boolean(errors.name) || undefined}
-              disabled={isSubmitting}
-              id="support-request-name"
-              value={formState.name}
-              onChange={(event) => updateForm((state) => ({ ...state, name: event.target.value }))}
-              onKeyDown={() => clearError('name')}
-            />
-            {errors.name && <FieldError>{errors.name}</FieldError>}
+            <Input id="support-request-name" value={currentUser?.name ?? ''} disabled />
           </Field>
-          <Field data-invalid={Boolean(errors.email) || undefined}>
+          <Field>
             <FieldLabel htmlFor="support-request-email">Email</FieldLabel>
             <Input
-              aria-invalid={Boolean(errors.email) || undefined}
-              disabled={isSubmitting}
               id="support-request-email"
               type="email"
-              value={formState.email}
-              onChange={(event) => updateForm((state) => ({ ...state, email: event.target.value }))}
-              onKeyDown={() => clearError('email')}
+              value={currentUser?.email ?? ''}
+              disabled
             />
-            {errors.email && <FieldError>{errors.email}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.subject) || undefined}>
             <FieldLabel htmlFor="support-request-subject">Subject</FieldLabel>
@@ -199,7 +160,7 @@ export function SupportRequestModal({
               }
               onKeyDown={() => clearError('message')}
             />
-            {draft.transcript && (
+            {draft.context?.transcript && (
               <FieldDescription>Your conversation will be attached automatically.</FieldDescription>
             )}
             {errors.message && <FieldError>{errors.message}</FieldError>}

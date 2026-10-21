@@ -142,35 +142,32 @@ describe('toSupportRequestDraft', () => {
     );
 
     expect(draft).toEqual({
-      name: 'Jamie Larson',
-      email: 'jamie@example.com',
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.',
       source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/#/posts',
-      conversationUrl: 'https://docsbot.ai/conversation/conv-1',
-      transcript: [
-        '**User** (8 May 2025, 22:56)',
-        'I cannot publish a post',
-        '',
-        '**Assistant** (8 May 2025, 22:56)',
-        'Have you checked your permissions?',
-      ].join('\n'),
+      context: {
+        conversation_url: 'https://docsbot.ai/conversation/conv-1',
+        transcript: [
+          '**User** (8 May 2025, 22:56)',
+          'I cannot publish a post',
+          '',
+          '**Assistant** (8 May 2025, 22:56)',
+          'Have you checked your permissions?',
+        ].join('\n'),
+      },
     });
   });
 
-  it('leaves identity and ticket fields empty when DocsBot does not provide them', () => {
+  it('leaves out ticket fields and context that DocsBot does not provide', () => {
     const draft = toSupportRequestDraft([], null, null, 'http://localhost:2368/ghost/');
 
     expect(draft).toEqual({
-      name: undefined,
-      email: undefined,
       subject: undefined,
       message: undefined,
       source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/',
-      conversationUrl: undefined,
-      transcript: '',
+      context: {},
     });
   });
 });

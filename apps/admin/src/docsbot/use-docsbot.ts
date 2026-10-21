@@ -156,16 +156,23 @@ export function toSupportRequestDraft(
 ): SupportRequestDraft {
   const normalizedMetadata = normalizeDocsBotMetadata(metadata);
   const normalizedTicket = normalizeDocsBotTicket(ticket);
+  const transcript = formatDocsBotHistory(normalizeDocsBotHistory(history));
+  const context: Record<string, string> = {};
+
+  if (normalizedMetadata.conversationUrl) {
+    context.conversation_url = normalizedMetadata.conversationUrl;
+  }
+
+  if (transcript) {
+    context.transcript = transcript;
+  }
 
   return {
-    name: normalizedMetadata.name,
-    email: normalizedMetadata.email,
     subject: normalizedTicket?.subject,
     message: normalizedTicket?.message,
     source: 'chat',
     pageUrl,
-    conversationUrl: normalizedMetadata.conversationUrl,
-    transcript: formatDocsBotHistory(normalizeDocsBotHistory(history)),
+    context,
   };
 }
 
