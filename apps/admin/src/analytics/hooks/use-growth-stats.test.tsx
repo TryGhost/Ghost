@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   mockLoading,
   mockNull,
@@ -545,6 +545,146 @@ describe('useGrowthStats', () => {
 
       expect(result.current.dateFrom).toBeDefined();
       expect(result.current.endDate).toBeDefined();
+    });
+  });
+
+  describe('custom date ranges', () => {
+    beforeEach(async () => {
+      // Only fake Date so waitFor's timers keep running
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2024-06-27T12:00:00'));
+
+      const actual = await vi.importActual<typeof import('@/shared/analytics/chart-helpers')>(
+        '@/shared/analytics/chart-helpers',
+      );
+      mockedGetRangeDates.mockImplementation(actual.getRangeDates);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('trims the history to a range that ends before today', async () => {
+      const { result } = renderHook(() => useGrowthStats({ from: '2024-06-25', to: '2024-06-26' }));
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Totals are the counts on the last day of the range, not today's
+      expect(result.current.totals.totalMembers).toBe(169); // 105 + 52 + 5 + 7
+      expect(result.current.totals.freeMembers).toBe(105);
+      expect(result.current.totals.paidMembers).toBe(64); // 52 + 5 + 7
+      expect(result.current.totals.mrr).toBe(5200);
+      expect(result.current.chartData.at(-1)?.date).toBe('2024-06-26');
+      expect(result.current.subscriptionData.map((item) => item.date)).toEqual([
+        '2024-06-25',
+        '2024-06-26',
+      ]);
+    });
+
+    it('uses current totals for a custom range that ends today', async () => {
+      const { result } = renderHook(() => useGrowthStats({ from: '2024-06-25', to: '2024-06-27' }));
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.totals.totalMembers).toBe(178);
+      expect(result.current.totals.mrr).toBe(5500);
+    });
+
+    it('keeps MRR dated after the local today for a range ending today', async () => {
+      // Evening west of UTC: the server has already dated a change 28 Jun
+      vi.setSystemTime(new Date('2024-06-27T20:00:00'));
+      mockSuccess(mockedUseMrrHistory, {
+        stats: [...mockMrrData, { date: '2024-06-28', mrr: 5600, currency: 'usd' }],
+        meta: { totals: [{ mrr: 5600, currency: 'usd' }] },
+      });
+
+      const { result } = renderHook(() => useGrowthStats(30));
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.totals.mrr).toBe(5600);
+    });
+
+    it('charts a single day by the hour when the server answers that way', async () => {
+      mockSuccess(mockedUseMemberCountHistory, {
+        stats: [
+          {
+            date: '2024-06-26T00:00',
+            free: 100,
+            paid: 50,
+            comped: 5,
+            gift: 0,
+            paid_subscribed: 0,
+            paid_canceled: 0,
+          },
+          {
+            date: '2024-06-26T01:00',
+            free: 102,
+            paid: 51,
+            comped: 5,
+            gift: 0,
+            paid_subscribed: 1,
+            paid_canceled: 0,
+          },
+          {
+            date: '2024-06-26T02:00',
+            free: 103,
+            paid: 50,
+            comped: 5,
+            gift: 0,
+            paid_subscribed: 0,
+            paid_canceled: 1,
+          },
+        ],
+        meta: { totals: { paid: 55, free: 110, comped: 5, gift: 8 }, interval: 'hour' },
+      });
+
+      const { result } = renderHook(() => useGrowthStats({ from: '2024-06-26', to: '2024-06-26' }));
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.isHourly).toBe(true);
+      expect(result.current.memberData.map((item) => item.date)).toEqual([
+        '2024-06-26T00:00',
+        '2024-06-26T01:00',
+        '2024-06-26T02:00',
+      ]);
+      expect(result.current.chartData.at(-1)).toEqual(
+        expect.objectContaining({ date: '2024-06-26T02:00', free: 103 }),
+      );
+    });
+
+    it('charts a single past day like Today', async () => {
+      const { result } = renderHook(() => useGrowthStats({ from: '2024-06-26', to: '2024-06-26' }));
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // The previous day is fetched as the starting point, and the day itself
+      // by the hour from servers that can answer
+      expect(mockedUseMemberCountHistory).toHaveBeenCalledWith({
+        searchParams: {
+          date_from: '2024-06-25',
+          date_to: '2024-06-26',
+          interval: 'hour',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+      // An older server's two daily totals: the previous day's counts open the
+      // day, the selected day's counts close it
+      expect(result.current.memberData).toEqual([
+        expect.objectContaining({ date: '2024-06-26', free: 100 }),
+        expect.objectContaining({ date: '2024-06-27', free: 105 }),
+      ]);
     });
   });
 });

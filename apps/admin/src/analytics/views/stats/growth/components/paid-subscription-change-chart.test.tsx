@@ -104,4 +104,45 @@ describe('PaidMembersChangeChart Component', () => {
     expect(dropdown).toBeInTheDocument();
     expect(dropdown).toHaveTextContent('Weekly');
   });
+
+  it("shows a single day's own changes when only member data is available", () => {
+    // useGrowthStats dates a single day's points by the start of each day:
+    // the previous day's counts open the day, the day's own counts close it
+    const singleDayMemberData = [
+      { date: '2024-01-12', paid_subscribed: 3, paid_canceled: 1 },
+      { date: '2024-01-13', paid_subscribed: 5, paid_canceled: 0 },
+    ];
+
+    render(
+      <PaidMembersChangeChart
+        isLoading={false}
+        memberData={singleDayMemberData}
+        range={{ from: '2024-01-12', to: '2024-01-12' }}
+        subscriptionData={undefined}
+      />,
+    );
+
+    expect(screen.getByText('New').nextElementSibling).toHaveTextContent('5');
+    expect(screen.getByText('Cancelled').nextElementSibling).toHaveTextContent('0');
+  });
+
+  it("adds up a single day's hours when member data comes by the hour", () => {
+    const hourlyMemberData = [
+      { date: '2024-01-12T00:00', paid_subscribed: 0, paid_canceled: 0 },
+      { date: '2024-01-12T09:00', paid_subscribed: 2, paid_canceled: 1 },
+      { date: '2024-01-12T15:00', paid_subscribed: 1, paid_canceled: 0 },
+    ];
+
+    render(
+      <PaidMembersChangeChart
+        isLoading={false}
+        memberData={hourlyMemberData}
+        range={{ from: '2024-01-12', to: '2024-01-12' }}
+        subscriptionData={undefined}
+      />,
+    );
+
+    expect(screen.getByText('New').nextElementSibling).toHaveTextContent('3');
+    expect(screen.getByText('Cancelled').nextElementSibling).toHaveTextContent('1');
+  });
 });

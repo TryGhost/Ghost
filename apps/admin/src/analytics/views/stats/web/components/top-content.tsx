@@ -38,7 +38,12 @@ import {
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { getAudienceQueryParam } from '@/shared/analytics/audience';
 import { getClickHandler } from '@/analytics/utils/url-helpers';
-import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  formatQueryDate,
+  getPeriodText,
+  getRangeDates,
+} from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -58,7 +63,7 @@ interface UnifiedContentData {
 
 interface TopContentTableProps {
   data: UnifiedContentData[] | null;
-  range: number;
+  range: StatsRange;
   contentType: ContentType;
   tableHeader: boolean;
 }
@@ -133,7 +138,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({
 };
 
 interface TopContentProps {
-  range: number;
+  range: StatsRange;
   totalVisitors: number;
   audience: number;
   filterParams?: Record<string, string>;

@@ -17,12 +17,16 @@ import {
 } from '@tryghost/shade/patterns';
 import { KPI_METRICS } from '@/posts/analytics/web/components/kpi-metrics';
 import { type KpiDataItem, getWebKpiValues } from '@/posts/analytics/utils/kpi-helpers';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  getEffectiveChartRange,
+  sanitizeChartData,
+} from '@/shared/analytics/chart-helpers';
 import { useSearchParams } from '@tryghost/admin-x-framework';
 
 interface KpisProps {
   data: KpiDataItem[] | null | undefined;
-  range: number;
+  range: StatsRange;
 }
 
 const Kpis: React.FC<KpisProps> = ({ data, range }) => {

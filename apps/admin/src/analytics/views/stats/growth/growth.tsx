@@ -99,7 +99,8 @@ const Growth: React.FC = () => {
   }, [initialTab]);
 
   // Get stats from custom hook once
-  const { isLoading, chartData, totals, currencySymbol, subscriptionData } = useGrowthStats(range);
+  const { isLoading, chartData, totals, currencySymbol, subscriptionData, isHourly } =
+    useGrowthStats(range);
 
   // Get growth data with post_type filtering - only call when not on Sources tab
   const { data: topPostsData, isLoading: isTopPostsLoading } = useTopPostsStatsWithRange(
@@ -186,7 +187,7 @@ const Growth: React.FC = () => {
     <StatsLayout>
       <StatsHeader>
         <NavbarActions>
-          <DateRangeSelect />
+          <DateRangeSelect chartsDailyTotals />
         </NavbarActions>
       </StatsHeader>
       <StatsView
@@ -200,6 +201,7 @@ const Growth: React.FC = () => {
               chartData={chartData}
               currencySymbol={currencySymbol}
               initialTab={initialTab}
+              isHourly={isHourly}
               isLoading={isPageLoading}
               totals={totals}
               onTabChange={setCurrentKpiTab}

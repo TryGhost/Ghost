@@ -19,6 +19,7 @@ import {
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
+import { analyticsScreen } from '@/analytics/analytics.screen';
 import { editorScreen } from '@/editor/editor.screen';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
@@ -34,6 +35,19 @@ function daysAgo(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date.toISOString().slice(0, 10);
+}
+
+// The calendar and its queries use the viewer's local dates, not UTC ones
+function localDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function localDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return localDate(date);
 }
 
 function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
@@ -856,6 +870,36 @@ describe('Post analytics web', () => {
     await expect.poll(() => sentLocation(kpisApi)).toBe(true);
     await expect.poll(() => sentLocation(topLocationsApi)).toBe(true);
     await expect.poll(() => sentLocation(topSourcesApi)).toBe(true);
+  });
+});
+
+describe('Post analytics web custom range', () => {
+  it('starts custom ranges no earlier than the post was published', async () => {
+    const { kpisApi } = seedPostAnalyticsWorld();
+    await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
+    await expect
+      .element(page.getByRole('tab', { name: 'Unique visitors' }))
+      .toHaveTextContent('250');
+
+    const publishedOn = localDate(new Date(`${daysAgo(10)}T10:00:00.000Z`));
+    const to = localDaysAgo(3);
+
+    await page.getByRole('combobox', { name: 'Date range' }).click();
+    await analyticsScreen.rangeOption('Custom range…').click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+
+    await expect.element(analyticsScreen.calendarDay(publishedOn)!).toBeEnabled();
+    const beforePublication = analyticsScreen
+      .calendarDays()
+      .filter(({ date }) => date < publishedOn);
+    expect(beforePublication.every(({ disabled }) => disabled)).toBe(true);
+
+    await analyticsScreen.calendarDay(publishedOn)!.click();
+    await analyticsScreen.calendarDay(to)!.click();
+    await analyticsScreen.customRangeApply().click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(publishedOn);
+    expect(kpisApi.lastRequest?.params.get('date_to')).toBe(to);
   });
 });
 

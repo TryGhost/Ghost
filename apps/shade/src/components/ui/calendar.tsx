@@ -1,11 +1,119 @@
 import * as React from 'react';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker';
+import {
+  type ChevronProps,
+  DayButton,
+  DayPicker,
+  type DropdownProps,
+  type MonthCaptionProps,
+  type RootProps,
+  type WeekNumberProps,
+  getDefaultClassNames,
+  useDayPicker,
+} from 'react-day-picker';
 
 import { useShade } from '@/providers/shade-context';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { buttonVariants } from '@/components/ui/button-variants';
+
+// Months are compared and built as a single count (year * 12 + month) so
+// stepping across years needs no special cases
+const toMonthIndex = (date: Date) => date.getFullYear() * 12 + date.getMonth();
+const fromMonthIndex = (index: number) => new Date(Math.floor(index / 12), index % 12, 1);
+
+// Which of the displayed months a caption belongs to, for its dropdowns
+const CalendarMonthContext = React.createContext<{
+  monthIndex: number;
+  displayIndex: number;
+} | null>(null);
+
+function CalendarMonthCaption({ calendarMonth, displayIndex, ...props }: MonthCaptionProps) {
+  return (
+    <CalendarMonthContext.Provider
+      value={{ monthIndex: toMonthIndex(calendarMonth.date), displayIndex }}
+    >
+      <div {...props} />
+    </CalendarMonthContext.Provider>
+  );
+}
+
+// DayPicker treats a change in any month's dropdown as choosing the FIRST
+// displayed month, so with several months a pick in the second one moved it
+// into the first slot, and picking the last allowed month pushed the months
+// after it out of view. Keep the picked month in the slot it was picked in,
+// and keep every displayed month inside startMonth and endMonth.
+function CalendarCaptionDropdown({ unit, ...props }: DropdownProps & { unit: 'month' | 'year' }) {
+  const { components, dayPickerProps, goToMonth } = useDayPicker();
+  const position = React.useContext(CalendarMonthContext);
+  if (!position) {
+    // A caller replaced MonthCaption, so fall back to DayPicker's handling
+    return <components.Dropdown {...props} />;
+  }
+
+  const { monthIndex, displayIndex } = position;
+  const { startMonth, endMonth, numberOfMonths = 1 } = dayPickerProps;
+
+  const minFirst = startMonth ? toMonthIndex(startMonth) : -Infinity;
+  const maxFirst = endMonth ? toMonthIndex(endMonth) - (numberOfMonths - 1) : Infinity;
+  const pickedMonth = (value: number) =>
+    unit === 'month' ? Math.floor(monthIndex / 12) * 12 + value : value * 12 + (monthIndex % 12);
+  const fitsInSlot = (month: number) =>
+    month - displayIndex >= minFirst && month - displayIndex <= maxFirst;
+
+  const options = props.options?.map((option) => {
+    const fits =
+      unit === 'month'
+        ? fitsInSlot(pickedMonth(option.value))
+        : Array.from({ length: 12 }, (_, month) => option.value * 12 + month).some(fitsInSlot);
+    return { ...option, disabled: option.disabled || !fits };
+  });
+
+  return (
+    <components.Dropdown
+      {...props}
+      options={options}
+      onChange={(event) => {
+        const first = pickedMonth(Number(event.target.value)) - displayIndex;
+        goToMonth(fromMonthIndex(Math.min(Math.max(first, minFirst), maxFirst)));
+      }}
+    />
+  );
+}
+
+// Custom components live at module level: defined inline, each Calendar render
+// would hand DayPicker new component types and remount the whole calendar
+function CalendarRoot({ className, rootRef, ...props }: RootProps) {
+  return <div ref={rootRef} className={cn(className)} data-slot="calendar" {...props} />;
+}
+
+function CalendarChevron({ className, orientation, ...props }: ChevronProps) {
+  if (orientation === 'left') {
+    return <ChevronLeftIcon className={cn('size-4', className)} {...props} />;
+  }
+  if (orientation === 'right') {
+    return <ChevronRightIcon className={cn('size-4', className)} {...props} />;
+  }
+  return <ChevronDownIcon className={cn('size-4', className)} {...props} />;
+}
+
+function CalendarWeekNumber({ children, ...props }: WeekNumberProps) {
+  return (
+    <td {...props}>
+      <div className="flex size-(--cell-size) items-center justify-center text-center">
+        {children}
+      </div>
+    </td>
+  );
+}
+
+function CalendarMonthsDropdown(props: DropdownProps) {
+  return <CalendarCaptionDropdown unit="month" {...props} />;
+}
+
+function CalendarYearsDropdown(props: DropdownProps) {
+  return <CalendarCaptionDropdown unit="year" {...props} />;
+}
 
 function Calendar({
   className,
@@ -101,32 +209,13 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className: rootClassName, rootRef, ...rootProps }) => {
-          return (
-            <div ref={rootRef} className={cn(rootClassName)} data-slot="calendar" {...rootProps} />
-          );
-        },
-        Chevron: ({ className: chevronClassName, orientation, ...chevronProps }) => {
-          if (orientation === 'left') {
-            return <ChevronLeftIcon className={cn('size-4', chevronClassName)} {...chevronProps} />;
-          }
-          if (orientation === 'right') {
-            return (
-              <ChevronRightIcon className={cn('size-4', chevronClassName)} {...chevronProps} />
-            );
-          }
-          return <ChevronDownIcon className={cn('size-4', chevronClassName)} {...chevronProps} />;
-        },
+        Root: CalendarRoot,
+        Chevron: CalendarChevron,
         DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...weekProps }) => {
-          return (
-            <td {...weekProps}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          );
-        },
+        MonthCaption: CalendarMonthCaption,
+        MonthsDropdown: CalendarMonthsDropdown,
+        YearsDropdown: CalendarYearsDropdown,
+        WeekNumber: CalendarWeekNumber,
         ...components,
       }}
       formatters={{

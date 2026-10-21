@@ -35,14 +35,14 @@ import {
   SkeletonTable,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { type StatsRange, getPeriodText } from '@/shared/analytics/chart-helpers';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
 
 interface SourcesTableProps {
   data: ProcessedSourceData[] | null;
-  range?: number;
+  range?: StatsRange;
   defaultSourceIconUrl?: string;
   tableHeader: boolean;
   onSourceClick?: (source: string) => void;
@@ -134,7 +134,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
 
 interface SourcesCardProps {
   data: BaseSourceData[] | null;
-  range?: number;
+  range?: StatsRange;
   totalVisitors?: number;
   siteUrl?: string;
   siteIcon?: string;

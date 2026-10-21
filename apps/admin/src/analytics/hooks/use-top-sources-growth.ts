@@ -1,10 +1,10 @@
 import { ALL_AUDIENCES } from '@/shared/analytics/constants';
-import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { type StatsRange, formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getAudienceQueryParam } from '@/shared/analytics/audience';
 import { useTopSourcesGrowth as useTopSourcesGrowthAPI } from '@tryghost/admin-x-framework/api/referrers';
 
 export const useTopSourcesGrowth = (
-  range: number,
+  range: StatsRange,
   orderBy: string = 'signups desc',
   limit: number = 50,
 ) => {
