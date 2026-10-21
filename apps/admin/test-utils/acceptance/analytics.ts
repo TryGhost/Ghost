@@ -30,6 +30,20 @@ export function fakeSiteHistoryStart({
   fakeTinybirdPipe('api_first_visit', [{ first_visit: firstVisit }]);
 }
 
+/**
+ * A server that answers a single day's history by the hour. Without this,
+ * member_count fakes answer by day, like servers from before hourly history,
+ * and Analytics leaves single days out of its member, revenue and
+ * subscriber views.
+ */
+export function fakeHourlyHistory(): void {
+  const totals = { paid: 0, free: 0, comped: 0, gift: 0 };
+  fakeAdminEndpoint('GET', /^\/stats\/member_count\/\?.*interval=hour/, {
+    stats: [],
+    meta: { totals, interval: 'hour', start: totals },
+  });
+}
+
 /** Empty request graph for mounting the Analytics overview. */
 export function fakeAnalyticsOverview(): void {
   fakeAdminStats.memberCount();
