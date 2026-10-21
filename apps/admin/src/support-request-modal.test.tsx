@@ -42,8 +42,8 @@ const draft: SupportRequestDraft = {
   source: 'chat-provider',
   pageUrl: 'http://localhost:2368/ghost/#/posts',
   context: {
-    conversation_url: 'https://chat.example.com/conversation/conv-1',
-    transcript: '**User**\nI cannot publish a post',
+    chat_url: 'https://chat.example.com/conversation/conv-1',
+    chat_transcript: '**User**\nI cannot publish a post',
   },
 };
 
@@ -145,8 +145,8 @@ describe('SupportRequestModal', () => {
       source: 'chat-provider',
       pageUrl: 'http://localhost:2368/ghost/#/posts',
       context: {
-        conversation_url: 'https://chat.example.com/conversation/conv-1',
-        transcript: '**User**\nI cannot publish a post',
+        chat_url: 'https://chat.example.com/conversation/conv-1',
+        chat_transcript: '**User**\nI cannot publish a post',
       },
     });
     expect(onOpenChange).toHaveBeenCalledWith(false);

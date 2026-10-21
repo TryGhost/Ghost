@@ -15,7 +15,7 @@ describe('support requests api', () => {
           message: 'Please help',
           source: 'chat',
           pageUrl: 'http://localhost:2368/ghost/#/posts',
-          context: { transcript: '**User**\nI cannot publish a post' },
+          context: { chat_transcript: '**User**\nI cannot publish a post' },
         });
       });
 
@@ -32,7 +32,7 @@ describe('support requests api', () => {
             message: 'Please help',
             source: 'chat',
             page_url: 'http://localhost:2368/ghost/#/posts',
-            context: { transcript: '**User**\nI cannot publish a post' },
+            context: { chat_transcript: '**User**\nI cannot publish a post' },
           },
         ],
       });

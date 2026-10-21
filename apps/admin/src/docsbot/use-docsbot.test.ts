@@ -147,8 +147,8 @@ describe('toSupportRequestDraft', () => {
       source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/#/posts',
       context: {
-        conversation_url: 'https://docsbot.ai/conversation/conv-1',
-        transcript: [
+        chat_url: 'https://docsbot.ai/conversation/conv-1',
+        chat_transcript: [
           '**User** (8 May 2025, 22:56)',
           'I cannot publish a post',
           '',

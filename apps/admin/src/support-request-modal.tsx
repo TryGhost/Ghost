@@ -160,7 +160,7 @@ export function SupportRequestModal({
               }
               onKeyDown={() => clearError('message')}
             />
-            {draft.context?.transcript && (
+            {draft.context?.chat_transcript && (
               <FieldDescription>Your conversation will be attached automatically.</FieldDescription>
             )}
             {errors.message && <FieldError>{errors.message}</FieldError>}

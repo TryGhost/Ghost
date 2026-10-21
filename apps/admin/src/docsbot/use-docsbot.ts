@@ -160,11 +160,11 @@ export function toSupportRequestDraft(
   const context: Record<string, string> = {};
 
   if (normalizedMetadata.conversationUrl) {
-    context.conversation_url = normalizedMetadata.conversationUrl;
+    context.chat_url = normalizedMetadata.conversationUrl;
   }
 
   if (transcript) {
-    context.transcript = transcript;
+    context.chat_transcript = transcript;
   }
 
   return {
