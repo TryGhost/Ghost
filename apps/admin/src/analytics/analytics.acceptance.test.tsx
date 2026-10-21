@@ -19,20 +19,31 @@ import {
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { formatCustomRange, getPeriodText } from '@/shared/analytics/chart-helpers';
 import { deferred } from '@/utils/deferred';
 import { analyticsScreen } from './analytics.screen';
 
 const LATEST_POST_ID = '64d623b64676110001e897d1';
 
-// Every Analytics view first looks up where the site's history starts
+// Every Analytics view first looks up where the site's history starts; the
+// test site has members from 2020
 beforeEach(() => {
-  fakeSiteHistoryStart();
+  fakeSiteHistoryStart({ firstMember: '2020-01-01T00:00:00.000Z' });
 });
 
 function daysAgo(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date.toISOString().slice(0, 10);
+}
+
+// The calendar and its queries use the viewer's local dates, not UTC ones
+function localDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 /**
@@ -218,6 +229,123 @@ describe('Analytics overview', () => {
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2013-01-01');
   });
 
+  it('queries a custom date range picked on the calendar', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+
+    const from = localDaysAgo(10);
+    const to = localDaysAgo(3);
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Custom range…').click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+    await expect.element(analyticsScreen.customRangeApply()).toBeDisabled();
+
+    // Overview has no single-day ranges, so a lone start date can't be applied
+    await analyticsScreen.calendarDay(from)!.click();
+    await expect
+      .element(analyticsScreen.customRangePicker())
+      .toHaveTextContent('Select an end date');
+    await expect.element(analyticsScreen.customRangeApply()).toBeDisabled();
+
+    await analyticsScreen.calendarDay(to)!.click();
+    await expect.element(analyticsScreen.customRangePicker()).toHaveTextContent('8 days');
+    await analyticsScreen.customRangeApply().click();
+
+    await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
+    await expect
+      .element(analyticsScreen.dateRangeSelect())
+      .toHaveTextContent(formatCustomRange({ from, to }));
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(from);
+    expect(kpisApi.lastRequest?.params.get('date_to')).toBe(to);
+
+    // Reopening the calendar and cancelling keeps the applied range
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Custom range…').click();
+    await analyticsScreen.customRangeCancel().click();
+    await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
+    await expect
+      .element(analyticsScreen.dateRangeSelect())
+      .toHaveTextContent(formatCustomRange({ from, to }));
+
+    // Presets still apply after a custom range
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Last 7 days').click();
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(localDaysAgo(6));
+  });
+
+  it('lets a custom range reach back exactly as far as All time', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    // All time, and so the calendar, starts at the site's first member
+    const earliest = localDaysAgo(999);
+    fakeSiteHistoryStart({ firstMember: `${earliest}T12:00:00.000Z` });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    const [year, month] = earliest.split('-');
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Custom range…').click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+
+    const yearOptions = Array.from(
+      (analyticsScreen.calendarYearSelect().element() as HTMLSelectElement).options,
+    ).map((option) => option.value);
+    expect(yearOptions[0]).toBe(year);
+
+    await analyticsScreen.calendarYearSelect().selectOptions(year);
+    await analyticsScreen.calendarMonthSelect().selectOptions(String(Number(month) - 1));
+    await expect.poll(() => analyticsScreen.calendarDay(earliest)).not.toBeNull();
+
+    await expect.element(analyticsScreen.calendarDay(earliest)!).toBeEnabled();
+    const earlierDays = analyticsScreen.calendarDays().filter(({ date }) => date < earliest);
+    expect(earlierDays.every(({ disabled }) => disabled)).toBe(true);
+    await expect
+      .element(
+        analyticsScreen
+          .customRangePicker()
+          .getByRole('button', { name: 'Go to the Previous Month', includeHidden: true }),
+      )
+      .not.toBeVisible();
+  });
+
+  it("keeps each month's dropdowns on that month", async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    const thisYear = new Date().getFullYear();
+    const thisMonth = new Date().getMonth();
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Custom range…').click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+
+    // The right-hand month is this month, so there's nowhere further to go
+    await expect
+      .element(
+        analyticsScreen
+          .customRangePicker()
+          .getByRole('button', { name: 'Go to the Next Month', includeHidden: true }),
+      )
+      .not.toBeVisible();
+
+    // Changing the right-hand month's year keeps that month on the right
+    await analyticsScreen.calendarYearSelect(1).selectOptions(String(thisYear - 1));
+    await expect.element(analyticsScreen.calendarMonthSelect(1)).toHaveValue(String(thisMonth));
+    await expect.element(analyticsScreen.calendarYearSelect(1)).toHaveValue(String(thisYear - 1));
+
+    // Moving the left month onto this month keeps both months visible:
+    // this month can only be the right-hand one
+    await analyticsScreen.calendarMonthSelect(0).selectOptions(String(thisMonth));
+    await analyticsScreen.calendarYearSelect(0).selectOptions(String(thisYear));
+    await expect.element(analyticsScreen.calendarMonthSelect(1)).toHaveValue(String(thisMonth));
+    await expect.element(analyticsScreen.calendarYearSelect(1)).toHaveValue(String(thisYear));
+  });
+
   it('renders the latest and top posts with zeroed stats when nothing is recorded', async () => {
     seedEmptyAnalyticsWorld();
     fakePosts([
@@ -366,6 +494,29 @@ describe('Analytics web traffic', () => {
     await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
     await expect.element(analyticsScreen.topSourcesCard()).toHaveTextContent('No visitors');
     await expect.element(analyticsScreen.locationsCard()).toHaveTextContent('No visitors');
+  });
+
+  it('applies a single custom day and describes the cards by its date', async () => {
+    seedEmptyAnalyticsWorld();
+    seedEmptyWebTraffic();
+    const kpisApi = fakeTinybirdPipe('api_kpis', []);
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.uniqueVisitorsTab()).toHaveTextContent('0');
+
+    const day = localDaysAgo(2);
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Custom range…').click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+    await analyticsScreen.calendarDay(day)!.click();
+    await expect.element(analyticsScreen.customRangePicker()).toHaveTextContent('1 day');
+    await analyticsScreen.customRangeApply().click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(day);
+    expect(kpisApi.lastRequest?.params.get('date_to')).toBe(day);
+    await expect
+      .element(analyticsScreen.topContentCard())
+      .toHaveTextContent(`No visitors ${getPeriodText({ from: day, to: day })}`);
   });
 
   it('keeps the empty state across the top content tabs', async () => {

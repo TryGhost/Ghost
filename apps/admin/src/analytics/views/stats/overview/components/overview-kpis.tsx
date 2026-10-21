@@ -19,7 +19,7 @@ import {
 } from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
+import { centsToDollars, getPeriodText, isCustomRange } from '@/shared/analytics/chart-helpers';
 import {
   usePaidMembersEnabled,
   useWebAnalyticsEnabled,
@@ -82,13 +82,16 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     const timeRangeText = periodText
       .replace('in the ', '') // Remove "in the " prefix
       .replace(/^\(|\)$/g, ''); // Remove parentheses for "(all time)"
+    // Custom ranges already read as a phrase ("between 3 Jan and 14 Feb")
+    const comparisonPrefix = isCustomRange(range) ? '' : 'compared to the ';
+    const comparisonPeriod = isCustomRange(range) ? periodText : timeRangeText;
 
     if (diffDirection === 'same') {
       return (
         <span>
           You&apos;re trending at the same level as{' '}
-          <span className="font-semibold">{formattedValue}</span> compared to the{' '}
-          <span className="font-semibold">{timeRangeText}</span>
+          <span className="font-semibold">{formattedValue}</span> {comparisonPrefix}
+          <span className="font-semibold">{comparisonPeriod}</span>
         </span>
       );
     }
@@ -99,8 +102,8 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
         <span className="font-semibold">
           {directionText} {diffValue}
         </span>{' '}
-        from <span className="font-semibold">{trendingFromValue}</span> compared to the{' '}
-        {timeRangeText}
+        from <span className="font-semibold">{trendingFromValue}</span> {comparisonPrefix}
+        {comparisonPeriod}
       </span>
     );
   }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
@@ -162,6 +165,8 @@ interface OverviewKPIsProps {
   growthChartRange: number;
   currencySymbol: string;
   isLoading: boolean;
+  // A single day charts by the hour, with times on the axis and hover
+  showHours?: boolean;
 }
 
 const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
@@ -175,6 +180,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   growthChartRange,
   currencySymbol,
   isLoading,
+  showHours = false,
 }) => {
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
@@ -230,6 +236,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
             id="visitors"
             range={visitorsChartRange}
             showHorizontalLines={true}
+            showHours={showHours}
             showYAxisValues={false}
             syncId="overview-charts"
             yAxisRange={visitorsYRange}
@@ -284,6 +291,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
             id="members"
             range={growthChartRange}
             showHorizontalLines={true}
+            showHours={showHours}
             showYAxisValues={false}
             syncId="overview-charts"
           />
@@ -311,6 +319,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
             id="mrr"
             range={growthChartRange}
             showHorizontalLines={true}
+            showHours={showHours}
             showYAxisValues={false}
             syncId="overview-charts"
           />

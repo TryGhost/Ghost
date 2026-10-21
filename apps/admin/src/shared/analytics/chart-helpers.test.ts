@@ -3,12 +3,16 @@ import { STATS_RANGES, STATS_RANGE_OPTIONS } from '@/shared/analytics/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   centsToDollars,
+  formatCustomRange,
   formatQueryDate,
   getAggregationStrategy,
+  getCustomRangeDays,
+  getSingleDay,
   getEffectiveChartRange,
   getPeriodText,
   getRangeDates,
   getRangeForStartDate,
+  isCustomRange,
   resolveEffectiveRangeDays,
   sanitizeChartData,
   truncateLeadingEmptyData,
@@ -470,6 +474,91 @@ describe('chart-helpers', () => {
       expect(getEffectiveChartRange(STATS_RANGES.yearToDate.value, data)).toBe(46);
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('custom ranges', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2024-07-10T12:00:00'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('tells custom ranges apart from presets', () => {
+      expect(isCustomRange({ from: '2024-06-01', to: '2024-06-30' })).toBe(true);
+      expect(isCustomRange(STATS_RANGES.last30Days.value)).toBe(false);
+      expect(isCustomRange(STATS_RANGES.yearToDate.value)).toBe(false);
+    });
+
+    it('counts both ends of the range', () => {
+      expect(getCustomRangeDays({ from: '2024-06-01', to: '2024-06-30' })).toBe(30);
+      expect(getCustomRangeDays({ from: '2024-06-01', to: '2024-06-01' })).toBe(1);
+      expect(resolveEffectiveRangeDays({ from: '2023-12-25', to: '2024-01-07' })).toBe(14);
+    });
+
+    it('resolves to the start and end of the selected days', () => {
+      const { startDate, endDate } = getRangeDates({ from: '2024-03-04', to: '2024-03-17' });
+
+      expect(formatQueryDate(startDate)).toBe('2024-03-04');
+      expect(formatQueryDate(endDate)).toBe('2024-03-17');
+      expect(startDate.isSame(startDate.clone().startOf('day'))).toBe(true);
+      expect(endDate.isSame(endDate.clone().endOf('day'))).toBe(true);
+    });
+
+    it('formats ranges, showing the year only outside the current one', () => {
+      expect(formatCustomRange({ from: '2024-03-04', to: '2024-03-17' })).toBe('4 Mar – 17 Mar');
+      expect(formatCustomRange({ from: '2024-03-04', to: '2024-03-04' })).toBe('4 Mar');
+      expect(formatCustomRange({ from: '2023-03-04', to: '2023-04-17' })).toBe(
+        '4 Mar – 17 Apr 2023',
+      );
+      expect(formatCustomRange({ from: '2023-12-20', to: '2024-01-05' })).toBe(
+        '20 Dec 2023 – 5 Jan 2024',
+      );
+    });
+
+    it('describes the period for subheads', () => {
+      expect(getPeriodText({ from: '2024-03-04', to: '2024-03-17' })).toBe(
+        'between 4 Mar and 17 Mar',
+      );
+      expect(getPeriodText({ from: '2023-12-20', to: '2024-01-05' })).toBe(
+        'between 20 Dec 2023 and 5 Jan 2024',
+      );
+      expect(getPeriodText({ from: '2024-03-04', to: '2024-03-04' })).toBe('on 4 Mar');
+    });
+
+    it('buckets by the length of the range', () => {
+      expect(getAggregationStrategy({ from: '2024-05-01', to: '2024-06-30' })).toBe('none');
+      expect(getAggregationStrategy({ from: '2024-01-01', to: '2024-06-30' })).toBe('weekly');
+      expect(getAggregationStrategy({ from: '2023-01-01', to: '2024-06-30' })).toBe('monthly');
+    });
+
+    it('labels the partial first bucket with the range start', () => {
+      // 2024-01-03 is a Wednesday, mid-week
+      const range = { from: '2024-01-03', to: '2024-06-30' };
+      const data = createDateRange(getCustomRangeDays(range), range.from);
+      const result = sanitizeChartData(data, range, 'value', 'sum');
+
+      expect(result[0].date).toBe('2024-01-03');
+      expect(result[1].date).toBe(
+        moment('2024-01-03').add(1, 'week').startOf('week').format('YYYY-MM-DD'),
+      );
+    });
+
+    it('finds the day a single-day range covers', () => {
+      expect(getSingleDay(STATS_RANGES.today.value)).toBe('2024-07-10');
+      expect(getSingleDay({ from: '2024-03-04', to: '2024-03-04' })).toBe('2024-03-04');
+      expect(getSingleDay({ from: '2024-03-04', to: '2024-03-05' })).toBeNull();
+      expect(getSingleDay(STATS_RANGES.last7Days.value)).toBeNull();
+    });
+
+    it('reports the range length for daily charts', () => {
+      expect(getEffectiveChartRange({ from: '2024-06-01', to: '2024-06-10' })).toBe(10);
+      // A single day reports 1, like Today, so visits chart by the hour
+      expect(getEffectiveChartRange({ from: '2024-06-01', to: '2024-06-01' })).toBe(1);
+      expect(getEffectiveChartRange({ from: '2024-01-01', to: '2024-06-30' })).toBe(91);
     });
   });
 

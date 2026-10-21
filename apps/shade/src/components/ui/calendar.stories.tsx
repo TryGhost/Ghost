@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { type DateRange } from 'react-day-picker';
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { Button } from './button';
@@ -42,6 +43,22 @@ const DatePickerExample = () => {
   );
 };
 
+const RangeAcrossTwoMonthsExample = () => {
+  const [range, setRange] = useState<DateRange | undefined>(undefined);
+  const today = new Date();
+  return (
+    <Calendar
+      captionLayout="dropdown"
+      endMonth={today}
+      mode="range"
+      numberOfMonths={2}
+      selected={range}
+      startMonth={new Date(today.getFullYear() - 2, 0, 1)}
+      onSelect={setRange}
+    />
+  );
+};
+
 export const Default: Story = {
   parameters: {
     docs: {
@@ -62,4 +79,16 @@ export const DatePicker: Story = {
     },
   },
   render: () => <DatePickerExample />,
+};
+
+export const RangeAcrossTwoMonths: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Two months for picking a range. Each month's dropdowns move only that month, the other follows, and neither goes outside startMonth and endMonth.",
+      },
+    },
+  },
+  render: () => <RangeAcrossTwoMonthsExample />,
 };

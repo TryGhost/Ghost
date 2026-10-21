@@ -28,6 +28,7 @@ import {
   formatPercentage,
 } from '@tryghost/shade/utils';
 import {
+  type StatsRange,
   getEffectiveChartRange,
   getPeriodText,
   sanitizeChartData,
@@ -44,7 +45,7 @@ interface BarTooltipPayload {
 interface BarTooltipProps {
   active?: boolean;
   payload?: BarTooltipPayload[];
-  range?: number;
+  range?: StatsRange;
 }
 
 const BarTooltipContent = ({ active, payload }: BarTooltipProps) => {
@@ -107,6 +108,8 @@ const NewsletterKPIs: React.FC<{
   isLoading: boolean;
   isAvgsLoading: boolean;
   initialTab?: string;
+  // A single day came back hour by hour, so it charts with times
+  isHourly?: boolean;
 }> = ({
   subscribersData: allSubscribersData,
   avgsData,
@@ -114,6 +117,7 @@ const NewsletterKPIs: React.FC<{
   isLoading,
   isAvgsLoading,
   initialTab = 'total-subscribers',
+  isHourly = false,
 }) => {
   const [currentTab, setCurrentTab] = useState(initialTab);
   const [isHoveringClickable, setIsHoveringClickable] = useState(false);
@@ -391,6 +395,7 @@ const NewsletterKPIs: React.FC<{
             data={subscribersData}
             id="mrr"
             range={chartRange}
+            showHours={isHourly}
           />
         )}
 

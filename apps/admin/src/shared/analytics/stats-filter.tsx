@@ -6,7 +6,7 @@ import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@trygho
 import { useShade } from '@tryghost/shade/app';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
-import { formatQueryDate, getRangeDates } from './chart-helpers';
+import { type StatsRange, formatQueryDate, getRangeDates } from './chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from './audience';
 import { useAnalyticsData } from './use-analytics-data';
 import { useTinybirdQuery, useWebAnalyticsEnabled } from '@tryghost/admin-x-framework';
@@ -21,8 +21,8 @@ interface StatsFilterProps extends Omit<
 > {
   filters: Filter[];
   onChange?: (filters: Filter[]) => void;
-  /** Date range the filter option queries are scoped to (day count or the -1 year-to-date sentinel) */
-  range: number;
+  /** Date range the filter option queries are scoped to (day count, the -1 year-to-date sentinel, or a custom range) */
+  range: StatsRange;
   /** Scope every option query to a single post (post analytics) */
   postUuid?: string;
   /** Offer the post/page filter field (site-wide analytics only) */
@@ -177,7 +177,7 @@ interface UseTinybirdFilterOptionsConfig {
 const useTinybirdFilterOptions = (
   fieldKey: string,
   currentFilters: Filter[],
-  range: number,
+  range: StatsRange,
   postUuid?: string,
   config: UseTinybirdFilterOptionsConfig = {},
 ) => {
@@ -263,7 +263,7 @@ interface UsePostOptionsConfig {
 // This uses a different API pattern so it can't use the generic hook
 const usePostOptions = (
   currentFilters: Filter[],
-  range: number,
+  range: StatsRange,
   config: UsePostOptionsConfig = {},
 ) => {
   const { enabled = true } = config;

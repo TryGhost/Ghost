@@ -4,6 +4,7 @@ import { type ReactNode, useCallback, useState } from 'react';
 import { type PostsResponseType, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { useParams } from '@tryghost/admin-x-framework';
 import { getEmailStatsPollingOptions } from '@/posts/analytics/utils/email-stats-polling';
+import { type StatsRange } from '@/shared/analytics/chart-helpers';
 
 // Slim provider: holds only post-scoped state (the routed post + selected date
 // range). Framework data is sourced from the shell via `useAnalyticsData`.
@@ -15,7 +16,7 @@ const PostAnalyticsProvider = ({ children }: { children: ReactNode }) => {
     throw new Error('Post ID is required for PostAnalyticsProvider');
   }
 
-  const [range, setRange] = useState(STATS_RANGES.last30Days.value);
+  const [range, setRange] = useState<StatsRange>(STATS_RANGES.last30Days.value);
 
   // Fetch post data with all required includes. The gift-link modal reuses
   // POST_ANALYTICS_INCLUDE for the same query key, so both read one cached post.

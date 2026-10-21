@@ -58,8 +58,8 @@ describe('Newsletter Stats Hooks', () => {
     dateMocking = setupDateMocking();
 
     // Mock the date functions with consistent behavior
-    mockGetRangeDates.mockImplementation((range: number) => {
-      const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(range);
+    mockGetRangeDates.mockImplementation((range) => {
+      const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(range as number);
       return {
         startDate: moment.utc(expectedDateFrom).startOf('day'),
         endDate: moment.utc(expectedDateTo).startOf('day'),
@@ -223,6 +223,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
         },
         enabled: true,
       });
@@ -240,6 +241,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
         },
         enabled: true,
       });
@@ -259,6 +261,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
           newsletter_id: 'newsletter-123',
         },
         enabled: true,

@@ -17,13 +17,18 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { LucideIcon, Recharts, formatNumber } from '@tryghost/shade/utils';
-import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  formatQueryDate,
+  getPeriodText,
+  getRangeDates,
+} from '@/shared/analytics/chart-helpers';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useSubscriptionStats } from '@tryghost/admin-x-framework/api/stats';
 
 type NewSubscribersCadenceProps = {
   isLoading: boolean;
-  range: number;
+  range: StatsRange;
 };
 
 type BreakdownType = 'billing-period' | 'tiers';

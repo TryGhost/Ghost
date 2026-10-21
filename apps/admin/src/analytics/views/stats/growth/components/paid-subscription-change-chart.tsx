@@ -25,9 +25,11 @@ import {
 } from '@tryghost/shade/utils';
 import {
   type AggregationStrategy,
+  type StatsRange,
   getEffectiveChartRange,
   getPeriodText,
   getRangeDates,
+  getSingleDay,
   resolveEffectiveRangeDays,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
@@ -39,7 +41,7 @@ type PaidMembersChangeChartProps = {
     paid_subscribed?: number;
     paid_canceled?: number;
   }[];
-  range: number;
+  range: StatsRange;
   isLoading: boolean;
 };
 
@@ -47,19 +49,19 @@ type PaidMembersChangeChartProps = {
 // Moved outside component to prevent recreation on each render
 const fillMissingDataPoints = (
   data: { date: string; signups: number; cancellations: number }[],
-  dateRange: number,
+  dateRange: StatsRange,
   strategy: AggregationStrategy,
 ) => {
-  // For "Today" (dateRange = 1), show just one data point for the current date
-  if (dateRange === 1) {
-    const today = moment().format('YYYY-MM-DD');
-    const todayData = data.find((item) => item.date === today);
+  // For single day ranges, show just one data point for that day
+  const singleDay = getSingleDay(dateRange);
+  if (singleDay) {
+    const dayData = data.find((item) => item.date === singleDay);
 
     return [
       {
-        date: today,
-        signups: todayData?.signups || 0,
-        cancellations: todayData?.cancellations || 0,
+        date: singleDay,
+        signups: dayData?.signups || 0,
+        cancellations: dayData?.cancellations || 0,
       },
     ];
   }
@@ -152,7 +154,7 @@ const fillMissingDataPoints = (
 type ResolutionOption = 'daily' | 'weekly' | 'monthly';
 
 // Helper to determine available resolutions based on range
-const getAvailableResolutions = (range: number): ResolutionOption[] => {
+const getAvailableResolutions = (range: StatsRange): ResolutionOption[] => {
   const actualSpan = resolveEffectiveRangeDays(range);
 
   if (actualSpan < 30) {
@@ -165,7 +167,7 @@ const getAvailableResolutions = (range: number): ResolutionOption[] => {
 };
 
 // Helper to get default resolution for a range
-const getDefaultResolution = (range: number): ResolutionOption => {
+const getDefaultResolution = (range: StatsRange): ResolutionOption => {
   const actualSpan = resolveEffectiveRangeDays(range);
 
   if (actualSpan < 30) {
@@ -215,19 +217,19 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
   }, [range, aggregationStrategy]);
 
   const paidChangeChartData = useMemo(() => {
+    const singleDay = getSingleDay(range);
     // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
     if (subscriptionData && subscriptionData.length > 0) {
-      // For "Today" range, show just the change for today
-      if (range === 1) {
-        const today = moment().format('YYYY-MM-DD');
-        const todayData = subscriptionData.find((item) => item.date === today);
+      // For single day ranges, show just the change for that day
+      if (singleDay) {
+        const dayData = subscriptionData.find((item) => item.date === singleDay);
 
         return [
           {
-            date: formatDisplayDateWithRange(today, range),
-            rawDate: today, // Keep raw date for dynamic tooltip formatting
-            new: todayData?.signups || 0,
-            cancelled: -(todayData?.cancellations || 0), // Negative for the stacked bar chart
+            date: formatDisplayDateWithRange(singleDay, 1),
+            rawDate: singleDay, // Keep raw date for dynamic tooltip formatting
+            new: dayData?.signups || 0,
+            cancelled: -(dayData?.cancellations || 0), // Negative for the stacked bar chart
           },
         ];
       }
@@ -291,17 +293,21 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         return [];
       }
 
-      // For "Today" range, show just today's change
-      if (range === 1) {
-        const today = moment().format('YYYY-MM-DD');
-        const todayData = memberData.find((item) => item.date === today);
+      // For single day ranges, show just that day's change. Hourly history
+      // spreads the day's changes over its hours, so they're added up; older
+      // servers' two daily points carry the day's own counts on the last one
+      if (singleDay) {
+        const isHourly = memberData.some((item) => item.date.includes('T'));
+        const dayData = isHourly ? memberData : memberData.slice(-1);
+        const sum = (field: 'paid_subscribed' | 'paid_canceled') =>
+          dayData.reduce((total, item) => total + (item[field] || 0), 0);
 
         return [
           {
-            date: formatDisplayDateWithRange(today, range),
-            rawDate: today, // Keep raw date for dynamic tooltip formatting
-            new: todayData?.paid_subscribed || 0,
-            cancelled: -(todayData?.paid_canceled || 0), // Negative for the stacked bar chart
+            date: formatDisplayDateWithRange(singleDay, 1),
+            rawDate: singleDay, // Keep raw date for dynamic tooltip formatting
+            new: sum('paid_subscribed'),
+            cancelled: -sum('paid_canceled'), // Negative for the stacked bar chart
           },
         ];
       }

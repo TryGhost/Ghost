@@ -18,11 +18,14 @@ import { LucideIcon, getScrollParent } from '@tryghost/shade/utils';
 import { STATS_RANGES, UNKNOWN_LOCATION_VALUES } from '@/shared/analytics/constants';
 import { createFilter } from '@tryghost/shade/patterns';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from '@/shared/analytics/audience';
+import moment from 'moment-timezone';
 import {
+  type StatsRange,
   formatQueryDate,
   getPeriodText,
   getRangeDates,
   getRangeForStartDate,
+  isCustomRange,
 } from '@/shared/analytics/chart-helpers';
 import {
   useBrowseSettings,
@@ -72,9 +75,17 @@ const Web: React.FC = () => {
   }, [isPostLoading, post?.email_only, navigate, postId]);
 
   // Calculate chart range based on days between today and post publication date
-  const chartRange = useMemo(() => {
+  const chartRange = useMemo<StatsRange>(() => {
     if (!post?.published_at) {
       return STATS_RANGES.allTime.value; // Fallback if no publication date
+    }
+    if (isCustomRange(range)) {
+      // A custom range can't start before the post was published, just as
+      // presets are cut back to the post's age below
+      const publishedOn = formatQueryDate(moment(post.published_at));
+      return range.from < publishedOn
+        ? { from: publishedOn, to: range.to < publishedOn ? publishedOn : range.to }
+        : range;
     }
     const calculatedRange = getRangeForStartDate(post.published_at);
     // Resolve the selected range to a concrete day count before clamping to
@@ -259,14 +270,19 @@ const Web: React.FC = () => {
     return <Navigate to={`/posts/analytics/${postId}`} replace />;
   }
 
+  const dateRangeSelect = (
+    <DateRangeSelect
+      earliestDate={post?.published_at ? new Date(post.published_at) : undefined}
+      range={range}
+      allowCustomRange
+      onRangeChange={setRange}
+    />
+  );
+
   return (
     <>
       <PostAnalyticsHeader currentTab="Web">
-        {hasFilters && (
-          <NavbarActions>
-            <DateRangeSelect range={range} onRangeChange={setRange} />
-          </NavbarActions>
-        )}
+        {hasFilters && <NavbarActions>{dateRangeSelect}</NavbarActions>}
         <NavbarActions
           className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}
         >
@@ -276,7 +292,7 @@ const Web: React.FC = () => {
             range={range}
             onChange={setAnalyticsFilters}
           />
-          {!hasFilters && <DateRangeSelect range={range} onRangeChange={setRange} />}
+          {!hasFilters && dateRangeSelect}
         </NavbarActions>
       </PostAnalyticsHeader>
       <PostAnalyticsContent ref={containerRef}>
