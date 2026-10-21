@@ -184,6 +184,7 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld({ invites: [existing] });
     const config = configResponse();
     config.config.hostSettings = {
+      billing: { enabled: true },
       staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
     };
     fakeAdminEndpoint(
