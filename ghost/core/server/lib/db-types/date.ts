@@ -3,6 +3,7 @@ import * as errors from '@tryghost/errors';
 import { z } from 'zod';
 
 const DATABASE_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss';
+const DATABASE_DATE_FORMAT_WITH_MILLISECONDS = 'yyyy-MM-dd HH:mm:ss.SSS';
 
 const databaseDateInput = z.union([z.date(), z.string(), z.number()]);
 
@@ -41,6 +42,9 @@ const parseDatabaseDate = (date: DatabaseDate): DateTime => {
 // Raw Knex queries need this UTC datetime format for consistent MySQL and SQLite behavior.
 export const toDatabaseDate = (date: DatabaseDate): string =>
   parseDatabaseDate(date).toFormat(DATABASE_DATE_FORMAT);
+
+export const toDatabaseDateWithMilliseconds = (date: DatabaseDate): string =>
+  parseDatabaseDate(date).toFormat(DATABASE_DATE_FORMAT_WITH_MILLISECONDS);
 
 export const fromDatabaseDate = (date: DatabaseDate): Date => parseDatabaseDate(date).toJSDate();
 
