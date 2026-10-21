@@ -103,7 +103,7 @@ export function normalizeManifest(entries: unknown): ContinuousPackage[] {
 }
 
 export const CONTINUOUS_PACKAGES: ContinuousPackage[] = normalizeManifest(
-  await readJson(join(SCRIPTS_DIR, 'publish-manifest.json')),
+  await readJson(join(SCRIPTS_DIR, 'release/publish-manifest.json')),
 );
 
 /** The subset Ghost core serves from jsDelivr. */

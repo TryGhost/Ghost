@@ -151,6 +151,11 @@ async function initCore({ ghostServer, config }) {
   await signingKeys.init();
   debug('End: signing keys');
 
+  debug('Begin: Internal Keys Service');
+  const internalKeys = require('./server/services/internal-keys').default;
+  await internalKeys.init();
+  debug('End: Internal Keys Service');
+
   debug('Begin: i18n');
   const i18n = require('./server/services/i18n');
   await i18n.init();
@@ -178,6 +183,16 @@ async function initCore({ ghostServer, config }) {
   const exportRequests = require('./server/services/export-requests').default;
   await exportRequests.init();
   debug('End: Export Requests Service');
+
+  debug('Begin: Invites Service');
+  const invites = require('./server/services/invites').default;
+  await invites.init();
+  debug('End: Invites Service');
+
+  debug('Begin: Support Requests Service');
+  const supportRequests = require('./server/services/support-requests').default;
+  await supportRequests.init();
+  debug('End: Support Requests Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
@@ -361,6 +376,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const tiers = require('./server/services/tiers');
   const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
+  const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
@@ -375,7 +391,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailAnalytics = require('./server/services/email-analytics');
   const mentionsService = require('./server/services/mentions');
   const tagsPublic = require('./server/services/tags-public');
-  const postsPublic = require('./server/services/posts-public');
+  const postsPublic = require('./server/services/posts-public').default;
   const slackNotifications = require('./server/services/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');
@@ -398,7 +414,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const models = require('./server/models');
   const urlUtils = require('./shared/url-utils').default;
   const settingsCache = require('./shared/settings-cache');
-  const internalKeys = require('./server/services/internal-keys').default;
+  const internalKeys = require('./server/services/internal-keys').default.service;
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
@@ -431,6 +447,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     membersEvents.init(),
     permissions.init(),
     indexnow.init(),
+    upgrades.init(),
     slack.init(),
     audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),

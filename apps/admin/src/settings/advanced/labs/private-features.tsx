@@ -51,12 +51,6 @@ const features: Feature[] = [
     flag: 'admin7CustomizeFromViewSite',
   },
   {
-    title: 'Admin 7 · Editor improvements',
-    description:
-      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
-    flag: 'admin7EditorImprovements',
-  },
-  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
@@ -90,12 +84,6 @@ const features: Feature[] = [
     description:
       'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
     flag: 'stripeCheckoutCollection',
-  },
-  {
-    title: 'Stripe checkout design',
-    description:
-      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
-    flag: 'stripeCheckoutDesign',
   },
   {
     title: 'Paywall improvements',

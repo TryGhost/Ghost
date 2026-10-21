@@ -223,13 +223,7 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
           key={label.id}
           className={cn(
             'cursor-pointer gap-1 pr-1',
-            // Wraps rather than truncates, as the editor's chips do: one line still
-            // reads as a pill, and a taller chip keeps soft corners.
-            isAdmin7 &&
-              cn(
-                tokenFieldClasses.chip,
-                'h-auto rounded-[12px] bg-secondary py-1 text-left leading-4 whitespace-normal',
-              ),
+            isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
           )}
           variant="outline"
           asChild

@@ -229,7 +229,6 @@ describe('Automations API', function () {
 
     beforeEach(async function () {
       mockManager.mockLabsEnabled('automations');
-      mockManager.mockLabsEnabled('automationsPerTier');
       await models.Base.knex('products').insert(
         tierIds.map((id) => ({
           id,
@@ -484,16 +483,13 @@ describe('Automations API', function () {
       );
     });
 
-    it.each(['automations', 'automationsPerTier'])(
-      'returns 404 when %s is disabled',
-      async function (flag) {
-        mockManager.mockLabsDisabled(flag);
-        await agent
-          .post('automations')
-          .body({ automations: [payload] })
-          .expectStatus(404);
-      },
-    );
+    it('returns 404 when automations is disabled', async function () {
+      mockManager.mockLabsDisabled('automations');
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(404);
+    });
 
     it('denies unauthenticated requests', async function () {
       agent.resetAuthentication();
@@ -1700,7 +1696,29 @@ describe('Automations API', function () {
         .expect(cacheInvalidateHeaderNotSet());
     });
 
-    it('rejects an edit with no actions or edges', async function () {
+    it.each(['inactive', 'archived'] as const)(
+      'saves an empty %s automation graph',
+      async function (status) {
+        const { body: browseBody } = await agent.get('automations').expectStatus(200);
+
+        const automationId = browseBody.automations[0].id;
+
+        const { body: savedBody } = await agent
+          .put(`automations/${automationId}`)
+          .body({ automations: [{ status, actions: [], edges: [] }] })
+          .expectStatus(200);
+
+        assert.equal(savedBody.automations[0].status, status);
+        assert.deepEqual(savedBody.automations[0].actions, []);
+        assert.deepEqual(savedBody.automations[0].edges, []);
+        await agent.get('automations').expectStatus(200);
+        const { body: readBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
+        assert.deepEqual(readBody.automations[0].actions, []);
+        assert.equal(readBody.automations[0].status, status);
+      },
+    );
+
+    it('rejects activation with no actions or edges', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
       const automationId = browseBody.automations[0].id;
@@ -1710,13 +1728,7 @@ describe('Automations API', function () {
       await agent
         .put(`automations/${automationId}`)
         .body({
-          automations: [
-            {
-              status: 'inactive',
-              actions: [],
-              edges: [],
-            },
-          ],
+          automations: [{ status: 'active', actions: [], edges: [] }],
         })
         .expectStatus(422)
         .expect(cacheInvalidateHeaderNotSet());

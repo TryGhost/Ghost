@@ -52,7 +52,7 @@ function runLint(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
     );
-    const resolver = 'tools/scripts/lib/service-dependency-resolver.mjs';
+    const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
     mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
     cpSync(path.join(root, resolver), path.join(cwd, resolver));
     mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });
@@ -492,6 +492,21 @@ test('reports direct allowlisted bindings and members passed to local service co
     [11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 23],
   );
   assert.ok(result.diagnostics.some((d) => d.message.includes('Import @tryghost/tpl directly')));
+});
+
+test('keeps security primitives directly imported rather than injected into services', () => {
+  const result = lint(
+    `
+    import Service from './service';
+    import security from '@tryghost/security';
+    new Service({encode: security.url.encodeBase64});
+    `,
+    serviceRoot,
+  );
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 1);
+  assert.equal(result.diagnostics[0]?.code, injectionCode);
+  assert.ok(result.diagnostics[0]?.message.includes('Import @tryghost/security directly'));
 });
 
 test('allows local library use, computed values, injected application dependencies and shadowed bindings', () => {

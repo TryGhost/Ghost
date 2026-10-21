@@ -14,6 +14,21 @@ helpers in `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alia
 Run `pnpm install` after generating a package; custom destinations must be covered
 by the workspace globs.
 
+## Development stacks
+
+Run `pnpm gx dev up`, `pnpm gx dev down`, `pnpm gx dev status` and
+`pnpm gx dev gc` to manage development stacks. Existing arguments still apply,
+including `up dev:analytics`, `down --all`, `down --orphans`, `status --json`
+and `gc --yes`. See [development setup](../../docs/contributing/development-setup.md#worktrees)
+for behavior and options.
+
+`pnpm dev:up`, `pnpm dev:down`, `pnpm dev:status` and `pnpm dev:gc` remain direct
+shortcuts to the same command files. The private session-end hook and shutdown
+path use Node built-ins only. Run `node tools/gx/dev-down.ts` directly when
+workspace dependencies are missing or stale; shutdown from the status view also
+uses direct Node execution and supports checkouts with the older script paths.
+Shared environment and infrastructure setup remain in `tools/scripts`.
+
 ## Golden email preview
 
 Run `pnpm gx generate golden-email <segment> <output-path>` against a running Ghost dev
@@ -54,7 +69,9 @@ options and prerequisites. Existing `pnpm reset:data` variants and
 Both reuse the checkout's development-environment runner and Ghost working
 directory. They use the source loader, with the data-generation engine remaining
 in Core. The generator preserves its existing environment permissions and
-options. `node index.js generate-data` now reports its gx replacement.
+options. `node index.js generate-data` now reports its gx replacement. Installed
+trees ship a dependency-light equivalent at
+[`ghost/bin/generate-data.js`](../../ghost/bin/README.md#data-generation).
 
 ## REPL and date shifting
 
@@ -81,6 +98,79 @@ Its database user needs permission to create and drop databases. It prints JSON
 metrics for preparing all members, rebuilding interrupted preparation and
 preparing a label segment. See [performance testing](../../docs/contributing/performance-testing.md).
 
+## Service migration reports
+
+These temporary commands combine the service inventory with the current
+Dependency Cruiser audit. Run them from the repository root:
+
+| Command                                 | Output                                                         |
+| --------------------------------------- | -------------------------------------------------------------- |
+| `pnpm gx services report`               | Migration totals and categories                                |
+| `pnpm gx services list`                 | Entries, migration categories and dependency counts            |
+| `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
+| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
+| `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
+
+List any group from the report with `list --group <group>`. Each report row
+shows its group ID; `list --help` lists all groups. For example:
+
+```sh
+pnpm gx services list --group straightforward-clear
+pnpm gx services list --group needs-preparation
+pnpm gx services list --group migrated --json
+```
+
+`report`, `list` and `dependencies` accept `--json` for structured output.
+`services audit` accepts the formatter's options, including
+`--output-type markdown` and `--output-type json --output-to /tmp/service-dependencies.json`.
+It replaces `pnpm audit:services`; `services dependencies` replaces
+`pnpm audit:services:summary` without requiring `jq`.
+
+### Interpreting the reports
+
+Counts are calculated from the checkout, not stored in the inventory. Categories
+come from the inventory's ownership and migration assessments:
+
+- **Migrated:** marked `migrated: true`.
+- **Move or split planned:** marked `disposition: relocate`; this records intended
+  ownership, not completed work.
+- **Ownership undecided:** marked `disposition: review`.
+- **Needs preparation:** either assessment is complex, or the overall assessment
+  identifies a possible model change.
+- **Straightforward:** both assessments are straightforward and the existing
+  model fits. This can still include dependency violations.
+
+Migration and ownership categories take precedence over complexity.
+**Staying in services/** counts entries marked `disposition: retain`, not all
+runtime services. Entries planned for a move or split can still be configured
+runtime services with dependency, readiness and lifetime contracts. Groups can
+overlap: an entry staying here can also be unmigrated and need preparation.
+The filter names remain `retained`, `unmigrated-retained`,
+`unmigrated-retained-with-violations` and `relocation`.
+
+Per-service reports show inventory notes before the migration assessments, so
+planned ownership changes are visible alongside earlier assessments. Notes are
+also included in JSON output as `entry.notes`.
+
+Entries found by the audit but absent from the inventory are **Not inventoried**;
+entries absent from the dependency graph have unknown counts. Malformed or
+incomplete assessments fail the report.
+
+`list` counts distinct disallowed dependency targets per entry, with unresolved
+and own-root imports in separate columns. `dependencies` counts distinct
+importing implementation files per target, largest first; it excludes unresolved
+and own-root findings. The native `audit` counts rule violations, so one import
+can appear under more than one rule.
+
+The audit checks all entries and returns success when it finds violations.
+`pnpm lint:boundaries` enforces the same rules for migrated services in CI.
+Legacy root `index.js` files are treated as wiring candidates. Computed paths
+such as `require(name)` cannot be resolved by the static audit. No violations
+does not mean ready to migrate: recorded blockers, runtime behavior and test
+gaps still need review. See the
+[services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
+for the dependency policy.
+
 ## Validation
 
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
@@ -88,3 +178,6 @@ from TypeScript source and has no build or package exports. Its `test` command
 checks types as well as running the command tests. Run `pnpm --filter @internal/gx lint` and
 `pnpm --filter @internal/gx test` to validate it. Add further commands as focused migrations
 of existing tools.
+
+See [tooling ownership](../README.md) before adding a command or relocating its
+implementation, shared helpers or installed-release functionality.

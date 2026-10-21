@@ -436,6 +436,14 @@ module.exports = function apiRoutes() {
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+  // ## Support requests
+  router.post(
+    '/support_requests',
+    mw.authAdminApi,
+    shared.middleware.brute.supportRequestLimiter,
+    http(api.supportRequests.add),
+  );
+
   // ## Tinybird
   router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
@@ -529,6 +537,27 @@ module.exports = function apiRoutes() {
     apiMw.upload.single('redirects'),
     apiMw.upload.validation({ type: 'redirects' }),
     http(api.redirects.upload),
+  );
+
+  // ## Host-managed upgrades
+  router.get(
+    '/upgrades/',
+    shared.middleware.brute.upgradeApiLimiter,
+    mw.authAdminApi,
+    http(api.upgrades.browse),
+  );
+  router.post(
+    '/upgrades/',
+    shared.middleware.brute.upgradeApiLimiter,
+    mw.authAdminApi,
+    shared.middleware.brute.upgradeLimiter,
+    http(api.upgrades.add),
+  );
+  router.get(
+    '/upgrades/:id/',
+    shared.middleware.brute.upgradeApiLimiter,
+    mw.authAdminApi,
+    http(api.upgrades.read),
   );
 
   // ## Webhooks (RESTHooks)

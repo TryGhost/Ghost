@@ -31,7 +31,7 @@ describe('Members Service Middleware', function () {
       };
 
       sinon.stub(urlUtils, 'getSubdir').returns('/blah');
-      sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
+      sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah/');
 
       app = express();
       app.use(membersMiddleware.createSessionFromMagicLink);
@@ -209,6 +209,40 @@ describe('Members Service Middleware', function () {
         .expect(302)
         .expect('Location', '/blah/?action=signin&success=true');
     });
+
+    const offSiteReferrers = [
+      ['lookalike hostname', 'https://site.com.external.com/blah/'],
+      ['userinfo before external host', 'https://site.com@external.com/blah/'],
+      ['userinfo before site host', 'https://user@site.com/blah/'],
+      ['different scheme', 'http://site.com/blah/'],
+      ['different port', 'https://site.com:8080/blah/'],
+      ['path outside subdirectory', 'https://site.com/other/'],
+      ['sibling path sharing subdirectory prefix', 'https://site.com/blah-other/'],
+      ['encoded dot segments', 'https://site.com/blah/%2e%2e/other/'],
+      ['malformed', 'not a url'],
+    ];
+
+    for (const [description, referrer] of offSiteReferrers) {
+      it(`does not redirect to referrer param on success: ${description}`, async function () {
+        membersService.ssr.exchangeTokenForSession.resolves({});
+
+        await request(app)
+          .get('/members')
+          .query({ token: 'test', action: 'signin', r: referrer })
+          .expect(302)
+          .expect('Location', '/blah/?action=signin&success=true');
+      });
+
+      it(`does not redirect to referrer param on failure: ${description}`, async function () {
+        membersService.ssr.exchangeTokenForSession.rejects();
+
+        await request(app)
+          .get('/members')
+          .query({ token: 'test', action: 'signin', r: referrer })
+          .expect(302)
+          .expect('Location', '/blah/?action=signin&success=false');
+      });
+    }
   });
 
   describe('updateMemberNewsletters', function () {

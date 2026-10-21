@@ -1,7 +1,5 @@
 import React from 'react';
-import { Navigate } from '@tryghost/admin-x-framework';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -109,9 +107,10 @@ const TriggerPicker: React.FC<{
 
 const NewAutomationLoading: React.FC = () => {
   return (
-    <div className="delayed-fade-in">
+    <Stack align="center" className="delayed-fade-in fixed inset-0" justify="center" role="status">
       <LoadingIndicator size="lg" />
-    </div>
+      <span className="sr-only">Loading automation</span>
+    </Stack>
   );
 };
 
@@ -175,10 +174,6 @@ const NewAutomationSession: React.FC<
 const NewAutomation: React.FC<NewAutomationProps> = ({ children }) => {
   const { allAutomations, stripeEnabled, isStripeReady, isLoading, isError, error } =
     useVisibleAutomations();
-  const enabled = useFeatureFlag('automationsPerTier');
-  if (!enabled) {
-    return <Navigate to="/automations" replace />;
-  }
   if (isError && !allAutomations) {
     throw error instanceof Error ? error : new Error('Failed to load automations');
   }

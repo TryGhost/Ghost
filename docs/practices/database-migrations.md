@@ -7,7 +7,6 @@ For example, a migration may:
 
 - Add a table.
 - Add a column to a table.
-- Add user permissions.
 - Manipulate existing data.
 
 > Migrations are dangerous and need to be treated with a great deal of care.
@@ -44,7 +43,7 @@ Always use this command rather than creating or naming the file manually. It
 compares the current package version with the latest published Ghost tag to
 avoid placing a migration in a version that has already shipped. CI repeats
 these version and placement checks with
-[`tools/scripts/check-migration-integrity.ts`](../../tools/scripts/check-migration-integrity.ts).
+[`tools/scripts/ci/check-migration-integrity.ts`](../../tools/scripts/ci/check-migration-integrity.ts).
 
 ### Writing the migration
 

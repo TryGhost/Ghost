@@ -273,7 +273,12 @@ describe('ExportRequestsService', function () {
         },
       },
       request: async () => {
-        throw new Error('Response code 500 (Internal Server Error)');
+        throw Object.assign(
+          new Error(
+            'Request failed with status code 500 (Internal Server Error): POST https://export-generator.example.com/secret-path?token=abc',
+          ),
+          { code: 'ERR_NON_2XX_3XX_RESPONSE', response: { statusCode: 500 } },
+        );
       },
     });
 
@@ -291,7 +296,7 @@ describe('ExportRequestsService', function () {
 
     assert.equal(
       errorMessage,
-      'Failed to request export generation from "https://export-generator.example.com": Response code 500 (Internal Server Error)',
+      'Failed to request export generation from "https://export-generator.example.com": HTTP 500',
     );
   });
 });

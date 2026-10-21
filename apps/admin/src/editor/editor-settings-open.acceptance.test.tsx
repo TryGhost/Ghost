@@ -26,10 +26,6 @@ function fakeDraft(overrides: Parameters<typeof fakeEditorPost>[0] = {}) {
   return fakeEditorPost({ tags: [], meta_title: null, ...overrides });
 }
 
-function editorOptions({ flag = true }: { flag?: boolean } = {}) {
-  return { ...withoutAutosave(), labs: { admin7EditorImprovements: flag } };
-}
-
 /** Leaves the editor for another screen and opens the post again. */
 async function reopenEditor() {
   window.location.hash = '#/restore';
@@ -61,10 +57,10 @@ afterEach(async () => {
   await page.viewport(WIDE_VIEWPORT.width, WIDE_VIEWPORT.height);
 });
 
-describe('Remembered settings panel (admin7EditorImprovements)', () => {
+describe('Remembered settings panel', () => {
   it('opens the editor with the panel as the writer last left it', async () => {
     fakeDraft();
-    await renderAdminApp(ROUTE, editorOptions());
+    await renderAdminApp(ROUTE, withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     await expect(editorScreen.settingsSidebar()).toHaveCount(0);
 
@@ -90,7 +86,7 @@ describe('Remembered settings panel (admin7EditorImprovements)', () => {
     fakeDraft();
     localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
     await page.viewport(900, 800);
-    await renderAdminApp(ROUTE, editorOptions());
+    await renderAdminApp(ROUTE, withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     await expect(editorScreen.settingsSidebar()).toHaveCount(0);
 
@@ -104,7 +100,7 @@ describe('Remembered settings panel (admin7EditorImprovements)', () => {
 
   it('opens and closes the panel with Cmd-., leaving the writer typing', async () => {
     fakeDraft();
-    await renderAdminApp(ROUTE, editorOptions());
+    await renderAdminApp(ROUTE, withoutAutosave());
     await editorScreen.titleInput().click();
 
     await pressSettingsShortcut();
@@ -125,30 +121,12 @@ describe('Remembered settings panel (admin7EditorImprovements)', () => {
       members: [],
       meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
     });
-    await renderAdminApp(ROUTE, editorOptions());
+    await renderAdminApp(ROUTE, withoutAutosave());
     await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     await editorScreen.publishButton().click();
 
     await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
     expect(stored()).toBeNull();
-  });
-
-  it('ignores and keeps the remembered state with the flag off', async () => {
-    fakeDraft();
-    localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
-    await renderAdminApp(ROUTE, editorOptions({ flag: false }));
-    await expect.element(editorScreen.body()).toBeVisible();
-    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
-
-    await pressSettingsShortcut();
-    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
-
-    await toggleSettings();
-    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-    await toggleSettings();
-    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
-
-    expect(stored()).toBe('open');
   });
 });

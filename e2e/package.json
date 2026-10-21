@@ -35,6 +35,7 @@
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",

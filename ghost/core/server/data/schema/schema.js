@@ -1560,6 +1560,7 @@ module.exports = {
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
     shipping: { type: 'text', maxlength: 65535, nullable: true },
+    phone: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
@@ -1572,7 +1573,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['shipping']] },
+      validations: { isIn: [['shipping', 'phone']] },
     },
     product_id: {
       type: 'string',
@@ -2159,7 +2160,7 @@ module.exports = {
       defaultTo: 'inactive',
       validations: { isIn: [['active', 'inactive', 'archived']] },
     },
-    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    name: { type: 'string', maxlength: 191, nullable: false },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
     trigger_tier_scope: {

@@ -28,7 +28,6 @@ import {
   serpDescription,
   serpTitle,
 } from './meta-data-fields';
-import { SettingsSubview } from './settings-subview';
 import { useSettingsField } from './use-settings-field';
 
 function Countdown({ id, value, recommended }: { id: string; value: string; recommended: number }) {
@@ -84,7 +83,7 @@ function SearchPreview({
   );
 }
 
-export interface MetaDataSectionProps {
+export interface MetaDataFieldsProps {
   session: EditorSettingsPort;
   siteUrl: string;
 }
@@ -93,22 +92,7 @@ export interface MetaDataSectionProps {
  * The post's search-engine metadata: a meta title and description that stand in
  * for the post's own, and the result they produce.
  */
-export function MetaDataSection(props: MetaDataSectionProps) {
-  return (
-    <SettingsSubview
-      closeLabel="Close meta data panel"
-      icon={<LucideIcon.Search />}
-      id="meta-data"
-      label="Meta data"
-      title="Meta data"
-    >
-      <MetaDataFields {...props} />
-    </SettingsSubview>
-  );
-}
-
-/** The search-engine fields and preview, without the pane around them. */
-export function MetaDataFields({ session, siteUrl }: MetaDataSectionProps) {
+export function MetaDataFields({ session, siteUrl }: MetaDataFieldsProps) {
   const titleHintId = useId();
   const descriptionHintId = useId();
 

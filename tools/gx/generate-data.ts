@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { z } from 'zod';
-// @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
 
 const logging = prettyCli.ui.log;

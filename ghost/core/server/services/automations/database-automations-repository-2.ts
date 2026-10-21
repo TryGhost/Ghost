@@ -29,6 +29,13 @@ const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
   paid: 'all_paid',
 } as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
 
+const selectExists = async (connection: Connection, query: Knex.QueryBuilder): Promise<boolean> => {
+  const row = await connection
+    .select<{ exists: boolean | number | string }>(connection.raw('exists ? as `exists`', [query]))
+    .first();
+  return Boolean(Number(row?.exists));
+};
+
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
  * for details on what should (and should not) be in here.
@@ -99,14 +106,16 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const [{ hasEntered }] = await connection.select<{ hasEntered: number }[]>(
-        connection.raw('EXISTS ? AS hasEntered', [
-          connection('automation_runs')
-            .select('id')
-            .where({ automation_id: automationId, member_id: memberId }),
-        ]),
-      );
-      return Boolean(hasEntered);
+      const query = connection('automation_runs')
+        .select(connection.raw('1'))
+        .where({ automation_id: automationId, member_id: memberId });
+      return await selectExists(connection, query);
+    },
+
+    async insertActions(connection, toInsert) {
+      if (toInsert.length > 0) {
+        await connection('automation_actions').insert(toInsert);
+      }
     },
 
     async insertRunSteps(connection, toInsert) {
@@ -132,6 +141,41 @@ export const createDatabaseAutomationsRepository2 = ({
           })),
         );
       }
+    },
+
+    async isAutomationActiveForRun(connection, automationRunId) {
+      const query = connection('automation_runs as run')
+        .select(connection.raw('1'))
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
+    },
+
+    async isAutomationActiveForRunStep(connection, runStepId) {
+      const query = connection('automation_run_steps as step')
+        .select(connection.raw('1'))
+        .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('step.id', runStepId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
+    },
+
+    async loadEdgeRows(connection, automationId) {
+      return await connection('automation_action_edges as e')
+        .select('e.source_action_id', 'e.target_action_id')
+        .innerJoin('automation_actions as source_action', (join) => {
+          join.on('source_action.id', 'e.source_action_id').onNull('source_action.deleted_at');
+        })
+        .innerJoin('automation_actions as target_action', (join) => {
+          join
+            .on('target_action.id', 'e.target_action_id')
+            .onNull('target_action.deleted_at')
+            .on('target_action.automation_id', 'source_action.automation_id');
+        })
+        .where('source_action.automation_id', automationId)
+        .orderBy(['e.source_action_id', 'e.target_action_id']);
     },
 
     async lockMember(connection, memberId) {

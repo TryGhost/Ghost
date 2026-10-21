@@ -7,8 +7,8 @@ import type { EditorFontControl } from '@/editor/use-editor-font';
 import { SettingsDisclosureRow } from './settings-navigation-row';
 
 /**
- * The font the writer reads the post in while editing (admin7EditorImprovements):
- * a row that shows the choice beneath it rather than opening a pane. It starts
+ * The font the writer reads the post in while editing: a row that shows the
+ * choice beneath it rather than opening a pane. It starts
  * collapsed whenever the section list is shown again.
  */
 export function EditorFontSection({ control }: { control: EditorFontControl }) {

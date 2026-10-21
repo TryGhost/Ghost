@@ -30,6 +30,8 @@ const messages = {
   },
   webmentionsBlock: 'Too many mention attempts',
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
+  upgradeBlock: 'Too many update requests. Try again in a minute.',
+  supportRequestBlock: 'Too many support requests. Please try again later.',
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -44,6 +46,9 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
+let spamUpgradeBlock = spam.upgrade_block || {};
+let spamUpgradeApiBlock = spam.upgrade_api_block || {};
+let spamSupportRequestBlock = spam.support_request_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -63,6 +68,9 @@ let sendVerificationCodeInstance;
 let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
+let upgradeBlockInstance;
+let upgradeApiBlockInstance;
+let supportRequestBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -242,6 +250,116 @@ const emailPreviewBlock = () => {
     );
 
   return emailPreviewBlockInstance;
+};
+
+const createUpgradeBlock = (name, settings, context, options = {}) => {
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('@tryghost/brute-knex');
+  const db = require('../../../../data/db');
+
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
+    });
+
+  const limiter = new ExpressBrute(
+    store,
+    extend(
+      {
+        attachResetToRequest: false,
+        failCallback(req, res, next, nextValidRequestDate) {
+          res.set(
+            'Retry-After',
+            String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
+          );
+
+          return next(
+            new errors.TooManyRequestsError({
+              message: messages.upgradeBlock,
+              context,
+              help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
+            }),
+          );
+        },
+        handleStoreError: handleStoreError,
+      },
+      pick(settings, spamConfigKeys),
+      options,
+    ),
+  );
+
+  // ExpressBrute otherwise namespaces keys by construction order, which can
+  // differ across Ghost instances and reset the shared database-backed budget.
+  limiter.name = name;
+
+  return limiter;
+};
+
+const upgradeBlock = () => {
+  upgradeBlockInstance =
+    upgradeBlockInstance ||
+    createUpgradeBlock(
+      'upgrade_requests',
+      spamUpgradeBlock,
+      'The staff user budget for update POST attempts has been exhausted.',
+    );
+
+  return upgradeBlockInstance;
+};
+
+const upgradeApiBlock = () => {
+  upgradeApiBlockInstance =
+    upgradeApiBlockInstance ||
+    createUpgradeBlock(
+      'upgrade_api',
+      spamUpgradeApiBlock,
+      'The shared IP budget for update API requests has been exhausted.',
+      {
+        // Continuous polling must not extend the counting window indefinitely.
+        refreshTimeoutOnRequest: false,
+      },
+    );
+
+  return upgradeApiBlockInstance;
+};
+
+const supportRequestBlock = () => {
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('@tryghost/brute-knex');
+  const db = require('../../../../data/db');
+
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
+    });
+
+  supportRequestBlockInstance =
+    supportRequestBlockInstance ||
+    new ExpressBrute(
+      store,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.supportRequestBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+        },
+        pick(spamSupportRequestBlock, spamConfigKeys),
+      ),
+    );
+
+  return supportRequestBlockInstance;
 };
 
 const membersAuth = () => {
@@ -713,6 +831,8 @@ const contentApiKey = () => {
 };
 
 module.exports = {
+  upgradeBlock,
+  upgradeApiBlock,
   globalBlock: globalBlock,
   globalReset: globalReset,
   userLogin: userLogin,
@@ -729,7 +849,10 @@ module.exports = {
   contentApiKey: contentApiKey,
   webmentionsBlock: webmentionsBlock,
   emailPreviewBlock: emailPreviewBlock,
+  supportRequestBlock: supportRequestBlock,
   reset: () => {
+    upgradeBlockInstance = undefined;
+    upgradeApiBlockInstance = undefined;
     store = undefined;
     memoryStore = undefined;
     privateBlogInstance = undefined;
@@ -746,8 +869,11 @@ module.exports = {
     contentApiKeyInstance = undefined;
     otcVerificationEnumerationInstance = undefined;
     otcVerificationInstance = undefined;
+    supportRequestBlockInstance = undefined;
 
     spam = config.get('spam') || {};
+    spamUpgradeBlock = spam.upgrade_block || {};
+    spamUpgradeApiBlock = spam.upgrade_api_block || {};
     spamPrivateBlock = spam.private_block || {};
     spamGlobalBlock = spam.global_block || {};
     spamGlobalReset = spam.global_reset || {};
@@ -761,5 +887,6 @@ module.exports = {
     spamContentApiKey = spam.content_api_key || {};
     spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
     spamOtcVerification = spam.otc_verification || {};
+    spamSupportRequestBlock = spam.support_request_block || {};
   },
 };

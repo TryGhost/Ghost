@@ -126,6 +126,58 @@ describe('Stripe Checkout Preview Admin API', function () {
     });
   });
 
+  describe('with an unsaved phone number', function () {
+    beforeEach(function () {
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('members_metafields').del();
+    });
+
+    function previewPhone(phone?: Record<string, unknown>) {
+      return preview({
+        tier_id: paidTierId,
+        design: { customize: false },
+        ...(phone ? { phone } : {}),
+      });
+    }
+
+    const askedPhone = () => stripeMocker.checkoutSessions.at(-1).phone_number_collection;
+
+    it('asks for a phone number as the settings being edited say', async function () {
+      await previewPhone({ collect: true });
+      assert.deepEqual(askedPhone(), { enabled: true });
+
+      await previewPhone({ collect: true, tier_ids: [freeTierId] });
+      assert.equal(askedPhone(), undefined);
+
+      await previewPhone({ collect: false });
+      assert.equal(askedPhone(), undefined);
+    });
+
+    it('asks as the saved settings say when the preview leaves it out', async function () {
+      mockManager.mockLabsEnabled('membersCustomFields');
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Contact phone', type: 'short_text' }] })
+        .expectStatus(201);
+      await agent
+        .put('stripe/checkout/config/')
+        .body({
+          checkout_config: [{ phone: { collect: true, custom_field_key: 'contact_phone' } }],
+        })
+        .expectStatus(200);
+
+      await previewPhone();
+      assert.deepEqual(askedPhone(), { enabled: true });
+
+      await previewPhone({ collect: false });
+      assert.equal(askedPhone(), undefined);
+    });
+  });
+
   it('refuses a free tier, an unknown tier and a malformed tier id', async function () {
     for (const tierId of [freeTierId, '0123456789abcdef01234567', 'not-a-tier']) {
       const { body } = await preview({ tier_id: tierId, design: { customize: false } }, 422);

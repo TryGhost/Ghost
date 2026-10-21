@@ -600,8 +600,7 @@ module.exports = class RouterController {
       options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
 
       // Existing paid members must manage their subscription instead of creating another.
-      // Other members must prove ownership of the provided email before checking out.
-      const restrictCheckout = member.get('status') === 'paid' || !options.isAuthenticated;
+      const restrictCheckout = member.get('status') === 'paid';
 
       if (restrictCheckout) {
         if (!options.isAuthenticated && options.email) {

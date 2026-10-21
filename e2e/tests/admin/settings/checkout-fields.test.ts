@@ -27,12 +27,20 @@ async function paidTier(page: Page, stripe: StripeTestService, name: string): Pr
 }
 
 /** What Ghost asked Stripe to collect on the checkout a member was most recently sent to. */
-function latestShippingRequest(stripe: StripeTestService) {
+function latestCollectionRequest(stripe: StripeTestService) {
   const session = stripe.getCheckoutSessions().at(-1);
   if (!session) {
     throw new Error('No checkout session was created');
   }
-  return session.request.shipping_address_collection;
+  return session.request;
+}
+
+function latestShippingRequest(stripe: StripeTestService) {
+  return latestCollectionRequest(stripe).shipping_address_collection;
+}
+
+function latestPhoneRequest(stripe: StripeTestService) {
+  return latestCollectionRequest(stripe).phone_number_collection;
 }
 
 test.describe('Ghost Admin - Checkout fields', () => {
@@ -95,7 +103,7 @@ test.describe('Ghost Admin - Checkout fields', () => {
       addressField: { create: 'Delivery address' },
       nameField: { create: 'Recipient' },
     });
-    await expect(checkout.previewShippingTag(shipped)).toBeVisible();
+    await expect(checkout.previewTierTag(shipped)).toBeVisible();
     await checkout.save();
     await checkout.close();
 
@@ -134,6 +142,70 @@ test.describe('Ghost Admin - Checkout fields', () => {
     await expect(checkout.shippingSwitch).toBeChecked();
     await expect(checkout.addressFieldPicker).toHaveText('Delivery address');
     await expect(checkout.nameFieldPicker).toHaveText('Recipient');
+  });
+
+  test('phone number - a member gives one at checkout, and it lands on their record', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Print Edition');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectPhone({ field: { create: 'Courier phone' } });
+    await expect(checkout.previewPhone).toBeVisible();
+    await checkout.save();
+    await checkout.close();
+
+    const { name } = await startPaidSignupViaPortal(page, { tierName });
+    expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
+
+    await stripe!.completeLatestSubscriptionCheckout({
+      name,
+      collected: { phone: '+442079460000' },
+    });
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await membersPage.getMemberLinkByName(name).click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Courier phone')).toHaveAccessibleName(
+      'Edit Courier phone: +442079460000',
+    );
+  });
+
+  test('phone number on specific tiers - only their checkouts ask for one', async ({
+    page,
+    stripe,
+  }) => {
+    const shipped = await paidTier(page, stripe!, 'Print Edition');
+    const digital = await paidTier(page, stripe!, 'Digital');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectPhone({ tiers: [shipped], field: { create: 'Courier phone' } });
+    await expect(checkout.previewTierTag(shipped)).toBeVisible();
+    await checkout.save();
+    await checkout.close();
+
+    await startPaidSignupViaPortal(page, { tierName: digital });
+    expect(latestPhoneRequest(stripe!)).toBeUndefined();
+
+    await startPaidSignupViaPortal(page, { tierName: shipped });
+    expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
+  });
+
+  test('preview in Stripe - asks for a phone number as the unsaved settings say', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Print Edition');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.phoneSwitch.setChecked(true);
+    const tab = await checkout.previewInStripe(tierName);
+    await tab.close();
+
+    expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
+    expect(latestShippingRequest(stripe!)).toBeUndefined();
   });
 
   test('incomplete - saving says which fields are missing, and saves nothing', async ({

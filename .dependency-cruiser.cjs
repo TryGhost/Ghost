@@ -3,7 +3,7 @@
 const { readFileSync } = require('node:fs');
 const path = require('node:path');
 const yaml = require('js-yaml');
-const { sourceExclusions } = require('./tools/scripts/lib/service-dependency-resolver.mjs');
+const { sourceExclusions } = require('./tools/scripts/ci/service-dependency-resolver.mjs');
 
 // Keep service policy here. The audit applies it to every service; normal lint
 // applies it only to entries marked migrated in the inventory.
@@ -26,9 +26,11 @@ const serviceImplementations = {
 const serviceDependencyAllowlist = [
   '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
   '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
+  '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
   '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
+  '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
@@ -317,7 +319,7 @@ module.exports = {
     },
     // Use the CLI's supported resolver hook to inspect authored TypeScript,
     // even when build:tsc has emitted adjacent JavaScript.
-    webpackConfig: { fileName: './tools/scripts/lib/service-dependency-resolver.mjs' },
+    webpackConfig: { fileName: './tools/scripts/ci/service-dependency-resolver.mjs' },
     // Keep incoming edges to built packages visible without scanning their output.
     doNotFollow: {
       path: auditServices

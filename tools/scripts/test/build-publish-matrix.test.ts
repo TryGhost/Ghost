@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { buildMatrix, cdnPathsFor } from '../build-publish-matrix.ts';
+import { buildMatrix, cdnPathsFor } from '../release/build-publish-matrix.ts';
 import { CDN_PACKAGES, CONTINUOUS_PACKAGES, normalizeManifest } from '../lib/publish-manifest.ts';
 
 const DEFAULTS: Record<string, Record<string, string>> = JSON.parse(

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { integrityOf } from '../compare-published.ts';
+import { integrityOf } from '../release/compare-published.ts';
 
 describe('integrityOf', () => {
   it('produces the SRI form npm records', () => {

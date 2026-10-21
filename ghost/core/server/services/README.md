@@ -125,33 +125,12 @@ The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
 
-To inspect the remaining work across **all** entries:
+### Migration reports
 
-```bash
-pnpm audit:services
-pnpm --silent audit:services:summary
-pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
-```
-
-The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
-all entries, including those absent from the inventory. It uses Dependency
-Cruiser's built-in terminal report, with Markdown and JSON also available.
-The audit returns success even when it finds violations; the normal lint
-command fails on violations in migrated services. Reports list source files and
-dependency targets, without custom inventory grouping. Legacy root `index.js`
-files are treated as wiring
-candidates; imports there do not prove readiness for migration.
-
-The optional summary requires `jq`. It groups `service-dependencies` findings
-by dependency and counts distinct importing implementation files, largest first.
-Multiple imports of the same target in one file count once. It does not include
-unresolved-import or own-root findings; use the detailed audit for those.
-
-Counts in the detailed report describe rule violations; one import can appear
-under more than one rule. Review whether each dependency needs injection, a
-library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
-by this static check and are not separately scanned. Unresolved imports,
-globals, runtime state and initialization behavior still need tests and review.
+Tools for inspecting progress of the active service migration are available
+under `pnpm gx services`. Start with `pnpm gx services report`; see the
+[gx guide](../../../../tools/gx/README.md#service-migration-reports) for lists,
+per-service details and dependency audits.
 
 ### Migration assessment
 
@@ -173,6 +152,56 @@ These are migration estimates, not proof that the kernel must change or permissi
 to redesign a service. Recheck the evidence before implementation. An assessment
 neither completes the contract audit nor establishes test coverage or passing tests.
 Migrated services cannot be classified as `not-applicable`.
+
+#### Dependency assessment
+
+Unmigrated entries also record `migration.dependencies`, separately from the
+earlier overall migration assessment above:
+
+- `complexity: straightforward` means dependencies are already explicit or can
+  move to root wiring through bounded constructor or factory changes. This can
+  still require several imports and caller updates.
+- `complexity: complex` means wiring depends on resolving a cycle, shared or
+  duplicated composition, ownership, or the timing of dependency access. The
+  `reason` names the concrete coupling; a large import count alone is insufficient.
+- `not-applicable` is only for confirmed non-services being relocated. An
+  unresolved ownership question does not qualify.
+- `preparation` lists proposed steps to make the dependency boundary explicit;
+  an empty list means no separate preparation was identified. These are not
+  implemented changes or permission to redesign the capability.
+- `sources` lists evidence relative to `ghost`. `reviewedAt` identifies the
+  source revision inspected for this assessment independently of the overall
+  assessment and `auditedAt`.
+
+Use the full dependency audit and inspect source, root wiring and consumers.
+The report excludes imports in legacy roots and cannot establish whether a
+captured dependency is ready or a deferred lookup must stay deferred. Keep
+live settings reads and operation-local state intact when introducing injection.
+
+A newer complex dependency assessment supersedes an older straightforward
+overall estimate for planning: that service needs preparation before a small
+initializer migration. A straightforward dependency assessment does not establish
+an easy lifecycle migration, sufficient test coverage or passing tests. Existing
+`blockers` and contract evidence still apply. Preserve this assessment as historical evidence
+when marking a service migrated; recheck it against current source before use.
+Do not store report totals in the inventory or infer kernel requirements from
+violation counts. Shared primitives need a demonstrated application-independent
+contract; feature-specific helpers stay with their owners.
+
+`disposition` records the intended home of the current directory entry:
+`retain` keeps it here, `relocate` plans a move or split between other owners,
+and `review` leaves ownership undecided. It does not record completed work.
+A relocated capability can still be a configured runtime service; relocation
+does not make its initialization assessment `not-applicable`. Keep the entry
+until the directory actually leaves, and preserve its dependency, readiness
+and lifetime contracts at the destination. Use `notes` to describe the intended
+split and distinguish it from an earlier in-place migration assessment.
+
+Base disposition on the capability's responsibilities and intended owner. Per-call
+construction, no initializer, a single consumer, or use of another service does
+not by itself justify relocation. A feature-owned target list or an extractable
+helper also does not settle ownership of the whole root. If the owner is
+undecided, use `review` and keep initialization and dependency work applicable.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;

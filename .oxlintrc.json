@@ -172,7 +172,13 @@
         "tools/gx/shift-dates.ts",
         "tools/gx/benchmark-recipient-preparation.ts",
         "tools/gx/run-ghost-command.ts",
+        "tools/gx/dev-*.ts",
+        "tools/gx/lib/**/*.ts",
+        "tools/gx/test/dev*.test.ts",
         "tools/scripts/*.ts",
+        "tools/scripts/ci/**/*.ts",
+        "tools/scripts/build/**/*.ts",
+        "tools/scripts/release/**/*.ts",
         "tools/scripts/lib/**/*.ts",
         "tools/scripts/test/**/*.test.ts"
       ],
@@ -197,8 +203,13 @@
         "ghost/core/server/services/donations/index.ts",
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/indexnow-ping/index.ts",
+        "ghost/core/server/services/internal-keys/index.ts",
+        "ghost/core/server/services/invites/index.ts",
+        "ghost/core/server/services/posts-public/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
-        "ghost/core/server/services/slack-ping/index.ts"
+        "ghost/core/server/services/slack-ping/index.ts",
+        "ghost/core/server/services/support-requests/index.ts",
+        "ghost/core/server/services/upgrades/index.ts"
       ],
       "rules": {
         "ghost/service-root-shape": [

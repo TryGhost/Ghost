@@ -6,7 +6,16 @@ const cliRules = {
 };
 
 export default [
-  ...nodeLibConfig({ srcGlobs: ['cli.ts', 'run-ghost-command.ts'], extraSrcRules: cliRules }),
+  ...nodeLibConfig({
+    srcGlobs: ['dev-*.ts', 'lib/**/*.ts'],
+    testGlobs: ['test/dev*.test.ts'],
+    extraSrcRules: { ...cliRules, 'no-console': 'off' },
+    extraTestRules: { ...cliRules, 'no-console': 'off' },
+  }),
+  ...nodeLibConfig({
+    srcGlobs: ['cli.ts', 'run-ghost-command.ts', 'services.ts'],
+    extraSrcRules: cliRules,
+  }),
   ...nodeLibConfig({
     srcGlobs: ['create-package.ts'],
     extraSrcRules: cliRules,

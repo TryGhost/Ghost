@@ -3,7 +3,6 @@ import domainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
-import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
@@ -30,6 +29,11 @@ import type {
   AutomationsRepository,
   EditAutomationData,
 } from './automations-repository';
+import {
+  addAutomationDataSchema,
+  editAutomationDataSchema,
+  editAutomationStatusOnlySchema,
+} from './automations-schemas';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import {
@@ -40,10 +44,9 @@ import {
 } from './tinybird-automation-stats';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
+import { buildInvalidAutomationPayloadMessage } from './util/build-invalid-automation-payload-message';
 
-const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
-const MAX_WAIT_HOURS = 720; // 30 days
 
 const messages = {
   invalidRunOrder: 'Automation run order must be one of: created_at desc, created_at asc.',
@@ -66,89 +69,11 @@ const messages = {
   invalidAutomationEdge: 'Automation edges cannot connect an action to itself.',
   invalidAutomationGraphShape:
     'Automation graph must be a single linear path without branches or cycles.',
+  emptyActionsWhenActive: 'Active automations require at least one action.',
   emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
   emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
   invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
 };
-
-const objectIdSchema = z.string().refine((value) => ObjectId.isValid(value));
-
-const waitActionSchema = z.object({
-  id: objectIdSchema,
-  type: z.literal('wait'),
-  data: z.object({
-    wait_hours: z.number().int().positive().max(MAX_WAIT_HOURS),
-  }),
-});
-
-const sendEmailActionSchema = z.object({
-  id: objectIdSchema,
-  type: z.literal('send_email'),
-  data: z.object({
-    email_subject: z.string(),
-    email_lexical: z.string(),
-    email_design_setting_id: z.string().min(1),
-  }),
-});
-
-const edgeSchema = z.object({
-  source_action_id: objectIdSchema,
-  target_action_id: objectIdSchema,
-});
-
-const automationShape = {
-  name: z.string().trim().min(1).max(191),
-  description: z.string().trim().max(2000),
-  status: z.enum(['active', 'inactive', 'archived']),
-  actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-    .min(1)
-    .max(MAX_AUTOMATION_ACTIONS),
-  edges: z.array(edgeSchema),
-};
-
-const defaultTriggerShape = {
-  trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-  trigger_tier_ids: z.null().optional(),
-};
-const selectedPaidTriggerShape = {
-  trigger_tier_scope: z.literal('selected_paid'),
-  trigger_tier_ids: z
-    .array(objectIdSchema)
-    .min(1)
-    .transform((ids) => [...new Set(ids)]),
-};
-
-const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
-  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
-  z.strictObject({
-    ...automationShape,
-    ...selectedPaidTriggerShape,
-  }),
-]);
-
-export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
-
-const editAutomationDataSchema = z
-  .object({
-    ...automationShape,
-    name: automationShape.name.optional(),
-    description: automationShape.description.optional(),
-  })
-  .and(
-    z.discriminatedUnion('trigger_tier_scope', [
-      z.object(defaultTriggerShape),
-      z.object(selectedPaidTriggerShape),
-    ]),
-  );
-
-const editAutomationStatusOnlySchema = z.strictObject({
-  // We disallow status-only activations because they could allow activations to
-  // happen with an invalid graph (e.g,. an email without a subject). If we
-  // change this, we should validate the graph on status-only activations as
-  // well.
-  status: z.enum(['inactive', 'archived']),
-});
 
 const fakeWaitHoursMultiplier = parseFakeWaitHoursMultiplier(
   config.get('automations:fakeWaitHoursMultiplier'),
@@ -439,6 +364,9 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
 }
 
 async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {
+  if (data.status === 'active' && data.actions.length === 0) {
+    throwValidationError(messages.emptyActionsWhenActive, 'actions');
+  }
   validateGraph(data.actions, data.edges);
   await validateEmailLexical(data.actions);
   validateActiveEmailSteps(data.status, data.actions);
@@ -544,19 +472,6 @@ function isEmptyParsedLexical(parsed: {
   return Array.isArray(children[0].children) && children[0].children.length === 0;
 }
 
-function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[], message: string) {
-  if (!issues.length) {
-    return message;
-  }
-
-  const issueSummaries = issues.slice(0, 3).map((issue) => {
-    const path = issue.path.length ? issue.path.join('.') : 'payload';
-    return `${path}: ${issue.message}`;
-  });
-
-  return `${message} ${issueSummaries.join('; ')}.`;
-}
-
 function validateGraph(actions: Automation['actions'], edges: Automation['edges']) {
   const actionIdentities = new Set<string>();
 
@@ -610,8 +525,8 @@ function validateLinearGraph(
   outgoing: Map<string, string>,
   incoming: Map<string, string>,
 ) {
-  // A single-action automation is valid only when it has no edges.
-  if (actionIdentities.size === 1) {
+  // Automations with fewer than 2 actions should have no edges.
+  if (actionIdentities.size <= 1) {
     if (outgoing.size !== 0 || incoming.size !== 0) {
       throwValidationError(messages.invalidAutomationGraphShape, 'edges');
     }
