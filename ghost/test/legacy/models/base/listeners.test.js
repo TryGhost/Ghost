@@ -9,13 +9,19 @@ const testUtils = require('../../../utils');
 
 describe('Models: listeners', function () {
   const eventsToRemember = {};
-  const now = moment();
 
   const scope = {
     posts: [],
     publishedAtFutureMoment1: moment().add(2, 'days').startOf('hour'),
     publishedAtFutureMoment2: moment().add(2, 'hours').startOf('hour'),
     publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour'),
+  };
+
+  const hasPreservedLocalTime = (post, scheduledAt, oldTimezone, newTimezone) => {
+    const format = 'YYYY-MM-DD HH:mm:ss';
+    const expectedTime = scheduledAt.clone().tz(oldTimezone).format(format);
+    const actualTime = moment(post.get('published_at')).tz(newTimezone).format(format);
+    return actualTime === expectedTime;
   };
 
   beforeAll(testUtils.teardownDb);
@@ -85,7 +91,7 @@ describe('Models: listeners', function () {
          * From London +1
          * To Los Angeles -7
          *
-         * We expect +420 minutes if DST. (otherwise +480)
+         * The scheduled wall time must remain unchanged in Los Angeles.
          *
          * Image it's 11AM London time. 10AM UTC.
          * Imagine the post is scheduled for 8PM London time.
@@ -97,10 +103,6 @@ describe('Models: listeners', function () {
          * So the database UTC string must be 2017-04-19 03:00:00. (-7 hours === 8 o'clock in Los Angeles)
          */
 
-        // calculate the offset dynamically, because of DST
-        scope.timezoneOffset =
-          moment.tz.zone('America/Los_Angeles').utcOffset(now) -
-          moment.tz.zone('Europe/London').utcOffset(now);
         scope.newTimezone = 'America/Los_Angeles';
         scope.oldTimezone = 'Europe/London';
 
@@ -130,15 +132,24 @@ describe('Models: listeners', function () {
                   post1.get('status') === 'scheduled' &&
                   post2.get('status') === 'scheduled' &&
                   post3.get('status') === 'scheduled' &&
-                  moment(post1.get('published_at')).diff(
-                    scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post2.get('published_at')).diff(
-                    scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post3.get('published_at')).diff(
-                    scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0
+                  hasPreservedLocalTime(
+                    post1,
+                    scope.publishedAtFutureMoment1,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  ) &&
+                  hasPreservedLocalTime(
+                    post2,
+                    scope.publishedAtFutureMoment2,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  ) &&
+                  hasPreservedLocalTime(
+                    post3,
+                    scope.publishedAtFutureMoment3,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  )
                 ) {
                   return resolve();
                 }
@@ -158,7 +169,7 @@ describe('Models: listeners', function () {
          * From Baghdad +3
          * To UTC +/-0
          *
-         * We expect +180 minutes.
+         * The scheduled wall time must remain unchanged in UTC.
          *
          * Image it's 11AM Baghdad time.
          * Imagine the post is scheduled for 8PM Baghdad time.
@@ -169,8 +180,6 @@ describe('Models: listeners', function () {
          * The post should be still scheduled for 8PM UTC time.
          * So the database UTC string must be 2017-04-19 20:00:00.
          */
-        scope.timezoneOffset =
-          moment.tz.zone('Etc/UTC').utcOffset(now) - moment.tz.zone('Asia/Baghdad').utcOffset(now);
         scope.oldTimezone = 'Asia/Baghdad';
         scope.newTimezone = 'Etc/UTC';
 
@@ -200,15 +209,24 @@ describe('Models: listeners', function () {
                   post1.get('status') === 'scheduled' &&
                   post2.get('status') === 'scheduled' &&
                   post3.get('status') === 'scheduled' &&
-                  moment(post1.get('published_at')).diff(
-                    scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post2.get('published_at')).diff(
-                    scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post3.get('published_at')).diff(
-                    scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0
+                  hasPreservedLocalTime(
+                    post1,
+                    scope.publishedAtFutureMoment1,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  ) &&
+                  hasPreservedLocalTime(
+                    post2,
+                    scope.publishedAtFutureMoment2,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  ) &&
+                  hasPreservedLocalTime(
+                    post3,
+                    scope.publishedAtFutureMoment3,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  )
                 ) {
                   return resolve();
                 }
@@ -228,7 +246,7 @@ describe('Models: listeners', function () {
          * From Amsterdam +2
          * To Seoul +9
          *
-         * We expect -420 minutes.
+         * The scheduled wall time must remain unchanged in Seoul.
          *
          * Image it's 11AM Amsterdam time. 9AM UTC.
          * Imagine the post is scheduled for 8PM Amsterdam time.
@@ -239,9 +257,6 @@ describe('Models: listeners', function () {
          * The post should be still scheduled for 8PM UTC time.
          * So the database UTC string must be 2017-04-18 11:00:00.
          */
-        scope.timezoneOffset =
-          moment.tz.zone('Asia/Seoul').utcOffset(now) -
-          moment.tz.zone('Europe/Amsterdam').utcOffset(now);
         scope.oldTimezone = 'Europe/Amsterdam';
         scope.newTimezone = 'Asia/Seoul';
 
@@ -271,12 +286,18 @@ describe('Models: listeners', function () {
                   post1.get('status') === 'scheduled' &&
                   post2.get('status') === 'draft' &&
                   post3.get('status') === 'scheduled' &&
-                  moment(post1.get('published_at')).diff(
-                    scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post3.get('published_at')).diff(
-                    scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0
+                  hasPreservedLocalTime(
+                    post1,
+                    scope.publishedAtFutureMoment1,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  ) &&
+                  hasPreservedLocalTime(
+                    post3,
+                    scope.publishedAtFutureMoment3,
+                    scope.oldTimezone,
+                    scope.newTimezone,
+                  )
                 ) {
                   return resolve();
                 }
