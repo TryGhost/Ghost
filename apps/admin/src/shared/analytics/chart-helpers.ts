@@ -88,9 +88,22 @@ export const formatCustomRange = (range: CustomDateRange): string => {
 export const hasHourlyInterval = (response: unknown): boolean =>
   (response as { meta?: { interval?: string } } | undefined)?.meta?.interval === 'hour';
 
+// The timezone Analytics counts days in: the site's own (Settings → General),
+// so everyone on a team sees the same days, and they match the post dates
+// shown alongside. Set once Analytics has the site's settings
+// (useStatsTimezone); until then, the viewer's
+let statsTimezone: string | null = null;
+
+export const setStatsTimezone = (timezone: string | null) => {
+  statsTimezone = timezone;
+};
+
+export const getStatsTimezone = (): string =>
+  statsTimezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 // Return the start and end dates for a range selection
 export const getRangeDates = (range: StatsRange) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getStatsTimezone();
 
   if (isCustomRange(range)) {
     return {
@@ -123,7 +136,7 @@ export const getRangeDates = (range: StatsRange) => {
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getStatsTimezone();
   const publishedDate = moment(startDate).tz(timezone).startOf('day');
   const today = moment().tz(timezone).startOf('day');
   const diffInDays = today.diff(publishedDate, 'days') + 1;

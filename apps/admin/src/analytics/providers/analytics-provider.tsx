@@ -1,7 +1,8 @@
-import { type ReactNode, useState } from 'react';
+import { Fragment, type ReactNode, useState } from 'react';
 import { AnalyticsContext } from '@/analytics/providers/analytics-context';
 import { STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS } from '@/shared/analytics/constants';
 import { useAllTimeStart } from '@/analytics/hooks/use-all-time-start';
+import { useStatsTimezone } from '@/shared/analytics/use-stats-timezone';
 import { useHourlyHistorySupport } from '@/analytics/hooks/use-hourly-history-support';
 import { type StatsRange } from '@/shared/analytics/chart-helpers';
 
@@ -14,6 +15,8 @@ const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
   // Where All time starts depends on the site's history, so the views wait
   // for it rather than working their ranges out twice
+  // Days are counted in the site's timezone; the views below are keyed on it
+  const timezone = useStatsTimezone();
   const { isLoading: isAllTimeStartLoading } = useAllTimeStart();
   // Whether single days can be charted by the hour decides which ranges the
   // date menus offer, so it's known before they render
@@ -33,7 +36,7 @@ const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         supportsHourly,
       }}
     >
-      {children}
+      <Fragment key={timezone}>{children}</Fragment>
     </AnalyticsContext.Provider>
   );
 };

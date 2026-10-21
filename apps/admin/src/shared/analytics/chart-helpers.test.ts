@@ -12,6 +12,8 @@ import {
   getPeriodText,
   getRangeDates,
   getRangeForStartDate,
+  getStatsTimezone,
+  setStatsTimezone,
   isCustomRange,
   resolveEffectiveRangeDays,
   sanitizeChartData,
@@ -630,6 +632,26 @@ describe('chart-helpers', () => {
     it('charts a long history as months', () => {
       const data = createDateRange(3000, '2017-06-01', () => 5);
       expect(getAggregationStrategy(STATS_RANGES.allTime.value, data)).toBe('monthly');
+    });
+  });
+
+  describe('the site timezone', () => {
+    afterEach(() => {
+      setStatsTimezone(null);
+    });
+
+    it('counts days in the site timezone once it is known', () => {
+      setStatsTimezone('Asia/Tokyo');
+
+      const { startDate, timezone } = getRangeDates(STATS_RANGES.last7Days.value);
+
+      expect(getStatsTimezone()).toBe('Asia/Tokyo');
+      expect(timezone).toBe('Asia/Tokyo');
+      expect(startDate.tz()).toBe('Asia/Tokyo');
+    });
+
+    it('uses the viewer timezone until then', () => {
+      expect(getStatsTimezone()).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
   });
 });
