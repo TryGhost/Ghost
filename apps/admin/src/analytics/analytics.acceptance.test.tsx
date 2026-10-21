@@ -483,6 +483,39 @@ describe('Analytics newsletters', () => {
       .toHaveTextContent('Weekly Digest Issue #1');
   });
 
+  it('spans a lone subscriber count across All time, not centuries', async () => {
+    seedAnalyticsWorld();
+    fakeSiteHistoryStart({ firstMember: '2020-01-01T00:00:00.000Z' });
+    fakeNewsletters([
+      newsletter({
+        name: 'Weekly Digest',
+        status: 'active',
+        sort_order: 0,
+        count: { posts: 3, active_members: 543 },
+      }),
+    ]);
+    // Only one count comes back
+    const subscribersApi = fakeAdminStats.newsletterSubscribers({
+      total: 543,
+      values: [{ date: daysAgo(1), value: 543 }],
+    });
+    fakeAdminStats.newsletterBasic();
+    fakeAdminStats.newsletterClicks();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect
+      .poll(() =>
+        new URL(subscribersApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2020-01-01');
+    await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
+    // Counting 100000 days back put the axis in 1753
+    expect(analyticsScreen.newslettersCard().element().textContent).not.toMatch(/17\d\d/);
+  });
+
   it('shows the empty state on every newsletter card when none were sent', async () => {
     seedEmptyAnalyticsWorld();
     fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
