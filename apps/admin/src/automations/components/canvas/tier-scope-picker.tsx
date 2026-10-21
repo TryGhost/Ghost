@@ -10,7 +10,12 @@ const VIEWPORT_GUTTER_PX = 16;
 
 export type TierScopeTier = { id: string; name: string };
 
-type Row = { kind: 'standalone' } | { kind: 'tier'; tier: TierScopeTier };
+type Row = {
+  kind: 'standalone' | 'tier';
+  id: string;
+  label: string;
+  chosen: boolean;
+};
 
 export type TierScopePickerProps<TStandalone extends string> = {
   // The standalone option's value, or the chosen tier ids; empty is unanswered.
@@ -58,6 +63,17 @@ export function TierScopePicker<TStandalone extends string>({
   const chosenIds: readonly string[] = typeof value === 'string' ? [] : value;
   const chosenTiers = tiers.filter((tier) => chosenIds.includes(tier.id));
 
+  const term = search.trim().toLowerCase();
+  const updateSearch = useCallback(
+    (next: string) => {
+      setSearch(next);
+      if (next.trim().toLowerCase() !== term) {
+        setHighlighted(0);
+      }
+    },
+    [term],
+  );
+
   // Fixed so an overflow-hidden ancestor can't clip the list.
   const { refs, floatingStyles } = useFloating({
     open,
@@ -84,8 +100,8 @@ export function TierScopePicker<TStandalone extends string>({
 
   const closeAndDiscard = useCallback(() => {
     setOpen(false);
-    setSearch('');
-  }, []);
+    updateSearch('');
+  }, [updateSearch]);
 
   useEffect(() => {
     if (!open) {
@@ -125,21 +141,28 @@ export function TierScopePicker<TStandalone extends string>({
     return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [close, open]);
 
-  const term = search.trim().toLowerCase();
-
-  useEffect(() => {
-    setHighlighted(0);
-  }, [term]);
-
   const matches = (label: string) => term === '' || label.toLowerCase().includes(term);
-  const rows: Row[] = notice
-    ? []
-    : [
-        ...(matches(standalone.label) ? [{ kind: 'standalone' as const }] : []),
-        ...tiers
-          .filter((tier) => matches(tier.name))
-          .map((tier) => ({ kind: 'tier' as const, tier })),
-      ];
+  const rows: Row[] = [];
+  if (!notice) {
+    if (matches(standalone.label)) {
+      rows.push({
+        kind: 'standalone',
+        id: standalone.value,
+        label: standalone.label,
+        chosen: standaloneChosen,
+      });
+    }
+    for (const tier of tiers) {
+      if (matches(tier.name)) {
+        rows.push({
+          kind: 'tier',
+          id: tier.id,
+          label: tier.name,
+          chosen: chosenIds.includes(tier.id),
+        });
+      }
+    }
+  }
   const highlightedIndex = Math.min(highlighted, Math.max(rows.length - 1, 0));
 
   useEffect(() => {
@@ -147,9 +170,6 @@ export function TierScopePicker<TStandalone extends string>({
       ?.querySelector('[data-highlighted="true"]')
       ?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIndex, open]);
-
-  const isChosen = (row: Row) =>
-    row.kind === 'standalone' ? standaloneChosen : chosenIds.includes(row.tier.id);
 
   const inTierOrder = (ids: readonly string[]) =>
     tiers.map((tier) => tier.id).filter((id) => ids.includes(id));
@@ -161,12 +181,12 @@ export function TierScopePicker<TStandalone extends string>({
       if (!standaloneChosen) {
         close();
       }
-    } else if (chosenIds.includes(row.tier.id)) {
-      onChange(chosenIds.filter((id) => id !== row.tier.id));
+    } else if (chosenIds.includes(row.id)) {
+      onChange(chosenIds.filter((id) => id !== row.id));
     } else {
-      onChange(inTierOrder([...chosenIds, row.tier.id]));
+      onChange(inTierOrder([...chosenIds, row.id]));
     }
-    setSearch('');
+    updateSearch('');
   };
 
   const removeLast = () => {
@@ -219,12 +239,11 @@ export function TierScopePicker<TStandalone extends string>({
 
   const renderRow = (row: Row, index: number) => {
     const isHighlighted = index === highlightedIndex;
-    const chosen = isChosen(row);
-    const label = row.kind === 'standalone' ? standalone.label : row.tier.name;
+    const { id, label, chosen } = row;
 
     return (
       <div
-        key={row.kind === 'standalone' ? standalone.value : row.tier.id}
+        key={id}
         aria-selected={chosen}
         className={cn(
           'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-(length:--text-control) leading-5',
@@ -244,13 +263,16 @@ export function TierScopePicker<TStandalone extends string>({
     );
   };
 
-  // Rows keep their flat index so the keyboard walks across both sections.
-  const standaloneRows = rows.flatMap((row, index) =>
-    row.kind === 'standalone' ? [renderRow(row, index)] : [],
-  );
-  const tierRows = rows.flatMap((row, index) =>
-    row.kind === 'tier' ? [renderRow(row, index)] : [],
-  );
+  // Render each row once, keeping its flat keyboard index across both sections.
+  const standaloneRows: ReactNode[] = [];
+  const tierRows: ReactNode[] = [];
+  rows.forEach((row, index) => {
+    if (row.kind === 'standalone') {
+      standaloneRows.push(renderRow(row, index));
+    } else {
+      tierRows.push(renderRow(row, index));
+    }
+  });
 
   return (
     <div
@@ -313,7 +335,7 @@ export function TierScopePicker<TStandalone extends string>({
           role="combobox"
           value={search}
           onChange={(event) => {
-            setSearch(event.target.value);
+            updateSearch(event.target.value);
             setOpen(true);
           }}
           onKeyDown={handleKeyDown}
