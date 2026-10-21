@@ -113,10 +113,10 @@ object ID, 24 lowercase hexadecimal characters; a slug is one path segment.
 | `newsletters:read` | `GET /newsletters/`                                                                    |
 | `slugs:read`       | `GET /slugs/:type/:name/`, `GET /slugs/:type/:name/:id/`                               |
 
-An app can't ask Ghost to email a post, or put script on the site, which serves
-a post's content on its own origin. The one exception: publishing a post that a
-staff member already scheduled with a newsletter sends its email, as it would
-have at the scheduled time.
+An app can't ask Ghost to email a post, set a post's code injection or write
+mobiledoc. The one exception: publishing a post that a staff member already
+scheduled with a newsletter sends its email, as it would have at the scheduled
+time.
 
 - A write may carry only the query parameters its scope lists: `include`,
   `formats` and `save_revision` for posts and pages, and `include` for tags.
@@ -124,18 +124,14 @@ have at the scheduled time.
   included, however it's written.
 - `codeinjection_head` and `codeinjection_foot` are refused with any value, even
   `null`, on posts, pages and tags: leave them out of the body.
-- `mobiledoc` must be `null` or left out, and `feature_image_caption` can't hold
-  `<`.
-- `lexical` may hold only text: paragraphs, headings (`h1` to `h6`), lists,
-  quotes, asides, links to `http`, `https`, `mailto` or `tel` URLs, line breaks,
-  tabs and horizontal rules. Every card is refused, images included.
+- `mobiledoc` must be `null` or left out: it's deprecated and Ghost 7.0 removes
+  it. Write `lexical` instead.
 - The SDK and Admin set the body's content type themselves; an app can't set
   `content-type` or `content-encoding`.
 
 To edit a post, send `updated_at` and only the fields you change, never the
 object you read: it comes back with `codeinjection_head` and
-`codeinjection_foot` as `null`, which are refused even as `null`. Leave out
-`lexical` unless you're rewriting the content as text.
+`codeinjection_foot` as `null`, which are refused even as `null`.
 
 ```ts
 const { posts } = await (await ghost.fetch(`/posts/${id}/`)).json();
@@ -207,19 +203,19 @@ reorder or hide text, such as direction marks, are removed.
 
 Every rejection is a `GhostAppError`, whose `code` gives the reason:
 
-| `code`             | Means                                                                                                                                                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                       |
-| `not_connected`    | Admin did not start the app before the timeout.                                                                                                        |
-| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first, because the page loads the SDK more than once. Load a single copy for the whole page.    |
-| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                          |
-| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app or the page navigated away from the document. Every call fails after that. |
-| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                               |
-| `invalid_path`     | `fetch` was given a URL, a path that leaves the Admin API, or a path the Admin API only redirects, such as `/posts` without its trailing `/`.          |
-| `unsupported`      | This site's Ghost version predates the call. The message names the call.                                                                               |
-| `blocked`          | A request the allowlist doesn't allow, such as `GET /db/`, or a write that could send email or carry script (see Admin API access).                    |
-| `network_error`    | Admin could not reach its own API.                                                                                                                     |
-| `rejected`         | Admin refused for another reason; the message says why.                                                                                                |
+| `code`             | Means                                                                                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                           |
+| `not_connected`    | Admin did not start the app before the timeout.                                                                                                            |
+| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first, because the page loads the SDK more than once. Load a single copy for the whole page.        |
+| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                              |
+| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app or the page navigated away from the document. Every call fails after that.     |
+| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                                   |
+| `invalid_path`     | `fetch` was given a URL, a path that leaves the Admin API, or a path the Admin API only redirects, such as `/posts` without its trailing `/`.              |
+| `unsupported`      | This site's Ghost version predates the call. The message names the call.                                                                                   |
+| `blocked`          | A request the allowlist doesn't allow, such as `GET /db/`, or a write that could send email, set code injection or carry mobiledoc (see Admin API access). |
+| `network_error`    | Admin could not reach its own API.                                                                                                                         |
+| `rejected`         | Admin refused for another reason; the message says why.                                                                                                    |
 
 ## How it connects
 

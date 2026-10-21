@@ -1049,6 +1049,32 @@ describe('Managing apps', () => {
       expect(tagsApi.requests[0].headers['content-type']).toBe('application/json');
     });
 
+    it('sends a write with cards in its content as it is', async () => {
+      await fakeAppPage(installation());
+      const postsApi = fakeAdminEndpoint('POST', '/posts/', ({ body }) => body, { status: 201 });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      const post = {
+        title: 'Episode 1',
+        lexical: JSON.stringify({
+          root: {
+            type: 'root',
+            children: [{ type: 'html', html: '<iframe src="https://player.example/1"></iframe>' }],
+          },
+        }),
+        feature_image_caption: 'Art by <a href="https://example.com/">Jo</a>',
+      };
+      const result = await callAppFrame(APP_ORIGIN, 'fetch', {
+        path: '/posts/',
+        method: 'POST',
+        body: JSON.stringify({ posts: [post] }),
+      });
+
+      expect(answer(result).status).toBe(201);
+      expect(postsApi.requests[0].body).toEqual({ posts: [post] });
+    });
+
     // An app's request can be refused as unauthorized while the staff session still works.
     it('stays with the app when its request is unauthorized while the session works', async () => {
       await fakeAppPage(installation());
@@ -1101,16 +1127,9 @@ describe('Managing apps', () => {
         ),
       ).toBe("blocked: Apps can't use DELETE /posts/");
 
-      // A write that would put script on the site.
-      const lexical = (node: object) =>
-        JSON.stringify({ root: { type: 'root', children: [node] } });
       for (const [post, refused] of [
-        [
-          { lexical: lexical({ type: 'html', html: '<script></script>' }) },
-          'lexical with a "html" node',
-        ],
         [{ codeinjection_head: '<script></script>' }, 'codeinjection_head'],
-        [{ mobiledoc: '{"cards":[["html",{"html":"<script></script>"}]]}' }, 'mobiledoc'],
+        [{ mobiledoc: '{"version":"0.3.1","cards":[],"sections":[]}' }, 'mobiledoc'],
       ] as const) {
         expect(
           refusal(
