@@ -106,6 +106,7 @@ type AutomationSummaryRow = {
 };
 
 type AutomationRow = AutomationSummaryRow & {
+  trigger_type: 'membership_started';
   trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
@@ -385,6 +386,7 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
+          trigger_type: 'membership_started',
           trigger_tier_scope: data.trigger_tier_scope ?? null,
           created_at: now,
           updated_at: now,
@@ -948,6 +950,7 @@ async function ensureAutomation(
       name: defaults.name,
       description: defaults.description,
       slug: defaults.slug,
+      trigger_type: 'membership_started',
       trigger_tier_scope: defaults.trigger_tier_scope,
       created_at: now,
       updated_at: now,
@@ -1447,6 +1450,7 @@ async function loadAutomation(
       'name',
       'description',
       'status',
+      'trigger_type',
       'trigger_tier_scope',
       'created_at',
       'updated_at',
