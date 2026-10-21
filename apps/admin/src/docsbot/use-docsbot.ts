@@ -286,13 +286,48 @@ function unmountDocsBotWidget(): void {
   });
 }
 
+const BOT_MESSAGE_ATTEMPT_TIMEOUT_MS = 250;
+const BOT_MESSAGE_MAX_ATTEMPTS = 8;
+
+/**
+ * DocsBot only renders the chat panel, which handles `addBotMessage`, while
+ * the widget is open, and it may not have rendered yet when `open()` resolves.
+ * Without the panel the message is dropped and the promise never settles, so
+ * each attempt is given a short timeout and retried until the panel is ready.
+ */
+export async function addBotMessageWhenReady(message: string): Promise<boolean> {
+  for (let attempt = 0; attempt < BOT_MESSAGE_MAX_ATTEMPTS; attempt++) {
+    if (!window.DocsBotAI?.addBotMessage) {
+      return false;
+    }
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const result = await Promise.race([
+      window.DocsBotAI.addBotMessage(message),
+
+      new Promise<'timeout'>((resolve) => {
+        timer = setTimeout(() => resolve('timeout'), BOT_MESSAGE_ATTEMPT_TIMEOUT_MS);
+      }),
+    ]);
+
+    clearTimeout(timer);
+
+    if (result !== 'timeout') {
+      return result !== false;
+    }
+  }
+
+  return false;
+}
+
 interface DocsBot {
   isAvailable: boolean;
   mountWidget: () => void;
   unmountWidget: () => void;
   supportRequest: SupportRequestDraft | null;
   clearSupportRequest: () => void;
-  addBotMessage: (message: string) => Promise<void | false>;
+  addBotMessage: (message: string) => Promise<boolean>;
   openWidget: () => Promise<void>;
 }
 
@@ -347,7 +382,7 @@ export function useDocsBot(): DocsBot {
   }, []);
 
   const addBotMessage = useCallback((message: string) => {
-    return window.DocsBotAI?.addBotMessage?.(message) ?? Promise.resolve();
+    return addBotMessageWhenReady(message);
   }, []);
 
   const openWidget = useCallback(() => {
