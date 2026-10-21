@@ -29,7 +29,7 @@ const firstPublished = {
  * missing permission) just doesn't count. Returns isLoading until all have
  * settled, so ranges are worked out once, with the start known.
  */
-export const useAllTimeStart = (): { isLoading: boolean } => {
+export const useAllTimeStart = (timezone: string): { isLoading: boolean } => {
   const { statsConfig } = useAnalyticsData();
   const firstPost = useBrowsePosts({ ...quiet, searchParams: firstPublished });
   const firstPage = useBrowsePages({ ...quiet, searchParams: firstPublished });
@@ -58,12 +58,13 @@ export const useAllTimeStart = (): { isLoading: boolean } => {
       visit ? `${visit.replace(' ', 'T')}Z` : null,
     ]
       .filter((date): date is string => Boolean(date))
-      .map((date) => moment(date));
+      // The day each falls on in the site's timezone, the one ranges use
+      .map((date) => moment(date).tz(timezone));
     if (dates.length === 0) {
       return null;
     }
     return formatQueryDate(moment.min(dates));
-  }, [firstPost.data, firstPage.data, firstMember.data, firstVisit.data]);
+  }, [firstPost.data, firstPage.data, firstMember.data, firstVisit.data, timezone]);
 
   // Set before the views below work out their ranges
   if (!isLoading) {
