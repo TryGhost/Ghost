@@ -11,6 +11,10 @@ written as digits; explicit zero values are preserved. Invalid quantities and
 seeds fail before loading the database. CLI help, environment setup, logging and
 connection cleanup belong to each entrypoint.
 
+Empty lists mean no overrides, whether omitted or passed as an empty string.
+Empty comma-separated entries are ignored during normalization. Each non-empty
+entry is validated in full; an explicit colon must be followed by a count.
+
 ## How It Works
 
 Importers live in `importers/` and each own one table. An importer declares its

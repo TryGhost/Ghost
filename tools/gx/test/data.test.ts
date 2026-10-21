@@ -308,6 +308,30 @@ test('gx and the compiled installed entrypoint share defaults, options and zero 
   assert.equal(options.seed, 0);
 });
 
+test('both entrypoints preserve empty lists and ignore blank comma-separated entries', async () => {
+  const root = await fixture();
+  const installed = await installedFixture(root);
+  for (const args of [
+    ['--tables=', '--quantities='],
+    ['--tables=,,', '--quantities=,,'],
+    ['--tables=,members,,posts,', '--quantities=,posts:1,,members:2,'],
+  ]) {
+    const gx = run(root, ['generate', ...args]);
+    const bin = runInstalled(installed, args);
+    assert.equal(gx.status, 0, gx.stdout + gx.stderr);
+    assert.equal(bin.status, 0, bin.stdout + bin.stderr);
+    const expected =
+      args[0] === '--tables=,members,,posts,'
+        ? { tables: [{ name: 'members' }, { name: 'posts' }], quantities: { posts: 1, members: 2 } }
+        : { tables: [], quantities: {} };
+    for (const result of [gx, bin]) {
+      const options = generatedOptions(result.stdout);
+      assert.deepEqual(options.tables, expected.tables);
+      assert.deepEqual(options.quantities, expected.quantities);
+    }
+  }
+});
+
 test('both entrypoints reject invalid quantities and seeds before loading the database', async () => {
   const root = await fixture();
   const installed = await installedFixture(root);
