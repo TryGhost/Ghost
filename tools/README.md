@@ -9,14 +9,14 @@ in `ghost/scripts/`, and installed-release commands in `ghost/bin/`.
 Choose the owner by the job and execution environment. A CI caller or a developer
 running a script manually does not, by itself, decide ownership.
 
-| Job                                                                                                                       | Home                                         | How it runs                                              |
-| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------- |
-| Reusable lint, test, TypeScript and browser-build presets and rules                                                       | [configs/](configs/README.md)                | Imported by workspace or root configuration              |
-| Repository setup, validation, cross-workspace builds, CI reporting, versioning and releases                               | [scripts/](scripts/README.md)                | pnpm/Nx tasks, hooks and workflows                       |
-| An interactive contributor task: generating code, previewing email, working with development data or managing a dev stack | [gx/](gx/README.md)                          | `pnpm gx <command>`; existing shortcuts may remain       |
-| Build assets, package archives or export Core policy for the `ghost/` server workspace | [ghost/scripts/](../ghost/scripts/README.md) | Ghost build/archive targets and documented export commands |
-| A tool that must work against an installed Ghost release without contributor dependencies                                 | [ghost/bin/](../ghost/bin/README.md)         | Direct invocation in the installed tree                  |
-| Application or domain behavior used by Ghost itself                                                                       | Its owning app, package or Core subsystem    | Imported by the application; a CLI can call it           |
+| Job                                                                                                                       | Home                                         | How it runs                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| Reusable lint, test, TypeScript and browser-build presets and rules                                                       | [configs/](configs/README.md)                | Imported by workspace or root configuration                |
+| Repository setup, validation, cross-workspace builds, CI reporting, versioning and releases                               | [scripts/](scripts/README.md)                | pnpm/Nx tasks, hooks and workflows                         |
+| An interactive contributor task: generating code, previewing email, working with development data or managing a dev stack | [gx/](gx/README.md)                          | `pnpm gx <command>`; existing shortcuts may remain         |
+| Build assets, package archives or export Core policy for the `ghost/` server workspace                                    | [ghost/scripts/](../ghost/scripts/README.md) | Ghost build/archive targets and documented export commands |
+| A tool that must work against an installed Ghost release without contributor dependencies                                 | [ghost/bin/](../ghost/bin/README.md)         | Direct invocation in the installed tree                    |
+| Application or domain behavior used by Ghost itself                                                                       | Its owning app, package or Core subsystem    | Imported by the application; a CLI can call it             |
 
 `tools/configs` defines settings and rules imported by tools, such as ESLint or
 Vite. `ghost/scripts` produces assets, release archives or policy exports for the

@@ -54,9 +54,12 @@ reviews:
       - name: 'Tooling ownership'
         mode: 'error'
         instructions: |
-          Review tooling anywhere in the diff, including scripts/** and **/scripts/**,
-          even when the PR introduces the directory. Use tools/README.md and the
-          relevant folder README. Choose by purpose and execution environment:
+          Review tooling anywhere in the PR diff. Inspect the full changed-file
+          list for a directory segment named scripts at any depth, including hidden
+          parents such as apps/.internal/.other/scripts/tool.ts and new directories.
+          This is a repository-wide check, not scoped by path-instruction globs.
+          Use tools/README.md and the relevant folder README. Choose by purpose
+          and execution environment:
           - tools/configs: reusable lint, test, compiler and build presets/rules
             imported by development tools.
           - tools/scripts: repository setup, validation, cross-workspace builds and
@@ -93,12 +96,6 @@ reviews:
         from being correct. Treat nearby AGENTS.md files and mapped codebase
         documentation as authoritative; do not enforce proposals, plans, or
         historical guidance as current policy.
-    - path: '{**/scripts/**,.*/**/scripts/**}'
-      instructions: |
-        Apply the Tooling ownership check and tools/README.md at every directory
-        depth, including the first file in a new scripts directory. Allow local
-        build/test/config helpers and documented execution/isolation exceptions;
-        a scripts folder alone does not justify its placement.
     - path: '**/*.{ts,tsx,mts,cts}'
       instructions: |
         Review lens: "where does this data become trusted?"
