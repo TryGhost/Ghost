@@ -1823,6 +1823,9 @@ describe('Members API', function () {
         name: 'Comp Tier',
         slug: 'comp-tier-test',
         type: 'paid',
+        currency: 'usd',
+        monthly_price: 500,
+        yearly_price: 5000,
       });
 
       const compCustomerId = createStripeID('cust');
@@ -1956,6 +1959,9 @@ describe('Members API', function () {
         name: 'Comp Tier Cancel',
         slug: 'comp-tier-cancel-test',
         type: 'paid',
+        currency: 'usd',
+        monthly_price: 500,
+        yearly_price: 5000,
       });
 
       const compCustomerId = createStripeID('cust');
@@ -2302,6 +2308,9 @@ describe('Members API', function () {
         name: 'Comp Tier Sub Event',
         slug: 'comp-tier-sub-event',
         type: 'paid',
+        currency: 'usd',
+        monthly_price: 500,
+        yearly_price: 5000,
       });
 
       const paidCustomerId = createStripeID('cust');

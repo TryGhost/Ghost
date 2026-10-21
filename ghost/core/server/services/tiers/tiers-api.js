@@ -4,9 +4,9 @@ const Tier = require('./tier');
 
 /**
  * @typedef {object} ITierRepository
- * @prop {(id: ObjectID) => Promise<Tier>} getById
+ * @prop {(id: ObjectID, options?: {transacting?: import('knex').Knex.Transaction}) => Promise<Tier>} getById
  * @prop {(tier: Tier) => Promise<void>} save
- * @prop {(options?: {filter?: string}) => Promise<Tier[]>} getAll
+ * @prop {(options?: {filter?: object, transacting?: import('knex').Knex.Transaction}) => Promise<Tier[]>} getAll
  */
 
 /**
@@ -74,9 +74,9 @@ module.exports = class TiersAPI {
    *
    * @returns {Promise<Tier>}
    */
-  async read(idString) {
+  async read(idString, options = {}) {
     const id = ObjectID.createFromHexString(idString);
-    const tier = await this.#repository.getById(id);
+    const tier = await this.#repository.getById(id, options);
 
     return tier;
   }

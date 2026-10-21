@@ -3,6 +3,7 @@ const os = require('node:os');
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
@@ -315,6 +316,67 @@ describe('Members import', function () {
     assert.equal(res.body.meta.stats.imported, 0);
     assert.equal(res.body.meta.stats.invalid.length, 1);
     assert.match(res.body.meta.stats.invalid[0].error, /is not a valid tier/);
+  });
+
+  // Several tiers can share a name, so a row lands on the most recently created tier with
+  // exactly the name it gives: by id when two were created in the same second, and never on
+  // one whose name only differs in case.
+  it('imports a member onto the newest tier with exactly the name the row gives', async function () {
+    const tier = (id, name, createdAt) => ({
+      id,
+      name,
+      slug: id,
+      type: 'paid',
+      active: true,
+      visibility: 'public',
+      currency: 'usd',
+      monthly_price: 900,
+      yearly_price: 9000,
+      created_at: createdAt,
+    });
+    const [older, newer, otherCase] = [new ObjectId(), new ObjectId(), new ObjectId()].map((id) =>
+      id.toHexString(),
+    );
+    const createdAt = new Date('2026-01-01T00:00:00.000Z');
+    await models.Base.knex('products').insert([
+      tier(older, 'Import Tier', createdAt),
+      tier(newer, 'Import Tier', createdAt),
+      tier(otherCase, 'import tier', new Date('2026-01-02T00:00:00.000Z')),
+    ]);
+    const email = 'member+named-tier@example.com';
+    const csvPath = path.join(os.tmpdir(), `members-named-tier-${process.pid}.csv`);
+    fs.writeFileSync(csvPath, `email,complimentary_plan,import_tier\n${email},true,Import Tier\n`);
+
+    try {
+      const res = await request
+        .post(localUtils.API.getApiQuery('members/upload/'))
+        .attach('membersfile', csvPath)
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/);
+
+      assert.equal(res.status, 201);
+      assert.equal(res.body.meta.stats.imported, 1);
+      const member = await findMember(email);
+      assertExists(member);
+      const { body } = await request
+        .get(localUtils.API.getApiQuery(`members/${member.id}/?include=tiers`))
+        .set('Origin', config.get('url'))
+        .expect(200);
+      assert.deepEqual(
+        body.members[0].tiers.map(({ id }) => id),
+        [newer],
+      );
+      await request
+        .del(localUtils.API.getApiQuery(`members/${member.id}/`))
+        .set('Origin', config.get('url'))
+        .expect(204);
+    } finally {
+      fs.unlinkSync(csvPath);
+      await models.Base.knex('members_product_events')
+        .whereIn('product_id', [older, newer, otherCase])
+        .del();
+      await models.Base.knex('products').whereIn('id', [older, newer, otherCase]).del();
+    }
   });
 
   // No file at all is a request error, not an import.

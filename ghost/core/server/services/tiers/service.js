@@ -22,10 +22,6 @@ class TiersServiceWrapper {
       },
     };
 
-    await repository.init();
-
-    this.repository = repository;
-
     this.api = new TiersAPI({
       repository,
       slugService,
