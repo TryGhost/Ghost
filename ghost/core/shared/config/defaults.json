@@ -69,6 +69,10 @@
       "InMemoryJobsBackend": {
         "concurrency": 3
       }
+    },
+    "email": {
+      "active": "Mailgun",
+      "Mailgun": {}
     }
   },
   "storage": {
