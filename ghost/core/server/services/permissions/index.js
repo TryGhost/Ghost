@@ -1,24 +1,15 @@
 // canThis(someUser).edit.posts([id]|[[ids]])
 // canThis(someUser).edit.post(somePost|somePostId)
 
-const models = require('../../models');
-
 const actionsMap = require('./actions-map-cache');
+const rolePermissions = require('./role-permissions');
 
-const init = function init(options) {
-  options = options || {};
-
-  // Load all the permissions
-  return models.Permission.findAll(options).then(function (permissionsCollection) {
-    const permissions = permissionsCollection.models.map(function (perm) {
-      return {
-        action_type: perm.get('action_type'),
-        object_type: perm.get('object_type'),
-      };
-    });
-
-    return actionsMap.init(permissions);
-  });
+/**
+ * Builds the actions map from the permissions defined in code. It does no I/O
+ * but still returns a promise, which boot awaits alongside other services.
+ */
+const init = async function init() {
+  return actionsMap.init(rolePermissions.all());
 };
 
 module.exports = {

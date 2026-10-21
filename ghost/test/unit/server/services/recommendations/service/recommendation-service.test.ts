@@ -40,14 +40,8 @@ describe('RecommendationService', function () {
       clickEventRepository: new InMemoryClickEventRepository<ClickEvent>(),
       subscribeEventRepository: new InMemoryClickEventRepository<SubscribeEvent>(),
       wellknownService: {
-        getPath() {
-          return '';
-        },
         getURL() {
           return new URL('http://localhost/.well-known/recommendations.json');
-        },
-        set() {
-          return Promise.resolve();
         },
       } as unknown as WellknownService,
       mentionSendingService: {
@@ -77,12 +71,6 @@ describe('RecommendationService', function () {
   });
 
   describe('init', function () {
-    it('should update wellknown', async function () {
-      const updateWellknown = sinon.stub(service.wellknownService, 'set').resolves();
-      await service.init();
-      sinon.assert.calledOnce(updateWellknown);
-    });
-
     it('should update recommendations on boot', async function () {
       enabled = 'true';
       const recommendation = Recommendation.create({

@@ -1,5 +1,6 @@
 import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
 import type { InternalKeys } from '../internal-keys';
+import type { CheckoutService } from '../stripe-checkout-config';
 import { GiftBookshelfRepository } from './gift-bookshelf-repository';
 import { GiftDeliveryBookshelfRepository } from './gift-delivery-bookshelf-repository';
 import { GiftDeliveryService } from './gift-delivery-service';
@@ -13,6 +14,8 @@ export interface GiftServiceInitOptions {
   apiUrl: string;
   schedulerAdapter: SchedulerAdapter & { rescheduleOnBoot?: boolean };
   internalKeys: InternalKeys;
+  /** Decides the checkout a gift opens. */
+  checkouts: Pick<CheckoutService, 'read'>;
 }
 
 // Constructed by init() at boot, once the database and scheduling adapter are ready.
@@ -71,6 +74,7 @@ export function init(options: GiftServiceInitOptions): void {
   const checkoutAdapter = new GiftCheckoutAdapter({
     StripeCustomerModel,
     getStripeApi: () => require('../stripe').api,
+    checkouts: options.checkouts,
   });
 
   const giftEmailService = new GiftEmailService({

@@ -290,7 +290,7 @@ module.exports = class MemberRepository {
 
     const trigger = async () => {
       await this._automationsApi.trigger({
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId,
         memberEmail,
         memberStatus,

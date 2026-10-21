@@ -184,10 +184,20 @@ async function initCore({ ghostServer, config }) {
   await exportRequests.init();
   debug('End: Export Requests Service');
 
+  debug('Begin: Invites Service');
+  const invites = require('./server/services/invites').default;
+  await invites.init();
+  debug('End: Invites Service');
+
+  debug('Begin: Support Requests Service');
+  const supportRequests = require('./server/services/support-requests').default;
+  await supportRequests.init();
+  debug('End: Support Requests Service');
+
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
-  const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
-  stripeCheckoutConfigService.init();
+  const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;
+  await stripeCheckoutConfig.init();
   debug('End: Stripe Checkout Config Service');
 
   if (ghostServer) {
@@ -366,6 +376,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const tiers = require('./server/services/tiers');
   const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
+  const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
@@ -404,6 +415,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const urlUtils = require('./shared/url-utils').default;
   const settingsCache = require('./shared/settings-cache');
   const internalKeys = require('./server/services/internal-keys').default.service;
+  const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
@@ -415,6 +427,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     apiUrl,
     schedulerAdapter,
     internalKeys,
+    checkouts,
   });
   const giftDeliveryService = giftService.deliveryService;
   assert(giftDeliveryService, 'Gift delivery service should be initialized');
@@ -436,6 +449,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     membersEvents.init(),
     permissions.init(),
     indexnow.init(),
+    upgrades.init(),
     slack.init(),
     audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),

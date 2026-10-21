@@ -96,7 +96,7 @@ describe('Authentication API', function () {
         expires: moment().add(1, 'days').valueOf(),
         email: ownerUser.email,
         dbHash: dbHash,
-        password: user.get('password'),
+        passwordHash: user.get('password'),
       });
       const encodedToken = security.url.encodeBase64(resetToken);
 

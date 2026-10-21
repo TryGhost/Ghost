@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react';
-import React, { useCallback, useContext, useMemo, useRef, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useEffect } from 'react';
 import {
   type ClientOnErrorFunction,
   createHashRouter,
@@ -20,7 +20,11 @@ import {
 import { useFramework } from './framework-provider';
 import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';
-import { syncFeatureFlagOverrides } from '../utils/feature-flag-overrides';
+import {
+  getStoredFeatureFlagOverrides,
+  isAppPagePath,
+  syncFeatureFlagOverrides,
+} from '../utils/feature-flag-overrides';
 import { FeatureFlagOverridesContext } from './feature-flag-overrides-context';
 
 /**
@@ -46,9 +50,13 @@ export interface RouterProviderProps {
 }
 
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation();
+  const { pathname, search } = useLocation();
   const { onFeatureFlagOverridesChange } = useFramework();
-  const enabledFlags = useMemo(() => syncFeatureFlagOverrides(search), [search]);
+  const isAppPage = isAppPagePath(pathname);
+  const enabledFlags = useMemo(
+    () => (isAppPage ? getStoredFeatureFlagOverrides() : syncFeatureFlagOverrides(search)),
+    [search, isAppPage],
+  );
   const value = useMemo(() => ({ enabledFlags }), [enabledFlags]);
 
   useEffect(() => {
@@ -120,6 +128,15 @@ export function ScrollRestoration({ containerRef }: ScrollRestorationProps) {
   return null;
 }
 
+/** The router that `RouterProvider` created, for code that reads its state outside a render. */
+interface FrameworkRouter {
+  router: ReturnType<typeof createHashRouter>;
+  /** The destination of a navigation that a screen transition is holding back, while it's held. */
+  held: { pathname?: string };
+}
+
+const RouterContext = createContext<FrameworkRouter | undefined>(undefined);
+
 // Route error boundaries swallow render crashes, so the SDK never sees them
 const reportRouteError: ClientOnErrorFunction = (error, { errorInfo }) => {
   if (Sentry.getClient()) {
@@ -137,7 +154,7 @@ export function RouterProvider({
   children,
 }: RouterProviderProps) {
   // Memoize the router to avoid re-creating it on every render
-  const router = useMemo(() => {
+  const frameworkRouter = useMemo<FrameworkRouter>(() => {
     // Ensure prefix has a leading slash and no double+ or trailing slashes
     const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
@@ -156,9 +173,10 @@ export function RouterProvider({
       })),
     };
 
-    return createHashRouter([rootRoute], {
-      basename: normalizedPrefix,
-    });
+    return {
+      router: createHashRouter([rootRoute], { basename: normalizedPrefix }),
+      held: {},
+    };
   }, [routes, prefix, errorElement, children]);
 
   const onError = useCallback<ClientOnErrorFunction>(
@@ -170,10 +188,48 @@ export function RouterProvider({
     [recoverFromError],
   );
 
-  return <ReactRouterProvider router={router} onError={onError} />;
+  return (
+    <RouterContext.Provider value={frameworkRouter}>
+      <ReactRouterProvider router={frameworkRouter.router} onError={onError} />
+    </RouterContext.Provider>
+  );
 }
 
 export type NavigateOptions = ReactRouterNavigateOptions;
+
+/**
+ * Returns `pathname` in the form `useLocation` gives it, without the router's basename. The
+ * basename is `RouterProvider`'s normalised prefix, and every location the router holds starts with
+ * it.
+ */
+function withinBasename(pathname: string, basename = '/'): string {
+  return basename === '/' ? pathname : pathname.slice(basename.length) || '/';
+}
+
+/**
+ * Returns a function that reads the pathname the router is going to: the destination of a
+ * navigation that is in progress or held back by a screen transition, or otherwise the router's
+ * current pathname. The router's state changes as soon as a navigation starts and as soon as it
+ * finishes. `useLocation` only shows either change once React has committed it, which happens in a
+ * transition. Without this, code that runs in between, such as a handler for a message from a
+ * frame, would treat Admin as still on the page it's leaving. The function returns `undefined`
+ * outside `RouterProvider`.
+ */
+export function useRouterDestination(): () => string | undefined {
+  const frameworkRouter = useContext(RouterContext);
+  return useCallback(() => {
+    if (!frameworkRouter) {
+      return undefined;
+    }
+    const { router, held } = frameworkRouter;
+    if (held.pathname !== undefined) {
+      return held.pathname;
+    }
+    const { navigation, location } = router.state;
+    const headedFor = navigation.state === 'idle' ? location : navigation.location;
+    return withinBasename(headedFor.pathname, router.basename);
+  }, [frameworkRouter]);
+}
 
 /**
  * Decides whether an in-router navigation to `pathname` (absolute, without the
@@ -184,7 +240,7 @@ export interface ViewTransitionController {
   shouldTransition: (pathname: string) => boolean;
   /**
    * Runs before a transitioning navigation, which waits for the promise and is
-   * dropped when it resolves false. Returning nothing navigates at once.
+   * dropped when it resolves false or rejects. Returning nothing navigates at once.
    */
   beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
   /** Runs once a transitioning navigation has settled, whether it landed or a blocker held it. */
@@ -205,9 +261,13 @@ export const ViewTransitionControllerProvider = ViewTransitionControllerContext.
 
 const ABSOLUTE_URL = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
 
-/** Runs `navigate` after the controller's `beforeTransition`, when it has one. */
+/**
+ * Runs `navigate` after the controller's `beforeTransition`, when it has one. While it waits,
+ * `held` records the navigation's destination.
+ */
 function navigateAfterTransitionStart(
   controller: ViewTransitionController,
+  held: FrameworkRouter['held'] | undefined,
   pathname: string,
   navigate: () => void | Promise<void>,
 ): void {
@@ -219,16 +279,25 @@ function navigateAfterTransitionStart(
     navigateAndSettle();
     return;
   }
-  void ready.then((proceed) => {
-    if (proceed) {
-      navigateAndSettle();
-    }
-  });
+  if (held) {
+    held.pathname = pathname;
+  }
+  void ready
+    .catch(() => false)
+    .then((proceed) => {
+      if (held?.pathname === pathname) {
+        held.pathname = undefined;
+      }
+      if (proceed) {
+        navigateAndSettle();
+      }
+    });
 }
 
 export function useNavigate() {
   const navigate = useReactRouterNavigate();
   const controller = useContext(ViewTransitionControllerContext);
+  const held = useContext(RouterContext)?.held;
   const routePathname = useResolvedPath('.').pathname;
   const locationPathname = useLocation().pathname;
 
@@ -246,7 +315,7 @@ export function useNavigate() {
 
       const pathname = pathnameFor.current(to, options?.relative);
       if (options?.viewTransition === undefined && controller.shouldTransition(pathname)) {
-        navigateAfterTransitionStart(controller, pathname, () =>
+        navigateAfterTransitionStart(controller, held, pathname, () =>
           navigate(to, {
             ...options,
             viewTransition: controller.viewTransition?.(pathname) ?? true,
@@ -257,7 +326,7 @@ export function useNavigate() {
 
       navigate(to, options);
     },
-    [controller, navigate],
+    [controller, held, navigate],
   );
 }
 
@@ -278,6 +347,7 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
   ref,
 ) {
   const controller = useContext(ViewTransitionControllerContext);
+  const held = useContext(RouterContext)?.held;
   const navigate = useReactRouterNavigate();
   const { pathname } = useResolvedPath(props.to, { relative: props.relative });
   const isAbsoluteUrl = typeof props.to === 'string' && ABSOLUTE_URL.test(props.to);
@@ -302,7 +372,7 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
     // Take the click from React Router's own handler so the navigation can wait
     event.preventDefault();
     const { to, replace, state, preventScrollReset, relative } = props;
-    navigateAfterTransitionStart(controller, pathname, () =>
+    navigateAfterTransitionStart(controller, held, pathname, () =>
       navigate(to, {
         replace,
         state,

@@ -43,7 +43,6 @@ import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EditorChrome, EmailModalMode } from '@/automations/components/types';
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
@@ -476,7 +475,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [newStepId, setNewStepId] = useState<string | null>(null);
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const triggerTierScope = automation?.trigger_tier_scope;
   let tiersEnabled: boolean;
   switch (triggerTierScope) {
@@ -666,7 +664,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   );
   const configQuery = useBrowseConfig();
   const isPerformanceEnabled = Boolean(configQuery.data?.config.stats);
-  const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   const [sidebar, setSidebar] = useState<{
     open: boolean;
     tab: 'unknown' | 'settings' | 'performance';
@@ -689,7 +686,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       tab: current.tab === 'unknown' ? 'settings' : current.tab,
     }));
   }, []);
-  const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
+  const isAutomationSidebarOpen = sidebar.open;
   // SHAPING PROTOTYPE ONLY — never merge: the design option picked in the prototype menu.
   const chrome: EditorChrome = useEditorChromeVariant();
   const floating = chrome === 'floating';
@@ -704,7 +701,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const header = renderHeader({
     chrome,
     sidebar: {
-      available: isAutomationSidebarAvailable,
+      available: true,
       open: isAutomationSidebarOpen,
       animated: sidebarAnimated,
     },
@@ -973,7 +970,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     </Box>
   );
 
-  const sidebarPanel = isAutomationSidebarAvailable ? (
+  const sidebarPanel = (
     <AutomationSidebar
       animated={sidebarAnimated}
       automationId={automation.id}
@@ -981,20 +978,19 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       description={automation.description}
       isOpen={isAutomationSidebarOpen}
       isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-      metadata={!automationsPerTierEnabled ? 'hidden' : isHistoryOpen ? 'readonly' : 'editable'}
-      name={automation.name}
+      metadata={isHistoryOpen ? 'readonly' : 'editable'}
       performanceEnabled={isPerformanceEnabled}
       selectedRunId={selectedRunId}
       selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
       tiers={tierData?.tiers ?? []}
       triggerTierIds={automation.trigger_tier_ids ?? []}
       triggerTierScope={automation.trigger_tier_scope}
-      onDetailsChange={(details) => onChange({ ...automation, ...details })}
+      onDescriptionChange={(description) => onChange({ ...automation, description })}
       onOpenChange={setAutomationSidebarOpen}
       onSelectRun={handleSelectRun}
       onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
     />
-  ) : null;
+  );
 
   const layoutProps = {
     ref: layoutRef,

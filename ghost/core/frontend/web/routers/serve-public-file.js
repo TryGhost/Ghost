@@ -29,7 +29,7 @@ function matchCacheKey(req, cache) {
   return true;
 }
 
-function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) {
+function createPublicFileMiddleware(location, file, mime, maxAge) {
   let cache;
   // These files are provided by Ghost, and therefore live inside of the core folder
   const staticFilePath = config.get('paths').publicFilePath;
@@ -50,7 +50,7 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
     }
 
     // send image files directly and let express handle content-length, etag, etc
-    if (mime.match(/^image/) || options.disableServerCache) {
+    if (mime.match(/^image/)) {
       return res.sendFile(filePath, (err) => {
         if (err && err.status === 404) {
           // ensure we're triggering basic asset 404 and not a templated 404
@@ -139,8 +139,8 @@ function createCardAssetMiddleware(type, mime, maxAge) {
 }
 
 // Handles requests to robots.txt and favicon.ico (and caches them)
-function servePublicFile(location, file, type, maxAge, options = {}) {
-  const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
+function servePublicFile(location, file, type, maxAge) {
+  const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge);
 
   return function servePublicFileMiddleware(req, res, next) {
     if (req.path === '/' + file) {
@@ -248,18 +248,6 @@ function servePublicFiles(siteApp) {
       'public/private.min.js',
       'application/javascript',
       config.get('caching:publicAssets:maxAge'),
-    ),
-  );
-
-  // Recommendations well-known
-  siteApp.get(
-    '/.well-known/recommendations.json',
-    createPublicFileMiddleware(
-      'built',
-      '.well-known/recommendations.json',
-      'application/json',
-      config.get('caching:publicAssets:maxAge'),
-      { disableServerCache: true },
     ),
   );
 

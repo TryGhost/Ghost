@@ -23,33 +23,28 @@ export interface DraftNewsletterControl {
 }
 
 /**
- * The draft's remembered newsletter (admin7EditorImprovements), shared by the
- * preview and the publish flow so a pick in either carries to the other. With the
- * flag off nothing is read or written. A pick holds for this visit even where
+ * The draft's remembered newsletter, shared by the preview and the publish flow
+ * so a pick in either carries to the other. A pick holds for this visit even where
  * storage is blocked.
  *
  * `newsletters` is the site's full list, or null while it is loading; the last
  * list seen is kept, so a refetch does not drop the pick under an open flow.
  */
 export function useDraftNewsletter({
-  enabled,
   postId,
   status,
   newsletters,
 }: {
-  enabled: boolean;
   postId: string;
   status: PostStatus;
   newsletters: ReadonlyArray<NewsletterInput> | null;
 }): DraftNewsletterControl {
-  // The flag can resolve after the editor opens, so the entry is read again when it does.
-  const key = `${postId}:${enabled}`;
   const [entry, setEntry] = useState(() => ({
-    key,
-    slug: readDraftNewsletter(draftNewsletterStorage(enabled), postId),
+    postId,
+    slug: readDraftNewsletter(draftNewsletterStorage(), postId),
   }));
-  if (entry.key !== key) {
-    setEntry({ key, slug: readDraftNewsletter(draftNewsletterStorage(enabled), postId) });
+  if (entry.postId !== postId) {
+    setEntry({ postId, slug: readDraftNewsletter(draftNewsletterStorage(), postId) });
   }
   const [knownNewsletters, setKnownNewsletters] = useState(newsletters);
   if (newsletters && newsletters !== knownNewsletters) {
@@ -58,9 +53,8 @@ export function useDraftNewsletter({
   const list = newsletters ?? knownNewsletters;
 
   const resolved = resolveDraftNewsletter({
-    enabled,
     status,
-    stored: entry.key === key ? entry.slug : null,
+    stored: entry.postId === postId ? entry.slug : null,
     newsletters: list,
   });
 
@@ -70,49 +64,46 @@ export function useDraftNewsletter({
     if (!stale) {
       return;
     }
-    writeDraftNewsletter(draftNewsletterStorage(enabled), postId, null);
-    setEntry({ key, slug: null });
-  }, [enabled, key, postId, stale]);
+    writeDraftNewsletter(draftNewsletterStorage(), postId, null);
+    setEntry({ postId, slug: null });
+  }, [postId, stale]);
 
   const store = useCallback(
     (slug: string, known: ReadonlyArray<NewsletterInput>) => {
       const stored = draftNewsletterToStore(slug, known);
-      writeDraftNewsletter(draftNewsletterStorage(enabled), postId, stored);
-      setEntry({ key, slug: stored });
+      writeDraftNewsletter(draftNewsletterStorage(), postId, stored);
+      setEntry({ postId, slug: stored });
     },
-    [enabled, key, postId],
+    [postId],
   );
 
   // The preview can offer its own newsletter list before this one has loaded, and
   // only the list says whether a pick is the default, so such a pick waits for it.
-  const [pendingPick, setPendingPick] = useState<{ key: string; slug: string } | null>(null);
+  const [pendingPick, setPendingPick] = useState<{ postId: string; slug: string } | null>(null);
   useEffect(() => {
     if (!pendingPick || !list) {
       return;
     }
-    if (pendingPick.key === key) {
+    if (pendingPick.postId === postId) {
       store(pendingPick.slug, list);
     }
     setPendingPick(null);
-  }, [key, list, pendingPick, store]);
+  }, [postId, list, pendingPick, store]);
 
   const remember = useCallback(
     (slug: string) => {
-      if (!enabled) {
-        return;
-      }
       if (!list) {
-        setPendingPick({ key, slug });
+        setPendingPick({ postId, slug });
         return;
       }
       store(slug, list);
     },
-    [enabled, key, list, store],
+    [postId, list, store],
   );
 
   const forget = useCallback(() => {
-    writeDraftNewsletter(draftNewsletterStorage(enabled), postId, null);
-  }, [enabled, postId]);
+    writeDraftNewsletter(draftNewsletterStorage(), postId, null);
+  }, [postId]);
 
   return { slug: resolved.slug ?? undefined, remember, forget };
 }

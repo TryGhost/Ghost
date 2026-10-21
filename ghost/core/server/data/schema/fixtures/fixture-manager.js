@@ -191,31 +191,6 @@ class FixtureManager {
   }
 
   /**
-   * ### Find Permission Relations For Object
-   * Specialist function can return the permission relation fixture with only entries for a particular object.model
-   * @param {string} objName
-   * @returns {Object} fixture relation
-   */
-  findPermissionRelationsForObject(objName, role) {
-    // Make a copy and delete any entries we don't want
-    const foundRelation = _.cloneDeep(this.findRelationFixture('Role', 'Permission'));
-
-    _.each(foundRelation.entries, (entry, key) => {
-      _.each(entry, (perm, obj) => {
-        if (obj !== objName) {
-          delete entry[obj];
-        }
-      });
-
-      if (_.isEmpty(entry) || (role && role !== key)) {
-        delete foundRelation.entries[key];
-      }
-    });
-
-    return foundRelation;
-  }
-
-  /**
    * ### Find Owner User ID
    * Find the owner user ID from the relation fixture
    * @returns {string}

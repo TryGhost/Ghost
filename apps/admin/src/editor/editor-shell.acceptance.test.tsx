@@ -39,8 +39,7 @@ function fakeLongDocument(
   });
 }
 
-/** Below the small breakpoint the footer has no help link. */
-function controls(postType: 'post' | 'page', { narrow = false } = {}) {
+function controls(postType: 'post' | 'page') {
   return [
     editorScreen.backLink(postType),
     editorScreen.status(),
@@ -48,12 +47,11 @@ function controls(postType: 'post' | 'page', { narrow = false } = {}) {
     editorScreen.publishButton(),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
-    ...(narrow ? [] : [editorScreen.helpLink()]),
   ];
 }
 
-function positions(postType: 'post' | 'page', options?: { narrow?: boolean }) {
-  return controls(postType, options).map((control) => {
+function positions(postType: 'post' | 'page') {
+  return controls(postType).map((control) => {
     const { x, y, width, height } = control.element().getBoundingClientRect();
     return { x, y, width, height };
   });
@@ -263,9 +261,9 @@ function failPublishInputs() {
 /**
  * Below the small breakpoint the header row holds the back link and the status,
  * and the bottom bar the word count at the left and the header's actions at the
- * right, with no help link.
+ * right.
  */
-async function expectSmallScreenLayout(buttons: number) {
+function expectSmallScreenLayout(buttons: number) {
   const back = editorScreen.backLink('post').element().getBoundingClientRect();
   const status = editorScreen.status().element().getBoundingClientRect();
   const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
@@ -273,7 +271,6 @@ async function expectSmallScreenLayout(buttons: number) {
   const bar = editorScreen.headerActions().element();
   const actions = editorScreen.headerActions().getByRole('button').elements();
   expect(actions).toHaveLength(buttons);
-  await expect(editorScreen.helpLink()).toHaveCount(0);
   for (const { left, top, right, bottom } of [back, status, toggle, words].concat(
     actions.map((action) => action.getBoundingClientRect()),
   )) {
@@ -317,27 +314,20 @@ afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
-/** Where the first line of an element's text sits, from its font's ascent. */
-function firstTextBaseline(element: Element): number {
+/** The vertical centre of the first line of an element's text. */
+function firstLineCentre(element: Element): number {
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) =>
       node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
   });
   const text = walker.nextNode();
-  if (!text?.parentElement) {
+  if (!text) {
     throw new Error('No text to measure');
   }
   const range = document.createRange();
   range.selectNodeContents(text);
   const line = range.getClientRects()[0];
-  const context = document.createElement('canvas').getContext('2d');
-  if (!context) {
-    throw new Error('No canvas to measure with');
-  }
-  context.font = getComputedStyle(text.parentElement).font;
-  const metrics = context.measureText(text.textContent ?? '');
-  const contentHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-  return line.top + (line.height - contentHeight) / 2 + metrics.fontBoundingBoxAscent;
+  return line.top + line.height / 2;
 }
 
 function verticalCentre(element: Element): number {
@@ -385,7 +375,7 @@ describe('Floating editor shell', () => {
     fakeLongDocument('post');
     await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
-    const footerBefore = editorScreen.helpLink().element().getBoundingClientRect();
+    const footerBefore = editorScreen.wordCount().element().getBoundingClientRect();
     const toggle = editorScreen.settingsToggle().element();
     const toggleBefore = toggle.getBoundingClientRect();
 
@@ -397,7 +387,7 @@ describe('Floating editor shell', () => {
       .toBe(sidebar.getBoundingClientRect().width + 8);
     await expect.poll(() => sidebar.getBoundingClientRect().right).toBe(window.innerWidth - 8);
     const sidebarBounds = sidebar.getBoundingClientRect();
-    const footerAfter = editorScreen.helpLink().element().getBoundingClientRect();
+    const footerAfter = editorScreen.wordCount().element().getBoundingClientRect();
     expect(footerBefore.right - footerAfter.right).toBeCloseTo(sidebarBounds.width + 16, 0);
     expect(footerAfter.bottom).toBe(footerBefore.bottom);
     expect(footerAfter.right).toBeLessThan(sidebarBounds.left);
@@ -436,13 +426,15 @@ describe('Floating editor shell', () => {
     );
     expect(sidebar.scrollTop).toBe(0);
     expect(pane.scrollTop).toBe(700);
-    expect(editorScreen.helpLink().element().getBoundingClientRect().right).toBe(footerAfter.right);
+    expect(editorScreen.wordCount().element().getBoundingClientRect().right).toBe(
+      footerAfter.right,
+    );
     expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
     // The toggle remains reachable even after the settings list has scrolled.
     await editorScreen.settingsToggle().click();
     await expect(editorScreen.settingsSidebar()).toHaveCount(0);
     expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
-    expect(editorScreen.helpLink().element().getBoundingClientRect().right).toBe(
+    expect(editorScreen.wordCount().element().getBoundingClientRect().right).toBe(
       footerBefore.right,
     );
   });
@@ -465,7 +457,7 @@ describe('Floating editor shell', () => {
       await expect
         .poll(() => document.documentElement.classList.contains('dark'))
         .toBe(theme === 'dark');
-      await expectSmallScreenLayout(2);
+      expectSmallScreenLayout(2);
       // Publish is the bar's primary button, the size of the controls around it.
       const publish = editorScreen.publishButton().element();
       await expect.element(editorScreen.publishButton()).toHaveClass('bg-primary');
@@ -477,7 +469,7 @@ describe('Floating editor shell', () => {
       expect(publish.getAttribute('aria-keyshortcuts')).toBeNull();
       expect(editorScreen.previewButton().element().getAttribute('aria-keyshortcuts')).toBeNull();
 
-      for (const { x, y, width, height } of positions('post', { narrow: true })) {
+      for (const { x, y, width, height } of positions('post')) {
         expect(x).toBeGreaterThanOrEqual(0);
         expect(y).toBeGreaterThanOrEqual(0);
         expect(x + width).toBeLessThanOrEqual(window.innerWidth);
@@ -498,15 +490,15 @@ describe('Floating editor shell', () => {
       const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
       expect(back.getBoundingClientRect().top).toBe(12);
       expect(window.innerWidth - toggle.right).toBe(12);
-      // Below 500px the back link is just its arrow, still named for where it goes.
-      expect(back.textContent?.trim()).toBe('Posts');
+      // The back link is just its arrow, still named for where it goes.
+      await expect.element(editorScreen.backLink('post')).toHaveAccessibleName('Posts');
       expect(back.getBoundingClientRect().width).toBe(toggle.width);
 
-      const before = positions('post', { narrow: true });
+      const before = positions('post');
       const pane = editorScreen.scrollPane();
       pane.scrollTo({ top: 700 });
       await expect.poll(() => pane.scrollTop).toBe(700);
-      expect(positions('post', { narrow: true })).toEqual(before);
+      expect(positions('post')).toEqual(before);
 
       const documentWidth = editorScreen.root().element().getBoundingClientRect().width;
       await editorScreen.settingsToggle().click();
@@ -564,7 +556,7 @@ describe('Floating editor shell', () => {
       }
 
       // Unpublish or Unschedule and Update, plus Retry when the load failed.
-      await expectSmallScreenLayout(inputs === 'failed' ? 3 : 2);
+      expectSmallScreenLayout(inputs === 'failed' ? 3 : 2);
       // Update, the bar's rightmost action, is its primary button, disabled until
       // something changes; the others keep their header looks.
       const actions = editorScreen.headerActions().getByRole('button').elements();
@@ -607,7 +599,7 @@ describe('Floating editor shell', () => {
     await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const publishBefore = editorScreen.publishButton().element().getBoundingClientRect().right;
-    const footerBefore = editorScreen.helpLink().element().getBoundingClientRect().right;
+    const footerBefore = editorScreen.wordCount().element().getBoundingClientRect().right;
     // Hold the real transition long enough to inspect precise points on its timeline,
     // independently of browser scheduling and Playwright's actionability waits.
     const animationStyle = slowSettingsTransition();
@@ -639,7 +631,7 @@ describe('Floating editor shell', () => {
       expect(writingPane.right).toBeCloseTo(window.innerWidth - width, 0);
       const remainingToggle = (footerBefore - publishBefore) * (1 - width / sidebarWidth);
       const publishDuring = editorScreen.publishButton().element().getBoundingClientRect().right;
-      const footerDuring = editorScreen.helpLink().element().getBoundingClientRect().right;
+      const footerDuring = editorScreen.wordCount().element().getBoundingClientRect().right;
       expect(publishDuring).toBeLessThan(publishBefore);
       expect(footerDuring - publishDuring).toBeCloseTo(remainingToggle, 0);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
@@ -1030,7 +1022,8 @@ describe('Floating editor shell', () => {
     const back = () => editorScreen.backLink('post').element();
     const status = () => editorScreen.status().element();
     const expectAligned = () => {
-      expect(Math.abs(firstTextBaseline(status()) - firstTextBaseline(back()))).toBeLessThan(2);
+      // The back link is its arrow alone, so the status's first line centres on it.
+      expect(Math.abs(firstLineCentre(status()) - verticalCentre(back()))).toBeLessThan(2);
       expect(
         Math.abs(
           verticalCentre(editorScreen.publishButton().element()) -
@@ -1068,10 +1061,9 @@ describe('Floating editor shell', () => {
       editorScreen.status(),
       editorScreen.settingsToggle(),
       editorScreen.wordCount(),
-      editorScreen.helpLink(),
     ];
     const before = visibleControls.map((control) => control.element().getBoundingClientRect().top);
-    expect(editorScreen.helpLink().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    expect(editorScreen.wordCount().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
       window.innerHeight,
     );
     const pane = editorScreen.scrollPane();

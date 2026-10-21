@@ -125,7 +125,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     // operator is chosen explicitly here.
     await membersPage.addCustomFieldFilter({
       field: fieldName,
-      subfield: 'City',
+      part: 'City',
       operator: 'is',
       value: 'London',
     });
@@ -178,7 +178,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     // A country is picked from a list, so it filters as a set: any of the picks.
     await membersPage.addCustomFieldFilter({
       field: fieldName,
-      subfield: 'Country',
+      part: 'Country',
       operator: 'is any of',
       values: ['United Kingdom', 'Germany'],
     });

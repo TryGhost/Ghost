@@ -17,10 +17,15 @@ collects nothing.
 - `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
 - `STRIPE_CHECKOUT_BORDER_STYLES` / `STRIPE_CHECKOUT_FONTS` — what Checkout's
   `branding_settings` accepts for the parts of the page a publisher can style.
+- `COLLECTED_PARTS` / `CHECKOUT_PART_SETTINGS` — what a checkout can ask the buyer
+  for, and each part's shape in the Admin API's checkout config, which previews take
+  too. Ghost Core and Admin each keep what they do with a part in a record keyed by
+  `COLLECTED_PARTS`, so a new part is a type error on both sides until each has its
+  entry.
 
 ## Measured, not read
 
-Every value here except the branding values was established by
+Every Stripe value here except the branding values was established by
 `e2e/scripts/probe-stripe-constraints.ts` against the live API at Ghost's pinned
 version, because the published artefacts disagree with it: the SDK's `AllowedCountry`
 union omits `SD`, which the API accepts. Re-probe before changing a value; do not read

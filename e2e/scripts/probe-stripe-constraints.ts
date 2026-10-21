@@ -192,7 +192,7 @@ async function main(): Promise<void> {
   // checkout: a free member upgrading, or anyone buying a second time. Ghost sends the
   // collection parameters and no `customer_update`, because it reads what was collected
   // off the completed session rather than off the customer. Stripe may still require the
-  // pair — it does for automatic tax, which is why `_applyAutomaticTaxSessionOptions` sets
+  // pair — it does for automatic tax, which is why `taxSessionParams` sets
   // `customer_update` only when there is a customer. If it does here too, then turning
   // shipping on breaks checkout for exactly the members most likely to buy, and every test
   // we have would miss it: they all check out anonymously.

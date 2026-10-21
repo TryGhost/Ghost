@@ -13,7 +13,7 @@ import type {
 import { detail } from './run-history.test-utils';
 import { automationsScreen } from './automations.screen';
 
-const flags = { labs: { automations: true, automationsArchive: true } };
+const flags = { labs: { automations: true } };
 const dialog = () => page.getByRole('alertdialog');
 const actions = () => page.getByRole('button', { name: 'Actions for Welcome series' });
 
@@ -49,39 +49,28 @@ const openConfirmation = async (label: 'Turn off') => {
 
 describe('Automation list status actions', () => {
   it.each([
-    { status: 'active' as const, enabled: false, items: [] },
-    { status: 'active' as const, enabled: true, items: ['Turn off', 'Archive'] },
-    { status: 'inactive' as const, enabled: false, items: [] },
-    { status: 'inactive' as const, enabled: true, items: ['Archive'] },
-    { status: 'archived' as const, enabled: false, items: [] },
-    { status: 'archived' as const, enabled: true, items: ['Unarchive'] },
-  ])(
-    'shows valid actions for $status with archive flag=$enabled',
-    async ({ status, enabled, items }) => {
-      const { edit } = setup(status);
-      await renderAdminApp('/automations', {
-        labs: { automations: true, automationsArchive: enabled },
-      });
+    { status: 'active' as const, items: ['Turn off', 'Archive'] },
+    { status: 'inactive' as const, items: ['Archive'] },
+    { status: 'archived' as const, items: ['Unarchive'] },
+  ])('shows valid actions for $status', async ({ status, items }) => {
+    const { edit } = setup(status);
+    await renderAdminApp('/automations', {
+      labs: { automations: true },
+    });
 
-      if (status === 'archived') {
-        await page.getByRole('combobox', { name: 'Automations to show' }).click();
-        await page.getByRole('option', { name: 'Archived automations', exact: true }).click();
-      }
+    if (status === 'archived') {
+      await page.getByRole('combobox', { name: 'Automations to show' }).click();
+      await page.getByRole('option', { name: 'Archived automations', exact: true }).click();
+    }
 
-      await expect(page.getByTestId('automation-list-row')).toHaveCount(1);
-      if (items.length === 0) {
-        await expect(actions()).toHaveCount(0);
-        await expect(page.getByRole('columnheader', { name: 'Actions' })).toHaveCount(0);
-      } else {
-        await actions().click();
-        await expect(page.getByRole('menuitem')).toHaveCount(items.length);
-        for (const name of items) {
-          await expect.element(page.getByRole('menuitem', { name, exact: true })).toBeVisible();
-        }
-      }
-      expect(edit.requests).toHaveLength(0);
-    },
-  );
+    await expect(page.getByTestId('automation-list-row')).toHaveCount(1);
+    await actions().click();
+    await expect(page.getByRole('menuitem')).toHaveCount(items.length);
+    for (const name of items) {
+      await expect.element(page.getByRole('menuitem', { name, exact: true })).toBeVisible();
+    }
+    expect(edit.requests).toHaveLength(0);
+  });
 
   it.each([
     { status: 'active' as const, action: 'Archive', nextStatus: 'archived' },
@@ -89,7 +78,7 @@ describe('Automation list status actions', () => {
     { status: 'archived' as const, action: 'Unarchive', nextStatus: 'inactive' },
   ])('$action saves only status and refreshes the list', async ({ status, action, nextStatus }) => {
     const { edit, read } = setup(status);
-    await renderAdminApp('/automations', { labs: { automations: true, automationsArchive: true } });
+    await renderAdminApp('/automations', { labs: { automations: true } });
 
     if (status === 'archived') {
       await page.getByRole('combobox', { name: 'Automations to show' }).click();
@@ -126,7 +115,7 @@ describe('Automation list status actions', () => {
           )
         : saveStatus('archived'),
     );
-    await renderAdminApp('/automations', { labs: { automations: true, automationsArchive: true } });
+    await renderAdminApp('/automations', { labs: { automations: true } });
 
     await actions().click();
     await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
@@ -158,7 +147,7 @@ describe('Automation list status actions', () => {
       await pending;
       return saveStatus('archived');
     });
-    await renderAdminApp('/automations', { labs: { automations: true, automationsArchive: true } });
+    await renderAdminApp('/automations', { labs: { automations: true } });
 
     await actions().click();
     await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();

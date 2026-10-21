@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import diagnosticsChannel from 'node:diagnostics_channel';
 import fs from 'node:fs';
 import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import {
@@ -61,6 +63,7 @@ describe('HttpUpgradeAdapter', function () {
   let dir: string;
   let socketPath: string;
   let server: http.Server;
+  let listener: http.RequestListener;
   let handler: Handler;
   let requests: Array<Parameters<Handler>[0]>;
 
@@ -78,7 +81,7 @@ describe('HttpUpgradeAdapter', function () {
       }
       return { status: 404, body: { error: { code: 'not-found' } } };
     };
-    server = http.createServer((req, res) => {
+    listener = (req, res) => {
       const chunks: Buffer[] = [];
       req.on('data', (chunk: Buffer) => chunks.push(chunk));
       req.on('end', () => {
@@ -101,7 +104,8 @@ describe('HttpUpgradeAdapter', function () {
         res.writeHead(answer.status, { 'content-type': 'application/json' });
         res.end(answer.body === undefined ? '' : JSON.stringify(answer.body));
       });
-    });
+    };
+    server = http.createServer(listener);
     await new Promise<void>((resolve) => {
       server.listen(socketPath, resolve);
     });
@@ -130,14 +134,125 @@ describe('HttpUpgradeAdapter', function () {
   });
 
   describe('validate', function () {
+    const refuses = (config: object) => {
+      assert.throws(() => HttpUpgradeAdapter.validate(config), {
+        errorType: 'IncorrectUsageError',
+      });
+      assert.throws(() => new HttpUpgradeAdapter(config), { errorType: 'IncorrectUsageError' });
+    };
+
     it('requires an absolute socketPath', function () {
-      for (const config of [{}, { socketPath: '' }, { socketPath: 'relative.sock' }]) {
-        assert.throws(() => HttpUpgradeAdapter.validate(config), {
-          errorType: 'IncorrectUsageError',
-        });
-        assert.throws(() => new HttpUpgradeAdapter(config), { errorType: 'IncorrectUsageError' });
+      for (const config of [{ socketPath: '' }, { socketPath: 'relative.sock' }]) {
+        refuses(config);
       }
       assert.doesNotThrow(() => HttpUpgradeAdapter.validate({ socketPath }));
+    });
+
+    it('requires exactly one of socketPath or url', function () {
+      refuses({});
+      refuses({ socketPath, url: 'https://upgrades.example' });
+      assert.doesNotThrow(() => HttpUpgradeAdapter.validate({ url: 'https://upgrades.example' }));
+    });
+
+    it('requires an http or https url', function () {
+      for (const url of [
+        'ftp://upgrades.example',
+        'file:///run/upgrade.sock',
+        'upgrades.example',
+      ]) {
+        refuses({ url });
+      }
+    });
+
+    it('allows a token only with an https url', function () {
+      refuses({ url: 'http://upgrades.example', token: 'secret' });
+      refuses({ socketPath, token: 'secret' });
+      refuses({ url: 'https://upgrades.example', token: '' });
+      assert.doesNotThrow(() =>
+        HttpUpgradeAdapter.validate({ url: 'HTTPS://upgrades.example', token: 'secret' }),
+      );
+    });
+
+    it('allows an http url only in development and tests', function () {
+      try {
+        for (const env of ['production', 'staging']) {
+          vi.stubEnv('NODE_ENV', env);
+          refuses({ url: 'http://upgrades.example' });
+          refuses({ url: 'HTTP://upgrades.example' });
+          assert.doesNotThrow(() =>
+            HttpUpgradeAdapter.validate({ url: 'https://upgrades.example', token: 'secret' }),
+          );
+        }
+        for (const env of ['development', 'testing', 'testing-mysql', '']) {
+          vi.stubEnv('NODE_ENV', env);
+          assert.doesNotThrow(() =>
+            HttpUpgradeAdapter.validate({ url: 'http://upgrades.example' }),
+          );
+        }
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+  });
+
+  describe('url', function () {
+    let tcp: http.Server;
+    let url: string;
+
+    beforeEach(async function () {
+      tcp = http.createServer(listener);
+      await new Promise<void>((resolve) => {
+        tcp.listen(0, '127.0.0.1', resolve);
+      });
+      url = `http://127.0.0.1:${(tcp.address() as AddressInfo).port}`;
+    });
+
+    afterEach(async function () {
+      tcp.closeAllConnections();
+      await new Promise((resolve) => {
+        tcp.close(resolve);
+      });
+    });
+
+    it('talks to the host at the url origin', async function () {
+      handler = (req) =>
+        req.url === '/v1/requests' ? { status: 202, body: job } : { status: 404 };
+      const adapter = new HttpUpgradeAdapter({ url: `${url}/ignored/path` });
+
+      assert.deepEqual(await adapter.createRequest(request), job);
+      assert.equal(requests[0].url, '/v1/requests');
+      assert.equal(requests[0].headers.authorization, undefined);
+    });
+
+    it('reports a refused connection as unavailable', async function () {
+      const adapter = new HttpUpgradeAdapter({ url });
+      tcp.close();
+
+      const result = await adapter.getStatus();
+
+      assert.equal(result.supported && result.availability, 'unavailable');
+      await assert.rejects(adapter.getJob(key), { code: 'unavailable' });
+    });
+
+    it('sends the token as a bearer header over https', async function () {
+      // The connection fails without a trusted certificate; the request is observed as created.
+      const channel = diagnosticsChannel.channel('undici:request:create');
+      const created: Array<{ origin: string; headers: string[] }> = [];
+      const observe = (message: unknown) => {
+        const { request: sent } = message as { request: { origin: string; headers: string[] } };
+        created.push({ origin: String(sent.origin), headers: sent.headers });
+      };
+      const https = url.replace('http:', 'https:');
+      channel.subscribe(observe);
+      try {
+        await new HttpUpgradeAdapter({ url: https, token: 'secret' }).getJob(key).catch(() => {});
+      } finally {
+        channel.unsubscribe(observe);
+      }
+
+      assert.equal(created[0].origin, https);
+      const headers = created[0].headers;
+      assert.equal(headers[headers.indexOf('authorization') + 1], 'Bearer secret');
     });
   });
 

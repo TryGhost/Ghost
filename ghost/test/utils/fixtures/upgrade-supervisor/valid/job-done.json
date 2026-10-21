@@ -11,7 +11,7 @@
       "source": "ghost-docker",
       "code": "backup",
       "severity": "info",
-      "message": "Before the update, the site was backed up to backups/20261014-200103."
+      "message": "Before the update, the site was backed up to `backups/20261014-200103`."
     }
   ]
 }

@@ -468,7 +468,7 @@ describe('Authentication API', function () {
         expires: Date.now() + 1000 * 60,
         email: email,
         dbHash: settingsCache.get('db_hash'),
-        password: ownerUser.get('password'),
+        passwordHash: ownerUser.get('password'),
       });
 
       await agent
@@ -533,7 +533,7 @@ describe('Authentication API', function () {
         expires: dateInThePast,
         email: email,
         dbHash: settingsCache.get('db_hash'),
-        password: ownerUser.get('password'),
+        passwordHash: ownerUser.get('password'),
       });
 
       await agent
@@ -567,7 +567,7 @@ describe('Authentication API', function () {
         expires: Date.now() + 1000 * 60,
         email: email,
         dbHash: settingsCache.get('db_hash'),
-        password: 'invalid_password',
+        passwordHash: 'invalid_password',
       });
 
       await agent

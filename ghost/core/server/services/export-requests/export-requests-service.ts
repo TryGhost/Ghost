@@ -1,4 +1,8 @@
-import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
+import {
+  buildSignedWebhookRequest,
+  describeWebhookError,
+  sanitizeWebhookUrl,
+} from '../../lib/signed-webhook';
 import type { ASYNC_EXPORT_COMPONENTS } from '../../data/exporter/export-components';
 
 type AsyncExportComponents = Record<(typeof ASYNC_EXPORT_COMPONENTS)[number], boolean>;
@@ -112,7 +116,7 @@ export class ExportRequestsService {
     try {
       await this.#request(webhookUrl, requestOptions);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeWebhookError(error);
       this.#logging.error(`Failed to request export generation from "${sanitizedUrl}": ${message}`);
       throw new errors.InternalServerError({
         statusCode: 502,

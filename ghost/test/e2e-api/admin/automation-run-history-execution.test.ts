@@ -85,7 +85,7 @@ describe('Automation run history from the execution', function () {
       },
     };
     await automationsApi2.trigger({
-      event: 'member_sign_up',
+      event: 'membership_started',
       memberId: member.id,
       memberEmail: member.email,
       memberStatus: 'free',

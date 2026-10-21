@@ -11,10 +11,11 @@ import {
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 const companyField: MemberCustomField = {
-  namespace: 'custom',
-  key: 'company',
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('company'),
   name: 'Company',
   type: 'short_text',
   status: 'active',
@@ -24,8 +25,8 @@ const companyField: MemberCustomField = {
 };
 
 const archivedField: MemberCustomField = {
-  namespace: 'custom',
-  key: 'old_hobby',
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('old_hobby'),
   name: 'Old hobby',
   type: 'short_text',
   status: 'archived',
@@ -145,7 +146,9 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     fakeCustomFields();
     const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
-      members_metafields: [{ ...companyField, key: 'job_title', name: 'Job Title' }],
+      members_metafields: [
+        { ...companyField, key: KeySchema.parse('job_title'), name: 'Job Title' },
+      ],
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -460,7 +463,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     const manyFields = Array.from({ length: 7 }, (_, index) => ({
       ...companyField,
-      key: `field_${index}`,
+      key: KeySchema.parse(`field_${index}`),
       name: `Field ${index}`,
     }));
     fakeCustomFields(manyFields);
@@ -486,10 +489,14 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     const initialFields = Array.from({ length: 6 }, (_, index) => ({
       ...companyField,
-      key: `field_${index}`,
+      key: KeySchema.parse(`field_${index}`),
       name: `Field ${index}`,
     }));
-    fakeCustomFieldsWithCreate(initialFields, { ...companyField, key: 'newest', name: 'Newest' });
+    fakeCustomFieldsWithCreate(initialFields, {
+      ...companyField,
+      key: KeySchema.parse('newest'),
+      name: 'Newest',
+    });
     await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
@@ -512,8 +519,8 @@ describe('Custom fields', () => {
 
   it('reorders a field by dragging it, sending the whole list in its new order', async () => {
     fakeSettingsScreens();
-    const shirtField = { ...companyField, key: 'shirt_size', name: 'Shirt size' };
-    const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
+    const shirtField = { ...companyField, key: KeySchema.parse('shirt_size'), name: 'Shirt size' };
+    const nicknameField = { ...companyField, key: KeySchema.parse('nickname'), name: 'Nickname' };
     let currentFields = [companyField, shirtField, nicknameField];
     const browseApi = fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
@@ -554,7 +561,7 @@ describe('Custom fields', () => {
 
   it('leaves the dragged field where it was dropped while the request is in flight', async () => {
     fakeSettingsScreens();
-    const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
+    const nicknameField = { ...companyField, key: KeySchema.parse('nickname'), name: 'Nickname' };
     let currentFields = [companyField, nicknameField];
     fakeMemberCustomFields(() => currentFields);
 
@@ -588,13 +595,13 @@ describe('Custom fields', () => {
 
   it('puts the list back and says why when the order is refused', async () => {
     fakeSettingsScreens();
-    const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
+    const nicknameField = { ...companyField, key: KeySchema.parse('nickname'), name: 'Nickname' };
     // What the server has, and what this screen does not know about yet: a third
     // field a colleague added since the page loaded.
     const serverFields = [
       companyField,
       nicknameField,
-      { ...companyField, key: 'added_elsewhere', name: 'Added elsewhere' },
+      { ...companyField, key: KeySchema.parse('added_elsewhere'), name: 'Added elsewhere' },
     ];
     let browses = 0;
     fakeMemberCustomFields(() => {
@@ -632,7 +639,7 @@ describe('Custom fields', () => {
 
   it('sends the archived fields too, keeping their places in the order', async () => {
     fakeSettingsScreens();
-    const shirtField = { ...companyField, key: 'shirt_size', name: 'Shirt size' };
+    const shirtField = { ...companyField, key: KeySchema.parse('shirt_size'), name: 'Shirt size' };
     // Archived between the two active fields, which is the arrangement that catches a
     // move applied to the visible tab instead of the whole list.
     let currentFields = [companyField, archivedField, shirtField];
@@ -662,7 +669,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     let currentFields = Array.from({ length: 7 }, (_, index) => ({
       ...companyField,
-      key: `field_${index}`,
+      key: KeySchema.parse(`field_${index}`),
       name: `Field ${index}`,
     }));
     fakeMemberCustomFields(() => currentFields);

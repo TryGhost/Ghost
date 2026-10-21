@@ -26,6 +26,11 @@
       "source": "./src/manifest/index.ts",
       "types": "./build/manifest/index.d.ts",
       "default": "./build/manifest/index.js"
+    },
+    "./bridge": {
+      "source": "./src/bridge/index.ts",
+      "types": "./build/bridge/index.d.ts",
+      "default": "./build/bridge/index.js"
     }
   },
   "scripts": {

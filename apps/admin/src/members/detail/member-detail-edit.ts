@@ -1,7 +1,15 @@
 import moment from 'moment-timezone';
 import validator from 'validator';
+import { z } from 'zod';
+import {
+  IdentitySchema,
+  PartSchema,
+  QUALIFIER,
+  SEPARATOR,
+} from '@tryghost/metafield-types/identity';
 import {
   MEMBER_CUSTOM_FIELD_TYPES,
+  memberCustomFieldIdentity,
   memberCustomFieldParts,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { dequal } from 'dequal';
@@ -10,7 +18,6 @@ import type {
   MemberCustomField,
   MemberCustomFieldAddress,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { FieldIdentityString } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // The parts of the address composite, in the order its value schema declares them, each
 // with the label every other surface shows it under.
@@ -74,14 +81,18 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
 
 export function getEditableCustomFieldValues(
   metafields: Record<string, Record<string, unknown> | undefined> | null | undefined,
-): Record<FieldIdentityString, EditableCustomFieldValue> {
-  const flattened: Record<FieldIdentityString, unknown> = {};
+): Record<string, EditableCustomFieldValue> {
+  const flattened: Record<string, unknown> = {};
   for (const [namespace, records] of Object.entries(metafields ?? {})) {
-    for (const [fieldKey, fieldValue] of Object.entries(records ?? {})) {
-      flattened[`${namespace}.${fieldKey}`] = fieldValue;
+    for (const [key, fieldValue] of Object.entries(records ?? {})) {
+      // A name no field could have is one no field on the page reads from.
+      const field = IdentitySchema.safeParse({ namespace, key });
+      if (field.success) {
+        flattened[memberCustomFieldIdentity(field.data)] = fieldValue;
+      }
     }
   }
-  const values: Record<FieldIdentityString, EditableCustomFieldValue> = {};
+  const values: Record<string, EditableCustomFieldValue> = {};
   for (const [key, value] of Object.entries(flattened)) {
     if (typeof value === 'string' && value.trim() !== '') {
       values[key] = value.trim();
@@ -115,8 +126,8 @@ function addressToSave(value: Record<string, unknown>): EditableAddressValue | u
 }
 
 /**
- * An address value reduced to its known sub-fields, trimmed, with empty
- * sub-fields dropped. Undefined when nothing remains, so an all-blank address
+ * An address value reduced to its known parts, trimmed, with empty
+ * parts dropped. Undefined when nothing remains, so an all-blank address
  * normalizes to "no value" exactly like an empty string does.
  */
 function normalizeAddressValue(value: Record<string, unknown>): EditableAddressValue | undefined {
@@ -295,7 +306,7 @@ function customFieldValueToSave(
 /**
  * The save payload for ONE custom field, from the per-field editor. Merge
  * semantics do the rest: only this key is touched, `null` clears it, and an
- * address is sent whole (the merge is per field, not per sub-field).
+ * address is sent whole (the merge is per field, not per part).
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
@@ -313,8 +324,8 @@ export function buildCustomFieldSavePayload(
  * schemas. Each rule carries its own message, so what this returns for a
  * violation is the same sentence the server returns for it, and the screen
  * reads the same whichever tier caught it. Returns messages keyed by
- * `namespace.fieldKey` (scalar) or `namespace.fieldKey.subfield` (composite
- * sub-field), the path shape of the server's 422 `property` once its
+ * `namespace.fieldKey` (scalar) or `namespace.fieldKey.part` (composite
+ * part), the path shape of the server's 422 `property` once its
  * `metafields.` prefix is dropped, so both error sources render through one map.
  * Cleared/empty values are always valid — fields are optional.
  */
@@ -341,8 +352,8 @@ export function getCustomFieldValidationErrors(
     const result = definition.value.safeParse(value);
     if (!result.success) {
       for (const issue of result.error.issues) {
-        const key = [field.namespace, field.key, ...issue.path].join('.');
-        errors[key] ??= issue.message;
+        const parts = z.array(PartSchema).safeParse(issue.path);
+        errors[memberCustomFieldIdentity(field, parts.data ?? [])] ??= issue.message;
       }
     }
   }
@@ -369,9 +380,10 @@ export function parseCustomFieldServerErrors(error: unknown): Record<string, str
     } | null
   )?.data;
   const errors: Record<string, string> = {};
+  const qualified = `${QUALIFIER}${SEPARATOR}`;
   for (const apiError of data?.errors ?? []) {
-    if (apiError.property?.startsWith('metafields.')) {
-      errors[apiError.property.slice('metafields.'.length)] =
+    if (apiError.property?.startsWith(qualified)) {
+      errors[apiError.property.slice(qualified.length)] =
         apiError.context || apiError.message || 'Invalid value.';
     }
   }

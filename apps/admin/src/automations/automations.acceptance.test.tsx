@@ -87,7 +87,7 @@ describe('Automations list', () => {
     ]);
 
     await renderAdminApp('/automations', {
-      labs: { automations: true, automationsPerTier: true },
+      labs: { automations: true },
     });
     const filter = () => page.getByRole('combobox', { name: 'Automations to show' });
 

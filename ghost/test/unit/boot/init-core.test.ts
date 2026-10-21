@@ -27,7 +27,9 @@ function createCoreHarness() {
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
     './server/services/export-requests': { default: { init() {} } },
-    './server/services/stripe-checkout-config': { init() {} },
+    './server/services/invites': { default: { init() {} } },
+    './server/services/support-requests': { default: { init() {} } },
+    './server/services/stripe-checkout-config': { default: { init() {} } },
   });
   return {
     init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),

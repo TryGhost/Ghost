@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
+import { CUSTOM_NAMESPACE, type Namespace } from '@tryghost/metafield-types/identity';
 
 /**
  * Who may define fields in a namespace.
@@ -15,11 +15,11 @@ import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
  * has to *be* that app rather than hold a role, which is why the staff permission stays
  * named after the publisher's fields rather than after metafields at large.
  */
-export function definableByPublisher(namespace: string): boolean {
+export function definableByPublisher(namespace: Namespace): boolean {
   return namespace === CUSTOM_NAMESPACE;
 }
 
-export function assertDefinable(namespace: string): void {
+export function assertDefinable(namespace: Namespace): void {
   if (!definableByPublisher(namespace)) {
     throw new errors.ValidationError({
       message: `Fields cannot be defined in the "${namespace}" namespace.`,

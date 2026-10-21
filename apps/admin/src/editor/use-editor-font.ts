@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
-import { type EditorFont, editorFontToSave, resolveEditorFont } from './editor-font';
+import { DEFAULT_EDITOR_FONT, type EditorFont, editorFontToSave } from './editor-font';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 
 export interface EditorFontControl {
@@ -18,14 +18,14 @@ export interface EditorFontControl {
  *
  * The choice is local, so use this once (the editor screen) and hand it down.
  */
-export function useEditorFont(enabled: boolean): EditorFontControl {
+export function useEditorFont(): EditorFontControl {
   const { data: preferences } = useUserPreferences({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { mutateAsync: editPreferences } = useEditUserPreferences({
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const [chosen, setChosen] = useState<EditorFont | null>(null);
   const saved = preferences?.editor?.bodyFont;
-  const font = resolveEditorFont(enabled, chosen ?? saved);
+  const font = chosen ?? saved ?? DEFAULT_EDITOR_FONT;
 
   // Read when saving, which can happen as the editor unmounts.
   const latest = useRef({ chosen, saved, editPreferences });

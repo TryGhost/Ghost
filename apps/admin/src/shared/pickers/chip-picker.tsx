@@ -610,16 +610,8 @@ function Chip({
   title,
 }: ChipProps) {
   return (
-    // Wraps rather than truncates, so a long name stays whole once it is picked.
-    // The fixed radius is half a one-line chip's height: one line still reads as
-    // a pill, and a taller chip keeps soft corners rather than turning oval. The
-    // fixed leading is what levels the × with the first line.
     <Badge
-      className={cn(
-        tokenFieldClasses.chip,
-        'h-auto rounded-[12px] bg-secondary py-1 text-left leading-4 whitespace-normal',
-        className,
-      )}
+      className={cn(tokenFieldClasses.chip, 'bg-secondary', className)}
       variant={variant}
       asChild
     >

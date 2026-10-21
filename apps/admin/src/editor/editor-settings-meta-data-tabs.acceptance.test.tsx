@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 import {
   settingsFacebookCardRow,
   settingsMetaDataBackButton,
@@ -21,8 +20,6 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
 
-const withTabs = () => withoutAutosave({ labs: { admin7EditorImprovements: true } });
-
 function fakeSavablePost() {
   fakeEditorChrome();
   fakeTiers([]);
@@ -37,7 +34,7 @@ function fakeSavablePost() {
   return fakeEditorPost({ meta_title: null, og_title: null, twitter_title: null, tags: [] });
 }
 
-const tab = (name: 'Search' | 'X card' | 'Facebook card') => page.getByRole('tab', { name });
+const tab = editorScreen.settingsMetaDataTab;
 
 async function openMetaData() {
   await editorScreen.settingsToggle().click();
@@ -47,10 +44,10 @@ async function openMetaData() {
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
-describe('Post settings Meta data tabs (admin7EditorImprovements)', () => {
+describe('Post settings Meta data tabs', () => {
   it('holds the X and Facebook cards as tabs of one pane that opens on Search', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, withTabs());
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await editorScreen.settingsToggle().click();
     await settleTransitions();
 
@@ -75,7 +72,7 @@ describe('Post settings Meta data tabs (admin7EditorImprovements)', () => {
 
   it('opens the tab of a card field a publish refuses', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, withTabs());
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await tab('Facebook card').click();

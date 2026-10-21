@@ -1,5 +1,5 @@
 /**
- * The newsletter each draft was last pointed at (admin7EditorImprovements). A draft
+ * The newsletter each draft was last pointed at. A draft
  * has no newsletter on the server until it is sent or scheduled, so the pick made
  * in the preview or the publish flow is remembered in this browser, keyed by post
  * id, and both start from it the next time. The default newsletter is never
@@ -24,13 +24,10 @@ export interface DraftNewsletterEntry {
 type DraftNewsletters = Record<string, DraftNewsletterEntry>;
 
 /**
- * The browser's storage while the flag is on, and null otherwise or where storage
- * is blocked. Every read and write below takes null as "nothing stored".
+ * The browser's storage, or null where it is blocked. Every read and write below
+ * takes null as "nothing stored".
  */
-export function draftNewsletterStorage(enabled: boolean): Storage | null {
-  if (!enabled) {
-    return null;
-  }
+export function draftNewsletterStorage(): Storage | null {
   try {
     return window.localStorage;
   } catch {
@@ -121,23 +118,20 @@ export interface ResolvedDraftNewsletter {
 }
 
 /**
- * The remembered newsletter a draft starts on. Only drafts read entries, and only
- * while the flag is on. An entry for a newsletter since archived or deleted is
+ * The remembered newsletter a draft starts on. Only drafts read entries. An entry for a newsletter since archived or deleted is
  * ignored and reported stale; `newsletters` is null until the site's list is known,
  * when nothing can be judged yet.
  */
 export function resolveDraftNewsletter({
-  enabled,
   status,
   stored,
   newsletters,
 }: {
-  enabled: boolean;
   status: PostStatus;
   stored: string | null;
   newsletters: ReadonlyArray<NewsletterInput> | null;
 }): ResolvedDraftNewsletter {
-  if (!enabled || status !== 'draft' || !stored || !newsletters) {
+  if (status !== 'draft' || !stored || !newsletters) {
     return { slug: null, stale: false };
   }
   const selectable = selectableNewsletters(newsletters).some(

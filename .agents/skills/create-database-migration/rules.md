@@ -22,7 +22,7 @@ Migration PRs should contain the minimal amount of code to create the migration.
 
 - the new migration file
 - updates to the schema.js file
-- updated schema integrity hash tests
+- updated database integrity hashes (only when changing fixtures, default settings, or default routes)
 - updated exporter table lists (when adding or removing tables)
 
 ## Migrations should be defensive

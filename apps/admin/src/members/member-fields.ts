@@ -1,4 +1,8 @@
-import { customFieldAddressing, metafieldFieldId } from './custom-fields/addressing';
+import {
+  customFieldAddressing,
+  fieldFromParams,
+  metafieldFieldId,
+} from './custom-fields/addressing';
 import { customFieldOperators, customFieldSemantics } from './custom-fields/filter-fields';
 import {
   FUTURE_TIMESTAMP_OPERATORS,
@@ -292,10 +296,10 @@ const CUSTOM_FIELD = domainField({
     // publisher collected varies member to member, which is what earns a column;
     // it is shown whatever the operator, the way Label is. No name resolved means
     // no such field for this site (or the flag is off), so no column either.
-    activeColumn: ({ params, label }) =>
-      label && params.namespace && params.key
-        ? { key: metafieldFieldId({ namespace: params.namespace, key: params.key }), label }
-        : null,
+    activeColumn: ({ params, label }) => {
+      const field = fieldFromParams(params);
+      return label && field ? { key: metafieldFieldId(field), label } : null;
+    },
     // Asked for as soon as a custom field is filtered on: the values are what the column will
     // hold, and they travel on the request the filter already sends. The API accepts the
     // include on every site and returns values only where fields are defined, so it needs no

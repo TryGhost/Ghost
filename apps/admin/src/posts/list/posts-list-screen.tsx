@@ -1,6 +1,6 @@
 import { Box, Container, Stack, Text } from '@tryghost/shade/primitives';
 import { LoadingIndicator } from '@tryghost/shade/components';
-import { ListPage } from '@tryghost/shade/page-templates';
+import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
@@ -136,6 +136,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // the save-view control falls back to the top row when the bar is hidden.
   const showFilterBar = hasFilters;
   const showViewActionsInHeader = canManageView && !showFilterBar;
+  // Under a large title the header draws its own separator (ListPage)
+  const { largeTitles } = usePageChrome();
 
   // Authors and contributors only ever see their own posts, whatever the
   // `author` param says — matching PostsRoute#model in the Ember app.
@@ -394,8 +396,10 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                   // opts back out. Border here, not on the
                   // header: the header is full-bleed and a
                   // border there runs wider than the rows.
+                  // Not under a large title, whose header has
+                  // its own separator.
                   className={cn(
-                    'border-t border-border-default',
+                    !largeTitles && 'border-t border-border-default',
                     selection.modifierHeld && [
                       'cursor-default',
                       '[&_li_*]:pointer-events-none [&_li_*]:cursor-default',

@@ -141,7 +141,7 @@ function ActivityPage() {
           <ListPage.Header
             className={cn(
               memberHeader &&
-                'top-(--list-page-header-top) z-60 gap-1 bg-background bg-none! pt-(--large-title-space)! pb-8 backdrop-blur-none!',
+                'top-(--list-page-header-top) z-40 gap-1 bg-background bg-none! pt-(--large-title-space)! pb-8 backdrop-blur-none!',
             )}
           >
             <PageHeader blurredBackground={false} sticky={false}>
@@ -209,15 +209,17 @@ function ActivityPage() {
                 </Inline>
               </PageHeader.Actions>
             </PageHeader>
+            {/* The name wraps rather than truncates, and stops short of the
+                actions above it on wide screens */}
             {memberHeader && member && (
-              <Inline className="min-w-0" gap="lg">
+              <Inline className="min-w-0 lg:pr-40" gap="lg">
                 <Avatar
                   {...memberAvatarProps(member)}
                   className="size-14 min-w-14 [&_span]:text-xl"
                   src={member.avatar_image}
                 />
                 <Stack className="min-w-0" gap="none">
-                  <H1 className="truncate text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]!">
+                  <H1 className="text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]! break-words">
                     {formatMemberName(member)}
                   </H1>
                   <Inline className="min-w-0 text-muted-foreground" gap="sm">

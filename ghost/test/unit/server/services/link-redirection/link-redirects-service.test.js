@@ -1,6 +1,7 @@
 const LinkRedirectsService = require('../../../../../core/server/services/link-redirection/link-redirects-service');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const DomainEvents = require('@tryghost/domain-events');
 const crypto = require('crypto');
 
 describe('LinkRedirectsService', function () {
@@ -264,6 +265,55 @@ describe('LinkRedirectsService', function () {
       sinon.assert.calledOnce(res.redirect);
       assert.equal(res.redirect.getCall(0).args[0], 'https://localhost:2368/b');
       sinon.assert.calledWith(res.setHeader, 'X-Robots-Tag', 'noindex, nofollow');
+    });
+
+    it('dispatches a redirect event for GET requests', async function () {
+      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const instance = new LinkRedirectsService({
+        linkRedirectRepository: {
+          getByURL: () =>
+            Promise.resolve({
+              link_id: 'link-id',
+              from: new URL('https://localhost:2368/r/a'),
+              to: new URL('https://localhost:2368/b'),
+            }),
+        },
+        config: {
+          baseURL: new URL('https://localhost:2368/'),
+        },
+      });
+      const res = {
+        redirect: sinon.fake(),
+        setHeader: sinon.fake(),
+      };
+      await instance.handleRequest({ method: 'GET', originalUrl: '/r/a?m=member-uuid' }, res);
+      sinon.assert.calledOnce(dispatch);
+      sinon.assert.calledOnce(res.redirect);
+    });
+
+    it('redirects HEAD requests without dispatching a redirect event', async function () {
+      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const instance = new LinkRedirectsService({
+        linkRedirectRepository: {
+          getByURL: () =>
+            Promise.resolve({
+              link_id: 'link-id',
+              from: new URL('https://localhost:2368/r/a'),
+              to: new URL('https://localhost:2368/b'),
+            }),
+        },
+        config: {
+          baseURL: new URL('https://localhost:2368/'),
+        },
+      });
+      const res = {
+        redirect: sinon.fake(),
+        setHeader: sinon.fake(),
+      };
+      await instance.handleRequest({ method: 'HEAD', originalUrl: '/r/a?m=member-uuid' }, res);
+      sinon.assert.notCalled(dispatch);
+      sinon.assert.calledOnce(res.redirect);
+      assert.equal(res.redirect.getCall(0).args[0], 'https://localhost:2368/b');
     });
 
     it('does not redirect if not found', async function () {

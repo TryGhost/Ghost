@@ -1,3 +1,4 @@
+import AutomationNameField from './automation-name-field';
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import { useShade } from '@tryghost/shade/app';
@@ -42,6 +43,8 @@ interface AutomationHeaderProps {
   onTurnOff: () => void;
   chrome: EditorChrome;
   sidebar: { available: boolean; open: boolean; animated: boolean };
+  // Makes the title editable when provided
+  onNameChange?: (name: string) => void;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -61,6 +64,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onTurnOff,
   chrome,
   sidebar,
+  onNameChange,
 }) => {
   const { isAdmin7, controlShape } = useShade();
   const floating = chrome === 'floating';
@@ -183,15 +187,19 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
             <Skeleton className="h-5 w-40" />
           ) : (
             <>
-              <span
-                className={cn(
-                  'flex h-(--control-height) min-w-0 items-center bg-surface-elevated',
-                  isAdmin7 ? 'px-3' : 'px-2.5',
-                  controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
-                )}
-              >
-                <span className="min-w-0 truncate text-control font-medium">{name}</span>
-              </span>
+              {onNameChange && name !== undefined ? (
+                <AutomationNameField value={name} surface onChange={onNameChange} />
+              ) : (
+                <span
+                  className={cn(
+                    'flex h-(--control-height) min-w-0 items-center bg-surface-elevated',
+                    isAdmin7 ? 'px-3' : 'px-2.5',
+                    controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
+                  )}
+                >
+                  <span className="min-w-0 truncate text-control font-medium">{name}</span>
+                </span>
+              )}
               {status && <AutomationStatusBadge status={status} />}
             </>
           )}
@@ -224,7 +232,11 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
           <Skeleton className="h-5 w-40" />
         ) : (
           <>
-            <span className="truncate text-lg font-semibold">{name}</span>
+            {onNameChange && name !== undefined ? (
+              <AutomationNameField value={name} onChange={onNameChange} />
+            ) : (
+              <span className="truncate text-control font-medium">{name}</span>
+            )}
             {status && <AutomationStatusBadge status={status} />}
           </>
         )}

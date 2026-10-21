@@ -131,7 +131,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('rejects a duplicate name, case-insensitively', async function () {
-      // The name is the human label and is globally unique; this 422 is what
+      // The name is the human label and is unique in its namespace; this 422 is what
       // the Settings UI surfaces as an inline error on the name field.
       await createField({ name: 'Company' });
       await agent
@@ -292,13 +292,29 @@ describe('Member Custom Fields Admin API', function () {
 
     it('404s reading, editing or deleting a non-existent field', async function () {
       // A key that doesn't exist reaches the service's not-found.
-      const missing = 'does-not-exist';
+      const missing = 'does_not_exist';
       await agent.get(`members/metafields/custom/${missing}/`).expectStatus(404);
       await agent
         .put(`members/metafields/custom/${missing}/`)
         .body({ members_metafields: [{ name: 'Topic' }] })
         .expectStatus(404);
       await agent.delete(`members/metafields/custom/${missing}/`).expectStatus(404);
+    });
+
+    it('refuses a route naming something that cannot be a namespace or key', async function () {
+      // No field could be stored under either, so the request is malformed rather than
+      // asking after something missing.
+      const { body } = await agent
+        .get('members/metafields/custom/does-not-exist/')
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'key');
+      assert.equal(
+        body.errors[0].context,
+        'A key can only contain lowercase letters, numbers and underscores.',
+      );
+
+      const namespace = await agent.get('members/metafields/Custom/').expectStatus(422);
+      assert.equal(namespace.body.errors[0].property, 'namespace');
     });
 
     it('hides archived fields from the default list', async function () {
@@ -362,19 +378,6 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Nope', type: 'short_text' }] })
         .expectStatus(422);
       assert.equal(refused.body.errors[0].property, 'namespace');
-    });
-
-    it('rejects a namespace filter, naming the route as the way to scope', async function () {
-      // The table storing these fields has no namespace column, so a filter clause naming one
-      // would reach the database as a query against a missing column. It is refused at the edge
-      // instead, pointing at the URL as the way to choose a namespace.
-      const { body } = await agent
-        .get('members/metafields/custom/?filter=namespace:custom')
-        .expectStatus(400);
-      // Ghost's API error handler replaces `message` with a stock sentence for the error's type
-      // and moves the thrown wording into `context`, so that is where it has to be asserted.
-      assert.match(body.errors[0].context, /namespace/i);
-      assert.equal(body.errors[0].property, 'filter');
     });
 
     it('rejects a malformed filter with a 400 rather than a 500', async function () {
@@ -464,6 +467,139 @@ describe('Member Custom Fields Admin API', function () {
       // fresh field with the same name reclaims the original (unsuffixed) key.
       const fresh = await createField({ name: 'Favourite topic' });
       assert.equal(fresh.key, 'favourite_topic');
+    });
+  });
+
+  // Written straight to the table: the database has to refuse these whoever writes them.
+  describe('What a field can be called', function () {
+    const insertField = (namespace: string, key: string) =>
+      models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000b1',
+        namespace,
+        key,
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+
+    it('refuses a namespace or key that an identity cannot name', async function () {
+      await assert.rejects(insertField('Shop', 'company'), /members_metafields_namespace_check/);
+      await assert.rejects(insertField('sh.op', 'company'), /members_metafields_namespace_check/);
+      await assert.rejects(insertField('shop', 'Company'), /members_metafields_key_check/);
+      await assert.rejects(insertField('shop', 'com-pany'), /members_metafields_key_check/);
+      await assert.rejects(insertField('shop', 'company\n'), /members_metafields_key_check/);
+
+      await insertField('shop', 'company');
+    });
+  });
+
+  // The API defines fields only in `custom`, so the other namespace's field is written
+  // straight to the table, as an app's would be.
+  describe('Fields in another namespace', function () {
+    beforeEach(async function () {
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000a1',
+        namespace: 'shop',
+        key: 'company',
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+    });
+
+    it('leaves the publisher free to use the same key and name', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        body.members_metafields.map(({ key }: { key: string }) => key),
+        ['company'],
+      );
+      const { body: shop } = await agent.get('members/metafields/shop/company/').expectStatus(200);
+      assert.equal(shop.members_metafields[0].namespace, 'shop');
+    });
+
+    it('keeps a filter inside the namespace the route names', async function () {
+      const created = await createField({ name: 'Favourite topic' });
+
+      // An "or" naming the other namespace still only reaches the publisher's fields.
+      const { body } = await agent
+        .get(
+          'members/metafields/custom/?filter=' + encodeURIComponent('namespace:shop,status:active'),
+        )
+        .expectStatus(200);
+      assert.deepEqual(
+        body.members_metafields.map(({ key }: { key: string }) => key),
+        [created.key],
+      );
+    });
+
+    it('clears only the publisher’s value', async function () {
+      await createField({ name: 'Company' });
+      const memberId = await createMember();
+      await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ metafields: { custom: { company: 'Ghost' }, shop: { company: 'Acme' } } }],
+        })
+        .expectStatus(200);
+
+      const { members } = await setValues(memberId, { company: null });
+
+      assert.deepEqual(members[0].metafields, { shop: { company: 'Acme' } });
+    });
+
+    it('renames, archives and reorders the publisher’s fields and nothing else', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Industry' });
+
+      await agent
+        .put('members/metafields/custom/company/')
+        .body({ members_metafields: [{ name: 'Employer' }] })
+        .expectStatus(200);
+      await setStatus('company', 'archived');
+      await agent
+        .put('members/metafields/custom/')
+        .body({ members_metafields: [{ key: 'industry' }, { key: 'company' }] })
+        .expectStatus(200);
+
+      const { body } = await agent.get('members/metafields/shop/company/').expectStatus(200);
+      const [shop] = body.members_metafields;
+      assert.equal(shop.name, 'Company');
+      assert.equal(shop.status, 'active');
+    });
+
+    it('keeps each namespace’s value apart on the member, in filters, and when one is deleted', async function () {
+      const publisherField = await createField({ name: 'Company' });
+      const memberId = await createMember();
+
+      const { body: written } = await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ metafields: { custom: { company: 'Ghost' }, shop: { company: 'Acme' } } }],
+        })
+        .expectStatus(200);
+      assert.deepEqual(written.members[0].metafields, {
+        custom: { company: 'Ghost' },
+        shop: { company: 'Acme' },
+      });
+
+      const matching = async (identity: string, value: string) => {
+        const filter = `(metafields.identity:'${identity}'+metafields.value:'${value}')`;
+        const { body } = await agent
+          .get(`members/?filter=${encodeURIComponent(filter)}`)
+          .expectStatus(200);
+        return body.members.map(({ id }: { id: string }) => id);
+      };
+      assert.deepEqual(await matching('shop.company', 'Acme'), [memberId]);
+      assert.deepEqual(await matching('custom.company', 'Acme'), []);
+
+      await setStatus(publisherField.key, 'archived');
+      await agent.delete(`members/metafields/custom/${publisherField.key}/`).expectStatus(204);
+
+      const { body: read } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.deepEqual(read.members[0].metafields, { shop: { company: 'Acme' } });
     });
   });
 
@@ -864,6 +1000,20 @@ describe('Member Custom Fields Admin API', function () {
 
       await reorder(['company', 'company'], 422);
 
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+    });
+
+    it('rejects a list naming something that cannot be a key', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+
+      const { errors } = await reorder(['shirt_size', 'Company'], 422);
+
+      assert.equal(errors[0].property, 'key');
+      assert.equal(
+        errors[0].message,
+        'A key can only contain lowercase letters, numbers and underscores.',
+      );
       assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
     });
 
@@ -1324,7 +1474,7 @@ describe('Member Custom Fields Admin API', function () {
         );
       });
 
-      it("gives a sub-field failure the sub-field's own limit, not the field's", async function () {
+      it("gives a part failure the part's own limit, not the field's", async function () {
         // postal_code is bounded well under the 255 its siblings carry, and the
         // reason has to name the bound that actually stopped the save.
         const field = await createField({ name: 'Home address', type: 'address' });
@@ -1748,7 +1898,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
     });
 
-    it('points at the offending sub-field of a composite value', async function () {
+    it('points at the offending part of a composite value', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
@@ -1761,7 +1911,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(body.errors[0].property, `metafields.custom.${field.key}.country`);
     });
 
-    it('round-trips an address that omits the sub-fields its country has no use for', async function () {
+    it('round-trips an address that omits the parts its country has no use for', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
       // Hong Kong has no postal code, so an address without one is complete.
@@ -1937,7 +2087,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal((await readValues(memberId))[field.key].length, 21845);
     });
 
-    it('rejects an over-long address sub-field', async function () {
+    it('rejects an over-long address part', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 

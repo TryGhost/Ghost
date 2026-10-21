@@ -2,7 +2,6 @@
 import chalk from 'chalk';
 import { DateTime } from 'luxon';
 import { z } from 'zod';
-// @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
 // @ts-expect-error This module lacks type definitions.
 import inquirer from 'inquirer';

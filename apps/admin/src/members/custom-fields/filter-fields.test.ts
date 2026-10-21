@@ -7,6 +7,7 @@ import type {
   MemberCustomFieldPartType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { FieldDescriptor, FilterTypeId } from '@/shared/filters';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 type ScalarKind = Exclude<MemberCustomFieldKind, 'record'>;
 
@@ -34,8 +35,8 @@ describe('SCALAR_KIND_FILTER_TYPE', () => {
 
 describe('a composite field descriptor', () => {
   const descriptor = customFieldDescriptor({
-    namespace: 'custom',
-    key: 'shipping',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('shipping'),
     name: 'Shipping',
     type: 'address',
   });

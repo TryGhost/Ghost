@@ -153,12 +153,15 @@ class LinkRedirectsService {
         return next();
       }
 
-      const event = RedirectEvent.create({
-        url,
-        link,
-      });
+      // Browsers click with GET; HEAD comes from email link checkers, so don't count it
+      if (req.method !== 'HEAD') {
+        const event = RedirectEvent.create({
+          url,
+          link,
+        });
 
-      DomainEvents.dispatch(event);
+        DomainEvents.dispatch(event);
+      }
 
       // Substitute %%{uuid}%% placeholder if present in the destination URL
       // This allows tracked links to include dynamic member UUIDs (e.g., for Transistor embeds)

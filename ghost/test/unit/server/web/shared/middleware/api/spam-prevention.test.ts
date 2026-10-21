@@ -6,6 +6,8 @@ import configUtils from '../../../../../../utils/config-utils';
 import * as spamPrevention from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';
 
 type FactoryName =
+  | 'upgradeBlock'
+  | 'upgradeApiBlock'
   | 'globalBlock'
   | 'globalReset'
   | 'userLogin'
@@ -21,7 +23,8 @@ type FactoryName =
   | 'privateBlog'
   | 'contentApiKey'
   | 'webmentionsBlock'
-  | 'emailPreviewBlock';
+  | 'emailPreviewBlock'
+  | 'supportRequestBlock';
 
 const factories: Array<{
   name: FactoryName;
@@ -29,6 +32,8 @@ const factories: Array<{
   attachResetToRequest: boolean;
   isMemoryBacked?: boolean;
 }> = [
+  { name: 'upgradeBlock', configKey: 'upgrade_block', attachResetToRequest: false },
+  { name: 'upgradeApiBlock', configKey: 'upgrade_api_block', attachResetToRequest: false },
   { name: 'globalBlock', configKey: 'global_block', attachResetToRequest: false },
   { name: 'globalReset', configKey: 'global_reset', attachResetToRequest: false },
   { name: 'userLogin', configKey: 'user_login', attachResetToRequest: true },
@@ -58,6 +63,7 @@ const factories: Array<{
   },
   { name: 'webmentionsBlock', attachResetToRequest: false },
   { name: 'emailPreviewBlock', attachResetToRequest: false },
+  { name: 'supportRequestBlock', configKey: 'support_request_block', attachResetToRequest: false },
 ];
 
 const fakeSpamConfig = (seed: number) => ({
@@ -137,6 +143,20 @@ describe('Spam Prevention', function () {
         `${name} config`,
       );
     }
+  });
+
+  it('keeps upgrade budgets stable when limiter construction order changes', function () {
+    const firstRequestLimiter = spamPrevention.upgradeBlock();
+    const firstApiLimiter = spamPrevention.upgradeApiBlock();
+
+    spamPrevention.reset();
+    spamPrevention.globalBlock();
+    const secondApiLimiter = spamPrevention.upgradeApiBlock();
+    const secondRequestLimiter = spamPrevention.upgradeBlock();
+
+    assert.equal(firstRequestLimiter.name, secondRequestLimiter.name);
+    assert.equal(firstApiLimiter.name, secondApiLimiter.name);
+    assert.notEqual(secondRequestLimiter.name, secondApiLimiter.name);
   });
 
   it('reset clears cached limiters and reloads spam configuration', function () {

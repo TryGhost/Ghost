@@ -1,8 +1,8 @@
 /**
  * Whether the post settings panel is open, remembered in this browser across
- * every post and page (admin7EditorImprovements). The editor opens with the
- * panel as the writer last left it with the Settings toggle; a panel the editor
- * opens itself, to show a field a save refused, is not remembered.
+ * every post and page. The editor opens with the panel as the writer last left
+ * it with the Settings toggle; a panel the editor opens itself, to show a field
+ * a save refused, is not remembered.
  */
 
 /** One state for all posts and pages, stored as `open` or `closed`. */
@@ -30,29 +30,25 @@ export function writeSettingsOpen(open: boolean, storage: StorageSource = browse
   }
 }
 
-interface SettingsOpenContext {
-  /** The admin7EditorImprovements flag. */
-  enabled: boolean;
-  /** The panel overlays the editor rather than sitting beside it. */
-  overlay: boolean;
-}
-
 /**
  * Whether the editor opens with the panel open. Where the panel would cover the
  * editor it always starts closed, so the writer lands on their post.
  */
 export function settingsOpenAtStart({
-  enabled,
   overlay,
   stored,
-}: SettingsOpenContext & { stored: boolean }): boolean {
-  return enabled && !overlay && stored;
+}: {
+  /** The panel overlays the editor rather than sitting beside it. */
+  overlay: boolean;
+  stored: boolean;
+}): boolean {
+  return !overlay && stored;
 }
 
 /**
  * Whether the writer's toggle is remembered. A toggle where the panel overlays
  * the editor is not, since that panel never opens with the editor.
  */
-export function remembersSettingsToggle({ enabled, overlay }: SettingsOpenContext): boolean {
-  return enabled && !overlay;
+export function remembersSettingsToggle({ overlay }: { overlay: boolean }): boolean {
+  return !overlay;
 }

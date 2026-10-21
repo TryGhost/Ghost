@@ -51,7 +51,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       memberStatus,
       memberTierIds,
     }: ReadonlyDeep<{
-      event: 'member_sign_up';
+      event: 'membership_started';
       memberEmail: string;
       memberId: string;
       memberStatus: 'free' | 'paid';
@@ -60,7 +60,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       // TypeScript makes this impossible in theory, but in practice there are
       // untyped callers (and TypeScript doesn't have a sound type system
       // anyway). This check is defense-in-depth.
-      if (event !== 'member_sign_up') {
+      if (event !== 'membership_started') {
         throw new errors.IncorrectUsageError({
           message: 'Member signup is the only supported event right now. More may be added later',
         });
@@ -70,7 +70,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
         return;
       }
 
-      await repository.withTransaction(async (trx) => {
+      const didEnroll = await repository.withTransaction(async (trx) => {
         await repository.lockMember(trx, memberId);
 
         const firstActions = await repository.findFirstActionRevisions(
@@ -121,9 +121,13 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
         await repository.insertRuns(trx, runsToInsert);
         await repository.insertRunSteps(trx, stepsToInsert);
+
+        return runsToInsert.length > 0;
       });
 
-      requestPoll();
+      if (didEnroll) {
+        requestPoll();
+      }
     },
   };
 };

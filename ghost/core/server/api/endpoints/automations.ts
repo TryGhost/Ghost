@@ -14,7 +14,7 @@ type EditFrame = Frame<{
 }>;
 
 const assertCanAddAutomations = (): void => {
-  if (!labs.isSet('automations') || !labs.isSet('automationsPerTier')) {
+  if (!labs.isSet('automations')) {
     throw new errors.NotFoundError({ message: 'Creating automations is not enabled.' });
   }
 };

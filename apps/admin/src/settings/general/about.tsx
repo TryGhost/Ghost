@@ -1,3 +1,4 @@
+import GhostUpdates from './ghost-updates/ghost-updates';
 import { GhostLogo, Link, Separator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -110,6 +111,7 @@ function AboutModal() {
             </div>
           )}
         </div>
+        <GhostUpdates />
         <Separator />
         <div className="flex flex-col gap-1.5">
           <a

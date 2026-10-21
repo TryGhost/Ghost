@@ -1,39 +1,17 @@
 const _ = require('lodash');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
-const rolePermissions = require('./role-permissions');
 const { setIsRoles } = require('../../models/role-utils');
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
   noActionsMapFoundError:
-    'No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use.',
-  parityMismatch: 'Permission grants differ with in-memory role permissions',
-  parityCheckFailed: 'Permissions parity check could not run',
+    'No actions map found, ensure permissions.init() has been called before use.',
 };
-
-// Compare grants from both permission sources. Model rules may override the
-// grants and perform database reads, so they run only once using the database
-// permissions. Each distinct grant difference is logged once per process.
-// This is temporary and goes with the switch.
-
-const roleNamesOf = (actor) => (actor?.roles ?? []).map((role) => role.name);
-
-/**
- * The same actors, with their permissions taken from the in-memory role map
- * instead of the database.
- */
-function withInMemoryPermissions(loaded) {
-  const swap = (actor) =>
-    actor ? { ...actor, permissions: rolePermissions.forRoles(roleNamesOf(actor)) } : actor;
-
-  return { ...loaded, user: swap(loaded.user), apiKey: swap(loaded.apiKey) };
-}
 
 /**
  * Calculates grants without performing I/O or running model-specific rules.
@@ -79,83 +57,12 @@ function getGrantFlags(loadedPermissions, actType, objType) {
   return { hasUserPermission, hasApiKeyPermission };
 }
 
-const reportedParityMismatches = new Set();
-
-/**
- * Compares grants from the database with grants from the in-memory role map.
- * Uses the same loaded actors, does no additional reads, and never runs model
- * rules. The caller does not wait for this diagnostic comparison.
- *
- * @param {{hasUserPermission: boolean|undefined, hasApiKeyPermission: boolean}} databaseGrants
- * @param {object} loaded the actors loaded from the database
- * @param {{actType: string, objType: string, context: object}} check
- * @returns {Promise<void>}
- */
-function compareWithInMemoryGrants(databaseGrants, loaded, check) {
-  return Promise.resolve()
-    .then(() => {
-      const inMemoryGrants = getGrantFlags(
-        withInMemoryPermissions(loaded),
-        check.actType,
-        check.objType,
-      );
-
-      // Preserve the original flags passed to model rules, but treat an absent
-      // grant (undefined) and an explicit false as equivalent for comparison.
-      const normalize = (grants) => ({
-        hasUserPermission: Boolean(grants.hasUserPermission),
-        hasApiKeyPermission: Boolean(grants.hasApiKeyPermission),
-      });
-      const database = normalize(databaseGrants);
-      const inMemory = normalize(inMemoryGrants);
-
-      if (_.isEqual(database, inMemory)) {
-        return;
-      }
-
-      const userRoles = roleNamesOf(loaded.user);
-      const apiKeyRoles = roleNamesOf(loaded.apiKey);
-      const key = JSON.stringify([
-        check.actType,
-        check.objType,
-        userRoles,
-        apiKeyRoles,
-        database,
-        inMemory,
-      ]);
-
-      if (reportedParityMismatches.has(key)) {
-        return;
-      }
-
-      reportedParityMismatches.add(key);
-
-      logging.error(
-        new errors.InternalServerError({
-          message: tpl(messages.parityMismatch),
-          code: 'PERMISSIONS_PARITY_MISMATCH',
-          errorDetails: {
-            action: check.actType,
-            object: check.objType,
-            user: loaded.user ? { id: check.context.user, roles: userRoles } : null,
-            apiKey: loaded.apiKey ? { id: check.context.api_key?.id, roles: apiKeyRoles } : null,
-            grants: { database, inMemory },
-          },
-        }),
-      );
-    })
-    .catch((err) => {
-      logging.error({ err, message: tpl(messages.parityCheckFailed) });
-    });
-}
-
 class CanThisResult {
   buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
     const objectTypeModelMap = {
       post: models.Post,
       role: models.Role,
       user: models.User,
-      permission: models.Permission,
       setting: models.Settings,
       invite: models.Invite,
       integration: models.Integration,
@@ -189,10 +96,11 @@ class CanThisResult {
           }
           // Wait for the user loading to finish
           return permissionLoad.then(function (loadedPermissions) {
-            const grants = getGrantFlags(loadedPermissions, actType, objType);
-            const { hasUserPermission, hasApiKeyPermission } = grants;
-
-            compareWithInMemoryGrants(grants, loadedPermissions, { actType, objType, context });
+            const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
+              loadedPermissions,
+              actType,
+              objType,
+            );
 
             // Ensure permission decisions are based on the user's role if present, not their staff-token.
             const permissionsForModel = loadedPermissions.user

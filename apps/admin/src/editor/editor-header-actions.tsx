@@ -405,13 +405,9 @@ function PublishActions({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
-  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
   // The preview and the publish flow start from the draft's remembered newsletter,
   // and a pick in either is remembered for both.
   const draftNewsletter = useDraftNewsletter({
-    enabled: editorImprovements,
     postId: post.id,
     status: post.status,
     newsletters: inputs.isReady ? inputs.site.newsletters : null,

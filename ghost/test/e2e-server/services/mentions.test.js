@@ -5,6 +5,9 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const markdownToLexical = require('../../utils/fixtures/data-generator').markdownToLexical;
 const mentionsService = require('../../../core/server/services/mentions');
+const SendWebmentionsJob =
+  require('../../../core/server/services/mentions/send-webmentions-job').default;
+const jobsService = require('../../../core/server/services/jobs-service');
 const urlService = require('../../../core/server/services/url');
 const events = require('../../../core/server/lib/common/events');
 
@@ -68,22 +71,22 @@ async function sendForPostSettled() {
 
 let processedJobs;
 
-function recordProcessed(resource) {
-  processedJobs.push(resource);
+function recordProcessed(job) {
+  processedJobs.push(job);
 }
 
 // Wrap the seam the job handler calls: completion here means the job ran,
 // without coupling the test to the queue or its backend.
 function trackWebmentionSending() {
   const sendingService = mentionsService.sendingService;
-  const original = sendingService.sendForHTMLResource.bind(sendingService);
-  sinon.stub(sendingService, 'sendForHTMLResource').callsFake(async (resource) => {
+  const original = sendingService.sendWebmentions.bind(sendingService);
+  sinon.stub(sendingService, 'sendWebmentions').callsFake(async (job) => {
     try {
-      return await original(resource);
+      return await original(job);
     } finally {
       // Recorded in finally: "processed" means the handler finished,
       // successful or not - the nock assertions decide correctness.
-      recordProcessed(resource);
+      recordProcessed(job);
     }
   });
 }
@@ -239,16 +242,16 @@ describe('Mentions Service', function () {
           lexical: markdownToLexical(mentionHtml + 'More content'),
           updated_at: res.body.posts[0].updated_at,
         };
+        const dispatch = sinon.spy(jobsService.getInstance(), 'dispatch');
 
         await agent
           .put(`posts/${postId}/`)
           .body({ posts: [editedPost] })
           .expectStatus(200);
 
-        // The edit dispatches a job (the html changed); "does not send" is
-        // the handler's link diff yielding nothing, so wait for processing.
-        await waitForSends(2);
+        await sendForPostSettled();
 
+        sinon.assert.neverCalledWith(dispatch, sinon.match.instanceOf(SendWebmentionsJob));
         assert.equal(mentionMock.isDone(), false);
         assert.equal(endpointMock.isDone(), false);
       });
@@ -415,16 +418,16 @@ describe('Mentions Service', function () {
           lexical: markdownToLexical(mentionHtml + 'More content'),
           updated_at: res.body.pages[0].updated_at,
         };
+        const dispatch = sinon.spy(jobsService.getInstance(), 'dispatch');
 
         await agent
           .put(`pages/${pageId}/`)
           .body({ pages: [editedPage] })
           .expectStatus(200);
 
-        // The edit dispatches a job (the html changed); "does not send" is
-        // the handler's link diff yielding nothing, so wait for processing.
-        await waitForSends(2);
+        await sendForPostSettled();
 
+        sinon.assert.neverCalledWith(dispatch, sinon.match.instanceOf(SendWebmentionsJob));
         assert.equal(mentionMock.isDone(), false);
         assert.equal(mentionMock.isDone(), false);
       });

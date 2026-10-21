@@ -1,4 +1,4 @@
-import { FIELD_TYPE_IDS, subFieldsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import { FIELD_TYPE_IDS, partsOf, type FieldType } from '@tryghost/metafield-types/structure';
 import { isPreviewMode } from './check-mode';
 import { hasCustomFieldsEnabled } from './helpers';
 
@@ -95,7 +95,7 @@ export function changedCustomFields(
 
   for (const field of fields.filter((f) => f.access.member === 'write')) {
     const value = values[field.key];
-    const parts = subFieldsOf(field.type);
+    const parts = partsOf(field.type);
 
     if (!parts) {
       if (scalarValue(value) !== scalarValue(original[field.key])) {

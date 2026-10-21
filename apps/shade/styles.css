@@ -241,6 +241,12 @@ html.theme-switching *::after {
   border-bottom-width: 0;
 }
 
+/* Once the header has stuck, its solid background is the edge on its own.
+   Transparent rather than gone, so the header doesn't shift as it sticks. */
+[data-large-title-header][data-condensed] [data-page-header='page-header'] {
+  border-bottom-color: transparent;
+}
+
 [data-large-title-header] [data-page-header='page-header'] ~ * {
   margin-top: 24px;
 }

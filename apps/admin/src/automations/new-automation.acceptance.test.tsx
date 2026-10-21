@@ -14,7 +14,7 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 import { detail } from './run-history.test-utils';
 import { performanceBoot } from './run-list.test-utils';
 
-const labs = { automations: true, automationsPerTier: true };
+const labs = { automations: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
@@ -31,6 +31,8 @@ const serveCreation = () =>
     ],
   }));
 
+const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
+
 describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
@@ -45,8 +47,8 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
-    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(nameField()).toHaveValue('New Automation (2)');
+    await expect.element(button('Save')).toBeEnabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
@@ -80,6 +82,25 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => edit.requests.length).toBe(1);
     expect(create.requests).toHaveLength(1);
+  });
+
+  it('saves a new automation without actions while keeping publish disabled', async () => {
+    fakeAutomations([]);
+    const create = serveCreation();
+    await renderAdminApp('/automations/new', { labs });
+
+    await expect.element(button('Save')).toBeEnabled();
+    await expect.element(button('Publish')).toBeDisabled();
+
+    await button('Save').click();
+
+    await expect.poll(currentRoute).toBe('/automations/created');
+    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(button('Publish')).toBeDisabled();
+    expect(create.requests).toHaveLength(1);
+    expect(create.requests[0].body).toMatchObject({
+      automations: [{ status: 'inactive', actions: [], edges: [] }],
+    });
   });
 
   it('starts a fresh creation session when navigating from the saved route to new', async () => {
@@ -127,9 +148,9 @@ describe('New automation', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
     window.location.hash = '#/automations/other';
-    await expect.element(page.getByText('Other automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Other automation');
     window.history.back();
-    await expect.element(page.getByText('Saved automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Saved automation');
     expect(read.requests).toHaveLength(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
@@ -382,14 +403,6 @@ describe('New automation', () => {
     expect(runs.requests).toHaveLength(0);
   });
 
-  it('does not offer creation when its flag is off', async () => {
-    fakeAutomations([]);
-    await renderAdminApp('/automations/new', { labs: { automations: true } });
-    await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
-    await expect.element(button('New automation')).not.toBeInTheDocument();
-  });
-
   for (const [title, scope] of [
     ['Free member signed up', 'free'],
     ['Paid subscription started', 'all_paid'],
@@ -421,9 +434,11 @@ describe('New automation', () => {
       await expect
         .element(page.getByRole('tab', { name: 'Settings' }))
         .toHaveAttribute('data-state', 'active');
-      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
+        .toBeVisible();
       await button('Hide automation sidebar').click();
-      await expect.element(button('Save')).toBeDisabled();
+      await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
       await addWait();
       await button('Save').click();

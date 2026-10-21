@@ -134,7 +134,12 @@ describe('VerificationWebhookService', function () {
         },
       },
       request: async () => {
-        throw new Error('Webhook failed');
+        throw Object.assign(
+          new Error(
+            'Request failed with status code 500 (Internal Server Error): POST https://test-webhook-receiver.com/secret-path?token=abc',
+          ),
+          { code: 'ERR_NON_2XX_3XX_RESPONSE', response: { statusCode: 500 } },
+        );
       },
     });
 
@@ -144,12 +149,12 @@ describe('VerificationWebhookService', function () {
         threshold: 1000,
         method: 'import',
       }),
-      /Webhook failed/,
+      /Request failed with status code 500/,
     );
 
     assert.equal(
       errorMessage,
-      'Failed to send verification webhook to "https://test-webhook-receiver.com": Webhook failed',
+      'Failed to send verification webhook to "https://test-webhook-receiver.com": HTTP 500',
     );
   });
 });

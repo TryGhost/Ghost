@@ -65,6 +65,7 @@ const config = {
         '**/*.teardown.ts',
         'analytics/**/*.test.ts',
         'stripe-fixtures/**/*.test.ts',
+        'fake-services/**/*.test.ts',
       ],
       testDir: './tests',
       use: {
@@ -75,7 +76,7 @@ const config = {
     {
       name: 'fixtures',
       testDir: './tests',
-      testMatch: ['stripe-fixtures/**/*.test.ts'],
+      testMatch: ['stripe-fixtures/**/*.test.ts', 'fake-services/**/*.test.ts'],
     },
     {
       name: 'analytics',

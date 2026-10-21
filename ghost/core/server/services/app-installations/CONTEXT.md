@@ -110,9 +110,9 @@ and nothing is stored, so the app opens again once its manifest is back.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:
-A change the re-check applies to the approved manifest straight away, without
-the publisher. Any other change makes the newer manifest the pending one and
-suspends the installation.
+A change App Contracts says needs no approval. The re-check applies it to the
+approved manifest straight away, without the publisher. Any other change makes
+the newer manifest the pending one and suspends the installation.
 _Avoid_: minor change, safe change
 
 ### History

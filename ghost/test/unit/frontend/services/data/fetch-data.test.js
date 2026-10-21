@@ -2,10 +2,12 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const _ = require('lodash');
+const logging = require('@tryghost/logging');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
 const testUtils = require('../../../../utils');
+const configUtils = require('../../../../utils/config-utils');
 
 describe('Unit - frontend/data/fetch-data', function () {
   let posts;
@@ -53,8 +55,9 @@ describe('Unit - frontend/data/fetch-data', function () {
     locals = {};
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
   });
 
   it('should handle no options', async function () {
@@ -86,6 +89,58 @@ describe('Unit - frontend/data/fetch-data', function () {
     assert('include' in browsePostsStub.firstCall.args[0]);
     assert.equal(browsePostsStub.firstCall.args[0].limit, 10);
     assert.equal(browsePostsStub.firstCall.args[0].page, 2);
+  });
+
+  it('should log once when the listing limit is over the max limit', async function () {
+    const logStub = sinon.stub(logging, 'info');
+
+    await data.fetchData({ limit: 150 }, {}, locals);
+    await data.fetchData({ limit: 150 }, {}, locals);
+
+    sinon.assert.calledOnce(logStub);
+    assert.deepEqual(logStub.firstCall.args[0], {
+      system: { event: 'listing.limit_over_max', source: 'theme', limit: 150, max_limit: 100 },
+    });
+    assert.equal(
+      logStub.firstCall.args[1],
+      'Listing page limit 150 from theme is over the max limit of 100',
+    );
+    assert.equal(browsePostsStub.firstCall.args[0].limit, 150);
+  });
+
+  it('should log a routes.yaml limit over the max limit', async function () {
+    const logStub = sinon.stub(logging, 'info');
+
+    await data.fetchData({ limit: 'all' }, { limit: 'all' }, locals);
+
+    sinon.assert.calledOnce(logStub);
+    assert.equal(logStub.firstCall.args[0].system.source, 'routes.yaml');
+    assert.equal(browsePostsStub.firstCall.args[0].limit, 'all');
+  });
+
+  it('should not log when the listing limit is within the max limit', async function () {
+    const logStub = sinon.stub(logging, 'info');
+
+    await data.fetchData({ limit: 100 }, {}, locals);
+
+    sinon.assert.notCalled(logStub);
+  });
+
+  it('should cap a listing limit over the max limit when capListingLimit is enabled', async function () {
+    sinon.stub(logging, 'info');
+    configUtils.set('optimization:capListingLimit', true);
+
+    await data.fetchData({ limit: 10000 }, {}, locals);
+
+    assert.equal(browsePostsStub.firstCall.args[0].limit, 100);
+  });
+
+  it('should not change a listing limit within the max limit when capListingLimit is enabled', async function () {
+    configUtils.set('optimization:capListingLimit', true);
+
+    await data.fetchData({ limit: 50 }, {}, locals);
+
+    assert.equal(browsePostsStub.firstCall.args[0].limit, 50);
   });
 
   it('should handle multiple queries', async function () {

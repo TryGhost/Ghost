@@ -4,19 +4,17 @@ import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import {
-  isInDevelopmentTable,
-  shouldCreateInDevelopmentTables,
-} from '../../data/schema/in-development';
-import {
   actingContext,
   recordAppInstallationAction,
   type RecordAppInstallationAction,
 } from './actions';
+import { createAppFetcher } from './fetch-from-app';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
-export type { AppInstallation } from './codec';
+export type { Installation, InstallationWithHistory } from './codec';
+export type { AppInstallation } from './serializers';
 export type { AppInstallationPreview, AppSession } from './service';
 
 /**
@@ -36,7 +34,7 @@ function localhostAlias(): string | null {
   return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
 }
 
-const extras = { actingContext, isAvailable };
+const extras = { actingContext };
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export default defineService(
@@ -49,31 +47,24 @@ export default defineService(
     const recordAction: RecordAppInstallationAction = (input) =>
       recordAppInstallationAction({ Action: models.Action, logging, ...input });
 
+    const fetchFromApp = createAppFetcher({
+      request: externalRequest,
+      getLocalhostAlias: localhostAlias,
+    });
+
     return new AppInstallationsService({
       knex,
       recordAction,
       loadManifest: createManifestLoader({
-        request: externalRequest,
+        fetchFromApp,
         logging,
-        // Read per load, not once at boot: both are config, which tests change.
+        // Read per load, not once at boot: it's config, which tests change.
         getManifestRules: () => ({
           ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
           allowLocalhost: isDevelopment(),
         }),
-        getLocalhostAlias: localhostAlias,
       }),
     });
   },
   extras,
 );
-
-/**
- * Whether this database has the installations table.
- *
- * While the table is still in development it only exists in development and testing
- * databases. Once it is finalised and has a migration it exists everywhere, and this is
- * always true.
- */
-function isAvailable(): boolean {
-  return !isInDevelopmentTable('app_installations') || shouldCreateInDevelopmentTables();
-}

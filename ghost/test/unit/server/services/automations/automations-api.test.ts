@@ -101,19 +101,30 @@ describe('automations API', function () {
         ...valid,
         description: 'Welcome selected paid members',
         trigger_tier_scope: 'selected_paid',
-        trigger_tier_ids: [...tierIds, tierIds[0]],
+        trigger_tier_ids: tierIds,
       };
-      const saved = { ...payload, id: ObjectId().toHexString(), trigger_tier_ids: tierIds };
+      const saved = { ...payload, id: ObjectId().toHexString() };
       repositoryAdd.mockResolvedValue(saved);
 
       assert.strictEqual(await automationsApi.add(payload), saved);
-      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith({
-        ...payload,
-        trigger_tier_ids: tierIds,
-      });
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
     });
 
+    it.each(['inactive', 'archived'] as const)(
+      'can add an %s automation with no actions',
+      async function (status) {
+        const payload = { ...valid, status, actions: [], edges: [] };
+        const saved = { ...payload, id: ObjectId().toHexString() };
+        repositoryAdd.mockResolvedValue(saved);
+
+        assert.strictEqual(await automationsApi.add(payload), saved);
+
+        expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
+      },
+    );
+
     it('rejects invalid inputs', async function () {
+      const tierId = ObjectId().toHexString();
       const invalidPayloads = [
         undefined,
         null,
@@ -149,6 +160,11 @@ describe('automations API', function () {
         { ...valid, slug: 'member-welcome-email-free' },
         { ...valid, actions: [] },
         { ...valid, id: ObjectId().toHexString() },
+        {
+          ...valid,
+          trigger_tier_scope: 'selected_paid',
+          trigger_tier_ids: [tierId, ObjectId().toHexString(), tierId],
+        },
       ];
       await Promise.all(
         invalidPayloads.map(async (payload) => {
@@ -192,6 +208,19 @@ describe('automations API', function () {
       },
     );
 
+    it.each(['inactive', 'archived'] as const)(
+      'saves an empty graph for %s automations',
+      async function (status) {
+        const payload = { status, actions: [], edges: [] };
+        const saved = { id: automationId, ...payload };
+        repositoryEdit.mockResolvedValue(saved);
+
+        assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
+
+        expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
+      },
+    );
+
     it.each([
       ['actions', { actions: [buildWaitAction()] }, /edges:/],
       ['edges', { edges: [] }, /actions:/],
@@ -229,6 +258,33 @@ describe('automations API', function () {
         property: 'status',
         message: 'Status-only automation edits can only set status to inactive or archived.',
       });
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('rejects activation with no actions', async function () {
+      await assert.rejects(
+        automationsApi.edit(automationId, { status: 'active', actions: [], edges: [] }),
+        {
+          errorType: 'ValidationError',
+          property: 'actions',
+          message: 'Active automations require at least one action.',
+        },
+      );
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('rejects edges in an empty graph', async function () {
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [],
+          edges: [buildEdge(buildWaitAction(), buildWaitAction())],
+        }),
+        {
+          errorType: 'ValidationError',
+          property: 'edges',
+        },
+      );
       expect(repositoryEdit).not.toHaveBeenCalled();
     });
 
@@ -313,6 +369,26 @@ describe('automations API', function () {
       }
     }
 
+    it('rejects duplicate trigger_tier_ids', async function () {
+      const tierId = ObjectId().toHexString();
+      const payload = {
+        name: 'Selected paid members',
+        description: '',
+        status: 'inactive',
+        actions: [buildWaitAction()],
+        edges: [],
+        trigger_tier_scope: 'selected_paid',
+        trigger_tier_ids: [tierId, ObjectId().toHexString(), tierId],
+      };
+
+      await assert.rejects(automationsApi.edit(automationId, payload), {
+        errorType: 'ValidationError',
+        statusCode: 422,
+        message: /trigger_tier_ids: Duplicate trigger_tier_ids are not allowed\./,
+      });
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
     it('validates metadata length after trimming, not before', async function () {
       repositoryEdit.mockResolvedValue({ id: automationId });
       await automationsApi.edit(automationId, {
@@ -345,7 +421,8 @@ describe('automations API', function () {
           actions: [buildWaitAction()],
           edges: [],
           trigger_tier_scope: scope,
-          trigger_tier_ids: scope === 'selected_paid' ? [ObjectId().toHexString()] : null,
+          trigger_tier_ids:
+            scope === 'selected_paid' ? [ObjectId().toHexString(), ObjectId().toHexString()] : null,
         };
         repositoryEdit.mockResolvedValue({ id: automationId });
         await automationsApi.edit(automationId, data);

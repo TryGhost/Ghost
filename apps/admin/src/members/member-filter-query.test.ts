@@ -441,44 +441,44 @@ describe('member-filter-query - custom fields', () => {
   const cases: Array<{
     field: string;
     operator: string;
-    values: [subfield: string, ...values: string[]];
+    values: [part: string, ...values: string[]];
     nql: string;
   }> = [
     {
       field: 'metafields.custom.company',
       operator: 'is',
       values: ['', 'Ghost'],
-      nql: "(metafields.key:'custom.company'+metafields.value:'Ghost')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'is-not',
       values: ['', 'Ghost'],
-      nql: "(metafields.key:'custom.company'+metafields.value:-'Ghost')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:-'Ghost')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'contains',
       values: ['', 'host'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~'host')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~'host')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'does-not-contain',
       values: ['', 'host'],
-      nql: "(metafields.key:'custom.company'+metafields.value:-~'host')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:-~'host')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'starts-with',
       values: ['', 'Gh'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~^'Gh')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~^'Gh')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'ends-with',
       values: ['', 'st'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~$'st')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~$'st')",
     },
     // A value that ends with a literal `$` must survive as contains, not be
     // misread as ends-with when the regex source (`5\$`) is parsed back.
@@ -486,31 +486,31 @@ describe('member-filter-query - custom fields', () => {
       field: 'metafields.custom.company',
       operator: 'contains',
       values: ['', '5$'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~'5$')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~'5$')",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is',
       values: ['country', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:'GB')",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:'GB')",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-not',
       values: ['country', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:-'GB')",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:-'GB')",
     },
     {
       field: 'metafields.custom.phone',
       operator: 'is-set',
       values: ['', ''],
-      nql: "metafields.key:'custom.phone'",
+      nql: "metafields.identity:'custom.phone'",
     },
     {
       field: 'metafields.custom.phone',
       operator: 'is-not-set',
       values: ['', ''],
-      nql: "metafields.key:-'custom.phone'",
+      nql: "metafields.identity:-'custom.phone'",
     },
     // A part picked from a list filters as a set, the way labels do: a list of codes,
     // even one, so it reads back as "is any of" rather than "is".
@@ -518,32 +518,39 @@ describe('member-filter-query - custom fields', () => {
       field: 'metafields.custom.shipping_address',
       operator: 'is-any',
       values: ['country', 'DE', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-any',
       values: ['country', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:['GB'])",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:['GB'])",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-not-any',
       values: ['country', 'DE', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
     },
     // A part's set / not-set targets its presence via `path`, not the whole field.
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-set',
       values: ['country', ''],
-      nql: "metafields.key:'custom.shipping_address.country'",
+      nql: "metafields.identity:'custom.shipping_address.country'",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-not-set',
       values: ['country', ''],
-      nql: "metafields.key:-'custom.shipping_address.country'",
+      nql: "metafields.identity:-'custom.shipping_address.country'",
+    },
+    // A part of a part: no type has one yet, but an identity can name one.
+    {
+      field: 'metafields.custom.shipping_address',
+      operator: 'is-set',
+      values: ['country.code', ''],
+      nql: "metafields.identity:'custom.shipping_address.country.code'",
     },
   ];
 

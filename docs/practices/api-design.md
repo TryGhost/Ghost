@@ -139,21 +139,26 @@ setting with the same intended exposure.
 ## Permissions
 
 Permission checks run after input serialization and before the controller query.
-Permissions are associated with a resource name (`docName`) and method, with
-their role assignments stored in the permissions and roles tables.
+Permissions are associated with a resource name (`docName`) and method. The
+permissions and their role assignments are defined in code, in
+`ghost/core/server/services/permissions/permissions-data.ts`.
 
 An endpoint's permission configuration can be:
 
-- An object using the database permission, with optional overrides for `method`,
+- An object using the default permission, with optional overrides for `method`,
   `docName`, and writable `unsafeAttrs`.
-- `true` to use the database permission.
+- `true` to use the default permission.
 - `false` to skip the permission stage.
 - A function for exceptional custom logic. It should throw a
   `NoPermissionError` to deny access and should not replace normal permission
   configuration without a specific reason.
 
-Adding or changing a database-backed permission requires updates to fixtures, a
-database migration, fixture tests, and the database integrity hash.
+Adding or changing a permission means editing `permissions-data.ts`, the
+expected grants in `ghost/test/unit/server/services/permissions/role-grants.test.ts`,
+and the per-role counts in `ghost/test/e2e-api/admin/users.test.js` for staff
+roles.
+No migration is needed: the permissions tables still exist until they are
+dropped, but nothing reads them.
 
 ## Future design
 

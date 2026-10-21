@@ -1,5 +1,5 @@
 import type { Frame } from '@tryghost/api-framework';
-import { toCheckoutBrandingResponse } from '../../../../../services/stripe-checkout-config';
+import { toCheckoutBrandingResponse } from '../../../../../services/stripe-checkout-config/serializers';
 import type { StripeCheckoutBranding } from '../../../../../services/stripe-checkout-config';
 
 const serialize = (branding: StripeCheckoutBranding, _apiConfig: unknown, frame: Frame): void => {

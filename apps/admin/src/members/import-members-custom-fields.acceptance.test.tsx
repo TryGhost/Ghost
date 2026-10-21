@@ -12,6 +12,7 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 // The import dialog is served to everyone now, so custom fields are the only switch left, and
 // the dialog has to hold up on either side of it.
@@ -54,8 +55,8 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
       body as { members_metafields: Array<{ name: string; type: MemberCustomField['type'] }> }
     ).members_metafields;
     const field: MemberCustomField = {
-      namespace: 'custom',
-      key: input.name.trim().toLowerCase().replace(/\s+/g, '-'),
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse(input.name.trim().toLowerCase().replace(/\s+/g, '_')),
       name: input.name.trim(),
       type: input.type,
       status: 'active',
@@ -71,8 +72,8 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
 
 /** A field the site has already defined, for proving what an import does and does not offer. */
 const NICKNAME_FIELD: MemberCustomField = {
-  namespace: 'custom',
-  key: 'nickname',
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('nickname'),
   name: 'Nickname',
   type: 'short_text',
   status: 'active',

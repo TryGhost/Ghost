@@ -253,6 +253,10 @@ describe('Public-config response builders', function () {
           webhookUrl: 'https://example.com/verify',
           webhookSecret: 'verification-secret',
         },
+        supportRequest: {
+          webhookUrl: 'https://example.com/support',
+          webhookSecret: 'support-request-secret',
+        },
       });
 
       const configProperties = getConfigProperties();
@@ -266,6 +270,9 @@ describe('Public-config response builders', function () {
           verified: true,
           webhookType: 'email_verification',
           webhookUrl: 'https://example.com/verify',
+        },
+        supportRequest: {
+          webhookUrl: 'https://example.com/support',
         },
       });
     });

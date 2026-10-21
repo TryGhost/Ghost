@@ -171,19 +171,20 @@ async function getEmailSentCounts(actions) {
 }
 
 async function runAutomationForFreeMember(automation, email) {
-  const member = await membersService.api.members.create({
-    email,
-    name: 'Automation Test Member',
-    status: 'free',
-    email_disabled: false,
-  });
-  assert.equal(member.get('status'), 'free');
-
-  await DomainEvents.allSettled();
-
-  const clock = mockSystemTime(new Date());
+  // Freeze to a round second to match database precision. (Real production code works fine.)
+  const clock = mockSystemTime(new Date('2026-01-01T12:00:00.000Z'));
 
   try {
+    const member = await membersService.api.members.create({
+      email,
+      name: 'Automation Test Member',
+      status: 'free',
+      email_disabled: false,
+    });
+    assert.equal(member.get('status'), 'free');
+
+    await DomainEvents.allSettled();
+
     for (const action of automation.actions) {
       if (action.type === 'wait') {
         clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));

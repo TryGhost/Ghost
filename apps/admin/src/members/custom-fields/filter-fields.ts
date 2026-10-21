@@ -57,10 +57,10 @@ const PART_SEMANTICS: { [T in PartFilterType]: () => ValueSemantics<string> } = 
 
 export function partFilterType(
   type: MemberCustomField['type'],
-  subfield: string,
+  part: string,
 ): PartFilterType | undefined {
-  const part = memberCustomFieldParts(type)?.find((candidate) => candidate.key === subfield);
-  return part ? PART_FILTER_TYPE[part.type] : undefined;
+  const declared = memberCustomFieldParts(type)?.find((candidate) => candidate.key === part);
+  return declared ? PART_FILTER_TYPE[declared.type] : undefined;
 }
 
 function usedPartTypes(type: MemberCustomField['type']): readonly PartFilterType[] {
@@ -112,12 +112,7 @@ export function customFieldOperators(partTypes: readonly PartFilterType[]): read
 
 export const CUSTOM_FIELD_CLAUSE = METAFIELDS_FIELD_PREFIX;
 
-export interface CustomFieldDefinition {
-  namespace: string;
-  key: string;
-  name: string;
-  type: MemberCustomField['type'];
-}
+export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' | 'name' | 'type'>;
 
 export function customFieldDescriptor(definition: CustomFieldDefinition): FieldDescriptor {
   const kind = memberCustomFieldKind(definition.type);

@@ -37,9 +37,9 @@ export interface MetaDataTabsSectionProps {
 }
 
 /**
- * Search metadata and the X and Facebook cards as one pane with a tab each
- * (admin7EditorImprovements). The pane opens on Search, unless the panel is
- * taking the writer to a field under another tab.
+ * Search metadata and the X and Facebook cards as one pane with a tab each. The
+ * pane opens on Search, unless the panel is taking the writer to a field under
+ * another tab.
  */
 export function MetaDataTabsSection({
   session,

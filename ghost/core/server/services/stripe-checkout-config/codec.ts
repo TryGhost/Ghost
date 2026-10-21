@@ -1,7 +1,8 @@
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbJson } from '../../lib/db-types/json';
+import { type CollectedPart, isStripeAllowedCountry } from '@tryghost/checkout';
 import { StripeCheckoutDesign } from './models';
 
 /** The design's fields in snake_case, as used by the database, the Admin API and Stripe. */
@@ -20,7 +21,7 @@ export type TierScope = z.infer<typeof TierScope>;
  * dropped, reads as off and is logged. Checkouts then go without it until the publisher saves
  * it again, and the other parts are unaffected.
  */
-function offWhenUnreadable(part: 'design' | 'shipping', message: string) {
+function offWhenUnreadable(logging: GhostLogger, part: 'design' | CollectedPart, message: string) {
   return ({ error }: z.core.$ZodCatchCtx) => {
     logging.warn(
       { event: { name: `stripe_checkout.${part}.unreadable` }, err: new z.ZodError(error.issues) },
@@ -33,31 +34,65 @@ function offWhenUnreadable(part: 'design' | 'shipping', message: string) {
 /**
  * The parts of a `stripe_checkout_config` row, each JSON or null while that part is off. They
  * are validated when read as well as when saved, so a stored value that is no longer allowed
- * never reaches Stripe. Which tiers shipping is limited to is in the tiers table, and which
- * custom fields the address and name land in are the bindings for their ports.
+ * never reaches Stripe. Which tiers a collected part is limited to is in the tiers table, and
+ * which custom fields its answers land in are the bindings for their ports.
  */
-export const ConfigRow = z.object({
-  design: DbJson(
-    z.codec(SnakeDesign, StripeCheckoutDesign, { decode: camelKeys, encode: snakeKeys }),
-    { message: 'The stored Stripe Checkout design is not JSON.' },
-  )
-    .nullable()
-    .catch(
-      offWhenUnreadable('design', 'Ignoring a Stripe Checkout design that is no longer valid'),
-    ),
-  shipping: DbJson(
-    z.object({
-      tier_scope: TierScope,
-      // A stored empty list would make Stripe refuse every checkout, so it reads as invalid.
-      allowed_countries: z.array(z.string()).min(1).nullable(),
-    }),
-    { message: 'The stored shipping settings are not JSON.' },
-  )
-    .nullable()
-    .catch(
-      offWhenUnreadable(
-        'shipping',
-        'Ignoring Stripe Checkout shipping settings that are no longer valid',
+export function configRow(logging: GhostLogger) {
+  return z.object({
+    design: DbJson(
+      z.codec(SnakeDesign, StripeCheckoutDesign, { decode: camelKeys, encode: snakeKeys }),
+      { message: 'The stored Stripe Checkout design is not JSON.' },
+    )
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'design',
+          'Ignoring a Stripe Checkout design that is no longer valid',
+        ),
       ),
-    ),
-});
+    shipping: DbJson(
+      z.object({
+        tier_scope: TierScope,
+        // A stored empty list, or a country Stripe no longer ships to, would make Stripe refuse
+        // every checkout, so either reads as invalid.
+        allowed_countries: z
+          .array(z.string().refine((code): boolean => isStripeAllowedCountry(code)))
+          .min(1)
+          .nullable(),
+      }),
+      { message: 'The stored shipping settings are not JSON.' },
+    )
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'shipping',
+          'Ignoring Stripe Checkout shipping settings that are no longer valid',
+        ),
+      ),
+    phone: DbJson(z.object({ tier_scope: TierScope }), {
+      message: 'The stored phone number settings are not JSON.',
+    })
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'phone',
+          'Ignoring Stripe Checkout phone number settings that are no longer valid',
+        ),
+      ),
+    tax_number: DbJson(z.object({ tier_scope: TierScope }), {
+      message: 'The stored tax ID settings are not JSON.',
+    })
+      .nullable()
+      .catch(
+        offWhenUnreadable(
+          logging,
+          'tax_number',
+          'Ignoring Stripe Checkout tax ID settings that are no longer valid',
+        ),
+      ),
+  });
+}
+export type ConfigRowSchema = ReturnType<typeof configRow>;

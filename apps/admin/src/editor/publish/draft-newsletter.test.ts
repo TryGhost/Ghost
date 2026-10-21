@@ -31,9 +31,8 @@ afterEach(() => {
 });
 
 describe('draftNewsletterStorage', () => {
-  it('reaches nothing while the flag is off', () => {
-    expect(draftNewsletterStorage(false)).toBeNull();
-    expect(draftNewsletterStorage(true)).toBe(window.localStorage);
+  it('reaches the browser storage', () => {
+    expect(draftNewsletterStorage()).toBe(window.localStorage);
   });
 
   it('reaches nothing where storage is blocked', () => {
@@ -41,7 +40,7 @@ describe('draftNewsletterStorage', () => {
       throw new DOMException('Blocked', 'SecurityError');
     });
 
-    expect(draftNewsletterStorage(true)).toBeNull();
+    expect(draftNewsletterStorage()).toBeNull();
   });
 });
 
@@ -130,7 +129,7 @@ describe('draftNewsletterToStore', () => {
 });
 
 describe('resolveDraftNewsletter', () => {
-  const draft = { enabled: true, status: 'draft' as const, newsletters: NEWSLETTERS };
+  const draft = { status: 'draft' as const, newsletters: NEWSLETTERS };
 
   it('starts a draft on its remembered newsletter', () => {
     expect(resolveDraftNewsletter({ ...draft, stored: 'monthly' })).toEqual({
@@ -169,13 +168,6 @@ describe('resolveDraftNewsletter', () => {
       stale: false,
     });
   });
-
-  it('ignores entries while the flag is off', () => {
-    expect(resolveDraftNewsletter({ ...draft, enabled: false, stored: 'monthly' })).toEqual({
-      slug: null,
-      stale: false,
-    });
-  });
 });
 
 describe('scheduledNewsletterToRestore', () => {
@@ -197,7 +189,6 @@ describe('scheduledNewsletterToRestore', () => {
 describe('useDraftNewsletter', () => {
   type HookProps = Parameters<typeof useDraftNewsletter>[0];
   const DRAFT: HookProps = {
-    enabled: true,
     postId: 'post-a',
     status: 'draft',
     newsletters: NEWSLETTERS,
@@ -220,24 +211,6 @@ describe('useDraftNewsletter', () => {
     act(() => result.current.remember('weekly'));
     expect(result.current.slug).toBeUndefined();
     expect(readDraftNewsletter(localStorage, 'post-a')).toBeNull();
-  });
-
-  it('reads and writes nothing while the flag is off, and leaves entries in place', () => {
-    writeDraftNewsletter(localStorage, 'post-a', 'monthly', 1);
-    const { result } = render({ enabled: false });
-
-    expect(result.current.slug).toBeUndefined();
-    act(() => result.current.remember('weekly'));
-    act(() => result.current.forget());
-    expect(stored()).toEqual({ 'post-a': { slug: 'monthly', updatedAt: 1 } });
-  });
-
-  it('reads the entry once the flag resolves on', () => {
-    writeDraftNewsletter(localStorage, 'post-a', 'monthly', 1);
-    const { result, rerender } = render({ enabled: false });
-
-    rerender(DRAFT);
-    expect(result.current.slug).toBe('monthly');
   });
 
   it('drops an entry for a newsletter that is no longer selectable', () => {

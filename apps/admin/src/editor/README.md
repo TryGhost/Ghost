@@ -17,24 +17,24 @@ again.
 
 ## The modules
 
-| Module                                           | What it is                                                                                                                   |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| [`engine/`](engine/README.md)                    | The pure, React-free save engine, change tracker and slug machine. No React, no network, every effect through a port         |
-| [`session/`](session/README.md)                  | The editing session that composes those three and is the editor's only writer                                                |
-| [`settings/`](settings/README.md)                | The settings panel beside the editor and the sections that edit a post's non-body fields                                     |
-| [`publish/`](publish/README.md)                  | The publish options machine and the publish, update and email-failure flow                                                   |
-| [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                                  |
-| `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                          |
-| `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                          |
-| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands or why a save failed                    |
-| `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                                      |
-| `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                            |
-| `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                              |
-| `email-size.ts`, `use-email-size.ts`             | The estimate of how large a post's newsletter would be, and when the editor makes it                                         |
-| `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                            |
-| `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll (`admin7EditorImprovements`) |
-| `editor-font.ts`, `use-editor-font.ts`           | The font the writer reads the post in while editing, chosen in the settings panel (`admin7EditorImprovements`)               |
-| `settings-open.ts`, `use-settings-open.ts`       | Whether the settings panel opens with the editor, as the writer last left it (`admin7EditorImprovements`)                    |
+| Module                                           | What it is                                                                                                           |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| [`engine/`](engine/README.md)                    | The pure, React-free save engine, change tracker and slug machine. No React, no network, every effect through a port |
+| [`session/`](session/README.md)                  | The editing session that composes those three and is the editor's only writer                                        |
+| [`settings/`](settings/README.md)                | The settings panel beside the editor and the sections that edit a post's non-body fields                             |
+| [`publish/`](publish/README.md)                  | The publish options machine and the publish, update and email-failure flow                                           |
+| [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                          |
+| `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                  |
+| `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                  |
+| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands or why a save failed            |
+| `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                              |
+| `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
+| `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
+| `email-size.ts`, `use-email-size.ts`             | The estimate of how large a post's newsletter would be, and when the editor makes it                                 |
+| `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                    |
+| `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll                      |
+| `editor-font.ts`, `use-editor-font.ts`           | The font the writer reads the post in while editing, chosen in the settings panel                                    |
+| `settings-open.ts`, `use-settings-open.ts`       | Whether the settings panel opens with the editor, as the writer last left it                                         |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
@@ -118,9 +118,8 @@ entry, but a new post never gets it. While the link leads to analytics, the
 status line is hidden unless the post's newsletter failed to send or a save
 failed.
 
-Under `admin7EditorImprovements` the link shows its arrow alone at every width,
-as a square button with no tooltip, and "Posts", "Pages" or "Analytics" stays
-its accessible name. Without the flag the arrow stands alone only below 500px.
+The link shows its arrow alone at every width, as a square button with no
+tooltip, and "Posts", "Pages" or "Analytics" stays its accessible name.
 
 ## Images
 
@@ -201,38 +200,37 @@ the field names its rule, and the status line does once a save the writer asks
 for is refused over it.
 
 The header row's actions line up with the settings toggle. A status that wraps
-keeps its first line level with the back link's label and grows downward.
+keeps its first line level with the back link and grows downward.
 
 Below Tailwind's `sm` breakpoint the status stays on the header row beside the
 back link, and the header's actions move to the bottom bar: the word count sits
-in the bottom-left corner, the actions in the bottom right, and the help link
-is hidden. The bar's rightmost action, Publish, Update or Save, is a primary
-button there, and the bar names no shortcuts,
-which still work. `editor-header-actions.tsx` builds one list of controls and,
-below the breakpoint, portals them into a slot `post-editor.tsx` keeps in its
-footer, so the header and the bar share order, disabled states, refusals and
-flows. Only the controls move; the flows they open stay mounted, so crossing
-the breakpoint keeps an open flow. A failed publish inputs load shows its
-message and Retry there too. While the on-screen keyboard is open the bar's
-actions are hidden with the word count.
+in the bottom-left corner and the actions in the bottom right. The bar's
+rightmost action, Publish, Update or Save, is a primary button there, and the
+bar names no shortcuts, which still work. `editor-header-actions.tsx` builds one
+list of controls and, below the breakpoint, portals them into a slot
+`post-editor.tsx` keeps in its footer, so the header and the bar share order,
+disabled states, refusals and flows. Only the controls move; the flows they open
+stay mounted, so crossing the breakpoint keeps an open flow. A failed publish
+inputs load shows its message and Retry there too. While the on-screen keyboard
+is open the bar's actions are hidden with the word count.
 
 ## Editor font
 
-Under `admin7EditorImprovements`, the settings panel's Editor font row offers a
-choice of three fonts to read the post in while editing (see the
-[settings README](settings/README.md#editor-font)): the editor's own serif
-(Georgia), sans (Inter) and mono (the system's monospace font: SF Mono on
-Apple devices, Consolas on Windows). Only the editor changes; the theme, the
-preview and the email never do.
+The settings panel's Editor font row offers a choice of three fonts to read the
+post in while editing (see the [settings
+README](settings/README.md#editor-font)): the editor's own serif (Georgia), sans
+(Inter) and mono (the system's monospace font: SF Mono on Apple devices,
+Consolas on Windows). Only the editor changes; the theme, the preview and the
+email never do.
 
 A choice applies at once, so the writer can compare, and is saved as it is
 made, as `editor.bodyFont` in the user's preferences, so it follows the writer
 between browsers. Saves run one after another, so the last choice is the one
 that holds, and the editor closing sends any choice still unsaved. A failed save
 keeps the choice for the visit and says so. A writer who never chose reads
-serif, and so does everyone with the flag off, whatever they saved.
+serif.
 
-With the flag or without, the editor lets Inter choose its optical size wherever
+The editor lets Inter choose its optical size wherever
 it sets text in Inter: the title, the excerpt and headings always, and the body
 in sans. Admin pins Inter to its text design. In the editor, Inter follows the
 font size instead, from its text design at 14px to its finer display one at

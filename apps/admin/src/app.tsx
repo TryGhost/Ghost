@@ -11,7 +11,7 @@ import {
   useServerNotifications,
   useUpgradeStatusAlerts,
 } from './alerts';
-import { DocsBotWidgetHost } from './docsbot-widget-host';
+import { DocsBotWidgetHost } from './docsbot/docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
 import { preloadSettings } from './settings/api';

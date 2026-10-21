@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { columnsOf } from './columns';
 
 const DeleteRuleSpec = z.object({
   cascadeDelete: z.boolean().optional(),
@@ -64,14 +65,10 @@ export function onDeleteOf(spec: z.infer<typeof DeleteRuleSpec>): DeleteRule | u
  * including a key `@@FOREIGN_KEYS@@` does not know.
  */
 export function foreignKeySpecsOf(tableSpec: Record<string, unknown>): ForeignKeySpec[] {
-  const columns = z
-    .record(z.string(), ColumnSpec)
-    .parse(
-      Object.fromEntries(Object.entries(tableSpec).filter(([name]) => !name.startsWith('@@'))),
-    );
-
   const foreignKeys: ForeignKeySpec[] = [];
-  for (const [columnName, { references, ...rest }] of Object.entries(columns)) {
+  for (const [columnName, { references, ...rest }] of Object.entries(
+    columnsOf(tableSpec, ColumnSpec),
+  )) {
     if (references) {
       foreignKeys.push({ ...rest, columns: [columnName], references });
     }

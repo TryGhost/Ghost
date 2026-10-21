@@ -4,10 +4,6 @@ import {
   permissions as permissionData,
   rolePermissions as roleData,
 } from '../../../../../core/server/services/permissions/permissions-data';
-// @ts-expect-error This module lacks type definitions.
-import models from '../../../../../core/server/models';
-// @ts-expect-error This module lacks type definitions.
-import FixtureManager from '../../../../../core/server/data/schema/fixtures/fixture-manager';
 
 type Permission = { action_type: string; object_type: string };
 type RoleValues = Record<string, 'all' | readonly string[]>;
@@ -40,6 +36,15 @@ describe('Permissions', function () {
         first.pop();
 
         assert.equal(rolePermissions.all().length, length);
+      });
+
+      it('returns frozen permissions', function () {
+        const [perm] = rolePermissions.all();
+
+        assert.throws(() => {
+          (perm as { action_type: string }).action_type = 'changed';
+        }, TypeError);
+        assert.notEqual(rolePermissions.all()[0].action_type, 'changed');
       });
     });
 
@@ -98,6 +103,16 @@ describe('Permissions', function () {
         assert.deepEqual(rolePermissions.forRoles([]), []);
       });
 
+      it('returns frozen permissions, so one caller cannot change them for another', function () {
+        const [perm] = rolePermissions.forRoles(['Contributor']);
+
+        assert.throws(() => {
+          (perm as { action_type: string }).action_type = 'changed';
+        }, TypeError);
+        assert.notEqual(rolePermissions.forRoles(['Contributor'])[0].action_type, 'changed');
+        assert(rolePermissions.forRoles(['Administrator']).every(Object.isFrozen));
+      });
+
       it('unions permissions across roles without duplicates', function () {
         const editor = toKeys(rolePermissions.forRoles(['Editor']));
         const author = toKeys(rolePermissions.forRoles(['Author']));
@@ -130,59 +145,6 @@ describe('Permissions', function () {
           }
         }
       });
-
-      // The permissions tables are still seeded from fixtures.json at install,
-      // so the data file has to agree with it. Both fixtures files are checked
-      // because the test database is seeded from the test copy. Remove this
-      // test once fixtures.json stops carrying permissions.
-      for (const [label, fixturesPath] of [
-        ['production fixtures', '../../../../../core/server/data/schema/fixtures/fixtures.json'],
-        ['test fixtures', '../../../../utils/fixtures/fixtures.json'],
-      ]) {
-        it(`matches the ${label} as the fixture manager expands them`, function () {
-          const fixtures = require(fixturesPath);
-          const permissionModels = fixtures.models
-            .find((model: { name: string }) => model.name === 'Permission')
-            .entries.map((entry: Permission) => models.Permission.forge(entry));
-          const relation = fixtures.relations.find(
-            (rel: { from: { model: string }; to: { model: string } }) =>
-              rel.from.model === 'Role' && rel.to.model === 'Permission',
-          );
-
-          const fixturePairs = permissionModels.map((perm: { get: (key: string) => string }) => ({
-            action_type: perm.get('action_type'),
-            object_type: perm.get('object_type'),
-          }));
-          assert.deepEqual(toKeys(rolePermissions.all()), toKeys(fixturePairs));
-
-          assert.deepEqual(
-            [...rolePermissions.roleNames()].sort(),
-            Object.keys(relation.entries).sort(),
-          );
-
-          // FixtureManager.matchFunc is what seeds permissions_roles.
-          for (const [roleName, objects] of Object.entries(relation.entries)) {
-            const expected = permissionModels
-              .filter((perm: { get: (key: string) => string }) =>
-                Object.entries(objects as Record<string, string | string[]>).some(
-                  ([objectType, value]) =>
-                    FixtureManager.matchFunc(relation.to.match, objectType, value)(perm),
-                ),
-              )
-              .map((perm: { get: (key: string) => string }) => ({
-                action_type: perm.get('action_type'),
-                object_type: perm.get('object_type'),
-              }));
-
-            assert(expected.length > 0, `${roleName} should have permissions`);
-            assert.deepEqual(
-              toKeys(rolePermissions.forRoles([roleName])),
-              toKeys(expected),
-              roleName,
-            );
-          }
-        });
-      }
     });
   });
 });

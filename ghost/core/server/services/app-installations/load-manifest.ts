@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
-import type { Got } from 'got';
 import { z } from 'zod';
 import {
   parseManifest,
@@ -9,6 +8,7 @@ import {
   type AppManifest,
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
+import type { FetchFromApp } from './fetch-from-app';
 import { createManifestFetcher } from './fetch-manifest';
 import { StoredManifest } from './schema';
 
@@ -49,26 +49,24 @@ function digestOf(manifestUrl: string, serialisedManifest: string): string {
 }
 
 /**
- * Checks a manifest URL, fetches the manifest through `request`, and parses it against
+ * Checks a manifest URL, fetches the manifest through `fetchFromApp`, and parses it against
  * the final URL. Redirects are only checked for staying on the same host (or upgrading
  * HTTP to HTTPS); the manifest rules apply to the final URL when it's parsed.
  *
  * Every problem is thrown as a Ghost error with an `APP_MANIFEST_*` code, which Admin
- * explains to the publisher. `getManifestRules` and `getLocalhostAlias` are called on
- * every load because both read config.
+ * explains to the publisher. `getManifestRules` is called on every load because it reads
+ * config.
  */
 export function createManifestLoader({
-  request,
+  fetchFromApp,
   logging,
   getManifestRules,
-  getLocalhostAlias,
 }: {
-  request: Got;
+  fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
   getManifestRules: () => ManifestRules;
-  getLocalhostAlias: () => string | null;
 }): LoadManifest {
-  const fetchManifest = createManifestFetcher({ request, logging, getLocalhostAlias });
+  const fetchManifest = createManifestFetcher({ fetchFromApp, logging });
 
   return async function loadManifest(input) {
     const rules = getManifestRules();

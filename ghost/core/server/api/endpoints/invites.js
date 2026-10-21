@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const invites = require('../../services/invites');
+const invites = require('../../services/invites').default;
 const models = require('../../models');
 const api = require('./index');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
@@ -95,7 +95,7 @@ const controller = {
       unsafeAttrs: UNSAFE_ATTRS,
     },
     query(frame) {
-      return invites.add({
+      return invites.service.add({
         api,
         InviteModel: models.Invite,
         invites: frame.data.invites,

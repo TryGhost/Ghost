@@ -28,8 +28,12 @@ import {
   parseCustomFieldServerErrors,
 } from './member-detail-edit';
 import { toast } from 'sonner';
+import { z } from 'zod';
+import { IdentityTextSchema } from '@tryghost/metafield-types/identity';
+import { partOf } from '@/members/custom-fields/addressing';
 import {
   formatMemberCustomFieldValue,
+  memberCustomFieldIdentity,
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
@@ -95,47 +99,47 @@ const CountryInput: React.FC<{
   );
 };
 
-// The address composite: one input per sub-field in a two-column sub-grid. The
+// The address composite: one input per part in a two-column sub-grid. The
 // street lines take a full row, since they are the long parts, and the short
 // parts pair up, the same way Portal's account settings lay an address out.
 const AddressInput: React.FC<{
   inputId: string;
   value: EditableAddressValue;
-  // Messages keyed by sub-field (`line1`, `postal_code`, …).
+  // Messages keyed by part (`line1`, `postal_code`, …).
   errors?: Record<string, string>;
   disabled?: boolean;
   onChange: (value: EditableAddressValue) => void;
 }> = ({ inputId, value, errors, disabled, onChange }) => {
   return (
     <div className="grid gap-x-4 gap-y-3 md:grid-cols-2">
-      {ADDRESS_PARTS.map(({ key: subfield, label, type }) => {
-        const subfieldId = `${inputId}-${subfield}`;
-        const error = errors?.[subfield];
+      {ADDRESS_PARTS.map(({ key: part, label, type }) => {
+        const partId = `${inputId}-${part}`;
+        const error = errors?.[part];
         return (
           <div
-            key={subfield}
+            key={part}
             className={cn(
               'flex flex-col gap-1.5',
-              (subfield === 'line1' || subfield === 'line2') && 'md:col-span-2',
+              (part === 'line1' || part === 'line2') && 'md:col-span-2',
             )}
           >
-            <Label htmlFor={subfieldId}>{label}</Label>
+            <Label htmlFor={partId}>{label}</Label>
             {type === 'country_code' ? (
               <CountryInput
                 disabled={disabled}
-                id={subfieldId}
+                id={partId}
                 invalid={Boolean(error)}
                 label={label}
-                value={value[subfield]}
-                onChange={(code) => onChange({ ...value, [subfield]: code })}
+                value={value[part]}
+                onChange={(code) => onChange({ ...value, [part]: code })}
               />
             ) : (
               <Input
                 aria-invalid={error ? true : undefined}
                 disabled={disabled}
-                id={subfieldId}
-                value={value[subfield] ?? ''}
-                onChange={(e) => onChange({ ...value, [subfield]: e.target.value })}
+                id={partId}
+                value={value[part] ?? ''}
+                onChange={(e) => onChange({ ...value, [part]: e.target.value })}
               />
             )}
             <ErrorMessage message={error} />
@@ -159,7 +163,7 @@ const CustomFieldInput: React.FC<{
   field: MemberCustomField;
   inputId: string;
   value: EditableCustomFieldValue;
-  // Messages for this field: '' = the field itself, 'subfield' = a composite sub-field.
+  // Messages for this field: '' = the field itself, 'part' = a part of a composite.
   errors?: Record<string, string>;
   disabled?: boolean;
   onChange: (value: EditableCustomFieldValue) => void;
@@ -229,14 +233,14 @@ const MemberCustomFieldEditModal: React.FC<{
 
   const validationErrors = getCustomFieldValidationErrors({ [field.key]: value }, [field]);
   const errors = { ...(saveAttempted ? validationErrors : {}), ...serverErrors };
-  // Strip this field's key prefix so the input sees '' / 'subfield' keys.
+  // Keyed by the part each names, which is how the input places them. The dialog saves this one
+  // field, so an error naming anything but one of its parts is about the field itself.
   const inputErrors = Object.fromEntries(
-    Object.entries(errors).map(([key, message]) => [
-      key === `${field.namespace}.${field.key}`
-        ? ''
-        : key.slice(`${field.namespace}.${field.key}`.length + 1),
-      message,
-    ]),
+    Object.entries(errors).map(([identity, message]) => {
+      const named = z.safeDecode(IdentityTextSchema, identity).data;
+      const ofField = named?.namespace === field.namespace && named.key === field.key;
+      return [ofField ? partOf(named) : '', message];
+    }),
   );
 
   const inputId = `member-custom-field-${field.key}`;
@@ -310,7 +314,7 @@ const MemberCustomFieldEditModal: React.FC<{
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
           {/* The dialog title names the field visually; this gives the
-                        scalar control a real label association (address sub-fields
+                        scalar control a real label association (address parts
                         carry their own labels). */}
           {!isAddressField && (
             <Label className="sr-only" htmlFor={inputId}>
@@ -393,7 +397,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
               const display =
                 formatMemberCustomFieldValue(
                   field.type,
-                  values[`${field.namespace}.${field.key}`],
+                  values[memberCustomFieldIdentity(field)],
                 ) || null;
               return (
                 // Dividers fade around the hovered row (its own border-b, and the
@@ -453,7 +457,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
         <MemberCustomFieldEditModal
           key={editingField.key}
           field={editingField}
-          initialValue={values[`${editingField.namespace}.${editingField.key}`]}
+          initialValue={values[memberCustomFieldIdentity(editingField)]}
           memberId={memberId}
           onClose={() => setEditingField(null)}
         />

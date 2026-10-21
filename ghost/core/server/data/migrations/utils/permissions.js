@@ -128,15 +128,13 @@ async function addPermissionToRoleHelper(connection, config) {
     })
     .first();
 
+  // Permission checks no longer read these tables, and databases created
+  // since fixtures stopped seeding permissions have no rows to link.
   if (!permission) {
-    throw new errors.InternalServerError({
-      message: tpl(messages.permissionRoleActionError, {
-        action: 'add',
-        permission: config.permission,
-        role: config.role,
-        resource: 'permission',
-      }),
-    });
+    logging.warn(
+      `Adding permission(${config.permission}) to role(${config.role}) - Permission not found.`,
+    );
+    return;
   }
 
   const role = await connection('roles')

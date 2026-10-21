@@ -87,7 +87,9 @@ describe('Performance without Tinybird configuration', () => {
           .toBe(page.getByTestId('automation-canvas').element().getBoundingClientRect().width);
         await page.getByRole('button', { name: 'Show automation sidebar' }).click();
         await expect.element(page.getByRole('tab', { name: 'Settings' })).toBeVisible();
-        await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Updated flow');
+        await page
+          .getByRole('textbox', { name: 'Automation name', exact: true })
+          .fill('Updated flow');
         await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
         await page.getByRole('textbox', { name: 'Wait for' }).fill('2');
         const saveLabel = status === 'active' ? 'Publish changes' : 'Save';

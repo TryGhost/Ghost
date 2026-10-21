@@ -115,6 +115,7 @@ describe('Mailgun Email Provider', function () {
           deliveryTime,
           track_opens: true,
           track_clicks: true,
+          perRecipientMessageId: true,
           tags: ['bulk-email', 'newsletter-email'],
         },
         { 'member@example.com': { name: 'John', name_html: 'John' } },
@@ -213,8 +214,7 @@ describe('Mailgun Email Provider', function () {
 
       const sendOptions = { clickTrackingEnabled: false, openTrackingEnabled: false };
 
-      it('requests per-recipient Message-Ids when enabled in config', async function () {
-        config.get.withArgs('bulkEmail:perRecipientMessageId').returns(true);
+      it('requests per-recipient Message-Ids', async function () {
         const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
 
         await mailgunEmailProvider.send(buildEmailData(), sendOptions);
@@ -223,33 +223,13 @@ describe('Mailgun Email Provider', function () {
         assert.equal(messageData.perRecipientMessageId, true);
       });
 
-      it('does not request per-recipient Message-Ids by default', async function () {
-        const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
-
-        await mailgunEmailProvider.send(buildEmailData(), sendOptions);
-
-        const [messageData] = sendStub.firstCall.args;
-        assert.equal('perRecipientMessageId' in messageData, false);
-      });
-
       it('passes through a missing provider id without failing the send', async function () {
         sendStub.resolves({ id: null });
-        config.get.withArgs('bulkEmail:perRecipientMessageId').returns(true);
         const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
 
         const response = await mailgunEmailProvider.send(buildEmailData(), sendOptions);
 
         assert.equal(response.id, null);
-      });
-
-      it('only honours a boolean true from config', async function () {
-        config.get.withArgs('bulkEmail:perRecipientMessageId').returns('true');
-        const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
-
-        await mailgunEmailProvider.send(buildEmailData(), sendOptions);
-
-        const [messageData] = sendStub.firstCall.args;
-        assert.equal('perRecipientMessageId' in messageData, false);
       });
     });
 

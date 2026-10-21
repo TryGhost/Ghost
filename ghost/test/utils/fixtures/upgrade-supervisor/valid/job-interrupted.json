@@ -12,7 +12,7 @@
       "code": "interrupted",
       "severity": "error",
       "message": "The upgrade supervisor stopped while this job was restarting. It is never resumed.",
-      "details": "In the site directory:\n  ./ghost-docker check\n  rm .ghost-docker.lock"
+      "details": "In the site directory:\n  `./ghost-docker check`\n  `rm .ghost-docker.lock`"
     }
   ]
 }

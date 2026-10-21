@@ -181,10 +181,8 @@ export class SlackPingService {
         return;
       }
 
-      // Don't ping for the default posts.
-      // This also handles the case where during Ghost's first run
-      // model loading inserts this post but permissions.init() hasn't
-      // (can't) run yet.
+      // Don't ping for the default posts, which are inserted during
+      // Ghost's first run before services are initialised.
       if (post.slug && defaultPostSlugs.indexOf(post.slug) > -1) {
         return;
       }

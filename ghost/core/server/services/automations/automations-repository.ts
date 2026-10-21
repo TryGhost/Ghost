@@ -1,7 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
-import type { AddAutomationData } from './automations-api';
-import type { AutomationTriggerTierScope } from './automations-repository-2';
+import type { AddAutomationData, AutomationTriggerTierScope } from './automations-repository-2';
 
 export type Pagination = {
   page: number;
@@ -214,17 +213,8 @@ export type AutomationRunMember = {
   email: string;
 };
 
-export type BrowseOptions = Readonly<{
-  /**
-   * Should stats be included?
-   *
-   * In the future, we plan to remove this option and never return stats from the database repository.
-   */
-  includeStats: boolean;
-}>;
-
 export type AutomationsRepository = {
-  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  browse(): Promise<Page<AutomationSummary>>;
   getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;

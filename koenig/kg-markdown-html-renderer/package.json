@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@tryghost/kg-utils": "workspace:~",
-    "markdown-it": "14.3.2",
+    "markdown-it": "14.3.3",
     "markdown-it-footnote": "4.0.0",
     "markdown-it-image-lazy-loading": "2.1.0",
     "markdown-it-lazy-headers": "0.1.3",

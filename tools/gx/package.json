@@ -19,7 +19,9 @@
     "bson-objectid": "catalog:",
     "chalk": "catalog:",
     "cli-progress": "catalog:",
+    "dependency-cruiser": "catalog:",
     "inquirer": "catalog:",
+    "js-yaml": "catalog:",
     "jsonwebtoken": "catalog:",
     "knex": "catalog:",
     "knex-migrator": "catalog:",
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
+    "@types/js-yaml": "catalog:",
     "@types/jsonwebtoken": "catalog:",
     "@types/luxon": "catalog:",
     "@types/node": "catalog:",
@@ -53,6 +56,7 @@
         "{workspaceRoot}/ghost/types/**/*.d.ts"
       ],
       "dataCommands": [
+        "{workspaceRoot}/ghost/bin/generate-data.ts",
         "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
         "{workspaceRoot}/ghost/core/server/data/schema/**/*",
         "{workspaceRoot}/ghost/core/server/models/**/*"
@@ -60,6 +64,10 @@
       "developmentStackCommands": [
         "{workspaceRoot}/package.json",
         "{workspaceRoot}/.codex/hooks.json"
+      ],
+      "serviceReports": [
+        "{workspaceRoot}/.dependency-cruiser.cjs",
+        "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs"
       ]
     },
     "targets": {
@@ -72,6 +80,7 @@
           "goldenEmailCommand",
           "dataCommands",
           "developmentStackCommands",
+          "serviceReports",
           {
             "runtime": "node -v"
           }

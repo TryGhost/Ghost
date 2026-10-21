@@ -4,6 +4,7 @@ export * from './recommendation-repository';
 export * from './in-memory-recommendation-repository';
 export * from './recommendation';
 export * from './well-known-service';
+export * from './well-known-controller';
 export * from './bookshelf-recommendation-repository';
 export * from './click-event';
 export * from './bookshelf-click-event-repository';

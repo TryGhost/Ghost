@@ -13,6 +13,7 @@ const messages = {
   valueExceedsMaxLength:
     'Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.',
   valueIsNotInteger: 'Value in [{tableName}.{columnKey}] is not an integer.',
+  valueDoesNotMatchPattern: 'Value in [{tableName}.{columnKey}] must match {pattern}.',
 };
 
 type Model = {
@@ -117,6 +118,24 @@ export function validateSchema(tableName: string, model: Model, options?: Option
             }),
           );
         }
+      }
+
+      // check pattern
+      if (
+        Object.hasOwn(schema[tableName][columnKey], 'pattern') &&
+        !RegExp(schema[tableName][columnKey].pattern).test(strVal)
+      ) {
+        message = tpl(messages.valueDoesNotMatchPattern, {
+          tableName: tableName,
+          columnKey: columnKey,
+          pattern: schema[tableName][columnKey].pattern,
+        });
+        validationErrors.push(
+          new errors.ValidationError({
+            message: message,
+            context: tableName + '.' + columnKey,
+          }),
+        );
       }
 
       // check validations objects

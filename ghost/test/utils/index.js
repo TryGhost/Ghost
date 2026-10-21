@@ -40,7 +40,7 @@ const initFixtures = async function initFixtures() {
 
 /**
  * ## Setup Integration Tests
- * Setup takes a list of arguments like: 'default', 'tag', 'perms:tag', 'perms:init'
+ * Setup takes a list of arguments like: 'default', 'tag', 'perms:init'
  * Setup does 'init' (DB) by default
  *
  * @param {Parameters<typeof initFixtures>} args

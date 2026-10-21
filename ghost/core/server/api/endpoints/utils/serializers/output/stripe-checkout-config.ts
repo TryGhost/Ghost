@@ -1,16 +1,14 @@
 import type { Frame } from '@tryghost/api-framework';
-import {
-  SHIPPING_FLAG,
-  toCheckoutConfigResponse,
-} from '../../../../../services/stripe-checkout-config';
+import { COLLECTION_FLAG } from '../../../../../services/stripe-checkout-config/models';
+import { toCheckoutConfigResponse } from '../../../../../services/stripe-checkout-config/serializers';
 import type { StripeCheckoutConfig } from '../../../../../services/stripe-checkout-config';
 
 const labs = require('../../../../../../shared/labs');
 
 const serialize = (config: StripeCheckoutConfig, _apiConfig: unknown, frame: Frame): void => {
-  // Shipping is still in development, so staff only see it while its flag is on.
+  // The collected parts are still in development, so staff only see them while their flag is on.
   frame.response = toCheckoutConfigResponse.parse(
-    labs.isSet(SHIPPING_FLAG) ? config : { design: config.design },
+    labs.isSet(COLLECTION_FLAG) ? config : { design: config.design },
   );
 };
 

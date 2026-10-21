@@ -5,6 +5,7 @@ import {
   currentRoute,
   fakeAnalyticsOverview,
   currentUserResponse,
+  fakeAdminEndpoint,
   fakeSettingsScreens,
   fakeTags,
   fakeTiers,
@@ -43,6 +44,10 @@ describe('Settings layout', () => {
   it('lets keyboard users reach Settings sections', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
+    // About asks the host about Ghost updates.
+    fakeAdminEndpoint('GET', '/upgrades/', {
+      upgrades: [{ supported: false, reason: 'not-configured' }],
+    });
     await renderAdminApp('/settings');
 
     await expect.element(settingsScreen.search()).toHaveFocus();

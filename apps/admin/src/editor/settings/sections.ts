@@ -14,8 +14,6 @@ export const SETTINGS_SECTION_ORDER = [
   'post-history',
   'code-injection',
   'meta-data',
-  'x-card',
-  'facebook-card',
   'editor-font',
   'keyboard-shortcuts',
   'editor-help',
@@ -38,10 +36,10 @@ export const SETTINGS_FIELD_SECTIONS = {
   canonical_url: 'meta-data',
   meta_title: 'meta-data',
   meta_description: 'meta-data',
-  og_title: 'facebook-card',
-  og_description: 'facebook-card',
-  twitter_title: 'x-card',
-  twitter_description: 'x-card',
+  og_title: 'meta-data',
+  og_description: 'meta-data',
+  twitter_title: 'meta-data',
+  twitter_description: 'meta-data',
   codeinjection_head: 'code-injection',
   codeinjection_foot: 'code-injection',
 } as const satisfies Record<Exclude<InvalidFieldKey, 'title' | 'email_subject'>, SettingsSectionId>;
@@ -53,10 +51,7 @@ export function isSettingsPanelField(key: InvalidFieldKey): key is SettingsPanel
   return key in SETTINGS_FIELD_SECTIONS;
 }
 
-/**
- * The tabs of the combined Meta data pane (admin7EditorImprovements), named for
- * the sections each one stands in for.
- */
+/** The tabs of the Meta data pane: search metadata and the X and Facebook cards. */
 export const META_DATA_TABS = ['meta-data', 'x-card', 'facebook-card'] as const;
 
 export type MetaDataTab = (typeof META_DATA_TABS)[number];
@@ -65,19 +60,20 @@ export function isMetaDataTab(value: string): value is MetaDataTab {
   return (META_DATA_TABS as readonly string[]).includes(value);
 }
 
+/** The tab of Meta data's pane each of its fields is edited under. */
+const META_DATA_FIELD_TABS = {
+  canonical_url: 'meta-data',
+  meta_title: 'meta-data',
+  meta_description: 'meta-data',
+  og_title: 'facebook-card',
+  og_description: 'facebook-card',
+  twitter_title: 'x-card',
+  twitter_description: 'x-card',
+} as const satisfies Partial<Record<SettingsPanelField, MetaDataTab>>;
+
 /** The Meta data tab a field is edited in, or null for a field outside the pane. */
 export function metaDataTabFor(field: SettingsPanelField): MetaDataTab | null {
-  const section = SETTINGS_FIELD_SECTIONS[field];
-  return isMetaDataTab(section) ? section : null;
-}
-
-/**
- * The section a field is edited in. With the cards combined into Meta data, a
- * card's field lives in Meta data's pane, under its own tab.
- */
-export function settingsSectionFor(
-  field: SettingsPanelField,
-  { combinedMetaData }: { combinedMetaData: boolean },
-): SettingsSectionId {
-  return combinedMetaData && metaDataTabFor(field) ? 'meta-data' : SETTINGS_FIELD_SECTIONS[field];
+  return field in META_DATA_FIELD_TABS
+    ? META_DATA_FIELD_TABS[field as keyof typeof META_DATA_FIELD_TABS]
+    : null;
 }
