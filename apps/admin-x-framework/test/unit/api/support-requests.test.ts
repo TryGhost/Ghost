@@ -11,14 +11,11 @@ describe('support requests api', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          name: 'Jamie Larson',
-          email: 'jamie@example.com',
           subject: 'Cannot publish a post',
           message: 'Please help',
           source: 'chat',
           pageUrl: 'http://localhost:2368/ghost/#/posts',
-          conversationUrl: null,
-          transcript: '**User**\nI cannot publish a post',
+          context: { chat_transcript: '**User**\nI cannot publish a post' },
         });
       });
 
@@ -31,14 +28,11 @@ describe('support requests api', () => {
       expect(JSON.parse(options.body)).toEqual({
         support_requests: [
           {
-            name: 'Jamie Larson',
-            email: 'jamie@example.com',
             subject: 'Cannot publish a post',
             message: 'Please help',
             source: 'chat',
             page_url: 'http://localhost:2368/ghost/#/posts',
-            conversation_url: null,
-            transcript: '**User**\nI cannot publish a post',
+            context: { chat_transcript: '**User**\nI cannot publish a post' },
           },
         ],
       });
