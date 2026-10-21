@@ -54,37 +54,46 @@ reviews:
       - name: 'Tooling ownership'
         mode: 'error'
         instructions: |
-          Review tooling anywhere in the PR diff. Inspect the full changed-file
-          list for a directory segment named scripts at any depth, including hidden
-          parents such as apps/.internal/.other/scripts/tool.ts and new directories.
-          This is a repository-wide check, not scoped by path-instruction globs.
-          Use tools/README.md and the relevant folder README. Choose by purpose
-          and execution environment:
-          - tools/configs: reusable lint, test, compiler and build presets/rules
-            imported by development tools.
-          - tools/scripts: repository setup, validation, cross-workspace builds and
-            release automation; use ci/, build/, release/ or root setup/repair.
-          - tools/gx: contributor commands and their implementations, run with pnpm gx.
-          - ghost/scripts: build/package the ghost/ server workspace's own assets,
-            assemble/prune release trees, or export its Core policy from a checkout.
-          - ghost/bin: shipped commands that run against an installed Ghost release.
-          Fail when new or moved tooling violates these homes. Allow app/package-local
-          build/test/config helpers and documented execution/isolation exceptions.
-          A new scripts directory alone is not an exception.
-          For a tool needed in both a checkout and an installed release, allow thin
-          gx and ghost/bin entrypoints sharing Core's operation and option validation/
-          normalization. Keep presentation, environment setup, logging and lifecycle
-          in each entrypoint; fail for new duplication of the shared behavior.
-          Preserve callers, path-derived roots, sparse checkouts, Docker/Nx inputs
-          and shipped paths. Keep bootstrap, repair and direct shutdown callable
-          without installed CLI dependencies. Installed tools must not require
-          private tooling workspaces or checkout-only loaders/dependencies.
-          Respect documented exceptions, nearby tests/fixtures, shared scripts/lib
-          helpers and the shipped scripts/prune.mts path. Do not turn an existing
-          placement question into a new rule or request unrelated moves.
-          Fail only for a concrete violation introduced or worsened by the diff;
-          cite the file, actual caller/runtime and correct home or broken contract.
-          Pass if there is no such violation. Do not repeat static-check findings.
+          Check that scripts, tools and shared configuration changed by this PR belong in
+          the right folder and work in their intended environment.
+
+          Check every changed path, including any folder named `scripts`, wherever it
+          appears—even inside hidden folders or newly added directories. Use
+          `tools/README.md` and the relevant folder README to decide placement:
+
+          - `tools/configs`: shared configuration and rules imported by development tools,
+            such as ESLint, TypeScript and Vite.
+          - `tools/scripts`: repository setup, checks, builds spanning multiple
+            workspaces, and releases. Use `ci/`, `build/` or `release/`; keep setup and
+            repair scripts at the root.
+          - `tools/gx`: contributor commands and their implementations, run
+            through `pnpm gx`.
+          - `ghost/scripts`: build and package the Ghost server, prepare release files, or
+            export Core policy from a source checkout.
+          - `ghost/bin`: commands shipped with Ghost that run against an installed
+            release.
+
+          Build, test and configuration helpers used only by one app or package can stay
+          beside it. Follow documented exceptions for tools that need a separate
+          installation environment. Creating a new `scripts` folder does not establish an
+          exception.
+
+          When a tool is needed through both gx and an installed release, keep both
+          entrypoints. Share the operation and option validation in Core; keep CLI output,
+          environment setup and cleanup in each entrypoint.
+
+          Check that moves preserve callers, relative paths, sparse checkouts, Docker/Nx
+          inputs and shipped paths. Bootstrap, repair and direct shutdown must work
+          without installed CLI dependencies. Installed commands must not depend on
+          private tooling workspaces or checkout-only loaders.
+
+          Preserve documented exceptions, including the shipped `ghost/scripts/prune.mts`
+          path, and keep tests and fixtures beside their owner.
+
+          Fail only when this PR introduces or worsens a concrete placement or execution
+          problem. Identify the file, its caller or runtime, and the required correction.
+          Otherwise pass. Do not request unrelated moves or repeat findings from automated
+          checks.
   path_instructions:
     - path: '**/*'
       instructions: |
