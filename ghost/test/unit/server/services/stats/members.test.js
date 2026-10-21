@@ -139,6 +139,55 @@ describe('MembersStatsService', function () {
       }
     }
 
+    it('starts a range that begins before any members at the day before the first change', async function () {
+      currentCounts.free = 2;
+      events = [
+        {
+          date: yesterdayDate,
+          paid_subscribed: 0,
+          paid_canceled: 0,
+          comped_delta: 0,
+          free_delta: 2,
+          gift_delta: 0,
+        },
+      ];
+      await setupDB();
+
+      // All time asks from 2013; this site's members arrived yesterday
+      const { data } = await membersStatsService.getCountHistory({ startDate: '1990-01-01' });
+
+      assert.deepEqual(
+        data.map(({ date, free }) => [date, free]),
+        [
+          [dayBeforeYesterday, 0],
+          [yesterday, 2],
+          [today, 2],
+        ],
+      );
+    });
+
+    it('keeps the whole range when members existed before the first change', async function () {
+      currentCounts.free = 3;
+      events = [
+        {
+          date: yesterdayDate,
+          paid_subscribed: 0,
+          paid_canceled: 0,
+          comped_delta: 0,
+          free_delta: 1,
+          gift_delta: 0,
+        },
+      ];
+      await setupDB();
+
+      const { data } = await membersStatsService.getCountHistory({
+        startDate: twoDaysBeforeYesterday,
+      });
+
+      assert.equal(data[0].date, twoDaysBeforeYesterday);
+      assert.equal(data[0].free, 2);
+    });
+
     it('Always returns at least one value', async function () {
       // No status events
       events = [];

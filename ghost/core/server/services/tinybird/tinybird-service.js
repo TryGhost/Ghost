@@ -58,6 +58,7 @@ const TINYBIRD_PIPES = [
   'api_top_utm_terms',
   'api_top_devices',
   'api_gift_link_visits',
+  'api_first_visit',
   'api_automation_browse_stats',
   'api_automation_performance_stats',
   'api_automation_runs',

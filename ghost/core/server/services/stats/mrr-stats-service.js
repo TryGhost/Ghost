@@ -1,4 +1,14 @@
 const moment = require('moment');
+const {
+  buildHourlyTotals,
+  dayStartUtc,
+  dayEndUtc,
+  hasDayEnded,
+  utcBucketExpression,
+  sumByLocalDay,
+  todayIn,
+  isKnownTimezone,
+} = require('./utils/hourly-history');
 
 class MrrStatsService {
   /**
@@ -35,10 +45,24 @@ class MrrStatsService {
   /**
    * Get the MRR deltas for all days (from old to new), grouped by currency (ascending alphabetically)
    * @param {string} [dateFrom] - Start date to fetch deltas from
+   * @param {string} [timezone] - Days in this timezone rather than UTC
    * @returns {Promise<MrrDelta[]>} The deltas sorted from new to old
    */
-  async fetchAllDeltas(dateFrom) {
+  async fetchAllDeltas(dateFrom, timezone) {
     const knex = this.knex;
+    if (isKnownTimezone(timezone)) {
+      // Local days are added up from UTC hours, which every timezone's days are made of
+      const start = dateFrom ?? moment.utc().subtract(90, 'days').format('YYYY-MM-DD');
+      const hour = utcBucketExpression(knex, 'created_at', timezone);
+      const rows = await knex('members_paid_subscription_events')
+        .select('currency')
+        .select(knex.raw(`${hour} as hour`))
+        .select(knex.raw(`SUM(mrr_delta) as delta`))
+        .where('created_at', '>=', dayStartUtc(start, timezone))
+        .groupByRaw(`${hour}, currency`);
+      return sumByLocalDay(rows, timezone, ['delta'], ['currency']);
+    }
+
     const startDate = dateFrom
       ? moment.utc(dateFrom).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss')
       : moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
@@ -54,17 +78,84 @@ class MrrStatsService {
   }
 
   /**
+   * Returns the MRR per currency for each hour of a single day, so a day
+   * charts with the same hours as its visitors
+   * @param {Object} options
+   * @param {string} options.date - The day, YYYY-MM-DD in `timezone`
+   * @param {string} [options.timezone] - IANA timezone, defaults to UTC
+   */
+  async getHourlyHistory({ date, timezone }) {
+    const knex = this.knex;
+    const dayEnd = dayEndUtc(date, timezone);
+    // Only the day's own changes are loaded; everything since the day ended is
+    // added up by the database and taken off the current MRR
+    const [totals, events, later] = await Promise.all([
+      this.getCurrentMrr(),
+      knex('members_paid_subscription_events')
+        .select('created_at', 'currency', 'mrr_delta')
+        .where('created_at', '>=', dayStartUtc(date, timezone))
+        .where('created_at', '<', dayEnd),
+      hasDayEnded(date, timezone)
+        ? knex('members_paid_subscription_events')
+            .select('currency')
+            .select(knex.raw('SUM(mrr_delta) as delta'))
+            .where('created_at', '>=', dayEnd)
+            .groupBy('currency')
+        : [],
+    ]);
+
+    /** @type {Object.<string, number>} */
+    const current = {};
+    for (const total of totals) {
+      current[total.currency] = total.mrr;
+    }
+    for (const row of later) {
+      if (current[row.currency] !== undefined) {
+        current[row.currency] -= Number(row.delta) || 0;
+      }
+    }
+
+    const apply = (mrr, event, direction) => {
+      if (mrr[event.currency] === undefined) {
+        // Skip unexpected currencies that are not in the totals
+        return mrr;
+      }
+      return { ...mrr, [event.currency]: mrr[event.currency] + direction * event.mrr_delta };
+    };
+
+    const { hours, start } = buildHourlyTotals({ date, timezone, current, events, apply });
+
+    return {
+      data: hours.flatMap(({ date: hour, totals: mrr }) =>
+        totals.map(({ currency }) => ({
+          date: hour,
+          mrr: Math.max(0, mrr[currency]),
+          currency,
+        })),
+      ),
+      meta: {
+        totals,
+        interval: 'hour',
+        // MRR per currency where the day started: each hour holds the MRR at
+        // its end, so the day's change is measured from here
+        start: totals.map(({ currency }) => ({ currency, mrr: Math.max(0, start[currency]) })),
+      },
+    };
+  }
+
+  /**
    * Returns a list of the MRR history for each day and currency, including the current MRR per currency as meta data.
    * The respons is in ascending date order, and currencies for the same date are always in ascending order.
    * @param {Object} [options]
    * @param {string} [options.dateFrom] - Start date to fetch history from
+   * @param {string} [options.timezone] - Days in this timezone rather than UTC
    * @returns {Promise<MrrHistory>}
    */
   async getHistory(options = {}) {
     // Fetch current total amounts and start counting from there
     const totals = await this.getCurrentMrr();
 
-    const rows = await this.fetchAllDeltas(options.dateFrom);
+    const rows = await this.fetchAllDeltas(options.dateFrom, options.timezone);
 
     rows.sort((rowA, rowB) => {
       const dateA = new Date(rowA.date);
@@ -73,8 +164,8 @@ class MrrStatsService {
       return dateA - dateB || rowA.currency.localeCompare(rowB.currency);
     });
 
-    // Get today in UTC (default timezone)
-    const today = moment().format('YYYY-MM-DD');
+    // Today in the viewer's timezone when asked for, UTC otherwise
+    const today = todayIn(options.timezone);
 
     const results = [];
 
