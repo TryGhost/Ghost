@@ -56,7 +56,8 @@ export const getCustomRangeDays = ({ from, to }: CustomDateRange): number => {
 // as YYYY-MM-DD, or null for longer ranges
 export const getSingleDay = (range: StatsRange): string | null => {
   if (range === STATS_RANGES.today.value) {
-    return moment().format('YYYY-MM-DD');
+    // The site's today, which near midnight can differ from the viewer's
+    return moment().tz(getStatsTimezone()).format('YYYY-MM-DD');
   }
   if (isCustomRange(range) && range.from === range.to) {
     return range.from;
@@ -70,7 +71,7 @@ export const getSingleDay = (range: StatsRange): string | null => {
 const formatCustomRangeEnds = ({ from, to }: CustomDateRange): [string, string] => {
   const start = moment(from);
   const end = moment(to);
-  const currentYear = moment().year();
+  const currentYear = moment().tz(getStatsTimezone()).year();
   const showYear = start.year() !== currentYear || end.year() !== currentYear;
   const startFormat = showYear && start.year() !== end.year() ? 'D MMM YYYY' : 'D MMM';
   const endFormat = showYear ? 'D MMM YYYY' : 'D MMM';

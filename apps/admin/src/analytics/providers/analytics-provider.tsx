@@ -17,7 +17,7 @@ const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   // for it rather than working their ranges out twice
   // Days are counted in the site's timezone; the views below are keyed on it
   const timezone = useStatsTimezone();
-  const { isLoading: isAllTimeStartLoading } = useAllTimeStart();
+  const { isLoading: isAllTimeStartLoading } = useAllTimeStart(timezone);
   // Whether single days can be charted by the hour decides which ranges the
   // date menus offer, so it's known before they render
   const { isLoading: isHourlySupportLoading, supportsHourly } = useHourlyHistorySupport();

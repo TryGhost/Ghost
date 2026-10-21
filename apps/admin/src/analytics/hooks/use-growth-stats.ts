@@ -249,7 +249,8 @@ export const useGrowthStats = (range: StatsRange) => {
   const isSingleDay = singleDay !== null;
   // The history endpoints always run up to today, so a custom range that
   // ends earlier has to be trimmed to its end date
-  const endsBeforeToday = endDate.isBefore(moment(), 'day');
+  // Today on the site's clock, the one the range is counted in
+  const endsBeforeToday = endDate.isBefore(moment().tz(timezone), 'day');
 
   // Fetch member count history from API
   // For single day ranges, we need at least 2 days of data to show a proper delta
