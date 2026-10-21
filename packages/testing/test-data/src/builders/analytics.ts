@@ -13,6 +13,11 @@ export interface AnalyticsActiveVisitors {
   active_visitors: number;
 }
 
+/** The site's first recorded visit (UTC, 'YYYY-MM-DD HH:mm:ss'), or null without visits. */
+export interface AnalyticsFirstVisit {
+  first_visit: string | null;
+}
+
 export interface AnalyticsSource {
   source: string;
   visits: number;
@@ -63,6 +68,7 @@ export interface AnalyticsGiftLinkVisits {
 export interface TinybirdPipeRows {
   api_kpis: AnalyticsKpi;
   api_active_visitors: AnalyticsActiveVisitors;
+  api_first_visit: AnalyticsFirstVisit;
   api_top_sources: AnalyticsSource;
   api_top_locations: AnalyticsLocation;
   api_top_devices: AnalyticsDevice;
@@ -208,6 +214,10 @@ export const analyticsKpi = createRequiredBuilder<AnalyticsKpi, 'date'>(() => ({
 
 export const analyticsActiveVisitors = createBuilder<AnalyticsActiveVisitors>(() => ({
   active_visitors: 0,
+}));
+
+export const analyticsFirstVisit = createBuilder<AnalyticsFirstVisit>(() => ({
+  first_visit: null,
 }));
 
 export const analyticsSource = createRequiredBuilder<AnalyticsSource, 'source'>(() => ({
@@ -404,6 +414,7 @@ export const newsletterSubscriberStat = createRequiredBuilder<NewsletterSubscrib
 export interface TinybirdPipeInputs {
   api_kpis: RequiredBuilderInput<AnalyticsKpi, 'date'>;
   api_active_visitors: Partial<AnalyticsActiveVisitors>;
+  api_first_visit: Partial<AnalyticsFirstVisit>;
   api_top_sources: RequiredBuilderInput<AnalyticsSource, 'source'>;
   api_top_locations: RequiredBuilderInput<AnalyticsLocation, 'location'>;
   api_top_devices: RequiredBuilderInput<AnalyticsDevice, 'device'>;
@@ -422,6 +433,7 @@ type TinybirdPipeBuilders = {
 const tinybirdPipeBuilders = {
   api_kpis: analyticsKpi,
   api_active_visitors: analyticsActiveVisitors,
+  api_first_visit: analyticsFirstVisit,
   api_top_sources: analyticsSource,
   api_top_locations: analyticsLocation,
   api_top_devices: analyticsDevice,
