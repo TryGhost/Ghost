@@ -51,6 +51,40 @@ reviews:
           migration (ghost/core/server/data/migrations/), a tool/config file,
           under tools/scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
+      - name: 'Tooling ownership'
+        mode: 'error'
+        instructions: |
+          Review tooling anywhere in the PR diff. Inspect the full changed-file
+          list for a directory segment named scripts at any depth, including hidden
+          parents such as apps/.internal/.other/scripts/tool.ts and new directories.
+          This is a repository-wide check, not scoped by path-instruction globs.
+          Use tools/README.md and the relevant folder README. Choose by purpose
+          and execution environment:
+          - tools/configs: reusable lint, test, compiler and build presets/rules
+            imported by development tools.
+          - tools/scripts: repository setup, validation, cross-workspace builds and
+            release automation; use ci/, build/, release/ or root setup/repair.
+          - tools/gx: contributor commands and their implementations, run with pnpm gx.
+          - ghost/scripts: build/package the ghost/ server workspace's own assets,
+            assemble/prune release trees, or export its Core policy from a checkout.
+          - ghost/bin: shipped commands that run against an installed Ghost release.
+          Fail when new or moved tooling violates these homes. Allow app/package-local
+          build/test/config helpers and documented execution/isolation exceptions.
+          A new scripts directory alone is not an exception.
+          For a tool needed in both a checkout and an installed release, allow thin
+          gx and ghost/bin entrypoints sharing Core's operation and option validation/
+          normalization. Keep presentation, environment setup, logging and lifecycle
+          in each entrypoint; fail for new duplication of the shared behavior.
+          Preserve callers, path-derived roots, sparse checkouts, Docker/Nx inputs
+          and shipped paths. Keep bootstrap, repair and direct shutdown callable
+          without installed CLI dependencies. Installed tools must not require
+          private tooling workspaces or checkout-only loaders/dependencies.
+          Respect documented exceptions, nearby tests/fixtures, shared scripts/lib
+          helpers and the shipped scripts/prune.mts path. Do not turn an existing
+          placement question into a new rule or request unrelated moves.
+          Fail only for a concrete violation introduced or worsened by the diff;
+          cite the file, actual caller/runtime and correct home or broken contract.
+          Pass if there is no such violation. Do not repeat static-check findings.
   path_instructions:
     - path: '**/*'
       instructions: |
@@ -193,6 +227,18 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
+      - files: 'tools/README.md'
+        applyTo: '**/*'
+      - files: 'tools/configs/README.md'
+        applyTo: 'tools/configs/**,**/*config*'
+      - files: 'tools/scripts/README.md'
+        applyTo: 'tools/scripts/**,.github/**,docker/**,package.json,nx.json'
+      - files: 'tools/gx/README.md'
+        applyTo: 'tools/gx/**,package.json,.codex/hooks.json'
+      - files: 'ghost/scripts/README.md'
+        applyTo: 'ghost/scripts/**,ghost/package.json,docker/**'
+      - files: 'ghost/bin/README.md'
+        applyTo: 'ghost/bin/**,ghost/package.json,docker/**'
       - files: 'docs/practices/api-design.md'
         applyTo: 'ghost/core/server/api/**,packages/admin-api-schema/**'
       - files: 'docs/practices/database-migrations.md'

@@ -8,14 +8,14 @@
 //   metafields.identity:'custom.company'                     // has a value
 //   metafields.identity:-'custom.shipping_address.country'   // that part is not set
 //
-// The values table holds one row per stored value: `metafield_key`, `path`
-// (empty for a plain field, the part's name for one part of a composite) and
-// `value_text`. A filter addresses those columns directly, so each one becomes a
-// single $elemMatch over them — positive asserts a matching row exists, $not
-// asserts none does — with no lookup against the field definitions.
+// The values table holds one row per stored value: `metafield_namespace`,
+// `metafield_key`, `path` (empty for a plain field, the part's name for one part of a
+// composite) and `value_text`. A filter addresses those columns directly, so each one
+// becomes a single $elemMatch over them: positive asserts a matching row exists, and $not
+// asserts none does, with no lookup against the field definitions.
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { CUSTOM_NAMESPACE, IdentityTextSchema } from '@tryghost/metafield-types/identity';
+import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
 import { ROOT_PATH, pathOf } from './storage';
 
 const RELATION = 'metafields';
@@ -67,7 +67,8 @@ function negatedString(value: unknown): string | null {
 const ANY_PATH = null;
 
 interface Target {
-  key: string;
+  namespace: Namespace;
+  key: Key;
   path: string | typeof ANY_PATH;
 }
 
@@ -79,20 +80,14 @@ function targetOf(raw: unknown): Target {
     });
   }
   const { namespace, key, parts } = identity.data;
-  const path = parts.length > 0 ? pathOf(parts) : ANY_PATH;
-  // A stored key never contains a dot, so the identity written out whole is a key no stored
-  // row can equal.
-  if (namespace !== CUSTOM_NAMESPACE) {
-    return { key: z.encode(IdentityTextSchema, identity.data), path };
-  }
-  return { key, path };
+  return { namespace, key, path: parts.length > 0 ? pathOf(parts) : ANY_PATH };
 }
 
 export function createMetafieldsFilterTransformer() {
   // One (maybe-negated) $elemMatch over the value row columns: positive is "a row pinned
   // by these matches", `$not` is "no row does".
   function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
-    const match: QueryNode = { metafield_key: target.key };
+    const match: QueryNode = { metafield_namespace: target.namespace, metafield_key: target.key };
     if (value !== undefined) {
       match.path = target.path ?? ROOT_PATH;
       match.value_text = value;

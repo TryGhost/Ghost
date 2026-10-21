@@ -1,4 +1,5 @@
 import {
+  addBotMessageWhenReady,
   formatDocsBotHistory,
   normalizeDocsBotHistory,
   normalizeDocsBotMetadata,
@@ -169,5 +170,73 @@ describe('toSupportRequestDraft', () => {
       pageUrl: 'http://localhost:2368/ghost/',
       context: {},
     });
+  });
+});
+
+describe('addBotMessageWhenReady', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    delete window.DocsBotAI;
+  });
+
+  // Mirrors DocsBot: a message sent before the chat panel is ready is dropped
+  // and its promise never settles.
+  function mockWidget({ readyAfterAttempts }: { readyAfterAttempts: number }) {
+    const messages: string[] = [];
+    let attempts = 0;
+
+    window.DocsBotAI = {
+      addBotMessage: vi.fn((message: string) => {
+        attempts += 1;
+
+        if (attempts <= readyAfterAttempts) {
+          return new Promise<void>(() => {});
+        }
+
+        messages.push(message);
+
+        return Promise.resolve();
+      }),
+    };
+
+    return { messages };
+  }
+
+  it('retries until the chat panel is ready and adds the message once', async () => {
+    const { messages } = mockWidget({ readyAfterAttempts: 2 });
+
+    const result = addBotMessageWhenReady('Thanks');
+
+    await vi.runAllTimersAsync();
+
+    await expect(result).resolves.toBe(true);
+    expect(messages).toEqual(['Thanks']);
+    expect(window.DocsBotAI?.addBotMessage).toHaveBeenCalledTimes(3);
+  });
+
+  it('gives up when the chat panel never becomes ready', async () => {
+    const { messages } = mockWidget({ readyAfterAttempts: Infinity });
+
+    const result = addBotMessageWhenReady('Thanks');
+
+    await vi.runAllTimersAsync();
+
+    await expect(result).resolves.toBe(false);
+    expect(messages).toEqual([]);
+  });
+
+  it('returns false when the widget is not mounted', async () => {
+    window.DocsBotAI = { addBotMessage: vi.fn(() => Promise.resolve(false as const)) };
+
+    await expect(addBotMessageWhenReady('Thanks')).resolves.toBe(false);
+    expect(window.DocsBotAI.addBotMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns false when the SDK is not loaded', async () => {
+    await expect(addBotMessageWhenReady('Thanks')).resolves.toBe(false);
   });
 });

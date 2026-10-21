@@ -1,3 +1,4 @@
+// Each preset covers as many days as its name says, today included
 export const STATS_RANGES = {
   today: {
     name: 'Today',
@@ -9,11 +10,11 @@ export const STATS_RANGES = {
   },
   last30Days: {
     name: 'Last 30 days',
-    value: 30 + 1,
+    value: 30,
   },
   last3Months: {
     name: 'Last 90 days',
-    value: 91,
+    value: 90,
   },
   yearToDate: {
     name: 'Year to date',
@@ -23,7 +24,7 @@ export const STATS_RANGES = {
   },
   last12Months: {
     name: 'Last 12 months',
-    value: 12 * (30 + 1),
+    value: 365,
   },
   allTime: {
     name: 'All time',

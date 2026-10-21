@@ -125,7 +125,10 @@ test.describe('Ghost Admin - Checkout fields', () => {
     const tierName = await paidTier(page, stripe!, 'Print Edition');
 
     const checkout = await openCheckoutFields(page);
-    await checkout.shippingSwitch.setChecked(true);
+    await checkout.collectShipping({
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
     const tab = await checkout.previewInStripe(tierName);
     await tab.close();
 
@@ -204,7 +207,7 @@ test.describe('Ghost Admin - Checkout fields', () => {
     const tierName = await paidTier(page, stripe!, 'Print Edition');
 
     const checkout = await openCheckoutFields(page);
-    await checkout.phoneSwitch.setChecked(true);
+    await checkout.collectPhone({ field: { create: 'Contact phone' } });
     const tab = await checkout.previewInStripe(tierName);
     await tab.close();
 

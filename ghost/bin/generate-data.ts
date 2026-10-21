@@ -4,6 +4,7 @@
 // Same options as `pnpm gx data generate`, which contributors use in a checkout.
 
 import { parseArgs } from 'node:util';
+import { parseDataGeneratorOptions } from '../core/server/data/seeders/schema';
 
 const { values } = parseArgs({
   options: {
@@ -17,16 +18,8 @@ const { values } = parseArgs({
   },
 });
 
-const pairs = (list: string) =>
-  list
-    .split(',')
-    .filter(Boolean)
-    .map((entry) => {
-      const [name = '', quantity = ''] = entry.split(':');
-      return { name, quantity: quantity ? parseInt(quantity) : undefined };
-    });
-
 async function main() {
+  const options = parseDataGeneratorOptions(values);
   // Fail while creating the connection if MySQL can't stream LOAD DATA
   process.env.REQUIRE_INFILE_STREAM = '1';
 
@@ -37,19 +30,11 @@ async function main() {
 
   try {
     await new DataGenerator({
-      baseDataPack: values['base-data-pack'],
+      ...options,
       knex,
       logger: console,
       baseUrl: config.getSiteUrl(),
-      clearDatabase: values['clear-database'],
-      tables: pairs(values.tables),
       schemaTables,
-      withDefault: values['with-default'],
-      printDependencies: values['print-dependencies'],
-      quantities: Object.fromEntries(
-        pairs(values.quantities).map(({ name, quantity }) => [name, quantity]),
-      ),
-      seed: values.seed ? parseInt(values.seed) : undefined,
     }).importData();
   } finally {
     await knex.destroy();
