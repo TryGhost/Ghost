@@ -169,6 +169,19 @@ describe('TierScopePicker', () => {
     }
   });
 
+  it('resets the highlight when typing and after clearing a committed search', () => {
+    render(<Picker />);
+    open();
+    fireEvent.keyDown(field(), { key: 'ArrowDown' });
+    fireEvent.keyDown(field(), { key: 'ArrowDown' });
+    fireEvent.change(field(), { target: { value: 'gol' } });
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(value()).toEqual(['gold']);
+    expect(field()).toHaveValue('');
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(value()).toBe('any_paid');
+  });
+
   it('shows a notice in place of the rows', () => {
     render(
       <TierScopePicker<'any_paid'>
