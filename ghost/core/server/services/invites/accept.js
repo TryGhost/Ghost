@@ -12,11 +12,12 @@ const messages = {
   },
 };
 
-async function accept(invitation, models) {
+async function accept(invitation, models, lockStaffUsage) {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
 
   return models.Base.transaction(async (transacting) => {
+    await lockStaffUsage?.(transacting);
     const options = { context: { internal: true }, transacting, forUpdate: true };
 
     const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
@@ -44,7 +45,8 @@ async function accept(invitation, models) {
 
     await invite.destroy(options);
 
-    await models.User.add(
+    // The validated invitation already occupies this seat, even after a large import.
+    await models.User.addWithRoles(
       {
         email,
         name: data.name,

@@ -6,6 +6,12 @@ const spamPrevention = require('./api/spam-prevention');
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {
+  staffInviteRateLimitError(err, req, res, next) {
+    if (err.code === 'STAFF_INVITE_RATE_LIMIT' && err.errorDetails?.retryAfter > 0) {
+      res.set('Retry-After', String(err.errorDetails.retryAfter));
+    }
+    next(err);
+  },
   // Limit authentication work across all upgrade routes, before staff identity
   // is available. This is separate from the stricter per-user POST budget.
   upgradeApiLimiter(req, res, next) {

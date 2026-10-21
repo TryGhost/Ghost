@@ -526,7 +526,12 @@ module.exports = function apiRoutes() {
   // ## Invites
   router.get('/invites', mw.authAdminApi, http(api.invites.browse));
   router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
-  router.post('/invites', mw.authAdminApi, http(api.invites.add));
+  router.post(
+    '/invites',
+    mw.authAdminApi,
+    http(api.invites.add),
+    shared.middleware.brute.staffInviteRateLimitError,
+  );
   router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
 
   // ## Redirects

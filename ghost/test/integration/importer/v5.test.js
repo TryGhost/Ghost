@@ -84,4 +84,53 @@ describe('Importing 5.x export', function () {
     assert.equal(post1.authors[0].id, user2.id);
     assert.equal(post2.authors[0].id, user2.id);
   });
+  it('imports a trial publication with more than ten authors, preserving posts and attribution', async function () {
+    const config = require('../../../core/shared/config');
+    const originalPolicy = config.get('hostSettings:staffInvites');
+    config.set('hostSettings:staffInvites', {
+      maxStaff: 10,
+      maxInvites: 15,
+      maxRequests: 3,
+      rateWindowSeconds: 60,
+    });
+    try {
+      const exportData = exportedBodyV5().db[0];
+      const role = testUtils.DataGenerator.forKnex.createRole({ name: 'Contributor' });
+      exportData.data.roles = [role];
+      exportData.data.users = Array.from({ length: 12 }, (_, i) =>
+        testUtils.DataGenerator.forKnex.createUser({
+          email: `import-author-${i}@example.com`,
+          slug: `import-author-${i}`,
+        }),
+      );
+      exportData.data.roles_users = exportData.data.users.map((author) =>
+        testUtils.DataGenerator.forKnex.createUsersRoles(author.id, role.id),
+      );
+      exportData.data.posts = exportData.data.users.map((author, i) =>
+        testUtils.DataGenerator.forKnex.createPost({
+          slug: `import-post-${i}`,
+          title: `Imported post ${i}`,
+          authors: [{ id: author.id }],
+          published_by: author.id,
+        }),
+      );
+      await dataImporter.doImport(exportData, importOptions);
+      const users = await models.User.findAll({
+        ...testUtils.context.internal,
+        withRelated: ['roles'],
+      });
+      assert.equal(users.length, 13);
+      const posts = await models.Post.findAll({
+        ...testUtils.context.internal,
+        withRelated: ['authors'],
+      });
+      assert.equal(posts.length, 12);
+      for (let i = 0; i < 12; i++) {
+        const post = posts.find((entry) => entry.get('slug') === `import-post-${i}`);
+        assert.equal(post.related('authors').at(0).get('email'), `import-author-${i}@example.com`);
+      }
+    } finally {
+      config.set('hostSettings:staffInvites', originalPolicy);
+    }
+  });
 });

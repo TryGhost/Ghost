@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const {
   limitService: limits,
   init: initLimits,
+  getHelpLink,
 } = require('../../../../core/server/services/limits');
 const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
@@ -28,6 +29,20 @@ describe('Limit Service Init', function () {
   afterEach(async function () {
     await configUtils.restore();
     sinon.restore();
+  });
+
+  it('only uses the billing help link when billing is explicitly enabled', function () {
+    for (const enabled of [undefined, false, 'true', true]) {
+      configUtils.set({
+        hostSettings: { billing: { enabled, url: 'https://billing.example.com' } },
+      });
+      assert.equal(
+        getHelpLink(),
+        enabled === true ? 'https://billing.example.com' : 'https://ghost.org/help/',
+      );
+    }
+    configUtils.set({ hostSettings: { billing: { enabled: true } } });
+    assert.equal(getHelpLink(), 'https://ghost.org/help/');
   });
 
   it('initiates and loads limits - minimal setup', async function () {

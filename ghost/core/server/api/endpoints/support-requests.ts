@@ -3,29 +3,24 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import supportRequests, { type SupportRequest } from '../../services/support-requests';
 
+const SLUG = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
+
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
-const optionalText = (max: number) => z.string().trim().min(1).max(max).nullable().optional();
 const optionalUrl = z
   .url({ protocol: /^https?$/ })
   .max(2048)
   .nullable()
   .optional();
 
+const SupportRequestContext = z.record(z.string().regex(SLUG), z.string().trim().min(1));
+
 const SupportRequestInput = z
   .object({
-    name: requiredText(191),
-    email: z.email().max(191),
     subject: requiredText(255),
     message: requiredText(10_000),
-    source: z
-      .string()
-      .regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/)
-      .max(50)
-      .nullable()
-      .optional(),
+    source: z.string().regex(SLUG).max(50).nullable().optional(),
     page_url: optionalUrl,
-    conversation_url: optionalUrl,
-    transcript: optionalText(100_000),
+    context: SupportRequestContext.nullable().optional(),
   })
   .strict();
 
@@ -50,15 +45,16 @@ function parseSupportRequest(frame: AddFrame) {
   return result.data.support_requests[0];
 }
 
-function requester(frame: AddFrame): { id: string; email: string } {
+function requester(frame: AddFrame): SupportRequest['requestedBy'] {
   const user = frame.user;
 
   if (user && typeof user === 'object' && 'get' in user && typeof user.get === 'function') {
     const id: unknown = user.get('id');
+    const name: unknown = user.get('name');
     const email: unknown = user.get('email');
 
-    if (typeof id === 'string' && typeof email === 'string') {
-      return { id, email };
+    if (typeof id === 'string' && typeof name === 'string' && typeof email === 'string') {
+      return { id, name, email };
     }
   }
 
@@ -69,19 +65,15 @@ function requester(frame: AddFrame): { id: string; email: string } {
 
 function toSupportRequest(
   input: z.infer<typeof SupportRequestInput>,
-  staffUser: { id: string; email: string },
+  requestedBy: SupportRequest['requestedBy'],
 ): SupportRequest {
   return {
-    requestedByUserId: staffUser.id,
-    requestedByEmail: staffUser.email,
-    name: input.name,
-    email: input.email,
+    requestedBy,
     subject: input.subject,
     message: input.message,
     source: input.source ?? null,
     pageUrl: input.page_url ?? null,
-    conversationUrl: input.conversation_url ?? null,
-    transcript: input.transcript ?? null,
+    context: input.context ?? {},
   };
 }
 

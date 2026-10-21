@@ -1,4 +1,6 @@
 import { defineService } from '../../../kernel/define-service';
+import InvitationLimiter from './invitation-limiter';
+import { getHelpLink, limitService } from '../limits';
 // @ts-expect-error The existing CommonJS implementation has no type declarations.
 import Invites from './invites';
 
@@ -9,7 +11,8 @@ export default defineService('Invites', () => {
   const urlUtils = require('../../../shared/url-utils').default;
   const models = require('../../models');
   const logging = require('@tryghost/logging');
-  const { limitService } = require('../limits');
+  const config = require('../../../shared/config');
+  const db = require('../../data/db');
 
   return new Invites({
     settingsCache,
@@ -19,5 +22,11 @@ export default defineService('Invites', () => {
     models,
     logging,
     limitService,
+    invitationLimiter: new InvitationLimiter(
+      db.knex,
+      () => config.get('hostSettings:staffInvites'),
+      Date.now,
+      getHelpLink,
+    ),
   });
 });
