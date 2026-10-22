@@ -62,6 +62,8 @@ describe('Stripe Checkout phone number collection', function () {
     await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('tier_requirement_tiers').del();
+    await models.Base.knex('tier_requirements').del();
     await models.Base.knex('members_metafields').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['stripe_checkout_config', 'member_custom_field'])

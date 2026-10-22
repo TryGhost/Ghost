@@ -1,10 +1,23 @@
+import { isDeepStrictEqual } from 'node:util';
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
+import {
+  PORT_FIELD,
+  PORT_PARTS,
+  CHECKOUT_PORT,
+  CHECKOUT_PORTS,
+  isAskable,
+  type CheckoutPort,
+  type RequiredPort,
+} from '@tryghost/checkout';
 import type { FieldStatus } from '../members-metafields/schema';
+import type {
+  RequiredTiers,
+  TierRequirements as TierRequirementsService,
+} from '../tiers/requirements';
 import {
   CUSTOM_NAMESPACE,
   type Identity,
@@ -19,8 +32,12 @@ import {
   COLLECTED_NOUNS,
   COLLECTED_SECTIONS,
   SECTION_NAMES,
+  SECTION_OF,
+  CONFIG_TIER_SECTIONS,
+  keepsTiersInConfig,
   type CheckoutSessionConfig,
   type CollectedSection,
+  type ConfigTierSection,
   type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutConfig,
@@ -42,17 +59,22 @@ type CollectedSettings = {
   [Section in CollectedSection]: NonNullable<CheckoutConfigInput[Section]>;
 };
 
-/** What each collected part keeps in its own column of the config row. */
+type StoredRow = z.output<ConfigRowSchema>;
+
+/**
+ * What each collected part with settings of Stripe's own keeps in its column of the config row.
+ * The phone number has none, so it has no column.
+ */
 type StoredParts = {
-  [Section in CollectedSection]: NonNullable<
-    z.output<ConfigRowSchema>[(typeof SECTION_NAMES)[Section]]
-  >;
+  [
+    Column in Extract<keyof StoredRow, keyof typeof SECTION_OF> as (typeof SECTION_OF)[Column]
+  ]: NonNullable<StoredRow[Column]>;
 };
-type StoredPart<Section extends CollectedSection> = StoredParts[Section];
+type StoredSection = keyof StoredParts;
 
 /** A custom field a request names for a port, and how to say it can't take the port's values. */
 interface Destination {
-  port: StripePort;
+  port: CheckoutPort;
   customFieldKey: Key;
   /** The request property naming the field. */
   property: string;
@@ -62,68 +84,108 @@ interface Destination {
 }
 
 /**
- * How each collected part is saved: what it keeps in its column, and for each port its answers
- * come back through, the custom field its settings name.
+ * The port each part saved into custom fields is required under: the tier requirement its tiers
+ * are kept as. Its answers come back through that port's parts.
+ */
+const REQUIRED_UNDER = {
+  shipping: CHECKOUT_PORT.shipping,
+  phone: CHECKOUT_PORT.phone,
+} as const satisfies { [Section in Exclude<CollectedSection, ConfigTierSection>]: RequiredPort };
+const REQUIRED_PORTS = Object.values(REQUIRED_UNDER);
+
+type RequiredSection = keyof typeof REQUIRED_UNDER;
+
+/** The parts of the port a part saved into custom fields is required under, in order. */
+type PartsOf<Section extends RequiredSection> =
+  (typeof PORT_PARTS)[(typeof REQUIRED_UNDER)[Section]];
+
+/** The ports a part's answers come back through: the parts of the port it's required under. */
+type PartPort<Section extends CollectedSection> = Section extends RequiredSection
+  ? PartsOf<Section>[number]['port']
+  : never;
+
+/** Where one of a part's answers is saved: the port it comes back through, and its field. */
+type PartDestination<Section extends CollectedSection> = Omit<
+  Destination,
+  'port' | 'customFieldKey'
+> & {
+  port: PartPort<Section>;
+  customFieldKey: (settings: CollectedSettings[Section]) => Key;
+};
+
+/** A destination for each of these parts, in the same order. */
+type DestinationsOf<Section extends CollectedSection, Parts> = {
+  readonly [Index in keyof Parts]: PartDestination<Section> & {
+    port: Parts[Index] extends { port: infer Port } ? Port : never;
+  };
+};
+
+/**
+ * A part keeping its tiers in the config saves nowhere. Any other saves each part of the port
+ * it's required under, as its tiers are that port's tier requirement, so a part added to the
+ * port has to be given somewhere to go.
+ */
+type SavedWhere = {
+  [Section in CollectedSection]: {
+    destinations: Section extends RequiredSection
+      ? DestinationsOf<Section, PartsOf<Section>>
+      : readonly [];
+  };
+};
+
+/**
+ * Where each collected part's answers are saved: for each port they come back through, the
+ * custom field its settings name.
  */
 const PARTS: {
-  [Section in CollectedSection]: {
-    stored: (settings: CollectedSettings[Section]) => StoredPart<Section>;
-    destinations: Array<
-      Omit<Destination, 'customFieldKey'> & {
-        customFieldKey: (settings: CollectedSettings[Section]) => Key;
-        /**
-         * Whether checkouts stop asking for the part while this field can't take a value, as
-         * the answer would have nowhere to go.
-         */
-        essential: boolean;
-      }
-    >;
-  };
+  [Section in CollectedSection]: { destinations: readonly PartDestination<Section>[] };
 } = {
   shipping: {
-    stored: (shipping) => ({
-      tier_scope: tierScopeOf(shipping),
-      allowed_countries: shipping.allowedCountries,
-    }),
     destinations: [
       {
-        port: STRIPE_PORT.shippingAddress,
+        port: CHECKOUT_PORT.shippingAddress,
         customFieldKey: (shipping) => shipping.addressCustomFieldKey,
         property: 'shipping.address.custom_field_key',
         wrongType: 'Choose an address custom field for the shipping address.',
         holds: 'the shipping address',
-        essential: true,
       },
       {
-        port: STRIPE_PORT.shippingName,
+        port: CHECKOUT_PORT.shippingName,
         customFieldKey: (shipping) => shipping.nameCustomFieldKey,
         property: 'shipping.name.custom_field_key',
         wrongType: "Choose a short text custom field for the recipient's name.",
         holds: "the recipient's name",
-        // Without the name, the address is still kept.
-        essential: false,
       },
     ],
   },
   phone: {
-    stored: (phone) => ({ tier_scope: tierScopeOf(phone) }),
     destinations: [
       {
-        port: STRIPE_PORT.phone,
+        port: CHECKOUT_PORT.phone,
         customFieldKey: (phone) => phone.customFieldKey,
         property: 'phone.custom_field_key',
         wrongType: 'Choose a short text custom field for the phone number.',
         holds: 'the phone number',
-        essential: true,
       },
     ],
   },
   taxNumber: {
-    stored: (taxNumber) => ({ tier_scope: tierScopeOf(taxNumber) }),
     // Stripe keeps the tax ID on the customer, so Ghost saves nothing from it.
     destinations: [],
   },
+} satisfies SavedWhere;
+
+/** How each part with a column of its own fills it from the settings a request saves. */
+const STORED: {
+  [Section in StoredSection]: (settings: CollectedSettings[Section]) => StoredParts[Section];
+} = {
+  shipping: (shipping) => ({ allowed_countries: shipping.allowedCountries }),
+  taxNumber: (taxNumber) => ({ tier_scope: tierScopeOf(taxNumber) }),
 };
+
+function hasColumn(section: CollectedSection): section is StoredSection {
+  return section in STORED;
+}
 
 /** The ports the collected parts bind to custom fields, each with what its field holds. */
 const PORT_HOLDS = new Map(
@@ -183,29 +245,29 @@ function changeOf<Section extends CollectedSection>(
 
 /** What the collected parts in a request keep in their columns, by part. */
 function storedColumns(requested: RequestedParts): {
-  [Section in CollectedSection]?: StoredPart<Section> | null;
+  [Section in StoredSection]?: StoredParts[Section] | null;
 } {
-  const columns: { [Section in CollectedSection]?: StoredPart<Section> | null } = {};
-  const store = <Section extends CollectedSection>(section: Section) => {
+  const columns: { [Section in StoredSection]?: StoredParts[Section] | null } = {};
+  const store = <Section extends StoredSection>(section: Section) => {
     const settings = requested[section];
     if (settings !== undefined) {
-      columns[section] = settings && PARTS[section].stored(settings);
+      columns[section] = settings && STORED[section](settings);
     }
   };
-  COLLECTED_SECTIONS.forEach(store);
+  COLLECTED_SECTIONS.filter(hasColumn).forEach(store);
   return columns;
 }
 
 /**
- * One row of the config read: the row's parts, one tier a collected part names and that tier
- * again only if it is paid (or nulls), and one port the collected parts bind with its field,
- * and that field again only while it is active (or nulls). A config whose parts name several
- * tiers or bind several ports comes back as a row for each pairing.
+ * One row of the config read: the row's parts, one tier a part keeping its tiers in the config
+ * names and that tier again only if it is paid (or nulls), and one port the collected parts bind
+ * with its field, and that field again only while it is active (or nulls). A config naming
+ * several tiers or binding several ports comes back as a row for each pairing.
  */
 const ReadRow = DbConfigParts.extend({
   section: DbSection.nullable(),
   paid_tier_id: z.string().nullable(),
-  port: z.enum(STRIPE_PORTS).nullable(),
+  port: z.enum(CHECKOUT_PORTS).nullable(),
   bound_key: z.nullable(KeySchema),
   active_key: z.string().nullable(),
   active_type: z.string().nullable(),
@@ -219,8 +281,8 @@ interface Bound {
 }
 
 /** The custom field each port is bound to, as the read found them. */
-function boundFields(rows: ReadRow[]): Map<StripePort, Bound> {
-  const bound = new Map<StripePort, Bound>();
+function boundFields(rows: ReadRow[]): Map<CheckoutPort, Bound> {
+  const bound = new Map<CheckoutPort, Bound>();
   for (const row of rows) {
     if (row.port && row.bound_key) {
       bound.set(row.port, {
@@ -235,7 +297,7 @@ function boundFields(rows: ReadRow[]): Map<StripePort, Bound> {
 
 const LockedTier = z.object({ id: z.string(), type: z.string() });
 const LockedField = z.object({ key: KeySchema, type: z.string(), status: z.string() });
-const LockedBinding = z.object({ port: z.enum(STRIPE_PORTS), metafield_key: KeySchema });
+const LockedBinding = z.object({ port: z.enum(CHECKOUT_PORTS), metafield_key: KeySchema });
 
 /** Points a port at a field, or stops it writing anywhere. */
 export interface PortBinder {
@@ -248,32 +310,40 @@ export interface PortBinder {
   remove(db: Knex, port: string): Promise<void>;
 }
 
+/** Which paid tiers' members must give what a port collects. */
+export type TierRequirements = Pick<TierRequirementsService, 'read' | 'require' | 'release'>;
+
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
   private recordAction: RecordCheckoutConfigAction;
   private bindings: PortBinder;
+  private requirements: TierRequirements;
   private configRow: ConfigRowSchema;
 
   constructor({
     knex,
     recordAction,
     bindings,
+    requirements,
     logging,
   }: {
     knex: Knex;
     recordAction: RecordCheckoutConfigAction;
     bindings: PortBinder;
+    requirements: TierRequirements;
     logging: GhostLogger;
   }) {
     this.knex = knex;
     this.recordAction = recordAction;
     this.bindings = bindings;
+    this.requirements = requirements;
     this.configRow = configRow(logging);
   }
 
   /**
-   * Reads the config, without caching it, in one query over the row and what it points at.
+   * Reads the config, without caching it: the row and what it points at, and the tier
+   * requirements the collected parts are required under.
    *
    * A collected part only counts the named tiers that are paid, and reads as off when it is
    * limited to tiers that have all been deleted, never widening to every tier. Any of its fields
@@ -299,7 +369,7 @@ export class StripeCheckoutConfigService {
           named: await assertTargets(trx, changes),
           saved: await this.readSaved(trx),
         }))
-      : { named: new Map<StripePort, Bound>(), saved: await this.readSaved() };
+      : { named: new Map<CheckoutPort, Bound>(), saved: await this.readSaved() };
     const config = { ...saved.config, ...unsaved };
     const bound = new Map([...saved.bound, ...named]);
     return {
@@ -320,11 +390,19 @@ export class StripeCheckoutConfigService {
     };
   }
 
-  /** The config as saved, and the custom field each port is bound to. */
-  private async readSaved(db: Knex = this.knex): Promise<{
+  /**
+   * The config as saved, the custom field each port is bound to, and the paid tiers each port is
+   * required on. Read in one transaction, as the requirements are a second query, so a save
+   * committing in between can't pair one save's bindings with another's requirements.
+   */
+  private async readSaved(db?: Knex.Transaction): Promise<{
     config: StripeCheckoutConfig;
-    bound: Map<StripePort, Bound>;
+    bound: Map<CheckoutPort, Bound>;
+    required: Map<RequiredPort, RequiredTiers>;
   }> {
+    if (!db) {
+      return this.knex.transaction((trx) => this.readSaved(trx));
+    }
     const rows = z.array(ReadRow).parse(
       await db(`${CONFIG_TABLE} as config`)
         // Every part's tiers in one join and every port in another, so the rows grow with the
@@ -333,7 +411,7 @@ export class StripeCheckoutConfigService {
         .leftJoin(`${CONFIG_TIERS_TABLE} as named`, (join) =>
           join.onIn(
             'named.section',
-            COLLECTED_SECTIONS.map((section) => z.encode(DbSection, section)),
+            CONFIG_TIER_SECTIONS.map((section) => z.encode(DbSection, section)),
           ),
         )
         .leftJoin('products as tier', (join) =>
@@ -365,17 +443,23 @@ export class StripeCheckoutConfigService {
     const [first] = rows;
     const bound = boundFields(rows);
     if (!first) {
-      return { config: { design: null, shipping: null, phone: null, taxNumber: null }, bound };
+      return {
+        config: { design: null, shipping: null, phone: null, taxNumber: null },
+        bound,
+        required: new Map(),
+      };
     }
-    const { design, shipping, phone, tax_number: taxNumber } = z.decode(this.configRow, first);
+    const required = await this.requirements.read(REQUIRED_PORTS, { transacting: db });
+    const { design, shipping, tax_number: taxNumber } = z.decode(this.configRow, first);
     return {
       config: {
         design,
-        shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
-        phone: phone && phoneFrom(tierIdsOf('phone', phone, rows), bound),
+        shipping: shippingFrom(shipping, bound, required.get(REQUIRED_UNDER.shipping)),
+        phone: phoneFrom(bound, required.get(REQUIRED_UNDER.phone)),
         taxNumber: taxNumber && taxNumberFrom(tierIdsOf('taxNumber', taxNumber, rows)),
       },
       bound,
+      required,
     };
   }
 
@@ -385,8 +469,11 @@ export class StripeCheckoutConfigService {
    *
    * The tiers and fields the collected parts name are checked inside the same transaction as
    * the write, with their rows locked, so nothing can change between the check and the write.
+   *
+   * Says whether it changed what tiers list to anyone: a requirement, or whether its parts can be
+   * asked for.
    */
-  async edit(context: RequestContext, input: unknown): Promise<void> {
+  async edit(context: RequestContext, input: unknown): Promise<{ changedRequirements: boolean }> {
     const { design, ...requested } = parseRequest(CheckoutConfigInput, input, 'checkout_config');
     // Only the parts in the request are written, so saving one part never overwrites another.
     const changes = changesOf(requested);
@@ -397,8 +484,10 @@ export class StripeCheckoutConfigService {
     const at = new Date();
     const now = toDatabaseDate(at);
 
+    let changedRequirements = false;
     await this.knex.transaction(async (trx) => {
       await assertTargets(trx, changes);
+      const before = await this.listedOnTiers(trx);
 
       await trx(CONFIG_TABLE)
         .insert({
@@ -414,6 +503,7 @@ export class StripeCheckoutConfigService {
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
       }
+      changedRequirements = !isDeepStrictEqual(before, await this.listedOnTiers(trx));
     });
 
     // An existing row keeps its id, so read the id back for the history entry.
@@ -424,26 +514,44 @@ export class StripeCheckoutConfigService {
       });
     }
     await this.recordAction({ context, subject: saved.id });
+    return { changedRequirements };
+  }
+
+  /**
+   * What a save can change of what tiers list: the requirements, and whether each bound port can
+   * take a value. Tiers don't say which field a port writes into, so moving it changes nothing.
+   */
+  private async listedOnTiers(trx: Knex.Transaction) {
+    const { bound, required } = await this.readSaved(trx);
+    return { required, ready: new Map([...bound].map(([port, { ready }]) => [port, ready])) };
   }
 
   /**
    * Settles which tiers a collected part is limited to and which fields it lands in. Switched
    * off, it keeps neither, so turning it back on doesn't inherit old tiers or fields.
+   *
+   * A part that lands in custom fields keeps its tiers as the tier requirement it's required
+   * under. One that lands nowhere keeps them in the config.
    */
   private async writeTargets(
     trx: Knex.Transaction,
     { section, targets }: Change,
     now: Date,
   ): Promise<void> {
-    const name = z.encode(DbSection, section);
-    await trx(CONFIG_TIERS_TABLE).where('section', name).del();
-    if (targets?.tierIds) {
-      await trx(CONFIG_TIERS_TABLE).insert(
-        targets.tierIds.map((productId) => ({ section: name, product_id: productId })),
-      );
+    if (keepsTiersInConfig(section)) {
+      const name = z.encode(DbSection, section);
+      await trx(CONFIG_TIERS_TABLE).where('section', name).del();
+      if (targets?.tierIds) {
+        await trx(CONFIG_TIERS_TABLE).insert(
+          targets.tierIds.map((productId) => ({ section: name, product_id: productId })),
+        );
+      }
+      return;
     }
 
+    const requires = REQUIRED_UNDER[section];
     if (targets) {
+      await this.requirements.require(requires, targets.tierIds, now, { transacting: trx });
       for (const { port, customFieldKey } of targets.destinations) {
         await this.bindings.bind(
           trx,
@@ -453,6 +561,7 @@ export class StripeCheckoutConfigService {
         );
       }
     } else {
+      await this.requirements.release(requires, { transacting: trx });
       for (const { port } of PARTS[section].destinations) {
         await this.bindings.remove(trx, port);
       }
@@ -465,7 +574,7 @@ export class StripeCheckoutConfigService {
  * and empty once every tier it named has been deleted.
  */
 function tierIdsOf(
-  section: CollectedSection,
+  section: ConfigTierSection,
   { tier_scope: tierScope }: { tier_scope: TierScope },
   rows: ReadRow[],
 ): string[] | null {
@@ -481,15 +590,19 @@ function tierIdsOf(
   ];
 }
 
-/** Shipping as the read found it, or null when what it points at is gone. */
+/**
+ * Shipping as the read found it: on while it's required on some paid tier, both its fields are
+ * bound and its countries can be read, asked on the tiers that require it. Countries that can
+ * no longer be read leave it off rather than widening to everywhere.
+ */
 function shippingFrom(
-  stored: StoredPart<'shipping'>,
-  tierIds: string[] | null,
-  bound: Map<StripePort, Bound>,
+  stored: StoredParts['shipping'] | null,
+  bound: Map<CheckoutPort, Bound>,
+  tierIds: RequiredTiers | undefined,
 ): ShippingSettings | null {
-  const address = bound.get(STRIPE_PORT.shippingAddress);
-  const name = bound.get(STRIPE_PORT.shippingName);
-  if (!address || !name || tierIds?.length === 0) {
+  const address = bound.get(CHECKOUT_PORT.shippingAddress);
+  const name = bound.get(CHECKOUT_PORT.shippingName);
+  if (!stored || !address || !name || tierIds === undefined) {
     return null;
   }
   return {
@@ -500,10 +613,16 @@ function shippingFrom(
   };
 }
 
-/** The phone number settings as the read found them, or null when what they point at is gone. */
-function phoneFrom(tierIds: string[] | null, bound: Map<StripePort, Bound>): PhoneSettings | null {
-  const field = bound.get(STRIPE_PORT.phone);
-  if (!field || tierIds?.length === 0) {
+/**
+ * The phone number settings as the read found them: on while it's required on some paid tier
+ * and its field is bound, asked on the tiers that require it.
+ */
+function phoneFrom(
+  bound: Map<CheckoutPort, Bound>,
+  tierIds: RequiredTiers | undefined,
+): PhoneSettings | null {
+  const field = bound.get(CHECKOUT_PORT.phone);
+  if (!field || tierIds === undefined) {
     return null;
   }
   return { tierIds, customFieldKey: field.customFieldKey };
@@ -515,9 +634,9 @@ function taxNumberFrom(tierIds: string[] | null): TaxNumberSettings | null {
 }
 
 /** Whether checkouts can ask for a part: while every field it can't do without can take a value. */
-function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound>): boolean {
-  return PARTS[section].destinations.every(
-    ({ port, essential }) => !essential || bound.get(port)?.ready === true,
+function collectableFrom(section: CollectedSection, bound: Map<CheckoutPort, Bound>): boolean {
+  return (
+    keepsTiersInConfig(section) || isAskable(REQUIRED_UNDER[section], (part) => bound.get(part))
   );
 }
 
@@ -539,7 +658,7 @@ function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound
 async function assertTargets(
   trx: Knex.Transaction,
   changes: Change[],
-): Promise<Map<StripePort, Bound>> {
+): Promise<Map<CheckoutPort, Bound>> {
   const switchedOn = changes.flatMap(({ section, targets }) =>
     targets ? [{ section, ...targets }] : [],
   );
@@ -633,7 +752,7 @@ async function assertTargets(
   }
 
   return new Map(
-    destinations.map(({ port, customFieldKey }): [StripePort, Bound] => [
+    destinations.map(({ port, customFieldKey }): [CheckoutPort, Bound] => [
       port,
       {
         customFieldKey,

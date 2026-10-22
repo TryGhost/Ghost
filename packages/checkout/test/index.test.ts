@@ -4,10 +4,12 @@ import {
   STRIPE_ALLOWED_COUNTRIES,
   STRIPE_CHECKOUT_BORDER_STYLES,
   STRIPE_CHECKOUT_FONTS,
-  STRIPE_PORT,
-  STRIPE_PORTS,
+  CHECKOUT_PORT,
+  CHECKOUT_PORTS,
   isStripeAllowedCountry,
-  isStripePort,
+  isCheckoutPort,
+  isAskable,
+  isRequiredPort,
 } from '../src/index.ts';
 
 describe('allowed countries', function () {
@@ -34,20 +36,52 @@ describe('allowed countries', function () {
 });
 
 describe('ports', function () {
-  it('recognises the names Stripe returns values under', function () {
-    for (const port of STRIPE_PORTS) {
-      assert.ok(isStripePort(port));
+  it('recognises the names a checkout collects values under', function () {
+    for (const port of CHECKOUT_PORTS) {
+      assert.ok(isCheckoutPort(port));
     }
-    assert.equal(isStripePort('email'), false);
+    assert.equal(isCheckoutPort('email'), false);
+    // Shipping is bound in its parts, never whole.
+    assert.equal(isCheckoutPort(CHECKOUT_PORT.shipping), false);
   });
 
   it('names a field for every port, of a type that can hold what it returns', function () {
     // Stripe returns a structured address for the address, plain text for the rest, so a
     // port left out here would be collected into whatever a request happened to name.
-    assert.deepEqual(Object.keys(PORT_FIELD).sort(), [...STRIPE_PORTS].sort());
-    assert.equal(PORT_FIELD[STRIPE_PORT.shippingAddress].type, 'address');
-    assert.equal(PORT_FIELD[STRIPE_PORT.shippingName].type, 'short_text');
-    assert.equal(PORT_FIELD[STRIPE_PORT.phone].type, 'short_text');
+    assert.deepEqual(Object.keys(PORT_FIELD).sort(), [...CHECKOUT_PORTS].sort());
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.shippingAddress].type, 'address');
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.shippingName].type, 'short_text');
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.phone].type, 'short_text');
+  });
+
+  it('gives each part to one port a tier can require', function () {
+    // A part under two ports would be asked for twice, and land in one field for both.
+    assert.equal(new Set(CHECKOUT_PORTS).size, CHECKOUT_PORTS.length);
+  });
+
+  it('recognises the ports a tier can require', function () {
+    assert.ok(isRequiredPort(CHECKOUT_PORT.shipping));
+    assert.ok(isRequiredPort(CHECKOUT_PORT.phone));
+    assert.equal(isRequiredPort(CHECKOUT_PORT.shippingAddress), false);
+    assert.equal(isRequiredPort('toString'), false);
+  });
+
+  it('asks for a port while each part is kept somewhere and each essential part can take a value', function () {
+    const keptIn =
+      (fields: Partial<Record<string, boolean>>) =>
+      (part: string): { ready: boolean } | undefined =>
+        fields[part] === undefined ? undefined : { ready: fields[part] };
+    const { shipping, shippingAddress, shippingName, phone } = CHECKOUT_PORT;
+
+    assert.ok(isAskable(shipping, keptIn({ [shippingAddress]: true, [shippingName]: true })));
+    // Without the recipient's name, the address is still kept.
+    assert.ok(isAskable(shipping, keptIn({ [shippingAddress]: true, [shippingName]: false })));
+    assert.equal(
+      isAskable(shipping, keptIn({ [shippingAddress]: false, [shippingName]: true })),
+      false,
+    );
+    assert.equal(isAskable(shipping, keptIn({ [shippingAddress]: true })), false);
+    assert.equal(isAskable(phone, keptIn({ [phone]: false })), false);
   });
 });
 

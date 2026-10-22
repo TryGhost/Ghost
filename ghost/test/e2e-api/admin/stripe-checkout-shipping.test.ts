@@ -67,6 +67,8 @@ describe('Stripe Checkout shipping address collection', function () {
     await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('tier_requirement_tiers').del();
+    await models.Base.knex('tier_requirements').del();
     await models.Base.knex('members_metafields').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['stripe_checkout_config', 'member_custom_field'])
@@ -127,6 +129,16 @@ describe('Stripe Checkout shipping address collection', function () {
       property: 'shipping.address.custom_field_key',
       message: 'An archived custom field cannot receive collected data. Restore it first.',
     });
+  });
+
+  it('reads countries Stripe no longer ships to as off, rather than shipping everywhere', async function () {
+    await setCheckout(shipping({ allowed_countries: ['GB'] }));
+    // Saving refuses such a country, so only a list stored before Stripe dropped it can hold one.
+    await models.Base.knex('stripe_checkout_config').update({
+      shipping: JSON.stringify({ allowed_countries: ['XX'] }),
+    });
+
+    assert.deepEqual((await readCheckout()).shipping, NO_SHIPPING);
   });
 
   it('switches off when either field is deleted', async function () {
