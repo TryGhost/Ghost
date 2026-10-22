@@ -780,7 +780,8 @@ services:
           buildFallbackLink return URL objects, while buildEmailLink returns a string. Controller
           and repository operations are async and use their instance receivers. There is no
           reset, shutdown, readiness getter or public wrapper constructor. Class tests exercise
-          link output but do not pin the root export shape or receiver behavior.
+          link output but do not pin the root export shape or receiver behavior. Root units pin
+          that repeated init retains the published repository, service and controller.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-service.js
@@ -789,6 +790,7 @@ services:
           - core/server/services/audience-feedback/feedback.js
         tests:
           - test/unit/server/services/audience-feedback/audience-feedback-service.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
       construction:
         summary: >-
           Import loads shared URL utilities, URL service and permissions dependencies. Boot is
@@ -797,7 +799,9 @@ services:
           store dependencies without querying. A truthy service guards repeat calls. Repository
           publication precedes URL/service construction, and service publication precedes
           controller construction; there is no rollback of partial initialization. No other
-          production construction of these private classes or direct wrapper test was found.
+          production construction of these private classes was found. Root units pin no URL read
+          on import, one home-URL read and no model or URL-service query across repeated init,
+          and a successful later init after the home-URL lookup throws.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
@@ -805,7 +809,8 @@ services:
           - core/server/services/audience-feedback/feedback-repository.js
           - core/server/services/url/index.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/audience-feedback/index.test.ts
       consumers:
         summary: >-
           Email initialization passes service itself to EmailRenderer, which retains it and
@@ -816,7 +821,9 @@ services:
           conditionally includes member details. No external repository consumer was found;
           getMemberByUuid has no caller. HTTP tests exercise submission and two redirect paths.
           Renderer units inject a fake link service and pin button inclusion/exclusion and
-          preservation through link tracking, not real root wiring or a newsletter-click flow.
+          preservation through link tracking. An HTTP case renders feedback links through the
+          booted EmailRenderer and follows both through Members redirects; root units drive the
+          retained controller's redirect through its repository and live URL routing.
         sources:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
@@ -830,6 +837,7 @@ services:
           - test/e2e-api/members/feedback.test.js
           - test/unit/server/services/email-service/email-renderer.test.js
           - test/unit/server/services/audience-feedback/audience-feedback-controller.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
       startup:
         summary: >-
           Boot initializes models, settings and routing before awaiting the service group and
@@ -878,7 +886,8 @@ services:
           literal member placeholders. Units pin these URL shapes, fallback and model input;
           HTTP redirects check Location patterns without exercising slug/routing changes.
           Browse defaults limit/page to 10/1, parses score and always orders newest first;
-          requested order is not forwarded. Root reconfiguration is untested.
+          requested order is not forwarded. Root units pin init-time capture: changing the home
+          URL after init and re-init leaves email and fallback links on the captured base.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-service.js
@@ -893,6 +902,7 @@ services:
           - test/unit/server/services/audience-feedback/audience-feedback-controller.test.js
           - test/unit/server/services/audience-feedback/feedback-repository.test.js
           - test/e2e-api/members/feedback.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
       resources:
         summary: >-
           This graph owns references and a URL, with no timer, subscription, provider client or
@@ -927,7 +937,9 @@ services:
           continues without member data, but propagates query failures. Units pin allowed/denied
           browse delegation. HTTP tests pin invalid-score 422, missing-post 404 and authentication
           401; the malformed/unknown UUID cases omit the key and fail before member lookup.
-          Initialization, write/read failures and concurrent submissions lack direct coverage.
+          Root units pin that a home-URL failure before service publication propagates and a later
+          init succeeds. Failure after service publication, write/read failures and concurrent
+          submissions lack direct coverage.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
@@ -938,12 +950,14 @@ services:
         tests:
           - test/unit/server/services/audience-feedback/audience-feedback-controller.test.js
           - test/e2e-api/members/feedback.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin wrapper exports, receiver requirements, pre-init behavior, repeated init and retained
-        consumers. Preserve publication before email initialization; test partial failures and
-        retry because the service guard can conceal an unfinished controller.
+        Root units now pin repeated-init retention, init-time URL capture and retry after a
+        home-URL failure. Still pin receiver requirements and pre-init behavior, and preserve
+        publication before email initialization. A failure after service publication remains
+        untested; the service guard can conceal an unfinished controller.
       - >-
         Characterize simultaneous submissions and failing writes. Read-then-add has no uniqueness
         or transaction protection, so sequential ID/timestamp assertions do not rule out duplicate
@@ -2092,12 +2106,15 @@ services:
           shared CustomThemeSetting model/cache; construction performs no setting query or
           activation. No alternate runtime implementation construction was found. Unit tests
           inject a fake model and separate cache; API tests explicitly re-init and activate.
+          Root units pin that init performs no setting query, frontend activation or shared
+          cache change, and that the real endpoint then lists no settings.
         sources:
           - core/server/services/custom-theme-settings/index.js
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/index.js
         tests:
           - test/e2e-api/admin/custom-theme-settings.test.js
+          - test/unit/server/services/custom-theme-settings/index.test.ts
       consumers:
         summary: >-
           Boot initializes the wrapper. Theme activation for boot/API/override awaits api.activateTheme
@@ -2107,7 +2124,9 @@ services:
           and local preview keys independently read the shared cache. No other runtime root
           or deep-constructor caller was found. HTTP cases cover edits and successful theme-copy
           activation; middleware tests replace the cache reader, leaving the complete import
-          and rendering paths untested.
+          and rendering paths untested. Root units hold the settings read in each of the real
+          bridge's boot, API and override methods to show frontend activation waits for it,
+          then read the result through the real endpoint.
         sources:
           - core/boot.js
           - core/server/services/themes/activation-bridge.js
@@ -2120,6 +2139,7 @@ services:
           - test/e2e-api/admin/custom-theme-settings.test.js
           - test/e2e-api/admin/themes.test.js
           - test/unit/frontend/services/theme-engine/middleware.test.js
+          - test/unit/server/services/custom-theme-settings/index.test.ts
       startup:
         summary: >-
           Boot initializes api after database/settings setup and before awaited themes.init,
@@ -2127,7 +2147,10 @@ services:
           leaves listSettings empty and the shared cache unchanged. Pre-init api use has no
           guard. Boot theme loading catches/logs activation failure and continues, so readiness
           alone does not establish successful custom-setting activation. API tests manually
-          activate a fixture definition rather than asserting this boot dependency.
+          activate a fixture definition. A boot-harness unit runs initServicesForFrontend with
+          the real root, themes service and bridge: init precedes the settings read, frontend
+          activation and offers, a second boot initializes and activates again, and a failed
+          settings lookup is logged while startup continues without activation or cache changes.
         sources:
           - core/boot.js
           - core/server/services/custom-theme-settings/index.js
@@ -2137,6 +2160,7 @@ services:
         tests:
           - test/e2e-api/admin/custom-theme-settings.test.js
           - test/unit/server/services/custom-theme-settings/service.test.js
+          - test/unit/server/services/custom-theme-settings/index.test.ts
       lifetime:
         summary: >-
           Re-init discards api state but reuses the shared value cache; retained old instances
@@ -2144,7 +2168,9 @@ services:
           concurrent name/settings and waits for a prior activation, but multiple differing
           waiters can then start together. Updates are not serialized with activation or one
           another. listSettings returns shallow copies; nested definition objects remain
-          shared. Cache getAll is also shallow, and no stop clears or drains this state.
+          shared. Cache getAll is also shallow, and no stop clears or drains this state. Root
+          units hold one activation across re-init; it completes on the retained old api, and
+          later activation through the bridge uses the new api.
         sources:
           - core/server/services/custom-theme-settings/index.js
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2152,6 +2178,7 @@ services:
         tests:
           - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/shared/custom-theme-settings-cache/cache.test.ts
+          - test/unit/server/services/custom-theme-settings/index.test.ts
       configuration:
         summary: >-
           Activation reconciles current theme definitions with stored values: remove missing
@@ -2194,7 +2221,9 @@ services:
           in finally without rolling back rows/caches; a waiting call inherits prior rejection.
           Update failure can leave earlier rows/internal values changed while public cache is
           stale. Copy failure rolls back via the transaction; tests use a fake rollback, while
-          the theme-upload HTTP case proves successful copy and subsequent activation only.
+          the theme-upload HTTP case proves successful copy and subsequent activation only. Root
+          units pin that a failed boot activation is logged without frontend activation or
+          cache changes.
         sources:
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
@@ -2206,12 +2235,14 @@ services:
           - test/unit/server/services/custom-theme-settings/service.test.js
           - test/e2e-api/admin/custom-theme-settings.test.js
           - test/e2e-api/admin/themes.test.js
+          - test/unit/server/services/custom-theme-settings/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin wrapper exports, repeated init, retained old api/cache behavior and boot ordering,
-        including failed activation. Current API setup reinitializes and manually activates;
-        it does not establish that replacing api during pending work is safe.
+        Root units now pin init without queries or cache changes, boot ordering across repeated
+        boots, failed boot activation and one activation pending across re-init. Wrapper export
+        shape and replacing api during other pending work, such as updates or copies, remain
+        uncharacterized.
       - >-
         Characterize differing concurrent activations, multiple waiters, rejected activation,
         updates during activation and detached import-triggered activation. The current guard
@@ -5142,7 +5173,11 @@ services:
     notes: >-
       Keep integration editing and key-rotation business rules outside HTTP. The endpoint
       currently constructs and retains this service; boot composition must preserve its
-      model calls, mutation/error contracts and dependent persistence behavior.
+      model calls, mutation/error contracts and dependent persistence behavior. Characterization
+      prepared against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36 covers the unchanged factory,
+      retained real endpoint, model receivers, option handling and awaited edit/rotation results.
+      The original auditedAt remains historical; this preparation does not adopt an initializer
+      or establish same-process reboot, transaction, association or action-write guarantees.
     contracts:
       exports:
         summary: >-
@@ -5152,18 +5187,23 @@ services:
           options object. There is no singleton, init, reset, shutdown or readiness export.
         sources:
           - core/server/services/integrations/integrations-service.js
-        tests: []
+        tests:
+          - test/unit/server/services/integrations/integrations-service.test.ts
       construction:
         summary: >-
           The integrations endpoint is the only production factory caller found. Module
           evaluation constructs once with shared Integration and ApiKey models and retains
           the result in a private constant. The constructor only stores references; it makes
           no query or subscription. The factory could create independent instances, but no
-          other runtime constructor or direct service unit test was found.
+          other runtime constructor was found. Preparation units exercise the real factory and
+          retained endpoint with stubbed model methods, proving idle composition and receiver
+          identity without claiming persisted database behavior.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
-        tests: []
+        tests:
+          - test/unit/server/services/integrations/integrations-service.test.ts
+          - test/unit/server/services/integrations/index.test.ts
       consumers:
         summary: >-
           The endpoint delegates ordinary integration edits and API-key refresh requests to
@@ -5172,6 +5212,8 @@ services:
           HTTP tests exercise ordinary field/webhook edits, successful admin-key rotation and
           missing-integration edits. The rotation case checks the new secret and a refreshed
           action, but not old-token rejection, content keys or mismatched integration/key IDs.
+          Preparation units exercise the real endpoint and retained instance across ordinary
+          edits and rotation, preserving receivers, current results and pending/error forwarding.
         sources:
           - core/server/api/endpoints/integrations.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -5180,6 +5222,7 @@ services:
           - core/server/models/integration.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/index.test.ts
       startup:
         summary: >-
           Admin router construction accesses the lazy endpoint getter. Normal backend/API mounts
@@ -5187,7 +5230,9 @@ services:
           construct the service before readiness. Direct factory construction can occur earlier
           because dependencies are merely stored. There is no pre-use guard. Existing HTTP
           tests exercise completed request composition, not construction timing, concurrent
-          first-request behavior or dependency failure during lazy router creation.
+          first-request behavior or dependency failure during lazy router creation. Preparation
+          units establish idle endpoint-time composition and retained identity without booting
+          the HTTP router or introducing a pre-init contract that does not yet exist.
         sources:
           - core/boot.js
           - core/server/api/endpoints/index.js
@@ -5200,6 +5245,7 @@ services:
           - core/server/services/integrations/integrations-service.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/index.test.ts
       lifetime:
         summary: >-
           Module caching retains the endpoint's instance and model references across requests
@@ -5211,7 +5257,9 @@ services:
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
-        tests: []
+        tests:
+          - test/unit/server/services/integrations/integrations-service.test.ts
+          - test/unit/server/services/integrations/index.test.ts
       configuration:
         summary: >-
           The factory retains model dependencies and reads no application configuration itself.
@@ -5223,6 +5271,9 @@ services:
           boundaries, not validation implemented by the service factory. The ApiKey unit test
           stubs model edit and pins generated secret length and forwarded data/options; it does
           not exercise service composition, association checks or persisted rotation.
+          Service units now pin ordinary option mutation, rotation option cloning, caller
+          transaction propagation to refresh only, and admin/content key delegation through
+          stubbed models; they do not prove stored key lengths or transaction atomicity.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
@@ -5232,6 +5283,7 @@ services:
         tests:
           - test/e2e-api/admin/integrations.test.js
           - test/unit/server/models/api-key.test.ts
+          - test/unit/server/services/integrations/integrations-service.test.ts
       resources:
         summary: >-
           The instance owns only borrowed model references; edits use the shared database and
@@ -5243,6 +5295,9 @@ services:
           The action plugin catches/logs ordinary Action.add rejection. With a caller transaction
           it waits for a truthy committed event, then inserts the action outside that transaction.
           HTTP tests observe a later action row, not write timing or failure handling.
+          Service units hold refresh and reread promises separately to prove operation ordering
+          and settlement; removing the refresh await makes the new pending-operation case fail.
+          Stubbed transactions do not establish database commit or rollback behavior.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/models/api-key.js
@@ -5252,6 +5307,7 @@ services:
           - core/server/models/base/plugins/events.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/integrations-service.test.ts
       failures:
         summary: >-
           Key lookup rejection escapes unchanged; an absent key yields NotFoundError before
@@ -5260,8 +5316,11 @@ services:
           integration reread is returned without a service error. Ordinary edits translate
           errors whose message is NotFound or EmptyResponse to Integration NotFoundError and
           rethrow others. Ordinary action-write rejection is logged without rejecting or rolling
-          back rotation. HTTP coverage pins deleted-integration 404/context; no direct test
-          covers the other service-level failure stages, option mutation or partial writes.
+          back rotation. HTTP coverage pins deleted-integration 404/context. Preparation units
+          pin missing/rejected key lookup, serialization/refresh/reread failure wrapping with
+          the generic 500, null reread, ordinary NotFound/EmptyResponse translation and unchanged
+          unrelated error identity. These stubbed model checks do not establish partial writes
+          or action-record failure behavior.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/models/api-key.js
@@ -5270,26 +5329,25 @@ services:
           - core/server/api/endpoints/integrations.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/integrations-service.test.ts
+          - test/unit/server/services/integrations/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin factory/instance exports, retained endpoint identity, composition timing and options
-        mutation before moving construction to boot. Existing HTTP tests use a fully booted
-        endpoint and do not establish pre-init, receiver or same-process restart behavior.
-      - >-
-        Add key-rotation failure contracts for absent/rejected key lookup, refresh failure,
-        null/rejected integration reread and action-record failure. Assert stored secrets and
-        errors together; a successful HTTP rotation and later action lookup do not prove atomicity
-        or that the action is awaited. Preserve or explicitly change transaction propagation.
+        Add persisted key-rotation failure contracts, including action-record failure. The
+        new service units pin failure translation through stubbed models, not stored-secret
+        outcomes; a successful HTTP rotation and later action lookup do not prove atomicity
+        or that the action is awaited. Preserve current transaction propagation in a bounded
+        initializer migration; changing its ownership requires separate preparation.
       - >-
         Characterize integration/key association and concurrent rotations through authorized
         HTTP calls, including content keys and old-token rejection. Source shows independent
         key/integration lookups; do not assume the facade or existing successful path tests
         establish association validation or protection against lost/repeated rotation results.
       - >-
-        Keep ordinary edit error translation and relation/model behavior distinct from the
-        rotation branch. Add direct model-failure injection and pending-operation ownership
-        evidence before introducing cleanup or promising rollback that does not exist today.
+        Preparation now pins direct model-failure translation and pending edit/rotation
+        settlement. Resource drain, cleanup, same-process reboot and transaction rollback remain
+        unproven; do not introduce those guarantees as part of initializer adoption.
   internal-keys:
     kind: directory
     disposition: relocate
@@ -7293,7 +7351,9 @@ services:
     notes: >-
       Preserve the three exposed collaborators, retained consumers and different configuration
       timing. Attribution computes and reads data; its consumers own event persistence, mail,
-      subscriptions and HTTP handling.
+      subscriptions and HTTP handling. Tests-only root and retained-consumer coverage was
+      refreshed against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the historical audit and
+      migration assessment revisions remain above.
     contracts:
       exports:
         summary: >-
@@ -7304,7 +7364,9 @@ services:
           synchronous URL/event mapping with async history/context/resource queries. Returned
           Attribution objects expose fields, getResource and async fetchResource. Tagging returns
           copied URLs or async HTML. There is no readiness getter, reset or shutdown. Deep-class
-          tests cover behavior, not the root export shape or receiver requirements.
+          tests cover behavior. Root characterization pins import-before-init absence, synchronous
+          publication and retained collaborator identity; detached receiver requirements remain
+          source-only.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7312,6 +7374,7 @@ services:
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/url-history.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/unit/server/services/member-attribution/service.test.ts
           - test/unit/server/services/member-attribution/attribution.test.ts
           - test/unit/server/services/member-attribution/outbound-link-tagger.test.ts
@@ -7323,7 +7386,8 @@ services:
           constructs its own parser with site/admin URLs. Constructors perform no database
           query or subscription. Builder and tagger are published before service; a constructor
           failure can leave partial properties, but the service guard is assigned last so retry
-          attempts reconstruction. No root constructor-failure or retry test was found.
+          attempts reconstruction. Root tests pin retry after URL configuration and late event-model
+          acquisition failures; constructor-failure rollback remains source-only.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/url-translator.js
@@ -7332,7 +7396,8 @@ services:
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/member-attribution-service.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/member-attribution/index.test.ts
       consumers:
         summary: >-
           Members API construction retains service in its router controller, BREAD service and
@@ -7342,8 +7407,9 @@ services:
           EmailRenderer retains service and tagger for links. Content API post/page HTML mapping
           retains the wrapper and reads outboundLinkTagger per call. HTTP tests pin token data,
           checkout metadata, member read/feed attribution and subscription persistence; staff
-          and renderer units use injected fakes. Browser history capture is a separate producer,
-          not another server constructor.
+          and renderer units use injected fakes. Booted tests additionally pin Staff/Members
+          retained identity and EmailRenderer's real attribution/tagger use across a setting
+          change. Browser history capture is a separate producer, not another server constructor.
         sources:
           - core/server/services/members/api.js
           - core/server/services/members/members-api/members-api.js
@@ -7357,6 +7423,7 @@ services:
           - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
           - core/frontend/src/member-attribution/member-attribution.js
         tests:
+          - test/e2e-server/services/member-attribution.test.js
           - test/e2e-api/members/send-magic-link.test.js
           - test/e2e-api/members/create-stripe-checkout-session.test.js
           - test/e2e-api/admin/members.test.js
@@ -7370,8 +7437,10 @@ services:
           Promise.all argument list. Those consumers capture collaborators during construction;
           making attribution initialization asynchronous would require explicit dependency
           sequencing. Full-app readiness follows the group. There is no pre-init access guard;
-          methods/properties are missing until publication. Booted service/HTTP tests exercise
-          real composition but do not assert order, pre-init behavior or partial startup cleanup.
+          methods/properties are missing until publication. Root tests pin the pre-init absence;
+          booted consumer tests pin ready collaborators after actual boot, rather than holding a
+          fabricated asynchronous legacy init. Explicit async sequencing and partial-startup cleanup
+          remain source-only.
         sources:
           - core/boot.js
           - core/server/services/member-attribution/index.js
@@ -7379,6 +7448,7 @@ services:
           - core/server/services/members/api.js
           - core/server/services/email-service/email-service-wrapper.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/e2e-server/services/member-attribution.test.js
           - test/e2e-api/members/send-magic-link.test.js
       lifetime:
@@ -7390,7 +7460,8 @@ services:
           ordered created_at then id descending and fetch current resources; missing resources
           degrade to saved URL/null attribution. Booted tests pin deleted resources and current
           post/page/tag/author URLs. Unit event mocks ignore query callbacks, so they do not pin
-          the deterministic ordering or concurrent event-write/read behavior.
+          the deterministic ordering or concurrent event-write/read behavior. Root and booted
+          consumer tests pin retained identity across repeated initialization.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7398,6 +7469,7 @@ services:
           - core/server/services/member-attribution/url-history.js
           - core/server/services/member-attribution/url-translator.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/e2e-server/services/member-attribution.test.js
           - test/unit/server/services/member-attribution/service.test.ts
       configuration:
@@ -7411,7 +7483,9 @@ services:
           input order without sorting. Builder prefers latest post, then other identified content,
           then URL; referrer selection uses the latest match and earliest UTM-bearing entry.
           Units pin algorithms, URL/tagging rules and fixed callbacks; booted subdirectory tests
-          use test config replacement, not same-instance capture/reload contracts.
+          use test config replacement. Root tests pin same-instance live source-tracking, tagging
+          policy and tagger URL reads, plus init-only parser URL reads and captured Admin referrer
+          matching; they do not establish production hot reload.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7421,6 +7495,7 @@ services:
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/shared/url-utils.ts
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/unit/server/services/member-attribution/history.test.ts
           - test/unit/server/services/member-attribution/attribution.test.ts
           - test/unit/server/services/member-attribution/referrer-translator.test.ts
@@ -7460,7 +7535,8 @@ services:
           Staff catches failures in fallback event reads and still sends, but provided-attribution
           enrichment failure reaches the subscriber catch and skips that notification. Units pin
           missing-resource fallbacks and HTML preservation; most injected fault/consumer boundaries
-          and root retry behavior remain untested.
+          remain untested. Root characterization pins original synchronous errors and successful
+          retry after URL configuration or late model acquisition failure.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7470,20 +7546,22 @@ services:
           - core/server/lib/link-replacer.js
           - core/server/services/staff/staff-service.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/unit/server/services/member-attribution/attribution.test.ts
           - test/unit/server/services/member-attribution/url-translator.test.ts
           - test/unit/server/services/member-attribution/outbound-link-tagger.test.ts
     unverified: []
     blockers:
       - >-
-        Pin root exports, synchronous startup dependency order, pre-init use, repeated init,
-        partial constructor failures and retained references. Existing booted tests establish
-        successful use, not restart/replacement or cleanup semantics.
+        Root and booted tests now pin pre-init absence, synchronous publication, repeated init,
+        retained Staff/Members references and EmailRenderer attribution/tagging. Keep explicit
+        async startup sequencing in the initializer change; constructor/parser failure cleanup
+        and restart/replacement semantics are not established by these tests.
       - >-
-        Test setting changes and captured URLs on the same graph using valid history and nonempty
-        context. Current disabled-context unit short-circuits on absent context; history-gating
-        cases already supply invalid histories. Test callback/parser/model faults and distinguish
-        URL-resolution fallback, integration lookup suppression and consumer error handling.
+        Same-graph root tests now cover valid history/context tracking changes, live outbound
+        tagging policy/source URL, captured parser URLs, integration lookup suppression and two
+        composition retry boundaries. Callback/parser faults, URL-resolution fallback through
+        the root and consumer error handling still need separate coverage.
       - >-
         Pin latest-event ordering with actual competing rows, relation-selection arguments,
         transaction visibility and pending-query ownership. Existing query mocks skip the ordering
@@ -7491,7 +7569,8 @@ services:
         and event subscriptions outside the attribution lifecycle; do not infer rollback or drain.
       - >-
         Characterize UTM reader omissions separately from history/checkout/persistence coverage,
-        and verify retained Staff/email and Content API tagging through real-root consumers.
+        and verify Content API tagging through its real-root consumer. Staff/Members retained
+        identity and EmailRenderer tagging now have booted composition checks.
         Preserve URL encoding, blocked-domain/internal-link rules and degradation boundaries;
         no setting reload or expanded output contract is implied by this migration.
   member-welcome-emails:

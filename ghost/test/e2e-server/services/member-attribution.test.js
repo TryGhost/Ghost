@@ -1,15 +1,97 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const cheerio = require('cheerio');
 const { assertObjectMatches } = require('../../utils/assertions');
 const { agentProvider, fixtureManager, configUtils } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const urlServiceUtils = require('../../utils/url-service-utils');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlUtils = require('../../../core/shared/url-utils').default;
+const settingsCache = require('../../../core/shared/settings-cache');
+const config = require('../../../core/shared/config');
 
 describe('Member Attribution Service', function () {
   beforeAll(async function () {
     await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('posts');
+  });
+
+  describe('booted consumers', function () {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('gives Staff and Members the same ready attribution instance across later init calls', function () {
+      const staff = require('../../../core/server/services/staff');
+      const members = require('../../../core/server/services/members');
+      const service = memberAttributionService.service;
+      assert.ok(service);
+      assert.equal(staff.api.memberAttributionService, service);
+      assert.equal(members.api.memberBREADService.memberAttributionService, service);
+      assert.equal(members.api.events._memberAttributionService, service);
+
+      memberAttributionService.init();
+
+      assert.equal(memberAttributionService.service, service);
+      assert.equal(staff.api.memberAttributionService, service);
+      assert.equal(members.api.memberBREADService.memberAttributionService, service);
+      assert.equal(members.api.events._memberAttributionService, service);
+    });
+
+    it('keeps the booted Email renderer on the live attribution graph', async function () {
+      const email = require('../../../core/server/services/email-service');
+      const linkTracking = require('../../../core/server/services/link-tracking');
+      const renderer = email.renderer;
+      const post = await models.Post.findOne({ id: fixtureManager.get('posts', 0).id });
+      const newsletter = await models.Newsletter.findOne();
+      const siteUrl = config.getSiteUrl();
+      const internalUrl = urlUtils.createUrl('/target/', true);
+      const html = `<a id="internal" href="${internalUrl}">Internal</a><a id="external" href="https://external.example/article?existing=1#heading">External</a>`;
+      const getSetting = sandbox.stub(settingsCache, 'get').callThrough();
+      getSetting.withArgs('outbound_link_tagging').returns(true);
+      sandbox.stub(renderer, 'renderPostBaseHtml').resolves(html);
+      sandbox.stub(renderer, 'getTemplateData').resolves({ post: { url: siteUrl } });
+      sandbox.stub(renderer, 'renderTemplate').resolves(html);
+      sandbox.stub(linkTracking.service, 'addTrackingToUrl').callsFake(async (url) => url);
+      const addPostAttribution = sandbox.spy(
+        memberAttributionService.service,
+        'addPostAttributionTracking',
+      );
+      const tagOutboundLink = sandbox.spy(memberAttributionService.outboundLinkTagger, 'addToUrl');
+
+      const renderLinks = async () => {
+        const result = await renderer.renderBody(post, newsletter, null, {
+          clickTrackingEnabled: true,
+        });
+        const $ = cheerio.load(result.html);
+        return {
+          internal: new URL($('#internal').attr('href')),
+          external: new URL($('#external').attr('href')),
+        };
+      };
+      const enabled = await renderLinks();
+      assert.equal(enabled.internal.searchParams.get('attribution_id'), post.id);
+      assert.equal(enabled.internal.searchParams.get('attribution_type'), 'post');
+      assert.ok(enabled.internal.searchParams.get('ref'));
+      assert.equal(
+        enabled.external.searchParams.get('ref'),
+        new URL(siteUrl).hostname.replace(/^www\./, ''),
+      );
+      assert.equal(enabled.external.searchParams.get('existing'), '1');
+      assert.equal(enabled.external.hash, '#heading');
+      sinon.assert.calledOnce(addPostAttribution);
+      sinon.assert.calledTwice(tagOutboundLink);
+
+      getSetting.withArgs('outbound_link_tagging').returns(false);
+      const disabled = await renderLinks();
+      assert.equal(email.renderer, renderer);
+      assert.equal(disabled.external.href, 'https://external.example/article?existing=1#heading');
+      assert.equal(disabled.internal.searchParams.has('ref'), false);
+      assert.equal(disabled.internal.searchParams.get('attribution_id'), post.id);
+      assert.equal(disabled.internal.searchParams.get('attribution_type'), 'post');
+    });
   });
 
   /**
