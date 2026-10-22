@@ -32,6 +32,7 @@ describe('Exporter', function () {
       'automation_actions',
       'automation_run_steps',
       'automation_runs',
+      'automation_trigger_rules',
       'automation_trigger_tiers',
       'automated_email_recipients',
       'automations',
