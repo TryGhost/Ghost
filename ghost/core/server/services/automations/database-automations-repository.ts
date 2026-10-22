@@ -42,6 +42,7 @@ import {
   DbDate,
   fromDatabaseDate,
   toDatabaseDate,
+  toDatabaseDateWithMilliseconds,
   type DatabaseDate,
 } from '../../lib/db-types/date';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
@@ -506,7 +507,7 @@ export function createDatabaseAutomationsRepository({
       steps: AutomationStepToRun[];
       nextStepReadyAt: null | Date;
     }> {
-      return await knex.transaction((trx) => fetchAndLockSteps(trx, limit));
+      return await knex.transaction((trx) => fetchAndLockSteps(trx, limit, knex));
     },
 
     async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
@@ -1060,6 +1061,7 @@ function createRunStep({
 async function fetchAndLockSteps(
   trx: Knex.Transaction,
   limit: number,
+  knex: Knex,
 ): Promise<{
   steps: AutomationStepToRun[];
   nextStepReadyAt: null | Date;
@@ -1077,6 +1079,7 @@ async function fetchAndLockSteps(
 
   const now = new Date();
   const nowString = toDatabaseDate(now);
+  const readyAtCutoff = isMysql(knex) ? toDatabaseDate(now) : toDatabaseDateWithMilliseconds(now);
   const staleLockCutoff = getStaleLockCutoff(now);
   const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
   const lockId = crypto.randomUUID();
@@ -1085,7 +1088,7 @@ async function fetchAndLockSteps(
   const candidates: ReadonlyArray<{ id: string }> = await trx('automation_run_steps')
     .select('id')
     .where('status', 'pending')
-    .where('ready_at', '<=', nowString)
+    .where('ready_at', '<=', readyAtCutoff)
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
     })
@@ -1111,7 +1114,7 @@ async function fetchAndLockSteps(
     .increment('step_attempts', 1)
     .whereIn('id', candidateIds)
     .where('status', 'pending')
-    .where('ready_at', '<=', nowString)
+    .where('ready_at', '<=', readyAtCutoff)
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
     });
