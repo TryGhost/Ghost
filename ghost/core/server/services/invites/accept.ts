@@ -1,6 +1,40 @@
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const security = require('@tryghost/security');
+import type { Knex } from 'knex';
+import * as errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import * as security from '@tryghost/security';
+
+export type Invitation = {
+  invitation: Array<{ token: string; name: string; password: string }>;
+};
+
+type TransactionOptions<Transaction> = {
+  context: { internal: true };
+  transacting: Transaction;
+  forUpdate: true;
+};
+
+export type AcceptanceModels<Transaction = Knex.Transaction> = {
+  Base: {
+    transaction<T>(callback: (transacting: Transaction) => Promise<T>): Promise<T>;
+  };
+  Invite: {
+    findOne(
+      data: { token: string; status: 'sent' },
+      options: TransactionOptions<Transaction>,
+    ): Promise<{
+      get(key: 'expires'): number;
+      get(key: 'email' | 'role_id'): string;
+      destroy(options: TransactionOptions<Transaction>): Promise<unknown>;
+    } | null>;
+  };
+  User: {
+    findOne(data: { email: string }, options: TransactionOptions<Transaction>): Promise<unknown>;
+    add(
+      data: { email: string; name: string; password: string; roles: string[] },
+      options: TransactionOptions<Transaction>,
+    ): Promise<unknown>;
+  };
+};
 
 const messages = {
   inviteNotFound: 'Invite not found.',
@@ -12,12 +46,19 @@ const messages = {
   },
 };
 
-async function accept(invitation, models) {
+export async function accept<Transaction>(
+  invitation: Invitation,
+  models: AcceptanceModels<Transaction>,
+): Promise<void> {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
 
   return models.Base.transaction(async (transacting) => {
-    const options = { context: { internal: true }, transacting, forUpdate: true };
+    const options: TransactionOptions<Transaction> = {
+      context: { internal: true },
+      transacting,
+      forUpdate: true,
+    };
 
     const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
 
@@ -55,5 +96,3 @@ async function accept(invitation, models) {
     );
   });
 }
-
-module.exports = accept;

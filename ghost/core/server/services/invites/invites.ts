@@ -1,6 +1,73 @@
-const security = require('@tryghost/security');
-const tpl = require('@tryghost/tpl');
-const accept = require('./accept');
+import * as security from '@tryghost/security';
+import tpl from '@tryghost/tpl';
+import { accept, type AcceptanceModels, type Invitation } from './accept';
+
+type Invite = {
+  id: string;
+  get(key: 'token' | 'email'): string;
+};
+
+type InviteData = { email: string; role_id: string };
+type InviteOptions = Record<string, unknown>;
+type InviteEmailData = {
+  blogName: string;
+  invitedByName?: string;
+  invitedByEmail?: string;
+  resetLink: string;
+  recipientEmail: string;
+};
+
+type Dependencies = {
+  settingsCache: { get(key: 'title'): string };
+  settingsHelpers: { getDefaultEmailDomain(): string };
+  mailService: {
+    utils: {
+      generateContent(options: {
+        data: InviteEmailData;
+        template: 'invite-user' | 'invite-user-by-api-key';
+      }): Promise<{ html: string; text: string }>;
+    };
+  };
+  urlUtils: {
+    urlFor(context: 'admin', absolute: true): string;
+    urlJoin(...parts: string[]): string;
+  };
+  models: AcceptanceModels;
+  logging: { warn(message: string): void };
+};
+
+type AddInviteRequest = {
+  api: {
+    mail: {
+      send(
+        payload: {
+          mail: Array<{
+            message: {
+              to: string;
+              replyTo?: string;
+              subject: string;
+              html: string;
+              text: string;
+            };
+            options: Record<string, never>;
+          }>;
+        },
+        options: { context: { internal: true } },
+      ): Promise<unknown>;
+    };
+  };
+  InviteModel: {
+    findOne(
+      data: { email: string },
+      options: InviteOptions,
+    ): Promise<{ destroy(options: InviteOptions): Promise<unknown> } | null>;
+    add(data: InviteData, options: InviteOptions): Promise<Invite>;
+    edit(data: { status: 'sent' }, options: InviteOptions & { id: string }): Promise<Invite>;
+  };
+  invites: InviteData[];
+  options: InviteOptions;
+  user: { name?: string; email?: string };
+};
 
 const messages = {
   invitedByName: '{invitedByName} has invited you to join {blogName}',
@@ -11,8 +78,22 @@ const messages = {
   },
 };
 
-class Invites {
-  constructor({ settingsCache, settingsHelpers, mailService, urlUtils, models, logging }) {
+export class Invites {
+  private readonly settingsCache: Dependencies['settingsCache'];
+  private readonly settingsHelpers: Dependencies['settingsHelpers'];
+  private readonly mailService: Dependencies['mailService'];
+  private readonly urlUtils: Dependencies['urlUtils'];
+  private readonly models: Dependencies['models'];
+  private readonly logging: Dependencies['logging'];
+
+  constructor({
+    settingsCache,
+    settingsHelpers,
+    mailService,
+    urlUtils,
+    models,
+    logging,
+  }: Dependencies) {
     this.settingsCache = settingsCache;
     this.settingsHelpers = settingsHelpers;
     this.mailService = mailService;
@@ -21,13 +102,13 @@ class Invites {
     this.logging = logging;
   }
 
-  accept(invitation) {
+  accept(invitation: Invitation) {
     return accept(invitation, this.models);
   }
 
-  add({ api, InviteModel, invites, options, user }) {
-    let invite;
-    let emailData;
+  add({ api, InviteModel, invites, options, user }: AddInviteRequest): Promise<Invite> {
+    let invite: Invite;
+    let emailData: InviteEmailData;
 
     return InviteModel.findOne({ email: invites[0].email }, options)
       .then((existingInvite) => {
@@ -118,19 +199,24 @@ class Invites {
       .then((editedInvite) => {
         return editedInvite;
       })
-      .catch((err) => {
-        if (err && err.errorType === 'EmailError') {
+      .catch((err: unknown) => {
+        if (
+          err &&
+          typeof err === 'object' &&
+          'errorType' in err &&
+          err.errorType === 'EmailError' &&
+          'message' in err
+        ) {
           const errorMessage = tpl(messages.errorSendingEmail.error, {
             message: err.message,
           });
           const helpText = tpl(messages.errorSendingEmail.help);
-          err.message = `${errorMessage} ${helpText}`;
-          this.logging.warn(err.message);
+          const message = `${errorMessage} ${helpText}`;
+          err.message = message;
+          this.logging.warn(message);
         }
 
         return Promise.reject(err);
       });
   }
 }
-
-module.exports = Invites;
