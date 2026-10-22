@@ -52,7 +52,7 @@ describe('Custom theme settings root and retained consumers', function () {
   let activateFrontend: sinon.SinonStub;
 
   beforeEach(function () {
-    previousModules = new Map(MODULE_PATHS.map((path) => [path, require.cache[path]]));
+    previousModules = new Map(Object.entries(require.cache));
     for (const path of MODULE_PATHS) {
       delete require.cache[path];
     }
@@ -76,12 +76,16 @@ describe('Custom theme settings root and retained consumers', function () {
   afterEach(function () {
     sandbox.restore();
     cache.populate(Object.entries(previousCache).map(([key, value]) => ({ key, value })));
-    // Restore full entries so other suites retain the same CommonJS identities.
-    for (const [path, previousModule] of previousModules) {
-      delete require.cache[path];
-      if (previousModule) {
-        require.cache[path] = previousModule;
+    // Requiring the fresh modules also loads the modules that depend on them, such
+    // as themes/storage, and those keep the fresh copies. Put the whole cache back
+    // as it was, so later suites load them against the identities they stub.
+    for (const path of Object.keys(require.cache)) {
+      if (!previousModules.has(path)) {
+        delete require.cache[path];
       }
+    }
+    for (const [path, previousModule] of previousModules) {
+      require.cache[path] = previousModule;
     }
   });
 
