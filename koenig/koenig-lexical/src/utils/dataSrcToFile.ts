@@ -1,4 +1,4 @@
-export async function dataSrcToFile(src, fileName) {
+export async function dataSrcToFile(src: string, fileName?: string): Promise<File | undefined> {
     if (!src.startsWith('data:')) {
         return;
     }
@@ -6,10 +6,10 @@ export async function dataSrcToFile(src, fileName) {
     const mimeType = src.split(',')[0].split(':')[1].split(';')[0];
 
     if (!fileName) {
-        let uuid;
+        let uuid: string;
         try {
             uuid = window.crypto.randomUUID();
-        } catch (e) {
+        } catch {
             uuid = Array.from(window.crypto.getRandomValues(new Uint8Array(8)), byte => byte.toString(16).padStart(2, '0')).join('');
         }
         const extension = mimeType.split('/')[1];
@@ -17,7 +17,7 @@ export async function dataSrcToFile(src, fileName) {
     }
 
     const blob = await fetch(src).then(it => it.blob());
-    const file = new File([blob], fileName, {type: mimeType, lastModified: new Date()});
+    const file = new File([blob], fileName, {type: mimeType, lastModified: Date.now()});
 
     return file;
 }
