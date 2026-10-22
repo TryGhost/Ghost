@@ -96,12 +96,6 @@ describe('formatNumber', function () {
 });
 
 describe('formatRelativeTime', () => {
-  let clock: sinon.SinonFakeTimers;
-
-  afterEach(() => {
-    clock?.restore();
-  });
-
   const t = (key: string, vars?: Record<string, string | number>) => {
     if (vars) {
       return key.replace('{amount}', vars.amount.toString());
@@ -116,15 +110,117 @@ describe('formatRelativeTime', () => {
     now?: Date,
   ) {
     it(`${humanDiff} = ${expected}`, function () {
-      if (now) {
-        clock = sinon.useFakeTimers(now);
-      } else {
-        clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-      }
-      const time = moment().subtract(duration);
-      expect(helpers.formatRelativeTime(time.toISOString(), t)).toEqual(expected);
+      const referenceTime = now ?? new Date('2024-02-15T15:00:00.000Z');
+      const time = moment.utc(referenceTime).subtract(duration);
+      expectFormatInTimezone('Etc/UTC', referenceTime.toISOString(), time.toISOString(), expected);
     });
   }
+
+  function expectFormatInTimezone(timezone: string, now: string, date: string, expected: string) {
+    const originalDate = globalThis.Date;
+    const clock = sinon.useFakeTimers(new originalDate(now));
+    const FakeDate = globalThis.Date;
+    const localDateFormatter = new Intl.DateTimeFormat('en-US', {
+      day: 'numeric',
+      month: 'numeric',
+      timeZone: timezone,
+      year: 'numeric',
+    });
+
+    class TimezoneDate extends FakeDate {
+      private localPart(type: 'year' | 'month' | 'day') {
+        const part = localDateFormatter.formatToParts(this).find((item) => item.type === type);
+        return Number(part?.value);
+      }
+
+      getFullYear() {
+        return this.localPart('year');
+      }
+
+      getMonth() {
+        return this.localPart('month') - 1;
+      }
+
+      getDate() {
+        return this.localPart('day');
+      }
+    }
+
+    globalThis.Date = TimezoneDate as unknown as DateConstructor;
+
+    try {
+      expect(helpers.formatRelativeTime(date, t)).toEqual(expected);
+    } finally {
+      globalThis.Date = FakeDate;
+      clock.restore();
+      globalThis.Date = originalDate;
+    }
+  }
+
+  const localCalendarCases: Array<[string, string, string, string, string]> = [
+    [
+      'uses the local day in Sao Paulo when UTC has crossed midnight',
+      'America/Sao_Paulo',
+      '2026-10-21T01:00:00.000Z',
+      '2026-10-20T22:00:00.000Z',
+      '3 hrs ago',
+    ],
+    [
+      'shows Yesterday in Sao Paulo when the UTC dates match',
+      'America/Sao_Paulo',
+      '2026-10-21T04:00:00.000Z',
+      '2026-10-21T00:00:00.000Z',
+      'Yesterday',
+    ],
+    [
+      'uses the local day across a UTC month boundary in Tokyo',
+      'Asia/Tokyo',
+      '2025-03-01T01:00:00.000Z',
+      '2025-02-28T15:00:00.000Z',
+      '10 hrs ago',
+    ],
+    [
+      'uses the local day across a UTC year boundary in Tokyo',
+      'Asia/Tokyo',
+      '2025-01-01T01:00:00.000Z',
+      '2024-12-31T15:00:00.000Z',
+      '10 hrs ago',
+    ],
+    [
+      'shows Yesterday across the local year boundary in Los Angeles',
+      'America/Los_Angeles',
+      '2025-01-01T10:00:00.000Z',
+      '2025-01-01T06:00:00.000Z',
+      'Yesterday',
+    ],
+    [
+      'shows Yesterday in Tokyo when UTC has not crossed midnight',
+      'Asia/Tokyo',
+      '2026-10-21T16:00:00.000Z',
+      '2026-10-21T12:00:00.000Z',
+      'Yesterday',
+    ],
+    [
+      'compares local calendar days across the spring DST gap',
+      'America/New_York',
+      '2025-03-10T03:30:00.000Z',
+      '2025-03-09T04:30:00.000Z',
+      'Yesterday',
+    ],
+    [
+      'keeps the UTC calendar result when the browser timezone is UTC',
+      'Etc/UTC',
+      '2026-10-21T04:00:00.000Z',
+      '2026-10-20T22:00:00.000Z',
+      'Yesterday',
+    ],
+  ];
+
+  localCalendarCases.forEach(([name, timezone, now, date, expected]) => {
+    it(name, function () {
+      expectFormatInTimezone(timezone, now, date, expected);
+    });
+  });
 
   it('handles invalid dates', function () {
     expect(helpers.formatRelativeTime('invalid', t)).toEqual('Just now');
