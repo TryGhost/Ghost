@@ -24,7 +24,7 @@ Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 
 **Semantic tokens** are named by purpose — `--background`, `--text-primary`, `--border-default`, `--surface-elevated`. They flip between light and dark mode automatically. Reach for these by default.
 
-**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. They never change between modes. Use only when no semantic token fits (chart series, brand assets, illustrations).
+**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. Most keep their value in both modes; dark mode remaps the grey scale, but a raw shade still has no role, so it won't follow the job it does the way a semantic token does. Use only when no semantic token fits (chart series, brand assets, illustrations).
 
 ## Source files
 
@@ -56,7 +56,7 @@ Inside Shade, change a token's value in `theme-variables.css` and wire a new uti
 | Destructive                                                                                                     | `bg-destructive`, `text-destructive`                | `--destructive`                          |
 | Focus ring                                                                                                      | `ring-focus-ring`, `border-focus-ring`              | `--focus-ring`                           |
 
-The sections below explain how to choose between the surface, hover and border tokens. `theme-variables.css` lists every token.
+The sections below explain how to choose between the surface, hover and border tokens. `theme-variables.css` lists every semantic token; the raw colour catalogue is in `tailwind.theme.css`.
 
 ## Rules of consumption
 
@@ -117,13 +117,13 @@ In light mode all three flatten to near-white, so borders and shadows carry the 
 
 Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.
 
-| Token                          | Use for                                                                                                                               |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `--interactive-hover`          | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all.                                                  |
-| `--button-hover`               | Outline / dropdown `Button` hover. Currently aliased to `--interactive-hover`; kept separate so the button surface can diverge later. |
-| `--button-ghost-hover`         | Ghost `Button` hover (Admin 7). Translucent in light mode so it stays visible on tinted surfaces like hovered list rows.              |
-| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark).                                       |
-| `--table-row-hover`            | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell).            |
+| Token                          | Use for                                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `--interactive-hover`          | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all.                                       |
+| `--button-hover`               | Outline / dropdown `Button` hover. `--interactive-hover` currently points at this token, so changing it changes both.      |
+| `--button-ghost-hover`         | Ghost `Button` hover (Admin 7). Translucent in light mode so it stays visible on tinted surfaces like hovered list rows.   |
+| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark).                            |
+| `--table-row-hover`            | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell). |
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
