@@ -62,6 +62,7 @@ export default defineService(
       knex,
       recordAction,
       bindings: metafields.bindings,
+      fieldsTable: metafields.fieldsTableForSite,
       logging,
     });
     const checkouts = new CheckoutService({ config, labs, logging });

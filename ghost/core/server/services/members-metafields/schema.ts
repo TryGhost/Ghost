@@ -35,7 +35,7 @@ export const DbMetafield = z.object({
 // Storage only: order is a fact about the list, so no read projection carries a rank.
 type MetafieldRank = { sort_order: number };
 
-type MetafieldRow = z.infer<typeof DbMetafield> & MetafieldRank;
+export type MetafieldRow = z.infer<typeof DbMetafield> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an

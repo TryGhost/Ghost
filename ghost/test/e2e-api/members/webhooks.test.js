@@ -10,6 +10,7 @@ const {
   mockManager,
   fixtureManager,
   matchers,
+  hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const modelEvents = require('../../../core/server/lib/common/events');
@@ -4430,6 +4431,28 @@ describe('Members API', function () {
 
       assert.equal(saved.delivery_address.line1, '1 High Street');
       assert.equal(saved.recipient_name, undefined);
+    });
+
+    // A checkout that asked before the plan changed. A plan without custom fields reads
+    // every field as archived, so what it collected lands in none of them.
+    describe('on a plan without custom fields', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('saves nothing into any field', async function () {
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+        await completeCheckout('shipping-not-in-plan@example.com', {
+          asked: { shipping: true, phone: true },
+        });
+
+        await hostLimits.restoreHostLimits();
+        const {
+          body: { members },
+        } = await adminAgent.get('/members/?search=shipping-not-in-plan%40example.com');
+        const { body } = await adminAgent.get(`/members/${members[0].id}/`);
+        assert.equal(body.members[0].metafields, undefined);
+      });
     });
 
     it('saves nothing from a checkout that did not ask for it', async function () {

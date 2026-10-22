@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import {
+  configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -189,6 +190,25 @@ describe('Member activity', () => {
 
     await renderAdminApp('/members-activity?member=ada', { boot: settings });
     await expect.poll(() => excludedTypes()?.split(',').sort()).toEqual(preview);
+  });
+
+  // A plan without custom fields reads every field as archived, and changes to an archived
+  // field stay in a member's history like any other.
+  it("keeps showing custom field changes on a plan that doesn't include custom fields", async () => {
+    const { eventsApi } = world([]);
+    fakeAdminEndpoint('GET', /^\/members\/ada\/\?include=tiers/, { members: [ada] });
+    const config = configResponse({ labs: { membersCustomFields: true } });
+    config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
+
+    await renderAdminApp('/members/ada', {
+      labs: { membersCustomFields: true },
+      boot: { browseConfig: { response: config } },
+    });
+
+    const filter = () =>
+      eventsApi.lastRequest?.url && new URL(eventsApi.lastRequest.url).searchParams.get('filter');
+    await expect.poll(filter).toContain('type:-[');
+    expect(filter()).not.toContain('metafield_change_event');
   });
 
   it('renders absent members and unknown event types without unsafe links', async () => {

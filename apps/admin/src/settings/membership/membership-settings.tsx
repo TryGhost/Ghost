@@ -14,7 +14,8 @@ import {
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { searchKeywords } from './search-keywords';
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
+import { LabsFlagGate } from '@/shared/gates/labs-flag-gate';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 
@@ -24,7 +25,7 @@ const MembershipSettings: React.FC = () => {
   const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
-  const hasCustomFields = useCustomFieldsAvailable();
+  const hasCustomFields = useFeatureFlag(CUSTOM_FIELDS_FLAG);
   const visibleSearchKeywords = [
     searchKeywords.access,
     searchKeywords.tiers,
@@ -46,7 +47,9 @@ const MembershipSettings: React.FC = () => {
       {hasTipsAndDonations && hasStripeEnabled && (
         <TipsAndDonations keywords={searchKeywords.tips} />
       )}
-      {hasCustomFields && <CustomFields keywords={searchKeywords.customFields} />}
+      <LabsFlagGate flag={CUSTOM_FIELDS_FLAG}>
+        <CustomFields keywords={searchKeywords.customFields} />
+      </LabsFlagGate>
     </SearchableSection>
   );
 };
