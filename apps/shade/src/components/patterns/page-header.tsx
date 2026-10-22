@@ -574,7 +574,8 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
  * The main row contains `Left` (Breadcrumb + Title) and `Actions`.
  * Compose optional ViewBar and FilterBar rows beside it in ListPage.Header.
  * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
- * See page-header.mdx for the action ordering and interaction contract.
+ * See the design contract for the action ordering and interaction rules:
+ * https://shade.ghost.org/docs/components/patterns/page-header.md (generated from page-header.mdx).
  */
 const PageHeader: PageHeaderComponent = Object.assign(
   function PageHeader({
