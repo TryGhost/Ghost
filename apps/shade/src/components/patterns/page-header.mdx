@@ -14,6 +14,22 @@ The blurred background in PageHeader and ListPage.Header uses the page backgroun
 token in both themes, so an unscrolled header blends into the canvas. Its translucent
 gradient and backdrop blur soften content scrolling beneath it.
 
+## Slots
+
+PageHeader is composed from named slots rather than configured with props:
+
+- `PageHeader.Left`: the title block.
+- `PageHeader.Breadcrumb`: a small, muted breadcrumb above the title.
+- `PageHeader.Title`: the page's `h1`; it can hold an inline `PageHeader.Count`.
+- `PageHeader.Count`: a secondary count beside the title.
+- `PageHeader.Description`: a paragraph below the title.
+- `PageHeader.Meta`: a small, muted metadata line below the title.
+- `PageHeader.Actions`: the action area at the right.
+- `PageHeader.ActionGroup`: groups the actions, with `.Primary` and `.MobileMenu` slots.
+
+PageHeader owns presentation. Permissions, routing, queries and keyboard-shortcut
+bindings stay in the feature that renders it.
+
 ## Order and hierarchy
 
 Place actions in reading and keyboard order:
@@ -149,6 +165,8 @@ Expanded search must not push the primary off-screen.
 <Canvas of={PageHeaderStories.MobileMenu} />
 
 ## Compatibility and rollout
+
+This section is for Admin's own screens; a Ghost app uses the defaults and can skip it.
 
 React Admin headers use the pill design by default without a Labs flag.
 Shade owns visual differences; features retain only historical structural
