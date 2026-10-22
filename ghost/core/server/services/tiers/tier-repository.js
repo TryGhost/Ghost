@@ -1,19 +1,39 @@
+const { BadRequestError } = require('@tryghost/errors');
 const Tier = require('./tier');
 const nql = require('@tryghost/nql');
+const { products } = require('../../data/schema/schema');
+
+/** The fields a tier can be filtered by: the columns of `products`. */
+const FILTERABLE = new Set(Object.keys(products));
+
+/**
+ * The fields a mongo query object filters on, looking inside `$and`, `$or` and the like.
+ * @param {unknown} filter
+ * @returns {string[]}
+ */
+function filteredFields(filter) {
+  if (Array.isArray(filter)) {
+    return filter.flatMap(filteredFields);
+  }
+  if (!filter || typeof filter !== 'object') {
+    return [];
+  }
+  return Object.entries(filter).flatMap(([key, value]) =>
+    key.startsWith('$') ? filteredFields(value) : [key],
+  );
+}
 
 /**
  * @typedef {import('./tiers-api').ITierRepository} ITierRepository
  */
 
 /**
+ * Reads and saves tiers in the database on every call, keeping nothing between calls, so every
+ * Ghost instance serving a site sees the same tiers.
+ *
  * @implements {ITierRepository}
  */
 module.exports = class TierRepository {
-  /** @type {import('./tier')[]} */
-  #store;
-  /** @type {Set<string>} */
-  #ids = new Set();
-
   /** @type {Object} */
   #ProductModel;
 
@@ -28,33 +48,6 @@ module.exports = class TierRepository {
   constructor(deps) {
     this.#ProductModel = deps.ProductModel;
     this.#DomainEvents = deps.DomainEvents;
-  }
-
-  async init() {
-    const models = await this.#ProductModel.findAll({
-      withRelated: ['benefits'],
-    });
-    this.#ids.clear();
-    this.#store = await Promise.all(
-      models.map(async (model) => {
-        const tier = await Tier.create(this.mapToTier(model));
-        this.#ids.add(tier.id.toHexString());
-        return tier;
-      }),
-    );
-  }
-
-  /**
-   * @param {import('./tier')} tier
-   * @returns {any}
-   */
-  toPrimitive(tier) {
-    return {
-      ...tier.toJSON(),
-      active: tier.status === 'active',
-      type: tier.type,
-      id: tier.id.toHexString(),
-    };
   }
 
   /**
@@ -82,39 +75,45 @@ module.exports = class TierRepository {
   }
 
   /**
+   * Every tier the filter matches, cheapest first.
+   *
    * @param {object} [options]
-   * @param {string} [options.filter]
+   * @param {object} [options.filter] - A mongo query object over the tier's columns
+   * @param {import('knex').Knex.Transaction} [options.transacting] - Reads inside it
    * @returns {Promise<import('./tier')[]>}
    */
   async getAll(options = {}) {
-    const filter = nql();
-    filter.filter = options.filter || {};
-    return Promise.all(
-      this.#store
-        .slice()
-        .filter((item) => {
-          return filter.queryJSON(this.toPrimitive(item));
-        })
-        .map((tier) => {
-          return Tier.create(tier);
-        }),
-    );
+    const unknown = filteredFields(options.filter).find((field) => !FILTERABLE.has(field));
+    if (unknown) {
+      throw new BadRequestError({ message: `Tiers can't be filtered by ${unknown}.` });
+    }
+    const models = await this.#ProductModel
+      .forge()
+      .query((qb) => {
+        if (options.filter) {
+          const query = nql();
+          query.filter = options.filter;
+          query.querySQL(qb);
+        }
+        // The id breaks ties, so tiers at one price stay in the order they were created in.
+        qb.orderByRaw(this.#ProductModel.orderDefaultRaw()).orderBy('products.id');
+      })
+      .fetchAll({ withRelated: ['benefits'], transacting: options.transacting });
+    return Promise.all(models.map((model) => Tier.create(this.mapToTier(model))));
   }
 
   /**
    * @param {import('bson-objectid').default} id
+   * @param {object} [options]
+   * @param {import('knex').Knex.Transaction} [options.transacting] - Reads inside it
    * @returns {Promise<import('./tier')>}
    */
-  async getById(id) {
-    const found = this.#store.find((item) => {
-      return item.id.equals(id);
-    });
-
-    if (!found) {
-      return null;
-    }
-
-    return Tier.create(found);
+  async getById(id, options = {}) {
+    const model = await this.#ProductModel.findOne(
+      { id: id.toHexString() },
+      { withRelated: ['benefits'], transacting: options.transacting },
+    );
+    return model ? Tier.create(this.mapToTier(model)) : null;
   }
 
   /**
@@ -140,20 +139,13 @@ module.exports = class TierRepository {
       benefits: tier.benefits.map((name) => ({ name })),
     };
 
-    const toSave = await Tier.create(tier);
-
-    if (this.#ids.has(tier.id.toHexString())) {
-      const existing = this.#store.findIndex((item) => {
-        return item.id.equals(tier.id);
-      });
+    const existing = await this.#ProductModel.findOne({ id: data.id });
+    if (existing) {
       await this.#ProductModel.edit(data, {
         id: data.id,
       });
-      this.#store.splice(existing, 1, toSave);
     } else {
       await this.#ProductModel.add(data);
-      this.#store.push(toSave);
-      this.#ids.add(tier.id.toHexString());
     }
 
     for (const event of tier.events) {

@@ -31,7 +31,7 @@ interface ImporterServices {
   knex: Knex;
   getMembersRepository(): Promise<Omit<MembersRepository, 'getImportLabel'>>;
   getDefaultTier(): Promise<Tier>;
-  getTierByName(name: string): Promise<Tier | null>;
+  getTierByName(name: string, options: { transacting: Knex.Transaction }): Promise<Tier | null>;
   getGiftService(): {
     reassignRedeemer(input: {
       giftId: string;
