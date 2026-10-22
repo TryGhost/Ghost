@@ -17,8 +17,9 @@ Read the human documentation before changing Shade:
   [recipes](./src/docs/recipes-guide.mdx), and
   [tokens](./src/docs/tokens.mdx).
 
-- When constructing or changing page headers or their actions, use the
-  [Shade page header skill](../../.agents/skills/shade-page-header/SKILL.md).
+- When building screens with Shade, use the design skills in
+  [`skills/`](./skills/). For page headers and their actions, use
+  [`shade-page-header`](./skills/shade-page-header/SKILL.md).
 
 ## Required workflow
 
@@ -41,3 +42,11 @@ Read the human documentation before changing Shade:
 - The npm package ships code only. Storybook serves the docs as Markdown at
   `/docs/<page>.md` and `/llms.txt`, generated from the `.mdx` sources; see
   [Docs for agents](./CONTRIBUTING.md#docs-for-agents).
+- The design skills live in [`skills/`](./skills/). Apps install them with
+  `npx skills add TryGhost/Ghost/apps/shade/skills`; `build-ghost-app-ui` is
+  their front door and is for apps only. In this repo, `.agents/skills` links
+  the other six, so agents working on Ghost find them as before. They hold no
+  rules: each routes to the docs, so a rule change belongs in the `.mdx`
+  source. Follow [Skills](./CONTRIBUTING.md#skills) when changing them.
+- `dev-skill/` holds the internal `ghost-app-ui-dev-setup` skill for Ghost's
+  own team. It isn't shipped or installed with the design skills.
