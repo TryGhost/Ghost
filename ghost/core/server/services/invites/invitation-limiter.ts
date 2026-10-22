@@ -4,7 +4,11 @@ import { MaxLimit } from '@tryghost/limit-service';
 
 import type { lockStaffInvites, checkTrialStaffLimit } from '../../lib/staff-invite-usage';
 
-interface Dependencies {
+interface InvitationLimiterDeps {
+  knex: Knex;
+  getLimits: () => InvitationLimits | undefined;
+  now: () => number;
+  getUpgradeUrl: () => string | undefined;
   lockStaffInvites: typeof lockStaffInvites;
   checkTrialStaffLimit: typeof checkTrialStaffLimit;
   STAFF_INVITE_RATE_KEY: string;
@@ -19,28 +23,14 @@ export interface InvitationLimits {
 
 /** A host-enabled trial allowance, independent of the mutable invitation list. */
 export default class InvitationLimiter {
-  private readonly dependencies: Dependencies;
-  private readonly knex: Knex;
-  private readonly getLimits: () => InvitationLimits | undefined;
-  private readonly now: () => number;
-  private readonly getUpgradeUrl: () => string | undefined;
+  private readonly deps: InvitationLimiterDeps;
 
-  constructor(
-    dependencies: Dependencies,
-    knex: Knex,
-    getLimits: () => InvitationLimits | undefined,
-    now: () => number = Date.now,
-    getUpgradeUrl: () => string | undefined = () => undefined,
-  ) {
-    this.dependencies = dependencies;
-    this.knex = knex;
-    this.getLimits = getLimits;
-    this.now = now;
-    this.getUpgradeUrl = getUpgradeUrl;
+  constructor(deps: InvitationLimiterDeps) {
+    this.deps = deps;
   }
 
   private policy(): InvitationLimits | undefined {
-    const limits = this.getLimits();
+    const limits = this.deps.getLimits();
     if (
       limits &&
       (!Number.isSafeInteger(limits.maxStaff) ||
@@ -63,16 +53,16 @@ export default class InvitationLimiter {
     if (!limits) {
       return 0;
     }
-    return this.knex.transaction(async (transaction) => {
-      const row = await this.dependencies.lockStaffInvites(transaction);
-      const now = this.now();
+    return this.deps.knex.transaction(async (transaction) => {
+      const row = await this.deps.lockStaffInvites(transaction);
+      const now = this.deps.now();
       const windowEnds = Number(row.firstRequest) + limits.rateWindowSeconds * 1000;
       const inWindow = Number(row.count) > 0 && now < windowEnds;
       if (inWindow && Number(row.count) >= limits.maxRequests) {
         return Math.ceil((windowEnds - now) / 1000);
       }
       await transaction('brute')
-        .where({ key: this.dependencies.STAFF_INVITE_RATE_KEY })
+        .where({ key: this.deps.STAFF_INVITE_RATE_KEY })
         .update({
           firstRequest: inWindow ? row.firstRequest : now,
           lastRequest: now,
@@ -85,7 +75,7 @@ export default class InvitationLimiter {
 
   async lockStaffUsage(transaction: Knex.Transaction): Promise<void> {
     if (this.policy()) {
-      await this.dependencies.lockStaffInvites(transaction);
+      await this.deps.lockStaffInvites(transaction);
     }
   }
 
@@ -94,9 +84,9 @@ export default class InvitationLimiter {
     if (!limits) {
       return prepare();
     }
-    return this.knex.transaction(async (transaction) => {
-      await this.dependencies.lockStaffInvites(transaction);
-      const helpLink = this.getUpgradeUrl();
+    return this.deps.knex.transaction(async (transaction) => {
+      await this.deps.lockStaffInvites(transaction);
+      const helpLink = this.deps.getUpgradeUrl();
       const emailLimit = new MaxLimit({
         name: 'staffInvites',
         errors,
@@ -118,7 +108,7 @@ export default class InvitationLimiter {
         },
       });
       await emailLimit.errorIfWouldGoOverLimit();
-      await this.dependencies.checkTrialStaffLimit(transaction, limits.maxStaff, helpLink, email);
+      await this.deps.checkTrialStaffLimit(transaction, limits.maxStaff, helpLink, email);
       // Invite.onCreated writes the quota's audit entry inside this transaction.
       // Preparation or audit failures roll back both records before mail is sent.
       return prepare(transaction);

@@ -15,7 +15,13 @@ const dbUtils = require('../../utils/db-utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 
-const dependencies = { lockStaffInvites, checkTrialStaffLimit, STAFF_INVITE_RATE_KEY };
+const dependencies = {
+  knex: db.knex,
+  getUpgradeUrl: () => undefined,
+  lockStaffInvites,
+  checkTrialStaffLimit,
+  STAFF_INVITE_RATE_KEY,
+};
 
 describe('Trial invitation admission', function () {
   let now: number;
@@ -39,12 +45,11 @@ describe('Trial invitation admission', function () {
     now = Date.parse('2026-10-20T12:00:00Z');
     limits = { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 };
     config.set('hostSettings:staffInvites', limits);
-    limiter = new InvitationLimiter(
-      dependencies,
-      db.knex,
-      () => limits,
-      () => now,
-    );
+    limiter = new InvitationLimiter({
+      ...dependencies,
+      getLimits: () => limits,
+      now: () => now,
+    });
   });
 
   afterEach(function () {
@@ -65,12 +70,11 @@ describe('Trial invitation admission', function () {
   }
 
   it('admits exactly three of twenty concurrent requests across instances', async function () {
-    const other = new InvitationLimiter(
-      dependencies,
-      db.knex,
-      () => limits,
-      () => now,
-    );
+    const other = new InvitationLimiter({
+      ...dependencies,
+      getLimits: () => limits,
+      now: () => now,
+    });
     const results = await Promise.all(
       Array.from({ length: 20 }, (_, index) => (index % 2 ? limiter : other).rateLimit()),
     );
@@ -85,12 +89,11 @@ describe('Trial invitation admission', function () {
     now += 59_000;
     assert.equal(await limiter.rateLimit(), 1);
     now += 1000;
-    const restarted = new InvitationLimiter(
-      dependencies,
-      db.knex,
-      () => limits,
-      () => now,
-    );
+    const restarted = new InvitationLimiter({
+      ...dependencies,
+      getLimits: () => limits,
+      now: () => now,
+    });
     assert.equal(await restarted.rateLimit(), 0);
   });
 
@@ -121,12 +124,11 @@ describe('Trial invitation admission', function () {
     }
     now += 90 * 86400_000;
     await dbUtils.truncate('brute');
-    const restarted = new InvitationLimiter(
-      dependencies,
-      db.knex,
-      () => ({ ...limits! }),
-      () => now,
-    );
+    const restarted = new InvitationLimiter({
+      ...dependencies,
+      getLimits: () => ({ ...limits! }),
+      now: () => now,
+    });
     await assert.rejects(
       restarted.run('new@example.com', async () => assert.fail()),
       /Upgrade to send more/,
