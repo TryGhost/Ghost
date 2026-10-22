@@ -1,13 +1,14 @@
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
 
-export const stripFileExtension = (fileName) => {
+export const stripFileExtension = (fileName: string) => {
     const fileExtension = fileName.split('.').pop();
     const fileNameWithoutExtension = fileName.replace(`.${fileExtension}`, '');
     return fileNameWithoutExtension;
 };
 
-export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
+export const fileUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: (files: File[]) => Promise<{url: string}[] | null>) => {
     if (!files) {
         return;
     }
@@ -25,7 +26,7 @@ export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
     const fileSize = meta?.[0].size;
     const src = result?.[0].url;
 
-    let dataset = {
+    const dataset = {
         fileName: fileName,
         fileSize: fileSize,
         src: src
