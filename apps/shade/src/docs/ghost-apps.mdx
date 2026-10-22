@@ -12,6 +12,16 @@ A framed app owns its document: the frame inherits none of Admin's styles, fonts
 
 Connecting to Admin with `connect()`, the app manifest, installing and deploying belong to the `build-ghost-app` skill in the Ghost apps repo, not here.
 
+## Install the skills
+
+If you build with an AI agent, install Shade's skills into the app first:
+
+```bash
+npx skills add TryGhost/Ghost/apps/shade/skills
+```
+
+That gives the agent `build-ghost-app-ui`, the starting point for an app's screens, and six design skills for page templates, page headers, layout, colours, dark mode and imports. Ask the agent to use `build-ghost-app-ui`: it walks through the rest of this page and points to the docs for each rule. The skills hold no rules of their own, so this documentation stays the source.
+
 ## Install
 
 Install Shade from the `alpha` tag. `@tryghost/shade` on its own installs `latest`, which points at an older alpha.
@@ -149,7 +159,7 @@ Add no outer padding or margin of your own, on `body`, `ShadeApp` or the contain
 
 ## Start from a page template
 
-Name the page type and start from its template: [Page types](?path=/docs/page-templates-page-types--docs) lists them, and the `shade-page-templates` skill walks through it. Install it with the other Shade skills: `npx skills add TryGhost/Ghost/apps/shade/skills`. Headers follow the [PageHeader design contract](?path=/docs/patterns-page-header--design-contract).
+Name the page type and start from its template: [Page types](?path=/docs/page-templates-page-types--docs) lists them, and the `shade-page-templates` skill walks through it. Headers follow the [PageHeader design contract](?path=/docs/patterns-page-header--design-contract).
 
 ## App state in the URL
 
