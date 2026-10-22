@@ -1,5 +1,6 @@
 const url = require('url');
 const spamPrevention = require('./api/spam-prevention');
+const { STAFF_INVITE_RATE_LIMIT } = require('../../../services/invites/constants');
 
 /**
  * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.
@@ -7,7 +8,7 @@ const spamPrevention = require('./api/spam-prevention');
  */
 module.exports = {
   staffInviteRateLimitError(err, req, res, next) {
-    if (err.code === 'STAFF_INVITE_RATE_LIMIT' && err.errorDetails?.retryAfter > 0) {
+    if (err.code === STAFF_INVITE_RATE_LIMIT && err.errorDetails?.retryAfter > 0) {
       res.set('Retry-After', String(err.errorDetails.retryAfter));
     }
     next(err);

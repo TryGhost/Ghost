@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const invites = require('../../services/invites').default;
+const { STAFF_INVITE_RATE_LIMIT } = require('../../services/invites/constants');
 const models = require('../../models');
 const api = require('./index');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
@@ -99,7 +100,7 @@ const controller = {
       const wait = await invites.service.rateLimit();
       if (wait > 0) {
         throw new errors.TooManyRequestsError({
-          code: 'STAFF_INVITE_RATE_LIMIT',
+          code: STAFF_INVITE_RATE_LIMIT,
           message: `Too many invitation requests. Try again in ${wait} seconds.`,
           errorDetails: { retryAfter: wait },
         });
