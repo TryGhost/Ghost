@@ -4,7 +4,7 @@ import {getImageDimensions} from './getImageDimensions';
 import type {FileUploadResult} from '../context/KoenigComposerContext';
 import type {LexicalEditor} from 'lexical';
 
-export const imageUploadHandler = async (files: File[] | FileList, nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
+export const imageUploadHandler = async (files: File[] | FileList | null, nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
@@ -48,7 +48,7 @@ export const imageUploadHandler = async (files: File[] | FileList, nodeKey: stri
     return;
 };
 
-export const backgroundImageUploadHandler = async (files: File[], upload: FileUploadResult['upload']) => {
+export const backgroundImageUploadHandler = async (files: File[] | FileList | null, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }

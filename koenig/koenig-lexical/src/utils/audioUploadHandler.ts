@@ -5,7 +5,7 @@ import {getAudioMetadata} from './getAudioMetadata';
 import type {FileUploadResult} from '../context/KoenigComposerContext';
 import type {LexicalEditor} from 'lexical';
 
-export const audioUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
+export const audioUploadHandler = async (files: File[] | FileList | null, nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
