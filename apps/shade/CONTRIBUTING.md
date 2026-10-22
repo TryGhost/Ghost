@@ -22,6 +22,8 @@ After setup, run the package commands below from `apps/shade` or with
 - `pnpm storybook` — run Storybook and view the docs
 - `pnpm build-storybook` — build a static export
 - `pnpm build` — build the JavaScript and type declarations
+- `pnpm build:docs` — build the [docs for agents](#docs-for-agents) without Storybook
+- `pnpm pack:local <app-dir>` — [try Shade in an external app](#test-in-an-external-app)
 
 ### Source exports
 
@@ -33,6 +35,16 @@ The library build remains required for those consumers. Published exports only
 refer to compiled modules and declarations; the workspace-only `source`
 conditions are removed when packing.
 
+### Test in an external app
+
+`pnpm pack:local <app-dir>` builds Shade, packs it exactly as CI publishes it,
+stamps the version as `<x.y.z>-local.<YYYYMMDD-HHMMSS>`, installs it into an npm
+app with `npm install --no-save` and clears the app's Vite cache. The app's
+`package.json` and lockfile don't change. Restart the app's dev server to pick
+it up. `--watch` also runs the app's `npm run dev` and repeats the install on
+every change under `src/` (add `-- <args>` to pass arguments to the dev server).
+Run `npm install` in the app to go back to the published release.
+
 ## Docs
 
 The docs live beside the code as `.mdx` files, in `src/docs/` and next to
@@ -41,6 +53,29 @@ changes, so the rule lives in one place.
 
 The docs are for people using Shade. Rules for changing Shade itself belong in
 this file.
+
+### Docs for agents
+
+Storybook also serves the docs as plain Markdown at `/docs/<path>.md` (start at
+`/docs/index.md`), with an [`llms.txt`](https://llmstxt.org) index at
+`/llms.txt`: `http://localhost:6006/llms.txt` locally, and
+`https://shade.ghost.org` once hosted. Agents read these with `curl`.
+
+`scripts/build-docs.ts` generates them from `src/**/*.mdx`, and
+`scripts/storybook-docs.ts` hooks that into Storybook. `pnpm storybook`
+regenerates them on change, `pnpm build-storybook` includes them in its output,
+and `pnpm build:docs` writes them to `.storybook-docs/` without starting
+Storybook. Edit the `.mdx` sources, never the generated files. The npm package
+doesn't ship them.
+
+Whatever hosts them should serve them as UTF-8 (`text/markdown; charset=utf-8`
+and `text/plain; charset=utf-8`). In `pnpm storybook`, a middleware adds the
+charset through Storybook's experimental `experimental_devServer` hook in
+`.storybook/main.tsx`. Check it still works when upgrading Storybook: `curl -I`
+a doc and look for `charset=utf-8`.
+
+CI doesn't build Storybook. `test/unit/scripts/storybook-docs.test.ts` runs the
+same docs generation into a temporary folder, so a broken doc still fails CI.
 
 ## Layers
 
