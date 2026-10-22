@@ -14,10 +14,22 @@ const logging = require('@tryghost/logging');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/custom-theme-settings');
 const BRIDGE_PATH = require.resolve('../../../../../core/server/services/themes/activation-bridge');
 const ACTIVATE_PATH = require.resolve('../../../../../core/server/services/themes/activate');
+const STORAGE_PATH = require.resolve('../../../../../core/server/services/themes/storage');
+const INSTALLER_PATH = require.resolve('../../../../../core/server/services/themes/installer');
 const THEMES_PATH = require.resolve('../../../../../core/server/services/themes');
 const CONTROLLER_PATH =
   require.resolve('../../../../../core/server/api/endpoints/custom-theme-settings');
-const MODULE_PATHS = [ROOT_PATH, BRIDGE_PATH, ACTIVATE_PATH, THEMES_PATH, CONTROLLER_PATH];
+// Storage captures the bridge/root, and the installer captures storage.setFromZip.
+// Restore those transitive consumers with the fixture's root and direct consumers.
+const MODULE_PATHS = [
+  ROOT_PATH,
+  BRIDGE_PATH,
+  ACTIVATE_PATH,
+  STORAGE_PATH,
+  INSTALLER_PATH,
+  THEMES_PATH,
+  CONTROLLER_PATH,
+];
 
 const checkedTheme = {
   name: 'casper',
