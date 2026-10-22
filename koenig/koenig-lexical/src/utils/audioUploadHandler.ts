@@ -2,9 +2,10 @@ import prettifyFileName from './prettifyFileName';
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {getAudioMetadata} from './getAudioMetadata';
+import type {FileUploadResult} from '../context/KoenigComposerContext';
 import type {LexicalEditor} from 'lexical';
 
-export const audioUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: (files: File[]) => Promise<{url: string}[] | null>) => {
+export const audioUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
