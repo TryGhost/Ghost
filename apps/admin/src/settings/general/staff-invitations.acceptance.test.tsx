@@ -159,7 +159,7 @@ describe('Staff invitations', () => {
     const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [replacement] });
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
     };
     await renderAdminApp('/settings/staff?tab=invited', {
       boot: {
@@ -185,7 +185,7 @@ describe('Staff invitations', () => {
     const config = configResponse();
     config.config.hostSettings = {
       billing: { enabled: true },
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
     };
     fakeAdminEndpoint(
       'POST',
@@ -232,7 +232,7 @@ describe('Staff invitations', () => {
     );
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
     };
     await renderAdminApp('/settings/staff?tab=invited', {
       boot: {
@@ -315,7 +315,7 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, editor] });
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
       limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
     };
     await renderAdminApp('/settings/staff', {
@@ -338,7 +338,7 @@ describe('Staff invitations', () => {
     const config = configResponse();
     config.config.hostSettings = {
       limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
       billing: { enabled: true, url: 'https://billing.example.com' },
     };
     await renderAdminApp('/settings/staff', {
@@ -354,7 +354,7 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld();
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
       billing: { enabled: true, upgradeUrl: '#/pro/custom-upgrade' },
     };
     fakeAdminEndpoint(

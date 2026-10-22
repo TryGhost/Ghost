@@ -131,7 +131,7 @@ describe('Staff actions', () => {
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
       limits: { staff: { max: 1, error: 'Your plan does not support more staff' } },
     };
     await renderAdminApp(`/settings/staff/${author.slug}`, {
@@ -151,7 +151,7 @@ describe('Staff actions', () => {
     const config = configResponse();
     config.config.hostSettings = {
       limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
-      staffInvites: { maxStaff: 2, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 },
+      staffInvites: { maxStaff: 2, maxInvites: 15 },
     };
     const editApi = fakeAdminEndpoint('PUT', `/users/${author.id}/?include=roles`, {
       users: [{ ...author, status: 'active' }],
