@@ -235,10 +235,6 @@ module.exports = function (Bookshelf) {
           options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
         }
 
-        if (options.transacting && options.forUpdate) {
-          options.lock = 'forUpdate';
-        }
-
         return model.fetch(options).catch((err) => {
           // CASE: SQL syntax is incorrect
           if (err.errno === 1054 || err.errno === 1) {
@@ -280,8 +276,11 @@ module.exports = function (Bookshelf) {
           model.hasTimestamps = false;
         }
 
+        // Lock only this row. Bookshelf's `lock` option would also lock every
+        // eager-loaded relation, e.g. tags shared with other posts, and
+        // concurrent edits of different records would deadlock on them
         if (options.transacting) {
-          options.lock = 'forUpdate';
+          model.query((qb) => qb.forUpdate());
         }
 
         const object = await model.fetch(options);
@@ -333,12 +332,17 @@ module.exports = function (Bookshelf) {
           };
         }
 
+        const model = this.forge(options.destroyBy);
+
+        // Relations are removed before the row, so lock it first as an edit would
+        if (options.transacting) {
+          model.query((qb) => qb.forUpdate());
+        }
+
         // Fetch the object before destroying it, so that the changed data is available to events
-        return this.forge(options.destroyBy)
-          .fetch(options)
-          .then(function then(obj) {
-            return obj.destroy(options);
-          });
+        return model.fetch(options).then(function then(obj) {
+          return obj.destroy(options);
+        });
       },
     },
   );

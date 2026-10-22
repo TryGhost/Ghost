@@ -87,6 +87,73 @@ module.exports = function (Bookshelf) {
   Bookshelf.Model = Bookshelf.Model.extend(
     {},
     {
+      /**
+       * Locks the rows with the given ids for the rest of the transaction, in id
+       * order so writers locking overlapping sets can't deadlock each other.
+       *
+       * An edit locks its record's row but not its relations, so anything that
+       * writes a record's relations without editing the record must take this
+       * lock first. Otherwise an in-flight edit diffs its relations against rows
+       * that changed underneath it. Reads that decide what to write afterwards
+       * should be locking reads, as plain reads come from the transaction's
+       * snapshot, which may predate the lock.
+       *
+       * @param {string[]} ids
+       * @param {object} options
+       * @param {import('knex').Knex.Transaction} options.transacting
+       */
+      lockForUpdate: async function lockForUpdate(ids, { transacting }) {
+        const sortedIds = _.uniq(ids).sort();
+
+        for (const chunk of _.chunk(sortedIds, CHUNK_SIZE)) {
+          await Bookshelf.knex(this.prototype.tableName)
+            .transacting(transacting)
+            .whereIn('id', chunk)
+            .orderBy('id')
+            .select('id')
+            .forUpdate();
+        }
+      },
+
+      /**
+       * Locks the rows linked through `linkTable` to whatever `where` matches,
+       * e.g. the posts of a tag, and returns their ids.
+       *
+       * The first read is a plain read, so it can't wait on the rows it finds
+       * before locking them, and a locking read afterwards catches rows linked
+       * in between. The plain read fixes the transaction's snapshot before the
+       * locks are held, which is why reads that decide writes afterwards must
+       * be locking reads.
+       *
+       * @param {string} linkTable
+       * @param {string} foreignKey - Column in `linkTable` holding this model's id
+       * @param {object} where
+       * @param {object} options
+       * @param {import('knex').Knex.Transaction} options.transacting
+       * @returns {Promise<string[]>}
+       */
+      lockLinkedForUpdate: async function lockLinkedForUpdate(
+        linkTable,
+        foreignKey,
+        where,
+        { transacting },
+      ) {
+        const ids = await Bookshelf.knex(linkTable)
+          .transacting(transacting)
+          .where(where)
+          .pluck(foreignKey);
+        await this.lockForUpdate(ids, { transacting });
+
+        const currentIds = await Bookshelf.knex(linkTable)
+          .transacting(transacting)
+          .where(where)
+          .forUpdate()
+          .pluck(foreignKey);
+        await this.lockForUpdate(_.difference(currentIds, ids), { transacting });
+
+        return _.uniq(currentIds);
+      },
+
       bulkAdd: function bulkAdd(data, tableName, options = {}) {
         tableName = tableName || this.prototype.tableName;
 

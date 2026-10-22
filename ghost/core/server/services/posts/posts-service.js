@@ -332,6 +332,9 @@ class PostsService {
     const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
     const postIds = postRows.map((post) => post.id);
 
+    // Adding tags changes the posts' relations, so lock them as an edit would
+    await this.models.Post.lockForUpdate(postIds, { transacting: options.transacting });
+
     const tagIds = [...new Set(tags.map((tag) => tag.id))];
 
     // Posts in the selection may already carry the tag, filter those pairs out
@@ -342,6 +345,7 @@ class PostsService {
             .whereIn('tag_id', tagIds)
             .whereIn('post_id', postIds)
             .select('post_id', 'tag_id')
+            .forUpdate()
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
 
@@ -399,6 +403,9 @@ class PostsService {
     );
     const deleteIds = postRows.map((row) => row.id);
     const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
+
+    // The posts' relations are deleted before the posts, so lock them first
+    await this.models.Post.lockForUpdate(deleteIds, { transacting: options.transacting });
 
     const postTablesToDelete = [
       'posts_authors',
@@ -480,6 +487,8 @@ class PostsService {
 
     // Update tiers
     if (tiers) {
+      await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
+
       // First delete all
       await this.models.Post.bulkDestroy(editIds, 'posts_products', {
         column: 'post_id',
