@@ -780,7 +780,8 @@ services:
           buildFallbackLink return URL objects, while buildEmailLink returns a string. Controller
           and repository operations are async and use their instance receivers. There is no
           reset, shutdown, readiness getter or public wrapper constructor. Class tests exercise
-          link output but do not pin the root export shape or receiver behavior.
+          link output but do not pin the root export shape or receiver behavior. Root units pin
+          that repeated init retains the published repository, service and controller.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-service.js
@@ -789,6 +790,7 @@ services:
           - core/server/services/audience-feedback/feedback.js
         tests:
           - test/unit/server/services/audience-feedback/audience-feedback-service.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
       construction:
         summary: >-
           Import loads shared URL utilities, URL service and permissions dependencies. Boot is
@@ -797,7 +799,9 @@ services:
           store dependencies without querying. A truthy service guards repeat calls. Repository
           publication precedes URL/service construction, and service publication precedes
           controller construction; there is no rollback of partial initialization. No other
-          production construction of these private classes or direct wrapper test was found.
+          production construction of these private classes was found. Root units pin no URL read
+          on import, one home-URL read and no model or URL-service query across repeated init,
+          and a successful later init after the home-URL lookup throws.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
@@ -805,7 +809,8 @@ services:
           - core/server/services/audience-feedback/feedback-repository.js
           - core/server/services/url/index.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/audience-feedback/index.test.ts
       consumers:
         summary: >-
           Email initialization passes service itself to EmailRenderer, which retains it and
@@ -816,7 +821,9 @@ services:
           conditionally includes member details. No external repository consumer was found;
           getMemberByUuid has no caller. HTTP tests exercise submission and two redirect paths.
           Renderer units inject a fake link service and pin button inclusion/exclusion and
-          preservation through link tracking, not real root wiring or a newsletter-click flow.
+          preservation through link tracking. An HTTP case renders feedback links through the
+          booted EmailRenderer and follows both through Members redirects; root units drive the
+          retained controller's redirect through its repository and live URL routing.
         sources:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
@@ -830,6 +837,7 @@ services:
           - test/e2e-api/members/feedback.test.js
           - test/unit/server/services/email-service/email-renderer.test.js
           - test/unit/server/services/audience-feedback/audience-feedback-controller.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
       startup:
         summary: >-
           Boot initializes models, settings and routing before awaiting the service group and
@@ -878,7 +886,8 @@ services:
           literal member placeholders. Units pin these URL shapes, fallback and model input;
           HTTP redirects check Location patterns without exercising slug/routing changes.
           Browse defaults limit/page to 10/1, parses score and always orders newest first;
-          requested order is not forwarded. Root reconfiguration is untested.
+          requested order is not forwarded. Root units pin init-time capture: changing the home
+          URL after init and re-init leaves email and fallback links on the captured base.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-service.js
@@ -893,6 +902,7 @@ services:
           - test/unit/server/services/audience-feedback/audience-feedback-controller.test.js
           - test/unit/server/services/audience-feedback/feedback-repository.test.js
           - test/e2e-api/members/feedback.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
       resources:
         summary: >-
           This graph owns references and a URL, with no timer, subscription, provider client or
@@ -927,7 +937,9 @@ services:
           continues without member data, but propagates query failures. Units pin allowed/denied
           browse delegation. HTTP tests pin invalid-score 422, missing-post 404 and authentication
           401; the malformed/unknown UUID cases omit the key and fail before member lookup.
-          Initialization, write/read failures and concurrent submissions lack direct coverage.
+          Root units pin that a home-URL failure before service publication propagates and a later
+          init succeeds. Failure after service publication, write/read failures and concurrent
+          submissions lack direct coverage.
         sources:
           - core/server/services/audience-feedback/index.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
@@ -938,12 +950,14 @@ services:
         tests:
           - test/unit/server/services/audience-feedback/audience-feedback-controller.test.js
           - test/e2e-api/members/feedback.test.js
+          - test/unit/server/services/audience-feedback/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin wrapper exports, receiver requirements, pre-init behavior, repeated init and retained
-        consumers. Preserve publication before email initialization; test partial failures and
-        retry because the service guard can conceal an unfinished controller.
+        Root units now pin repeated-init retention, init-time URL capture and retry after a
+        home-URL failure. Still pin receiver requirements and pre-init behavior, and preserve
+        publication before email initialization. A failure after service publication remains
+        untested; the service guard can conceal an unfinished controller.
       - >-
         Characterize simultaneous submissions and failing writes. Read-then-add has no uniqueness
         or transaction protection, so sequential ID/timestamp assertions do not rule out duplicate
