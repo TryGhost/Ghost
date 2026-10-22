@@ -93,7 +93,11 @@ function SignupNodeComponent({
 
     const imageUploader = fileUploader.useFileUpload('image');
 
+    // bumped by every background image change so a stale failed upload doesn't undo a newer one
+    const imageChangeId = useRef(0);
+
     const handleImageChange = async (files) => {
+        const changeId = ++imageChangeId.current;
         let previousSrc;
 
         // reset original src so it can be replaced with preview and upload progress
@@ -106,6 +110,10 @@ function SignupNodeComponent({
         const result = await backgroundImageUploadHandler(files, imageUploader.upload);
 
         if (!result) {
+            if (changeId !== imageChangeId.current) {
+                return;
+            }
+
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.backgroundImageSrc = previousSrc;
@@ -154,6 +162,7 @@ function SignupNodeComponent({
     };
 
     const handleClearBackgroundImage = () => {
+        imageChangeId.current += 1;
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.backgroundImageSrc = '';
@@ -175,6 +184,7 @@ function SignupNodeComponent({
     };
 
     const handleHideBackgroundImage = () => {
+        imageChangeId.current += 1;
         setShowBackgroundImage(false);
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
