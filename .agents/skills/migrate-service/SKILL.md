@@ -61,6 +61,12 @@ make the audit command fail, and a summary may omit unresolved/own-root imports.
 
 Map each proposed change to an existing behavioral assertion. Run the relevant
 unchanged root/implementation tests and real consumer checks on the base.
+Use the testing guide's focused Nx commands: they prepare workspace builds and
+Core assets before running the selected files. Direct Vitest or `test:single`
+commands skip those prerequisites; `pnpm bootstrap` alone does not supply them.
+Treat missing package outputs or card manifests as setup failures. Do not compile
+Core merely to supply workspace outputs: adjacent emitted JavaScript can shadow
+TypeScript edits in CommonJS consumers.
 Initialization complexity, an audited inventory entry or an old green result
 is not proof of coverage.
 

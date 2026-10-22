@@ -117,24 +117,29 @@ which targets it provides:
 pnpm nx show project <project-name>
 ```
 
-For Ghost Core, run its suites from `ghost/`:
+For Ghost Core, prefer its Nx targets from the repository root. They prepare
+workspace builds and Core assets before running the suite or selected files:
 
 ```bash
-cd ghost
+pnpm nx run ghost:test:unit
+pnpm nx run ghost:test:integration
+pnpm nx run ghost:test:e2e
 
-pnpm test:unit
-pnpm test:integration
-pnpm test:e2e
-pnpm test:all
+pnpm nx run ghost:test:unit test/unit/path/to/test.test.js
+pnpm nx run ghost:test:integration test/integration/path/to/test.test.js
+pnpm nx run ghost:test:e2e test/e2e-api/admin/integrations.test.js --maxWorkers=1
 ```
 
-`test:all` runs Ghost Core's unit, integration, server E2E, and lint targets. To
-run one Ghost Core test file, use:
+`pnpm bootstrap` installs dependencies but does not build workspace packages or
+Core's card assets. Direct Vitest and `pnpm test:single` commands from `ghost/`
+bypass Nx's prerequisites; use them once those outputs are prepared. Missing
+package `build/` files or `cards.manifest.json` indicate incomplete setup.
+Compiling Core with `build:tsc` is unnecessary for source tests and leaves
+adjacent JavaScript files that can shadow later TypeScript edits in CommonJS
+imports.
 
-```bash
-pnpm test:single test/unit/path/to/test.test.js
-pnpm test:single test/integration/path/to/test.test.js
-```
+From `ghost/`, `pnpm test:all` runs Ghost Core's unit, integration, server E2E,
+type and lint commands after its prerequisites have been prepared.
 
 Watch mode at the repository root covers unit tests across the workspace:
 
