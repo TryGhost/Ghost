@@ -35,7 +35,7 @@ Shade defines its tokens in two stylesheets at the root of the package:
 
 Apps read these files; they don't add to them. An app that needs a colour no semantic token covers uses a raw token, never a literal value or a colour variable of its own.
 
-Inside Shade, change a token's value in `theme-variables.css` and wire a new utility name or raw colour in `tailwind.theme.css`. Don't introduce ad-hoc CSS variables in component files. Semantic color variables shouldn't point at another semantic token. Build each from raw `--color-*` tokens, for example `--text-primary: var(--color-black)` rather than `--text-primary: var(--foreground)`. A token may combine raw tokens with `color-mix()` when it needs a blended or translucent value (like `--border-default`, or dark mode's `--tab-hover`), or use a literal colour when no raw token fits (like dark mode's `--background`).
+Inside Shade, change a token's value in `theme-variables.css` and wire a new utility name or raw colour in `tailwind.theme.css`. Don't introduce ad-hoc CSS variables in component files. Build semantic color variables from raw `--color-*` tokens, for example `--text-primary: var(--color-black)` rather than `--text-primary: var(--foreground)`. Point one semantic token at another only as a deliberate alias, when the two must always match (like `--interactive-hover: var(--button-hover)` or `--control-surface: var(--surface-elevated)`). A token may combine raw tokens with `color-mix()` when it needs a blended or translucent value (like `--border-default`, or dark mode's `--tab-hover`), or use a literal colour when no raw token fits (like dark mode's `--background`).
 
 ## Common semantic tokens
 
@@ -61,7 +61,7 @@ The sections below explain how to choose between the surface, hover and border t
 ## Rules of consumption
 
 - Prefer Tailwind utilities — `bg-background`, `text-foreground`, `rounded-md` — over inline styles.
-- Never hard-code hex or `hsl()` values, or raw palette utilities such as `bg-gray-200` and `text-zinc-500`, for UI chrome. They don't theme and don't dark-mode. Chart tokens are the current exception until the chart palette has its own raw scale.
+- Never hard-code hex or `hsl()` values, or raw palette utilities such as `bg-gray-200` and `text-zinc-500`, for UI chrome. Dark mode remaps the raw grey scale, but a raw shade says nothing about its job, so it won't follow the role it plays (a border, a surface, muted text) the way a semantic token does. Chart tokens are the current exception until the chart palette has its own raw scale.
 - Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions: they already hold complete colours, so `hsl(var(--surface-elevated))` is an invalid colour.
 - Use the dedicated hover and active tokens below rather than an opacity modifier on a raw grey, such as `hover:bg-gray-900/30`.
 
@@ -97,7 +97,7 @@ To fix one:
 2. Pick the matching semantic token from the tables on this page.
 3. Drop both the light class and its `dark:` variant; the token handles both modes.
 
-Use `dark:` only for assets that genuinely differ in dark mode and can't be expressed as a token: logos and brand marks, illustrations and SVG art, screenshots and other imagery. A narrow `dark:` opacity modifier on an existing token is acceptable when no token covers it, as in `dark:ring-destructive/40` inside the `inputSurface` recipe and the dropdown border below. Inside Shade, first check whether a new token belongs in `theme-variables.css`.
+Use `dark:` only for assets that genuinely differ in dark mode and can't be expressed as a token: logos and brand marks, illustrations and SVG art, screenshots and other imagery. A narrow `dark:` opacity modifier on an existing token is acceptable when no token covers it, as in `dark:aria-[invalid=true]:ring-destructive/40` inside the `inputSurface` recipe, which only applies to invalid fields and the dropdown border below. Inside Shade, first check whether a new token belongs in `theme-variables.css`.
 
 When something looks wrong only in dark mode, the fix is almost always a different token, not an added `dark:` variant.
 
