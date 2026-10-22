@@ -13,7 +13,6 @@ export default defineService('Invites', () => {
   const models = require('../../models');
   const logging = require('@tryghost/logging');
   const config = require('../../../shared/config');
-  const db = require('../../data/db');
 
   return new Invites({
     settingsCache,
@@ -23,7 +22,7 @@ export default defineService('Invites', () => {
     models,
     logging,
     invitationLimiter: new InvitationLimiter({
-      knex: db.knex,
+      transaction: (callback) => models.Base.transaction(callback),
       getLimits: () => config.get('hostSettings:staffInvites'),
       getUpgradeUrl: getHelpLink,
       lockStaffInvites,

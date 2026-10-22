@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import type { Knex } from 'knex';
 import {
   lockStaffInvites,
   checkTrialStaffLimit,
@@ -9,7 +8,7 @@ import InvitationLimiter, {
 } from '../../../../../core/server/services/invites/invitation-limiter';
 
 const dependencies = {
-  knex: {} as Knex,
+  transaction: async () => assert.fail('Unexpected database access'),
   getUpgradeUrl: () => undefined,
   lockStaffInvites,
   checkTrialStaffLimit,

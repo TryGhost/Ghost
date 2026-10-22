@@ -44,15 +44,12 @@ export async function checkTrialStaffLimit(
       max: maxStaff,
       currentCountQuery: async () => {
         // All roles and statuses occupy a trial seat.
-        // Locking reads see current rows even if an import transaction already has a snapshot.
         const users = await transaction('users')
           .select('id')
-          .limit(maxStaff + 1)
-          .forUpdate();
+          .limit(maxStaff + 1);
         const invites = await transaction('invites')
           .select('id')
-          .limit(maxStaff + 1)
-          .forUpdate();
+          .limit(maxStaff + 1);
         return users.length + invites.length;
       },
       error:
