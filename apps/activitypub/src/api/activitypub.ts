@@ -29,6 +29,54 @@ export interface Account {
   blueskyEnabled?: boolean;
   blueskyHandleConfirmed?: boolean;
   blueskyHandle?: string | null;
+  blueskyDomainHandle?: BlueskyDomainHandle | null;
+}
+
+/**
+ * Whether the site's domain is (or is becoming) the Bluesky handle, or why it
+ * can't be
+ */
+const blueskyDomainHandleSchema = z.object({
+  domain: z.string(),
+  status: z.enum(['claiming', 'active', 'unavailable', 'opted_out', 'released']),
+  reason: z.enum(['taken', 'not_reachable', 'dns_error', 'rejected']).nullable().catch(null),
+});
+
+export type BlueskyDomainHandle = z.infer<typeof blueskyDomainHandleSchema>;
+export type BlueskyDomainHandleStatus = BlueskyDomainHandle['status'];
+export type BlueskyDomainHandleReason = NonNullable<BlueskyDomainHandle['reason']>;
+
+/**
+ * Parse a domain handle from the ActivityPub service. Anything that isn't one
+ * this version understands (eg a status added later) counts as no domain
+ * handle yet
+ */
+function parseBlueskyDomainHandle(value: unknown): BlueskyDomainHandle | null {
+  const result = blueskyDomainHandleSchema.safeParse(value);
+
+  return result.success ? result.data : null;
+}
+
+export interface BlueskyHandleDetails {
+  /**
+   * The confirmed Bluesky handle, or an empty string if it isn't confirmed yet
+   */
+  handle: string;
+  /**
+   * Undefined when the ActivityPub service predates domain handles
+   */
+  domainHandle?: BlueskyDomainHandle | null;
+}
+
+/**
+ * Whether the ActivityPub service supports Bluesky domain handles. Services
+ * that predate them leave `blueskyDomainHandle` out of the account entirely,
+ * while newer ones always include it (as null until a domain is tried)
+ */
+export function supportsBlueskyDomainHandles(
+  account: Pick<Account, 'blueskyDomainHandle'> | undefined,
+): boolean {
+  return account?.blueskyDomainHandle !== undefined;
 }
 
 export type AccountSearchResult = Pick<
@@ -546,8 +594,15 @@ export class ActivityPubAPI {
   async getAccount(handle: string): Promise<GetAccountResponse> {
     const url = new URL(`.ghost/activitypub/v1/account/${handle}`, this.apiUrl);
     const json = await this.fetchJSON(url);
+    const account = json as GetAccountResponse;
 
-    return json as GetAccountResponse;
+    // Only there for the site's own account, and only with ActivityPub
+    // services that support domain handles
+    if (json !== null && 'blueskyDomainHandle' in json) {
+      account.blueskyDomainHandle = parseBlueskyDomainHandle(json.blueskyDomainHandle);
+    }
+
+    return account;
   }
 
   async getAccountFollows(
@@ -957,15 +1012,33 @@ export class ActivityPubAPI {
     await this.fetchJSON(url, 'POST');
   }
 
-  async confirmBlueskyHandle(): Promise<string> {
+  async confirmBlueskyHandle(): Promise<BlueskyHandleDetails> {
     const url = new URL('.ghost/activitypub/v2/actions/bluesky/confirm-handle', this.apiUrl);
 
-    const json = await this.fetchJSON(url, 'POST');
+    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'POST'));
+  }
 
-    if (json === null || !('handle' in json) || typeof json.handle !== 'string') {
-      return '';
+  async claimBlueskyDomainHandle(): Promise<BlueskyHandleDetails> {
+    const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
+
+    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'POST'));
+  }
+
+  async resetBlueskyHandle(): Promise<BlueskyHandleDetails> {
+    const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
+
+    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'DELETE'));
+  }
+
+  private parseBlueskyHandleDetails(json: object | null): BlueskyHandleDetails {
+    const handle =
+      json !== null && 'handle' in json && typeof json.handle === 'string' ? json.handle : '';
+
+    // Older ActivityPub services leave it out entirely
+    if (json === null || !('domainHandle' in json)) {
+      return { handle };
     }
 
-    return String(json.handle);
+    return { handle, domainHandle: parseBlueskyDomainHandle(json.domainHandle) };
   }
 }

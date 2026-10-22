@@ -6,6 +6,8 @@ import {
   type AccountSearchResult,
   ActivityPubAPI,
   ActivityPubCollectionResponse,
+  type BlueskyDomainHandle,
+  type BlueskyHandleDetails,
   type ExploreAccount,
   type GetAccountFollowsResponse,
   type Notification,
@@ -2922,6 +2924,7 @@ type BlueskyDetails = {
   blueskyEnabled: boolean;
   blueskyHandleConfirmed: boolean;
   blueskyHandle: string | null;
+  blueskyDomainHandle?: BlueskyDomainHandle | null;
 };
 
 function updateAccountBlueskyCache(queryClient: QueryClient, blueskyDetails: BlueskyDetails) {
@@ -3013,18 +3016,67 @@ export function useConfirmBlueskyHandleMutationForUser(handle: string) {
 
       return api.confirmBlueskyHandle();
     },
-    onSuccess(blueskyHandle: string) {
+    onSuccess(details: BlueskyHandleDetails) {
       // If the bluesky handle is empty then the handle was not confirmed
       // so we don't need to update the cache
-      if (blueskyHandle === '') {
+      if (details.handle === '') {
         return;
       }
 
-      updateAccountBlueskyCache(queryClient, {
-        blueskyEnabled: true,
-        blueskyHandleConfirmed: true,
-        blueskyHandle: blueskyHandle,
-      });
+      updateConfirmedBlueskyCache(queryClient, details);
+    },
+    onError(error: { message: string; statusCode: number }) {
+      if (error.statusCode === 429) {
+        renderRateLimitError();
+      }
+    },
+  });
+}
+
+function updateConfirmedBlueskyCache(queryClient: QueryClient, details: BlueskyHandleDetails) {
+  updateAccountBlueskyCache(queryClient, {
+    blueskyEnabled: true,
+    blueskyHandleConfirmed: true,
+    blueskyHandle: details.handle,
+    // Left out for ActivityPub services that predate domain handles, which
+    // the screen tells apart by the field being absent
+    ...(details.domainHandle !== undefined ? { blueskyDomainHandle: details.domainHandle } : {}),
+  });
+}
+
+export function useClaimBlueskyDomainHandleMutationForUser(handle: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn() {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI(handle, siteUrl);
+
+      return api.claimBlueskyDomainHandle();
+    },
+    onSuccess(details: BlueskyHandleDetails) {
+      updateConfirmedBlueskyCache(queryClient, details);
+    },
+    onError(error: { message: string; statusCode: number }) {
+      if (error.statusCode === 429) {
+        renderRateLimitError();
+      }
+    },
+  });
+}
+
+export function useResetBlueskyHandleMutationForUser(handle: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn() {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI(handle, siteUrl);
+
+      return api.resetBlueskyHandle();
+    },
+    onSuccess(details: BlueskyHandleDetails) {
+      updateConfirmedBlueskyCache(queryClient, details);
     },
     onError(error: { message: string; statusCode: number }) {
       if (error.statusCode === 429) {
