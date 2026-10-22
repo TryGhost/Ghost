@@ -5,6 +5,7 @@ const logging = require('@tryghost/logging');
 const stripe = require('stripe');
 const i18n = require('../../../../../core/server/services/i18n');
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
+const { createMetrics } = require('../../../../../core/server/lib/metrics/create-metrics');
 const {
   NOTHING_COLLECTED,
 } = require('../../../../../core/server/services/stripe-checkout-config/checkout-service');
@@ -20,7 +21,10 @@ describe('StripeAPI', function () {
       return false;
     },
   };
-  const api = new StripeAPI({ labs: mockLabs });
+  const api = new StripeAPI({
+    labs: mockLabs,
+    metrics: createMetrics({ transport: { metric: () => Promise.resolve(null) }, logging }),
+  });
 
   let mockStripe;
   let mockLabsIsSet;

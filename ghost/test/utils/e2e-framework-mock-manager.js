@@ -31,6 +31,7 @@ const { limitService } = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
+const ghostMetrics = require('@tryghost/metrics');
 
 let fakedLabsFlags = {};
 let allowedNetworkDomains = [];
@@ -408,6 +409,25 @@ const emittedEvent = (name) => {
 };
 
 /**
+ * Metrics Mocks
+ */
+
+/**
+ * Records the metrics Ghost ships through `@tryghost/metrics`, rather than shipping them.
+ * @returns {{shipped: (name: string) => object[]}} What was shipped as a metric, in order.
+ */
+const mockMetrics = () => {
+  const shipped = [];
+  mocks.metrics = sinon.stub(ghostMetrics, 'metric').callsFake((name, value) => {
+    shipped.push({ name, value });
+    return Promise.resolve(null);
+  });
+  return {
+    shipped: (name) => shipped.filter((metric) => metric.name === name).map(({ value }) => value),
+  };
+};
+
+/**
  * Settings Mocks
  */
 
@@ -582,6 +602,7 @@ const restore = () => {
 module.exports = {
   mockEvents,
   mockMail,
+  mockMetrics,
   disableStripe,
   mockStripe,
   mockSlack,

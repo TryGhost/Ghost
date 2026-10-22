@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const StripeService = require('./stripe-service');
 const logging = require('@tryghost/logging');
+const ghostMetrics = require('@tryghost/metrics');
+const { createMetrics } = require('../../lib/metrics/create-metrics');
 const membersService = require('../members');
 const config = require('../../../shared/config');
 const settings = require('../../../shared/settings-cache');
@@ -39,6 +41,7 @@ const debouncedConfigureApi = _.debounce(() => {
 
 module.exports = new StripeService({
   labs,
+  metrics: createMetrics({ transport: ghostMetrics, logging }),
   membersService,
   models: _.pick(models, [
     'Product',
