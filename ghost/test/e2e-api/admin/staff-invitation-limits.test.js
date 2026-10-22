@@ -376,6 +376,33 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.notCalled(send);
   });
 
+  it('rejects unauthenticated garbage tokens without taking the staff lock', async function () {
+    const security = require('@tryghost/security');
+    const invitesService = require('../../../core/server/services/invites').default;
+    const lock = sinon
+      .stub(invitesService.service.invitationLimiter, 'lockStaffUsage')
+      .rejects(new Error('Invalid tokens must not reach the shared lock'));
+    const transaction = sinon.spy(models.Base, 'transaction');
+    await Promise.all(
+      Array.from({ length: 5 }, (_, i) =>
+        supertest(config.get('url'))
+          .post(localUtils.API.getApiQuery('authentication/invitation/'))
+          .send({
+            invitation: [
+              {
+                token: security.url.encodeBase64(`invalid-invitation-${i}`),
+                name: 'Invalid invite',
+                password: 'Sl1m3rson99',
+              },
+            ],
+          })
+          .expect(404),
+      ),
+    );
+    sinon.assert.notCalled(lock);
+    sinon.assert.notCalled(transaction);
+  });
+
   it('accepts an invitation at capacity without consuming another seat or email', async function () {
     const users = await db.knex('users').count('id', { as: 'count' }).first();
     const remaining = 10 - Number(users.count);
