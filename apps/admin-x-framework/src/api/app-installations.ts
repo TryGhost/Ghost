@@ -54,6 +54,11 @@ export interface AppInstallationPreview {
   /** Sent back when confirming, so only the manifest that was reviewed gets installed. */
   digest: string;
   /**
+   * The app's origins, its manifest's own included, that the site's configuration trusts. Ghost
+   * didn't ask these to prove they hold the app's key. Empty when every origin proved it.
+   */
+  trusted_origins: string[];
+  /**
    * The site's installation of the same app, if it has one: the manifest it was approved
    * with and where that was read from, and what would change.
    */

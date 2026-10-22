@@ -23,14 +23,30 @@ export function isSessionsRouteMissing(error: unknown): boolean {
 }
 
 /**
- * Whether starting a session failed because Ghost couldn't use the app's manifest: it couldn't be
- * loaded, or it was for a different app. This is the app's fault, not Admin's, and nothing changed,
- * so trying again opens the app once its manifest is available again.
+ * The codes a session fails with when Ghost couldn't use the app's manifest: `APP_UNAVAILABLE`
+ * when it couldn't be loaded or was for a different app, and the identity check's own codes
+ * when it couldn't confirm the app is the one installed.
+ */
+const UNAVAILABLE_CODES: ReadonlySet<unknown> = new Set([
+  'APP_UNAVAILABLE',
+  'APP_MANIFEST_UNSIGNED',
+  'APP_MANIFEST_URL_MISMATCH',
+  'APP_MANIFEST_SIGNATURE_INVALID',
+  'APP_IDENTITY_MISMATCH',
+  'APP_BACKEND_KEY_RETIRED',
+  'APP_CHALLENGE_FAILED',
+  'APP_CHALLENGE_UNREACHABLE',
+]);
+
+/**
+ * Whether starting a session failed because Ghost couldn't use the app's manifest, or couldn't
+ * confirm it's the app that was installed. This is the app's fault, not Admin's, and nothing
+ * changed, so trying again opens the app once it's fixed.
  */
 export function isAppUnavailable(error: unknown): boolean {
   return (
     error instanceof APIError &&
     error.response?.status === 409 &&
-    apiErrorOf(error)?.code === 'APP_UNAVAILABLE'
+    UNAVAILABLE_CODES.has(apiErrorOf(error)?.code)
   );
 }
