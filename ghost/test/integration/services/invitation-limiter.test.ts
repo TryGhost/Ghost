@@ -65,6 +65,66 @@ describe('Trial invitation admission', function () {
     return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
   }
 
+  it('initializes the internal lock setting and restores it on an existing site', async function () {
+    const initial = await db.knex('settings').where({ key: 'staff_invitation_lock' }).first();
+    assert.ok(initial);
+    assert.equal(initial.group, 'core');
+    assert.equal(initial.value, null);
+    await db.knex('settings').where({ id: initial.id }).delete();
+    await models.Settings.populateDefaults();
+    const restored = await db.knex('settings').where({ key: 'staff_invitation_lock' });
+    assert.equal(restored.length, 1);
+    assert.equal(restored[0].group, 'core');
+    await models.Settings.populateDefaults();
+    assert.equal((await db.knex('settings').where({ key: 'staff_invitation_lock' })).length, 1);
+  });
+
+  it('fails closed if the lock setting is missing', async function () {
+    await assert.rejects(
+      models.Base.transaction(async (transaction: Knex.Transaction) => {
+        await transaction('settings').where({ key: 'staff_invitation_lock' }).delete();
+        await lockStaffInvites(transaction);
+      }),
+      /Cannot lock the trial staff invitation limits/,
+    );
+  });
+
+  it('allows brute cleanup while an invitation holds the shared lock', async function () {
+    const BruteKnex = require('@tryghost/brute-knex');
+    const store = new BruteKnex({ tablename: 'brute', createTable: false, knex: db.knex });
+    await db
+      .knex('brute')
+      .insert({ key: 'expired-test', firstRequest: 0, lastRequest: 0, lifetime: 0, count: 0 });
+    let read: Promise<unknown> | undefined;
+    try {
+      await models.Base.transaction(async (transaction: Knex.Transaction) => {
+        await lockStaffInvites(transaction);
+        read = new Promise((resolve, reject) => {
+          store.get('unrelated-login', (error: Error | null, value: unknown) =>
+            error ? reject(error) : resolve(value),
+          );
+        });
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            read,
+            new Promise((_, reject) => {
+              timer = setTimeout(
+                () => reject(new Error('Brute cleanup waited for the invitation lock')),
+                2000,
+              );
+            }),
+          ]);
+        } finally {
+          clearTimeout(timer);
+        }
+      });
+    } finally {
+      await read;
+    }
+    assert.deepEqual(await db.knex('brute').select(), []);
+  });
+
   it('admits only fifteen concurrent email preparations even without the HTTP guard', async function () {
     limits!.maxStaff = 50;
     const results = await Promise.allSettled(
