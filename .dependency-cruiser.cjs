@@ -43,6 +43,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
+  '^ghost/core/server/lib/frame-identity\\.ts$', // Reading who is acting off an API frame's context.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
 ];
 
