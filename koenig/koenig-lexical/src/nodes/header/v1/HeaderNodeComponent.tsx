@@ -42,13 +42,26 @@ function HeaderNodeComponent({
     const onFileChange = async (e) => {
         const files = e.target.files;
 
+        let previousSrc;
+
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            previousSrc = node.backgroundImageSrc;
             node.backgroundImageSrc = '';
         });
 
-        const {imageSrc} = await backgroundImageUploadHandler(files, imageUploader.upload);
+        const result = await backgroundImageUploadHandler(files, imageUploader.upload);
+
+        if (!result) {
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.backgroundImageSrc = previousSrc;
+            });
+            return;
+        }
+
+        const {imageSrc} = result;
 
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
