@@ -161,5 +161,6 @@ describe('the package', () => {
         'connect',
       ].sort(),
     );
-  });
+    // a full TypeScript program build is well past the default timeout when CI runs every workspace's tests at once
+  }, 30_000);
 });

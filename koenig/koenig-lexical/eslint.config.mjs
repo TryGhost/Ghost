@@ -114,6 +114,7 @@ export default defineConfig([
         },
         rules: {
             ...ghostPlugin.configs['ts-test'].rules,
+            'ghost/ghost-custom/node-assert-strict': 'off',
             'ghost/mocha/no-global-tests': 'off',
             'ghost/mocha/handle-done-callback': 'off',
             'ghost/mocha/no-mocha-arrows': 'off',
