@@ -56,7 +56,7 @@ describe('Concurrent post edits', function () {
     }
 
     for (let round = 1; round <= 5; round++) {
-      const responses = await Promise.all(
+      const responses: { statusCode: number; body: any }[] = await Promise.all(
         posts.map((post, i) =>
           agent.put(`/posts/${post.id}/`).body({
             posts: [
