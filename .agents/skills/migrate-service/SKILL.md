@@ -55,14 +55,13 @@ Wire application instances, models, logging and configured adapters in the root.
 Keep approved libraries imported where used and use explicit type-only imports.
 Do not inject stateless utilities to evade the policy or duplicate shared helpers.
 
-Subagents must not edit dependency allowances or enforcement rules. Report the
-blocked imports, smallest proposed allowance and source-based justification to
-the parent. The parent inspects the dependency and approves clearly justified
-libraries; otherwise ask the user before changing the policy. A lint failure is
-not approval. Only the parent applies approved allowances, with a reason and a
-boundary regression in the migration PR that needs them. Keep allowances out of
-standalone skill/tooling PRs. Normal inventory and root-shape opt-ins still belong
-in each migration.
+Inspect the source before adding a library allowance. Justify why the dependency
+is a library rather than an application-owned instance, and allow only its exact
+entry or file. Include the reason and a boundary regression in the migration PR
+that needs the allowance. Keep allowances out of standalone skill/tooling PRs.
+Seek review when that distinction is unclear or a broader policy change is
+needed; do not widen the rule merely to make lint pass. Normal inventory and
+root-shape opt-ins still belong in each migration.
 
 Preserve late acquisition with getters/factories when dependencies are unavailable
 at boot. If audit scripts exist, inspect their detailed output: findings may not
@@ -133,7 +132,7 @@ that decision from the small migration. Do not silently expand its scope.
 Migration tests may receive mechanical import/type/stub and initializer-await
 adaptations. New behavioral assertions or substantial harness changes return to
 preparation. The only new cases permitted in the migration commit are boundary
-regressions for parent-approved dependency allowances. Never weaken assertions,
+regressions for new exact dependency allowances. Never weaken assertions,
 coverage gates, lint or types to make the refactor pass.
 
 ## 5. Update metadata and verify
@@ -158,7 +157,7 @@ retry or an unchanged file alone does not establish that a failure belongs to
 main. Keep unrelated fixes out of the migration.
 
 Review the final diff: one service, unchanged operation behavior, no hidden
-composition, no new behavioral tests, and only approved metadata/enforcement
+composition, no new behavioral tests, and only justified metadata/enforcement
 changes.
 Use the repository commit skill and make **one commit for this service**.
 Keep unrelated tooling/skill changes on their own branch. Report the branch,
