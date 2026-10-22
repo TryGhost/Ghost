@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import { decideOnManifest } from '../../../../../core/server/services/app-installations/decide-on-manifest';
+import {
+  approvalWrite,
+  decideOnManifest,
+  recheckWrite,
+} from '../../../../../core/server/services/app-installations/decide-on-manifest';
 import type { LoadedManifest } from '../../../../../core/server/services/app-installations/load-manifest';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
@@ -15,7 +19,11 @@ const approvedManifest: AppManifest = {
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
 };
 
-const current = { manifest_url: MANIFEST_URL, manifest: approvedManifest };
+const current = {
+  manifest_id: 'approved-manifest',
+  manifest_url: MANIFEST_URL,
+  manifest: approvedManifest,
+};
 
 /** A loaded manifest as the loader returns it, with a digest made from its URL and contents. */
 function loaded(overrides: Partial<AppManifest> = {}, manifestUrl = MANIFEST_URL): LoadedManifest {
@@ -26,6 +34,8 @@ function loaded(overrides: Partial<AppManifest> = {}, manifestUrl = MANIFEST_URL
 
 const silent = { description: 'Episodes and players.' };
 const needsApproval = { name: 'Podcasts' };
+
+const pending = { id: 'pending-manifest', digest: loaded(needsApproval).digest };
 
 describe('decideOnManifest', function () {
   it('returns the changes the decision was based on', function () {
@@ -86,13 +96,12 @@ describe('decideOnManifest', function () {
   });
 
   describe('with a pending manifest', function () {
-    const pending = { digest: loaded(needsApproval).digest };
-
-    it('uses the pending manifest when it is the one loaded', function () {
-      assert.equal(
-        decideOnManifest({ current, pending, loaded: loaded(needsApproval) }).kind,
-        'use_pending',
-      );
+    it('uses the pending manifest when it is the one loaded, saying which it is', function () {
+      assert.deepEqual(decideOnManifest({ current, pending, loaded: loaded(needsApproval) }), {
+        kind: 'use_pending',
+        changes: [{ path: 'name', requires_approval: true }],
+        pendingManifestId: 'pending-manifest',
+      });
     });
 
     it('applies the approved manifest again when the app reverts the pending changes', function () {
@@ -119,6 +128,81 @@ describe('decideOnManifest', function () {
         }).kind,
         'suspend',
       );
+    });
+  });
+});
+
+describe('approvalWrite', function () {
+  it('writes nothing for the approved manifest with nothing pending', function () {
+    assert.deepEqual(approvalWrite({ current, pending: null, loaded: loaded() }), {
+      kind: 'nothing',
+    });
+  });
+
+  it('approves the pending manifest’s row', function () {
+    assert.deepEqual(approvalWrite({ current, pending, loaded: loaded(needsApproval) }), {
+      kind: 'approve_existing',
+      manifestId: 'pending-manifest',
+    });
+  });
+
+  // The app reverted the pending changes, and approving lets go of them.
+  it('approves the approved manifest’s row again when nothing differs from it', function () {
+    assert.deepEqual(approvalWrite({ current, pending, loaded: loaded() }), {
+      kind: 'approve_existing',
+      manifestId: 'approved-manifest',
+    });
+  });
+
+  it('adds an approval row for any other manifest, which becomes the approved one', function () {
+    for (const [name, manifest, pendingManifest, requiresApproval] of [
+      ['silent changes', loaded(silent), null, false],
+      ['silent changes kept after reverting the pending ones', loaded(silent), pending, false],
+      ['changes that need approval', loaded({ ...silent, ...needsApproval }), null, true],
+    ] as const) {
+      assert.deepEqual(
+        approvalWrite({ current, pending: pendingManifest, loaded: manifest }),
+        {
+          kind: 'add_approved',
+          row: { loaded: manifest, source: 'approval', requiresApproval },
+        },
+        name,
+      );
+    }
+  });
+});
+
+describe('recheckWrite', function () {
+  it('writes nothing for the approved manifest or the pending one', function () {
+    assert.deepEqual(recheckWrite({ current, pending: null, loaded: loaded() }), {
+      kind: 'nothing',
+    });
+    assert.deepEqual(recheckWrite({ current, pending, loaded: loaded(needsApproval) }), {
+      kind: 'nothing',
+    });
+  });
+
+  it('adds a row for silent changes, which becomes the approved manifest', function () {
+    const manifest = loaded(silent);
+    assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
+      kind: 'add_approved',
+      row: { loaded: manifest, source: 'update', requiresApproval: false },
+    });
+  });
+
+  it('adds a resume row when the app reverted the pending changes, which lifts the suspension', function () {
+    const manifest = loaded();
+    assert.deepEqual(recheckWrite({ current, pending, loaded: manifest }), {
+      kind: 'add_approved',
+      row: { loaded: manifest, source: 'resume', requiresApproval: false },
+    });
+  });
+
+  it('adds a row for changes that need approval, which becomes the pending manifest', function () {
+    const manifest = loaded(needsApproval);
+    assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
+      kind: 'add_pending',
+      row: { loaded: manifest, source: 'update', requiresApproval: true },
     });
   });
 });
