@@ -40,6 +40,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
+  '^ghost/core/server/lib/common/to-plain\\.ts$', // Bookshelf/plain-object normalization; no application instances or captured state.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
   '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.

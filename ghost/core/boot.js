@@ -385,7 +385,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const memberAttribution = require('./server/services/member-attribution');
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback');
+  const audienceFeedback = require('./server/services/audience-feedback').default;
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
@@ -437,6 +437,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
+  // Email captures Audience Feedback's ready link service during initialization.
+  await audienceFeedback.init();
+
   await Promise.all([
     identityTokens.init(),
     memberAttribution.init(),
@@ -451,7 +454,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     upgrades.init(),
     slack.init(),
-    audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
