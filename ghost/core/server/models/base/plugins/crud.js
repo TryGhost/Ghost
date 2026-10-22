@@ -332,12 +332,17 @@ module.exports = function (Bookshelf) {
           };
         }
 
+        const model = this.forge(options.destroyBy);
+
+        // Relations are removed before the row, so lock it first as an edit would
+        if (options.transacting) {
+          model.query((qb) => qb.forUpdate());
+        }
+
         // Fetch the object before destroying it, so that the changed data is available to events
-        return this.forge(options.destroyBy)
-          .fetch(options)
-          .then(function then(obj) {
-            return obj.destroy(options);
-          });
+        return model.fetch(options).then(function then(obj) {
+          return obj.destroy(options);
+        });
       },
     },
   );

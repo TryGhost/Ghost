@@ -114,24 +114,32 @@ const Label = ghostBookshelf.Model.extend(
       });
       options.withRelated = ['members'];
 
-      return this.forge({ id: options.id })
-        .fetch(options)
-        .then(function destroyLabelsAndMember(label) {
-          if (!label) {
-            return Promise.reject(
-              new errors.NotFoundError({
-                message: tpl(messages.labelNotFound),
-              }),
-            );
-          }
+      const destroyLabel = async (transacting) => {
+        // Detaching changes the relations of the members, so lock them as an edit
+        // would, before reading anything
+        await ghostBookshelf
+          .model('Member')
+          .lockLinkedForUpdate(
+            'members_labels',
+            'member_id',
+            { label_id: options.id },
+            { transacting },
+          );
 
-          return label
-            .related('members')
-            .detach(null, options)
-            .then(function destroyLabels() {
-              return label.destroy(options);
-            });
-        });
+        const label = await this.forge({ id: options.id }).fetch({ ...options, transacting });
+        if (!label) {
+          throw new errors.NotFoundError({
+            message: tpl(messages.labelNotFound),
+          });
+        }
+
+        await label.related('members').detach(null, { ...options, transacting });
+        return label.destroy({ ...options, transacting });
+      };
+
+      return options.transacting
+        ? destroyLabel(options.transacting)
+        : ghostBookshelf.transaction(destroyLabel);
     },
   },
 );

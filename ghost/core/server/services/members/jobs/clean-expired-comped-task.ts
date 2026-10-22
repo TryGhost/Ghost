@@ -82,19 +82,22 @@ async function cleanExpiredComped({
       const rowIds = expiredCompedRows.map((d) => d.id);
       const memberIds = expiredCompedRows.map((d) => d.member_id);
 
-      // Only members still in the comped status change; anyone already paid,
-      // free or deleted is left untouched. The rows are locked for the rest
-      // of the transaction so a concurrent status change cannot slip between
-      // this read and the update below (forUpdate is a no-op on SQLite,
-      // where the single-writer transaction already guarantees this). The
-      // members rows are locked BEFORE the members_products delete so this
-      // transaction acquires locks in the same members -> members_products
-      // order as the member-edit flows (Bookshelf edit, linkSubscription);
-      // the reverse order could deadlock against them.
-      const compedMembers: MemberRow[] = await trx('members')
+      // Every member losing a tier is locked, in id order, before the
+      // members_products delete: an edit of the member locks its row but not
+      // its tiers, and this transaction must take locks in the same
+      // members -> members_products order as the member-edit flows (Bookshelf
+      // edit, linkSubscription) to not deadlock against them. The locks also
+      // stop a concurrent status change slipping between this read and the
+      // update below (forUpdate is a no-op on SQLite, where the single-writer
+      // transaction already guarantees this).
+      const lockedMembers: MemberRow[] = await trx('members')
         .whereIn('id', memberIds)
-        .andWhere('status', 'comped')
+        .orderBy('id')
         .forUpdate();
+
+      // Only members still in the comped status change; anyone already paid,
+      // free or deleted is left untouched
+      const compedMembers = lockedMembers.filter((member) => member.status === 'comped');
 
       const deletedCount = await trx('members_products').whereIn('id', rowIds).del();
 
