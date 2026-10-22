@@ -74,11 +74,17 @@ Cover the real risk: retained consumers, configuration timing, transaction or
 cache behavior, boot ordering and resource cleanup. Use existing cold-boot
 HTTP/job coverage where it already proves readiness. Do not copy a boot harness
 for every service or duplicate generic kernel concurrency/retry tests.
+For async ordering tests, verify both a missing required await and a harmless
+extra await: the first must fail and the second must pass. Avoid checks that
+count microtask turns; follow the testing guide's async-ordering advice.
 
 If a needed assertion is absent, prepare passing characterization against the
 old implementation in a tests-only PR and merge it first. Keep one commit per
 service in preparatory batches. If a test exposes a production bug, isolate the
 fix ahead of initializer adoption; do not change expectations to hide it.
+Update each prepared service's inventory evidence in that tests-only change,
+citing the new tests and narrowing only the blockers they cover. Preserve
+historical audit revisions; do not defer this evidence to initializer adoption.
 
 Substantial dependency refactors, fixture rewrites and business changes are also
 preparation work, separate from the minimal initializer PR. Preserve the old

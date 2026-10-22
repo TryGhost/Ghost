@@ -60,6 +60,14 @@ integration between layers is itself the behavior being protected.
 - Assert the result a user or caller depends on, including important side
   effects. Avoid assertions that merely repeat how the implementation works.
 
+For async ordering, hold a collaborator's promise pending and assert that the
+next operation cannot start until it settles. Do not assume a single
+`await Promise.resolve()` advances an async chain far enough: an additional
+harmless await can change the number of microtasks. Observe a readiness signal;
+in Node tests, yielding an event-loop turn with `setImmediate()` can let the chain
+reach the held promise without counting microtasks. Check that a missing required
+await fails the test and an extra harmless await still passes.
+
 Snapshot tests are useful for stable, structured output, but a generated
 snapshot is not proof that the output is correct. Review every changed snapshot
 before committing it and add focused assertions for behaviour that should be
