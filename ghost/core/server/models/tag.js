@@ -197,8 +197,7 @@ const Tag = ghostBookshelf.Model.extend(
       options.withRelated = ['posts'];
 
       const destroyTag = async (transacting) => {
-        // Detaching changes the relations of the posts, so lock them as an edit
-        // would, before reading anything
+        // Detaching changes the relations of the posts, so lock them as an edit would
         await ghostBookshelf
           .model('Post')
           .lockLinkedForUpdate('posts_tags', 'post_id', { tag_id: options.id }, { transacting });

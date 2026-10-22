@@ -119,10 +119,11 @@ module.exports = function (Bookshelf) {
        * Locks the rows linked through `linkTable` to whatever `where` matches,
        * e.g. the posts of a tag, and returns their ids.
        *
-       * The first read runs outside the transaction: inside it, a plain read
-       * would fix the transaction's snapshot before the locks are held. A
-       * locking read afterwards catches rows linked in between, or earlier in
-       * this transaction.
+       * The first read is a plain read, so it can't wait on the rows it finds
+       * before locking them, and a locking read afterwards catches rows linked
+       * in between. The plain read fixes the transaction's snapshot before the
+       * locks are held, which is why reads that decide writes afterwards must
+       * be locking reads.
        *
        * @param {string} linkTable
        * @param {string} foreignKey - Column in `linkTable` holding this model's id
@@ -137,7 +138,10 @@ module.exports = function (Bookshelf) {
         where,
         { transacting },
       ) {
-        const ids = await Bookshelf.knex(linkTable).where(where).pluck(foreignKey);
+        const ids = await Bookshelf.knex(linkTable)
+          .transacting(transacting)
+          .where(where)
+          .pluck(foreignKey);
         await this.lockForUpdate(ids, { transacting });
 
         const currentIds = await Bookshelf.knex(linkTable)

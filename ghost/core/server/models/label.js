@@ -115,8 +115,7 @@ const Label = ghostBookshelf.Model.extend(
       options.withRelated = ['members'];
 
       const destroyLabel = async (transacting) => {
-        // Detaching changes the relations of the members, so lock them as an edit
-        // would, before reading anything
+        // Detaching changes the relations of the members, so lock them as an edit would
         await ghostBookshelf
           .model('Member')
           .lockLinkedForUpdate(
