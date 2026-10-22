@@ -1,5 +1,14 @@
+import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 import validator from 'validator';
-import { APIError, HostLimitError, ValidationError } from '@tryghost/admin-x-framework/errors';
+import { useGlobalData } from '@/settings/providers/global-data-context';
+import {
+  APIError,
+  JSONError,
+  HostLimitError,
+  ValidationError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
 import {
   Button,
   Dialog,
@@ -42,9 +51,13 @@ function InviteUserModal() {
     searchParams: { limit: '100', permissions: 'assign' },
   });
   const limiter = useLimiter();
+  const upgradeRoute = useUpgradeRoute();
+  const { config } = useGlobalData();
+  const trialInvites = config?.hostSettings?.staffInvites;
 
   const { updateRoute } = useSettingsNavigation();
   const editorBeta = useFeatureFlag('superEditors');
+  const [invitationError, setInvitationError] = useState<string>();
   const [email, setEmail] = useState<string>('');
   const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
   const [role, setRole] = useState<RoleType>('contributor');
@@ -67,23 +80,24 @@ function InviteUserModal() {
   }, [saveState]);
 
   useEffect(() => {
-    if (role !== 'contributor' && limiter?.isLimited('staff')) {
-      limiter
-        .errorIfWouldGoOverLimit('staff')
-        .then(() => {
-          setErrors((e) => ({ ...e, role: undefined }));
-        })
-        .catch((error) => {
-          if (error instanceof HostLimitError) {
-            setErrors((e) => ({ ...e, role: error.message }));
-            return;
-          } else {
-            throw error;
-          }
-        });
-    } else {
-      setErrors((e) => ({ ...e, role: undefined }));
-    }
+    const checkLimits = async () => {
+      try {
+        if (limiter?.isLimited('trialStaff')) {
+          await limiter.errorIfWouldGoOverLimit('trialStaff');
+        }
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+          await limiter.errorIfWouldGoOverLimit('staff');
+        }
+        setErrors((e) => ({ ...e, role: undefined }));
+      } catch (error) {
+        if (error instanceof HostLimitError) {
+          setErrors((e) => ({ ...e, role: error.message }));
+        } else {
+          throw error;
+        }
+      }
+    };
+    void checkLimits();
   }, [limiter, role]);
 
   if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
@@ -105,7 +119,7 @@ function InviteUserModal() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (saveState === 'saving') {
+    if (saveState === 'saving' || invitationError) {
       return;
     }
 
@@ -157,6 +171,16 @@ function InviteUserModal() {
         return;
       }
 
+      if (e instanceof JSONError && e.data?.errors?.[0]?.type === 'HostLimitError') {
+        setSaveState('');
+        setInvitationError(getErrorMessage(e, e.data.errors[0].message));
+        return;
+      }
+      if (e instanceof APIError && e.response?.status === 429) {
+        setSaveState('error');
+        handleError(e);
+        return;
+      }
       setSaveState('error');
       const title = 'Failed to send invitation';
       let message = (
@@ -303,7 +327,30 @@ function InviteUserModal() {
                   );
                 })}
               </RadioGroup>
-              <FieldError id="invite-role-error">{errors.role}</FieldError>
+              {(errors.role || invitationError) && (
+                <FieldError id="invite-role-error">
+                  {invitationError || errors.role}
+                  {trialInvites && (
+                    <>
+                      {' '}
+                      <Link
+                        className="border-b border-current text-inherit no-underline"
+                        href={upgradeRoute.startsWith('/') ? `#${upgradeRoute}` : upgradeRoute}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          navigateTo(upgradeRoute);
+                        }}
+                      >
+                        Upgrade to invite more people{' '}
+                        <LucideIcon.ArrowRight
+                          aria-hidden="true"
+                          className="inline size-3 align-middle"
+                        />
+                      </Link>
+                    </>
+                  )}
+                </FieldError>
+              )}
             </FieldSet>
           </Stack>
           <DialogFooter className="shrink-0">
@@ -311,7 +358,7 @@ function InviteUserModal() {
               Close
             </Button>
             <Button
-              disabled={saveState === 'saving'}
+              disabled={saveState === 'saving' || !!invitationError}
               type="submit"
               variant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             >

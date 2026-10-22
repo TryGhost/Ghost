@@ -10,7 +10,7 @@ import type { EmailsResponseType } from '../api/emails';
 import { apiUrl, useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
 import { HostLimitError } from '../utils/errors';
 
-import { LimitService, type LimitConfig } from '@tryghost/limit-service';
+import { LimitService, MaxLimit, type LimitConfig } from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
@@ -92,7 +92,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       errorIfIsOverLimit: (): Promise<void> => Promise.resolve(),
     };
 
-    if (!config?.hostSettings?.limits || isStaffLoading) {
+    if ((!config?.hostSettings?.limits && !config?.hostSettings?.staffInvites) || isStaffLoading) {
       return noOpLimiter;
     }
 
@@ -105,7 +105,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     // Periodic limits need a subscription to build, and registration stops at the first
     // limit that throws, so without one they're skipped to keep the rest working
     const limits = Object.fromEntries(
-      Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
+      Object.entries(config.hostSettings?.limits || {}).filter(([name, limit]) => {
         if (wanted && !wanted.includes(name)) {
           return false;
         }
@@ -118,6 +118,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     ) as Record<string, LimitConfig>;
     const limiter = new LimitService();
 
+    const trialInvites = config.hostSettings?.staffInvites;
     if (limits.staff) {
       limits.staff.currentCountQuery = () => {
         // Keep the existing first-page behavior for this move. Full pagination is tracked in
@@ -187,6 +188,21 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       },
     });
 
+    // Trial seats include Contributors and inactive users; plan seats retain their own rules.
+    if (trialInvites && wantsStaff) {
+      limiter.limits.trialStaff = new MaxLimit({
+        name: 'trialStaff',
+        helpLink,
+        errors: { HostLimitError, IncorrectUsageError },
+        config: {
+          max: trialInvites.maxStaff,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+          currentCountQuery: () => Promise.resolve(users.length + invites.length),
+        },
+      });
+    }
+
     return {
       isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
       isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName) ?? false,
@@ -212,5 +228,6 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     sessionExpiryRedirect,
     users,
     wanted,
+    wantsStaff,
   ]);
 };

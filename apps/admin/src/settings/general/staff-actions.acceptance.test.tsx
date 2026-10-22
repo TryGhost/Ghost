@@ -45,7 +45,9 @@ describe('Staff actions', () => {
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Un-suspend' }).click();
 
     await expect(settingsScreen.userDetailModal().getByText(/Suspended/)).toHaveCount(0);
-    expect(editApi.lastRequest?.body).toMatchObject({ users: [{ status: 'active' }] });
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({ users: [{ status: 'active' }] });
   });
 
   it('deletes a user and returns to the staff list', async () => {
@@ -122,5 +124,45 @@ describe('Staff actions', () => {
     await expect
       .element(settingsScreen.limitModal())
       .toHaveTextContent('Your plan does not support more staff');
+  });
+  it('preserves the plan limit when un-suspending during a trial', async () => {
+    const owner = user('Owner');
+    const author = user('Author', { status: 'inactive' });
+    const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
+    const config = configResponse();
+    config.config.hostSettings = {
+      staffInvites: { maxStaff: 10, maxInvites: 15 },
+      limits: { staff: { max: 1, error: 'Your plan does not support more staff' } },
+    };
+    await renderAdminApp(`/settings/staff/${author.slug}`, {
+      boot: { ...boot, browseConfig: { response: config } },
+    });
+
+    await chooseAction('Un-suspend user');
+
+    await expect
+      .element(settingsScreen.limitModal())
+      .toHaveTextContent('Your plan does not support more staff');
+  });
+  it('reactivates an existing user at the trial staff cap without needing another seat', async () => {
+    const owner = user('Owner');
+    const author = user('Author', { status: 'inactive' });
+    const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
+    const config = configResponse();
+    config.config.hostSettings = {
+      limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
+      staffInvites: { maxStaff: 2, maxInvites: 15 },
+    };
+    const editApi = fakeAdminEndpoint('PUT', `/users/${author.id}/?include=roles`, {
+      users: [{ ...author, status: 'active' }],
+    });
+    await renderAdminApp(`/settings/staff/${author.slug}`, {
+      boot: { ...boot, browseConfig: { response: config } },
+    });
+    await chooseAction('Un-suspend user');
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Un-suspend' }).click();
+    await expect
+      .poll(() => editApi.lastRequest?.body)
+      .toMatchObject({ users: [{ status: 'active' }] });
   });
 });
