@@ -23,12 +23,24 @@ export const AutomationCard = React.forwardRef<HTMLDivElement, React.ComponentPr
 
 export const AutomationCardHeader: React.FC<{
   title: string;
+  titleClassName?: string;
+  // NY-1715 concept E: shown straight after the title, e.g. the Unsaved changes dot.
+  titleAddon?: React.ReactNode;
   icon: React.ReactNode;
   iconClassName?: string;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   metadata?: React.ReactNode;
-}> = ({ title, icon, iconClassName, description, actions, metadata }) => (
+}> = ({
+  title,
+  titleClassName,
+  titleAddon,
+  icon,
+  iconClassName,
+  description,
+  actions,
+  metadata,
+}) => (
   <Inline gap="md" wrap={Boolean(metadata)}>
     <Inline className={cn('min-w-0 flex-1', metadata && 'min-w-[min(100%,10rem)]')} gap="md">
       <Box
@@ -38,8 +50,9 @@ export const AutomationCardHeader: React.FC<{
         {icon}
       </Box>
       <Stack className="min-w-0 flex-1" gap="xs">
-        <Text as="h3" className="break-words" size="md" weight="medium">
+        <Text as="h3" className={cn('break-words', titleClassName)} size="md" weight="medium">
           {title}
+          {titleAddon}
         </Text>
         {description}
       </Stack>

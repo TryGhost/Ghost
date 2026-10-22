@@ -7,6 +7,9 @@ import type {
 // NY-1715 exploration only — never merge.
 export type PendingChangesKind = 'unsaved' | 'unpublished';
 
+// Concept E: what the next save does to a step — adds it, updates it or deletes it.
+export type StepChangeKind = 'added' | 'updated' | 'deleted';
+
 export const pendingChangesKind = (status: string | undefined): PendingChangesKind =>
   status === 'active' ? 'unpublished' : 'unsaved';
 

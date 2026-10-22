@@ -42,12 +42,20 @@ import {
   isCanvasCard,
   isCanvasCardV2,
   isConceptA,
+  isConceptF,
   useConcept,
 } from '@/automations/concepts/concept';
 import { useExpandFromCard } from '@/automations/concepts/use-expand-from-card';
 import ChangesIndicator from '@/automations/concepts/changes-indicator';
 import { EditedLabel } from '@/automations/concepts/modified-dot';
-import type { PendingChangesKind } from '@/automations/concepts/pending-changes';
+import TkIndicators from '@/automations/concepts/tk-indicators';
+import {
+  clearTkFocusRequest,
+  findSubjectTk,
+  hasTkFocusRequest,
+  selectFirstBodyTk,
+} from '@/automations/concepts/tk';
+import type { PendingChangesKind, StepChangeKind } from '@/automations/concepts/pending-changes';
 import type { EmailModalMode } from '@/automations/components/types';
 
 interface EmailPreviewModalContentProps {
@@ -60,6 +68,8 @@ interface EmailPreviewModalContentProps {
   headerBelow?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  // The scrolling body under the fixed header.
+  bodyClassName?: string;
   isEditMode?: boolean;
 }
 
@@ -74,6 +84,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
       headerBelow,
       children,
       className,
+      bodyClassName,
       isEditMode = false,
     },
     ref,
@@ -98,7 +109,12 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
         <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
         {headerBelow && <div className="col-span-3 mt-6">{headerBelow}</div>}
       </div>
-      <div className="flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
+      <div
+        className={cn(
+          'flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto',
+          bodyClassName,
+        )}
+      >
         {children}
       </div>
     </div>
@@ -163,6 +179,14 @@ export interface EmailContentModalProps {
   // NY-1715 concept D: called as the editor starts closing, so the canvas can bring its
   // sidebar back in step with the shrink.
   onCloseStart?: () => void;
+  // NY-1715 concepts D and E: changes when Discard (or its Undo) swaps the automation under the
+  // open editor, which then starts over from the email's new content.
+  resetKey?: number;
+  // NY-1715 concept E: puts this email back to the last save, from the Unsaved changes marker.
+  onRevert?: () => void;
+  // NY-1715 concept E: what the next save does to this email, named on the marker.
+  emailChangeKind?: StepChangeKind;
+  revertLabel?: string;
 }
 
 // NY-1715 concept A: a tooltip for each icon action in the editor's top-right corner.
@@ -199,6 +223,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   isEmailModified = false,
   footer,
   onCloseStart,
+  resetKey = 0,
+  onRevert,
+  revertLabel,
+  emailChangeKind,
 }) => {
   // Concept A applies edits straight to the automation, like edits made on the
   // canvas, so the modal has no save step of its own. Read once so switching
@@ -213,6 +241,17 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   // E (Canvas card v2): the feedback round — subject at the top of the body, a slim header,
   // and an "Unsaved" marker on edited cards. Clicking the canvas minimizes it, as in C.
   const [isCanvasCardV2Editor] = useState(isCanvasCardV2(conceptAtOpen));
+  // E (not F): 40px padding all round instead of 96px at the sides, with Koenig's + button
+  // (66px left of the text) left where it is and hanging out past the panel's left edge
+  // rather than being cropped.
+  const [overhangsPlus] = useState(isCanvasCardV2(conceptAtOpen) && !isConceptF(conceptAtOpen));
+  // E: opened from a card's TK marker, so the first TK is selected, as Koenig's own TK
+  // indicator does — in the subject if it has one, otherwise in the body.
+  const [opensAtTk] = useState(() => isCanvasCardV2(conceptAtOpen) && hasTkFocusRequest());
+  const [subjectTk] = useState(() => (opensAtTk ? findSubjectTk(initialSubject || '') : null));
+  useEffect(() => clearTkFocusRequest(), []);
+  // E: the writing column, which the stand-in TK indicators are drawn over.
+  const [editorColumn, setEditorColumn] = useState<HTMLDivElement | null>(null);
   // B shows the unsaved/unpublished indicator beside close; Test stays in the Preview tab
   // for every concept. B closes with a text Close.
   const isFullModal = appliesEditsLive && !expandsInPlace;
@@ -237,7 +276,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     closeIntoCard(onClose);
   }, [closeIntoCard, onClose, onCloseStart]);
   // Live edits flow back in through initialLexical, so keep the content as it was on open.
-  const [lexicalAtOpen] = useState(initialLexical || '');
+  const [lexicalAtOpen, setLexicalAtOpen] = useState(initialLexical || '');
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
   const { data: automatedEmailsData } = useBrowseAutomatedEmails();
   const [showTestDropdown, setShowTestDropdown] = useState(false);
@@ -277,6 +316,22 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     },
     onSaveError: handleError,
   });
+
+  // Koenig only reads its value on mount, so it remounts (editorKey) in the same render that
+  // picks up the new content. Only a new reset key restarts it; live edits change the initial
+  // values too.
+  const [editorKey, setEditorKey] = useState(resetKey);
+  useEffect(() => {
+    if (resetKey === editorKey) {
+      return;
+    }
+    // The remounted editor normalizes the new content before it can take focus, as on open.
+    hasEditorBeenFocused.current = false;
+    normalizedLexical.current = initialLexical || '';
+    setLexicalAtOpen(initialLexical || '');
+    setFormState(() => ({ subject: initialSubject || '', lexical: initialLexical || '' }));
+    setEditorKey(resetKey);
+  }, [resetKey]);
 
   const validateForTest = useCallback((): boolean => {
     const newErrors = getEmailValidationErrors(formState);
@@ -405,6 +460,29 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
       });
     };
   }, [clearsCanvas, dialogContentNode]);
+
+  // E: a TK in the body is selected once Koenig has loaded. It waits a tick past the editor
+  // appearing, so the editor's load normalisation is never taken for an edit.
+  useEffect(() => {
+    if (!opensAtTk || subjectTk || !dialogContentNode) {
+      return;
+    }
+    let isEditorSeen = false;
+    const startedAt = performance.now();
+    const timer = window.setInterval(() => {
+      const editable = dialogContentNode.querySelector<HTMLElement>(
+        '[data-testid="email-editor"] [contenteditable="true"]',
+      );
+      if (
+        (editable && isEditorSeen && selectFirstBodyTk(editable)) ||
+        performance.now() - startedAt > 3000
+      ) {
+        window.clearInterval(timer);
+      }
+      isEditorSeen = Boolean(editable);
+    }, 150);
+    return () => window.clearInterval(timer);
+  }, [dialogContentNode, opensAtTk, subjectTk]);
 
   const handleModeChange = useCallback(
     (nextMode: EmailModalMode) => {
@@ -560,7 +638,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     '[data-testid="email-editor-subject"]',
                   )
                 : null;
-              if (subject) {
+              if (subject && subjectTk) {
+                subject.focus({ preventScroll: true });
+                subject.setSelectionRange(subjectTk.start, subjectTk.end);
+              } else if (subject && !opensAtTk) {
                 subject.focus({ preventScroll: true });
                 subject.setSelectionRange(subject.value.length, subject.value.length);
               } else {
@@ -582,6 +663,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             )}
           <EmailPreviewModalContent
             ref={expandFromCard.panelRef}
+            bodyClassName={cn(
+              // E: the scrolling body reaches 72px out past the panel's left edge (padded back
+              // in, so nothing inside moves), far enough to hold the + without clipping it.
+              overhangsPlus && '-ml-[72px] pl-[72px]',
+            )}
             centeredHeaderContent={
               isCanvasCardV2Editor ? undefined : (
                 <Tabs
@@ -621,8 +707,12 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               expandsInPlace && !clearsCanvas && 'max-h-[80vh] self-center',
               // A3 sits on the cleared canvas, so it takes the canvas cards' own shadow.
               clearsCanvas && 'shadow-sm',
-              // E hugs its writing column: 600px of content plus 32px of padding each side.
-              isCanvasCardV2Editor && 'max-w-[664px]',
+              // E hugs its writing column: 600px of content plus 96px each side, which holds
+              // Koenig's + button (28px, 66px left of the text) with 30px to spare.
+              isCanvasCardV2Editor && 'max-w-[792px]',
+              // E: 600px plus 40px each side, and nothing clipped at its edges, so the + can
+              // hang out past the left one.
+              overhangsPlus && 'max-w-[680px] overflow-visible',
             )}
             headerActions={
               appliesEditsLive ? (
@@ -701,9 +791,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             headerBelow={isCanvasCardV2Editor && mode === 'edit' ? subjectField : undefined}
             headerClassName={cn(
               appliesEditsLive && 'px-6 py-5',
-              // E: 32px at the sides (matching the body) and on top, 24px below, and no rule
-              // under it, so it reads as part of the card.
-              isCanvasCardV2Editor && 'border-b-0 px-8 pt-8 pb-6',
+              // E: 96px at the sides, so the header sits on the body's 600px column; 40px above
+              // and below, and no rule under it, so it reads as part of the card.
+              isCanvasCardV2Editor && 'border-b-0 px-24 py-10',
+              // E: 40px all round, as the body; rounded, now the panel no longer clips its corners.
+              overhangsPlus && 'rounded-t-xl p-10',
             )}
             isEditMode={mode === 'edit'}
             title={
@@ -718,6 +810,12 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     <LucideIcon.Mail className="size-4" />
                   </span>
                   <span className="truncate">Edit email</span>
+                  {overhangsPlus &&
+                    isEmailModified && (
+                      // E: the cards' Unsaved changes dot, after the title as on the card (8px out:
+                      // the row's 12px gap, less 4px).
+                      <EditedLabel className="-ml-1 h-auto shrink-0" />
+                    )}
                 </span>
               ) : appliesEditsLive ? (
                 // Concept A: mirrors the email card's header, so the editor reads as that card expanded.
@@ -739,13 +837,23 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             <div
               className={cn(
                 'flex grow flex-col items-center p-6',
-                // E, writing: 32px at the sides; the header's padding already sits above, so none
-                // on top. Preview keeps 24px all round, so the email sits clear of the header.
-                isCanvasCardV2Editor && mode === 'edit' && 'px-8 pt-0',
+                // E, writing: 96px at the sides, room for Koenig's + button in the left gutter;
+                // the header's 40px already sits above, so none on top. Preview keeps 24px all
+                // round, so the email sits clear of the header.
+                isCanvasCardV2Editor && mode === 'edit' && 'px-24 pt-0',
+                // E, preview: 48px on top rather than 24px, so the email sits further under the header.
+                isCanvasCardV2Editor && mode === 'preview' && 'pt-12',
+                overhangsPlus && mode === 'edit' && 'px-10 pb-10',
               )}
             >
               {mode === 'preview' && (
-                <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
+                <EmailPreviewEmailHeader
+                  className={cn(
+                    'border-x-0 border-t-0 border-b',
+                    // E: the preview keeps to the same 600px column as the writing and header.
+                    isCanvasCardV2Editor && 'max-w-[600px]',
+                  )}
+                >
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center py-1">
                       <div className="w-20 shrink-0 text-sm font-semibold">From:</div>
@@ -825,16 +933,21 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               <EmailPreviewBody
                 className={cn(
                   mode === 'preview' && 'bg-white shadow-sm dark:bg-[#151719]',
+                  isCanvasCardV2Editor && 'max-w-[600px]',
                   mode === 'edit' && !isCanvasCardV2Editor && 'px-6',
                   mode === 'edit' && 'rounded-lg',
                   mode === 'edit' && errors.lexical && 'border border-red-500',
                 )}
               >
                 <div
+                  ref={isCanvasCardV2Editor ? setEditorColumn : undefined}
                   className={cn(
                     'mx-auto w-full max-w-[600px] pt-10 pb-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
                     // E: one 24px of padding round the body (from the content area), not three.
-                    isCanvasCardV2Editor && 'py-0',
+                    // Positioned and isolated for the TK indicators drawn over it.
+                    isCanvasCardV2Editor && 'relative isolate py-0',
+                    // E: the + hangs out over the canvas, so it gets the panel's own fill behind it.
+                    overhangsPlus && '[&_[data-kg-plus-button]>button]:bg-surface-elevated',
                     mode === 'preview' && 'hidden',
                   )}
                   data-testid="email-editor"
@@ -843,11 +956,19 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                   }}
                 >
                   <EmailEditor
+                    key={editorKey}
                     className="automation-email-editor"
                     placeholder="Begin writing your email..."
                     value={formState.lexical}
                     onChange={handleEditorChange}
                   />
+                  {isCanvasCardV2Editor && (
+                    // E's 40px leaves no room for Koenig's 56px, so its TK comes in to 36px.
+                    <TkIndicators
+                      container={editorColumn}
+                      marginRight={overhangsPlus ? -36 : -56}
+                    />
+                  )}
                 </div>
                 {mode === 'preview' && <EmailPreviewFrame previewState={previewFrameState} />}
               </EmailPreviewBody>
@@ -858,14 +979,24 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               )}
             </div>
           </EmailPreviewModalContent>
+          {/* F only: in E the header's Unsaved changes, just above, covers the open email. */}
           {isCanvasCardV2Editor &&
+            isConceptF(conceptAtOpen) &&
             isEmailModified && (
               // E: the same Unsaved marker as on the cards, beside the panel's top-right corner
               // (24px out, level with the header row), so the open email shows its state too.
               <EditedLabel
+                // F names the change; E keeps the plain Unsaved changes dot.
+                changeKind={isConceptF(conceptAtOpen) ? emailChangeKind : undefined}
                 className="absolute animate-in duration-200 fade-in-0 fill-mode-backwards [--tw-animation-delay:200ms] motion-reduce:animate-none"
-                style={{ top: panelGap + 32, left: 'calc(50% + 332px + 24px)' }}
+                revertLabel={revertLabel}
+                style={{
+                  top: panelGap + 40,
+                  left: `calc(50% + ${overhangsPlus ? 340 : 396}px + 24px)`,
+                }}
                 showText
+                // F only: E's marker is information, with no Revert.
+                onRevert={isConceptF(conceptAtOpen) ? onRevert : undefined}
               />
             )}
           {expandsInPlace && !clearsCanvas && footer}

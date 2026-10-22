@@ -37,7 +37,16 @@ export const WaitDurationField: React.FC<{
   inline?: boolean;
   onValidityChange?: (valid: boolean) => void;
   onErrorVisibilityChange?: (visible: boolean) => void;
-}> = ({ waitHours, onUpdate, inline = false, onValidityChange, onErrorVisibilityChange }) => {
+  // NY-1715 concept E: the inline message shows under the field, not on the card.
+  showsErrorBelow?: boolean;
+}> = ({
+  waitHours,
+  onUpdate,
+  inline = false,
+  onValidityChange,
+  onErrorVisibilityChange,
+  showsErrorBelow = false,
+}) => {
   const fieldId = useId();
   const inputId = inline ? fieldId : 'automation-wait-days';
   const errorId = `${inputId}-error`;
@@ -169,11 +178,15 @@ export const WaitDurationField: React.FC<{
             </InputGroupAddon>
           </InputGroup>
         )}
-        {inline && isInlineErrorVisible && (
-          <span className="sr-only" id={errorId}>
-            {WAIT_VALIDATION_MESSAGE}
-          </span>
-        )}
+        {inline &&
+          isInlineErrorVisible &&
+          (showsErrorBelow ? (
+            <FieldError id={errorId}>{WAIT_VALIDATION_MESSAGE}</FieldError>
+          ) : (
+            <span className="sr-only" id={errorId}>
+              {WAIT_VALIDATION_MESSAGE}
+            </span>
+          ))}
         {!inline && showValidationError && (
           <FieldError className="text-xs" id={errorId}>
             Enter a delay between 1 and {formatNumber(MAX_WAIT_DAYS)} days

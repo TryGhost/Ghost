@@ -194,6 +194,15 @@ export const useExpandFromCard = ({
           fill: 'forwards',
         });
       }
+      // E: the open email's Unsaved marker fades out with the content, mirroring how it fades
+      // in on open; the card's own marker shows again with the card.
+      panel.parentElement
+        ?.querySelector(':scope > [data-unsaved-marker]')
+        ?.animate([{ opacity: 1 }, { opacity: 0 }], {
+          duration: CONTENT_FADE_OUT,
+          easing: 'ease-in',
+          fill: 'forwards',
+        });
       // Frame by frame rather than a fixed animation, re-measuring the card each time: in D
       // the sidebar reopens alongside, so the canvas (and the card) moves while this runs.
       const startsAt = performance.now() + CONTENT_FADE_OUT / 2;
