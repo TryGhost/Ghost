@@ -5126,7 +5126,11 @@ services:
     notes: >-
       Keep integration editing and key-rotation business rules outside HTTP. The endpoint
       currently constructs and retains this service; boot composition must preserve its
-      model calls, mutation/error contracts and dependent persistence behavior.
+      model calls, mutation/error contracts and dependent persistence behavior. Characterization
+      prepared against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36 covers the unchanged factory,
+      retained real endpoint, model receivers, option handling and awaited edit/rotation results.
+      The original auditedAt remains historical; this preparation does not adopt an initializer
+      or establish same-process reboot, transaction, association or action-write guarantees.
     contracts:
       exports:
         summary: >-
@@ -5136,18 +5140,23 @@ services:
           options object. There is no singleton, init, reset, shutdown or readiness export.
         sources:
           - core/server/services/integrations/integrations-service.js
-        tests: []
+        tests:
+          - test/unit/server/services/integrations/integrations-service.test.ts
       construction:
         summary: >-
           The integrations endpoint is the only production factory caller found. Module
           evaluation constructs once with shared Integration and ApiKey models and retains
           the result in a private constant. The constructor only stores references; it makes
           no query or subscription. The factory could create independent instances, but no
-          other runtime constructor or direct service unit test was found.
+          other runtime constructor was found. Preparation units exercise the real factory and
+          retained endpoint with stubbed model methods, proving idle composition and receiver
+          identity without claiming persisted database behavior.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
-        tests: []
+        tests:
+          - test/unit/server/services/integrations/integrations-service.test.ts
+          - test/unit/server/services/integrations/index.test.ts
       consumers:
         summary: >-
           The endpoint delegates ordinary integration edits and API-key refresh requests to
@@ -5156,6 +5165,8 @@ services:
           HTTP tests exercise ordinary field/webhook edits, successful admin-key rotation and
           missing-integration edits. The rotation case checks the new secret and a refreshed
           action, but not old-token rejection, content keys or mismatched integration/key IDs.
+          Preparation units exercise the real endpoint and retained instance across ordinary
+          edits and rotation, preserving receivers, current results and pending/error forwarding.
         sources:
           - core/server/api/endpoints/integrations.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -5164,6 +5175,7 @@ services:
           - core/server/models/integration.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/index.test.ts
       startup:
         summary: >-
           Admin router construction accesses the lazy endpoint getter. Normal backend/API mounts
@@ -5171,7 +5183,9 @@ services:
           construct the service before readiness. Direct factory construction can occur earlier
           because dependencies are merely stored. There is no pre-use guard. Existing HTTP
           tests exercise completed request composition, not construction timing, concurrent
-          first-request behavior or dependency failure during lazy router creation.
+          first-request behavior or dependency failure during lazy router creation. Preparation
+          units establish idle endpoint-time composition and retained identity without booting
+          the HTTP router or introducing a pre-init contract that does not yet exist.
         sources:
           - core/boot.js
           - core/server/api/endpoints/index.js
@@ -5184,6 +5198,7 @@ services:
           - core/server/services/integrations/integrations-service.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/index.test.ts
       lifetime:
         summary: >-
           Module caching retains the endpoint's instance and model references across requests
@@ -5195,7 +5210,9 @@ services:
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
-        tests: []
+        tests:
+          - test/unit/server/services/integrations/integrations-service.test.ts
+          - test/unit/server/services/integrations/index.test.ts
       configuration:
         summary: >-
           The factory retains model dependencies and reads no application configuration itself.
@@ -5207,6 +5224,9 @@ services:
           boundaries, not validation implemented by the service factory. The ApiKey unit test
           stubs model edit and pins generated secret length and forwarded data/options; it does
           not exercise service composition, association checks or persisted rotation.
+          Service units now pin ordinary option mutation, rotation option cloning, caller
+          transaction propagation to refresh only, and admin/content key delegation through
+          stubbed models; they do not prove stored key lengths or transaction atomicity.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
@@ -5216,6 +5236,7 @@ services:
         tests:
           - test/e2e-api/admin/integrations.test.js
           - test/unit/server/models/api-key.test.ts
+          - test/unit/server/services/integrations/integrations-service.test.ts
       resources:
         summary: >-
           The instance owns only borrowed model references; edits use the shared database and
@@ -5227,6 +5248,9 @@ services:
           The action plugin catches/logs ordinary Action.add rejection. With a caller transaction
           it waits for a truthy committed event, then inserts the action outside that transaction.
           HTTP tests observe a later action row, not write timing or failure handling.
+          Service units hold refresh and reread promises separately to prove operation ordering
+          and settlement; removing the refresh await makes the new pending-operation case fail.
+          Stubbed transactions do not establish database commit or rollback behavior.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/models/api-key.js
@@ -5236,6 +5260,7 @@ services:
           - core/server/models/base/plugins/events.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/integrations-service.test.ts
       failures:
         summary: >-
           Key lookup rejection escapes unchanged; an absent key yields NotFoundError before
@@ -5244,8 +5269,11 @@ services:
           integration reread is returned without a service error. Ordinary edits translate
           errors whose message is NotFound or EmptyResponse to Integration NotFoundError and
           rethrow others. Ordinary action-write rejection is logged without rejecting or rolling
-          back rotation. HTTP coverage pins deleted-integration 404/context; no direct test
-          covers the other service-level failure stages, option mutation or partial writes.
+          back rotation. HTTP coverage pins deleted-integration 404/context. Preparation units
+          pin missing/rejected key lookup, serialization/refresh/reread failure wrapping with
+          the generic 500, null reread, ordinary NotFound/EmptyResponse translation and unchanged
+          unrelated error identity. These stubbed model checks do not establish partial writes
+          or action-record failure behavior.
         sources:
           - core/server/services/integrations/integrations-service.js
           - core/server/models/api-key.js
@@ -5254,26 +5282,25 @@ services:
           - core/server/api/endpoints/integrations.js
         tests:
           - test/e2e-api/admin/integrations.test.js
+          - test/unit/server/services/integrations/integrations-service.test.ts
+          - test/unit/server/services/integrations/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin factory/instance exports, retained endpoint identity, composition timing and options
-        mutation before moving construction to boot. Existing HTTP tests use a fully booted
-        endpoint and do not establish pre-init, receiver or same-process restart behavior.
-      - >-
-        Add key-rotation failure contracts for absent/rejected key lookup, refresh failure,
-        null/rejected integration reread and action-record failure. Assert stored secrets and
-        errors together; a successful HTTP rotation and later action lookup do not prove atomicity
-        or that the action is awaited. Preserve or explicitly change transaction propagation.
+        Add persisted key-rotation failure contracts, including action-record failure. The
+        new service units pin failure translation through stubbed models, not stored-secret
+        outcomes; a successful HTTP rotation and later action lookup do not prove atomicity
+        or that the action is awaited. Preserve current transaction propagation in a bounded
+        initializer migration; changing its ownership requires separate preparation.
       - >-
         Characterize integration/key association and concurrent rotations through authorized
         HTTP calls, including content keys and old-token rejection. Source shows independent
         key/integration lookups; do not assume the facade or existing successful path tests
         establish association validation or protection against lost/repeated rotation results.
       - >-
-        Keep ordinary edit error translation and relation/model behavior distinct from the
-        rotation branch. Add direct model-failure injection and pending-operation ownership
-        evidence before introducing cleanup or promising rollback that does not exist today.
+        Preparation now pins direct model-failure translation and pending edit/rotation
+        settlement. Resource drain, cleanup, same-process reboot and transaction rollback remain
+        unproven; do not introduce those guarantees as part of initializer adoption.
   internal-keys:
     kind: directory
     disposition: relocate
