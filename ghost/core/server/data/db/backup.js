@@ -1,6 +1,7 @@
 // # Backup Database
 // Provides for backing up the database before making potentially destructive changes
 const fs = require('fs-extra');
+const { pipeline } = require('stream/promises');
 
 const path = require('path');
 const config = require('../../../shared/config');
@@ -9,17 +10,35 @@ const urlUtils = require('../../../shared/url-utils').default;
 const exporter = require('../exporter');
 
 /**
- * @param {object} exportResult
- * @param {string} exportResult.filename
- * @param {object} exportResult.data
+ * Streams the export straight to disk so the full JSON is never held in memory
+ *
+ * @param {string} filename
+ * @param {object} options - passed through to the exporter
+ * @returns {Promise<string>} the path of the written file
  */
-const writeExportFile = async (exportResult) => {
-  const filename = path.resolve(
-    urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename),
+const writeExportFile = async (filename, options) => {
+  const filePath = path.resolve(
+    urlUtils.urlJoin(config.get('paths').contentPath, 'data', filename),
   );
 
-  await fs.writeFile(filename, JSON.stringify(exportResult.data));
-  return filename;
+  const fileStream = fs.createWriteStream(filePath);
+
+  try {
+    await pipeline(exporter.streamExport(options), fileStream);
+  } catch (err) {
+    // pipeline can reject before the destroyed file stream has finished opening and closing,
+    // which would recreate the file after it's removed
+    if (!fileStream.closed) {
+      await new Promise((resolve) => {
+        fileStream.once('close', resolve);
+      });
+    }
+    // a partial file isn't valid JSON, so don't leave it behind to be mistaken for a backup
+    await fs.remove(filePath);
+    throw err;
+  }
+
+  return filePath;
 };
 
 /**
@@ -58,12 +77,7 @@ const backup = async function backup(options = {}) {
   logging.info('Creating database backup');
 
   const filename = await exporter.fileName(options);
-  const data = await exporter.doExport(options);
-
-  const filePath = await writeExportFile({
-    data,
-    filename,
-  });
+  const filePath = await writeExportFile(filename, options);
 
   logging.info(`Database backup written to ${filePath}`);
   return filePath;
