@@ -35,7 +35,7 @@ import {
   useDeleteInvite,
 } from '@tryghost/admin-x-framework/api/invites';
 import { UserRoundX } from 'lucide-react';
-import { formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { memberAvatarProps } from '@/members/api';
 import { getSettingValue, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
@@ -248,7 +248,17 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
       const error = e instanceof JSONError ? e.data?.errors?.[0] : undefined;
       if (error?.type === 'HostLimitError') {
         toast.error(getErrorMessage(e, error.message), {
-          action: { label: 'Upgrade', onClick: () => navigateTo(upgradeRoute) },
+          action: {
+            label: config?.hostSettings?.staffInvites ? (
+              <>
+                Upgrade to invite more people{' '}
+                <LucideIcon.ArrowRight aria-hidden="true" className="size-3" />
+              </>
+            ) : (
+              'Upgrade'
+            ),
+            onClick: () => navigateTo(upgradeRoute),
+          },
         });
       } else {
         handleError(e);

@@ -197,7 +197,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
         config: {
           max: trialInvites.maxStaff,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors. Upgrade to invite more people.',
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
           currentCountQuery: () => Promise.resolve(users.length + invites.length),
         },
       });

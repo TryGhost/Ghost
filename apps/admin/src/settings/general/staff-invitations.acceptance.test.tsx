@@ -194,7 +194,7 @@ describe('Staff invitations', () => {
         errors: [
           {
             type: 'HostLimitError',
-            message: 'Trial invitation allowance exhausted. Upgrade to continue.',
+            message: 'Trial invitation allowance exhausted.',
           },
         ],
       },
@@ -208,7 +208,7 @@ describe('Staff invitations', () => {
     await item.getByRole('button', { name: 'Resend' }).click();
     const toast = settingsScreen.errorToast();
     await expect.element(toast).toHaveTextContent('Trial invitation allowance exhausted');
-    await toast.getByRole('button', { name: 'Upgrade', exact: true }).click();
+    await toast.getByRole('button', { name: 'Upgrade to invite more people', exact: true }).click();
     await expect.poll(() => window.location.hash).toBe('#/pro');
   });
 
@@ -365,8 +365,7 @@ describe('Staff invitations', () => {
           {
             type: 'HostLimitError',
             message: 'Host Limit error, cannot save invite.',
-            context:
-              'Your trial allows 15 staff invitation emails in total, including resends. Upgrade to send more invitations.',
+            context: 'Your trial allows 15 staff invitation emails in total, including resends.',
           },
         ],
       },

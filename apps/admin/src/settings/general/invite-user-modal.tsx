@@ -329,13 +329,8 @@ function InviteUserModal() {
               </RadioGroup>
               {(errors.role || invitationError) && (
                 <FieldError id="invite-role-error">
-                  {trialInvites
-                    ? (invitationError || errors.role)?.replace(
-                        /\s*Upgrade to (?:invite more people|send more invitations)\.?$/,
-                        '',
-                      )
-                    : invitationError || errors.role}
-                  {(errors.role || invitationError) && trialInvites && (
+                  {invitationError || errors.role}
+                  {trialInvites && (
                     <>
                       {' '}
                       <Link
