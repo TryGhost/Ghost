@@ -3,55 +3,61 @@ import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import {
+  readSignedManifest,
+  thumbprintOf,
+  verifySignedManifest,
+} from '@tryghost/app-contracts/identity';
+import {
   parseManifest,
   parseManifestUrl,
   type AppManifest,
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
 import type { FetchFromApp } from './fetch-from-app';
-import { createManifestFetcher } from './fetch-manifest';
+import { createManifestFetcher, parseJson } from './fetch-manifest';
 import { StoredManifest } from './schema';
 
 /** The rules a manifest is checked against: the site's URL and the environment. */
 export type ManifestRules = Omit<ParseManifestOptions, 'manifestUrl'>;
 
 /**
- * A manifest fetched server-side from its manifest URL and parsed, ready to preview,
- * compare or store.
+ * A signed manifest fetched server-side from its manifest URL, its signature verified, and
+ * parsed, ready for the identity check, then to preview, compare or store.
  */
 export interface LoadedManifest {
   /**
-   * The manifest URL as parsed, before any redirect. This is what's stored and fetched
-   * again later.
+   * The manifest URL as parsed, before any redirect, which the manifest names as its own.
+   * This is what's stored and fetched again later.
    */
   manifestUrl: string;
-  /** Parsed, with relative URLs resolved against the final URL after redirects. */
   manifest: AppManifest;
   /** Exactly the text that is stored and digested. */
   serialised: string;
   /** Stored with the manifest, and sent back when a publisher confirms. */
   digest: string;
+  /** The RFC 7638 thumbprint of the identity key the manifest is signed with. */
+  identityKeyThumbprint: string;
+  /** The RFC 7638 thumbprint of the backend key the manifest names. */
+  backendKeyThumbprint: string;
 }
 
 export type LoadManifest = (manifestUrl: string) => Promise<LoadedManifest>;
 
 /**
- * The digest includes the manifest URL because two URLs can serve identical manifests
- * once every URL in them is absolute. Without it, reviewing one URL would also confirm the
- * other, and that other URL would then be used for every future re-check.
- *
  * Encoding writes keys in the schema's order, so the same manifest always serialises the
- * same way. The newline separator can't appear in either part: the URL parser strips
- * newlines, and the encoded JSON has none.
+ * same way. The manifest names its own URL, so the digest covers that too.
  */
-function digestOf(manifestUrl: string, serialisedManifest: string): string {
-  return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
+function digestOf(serialisedManifest: string): string {
+  return createHash('sha256').update(serialisedManifest).digest('hex');
 }
 
 /**
- * Checks a manifest URL, fetches the manifest through `fetchFromApp`, and parses it against
- * the final URL. Redirects are only checked for staying on the same host (or upgrading
- * HTTP to HTTPS); the manifest rules apply to the final URL when it's parsed.
+ * Checks a manifest URL, fetches the signed manifest through `fetchFromApp`, parses the
+ * manifest inside it, and verifies its signature with the identity key it names. The
+ * manifest is checked before its signature, so its developer sees every problem with it,
+ * but nothing in it is used unless the signature is valid. Redirects are only checked for
+ * staying on the same host (or upgrading HTTP to HTTPS); the manifest must name the URL it
+ * was asked for, wherever that redirects.
  *
  * Every problem is thrown as a Ghost error with an `APP_MANIFEST_*` code, which Admin
  * explains to the publisher. `getManifestRules` is called on every load because it reads
@@ -80,26 +86,54 @@ export function createManifestLoader({
     }
     const { manifestUrl } = address;
 
-    const fetched = await fetchManifest(manifestUrl);
-    const parsed = parseManifest(fetched.body, { ...rules, manifestUrl: fetched.url });
+    const signed = readSignedManifest(await fetchManifest(manifestUrl));
+    if (!signed.success) {
+      throw new errors.ValidationError({
+        message: 'The app’s manifest is not signed.',
+        code: 'APP_MANIFEST_UNSIGNED',
+        context: signed.error,
+      });
+    }
+
+    const parsed = parseManifest(parseJson(signed.payload, manifestUrl), { ...rules, manifestUrl });
     if (!parsed.success) {
+      const context = parsed.errors
+        .map(({ path, message }) => (path ? `${path}: ${message}` : message))
+        .join('; ');
+      if (parsed.reason === 'manifest_url_mismatch') {
+        throw new errors.ValidationError({
+          message: 'The app’s manifest is for another address.',
+          code: 'APP_MANIFEST_URL_MISMATCH',
+          context,
+        });
+      }
       throw new errors.ValidationError({
         message: 'The app manifest is not valid.',
         code: 'APP_MANIFEST_INVALID',
-        context: parsed.errors
-          .map(({ path, message }) => (path ? `${path}: ${message}` : message))
-          .join('; '),
+        context,
         // Each problem separately, so Admin can list them for the app's developer.
         errorDetails: parsed.errors,
       });
     }
+    const { manifest } = parsed;
 
-    const serialised = z.encode(StoredManifest, parsed.manifest);
+    const verified = await verifySignedManifest(signed.signed, manifest.identity_key);
+    if (!verified.success) {
+      throw new errors.ValidationError({
+        message: 'The app’s manifest signature is not valid.',
+        code: 'APP_MANIFEST_SIGNATURE_INVALID',
+        context: verified.error,
+      });
+    }
+
+    const serialised = z.encode(StoredManifest, manifest);
     return {
       manifestUrl,
-      manifest: parsed.manifest,
+      manifest,
       serialised,
-      digest: digestOf(manifestUrl, serialised),
+      digest: digestOf(serialised),
+      identityKeyThumbprint: await thumbprintOf(manifest.identity_key),
+      backendKeyThumbprint: await thumbprintOf(manifest.backend_key),
     };
   };
 }

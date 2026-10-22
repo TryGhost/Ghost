@@ -21,8 +21,8 @@ describe('surfaces', () => {
       errorsOf(
         manifest({
           surfaces: [
-            { type: 'admin_page', url: '/admin' },
-            { type: 'admin_page', url: '/other' },
+            { type: 'admin_page', url: 'https://podcast.example.com/admin' },
+            { type: 'admin_page', url: 'https://podcast.example.com/other' },
           ],
         }),
       ),

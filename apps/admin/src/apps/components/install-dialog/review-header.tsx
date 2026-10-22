@@ -10,7 +10,6 @@ import {
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppBanner, AppIcon } from '@/apps/components/app-icon';
-import { isDevelopmentApp } from '@/apps/lib/served-from';
 
 /**
  * Who made the app: the same for installing and approving. Where it runs is listed with
@@ -31,7 +30,7 @@ const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview })
           {manifest.author.name}
         </a>
       </Text>
-      {isDevelopmentApp(manifest) && (
+      {manifest.development && (
         <Badge data-testid="app-development-badge" variant="secondary">
           Development
         </Badge>

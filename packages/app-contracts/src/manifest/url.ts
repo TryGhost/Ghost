@@ -4,11 +4,19 @@ import { isGhostOrigin } from './ghost-origin.ts';
 import { URL_MAX_LENGTH } from './limits.ts';
 import { isLocalhost } from './localhost.ts';
 
+export const FRAGMENT_PROBLEM = 'Expected a URL without a fragment';
+
 /**
- * Checks a URL after it has been resolved, never before: a relative value can resolve to
- * another scheme or host, and only the result says what Ghost would load. The length is
- * measured here for the same reason, as the resolved URL is what is stored and checked
- * again later: a short relative path can resolve to more than the limit.
+ * Whether an address carries a fragment, even an empty one, which the parsed URL's `hash`
+ * hides. A fragment never reaches the server, so a manifest address with one is a mistake or
+ * a second spelling of the same address.
+ */
+export const hasFragment = (address: string) => address.includes('#');
+
+/**
+ * Checks a URL once the URL parser has read it, so the rules apply to the URL Ghost would
+ * use. The length is measured on the parsed URL for the same reason, as that is what is
+ * stored and checked again later.
  */
 export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | null {
   if (url.href.length > URL_MAX_LENGTH) {
@@ -29,7 +37,6 @@ export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | nu
 }
 
 export interface UrlRules {
-  base: URL;
   /** The URLs Ghost itself is served from, which no loaded URL may share an origin with. */
   ghostUrls: string[];
   allowLocalhost: boolean;
@@ -42,39 +49,35 @@ export interface UrlRules {
 export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
 
 /**
- * A URL Ghost will load: resolved against the manifest's own URL, and never on an origin
- * Ghost is served from. `linkOnly` lifts that last rule for a URL that is only ever
- * linked to, which a publisher's own app may well point at their own site.
+ * A URL Ghost will load, never on an origin Ghost is served from. `linkOnly` lifts that
+ * last rule for a URL that is only ever linked to, which a publisher's own app may well
+ * point at their own site.
+ *
+ * Only absolute URLs are accepted, so the manifest's signature covers every origin Ghost
+ * loads or links to: the same signed bytes served from somewhere else still point at the
+ * app that signed them.
  */
-export function urlField({ base, ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
-  return z
-    .string('Expected a URL, or a path relative to the manifest')
-    .min(1, 'Expected a URL, or a path relative to the manifest')
-    .transform((value, ctx) => {
-      let url: URL;
-      try {
-        url = new URL(value, base);
-      } catch {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Expected a URL, or a path relative to the manifest',
-        });
-        return z.NEVER;
-      }
-      const problem = checkResolvedUrl(url, allowLocalhost);
-      if (problem) {
-        ctx.addIssue({ code: 'custom', message: problem });
-        return z.NEVER;
-      }
-      if (!linkOnly && isGhostOrigin(url, ghostUrls)) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Expected an address other than the one Ghost itself is served from',
-        });
-        return z.NEVER;
-      }
-      return url.href;
-    });
+export function urlField({ ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
+  return z.string('Expected an absolute URL').transform((value, ctx) => {
+    const url = URL.parse(value);
+    if (!url) {
+      ctx.addIssue({ code: 'custom', message: 'Expected an absolute URL' });
+      return z.NEVER;
+    }
+    const problem = checkResolvedUrl(url, allowLocalhost);
+    if (problem) {
+      ctx.addIssue({ code: 'custom', message: problem });
+      return z.NEVER;
+    }
+    if (!linkOnly && isGhostOrigin(url, ghostUrls)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Expected an address other than the one Ghost itself is served from',
+      });
+      return z.NEVER;
+    }
+    return url.href;
+  });
 }
 
 /**

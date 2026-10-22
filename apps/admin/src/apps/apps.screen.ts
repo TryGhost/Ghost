@@ -17,7 +17,6 @@ export const appsScreen = {
   accessItems: () => page.getByTestId(sel.accessItem),
   capabilities: () => page.getByTestId(sel.appCapability),
   notice: () => page.getByTestId(sel.appInstallNotice),
-  moveWarning: () => page.getByTestId(sel.appInstallMoveWarning),
   problems: () => page.getByTestId(sel.appInstallProblems),
   unreachable: () => page.getByTestId(sel.appInstallUnreachable),
   changes: () => page.getByTestId(sel.appManifestChange),

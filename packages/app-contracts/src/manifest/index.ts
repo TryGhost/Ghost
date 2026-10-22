@@ -11,12 +11,7 @@
  * The format is unversioned while only Ghost builds apps.
  */
 
-export {
-  compareManifests,
-  type ManifestChange,
-  type ManifestComparison,
-  type ManifestVersion,
-} from './compare.ts';
+export { compareManifests, type ManifestChange, type ManifestComparison } from './compare.ts';
 export { isGhostOrigin } from './ghost-origin.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 export type { AppIcon } from './icon.ts';
@@ -37,11 +32,4 @@ export {
   type AppSurfaceType,
 } from './schema.ts';
 export { isLocalhost } from './localhost.ts';
-export {
-  appPageUrl,
-  isDevelopmentApp,
-  movedBetween,
-  servedFrom,
-  type AppMove,
-  type ServedManifest,
-} from './served-from.ts';
+export { appPageUrl, movedBetween, servedFrom, type AppMove } from './served-from.ts';

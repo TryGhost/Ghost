@@ -136,27 +136,24 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
   });
 
-  it('shows the app’s own icon from the copy Ghost would store, never from the app', async () => {
+  it('marks a development build, as its signed manifest says', async () => {
     fakeInstallations();
-    fakePreview(
-      previewResponse(
-        preview({ manifest: manifest({ icon: { url: ICON_URL } }), icon_data_url: ICON_DATA_URL }),
-      ),
-    );
+    fakePreview(previewResponse(preview({ manifest: manifest({ development: true }) })));
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect.element(appsScreen.installButton()).toBeVisible();
-    expect(imageSources(appsScreen.installDialog().element())).toEqual([ICON_DATA_URL]);
+    await expect.element(appsScreen.developmentBadge()).toBeVisible();
   });
 
-  it('marks an app served from the developer’s machine', async () => {
+  // Where an app runs says nothing about whether it's a development build.
+  it('doesn’t mark an app on the developer’s machine that isn’t a development build', async () => {
     fakeInstallations();
     fakePreview(
       previewResponse(
         preview({
           manifest_url: 'http://localhost:5173/ghost-app.json',
           manifest: manifest({
+            manifest_url: 'http://localhost:5173/ghost-app.json',
             surfaces: [{ type: 'admin_page', url: 'http://localhost:5173/admin' }],
           }),
         }),
@@ -168,7 +165,7 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.capabilities().last())
       .toHaveTextContent('Read and write data to localhost:5173');
-    await expect.element(appsScreen.developmentBadge()).toBeVisible();
+    await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
   });
 
   it('asks for a fresh review when the app changed while it was being reviewed', async () => {
@@ -223,7 +220,6 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
-    await expect.element(appsScreen.moveWarning()).not.toBeInTheDocument();
     await expect(appsScreen.changes()).toHaveCount(2);
     // What needs approval comes first.
     await expect.element(appsScreen.changes().nth(0)).toHaveTextContent('NamePodcastPodcasts');
@@ -238,15 +234,17 @@ describe('Installing an app', () => {
     ]);
   });
 
-  it('warns that an install link would move an installed app to another host', async () => {
+  // The identity key proves it's the same app, so a move is a change like any other.
+  it('reviews a move of an installed app like any other change', async () => {
     fakeInstallations([installation()]);
-    const elsewhere = 'https://evil.example/ghost-app.json';
+    const elsewhere = 'https://audio.example.org/ghost-app.json';
     fakePreview(
       previewResponse(
         preview({
           manifest_url: elsewhere,
           manifest: manifest({
-            surfaces: [{ type: 'admin_page', url: 'https://evil.example/admin' }],
+            manifest_url: elsewhere,
+            surfaces: [{ type: 'admin_page', url: 'https://audio.example.org/admin' }],
           }),
           digest: 'digest-2',
           installation: existing([
@@ -263,13 +261,13 @@ describe('Installing an app', () => {
     await renderAdminApp(`/apps/install?manifest=${encodeURIComponent(elsewhere)}`, { labs });
 
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
-    await expect
-      .element(appsScreen.moveWarning())
-      .toHaveTextContent('moves Podcast from podcast.example.com to evil.example');
-    await expect(appsScreen.changes()).toHaveCount(1);
+    await expect(appsScreen.changes()).toHaveCount(2);
     await expect
       .element(appsScreen.changes().first())
-      .toHaveTextContent('https://podcast.example.com/adminhttps://evil.example/admin');
+      .toHaveTextContent(`Install link${MANIFEST_URL}${elsewhere}`);
+    await expect
+      .element(appsScreen.changes().last())
+      .toHaveTextContent('https://podcast.example.com/adminhttps://audio.example.org/admin');
 
     await appsScreen.approveChangesButton().click();
 
@@ -331,18 +329,20 @@ describe('Installing an app', () => {
     );
     // Someone else approved a move first, so the review now starts from that.
     const moved = preview({
-      manifest: manifest({
-        name: 'Podcasts',
-        surfaces: [{ type: 'admin_page', url: 'https://new.example.com/admin' }],
-      }),
+      manifest: manifest({ name: 'Podcasts' }),
       digest: 'digest-2',
       installation: {
         ...existing([
           { path: 'manifest_url', requires_approval: true },
+          { path: 'name', requires_approval: true },
           { path: 'surfaces[0].url', requires_approval: true },
         ]),
         revision: 1,
         manifest_url: 'https://new.example.com/ghost-app.json',
+        manifest: manifest({
+          manifest_url: 'https://new.example.com/ghost-app.json',
+          surfaces: [{ type: 'admin_page', url: 'https://new.example.com/admin' }],
+        }),
       },
     });
     const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () =>
@@ -353,7 +353,9 @@ describe('Installing an app', () => {
     await appsScreen.approveChangesButton().click();
 
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
-    await expect.element(appsScreen.moveWarning()).toHaveTextContent('to new.example.com');
+    await expect
+      .element(appsScreen.changes().filter({ hasText: 'Install link' }))
+      .toHaveTextContent(`https://new.example.com/ghost-app.json${MANIFEST_URL}`);
     expect(previewApi.requests).toHaveLength(1);
     expect(approveApi.requests).toHaveLength(1);
   });

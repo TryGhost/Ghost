@@ -18,6 +18,7 @@ import {
 } from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
 import { approvalManifestIds, buildHistory } from './history';
+import { IDENTITY_FAILURE_CODES, type CheckIdentity, type PinnedIdentity } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
 
@@ -34,6 +35,11 @@ export interface AppInstallationPreview {
    */
   digest: string;
   icon_data_url: string | null;
+  /**
+   * The origins the manifest names, its own included, that the site's configuration
+   * trusts, so they skipped the challenge. Empty when every origin answered it.
+   */
+  trusted_origins: string[];
   /**
    * The site's existing installation of this app, if any, with its approved manifest and
    * the changes the reviewed manifest would make.
@@ -83,15 +89,31 @@ function uninstalled() {
 }
 
 /**
- * The app's manifest URL doesn't serve a usable manifest for this app. Nothing is written,
- * so the app opens again once the URL serves one.
+ * The app's manifest URL doesn't serve a usable manifest for this app, or one that passes
+ * the identity check, which keeps its own code. Nothing is written, so the app opens again
+ * once the URL serves one.
  */
-function unavailable(why: string) {
+function unavailable(err: InstanceType<typeof errors.ValidationError>) {
+  if (err.code && IDENTITY_FAILURE_CODES.has(err.code)) {
+    return new errors.ConflictError({
+      message: err.message,
+      context: err.context,
+      code: err.code,
+    });
+  }
   return new errors.ConflictError({
     message: 'This app is unavailable.',
-    context: why,
+    context: `${err.code}: ${err.message}${err.context ? ` (${err.context})` : ''}`,
     code: 'APP_UNAVAILABLE',
   });
+}
+
+/** A loaded manifest that has passed the identity check. */
+interface CheckedManifest {
+  loaded: LoadedManifest;
+  trustedOrigins: string[];
+  /** The installation it was checked against, which the preview shows, if there is one. */
+  installation: Installation | null;
 }
 
 /** The reviewed manifest is for a different app than the installed one. */
@@ -123,7 +145,7 @@ export class AppInstallationsService {
   private repository: AppInstallationsRepository;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
-  private fetchIcon: FetchIcon;
+  private checkIdentity: CheckIdentity;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -131,17 +153,17 @@ export class AppInstallationsService {
     knex,
     recordAction,
     loadManifest,
-    fetchIcon,
+    checkIdentity,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
-    fetchIcon: FetchIcon;
+    checkIdentity: CheckIdentity;
   }) {
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
-    this.fetchIcon = fetchIcon;
+    this.checkIdentity = checkIdentity;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -167,9 +189,12 @@ export class AppInstallationsService {
     return installation;
   }
 
-  /** Fetches and checks an app's manifest, for the publisher to review. Stores nothing. */
+  /**
+   * Fetches and checks an app's manifest, and runs the identity check, for the publisher to
+   * review. Stores nothing.
+   */
   async preview(manifestUrl: string): Promise<AppInstallationPreview> {
-    return this.previewOf(await this.loadManifest(manifestUrl));
+    return this.previewOf(await this.review(await this.loadManifest(manifestUrl)));
   }
 
   /** Installs an app after the publisher has reviewed its manifest, as previewed. */
@@ -177,15 +202,8 @@ export class AppInstallationsService {
     context: RequestContext,
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<Installation> {
-    const loaded = await this.fetchReviewed(manifestUrl, digest);
-    const iconDataUrl = await this.fetchIcon(loaded.manifest.icon).catch(async (error: unknown) => {
-      // An installed app can't be installed, whatever went wrong with its icon. The insert
-      // reports the same when the app is installed after the fetch.
-      throw (await this.repository.isInstalled(loaded.manifest.id))
-        ? alreadyInstalled(loaded.manifest.id)
-        : error;
-    });
-    const installation = await this.repository.insert(loaded, iconDataUrl);
+    const { loaded } = await this.fetchReviewed(manifestUrl, digest);
+    const installation = await this.repository.insert(loaded);
     await this.recordAction({
       context,
       event: 'installed',
@@ -220,16 +238,10 @@ export class AppInstallationsService {
     if (current.status === 'uninstalled') {
       throw uninstalled();
     }
-    const loaded = await this.fetchReviewed(manifestUrl, digest);
-    if (loaded.manifest.id !== current.app_id) {
-      throw forAnotherApp(loaded.manifest.id);
-    }
+    const checked = await this.fetchReviewed(manifestUrl, digest, current);
+    const { loaded } = checked;
     if (current.revision !== revision) {
-      // The review is out of date, which asks for a new one, unless the app has been
-      // uninstalled during the fetch and there's nothing left to review.
-      throw (await this.currentInstallation(id))
-        ? await this.changedSinceReview(loaded)
-        : uninstalled();
+      throw await this.changedSinceReview(checked, id);
     }
 
     const write = await this.withIconCopy(
@@ -251,7 +263,7 @@ export class AppInstallationsService {
       throw uninstalled();
     }
     if (stored.status === 'changed') {
-      throw await this.changedSinceReview(loaded);
+      throw await this.changedSinceReview(checked, id);
     }
     const approved = stored.value;
     if (approved) {
@@ -316,31 +328,39 @@ export class AppInstallationsService {
     );
   }
 
+  /** The pinned identity key and retired backend keys of an installation. */
+  private async pinnedIdentityOf(installation: Installation): Promise<PinnedIdentity> {
+    return {
+      identityKeyThumbprint: installation.identity_key_thumbprint,
+      retiredBackendKeys: await this.repository.retiredBackendKeysOf(installation.id),
+    };
+  }
+
   /**
-   * Shows the icon approving would store. A reused row shows its stored copy without a
-   * fetch, so the review works even if the icon URL stopped loading. The digest doesn't
-   * cover the icon, so confirming fetches it again.
+   * Runs the identity check on a manifest a publisher is to review, against `installation`,
+   * or else the site's installation of that app, if it has one.
    */
-  private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
-    const reviewed = {
+  private async review(
+    loaded: LoadedManifest,
+    installation?: Installation,
+  ): Promise<CheckedManifest> {
+    const current =
+      installation ?? (await this.repository.currentInstallationOf(loaded.manifest.id)) ?? null;
+    const pinned = current ? await this.pinnedIdentityOf(current) : null;
+    const { trustedOrigins } = await this.checkIdentity(loaded, pinned);
+    return { loaded, trustedOrigins, installation: current };
+  }
+
+  private previewOf({
+    loaded,
+    trustedOrigins,
+    installation: current,
+  }: CheckedManifest): AppInstallationPreview {
+    return {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
       digest: loaded.digest,
-    };
-    const current = await this.repository.currentInstallationOf(loaded.manifest.id);
-    if (!current) {
-      return {
-        ...reviewed,
-        icon_data_url: await this.fetchIcon(loaded.manifest.icon),
-        installation: null,
-      };
-    }
-
-    const pending = await this.pendingManifestOf(current);
-    const write = await this.withIconCopy(approvalWrite({ current, pending, loaded }));
-    return {
-      ...reviewed,
-      icon_data_url: iconCopyKeptBy(write, current, pending),
+      trusted_origins: trustedOrigins,
       // The approved manifest shown is the one the changes were computed from, so the
       // review matches the list of changes.
       installation: {
@@ -356,45 +376,44 @@ export class AppInstallationsService {
   }
 
   /**
-   * Fetches the icon for a write that adds a row, before the transaction opens so it never
-   * waits on the app. Other writes skip the fetch, so a stored copy never changes.
+   * Fetches the manifest again, runs the identity check again, and checks its digest
+   * matches the one the publisher reviewed. For an existing installation, the manifest must
+   * be for its app, and is checked against its pinned keys. If the digest doesn't match,
+   * the error carries a new preview so they can review the new version.
    */
-  private async withIconCopy(write: ManifestWrite): Promise<ManifestWrite<AddedRow>> {
-    switch (write.kind) {
-      case 'nothing':
-      case 'approve_existing':
-        return write;
-      case 'add_approved':
-      case 'add_pending': {
-        const iconDataUrl = await this.fetchIcon(write.row.loaded.manifest.icon);
-        return { kind: write.kind, row: { ...write.row, iconDataUrl } };
-      }
-    }
-  }
-
-  /**
-   * Fetches the manifest again and checks its digest matches the one the publisher
-   * reviewed. If it doesn't, the error carries a new preview so they can review the new
-   * version.
-   */
-  private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
+  private async fetchReviewed(
+    manifestUrl: string,
+    digest: string,
+    installation?: Installation,
+  ): Promise<CheckedManifest> {
     const loaded = await this.loadManifest(manifestUrl);
+    if (installation && loaded.manifest.id !== installation.app_id) {
+      throw forAnotherApp(loaded.manifest.id);
+    }
+    const checked = await this.review(loaded, installation);
     if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
-        errorDetails: await this.previewOf(loaded),
+        errorDetails: this.previewOf(checked),
       });
     }
-    return loaded;
+    return checked;
   }
 
-  /** The installation changed since the review, so the error carries a new preview. */
-  private async changedSinceReview(loaded: LoadedManifest) {
+  /**
+   * The installation changed since the review, so the error carries a new preview of it as
+   * it is now, unless it has been uninstalled and there's nothing left to review.
+   */
+  private async changedSinceReview(checked: CheckedManifest, id: string) {
+    const installation = await this.currentInstallation(id);
+    if (!installation) {
+      return uninstalled();
+    }
     return new errors.ConflictError({
       message: 'The installation changed while the app was being reviewed.',
       code: 'APP_INSTALLATION_CHANGED',
-      errorDetails: await this.previewOf(loaded),
+      errorDetails: this.previewOf({ ...checked, installation }),
     });
   }
 
@@ -459,10 +478,10 @@ export class AppInstallationsService {
    * manifest, which suspends the app. No person made these changes, so nothing goes into
    * the staff history; the manifest rows record them.
    *
-   * If the manifest can't be loaded, or it's for a different app, the app is broken or its
-   * URL now serves someone else. The session then fails as unavailable instead of running
-   * the approved manifest. So does an icon that can't be loaded when a new row needs storing,
-   * even for a silent change. A re-check that stores nothing doesn't fetch the icon.
+   * If the manifest can't be loaded, fails the identity check, or is for a different app,
+   * the app is broken or its URL now serves someone else. The session then fails instead of
+   * running the approved manifest: with the identity check's code when it failed, and as
+   * unavailable otherwise.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation
@@ -484,19 +503,14 @@ export class AppInstallationsService {
           code: 'APP_MANIFEST_OTHER_APP',
         });
       }
-      write = await this.withIconCopy(
-        recheckWrite({ current: before, pending: await this.pendingManifestOf(before), loaded }),
-      );
+      await this.checkIdentity(loaded, await this.pinnedIdentityOf(before));
     } catch (err) {
       // A ValidationError means the app served something that can't be used. Anything else
       // is a fault in Ghost, which fails the session as it is.
       if (!(err instanceof errors.ValidationError)) {
         throw err;
       }
-      return this.unavailableUnlessChanged(
-        before,
-        `${err.code}: ${err.message}${err.context ? ` (${err.context})` : ''}`,
-      );
+      return this.unavailableUnlessChanged(before, err);
     }
 
     const stored = await this.store(before, write);
@@ -512,11 +526,14 @@ export class AppInstallationsService {
   }
 
   /**
-   * Fails the session as unavailable, saying `why` in the error's context, which the request
-   * log records. If the installation changed while the manifest was loading, it may no
-   * longer use that URL, so the session returns the installation as it is instead.
+   * Fails the session with why the manifest couldn't be used in the error's context, which
+   * the request log records. If the installation changed while the manifest was loading, it
+   * may no longer use that URL, so the session returns the installation as it is instead.
    */
-  private async unavailableUnlessChanged(before: Installation, why: string): Promise<void> {
+  private async unavailableUnlessChanged(
+    before: Installation,
+    err: InstanceType<typeof errors.ValidationError>,
+  ): Promise<void> {
     const current = await this.currentInstallation(before.id);
     if (!current) {
       throw notInstalled();
@@ -524,6 +541,6 @@ export class AppInstallationsService {
     if (current.revision !== before.revision) {
       return;
     }
-    throw unavailable(why);
+    throw unavailable(err);
   }
 }
