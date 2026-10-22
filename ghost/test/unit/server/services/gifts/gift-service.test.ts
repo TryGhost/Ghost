@@ -2223,8 +2223,6 @@ describe('GiftService', function () {
       );
     });
 
-    // Locked before anything else reads, so the downgrade sees tiers attached by
-    // a concurrent edit, and in the member-then-gift order redeeming uses
     it('locks the redeemer before saving the refunded gift', async function () {
       const gift = buildGift({
         status: 'redeemed',

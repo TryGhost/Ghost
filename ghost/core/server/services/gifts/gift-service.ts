@@ -1164,9 +1164,6 @@ export class GiftService {
     const { redeemerMemberId } = gift;
 
     await this.deps.giftRepository.transaction(async (transacting) => {
-      // Locked before anything else reads, in the member-then-gift order redeeming
-      // uses. On MySQL a transaction reads from a snapshot taken at its first plain
-      // read, so the downgrade would otherwise miss tiers a concurrent edit attached.
       const member = redeemerMemberId
         ? await this.deps.memberRepository.get(
             { id: redeemerMemberId },
