@@ -1161,25 +1161,30 @@ export class GiftService {
       return true;
     }
 
+    const { redeemerMemberId } = gift;
+
     await this.deps.giftRepository.transaction(async (transacting) => {
+      // Locked before anything else reads, in the member-then-gift order redeeming
+      // uses. On MySQL a transaction reads from a snapshot taken at its first plain
+      // read, so the downgrade would otherwise miss tiers a concurrent edit attached.
+      const member = redeemerMemberId
+        ? await this.deps.memberRepository.get(
+            { id: redeemerMemberId },
+            { transacting, forUpdate: true },
+          )
+        : null;
+
       await this.deps.giftRepository.update(refunded, { transacting });
       await this.deps.giftDeliveryService.cancelPendingForGift(refunded.token, { transacting });
 
-      if (gift.redeemerMemberId) {
-        const member = await this.deps.memberRepository.get(
-          { id: gift.redeemerMemberId },
-          { transacting },
+      if (redeemerMemberId && member?.get('status') === 'gift') {
+        await this.deps.memberRepository.update(
+          {
+            products: [],
+            status: 'free',
+          },
+          { id: redeemerMemberId, transacting },
         );
-
-        if (member?.get('status') === 'gift') {
-          await this.deps.memberRepository.update(
-            {
-              products: [],
-              status: 'free',
-            },
-            { id: gift.redeemerMemberId, transacting },
-          );
-        }
       }
     });
 

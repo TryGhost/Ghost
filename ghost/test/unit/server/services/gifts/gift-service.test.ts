@@ -2211,7 +2211,7 @@ describe('GiftService', function () {
       sinon.assert.calledOnceWithExactly(
         memberRepository.get,
         { id: 'redeemer_1' },
-        { transacting },
+        { transacting, forUpdate: true },
       );
       sinon.assert.calledOnceWithExactly(
         memberRepository.update,
@@ -2220,6 +2220,32 @@ describe('GiftService', function () {
           status: 'free',
         },
         { id: 'redeemer_1', transacting },
+      );
+    });
+
+    // Locked before anything else reads, so the downgrade sees tiers attached by
+    // a concurrent edit, and in the member-then-gift order redeeming uses
+    it('locks the redeemer before saving the refunded gift', async function () {
+      const gift = buildGift({
+        status: 'redeemed',
+        redeemerMemberId: 'redeemer_1',
+        redeemedAt: new Date('2026-02-01T00:00:00.000Z'),
+        consumesAt: new Date('2027-02-01T00:00:00.000Z'),
+      });
+
+      giftRepository.getByPaymentIntentId.resolves(gift);
+      memberRepository.get.resolves({
+        id: 'redeemer_1',
+        get: sinon.stub().withArgs('status').returns('gift'),
+      });
+
+      const service = createService();
+      await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
+
+      sinon.assert.callOrder(
+        memberRepository.get,
+        giftRepository.update,
+        giftDeliveryService.cancelPendingForGift,
       );
     });
 
