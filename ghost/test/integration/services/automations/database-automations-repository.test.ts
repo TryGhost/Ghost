@@ -306,6 +306,56 @@ describe('database automations repository', function () {
   });
 
   describe('fetchAndLockSteps', function () {
+    it('hydrates current subscription destination settings for queued steps', async function () {
+      const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const api = createApi();
+      for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
+        await api.trigger({
+          event: 'membership_started',
+          memberId,
+          memberEmail: await insertMember(memberId),
+          memberStatus: 'paid',
+          memberTierIds: selectedTierIds,
+        });
+      }
+      const runs = await knex('automation_runs').where({ automation_id: selectedAutomationId });
+      await knex('automation_run_steps')
+        .whereIn(
+          'automation_run_id',
+          runs.map((run) => run.id),
+        )
+        .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
+      await knex('automations').where({ id: selectedAutomationId }).update({
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+        trigger_from_tier_scope: 'selected_paid',
+        trigger_to_tier_scope: 'selected_paid',
+      });
+      await knex('automation_trigger_transition_tiers').insert([
+        { automation_id: selectedAutomationId, direction: 'from', product_id: selectedTierIds[0] },
+        { automation_id: selectedAutomationId, direction: 'to', product_id: selectedTierIds[1] },
+      ]);
+      const first = (await repo.fetchAndLockSteps(1)).steps[0];
+      assert.equal(first.automation_trigger_type, 'paid_subscription_changed');
+      assert.equal(first.automation_trigger_to_tier_scope, 'selected_paid');
+      assert.deepEqual(first.automation_trigger_to_tier_ids, [selectedTierIds[1]]);
+      assert.deepEqual(first.automation_trigger_tier_ids, []);
+      await repo.finishStepAndEnqueueNext(first);
+
+      await knex('automation_trigger_transition_tiers')
+        .where({ automation_id: selectedAutomationId, direction: 'to' })
+        .delete();
+      await knex('automations')
+        .where({ id: selectedAutomationId })
+        .update({ trigger_to_tier_scope: 'free' });
+      const second = (await repo.fetchAndLockSteps(1)).steps[0];
+      assert.notEqual(second.id, first.id);
+      assert.equal(second.automation_trigger_to_tier_scope, 'free');
+      assert.deepEqual(second.automation_trigger_to_tier_ids, []);
+      await repo.finishStepAndEnqueueNext(second);
+    });
+
     it("returns each step once with the automation's current selected tiers", async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });

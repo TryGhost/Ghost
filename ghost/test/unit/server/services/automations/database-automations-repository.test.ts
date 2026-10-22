@@ -81,6 +81,8 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('status').notNullable();
     table.text('trigger_type').notNullable();
     table.text('trigger_tier_scope');
+    table.text('trigger_to_tier_scope');
+    table.text('trigger_from_tier_scope');
   });
 
   await database.schema.createTable('products', (table) => {
@@ -93,6 +95,13 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('automation_id').notNullable().references('id').inTable('automations');
     table.text('product_id').notNullable();
     table.unique(['automation_id', 'product_id']);
+  });
+
+  await database.schema.createTable('automation_trigger_transition_tiers', (table) => {
+    table.text('automation_id').notNullable().references('id').inTable('automations');
+    table.text('direction').notNullable();
+    table.text('product_id').notNullable();
+    table.unique(['automation_id', 'direction', 'product_id']);
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -1982,6 +1991,9 @@ describe('automations repository', function () {
           locked_by: assertSingleBatchLock(steps),
           automation_run_id: run.id,
           automation_id: automation.id,
+          automation_trigger_type: 'membership_started',
+          automation_trigger_to_tier_scope: null,
+          automation_trigger_to_tier_ids: [],
           automation_trigger_tier_scope: 'free',
           automation_trigger_tier_ids: [],
           automation_status: 'active',
@@ -2009,6 +2021,47 @@ describe('automations repository', function () {
       const { steps } = await repo.fetchAndLockSteps(10);
       assert.equal(steps.length, 1);
       assert.deepEqual([...steps[0].automation_trigger_tier_ids].toSorted(), ['bronze', 'silver']);
+    });
+
+    it('loads current subscription To scope and tiers without mixing From or signup tiers', async function () {
+      const automationId = await insertAutomation({
+        slug: null,
+        triggerTierScope: 'selected_paid',
+        triggerTierIds: ['signup'],
+      });
+      await knex('automations').where({ id: automationId }).update({
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+        trigger_to_tier_scope: 'selected_paid',
+      });
+      await knex('automation_trigger_transition_tiers').insert([
+        { automation_id: automationId, direction: 'from', product_id: 'bronze' },
+        { automation_id: automationId, direction: 'to', product_id: 'silver' },
+        { automation_id: automationId, direction: 'to', product_id: 'gold' },
+      ]);
+      const action = await getActionByIndex(automationId, 0);
+      const run = await insertRun(automationId);
+      await insertStep(run.id, action.revision_id, { ready_at: new Date('2024-01-01') });
+      const first = (await repo.fetchAndLockSteps(1)).steps[0];
+      assert.equal(first.automation_trigger_type, 'paid_subscription_changed');
+      assert.equal(first.automation_trigger_to_tier_scope, 'selected_paid');
+      assert.deepEqual([...first.automation_trigger_to_tier_ids].sort(), ['gold', 'silver']);
+      assert.deepEqual(first.automation_trigger_tier_ids, []);
+
+      await repo.retryStep(first, new Date('2024-01-01'));
+      await knex('automation_trigger_transition_tiers')
+        .where({ automation_id: automationId, direction: 'to' })
+        .delete();
+      const second = (await repo.fetchAndLockSteps(1)).steps[0];
+      assert.deepEqual(second.automation_trigger_to_tier_ids, []);
+
+      await repo.retryStep(second, new Date('2024-01-01'));
+      await knex('automations')
+        .where({ id: automationId })
+        .update({ trigger_to_tier_scope: 'free' });
+      const third = (await repo.fetchAndLockSteps(1)).steps[0];
+      assert.equal(third.automation_trigger_to_tier_scope, 'free');
+      assert.deepEqual(third.automation_trigger_to_tier_ids, []);
     });
 
     it('locks ready and steps with stale locks, but skips future and recently-locked steps', async function () {
