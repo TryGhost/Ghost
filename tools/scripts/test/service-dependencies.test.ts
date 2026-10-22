@@ -179,6 +179,23 @@ it('allows same-service code, explicit types, approved libraries and root wiring
   assert.equal(f.run('err').status, 0);
 });
 
+it('allows the toPlain library required by Audience Feedback without allowing sibling helpers', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.ts`]: "import '../../lib/common/to-plain';",
+    [`${alpha}/rejected.ts`]:
+      "import '../../lib/common/to-plain-extra'; import '../../lib/common';",
+    'ghost/core/server/lib/common/to-plain.ts': 'export const toPlain = (value) => value;',
+    'ghost/core/server/lib/common/to-plain-extra.ts': 'export {};',
+    'ghost/core/server/lib/common/index.ts': 'export {};',
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.ts`).length, 1);
+  assert.deepEqual(
+    violations(graph).map(([rule, from]) => [rule, from]),
+    Array.from({ length: 2 }, () => ['service-dependencies', `${alpha}/rejected.ts`]),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",

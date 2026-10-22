@@ -56,7 +56,7 @@ class EmailServiceWrapper {
     const memberAttribution = require('../member-attribution');
     const linkReplacer = require('../../lib/link-replacer');
     const linkTracking = require('../link-tracking');
-    const audienceFeedback = require('../audience-feedback');
+    const audienceFeedback = require('../audience-feedback').default;
     const storageUtils = require('../../adapters/storage/utils');
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     const { cachedImageSizeFromUrl } = require('../../lib/image');
@@ -94,7 +94,7 @@ class EmailServiceWrapper {
       linkReplacer,
       linkTracking,
       memberAttributionService: memberAttribution.service,
-      audienceFeedbackService: audienceFeedback.service,
+      audienceFeedbackService: audienceFeedback.service.service,
       outboundLinkTagger: memberAttribution.outboundLinkTagger,
       emailAddressService: emailAddressService.service,
       labs,
