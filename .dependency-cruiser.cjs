@@ -32,6 +32,7 @@ const serviceDependencyAllowlist = [
   '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
+  '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
   '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.

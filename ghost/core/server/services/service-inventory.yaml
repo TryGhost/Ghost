@@ -2474,7 +2474,6 @@ services:
         sources:
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-          - core/server/services/email-address/email-address-parser.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/services/settings-helpers/settings-helpers.js
@@ -2486,8 +2485,16 @@ services:
       Planned split and relocation out of services: the configured Ghost sender-policy
       service belongs in shared; construction and live settings wiring belong in boot.
       Mailbox parsing and formatting belong in an ordinary library, not kernel, while
-      delivery compatibility rules belong with sending. No source has moved. Reassess
-      initialization after separating ownership rather than migrating this root in place.
+      delivery compatibility rules belong with sending. Mailbox mechanics now live in
+      @tryghost/parse-email-address/mailbox; core/server/lib/mail/format-address-for-delivery.ts
+      preserves delivery formatting for existing string-valued callers. The removed private
+      [parser](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/email-address/email-address-parser.ts)
+      and its
+      [tests](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/test/unit/server/services/email-address/email-address-parser.test.ts)
+      remain historical evidence at auditedAt. Package mailbox tests
+      protect the new library boundary; the Core delivery formatter tests protect compatibility.
+      The configured service has not moved or adopted defineService. Reassess initialization
+      after separating ownership rather than migrating this root in place.
       The policy remains a boot-owned service with dependency and readiness contracts.
       Preserve stable identity, live callbacks and consumers that retain the implementation,
       wrapper or derived sender values. Keep library helpers independent of service startup.
@@ -2497,13 +2504,14 @@ services:
           CommonJS exports an eager wrapper with synchronous init returning undefined and an
           initially undefined service property. The wrapper constructor and named TypeScript
           EmailAddressService class remain deep imports; the class exposes address getters,
-          getAddress, getAddressFromString, getMembersSupportAddress and validate. Separate
-          parser parse/stringify helpers are runtime deep imports. There is no reset/shutdown.
+          getAddress, getAddressFromString, getMembersSupportAddress and validate. Mailbox
+          parsing/formatting now uses the library; delivery formatting belongs to mail.
+          There is no reset/shutdown.
         sources:
+          - core/server/lib/mail/format-address-for-delivery.ts
           - core/server/services/email-address/index.js
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-          - core/server/services/email-address/email-address-parser.ts
         tests: []
       construction:
         summary: >-
@@ -2596,17 +2604,16 @@ services:
           optional fallback rules; disabled policy permits valid requested addresses. Wrapper
           tests change values on one retained instance; integration tests use test-only config
           mutation after boot. These prove accessor rereads, not production hot reload of the
-          immutable config tree. Parser tests cover single-address parsing, name escaping and
-          character removal.
+          immutable config tree. Mailbox parsing tests live in the package; Core delivery
+          tests cover name escaping and character removal.
         sources:
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-          - core/server/services/email-address/email-address-parser.ts
           - core/server/services/settings-helpers/settings-helpers.js
         tests:
           - test/unit/server/services/email-address/wrapper.test.ts
           - test/unit/server/services/email-address/email-address-service.test.ts
-          - test/unit/server/services/email-address/email-address-parser.test.ts
+          - test/unit/server/lib/mail/format-address-for-delivery.test.ts
           - test/integration/services/q-email-addresses.test.js
       resources:
         summary: >-
@@ -2619,7 +2626,6 @@ services:
           - core/server/services/email-address/index.js
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-          - core/server/services/email-address/email-address-parser.ts
           - core/server/services/settings-helpers/index.js
         tests: []
       failures:
@@ -2633,13 +2639,12 @@ services:
         sources:
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/email-address/email-address-service.ts
-          - core/server/services/email-address/email-address-parser.ts
           - core/server/api/endpoints/utils/validate-email-sender-fields.ts
           - core/server/services/settings/settings-bread-service.js
           - core/server/services/newsletters/newsletters-service.js
         tests:
           - test/unit/server/services/email-address/email-address-service.test.ts
-          - test/unit/server/services/email-address/email-address-parser.test.ts
+          - test/unit/server/lib/mail/format-address-for-delivery.test.ts
           - test/e2e-api/admin/automated-emails.test.ts
           - test/e2e-api/admin/newsletters.test.js
     unverified: []
@@ -12238,7 +12243,6 @@ services:
         sources:
           - core/server/services/settings-helpers/index.js
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/email-address/email-address-parser.ts
           - core/shared/settings-cache/index.js
           - core/shared/url-utils.ts
           - core/server/services/limits.ts
@@ -12351,7 +12355,6 @@ services:
           gates and analytics config/limit gates, with injected cache/limits and selected config.
         sources:
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/email-address/email-address-parser.ts
           - core/shared/url-utils.ts
           - core/shared/config/validated.ts
           - core/server/services/limits.ts
@@ -12375,7 +12378,6 @@ services:
           - core/server/services/settings-helpers/settings-helpers.js
           - core/shared/settings-cache/cache-manager.js
           - core/server/services/settings/settings-service.js
-          - core/server/services/email-address/email-address-parser.ts
           - core/server/services/stripe/service.js
           - core/server/services/machine-payments/stripe/deposit-address-store.ts
           - core/server/services/member-welcome-emails/service.js
@@ -12392,7 +12394,6 @@ services:
           and selected disabled gates, not these exception paths or partial initialization.
         sources:
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/email-address/email-address-parser.ts
           - core/shared/settings-cache/cache-manager.js
           - core/server/lib/common/events.js
           - core/server/services/settings/settings-service.js

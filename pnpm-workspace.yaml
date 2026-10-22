@@ -262,6 +262,8 @@ catalog:
   remark-validate-links: 13.1.0
   markdownlint-cli2: 0.23.3
   parse-email-address: 0.0.5
+  nodemailer: 10.0.16
+  '@types/nodemailer': 8.0.2
   '@breejs/later': 4.2.0
   fastq: ^1.20.1
   cron-validate: 1.4.5
