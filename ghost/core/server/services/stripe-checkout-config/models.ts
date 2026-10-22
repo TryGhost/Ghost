@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
 import { KeySchema } from '@tryghost/metafield-types/identity';
-import type { CamelToSnake } from '../../lib/case-keys';
+import { COLLECTED_PARTS, type CollectedPart } from '@tryghost/checkout';
+import type { CamelToSnake, SnakeToCamel } from '../../lib/case-keys';
 
 /**
  * A color as a 6-digit hex code. It is lowercased, so the same color is always stored the same
@@ -65,7 +66,7 @@ export const TaxNumberSettings = CollectedPart;
 export type TaxNumberSettings = z.infer<typeof TaxNumberSettings>;
 
 /** Each collected part of the config as saved. */
-const COLLECTED_PARTS = {
+const COLLECTED_SETTINGS = {
   /** Null means checkout doesn't ask for a shipping address. */
   shipping: ShippingSettings.nullable(),
   /** Null means checkout doesn't ask for a phone number. */
@@ -78,27 +79,36 @@ const COLLECTED_PARTS = {
 export const StripeCheckoutConfig = z.object({
   /** Null means Stripe uses the design set in the Stripe dashboard. */
   design: StripeCheckoutDesign.nullable(),
-  ...COLLECTED_PARTS,
+  ...COLLECTED_SETTINGS,
 });
 export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
+
+/**
+ * The name in the model of each part of the config that asks the buyer for something, by the
+ * name the Admin API and the shared `COLLECTED_PARTS` give it.
+ */
+export const SECTION_OF = {
+  shipping: 'shipping',
+  phone: 'phone',
+  tax_number: 'taxNumber',
+} as const satisfies { [Part in CollectedPart]: SnakeToCamel<Part> };
+export type CollectedSection = (typeof SECTION_OF)[CollectedPart];
 
 /**
  * The parts of the config that ask the buyer for something, each on every paid tier or only
  * the ones it names.
  */
-export const COLLECTED_SECTIONS = ['shipping', 'phone', 'taxNumber'] as const;
-export type CollectedSection = (typeof COLLECTED_SECTIONS)[number];
+export const COLLECTED_SECTIONS = COLLECTED_PARTS.map((part) => SECTION_OF[part]);
 
 /**
  * Each collected part's name where it is stored, in its own column and in the rows naming its
- * tiers, and in the Admin API.
+ * tiers, which is also its name in the Admin API.
  */
 export const SECTION_NAMES = {
   shipping: 'shipping',
   phone: 'phone',
   taxNumber: 'tax_number',
 } as const satisfies { [Section in CollectedSection]: CamelToSnake<Section> };
-export type SectionName = (typeof SECTION_NAMES)[CollectedSection];
 
 /** What each collected part asks the buyer for, as messages about it name it. */
 export const COLLECTED_NOUNS = {

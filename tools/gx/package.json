@@ -56,6 +56,7 @@
         "{workspaceRoot}/ghost/types/**/*.d.ts"
       ],
       "dataCommands": [
+        "{workspaceRoot}/ghost/bin/generate-data.ts",
         "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
         "{workspaceRoot}/ghost/core/server/data/schema/**/*",
         "{workspaceRoot}/ghost/core/server/models/**/*"

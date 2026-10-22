@@ -1,19 +1,27 @@
-const assert = require('node:assert/strict');
-const { setImmediate } = require('node:timers/promises');
-const sinon = require('sinon');
-const accept = require('../../../../../core/server/services/invites/accept');
-const models = require('../../../../../core/server/models');
+import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
+import sinon from 'sinon';
+import { accept, type AcceptanceModels } from '../../../../../core/server/services/invites/accept';
 
 describe('Unit: services/invites/accept', function () {
   const now = 1700000000000;
   const transacting = { id: 'fake-txn' };
-  let transactionStub;
-  let findOneInviteStub;
-  let findOneUserStub;
-  let destroyStub;
-  let addUserStub;
-  let inviteAttributes;
-  let invitation;
+  let models: AcceptanceModels<typeof transacting>;
+  let transactionStub: sinon.SinonStub;
+  let findOneInviteStub: sinon.SinonStub;
+  let findOneUserStub: sinon.SinonStub;
+  let destroyStub: sinon.SinonStub;
+  let addUserStub: sinon.SinonStub;
+  let inviteAttributes: { expires: number; email: string; role_id: string };
+  let invitation: {
+    invitation: Array<{
+      token: string;
+      email: string;
+      role_id: string;
+      name: string;
+      password: string;
+    }>;
+  };
 
   beforeEach(function () {
     sinon.stub(Date, 'now').returns(now);
@@ -35,18 +43,21 @@ describe('Unit: services/invites/accept', function () {
     };
     destroyStub = sinon.stub().resolves();
     findOneInviteStub = sinon.stub().resolves({
-      get: (key) => inviteAttributes[key],
+      get: <Key extends keyof typeof inviteAttributes>(key: Key) => inviteAttributes[key],
       destroy: destroyStub,
     });
     findOneUserStub = sinon.stub().resolves(null);
     addUserStub = sinon.stub().resolves();
     // This fixture drives transaction propagation; it does not simulate database rollback.
-    transactionStub = sinon.stub().callsFake(async (cb) => cb(transacting));
+    transactionStub = sinon
+      .stub()
+      .callsFake(async (cb: (transaction: typeof transacting) => Promise<void>) => cb(transacting));
 
-    sinon.stub(models.Base, 'transaction').callsFake(transactionStub);
-    sinon.stub(models.Invite, 'findOne').callsFake(findOneInviteStub);
-    sinon.stub(models.User, 'findOne').callsFake(findOneUserStub);
-    sinon.stub(models.User, 'addWithRoles').callsFake(addUserStub);
+    models = {
+      Base: { transaction: transactionStub },
+      Invite: { findOne: findOneInviteStub },
+      User: { findOne: findOneUserStub, addWithRoles: addUserStub },
+    };
   });
 
   afterEach(function () {
@@ -75,7 +86,7 @@ describe('Unit: services/invites/accept', function () {
   });
 
   it('destroys invite before creating user', async function () {
-    const callOrder = [];
+    const callOrder: string[] = [];
     destroyStub.callsFake(async () => {
       callOrder.push('destroy');
     });
@@ -220,8 +231,8 @@ describe('Unit: services/invites/accept', function () {
   });
 
   it('waits for invite deletion to finish before creating the user', async function () {
-    const deletion = Promise.withResolvers();
-    const started = Promise.withResolvers();
+    const deletion = Promise.withResolvers<void>();
+    const started = Promise.withResolvers<void>();
     destroyStub.callsFake(() => {
       started.resolve();
       return deletion.promise;
@@ -243,8 +254,8 @@ describe('Unit: services/invites/accept', function () {
   });
 
   it('waits for user creation before resolving acceptance', async function () {
-    const creation = Promise.withResolvers();
-    const started = Promise.withResolvers();
+    const creation = Promise.withResolvers<{ id: string }>();
+    const started = Promise.withResolvers<void>();
     let settled = false;
     addUserStub.callsFake(() => {
       started.resolve();
@@ -299,10 +310,12 @@ describe('Unit: services/invites/accept', function () {
 
   it('propagates transaction failure after the callback has completed', async function () {
     const failure = new Error('Transaction completion failed');
-    transactionStub.callsFake(async (callback) => {
-      await callback(transacting);
-      throw failure;
-    });
+    transactionStub.callsFake(
+      async (callback: (transaction: typeof transacting) => Promise<void>) => {
+        await callback(transacting);
+        throw failure;
+      },
+    );
 
     await assert.rejects(accept(invitation, models), (error) => error === failure);
 

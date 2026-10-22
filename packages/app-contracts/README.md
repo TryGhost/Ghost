@@ -205,8 +205,8 @@ for anything else it refuses, with a `detail` naming the method and path or
 what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can reach, by
 method, under the scope names Permissions and auth will use; its header
 comment says what the security review (BER-3992) must look at. Writes of
-posts, pages and tags are also checked for script (`content.ts`). It all stands
-in for apps' own token.
+posts, pages and tags are also checked for code injection and mobiledoc
+(`content.ts`). It all stands in for apps' own token.
 
 ```ts
 import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';

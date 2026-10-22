@@ -6,6 +6,8 @@ import testUtils from '../../../../utils';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../../core/server/models';
 import { validateSchema } from '../../../../../core/server/data/schema/validator';
+// @ts-expect-error This module lacks type definitions.
+import schema from '../../../../../core/server/data/schema/schema';
 
 describe('Validate Schema', function () {
   describe('models.add', function () {
@@ -145,6 +147,44 @@ describe('Validate Schema', function () {
           return true;
         },
       );
+    });
+  });
+
+  // No table in schema.js has a pattern yet, so these lend one to a real column.
+  describe('a column pattern', function () {
+    beforeEach(function () {
+      schema.posts.slug.pattern = '^[a-z-]+$';
+    });
+
+    afterEach(function () {
+      delete schema.posts.slug.pattern;
+    });
+
+    it('refuses a value outside it, one ending in a line break included', function () {
+      for (const slug of ['Not.A.Slug', 'a-slug\n']) {
+        const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({ slug }));
+
+        assert.throws(
+          () => validateSchema('posts', post, { method: 'insert' }),
+          (err: unknown) => {
+            assert(Array.isArray(err));
+            assert.deepEqual(
+              err.map((error) => error.message),
+              ['Value in [posts.slug] must match ^[a-z-]+$.'],
+            );
+            return true;
+          },
+          slug,
+        );
+      }
+    });
+
+    it('lets a value inside it through', function () {
+      const post = models.Post.forge(
+        testUtils.DataGenerator.forKnex.createPost({ slug: 'a-slug' }),
+      );
+
+      validateSchema('posts', post, { method: 'insert' });
     });
   });
 });

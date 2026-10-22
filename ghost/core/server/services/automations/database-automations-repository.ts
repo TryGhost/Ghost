@@ -17,7 +17,6 @@ import {
 import type {
   AutomatedEmailEvents,
   Automation,
-  AutomationBrowseResult,
   AutomationAction,
   AutomationEdge,
   AutomationEmailStats,
@@ -30,7 +29,6 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
-  BrowseOptions,
   EditAutomationData,
   Page,
 } from './automations-repository';
@@ -108,13 +106,8 @@ type AutomationSummaryRow = {
 };
 
 type AutomationRow = AutomationSummaryRow & {
+  trigger_type: 'membership_started';
   trigger_tier_scope: AutomationTriggerTierScope | null;
-};
-
-type AutomationBrowseRow = AutomationSummaryRow & {
-  last_run_created_at: DatabaseDate | null;
-  total_run_count: string | number | null;
-  in_progress_run_count: string | number | null;
 };
 
 const runHistoryRowSchema = z.object({
@@ -243,15 +236,13 @@ export function createDatabaseAutomationsRepository({
   });
 
   return {
-    async browse({ includeStats }: BrowseOptions): Promise<Page<AutomationBrowseResult>> {
+    async browse(): Promise<Page<AutomationSummary>> {
       await knex.transaction(async (trx) => {
         await ensureDefaultAutomations(repository2, trx);
       });
 
       return await knex.transaction(async (trx) => {
-        const data = includeStats
-          ? (await loadAutomationsWithStats(trx)).map((row) => buildAutomationBrowseResult(row))
-          : (await loadAutomations(trx)).map((row) => buildAutomationSummary(row));
+        const data = (await loadAutomations(trx)).map((row) => buildAutomationSummary(row));
         return {
           data,
           meta: {
@@ -395,6 +386,7 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
+          trigger_type: 'membership_started',
           trigger_tier_scope: data.trigger_tier_scope ?? null,
           created_at: now,
           updated_at: now,
@@ -958,6 +950,7 @@ async function ensureAutomation(
       name: defaults.name,
       description: defaults.description,
       slug: defaults.slug,
+      trigger_type: 'membership_started',
       trigger_tier_scope: defaults.trigger_tier_scope,
       created_at: now,
       updated_at: now,
@@ -1457,6 +1450,7 @@ async function loadAutomation(
       'name',
       'description',
       'status',
+      'trigger_type',
       'trigger_tier_scope',
       'created_at',
       'updated_at',
@@ -1471,37 +1465,6 @@ async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummary
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .orderBy('created_at', 'desc')
     .orderBy('id', 'desc');
-}
-
-async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
-  const inProgressRuns = trx('automation_run_steps')
-    .distinct('automation_run_id')
-    .where('status', 'pending')
-    .as('in_progress_runs');
-  const runStats = trx('automation_runs')
-    .select('automation_runs.automation_id')
-    .max({ last_run_created_at: 'automation_runs.created_at' })
-    .count({ total_run_count: '*' })
-    .count({ in_progress_run_count: 'in_progress_runs.automation_run_id' })
-    .leftJoin(inProgressRuns, 'automation_runs.id', 'in_progress_runs.automation_run_id')
-    .groupBy('automation_runs.automation_id')
-    .as('run_stats');
-  return await trx('automations')
-    .select(
-      'automations.id',
-      'automations.slug',
-      'automations.name',
-      'automations.description',
-      'automations.status',
-      'automations.created_at',
-      'automations.updated_at',
-      'run_stats.last_run_created_at',
-      'run_stats.total_run_count',
-      'run_stats.in_progress_run_count',
-    )
-    .leftJoin(runStats, 'automations.id', 'run_stats.automation_id')
-    .orderBy('automations.created_at', 'desc')
-    .orderBy('automations.id', 'desc');
 }
 
 async function updateAutomation(
@@ -1921,19 +1884,6 @@ function buildAutomationSummary(automation: AutomationSummaryRow): AutomationSum
     status: automation.status,
     created_at: serializeDate(automation.created_at),
     updated_at: serializeDate(automation.updated_at),
-  };
-}
-
-function buildAutomationBrowseResult(automation: AutomationBrowseRow): AutomationBrowseResult {
-  return {
-    ...buildAutomationSummary(automation),
-    stats: {
-      last_run_created_at: automation.last_run_created_at
-        ? fromDatabaseDate(automation.last_run_created_at)
-        : null,
-      total_run_count: Number(automation.total_run_count ?? 0),
-      in_progress_run_count: Number(automation.in_progress_run_count ?? 0),
-    },
   };
 }
 

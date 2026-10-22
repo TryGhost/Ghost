@@ -9,7 +9,7 @@ import {
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
-import { KeySchema } from '@tryghost/metafield-types/identity';
+import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -22,6 +22,7 @@ export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archi
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
 export const DbMetafield = z.object({
   id: z.string(),
+  namespace: z.string(),
   key: z.string(),
   name: z.string(),
   type: FieldTypeSchema,
@@ -57,6 +58,7 @@ export type WrittenBy = z.infer<typeof WrittenBy>;
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbMetafieldValue = z.object({
+  metafield_namespace: z.string(),
   metafield_key: z.string(),
   member_id: z.string(),
   path: z.string(),
@@ -72,13 +74,15 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's key travels with the row so a value assembles without a second lookup.
+// The field's namespace and key travel with the row so a value assembles without a second
+// lookup.
 //
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
 // is what drops it.
 export const DbStoredValueRow = z.object({
   member_id: z.string(),
+  namespace: NamespaceSchema,
   key: KeySchema,
   type: FieldTypeSchema,
   path: z.string(),
@@ -88,6 +92,7 @@ export const DbStoredValueRow = z.object({
 export const DbMetafieldBinding = z.object({
   id: z.string(),
   port: z.string(),
+  metafield_namespace: z.string(),
   metafield_key: z.string(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
@@ -98,6 +103,7 @@ type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
   binding_id: z.string(),
+  namespace: NamespaceSchema,
   key: KeySchema,
   type: FieldTypeSchema,
 });

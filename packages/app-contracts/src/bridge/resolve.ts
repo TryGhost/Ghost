@@ -55,7 +55,8 @@ export type AdminApiRequestCheck =
  * A path that stays under the root is `blocked` unless the allowlist has a route for where it
  * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
  * or its first segment is an old API version (`v4`), whatever the allowlist says; when it carries
- * a query parameter its scope doesn't list; or when its body is content its scope refuses.
+ * a query parameter its scope doesn't list; or when its scope checks content and its body holds a
+ * field `refusedContent` refuses.
  */
 export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): AdminApiRequestCheck {
   const { path, method = 'GET', body } = request;
@@ -115,14 +116,14 @@ export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): Ad
     }
   }
 
-  if (scope.content && body !== undefined) {
+  if (scope.checksContent && body !== undefined) {
     let content: unknown;
     try {
       content = JSON.parse(body);
     } catch {
       return blocked(`Apps can only send JSON to ${method} ${pathname}`);
     }
-    const refused = refusedContent(scope.content, content);
+    const refused = refusedContent(content);
     if (refused) {
       return blocked(`Apps can't send ${refused} to ${method} ${pathname}`);
     }

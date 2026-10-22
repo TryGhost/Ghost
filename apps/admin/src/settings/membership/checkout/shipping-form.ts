@@ -1,7 +1,4 @@
-import type {
-  StripeCheckoutPreviewShipping,
-  StripeCheckoutShippingSetting,
-} from '@tryghost/admin-x-framework/api/stripe-checkout-config';
+import type { StripeCheckoutShippingSetting } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
 import {
   type CollectFormState,
   asksNoTier,
@@ -73,19 +70,5 @@ export function shippingSettingOf(state: ShippingFormState): StripeCheckoutShipp
     ...(state.countries === 'specific' ? { allowed_countries: state.allowedCountries } : {}),
     address: { custom_field_key: state.addressFieldKey },
     name: { custom_field_key: state.nameFieldKey },
-  };
-}
-
-/** Shipping as it's being edited, for Preview in Stripe, whether or not it could be saved yet. */
-export function previewShippingOf(state: ShippingFormState): StripeCheckoutPreviewShipping {
-  if (!state.collect || asksNoTier(state)) {
-    return { collect: false };
-  }
-  return {
-    collect: true,
-    ...tierIdsSettingOf(state),
-    ...(state.countries === 'specific' && state.allowedCountries.length
-      ? { allowed_countries: state.allowedCountries }
-      : {}),
   };
 }

@@ -49,7 +49,7 @@ For example:
   implementation through `init()` and `service`. It qualifies without owning a
   background worker.
 - Staff invitation acceptance is a domain action owned by `invites`. Its
-  `accept.js` function keeps transaction state local to each invocation; it
+  `accept.ts` function keeps transaction state local to each invocation; it
   does not need its own service root or lifecycle.
 - Magic-link token and URL helpers are reusable support for several workflows,
   not a separately boot-managed capability. They belong in their own library,

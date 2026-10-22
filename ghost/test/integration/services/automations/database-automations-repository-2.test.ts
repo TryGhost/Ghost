@@ -27,6 +27,7 @@ describe('database automations repository', function () {
     id,
     name: `Test automation ${id}`,
     status: 'active',
+    trigger_type: 'membership_started',
     trigger_tier_scope: 'free',
     created_at: now,
   });
@@ -226,6 +227,13 @@ describe('database automations repository', function () {
         paid,
         selected,
       ]);
+    });
+
+    it('excludes other trigger types', async function () {
+      const matching = await insertAutomation();
+      await insertAutomation({ trigger_type: 'another_trigger_type' });
+
+      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([matching]);
     });
 
     it.each(['inactive', 'archived'])(

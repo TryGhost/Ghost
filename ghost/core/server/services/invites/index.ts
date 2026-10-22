@@ -1,9 +1,8 @@
 import { lockStaffInvites, checkTrialStaffLimit } from '../../lib/staff-invite-usage';
 import { defineService } from '../../../kernel/define-service';
+import { Invites } from './invites';
 import InvitationLimiter from './invitation-limiter';
 import { getHelpLink } from '../limits';
-// @ts-expect-error The existing CommonJS implementation has no type declarations.
-import Invites from './invites';
 
 export default defineService('Invites', () => {
   const settingsCache = require('../../../shared/settings-cache');
