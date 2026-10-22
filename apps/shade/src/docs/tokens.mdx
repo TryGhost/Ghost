@@ -35,7 +35,7 @@ Shade defines its tokens in two stylesheets at the root of the package:
 
 Apps read these files; they don't add to them. An app that needs a colour no semantic token covers uses a raw token, never a literal value or a colour variable of its own.
 
-Inside Shade, change a token's value in `theme-variables.css` and wire a new utility name or raw colour in `tailwind.theme.css`. Don't introduce ad-hoc CSS variables in component files. Semantic color variables should resolve directly to raw `--color-*` tokens, not to another semantic token. For example, prefer `--text-primary: var(--color-black)` over `--text-primary: var(--foreground)`.
+Inside Shade, change a token's value in `theme-variables.css` and wire a new utility name or raw colour in `tailwind.theme.css`. Don't introduce ad-hoc CSS variables in component files. Semantic color variables shouldn't point at another semantic token. Build each from raw `--color-*` tokens, for example `--text-primary: var(--color-black)` rather than `--text-primary: var(--foreground)`. A token may combine raw tokens with `color-mix()` when it needs a blended or translucent value (like `--border-default`, or dark mode's `--tab-hover`), or use a literal colour when no raw token fits (like dark mode's `--background`).
 
 ## Common semantic tokens
 
