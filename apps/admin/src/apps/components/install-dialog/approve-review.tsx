@@ -3,7 +3,7 @@ import { Button, DialogFooter } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import type { ReviewProps } from './install-review';
-import { NoticeBanner, ReviewHeader, ReviewSeparator } from './review-header';
+import { NoticeBanner, ReviewHeader, ReviewSeparator, TrustedOriginsNote } from './review-header';
 import { ACCOUNT_ACCESS_INTRO, AccessIndicator } from '@/apps/components/access-indicator';
 import { ManifestChanges } from '@/apps/components/manifest-changes';
 import { SectionEyebrow } from '@/apps/components/section-eyebrow';
@@ -36,6 +36,7 @@ export const ApproveReview: React.FC<ApproveReviewProps> = ({
       />
       <NoticeBanner notice={notice} />
       <CapabilitySummary manifest={manifest} />
+      <TrustedOriginsNote preview={preview} />
       <ReviewSeparator />
       {rows.length > 0 && (
         <Stack gap="sm">

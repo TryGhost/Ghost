@@ -26,10 +26,24 @@ const TITLES: Record<Attempted, string> = {
   approve: 'Couldn’t approve the changes',
 };
 
+// Whatever the publisher was doing, the app itself can't be installed.
+const REFUSED_TITLE = 'Can’t install this app';
+
+function titleOf(failure: InstallFailure, attempted: Attempted): string {
+  if (failure.kind === 'another-developer' || failure.kind === 'unconfirmed') {
+    return REFUSED_TITLE;
+  }
+  return TITLES[attempted];
+}
+
 function describe(failure: InstallFailure): string {
   switch (failure.kind) {
     case 'unreachable':
       return 'The app didn’t respond. It might be down or having a temporary problem.';
+    case 'another-developer':
+      return 'This link is for an app that’s already installed, but it doesn’t come from the same developer. If you weren’t expecting it, you can ignore it.';
+    case 'unconfirmed':
+      return 'Ghost couldn’t confirm it comes from its developer.';
     case 'problems':
       return 'Send these details to the app’s developer.';
     case 'incomplete-link':
@@ -47,8 +61,15 @@ export const Failed: React.FC<FailedProps> = ({ failure, attempted, onClose, onR
       {/* The details belong to the copy above them, closer than the dialog's own gap. */}
       <div className="grid gap-3">
         <DialogHeader className="gap-3">
-          <DialogTitle>{TITLES[attempted]}</DialogTitle>
-          <DialogDescription>{describe(failure)}</DialogDescription>
+          <DialogTitle>{titleOf(failure, attempted)}</DialogTitle>
+          {/* Ghost's explanation starts with the same sentence, so it stands in for it. */}
+          {failure.kind === 'unconfirmed' && failure.detail ? (
+            <DialogDescription className="wrap-anywhere" data-testid="app-install-unconfirmed">
+              {failure.detail}
+            </DialogDescription>
+          ) : (
+            <DialogDescription>{describe(failure)}</DialogDescription>
+          )}
         </DialogHeader>
         {failure.kind === 'problems' && (
           <ul className="border-t" data-testid="app-install-problems">

@@ -10,6 +10,16 @@ export interface InstallProblem {
 export type InstallFailure =
   /** The app didn't answer as expected. Trying again may work. */
   | { kind: 'unreachable'; detail: string }
+  /**
+   * The link is for an app the site has, from another developer. Nothing can approve it, and
+   * nothing more is said, so the publisher isn't drawn into the details.
+   */
+  | { kind: 'another-developer' }
+  /**
+   * Ghost couldn't confirm the app comes from its developer. Its explanation, the detail,
+   * starts by saying so.
+   */
+  | { kind: 'unconfirmed'; detail: string }
   /** What the install link points at can't be installed until its developer fixes it. */
   | { kind: 'problems'; problems: InstallProblem[] }
   /** The install link doesn't say which app to install, so there is nothing to check. */
@@ -43,7 +53,24 @@ export function installFailureOf(error: unknown): InstallFailure {
 
   switch (apiError?.code) {
     case 'APP_MANIFEST_UNREACHABLE':
+    case 'APP_CHALLENGE_UNREACHABLE':
       return { kind: 'unreachable', detail };
+    case 'APP_IDENTITY_MISMATCH':
+      return { kind: 'another-developer' };
+    case 'APP_MANIFEST_SIGNATURE_INVALID':
+    case 'APP_BACKEND_KEY_RETIRED':
+    case 'APP_CHALLENGE_FAILED':
+      return { kind: 'unconfirmed', detail };
+    case 'APP_MANIFEST_UNSIGNED':
+      return {
+        kind: 'problems',
+        problems: [{ title: 'The app’s details aren’t signed', detail }],
+      };
+    case 'APP_MANIFEST_URL_MISMATCH':
+      return {
+        kind: 'problems',
+        problems: [{ title: 'The app’s details are for another install link', detail }],
+      };
     case 'APP_MANIFEST_URL_INVALID':
       return { kind: 'problems', problems: [{ title: 'The install link isn’t valid', detail }] };
     case 'APP_MANIFEST_REDIRECTED':
