@@ -665,20 +665,20 @@ const User = ghostBookshelf.Model.extend(
      */
     add: async function add(dataToClone, unfilteredOptions = {}) {
       const policy = config.get('hostSettings:staffInvites');
-      // Content imports preserve author attribution without sending invitation emails.
-      if (!policy || unfilteredOptions.importing) {
+      // Imports and installation fixtures create users without sending invitation emails.
+      if (!policy || unfilteredOptions.importing || unfilteredOptions.migrating) {
         return this.addWithRoles(dataToClone, unfilteredOptions);
       }
-      const create = async (transacting) => {
+      if (unfilteredOptions.transacting) {
+        throw new errors.IncorrectUsageError({
+          message: 'Trial staff creation requires a fresh transaction.',
+        });
+      }
+      return ghostBookshelf.transaction(async (transacting) => {
         await lockStaffInvites(transacting);
         await checkTrialStaffLimit(transacting, policy.maxStaff, getHelpLink());
         return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
-      };
-      // Reuse the caller's transaction so the seat check and user creation
-      // commit or roll back with the surrounding work.
-      return unfilteredOptions.transacting
-        ? create(unfilteredOptions.transacting)
-        : ghostBookshelf.transaction(create);
+      });
     },
 
     addWithRoles: function addWithRoles(dataToClone, unfilteredOptions) {

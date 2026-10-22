@@ -15,7 +15,8 @@ const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 
 const dependencies = {
-  knex: db.knex,
+  transaction: <T>(callback: (transaction: Knex.Transaction) => Promise<T>): Promise<T> =>
+    models.Base.transaction(callback),
   getUpgradeUrl: () => undefined,
   lockStaffInvites,
   checkTrialStaffLimit,
@@ -115,6 +116,82 @@ describe('Trial invitation admission', function () {
     // A resend reuses the occupied slot even at capacity.
     await limiter.run(invite.email, (transaction) => prepare(invite.email, transaction));
     assert.equal((await actions()).length, 2);
+  });
+
+  it('leaves counted records available to other transactions during preparation', async function () {
+    const existing = await limiter.run('existing@example.com', (transaction) =>
+      prepare('existing@example.com', transaction),
+    );
+    const action = await actions().first();
+
+    await limiter.run('new@example.com', async (transaction) => {
+      await db.knex.transaction(async (other: Knex.Transaction) => {
+        await other('users').where({ id: actorId }).forUpdate().noWait().first();
+        await other('invites').where({ id: existing.id }).forUpdate().noWait().first();
+        await other('actions').where({ id: action.id }).forUpdate().noWait().first();
+      });
+      return prepare('new@example.com', transaction);
+    });
+  });
+
+  it('rejects caller-owned transactions for non-import trial staff creation', async function () {
+    await models.Base.transaction(async (transacting: Knex.Transaction) => {
+      await assert.rejects(
+        models.User.add({ email: 'new@example.com' }, { transacting }),
+        /Trial staff creation requires a fresh transaction/,
+      );
+    });
+  });
+
+  it('creates the installation user fixture inside a migration transaction on a trial', async function () {
+    const { fixtureManager } = require('../../../core/server/data/schema/fixtures');
+    const fixtures = require('../../../core/server/data/schema/fixtures/fixtures.json');
+    const owner = fixtures.models.find((model: { name: string }) => model.name === 'User')
+      .entries[0];
+    const id = ObjectId().toHexString();
+    const rollback = new Error('Roll back installation fixture');
+
+    await assert.rejects(
+      models.Base.transaction(async (transacting: Knex.Transaction) => {
+        const result = await fixtureManager.addFixturesForModel(
+          {
+            name: 'User',
+            entries: [{ ...owner, id, email: 'installation-owner@example.com' }],
+          },
+          {
+            transacting,
+            migrating: true,
+            autoRefresh: false,
+            context: { internal: true, user: id },
+          },
+        );
+        assert.equal(result.done, 1);
+        assert.ok(await transacting('users').where({ id }).first());
+        assert.deepEqual(await transacting('actions').where({ resource_type: 'invite' }), []);
+        throw rollback;
+      }),
+      (error) => error === rollback,
+    );
+    assert.equal(await db.knex('users').where({ id }).first(), undefined);
+  });
+
+  it('records both additions and the deletion when resending an invitation', async function () {
+    const original = await limiter.run('resend@example.com', (transaction) =>
+      prepare('resend@example.com', transaction),
+    );
+    const replacement = await limiter.run('resend@example.com', (transaction) =>
+      prepare('resend@example.com', transaction),
+    );
+    // Deletion audit entries are written asynchronously after commit.
+    await vi.waitFor(async () => {
+      const rows = await db.knex('actions').where({ resource_type: 'invite' });
+      assert.equal(rows.length, 3);
+      assert.equal(rows.filter((row: { event: string }) => row.event === 'added').length, 2);
+      const deleted = rows.filter((row: { event: string }) => row.event === 'deleted');
+      assert.equal(deleted.length, 1);
+      assert.equal(deleted[0].resource_id, original.id);
+      assert.notEqual(replacement.id, original.id);
+    });
   });
 
   it('rolls back email allowance and invitation changes on preparation failure', async function () {

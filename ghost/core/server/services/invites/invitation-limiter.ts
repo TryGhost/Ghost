@@ -5,7 +5,7 @@ import { MaxLimit } from '@tryghost/limit-service';
 import type { lockStaffInvites, checkTrialStaffLimit } from '../../lib/staff-invite-usage';
 
 interface InvitationLimiterDeps {
-  knex: Knex;
+  transaction: <T>(callback: (transaction: Knex.Transaction) => Promise<T>) => Promise<T>;
   getLimits: () => InvitationLimits | undefined;
   getUpgradeUrl: () => string | undefined;
   lockStaffInvites: typeof lockStaffInvites;
@@ -50,7 +50,7 @@ export default class InvitationLimiter {
     if (!limits) {
       return prepare();
     }
-    return this.deps.knex.transaction(async (transaction) => {
+    return this.deps.transaction(async (transaction) => {
       await this.deps.lockStaffInvites(transaction);
       const helpLink = this.deps.getUpgradeUrl();
       const emailLimit = new MaxLimit({
@@ -65,8 +65,7 @@ export default class InvitationLimiter {
             const actions = await transaction('actions')
               .select('id')
               .where({ resource_type: 'invite', event: 'added' })
-              .limit(limits.maxInvites)
-              .forUpdate();
+              .limit(limits.maxInvites);
             return actions.length;
           },
           error:
@@ -74,6 +73,7 @@ export default class InvitationLimiter {
         },
       });
       await emailLimit.errorIfWouldGoOverLimit();
+      // This transaction's snapshot starts after acquiring the shared lock.
       await this.deps.checkTrialStaffLimit(transaction, limits.maxStaff, helpLink, email);
       // Invite.onCreated writes the quota's audit entry inside this transaction.
       // Preparation or audit failures roll back both records before mail is sent.
