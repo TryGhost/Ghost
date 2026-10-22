@@ -6,9 +6,11 @@ const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
 const { z } = require('zod');
 const { checkoutSessionParts, taxSessionParams } = require('./checkout-session-params');
+const { trackCheckoutSession } = require('./checkout-session-track');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 /** @import { CheckoutSessionParts } from './checkout-session-params' */
+/** @import { Tracer } from '../../lib/tracing/tracer' */
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -77,13 +79,6 @@ const refusalOf = (param) =>
 const without = (parts, part) =>
   Object.fromEntries(Object.entries(parts).filter(([name]) => name !== part));
 
-/** A checkout goes ahead in Stripe's own design when Stripe refuses Ghost's. */
-const logRefusedDesign = (err) =>
-  logging.error(
-    { event: { name: 'stripe_checkout.design.refused' }, err },
-    'Stripe refused the Stripe Checkout design',
-  );
-
 /** A preview must show the design it was asked to, so Stripe refusing it is reported. */
 const reportRefusedDesign = (err) => {
   throw new ValidationError({
@@ -101,18 +96,20 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
+   * @param {Tracer} deps.tracer
    */
   constructor(deps) {
     /** @type {Stripe} */
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
+    this.tracer = deps.tracer;
   }
 
   /**
    * Creates a Checkout session in a checkout's design, asking the buyer for what it asks for.
-   * Every Checkout session Ghost creates goes through here or, for a preview,
-   * `createPreviewCheckoutSession`.
+   * Every session Ghost creates for a buyer goes through here, and no other session does, as
+   * each one is recorded as a buyer's checkout.
    *
    * If Stripe refuses the design or something the checkout asks the buyer for, the session is
    * created again without it, as a checkout that looks plainer or asks for less still takes
@@ -125,11 +122,9 @@ module.exports = class StripeAPI {
    *   buyer for. Null sends nothing from Ghost's settings, so Stripe uses the merchant's own.
    */
   async _createCheckoutSession(params, requestOptions, checkout) {
-    return this._createWithFallback(
-      params,
-      requestOptions,
-      checkoutSessionParts(checkout, params),
-      logRefusedDesign,
+    const parts = checkoutSessionParts(checkout, params);
+    return trackCheckoutSession(this.tracer, parts, (onDesignRefused) =>
+      this._createWithFallback(params, requestOptions, parts, onDesignRefused),
     );
   }
 
@@ -999,17 +994,13 @@ module.exports = class StripeAPI {
    */
   async getCheckoutBranding() {
     await this._rateLimitBucket.throttle();
-    const session = await this._createCheckoutSession(
-      {
-        mode: 'setup',
-        managed_payments: MANAGED_PAYMENTS_DISABLED,
-        payment_method_types: ['card'],
-        success_url: this._config.checkoutSetupSessionSuccessUrl,
-        metadata: { ghost_checkout_preview: true },
-      },
-      undefined,
-      null,
-    );
+    const session = await this._stripe.checkout.sessions.create({
+      mode: 'setup',
+      managed_payments: MANAGED_PAYMENTS_DISABLED,
+      payment_method_types: ['card'],
+      success_url: this._config.checkoutSetupSessionSuccessUrl,
+      metadata: { ghost_checkout_preview: true },
+    });
 
     try {
       await this._rateLimitBucket.throttle();
