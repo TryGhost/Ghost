@@ -3,6 +3,8 @@ const { anyContentVersion, anyObjectId, anyString, anyEtag, anyNumber } = matche
 const { mockSystemTime } = require('../../utils/clock-utils');
 const assert = require('node:assert/strict');
 const config = require('../../../core/shared/config');
+const db = require('../../../core/server/data/db');
+const ObjectId = require('bson-objectid').default;
 
 const matchLink = {
   post_id: anyObjectId,
@@ -41,7 +43,7 @@ describe('Links API', function () {
         etag: anyEtag,
       })
       .matchBodySnapshot({
-        links: new Array(3).fill(matchLink),
+        links: new Array(2).fill(matchLink),
       });
   });
 
@@ -97,14 +99,6 @@ describe('Links API', function () {
       .matchBodySnapshot({
         links: [
           matchLink,
-          {
-            ...matchLink,
-            link: {
-              ...matchLink.link,
-              to: `${config.get('url')}/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df`,
-              edited: true,
-            },
-          },
           {
             ...matchLink,
             link: {
@@ -176,7 +170,6 @@ describe('Links API', function () {
               edited: true,
             },
           },
-          matchLink,
           matchLink,
         ],
       });
@@ -307,8 +300,32 @@ describe('Links API', function () {
             },
           },
           matchLink,
-          matchLink,
         ],
       });
+  });
+
+  it('Counts each member once when several redirects share a destination', async function () {
+    await fixtureManager.init('members');
+    const [member] = await db.knex('members').select('id').limit(1);
+    const siteRedirects = await db
+      .knex('redirects')
+      .where('to', 'like', '%/email/%')
+      .select('id', 'post_id', 'to');
+    assert.equal(siteRedirects.length, 2);
+
+    const createdAt = new Date(Date.now() + 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+    await db.knex('members_click_events').insert(
+      siteRedirects.map((redirect) => ({
+        id: ObjectId().toHexString(),
+        member_id: member.id,
+        redirect_id: redirect.id,
+        created_at: createdAt,
+      })),
+    );
+
+    const res = await agent.get('links').expectStatus(200);
+    const siteLinks = res.body.links.filter((link) => link.link.to.includes('/email/'));
+    assert.equal(siteLinks.length, 1);
+    assert.equal(siteLinks[0].count.clicks, 1);
   });
 });

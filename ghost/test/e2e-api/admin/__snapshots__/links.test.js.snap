@@ -27,24 +27,12 @@ Object {
       },
       "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
-    Object {
-      "count": Object {
-        "clicks": Any<Number>,
-      },
-      "link": Object {
-        "edited": false,
-        "from": Any<String>,
-        "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "to": Any<String>,
-      },
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-    },
   ],
   "meta": Object {
     "pagination": Object {
       "page": 1,
       "pages": 1,
-      "total": 3,
+      "total": 2,
     },
   },
 }
@@ -101,7 +89,7 @@ exports[`Links API Can browse all links 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "930",
+  "content-length": "607",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -209,24 +197,12 @@ Object {
       },
       "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
-    Object {
-      "count": Object {
-        "clicks": Any<Number>,
-      },
-      "link": Object {
-        "edited": false,
-        "from": Any<String>,
-        "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "to": Any<String>,
-      },
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-    },
   ],
   "meta": Object {
     "pagination": Object {
       "page": 1,
       "pages": 1,
-      "total": 3,
+      "total": 2,
     },
   },
 }
@@ -283,7 +259,7 @@ exports[`Links API Can bulk update links with external redirect 4: [headers] 1`]
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "929",
+  "content-length": "606",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -361,24 +337,12 @@ Object {
       },
       "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
-    Object {
-      "count": Object {
-        "clicks": Any<Number>,
-      },
-      "link": Object {
-        "edited": true,
-        "from": Any<String>,
-        "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "to": "http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df",
-      },
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-    },
   ],
   "meta": Object {
     "pagination": Object {
       "page": 1,
       "pages": 1,
-      "total": 3,
+      "total": 2,
     },
   },
 }
@@ -435,7 +399,7 @@ exports[`Links API Can bulk update multiple links with same site redirect 4: [he
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "884",
+  "content-length": "584",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -513,24 +477,12 @@ Object {
       },
       "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
-    Object {
-      "count": Object {
-        "clicks": Any<Number>,
-      },
-      "link": Object {
-        "edited": false,
-        "from": Any<String>,
-        "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "to": Any<String>,
-      },
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-    },
   ],
   "meta": Object {
     "pagination": Object {
       "page": 1,
       "pages": 1,
-      "total": 3,
+      "total": 2,
     },
   },
 }
@@ -587,7 +539,7 @@ exports[`Links API Can call bulk update link with 0 matches 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "930",
+  "content-length": "607",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
