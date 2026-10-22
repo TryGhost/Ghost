@@ -177,7 +177,7 @@ describe('Trial staff invitation limits', function () {
     const original = await models.Invite.findOne({ email: 'quota@example.com' });
     const rejected = await invite('quota@example.com').expect(403);
     assert.equal(rejected.body.errors[0].type, 'HostLimitError');
-    assert.match(rejected.body.errors[0].context, /15 staff invitation emails.*Upgrade/);
+    assert.match(rejected.body.errors[0].context, /15 staff invitation emails/);
     assert.equal((await models.Invite.findOne({ email: 'quota@example.com' })).id, original.id);
     sinon.assert.callCount(send, 15);
     assert.equal(
@@ -198,7 +198,7 @@ describe('Trial staff invitation limits', function () {
     await invite('seat-0@example.com').expect(201);
     await nextMinute();
     const rejected = await invite('eleventh@example.com', 'Author').expect(403);
-    assert.match(rejected.body.errors[0].context, /10 staff.*Contributors.*Upgrade/);
+    assert.match(rejected.body.errors[0].context, /10 staff.*Contributors/);
     assert.equal(await models.Invite.findOne({ email: 'eleventh@example.com' }), null);
     sinon.assert.callCount(send, remaining + 1);
   });

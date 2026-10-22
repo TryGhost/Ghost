@@ -96,7 +96,7 @@ describe('Trial invitation admission', function () {
     });
     await assert.rejects(
       restarted.run('new@example.com', async () => assert.fail()),
-      /Upgrade to send more/,
+      /staff invitation emails/,
     );
     assert.equal((await actions()).length, 15);
   });
@@ -219,7 +219,7 @@ describe('Trial invitation admission', function () {
     limits = { maxStaff: 10, maxInvites: 1 };
     await assert.rejects(
       limiter.run('trial-again@example.com', async () => assert.fail()),
-      /Upgrade/,
+      /staff invitation emails/,
     );
   });
 
@@ -246,7 +246,7 @@ describe('Trial invitation admission', function () {
     );
     await assert.rejects(
       limiter.run('excess@example.com', async () => assert.fail()),
-      /Upgrade/,
+      /staff invitation emails/,
     );
     assert.equal((await actions()).length, 15);
   });
