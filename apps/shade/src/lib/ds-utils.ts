@@ -307,8 +307,8 @@ export const stringToHslColor = (str: string, saturation: string, lightness: str
 
 /**
  * Formats a date based on the range
- * - For ranges above 365 days: shows month and year (e.g. "Apr 2025")
- * - For ranges above 91 days: shows "Week of [date]"
+ * - For ranges of 365 days or more: shows month and year (e.g. "Apr 2025")
+ * - For ranges of 90 days or more: shows "Week of [date]"
  * - For other ranges: uses the default formatDisplayDate
  */
 export const formatDisplayDateWithRange = (
@@ -321,9 +321,9 @@ export const formatDisplayDateWithRange = (
     return moment(date).format('h:mma');
   } else if (range === 1 && showHours) {
     return moment(date).format('MMM D, h:mma');
-  } else if (range > 365) {
+  } else if (range >= 365) {
     return moment(date).format('MMM YYYY');
-  } else if (range >= 91) {
+  } else if (range >= 90) {
     return `Week of ${formatDisplayDate(date)}`;
   }
   return formatDisplayDate(date);
