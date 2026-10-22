@@ -21,6 +21,7 @@ export type KoenigCard<TOutput extends ExportDOMOutput = ExportDOMOutput> = Koen
     getDataset(): Record<string, unknown>;
     hasDynamicData(): boolean;
     hasEditMode(): boolean;
+    hasVisibilitySettingsInEditMode(): boolean;
     getIsVisibilityActive(): boolean;
     getDynamicData?(options: ExportDOMOptions): Promise<{key: number; data: unknown}>;
 };

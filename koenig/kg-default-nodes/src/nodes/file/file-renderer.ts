@@ -1,6 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {escapeHtml} from '../../utils/escape-html.js';
 import {bytesToSize} from '../../utils/size-byte-converter.js';
 
@@ -11,6 +12,7 @@ interface FileNodeData {
     fileName: string;
     fileSize: number;
     formattedFileSize: string;
+    visibility?: Visibility;
 }
 
 interface RenderOptions extends ExportDOMOptions {}
@@ -23,11 +25,11 @@ export function renderFileNode(node: FileNodeData, options: RenderOptions = {}) 
         return renderEmptyContainer(document);
     }
 
-    if (options.target === 'email') {
-        return emailTemplate(node, document, options);
-    } else {
-        return cardTemplate(node, document);
-    }
+    const output = options.target === 'email'
+        ? emailTemplate(node, document, options)
+        : cardTemplate(node, document);
+
+    return renderWithVisibility(output, node.visibility, options);
 }
 
 function emailTemplate(node: FileNodeData, document: Document, options: RenderOptions) {

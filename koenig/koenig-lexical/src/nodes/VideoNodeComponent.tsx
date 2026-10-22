@@ -5,13 +5,18 @@ import extractVideoMetadata from '../utils/extractVideoMetadata';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VideoCard} from '../components/ui/cards/VideoCard';
+import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {openFileSelection} from '../utils/openFileSelection';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle.jsx';
 
 export function VideoNodeComponent({
     nodeKey,
@@ -26,9 +31,22 @@ export function VideoNodeComponent({
     initialFile
 }) {
     const [editor] = useLexicalComposerContext();
-    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const cardContext = React.useContext(CardContext);
     const videoFileInputRef = React.useRef();
+    const {showVisibilitySettings} = useKoenigSelectedCardContext();
+    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+
+    const visibilitySettingsTabs = [
+        {id: 'visibility', label: 'Visibility'}
+    ];
+
+    const handleVisibilityToggle = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
+    }, [editor, nodeKey]);
+
     const [previewThumbnail, setPreviewThumbnail] = useState('');
     const videoUploader = fileUploader.useFileUpload('video');
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
@@ -241,6 +259,18 @@ export function VideoNodeComponent({
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-video-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    {isVisibilityEnabled && (
+                        <>
+                            <ToolbarMenuSeparator />
+                            <ToolbarMenuItem
+                                dataTestId="show-visibility"
+                                icon="visibility"
+                                isActive={showVisibilitySettings}
+                                label="Visibility"
+                                onClick={handleVisibilityToggle}
+                            />
+                        </>
+                    )}
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -252,6 +282,27 @@ export function VideoNodeComponent({
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            {isVisibilityEnabled && showVisibilitySettings && cardContext.isSelected && (
+                <SettingsPanel
+                    darkMode={darkMode}
+                    defaultTab="visibility"
+                    tabs={visibilitySettingsTabs}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                >
+                    {{
+                        visibility: (
+                            <VisibilitySettings
+                                toggleVisibility={toggleVisibility}
+                                visibilityOptions={visibilityOptions}
+                            />
+                        )
+                    }}
+                </SettingsPanel>
+            )}
         </>
     );
 }

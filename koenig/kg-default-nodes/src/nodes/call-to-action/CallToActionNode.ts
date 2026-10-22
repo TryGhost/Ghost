@@ -29,6 +29,10 @@ export class CallToActionNode extends generateDecoratorNode({
     properties: callToActionProperties,
     defaultRenderFn: renderCallToActionNode
 }) {
+    hasVisibilitySettingsInEditMode() {
+        return true;
+    }
+
     static importDOM() {
         return parseCallToActionNode(this);
     }

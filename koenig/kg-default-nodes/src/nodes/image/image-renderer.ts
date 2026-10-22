@@ -6,6 +6,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions} from '../../export-dom.js';
 import type {CardWidth} from '../../utils/card-widths.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 
 const MODERN_IMAGE_FORMATS = ['avif', 'webp'];
 
@@ -27,6 +28,7 @@ interface ImageNodeData {
     caption: string;
     cardWidth: CardWidth;
     href: string;
+    visibility?: Visibility;
 }
 
 interface ImageRenderOptions extends ExportDOMOptions {
@@ -217,5 +219,5 @@ export function renderImageNode(node: ImageNodeData, options: ImageRenderOptions
         figure.appendChild(caption);
     }
 
-    return {element: figure, type: 'outer' as const};
+    return renderWithVisibility({element: figure, type: 'outer' as const}, node.visibility, options);
 }

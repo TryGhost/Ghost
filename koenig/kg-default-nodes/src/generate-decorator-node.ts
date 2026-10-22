@@ -344,6 +344,16 @@ export function generateDecoratorNode({nodeType, properties, defaultRenderFn, ve
             return true;
         }
 
+        /**
+         * Defines whether a node's visibility settings live inside its own
+         * settings panel, shown while the card is being edited (e.g. the call
+         * to action card). Cards that return false get a standalone visibility
+         * panel while the card is selected, without entering edit mode.
+         */
+        hasVisibilitySettingsInEditMode() {
+            return false;
+        }
+
         /*
         * Returns the text content of the node, used by the editor to calculate the word count
         * This method filters out properties without `wordCount: true`

@@ -321,6 +321,10 @@ describe('HTMLtoLexical', function () {
               caption: '',
               cardWidth: 'regular',
               href: '',
+              visibility: {
+                web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                email: { memberSegment: 'status:free,status:-free' },
+              },
             },
           ],
           direction: null,

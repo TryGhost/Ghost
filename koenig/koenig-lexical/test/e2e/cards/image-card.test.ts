@@ -179,7 +179,11 @@ test.describe('Image card', async () => {
             alt: '',
             caption: '',
             cardWidth: 'regular',
-            href: ''
+            href: '',
+            visibility: {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            }
         },{
             children: [],
             direction: null,
