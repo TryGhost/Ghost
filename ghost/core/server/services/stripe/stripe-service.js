@@ -37,6 +37,7 @@ module.exports = class StripeService {
   /**
    * @param {object} deps
    * @param {*} deps.labs
+   * @param {import('../../lib/metrics/track').Metrics} deps.metrics
    * @param {*} deps.membersService
    * @param {*} deps.donationService
    * @param {*} deps.giftService
@@ -53,6 +54,7 @@ module.exports = class StripeService {
    */
   constructor({
     labs,
+    metrics,
     membersService,
     donationService,
     giftService,
@@ -61,7 +63,7 @@ module.exports = class StripeService {
     settingsCache,
     models,
   }) {
-    const api = new StripeAPI({ labs });
+    const api = new StripeAPI({ labs, metrics });
 
     const webhookManager = new WebhookManager({
       StripeWebhook,
