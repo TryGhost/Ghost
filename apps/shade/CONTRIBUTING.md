@@ -77,6 +77,68 @@ a doc and look for `charset=utf-8`.
 CI doesn't build Storybook. `test/unit/scripts/storybook-docs.test.ts` runs the
 same docs generation into a temporary folder, so a broken doc still fails CI.
 
+## Skills
+
+The agent skills in `skills/` help agents build screens with Shade. Apps install
+them all with the [`skills` CLI](https://github.com/vercel-labs/skills):
+
+```sh
+npx skills add TryGhost/Ghost/apps/shade/skills
+# or, from a local checkout:
+npx skills add <path-to-checkout>/apps/shade/skills
+```
+
+`build-ghost-app-ui` is the front door for Ghost apps. The other six cover page
+templates, the page header, primitives, tokens, dark mode and imports. The npm
+package doesn't ship them.
+
+### Rules for skills
+
+- A skill holds no design rules. It says when to apply which doc, and the rule
+  lives once, in the `.mdx` source. To change a rule, change the doc.
+- Link docs as `https://shade.ghost.org/docs/<page>.md`, with a heading anchor
+  where it helps. A skill is installed apart from this repo, so it can't link
+  to files here.
+- Keep each skill standalone, apart from links to sibling skills.
+- `test/unit/scripts/skills.test.ts` checks every docs link against the
+  generated docs and their headings, and that each one maps to an `.mdx`
+  source in this repo.
+
+### Shortcuts in the Ghost repo
+
+Agents working on Ghost find the six design skills through shortcuts, as with
+any repository skill: `.agents/skills/<name>` links to
+`../../apps/shade/skills/<name>`, and `.claude/skills/<name>` links to
+`../../.agents/skills/<name>`. `build-ghost-app-ui` has no shortcut, because
+it's for apps only. `pnpm lint:agent-skills` follows the links and fails if one
+is broken.
+
+To add a design skill, create it in `skills/` and add both links. Turning a
+folder in `.agents/skills/` into a link takes two commits, one that removes the
+folder and one that adds the link, or the pre-commit hook's backup fails.
+
+`shade.ghost.org` isn't live yet. Inside this repo, the root `AGENTS.md` tells
+agents to read a docs link's `.mdx` source instead.
+
+### Try Shade as an app developer
+
+The internal `ghost-app-ui-dev-setup` skill in `dev-skill/` prepares an empty
+folder for building a Ghost app the way an outside developer would, with
+everything local. It checks Ghost, starts Storybook if needed, installs Shade's
+skills and a stand-in `build-ghost-app` skill, packs the app SDK into
+`vendor/`, and writes the folder's `AGENTS.md`. It isn't shipped.
+
+Install it once, for every folder:
+
+```sh
+npx skills add <path-to-checkout>/apps/shade/dev-skill -g -a claude-code codex -y
+```
+
+Run the same command again to pick up changes. Then make an empty folder, open
+it in your agent client, type `/ghost-app-ui-dev-setup`, and when it's done,
+start a new chat there and describe your app. The Storybook it starts keeps
+running; stop it with `lsof -ti tcp:6006 | xargs kill`.
+
 ## Layers
 
 Shade is a stack of layers. Each layer has one job and lives in one folder.
