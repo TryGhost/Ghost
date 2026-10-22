@@ -9,7 +9,7 @@ export const stripFileExtension = (fileName: string) => {
     return fileNameWithoutExtension;
 };
 
-export const fileUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
+export const fileUploadHandler = async (files: File[] | FileList | null, nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
