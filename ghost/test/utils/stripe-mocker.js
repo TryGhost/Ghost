@@ -34,6 +34,10 @@ class StripeMocker {
   checkoutBranding = StripeMocker.defaultCheckoutBranding();
   /** Makes Stripe refuse to expire checkout sessions. */
   failCheckoutExpiry = false;
+  /** Makes Stripe refuse checkout sessions sent with a design. */
+  refuseCheckoutDesign = false;
+  /** Makes Stripe fail every new checkout session with this error, in Stripe's API shape. */
+  checkoutSessionError = null;
 
   nockInterceptors = [];
 
@@ -70,6 +74,8 @@ class StripeMocker {
     this.checkoutSessions = [];
     this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
     this.failCheckoutExpiry = false;
+    this.refuseCheckoutDesign = false;
+    this.checkoutSessionError = null;
 
     // Fix for now, because of importing order breaking some things when they are not initialized
     members = require('../../core/server/services/members');
@@ -498,6 +504,21 @@ class StripeMocker {
       }
 
       if (resource === 'checkout' && id === 'sessions') {
+        if (this.checkoutSessionError) {
+          return [400, { error: this.checkoutSessionError }];
+        }
+        if (this.refuseCheckoutDesign && require('qs').parse(body).branding_settings) {
+          return [
+            400,
+            {
+              error: {
+                type: 'invalid_request_error',
+                param: 'branding_settings[font_family]',
+                message: 'Invalid branding_settings[font_family]',
+              },
+            },
+          ];
+        }
         return this.#postData(this.checkoutSessions, null, body, resource);
       }
 
