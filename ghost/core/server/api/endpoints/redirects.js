@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 
 const customRedirects = require('../../services/custom-redirects');
 const {

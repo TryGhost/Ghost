@@ -7,7 +7,7 @@ const {
 const { anyContentLength, anyContentVersion, anyEtag, anyErrorId, stringMatching } = matchers;
 const { cacheInvalidateHeaderNotSet } = assertions;
 const { exportedBodyLatest } = require('../../utils/fixtures/export/body-generator');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 
@@ -20,7 +20,12 @@ describe('Backup Integration', function () {
   });
 
   beforeEach(function () {
-    fsStub = sinon.stub(fs, 'writeFile').resolves();
+    // Scoped to backup files so other writers (e.g. the tsx cache) pass through
+    fsStub = sinon
+      .stub(fs, 'writeFile')
+      .callThrough()
+      .withArgs(sinon.match(/\/data\/[^/]+\.json$/))
+      .resolves();
   });
 
   afterEach(function () {

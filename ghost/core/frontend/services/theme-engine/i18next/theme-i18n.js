@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const i18nLib = require('@tryghost/i18n').default;
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 class ThemeI18n {
   /**

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const debug = require('@tryghost/debug')('importer:handler:revue');
 
 const hasIssuesCSV = (files, startDirRegex) => {
