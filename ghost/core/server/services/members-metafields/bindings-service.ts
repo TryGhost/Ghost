@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
 import { INTERNAL } from './access';
-import { fieldReference, onField, type FieldIdentity } from './queries';
+import { fieldReference, fieldsTable, onField, type FieldIdentity } from './queries';
 import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
@@ -157,7 +157,7 @@ export class MetafieldBindingsService {
 
   private async resolve(port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
-      .join(FIELDS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
+      .join(fieldsTable(), onField(FIELDS_TABLE, BINDINGS_TABLE))
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value
       // can land, so the write drops rather than waiting.

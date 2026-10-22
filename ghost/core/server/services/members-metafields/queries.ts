@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import type { Identity, Namespace } from '@tryghost/metafield-types/identity';
 import { readableLevels, type Audience } from './access';
-import { FIELD_STATUS } from './schema';
+import { FIELD_STATUS, type MetafieldRow } from './schema';
 
 const FIELDS_TABLE = 'members_metafields';
 
@@ -37,11 +37,21 @@ export type StatusScope = typeof ACTIVE_ONLY | typeof ANY_STATUS;
 
 declare const scoped: unique symbol;
 
-// Unannotated so the builder keeps the row type knex derives from the table
-// registration; naming a type here would both lose that and make the alias below
-// refer to itself.
+/**
+ * The fields table, under the name a query gives it.
+ *
+ * Every read that asks what a field is, or whether it can take a value, names the table
+ * through this rather than directly, here or in another domain, so a rule about how
+ * fields read holds for every one of them. Writes name the table itself.
+ */
+export function fieldsTable(alias: string = FIELDS_TABLE): string {
+  return alias === FIELDS_TABLE ? FIELDS_TABLE : `${FIELDS_TABLE} as ${alias}`;
+}
+
+// The row type is stated rather than derived from the table registration, which a name
+// `fieldsTable` hands back does not carry.
 function metafieldsTable(db: Knex) {
-  return db(FIELDS_TABLE);
+  return db<MetafieldRow>(fieldsTable());
 }
 
 /**
@@ -102,10 +112,10 @@ export function fieldReference(field: FieldIdentity) {
  * Joins a row that points at a field to that field. On namespace and key together, since
  * a key alone names a field in every namespace that has one.
  */
-export function onField(fieldsTable: string, pointingTable: string) {
+export function onField(fieldsAlias: string, pointingTable: string) {
   return function (this: Knex.JoinClause) {
-    this.on(`${fieldsTable}.namespace`, `${pointingTable}.metafield_namespace`).andOn(
-      `${fieldsTable}.key`,
+    this.on(`${fieldsAlias}.namespace`, `${pointingTable}.metafield_namespace`).andOn(
+      `${fieldsAlias}.key`,
       `${pointingTable}.metafield_key`,
     );
   };

@@ -33,6 +33,7 @@ import {
   ACTIVE_ONLY,
   definitions,
   fieldReference,
+  fieldsTable,
   knexify,
   onField,
   readableBy,
@@ -245,7 +246,7 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      executor(VALUES_TABLE).join(FIELDS_TABLE, onField(FIELDS_TABLE, VALUES_TABLE)),
+      executor(VALUES_TABLE).join(fieldsTable(), onField(FIELDS_TABLE, VALUES_TABLE)),
       audience,
     )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
