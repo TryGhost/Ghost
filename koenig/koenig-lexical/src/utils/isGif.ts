@@ -1,3 +1,3 @@
 export function isGif(url) {
-    return /\.(gif)$/.test(url);
+    return /\.gif$/i.test(String(url).split(/[?#]/, 1)[0]);
 }
