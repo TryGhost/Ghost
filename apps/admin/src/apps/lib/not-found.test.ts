@@ -30,6 +30,19 @@ describe('isAppUnavailable', () => {
     expect(isInstallationNotFound(apiError(409, 'APP_UNAVAILABLE'))).toBe(false);
   });
 
+  // One screen covers every failed session for now, whatever the identity check found.
+  it.each([
+    'APP_MANIFEST_UNSIGNED',
+    'APP_MANIFEST_URL_MISMATCH',
+    'APP_MANIFEST_SIGNATURE_INVALID',
+    'APP_IDENTITY_MISMATCH',
+    'APP_BACKEND_KEY_RETIRED',
+    'APP_CHALLENGE_FAILED',
+    'APP_CHALLENGE_UNREACHABLE',
+  ])('treats a 409 with %s as the app being unavailable', (code) => {
+    expect(isAppUnavailable(apiError(409, code))).toBe(true);
+  });
+
   it('leaves other failures alone', () => {
     expect(isAppUnavailable(apiError(409, null))).toBe(false);
     expect(isAppUnavailable(apiError(404, 'APP_NOT_INSTALLED'))).toBe(false);
