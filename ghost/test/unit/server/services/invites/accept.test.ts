@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
+import { ZodError } from 'zod';
 import { accept, type AcceptanceModels } from '../../../../../core/server/services/invites/accept';
+import { createAcceptanceModels } from '../../../../../core/server/services/invites/acceptance-models';
 
 describe('Unit: services/invites/accept', function () {
   const now = 1700000000000;
   const transacting = { id: 'fake-txn' };
-  let models: AcceptanceModels<typeof transacting>;
+  let models: AcceptanceModels;
   let transactionStub: sinon.SinonStub;
   let findOneInviteStub: sinon.SinonStub;
   let findOneUserStub: sinon.SinonStub;
@@ -53,11 +55,12 @@ describe('Unit: services/invites/accept', function () {
       .stub()
       .callsFake(async (cb: (transaction: typeof transacting) => Promise<void>) => cb(transacting));
 
-    models = {
+    const legacyModels: AcceptanceModels<typeof transacting> = {
       Base: { transaction: transactionStub },
       Invite: { findOne: findOneInviteStub },
       User: { findOne: findOneUserStub, add: addUserStub },
     };
+    models = createAcceptanceModels(legacyModels);
   });
 
   afterEach(function () {
@@ -69,6 +72,42 @@ describe('Unit: services/invites/accept', function () {
 
     sinon.assert.calledOnce(transactionStub);
   });
+
+  it('returns the typed callback result after transaction completion', async function () {
+    assert.equal(
+      await models.Base.transaction(async (transaction) => {
+        assert.equal(transaction, transacting);
+        return 42;
+      }),
+      42,
+    );
+  });
+
+  it('rejects a missing model method during production wiring', function () {
+    assert.throws(() => createAcceptanceModels({ ...models, User: {} }), {
+      errorType: 'IncorrectUsageError',
+      message: 'Missing invite model method: findOne',
+    });
+  });
+
+  for (const { key, value } of [
+    { key: 'expires', value: String(now + 100000) },
+    { key: 'email', value: null },
+    { key: 'role_id', value: 42 },
+  ]) {
+    it(`rejects an invalid ${key} returned by the JavaScript model before mutation`, async function () {
+      const attributes: Record<string, unknown> = { ...inviteAttributes, [key]: value };
+      findOneInviteStub.resolves({
+        get: (field: string) => attributes[field],
+        destroy: destroyStub,
+      });
+
+      await assert.rejects(accept(invitation, models), ZodError);
+
+      sinon.assert.notCalled(destroyStub);
+      sinon.assert.notCalled(addUserStub);
+    });
+  }
 
   it('passes internal context, the same transaction and row locking to all model calls', async function () {
     await accept(invitation, models);

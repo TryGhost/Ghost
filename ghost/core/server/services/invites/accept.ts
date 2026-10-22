@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import * as security from '@tryghost/security';
@@ -13,7 +12,8 @@ type TransactionOptions<Transaction> = {
   forUpdate: true;
 };
 
-export type AcceptanceModels<Transaction = Knex.Transaction> = {
+// Acceptance only forwards the transaction handle to these model methods.
+export type AcceptanceModels<Transaction = unknown> = {
   Base: {
     transaction<T>(callback: (transacting: Transaction) => Promise<T>): Promise<T>;
   };

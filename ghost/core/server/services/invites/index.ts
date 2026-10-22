@@ -1,12 +1,13 @@
 import { defineService } from '../../../kernel/define-service';
 import { Invites } from './invites';
+import { createAcceptanceModels } from './acceptance-models';
 
 export default defineService('Invites', () => {
   const settingsCache = require('../../../shared/settings-cache');
   const settingsHelpers = require('../settings-helpers');
   const mailService = require('../../lib/mail');
   const urlUtils = require('../../../shared/url-utils').default;
-  const models = require('../../models');
+  const models: unknown = require('../../models');
   const logging = require('@tryghost/logging');
 
   return new Invites({
@@ -14,7 +15,7 @@ export default defineService('Invites', () => {
     settingsHelpers,
     mailService,
     urlUtils,
-    models,
+    models: createAcceptanceModels(models),
     logging,
   });
 });
