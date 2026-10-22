@@ -68,8 +68,7 @@ export default class InvitationLimiter {
               .limit(limits.maxInvites);
             return actions.length;
           },
-          error:
-            'Your trial allows {{max}} staff invitation emails in total, including resends. Upgrade to send more invitations.',
+          error: 'Your trial allows {{max}} staff invitation emails in total, including resends.',
         },
       });
       await emailLimit.errorIfWouldGoOverLimit();

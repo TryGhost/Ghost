@@ -53,7 +53,7 @@ export async function checkTrialStaffLimit(
         return users.length + invites.length;
       },
       error:
-        'Your trial supports up to {{max}} staff, including pending invitations and Contributors. Upgrade to invite more people.',
+        'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
     },
   });
   await limit.errorIfWouldGoOverLimit();
