@@ -70,10 +70,9 @@ export const IdentityTextSchema = z.codec(z.string(), IdentitySchema, {
 /**
  * The namespace holding the fields a site's own staff define.
  *
- * It is a constant only because the table storing these fields has no namespace
- * column: it holds this namespace's fields and nothing else, so the query layer has
- * to supply the name the rows implicitly carry. Nothing outside that layer should
- * compare against this value — a namespace nobody has declared fields in is an empty
- * namespace, not an error.
+ * Every field records its namespace, so reading and writing fields never needs this. It
+ * is for code that speaks only for the publisher's fields: who may define fields where,
+ * and the surfaces that name a publisher's field by key alone. Another namespace is not
+ * an error for not being this one: a namespace nobody has declared fields in is empty.
  */
 export const CUSTOM_NAMESPACE = NamespaceSchema.parse('custom');

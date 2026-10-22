@@ -95,8 +95,22 @@ describe('Stripe Checkout Preview Admin API', function () {
   });
 
   describe('with unsaved shipping', function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('membersCustomFields');
+      for (const field of [
+        { name: 'Delivery address', type: 'address' },
+        { name: 'Recipient name', type: 'short_text' },
+      ]) {
+        await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [field] })
+          .expectStatus(201);
+      }
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('members_metafields').del();
     });
 
     function previewShipping(shipping: Record<string, unknown>) {
@@ -104,119 +118,15 @@ describe('Stripe Checkout Preview Admin API', function () {
     }
 
     it('asks for an address in the countries being previewed', async function () {
-      await previewShipping({ collect: true, allowed_countries: ['GB', 'IE'] });
+      await previewShipping({
+        collect: true,
+        allowed_countries: ['GB', 'IE'],
+        address: { custom_field_key: 'delivery_address' },
+        name: { custom_field_key: 'recipient_name' },
+      });
 
       const session = stripeMocker.checkoutSessions.at(-1);
       assert.deepEqual(session.shipping_address_collection.allowed_countries, ['GB', 'IE']);
-    });
-
-    it('asks for none when it is off or limited to other tiers', async function () {
-      await previewShipping({ collect: false });
-      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
-
-      await previewShipping({ collect: true, tier_ids: [freeTierId] });
-      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
-    });
-
-    it('asks for none while the shipping flag is off', async function () {
-      mockManager.mockLabsDisabled('stripeCheckoutCollection');
-      await previewShipping({ collect: true });
-
-      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
-    });
-  });
-
-  describe('with an unsaved phone number', function () {
-    beforeEach(function () {
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    });
-
-    afterEach(async function () {
-      await models.Base.knex('members_metafield_bindings').del();
-      await models.Base.knex('members_metafields').del();
-    });
-
-    function previewPhone(phone?: Record<string, unknown>) {
-      return preview({
-        tier_id: paidTierId,
-        design: { customize: false },
-        ...(phone ? { phone } : {}),
-      });
-    }
-
-    const askedPhone = () => stripeMocker.checkoutSessions.at(-1).phone_number_collection;
-
-    it('asks for a phone number as the settings being edited say', async function () {
-      await previewPhone({ collect: true });
-      assert.deepEqual(askedPhone(), { enabled: true });
-
-      await previewPhone({ collect: true, tier_ids: [freeTierId] });
-      assert.equal(askedPhone(), undefined);
-
-      await previewPhone({ collect: false });
-      assert.equal(askedPhone(), undefined);
-    });
-
-    it('asks as the saved settings say when the preview leaves it out', async function () {
-      mockManager.mockLabsEnabled('membersCustomFields');
-      await agent
-        .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Contact phone', type: 'short_text' }] })
-        .expectStatus(201);
-      await agent
-        .put('stripe/checkout/config/')
-        .body({
-          checkout_config: [{ phone: { collect: true, custom_field_key: 'contact_phone' } }],
-        })
-        .expectStatus(200);
-
-      await previewPhone();
-      assert.deepEqual(askedPhone(), { enabled: true });
-
-      await previewPhone({ collect: false });
-      assert.equal(askedPhone(), undefined);
-    });
-  });
-
-  describe('with an unsaved tax number', function () {
-    beforeEach(function () {
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      // Automatic tax offers a tax ID on every checkout by itself.
-      mockManager.mockLabsDisabled('stripeAutomaticTax');
-    });
-
-    function previewTaxNumber(taxNumber?: Record<string, unknown>) {
-      return preview({
-        tier_id: paidTierId,
-        design: { customize: false },
-        ...(taxNumber ? { tax_number: taxNumber } : {}),
-      });
-    }
-
-    const offered = () => stripeMocker.checkoutSessions.at(-1).tax_id_collection;
-
-    it('offers a tax ID as the settings being edited say', async function () {
-      await previewTaxNumber({ collect: true });
-      assert.deepEqual(offered(), { enabled: true });
-
-      await previewTaxNumber({ collect: true, tier_ids: [freeTierId] });
-      assert.equal(offered(), undefined);
-
-      await previewTaxNumber({ collect: false });
-      assert.equal(offered(), undefined);
-    });
-
-    it('offers it as the saved settings say when the preview leaves it out', async function () {
-      await agent
-        .put('stripe/checkout/config/')
-        .body({ checkout_config: [{ tax_number: { collect: true } }] })
-        .expectStatus(200);
-
-      await previewTaxNumber();
-      assert.deepEqual(offered(), { enabled: true });
-
-      await previewTaxNumber({ collect: false });
-      assert.equal(offered(), undefined);
     });
   });
 

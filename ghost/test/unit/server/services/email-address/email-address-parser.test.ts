@@ -75,6 +75,13 @@ describe('email address parser', function () {
       const email = emailAddressParser.parse('My Group: test@example.com;');
       assert.equal(email, null);
     });
+
+    it('preserves domain spelling while parsing a mailbox', function () {
+      assert.deepEqual(emailAddressParser.parse('"Editor" <Local@中文.Example>'), {
+        address: 'Local@中文.Example',
+        name: 'Editor',
+      });
+    });
   });
 
   describe('stringify', function () {

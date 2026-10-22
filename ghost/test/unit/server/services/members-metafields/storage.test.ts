@@ -115,20 +115,38 @@ describe('custom field value storage', function () {
 
   describe('rows become every member’s values', function () {
     it('gathers each value from every row belonging to it', function () {
+      const row = (
+        memberId: string,
+        namespace: string,
+        key: string,
+        path: string,
+        value: string,
+      ) => ({
+        member_id: memberId,
+        namespace,
+        key,
+        path,
+        value_text: value,
+      });
       const values = valuesFromRows([
-        { member_id: 'm1', key: 'home_address', path: 'city', value_text: 'London' },
-        { member_id: 'm1', key: 'nickname', path: ROOT_PATH, value_text: 'Bex' },
-        { member_id: 'm2', key: 'home_address', path: 'country', value_text: 'IE' },
-        { member_id: 'm1', key: 'home_address', path: 'line1', value_text: '1 High St' },
+        row('m1', 'custom', 'home_address', 'city', 'London'),
+        row('m1', 'custom', 'nickname', ROOT_PATH, 'Bex'),
+        row('m2', 'custom', 'home_address', 'country', 'IE'),
+        row('m1', 'custom', 'home_address', 'line1', '1 High St'),
+        row('m1', 'transistor', 'nickname', ROOT_PATH, 'Becks'),
       ]);
 
       // m1's address arrives split by two unrelated rows; nothing depends on the
-      // rows for one value being next to each other.
+      // rows for one value being next to each other. Two namespaces can each hold a
+      // `nickname` without one overwriting the other.
       assert.deepEqual(values.get('m1'), {
-        home_address: { city: 'London', line1: '1 High St' },
-        nickname: 'Bex',
+        custom: {
+          home_address: { city: 'London', line1: '1 High St' },
+          nickname: 'Bex',
+        },
+        transistor: { nickname: 'Becks' },
       });
-      assert.deepEqual(values.get('m2'), { home_address: { country: 'IE' } });
+      assert.deepEqual(values.get('m2'), { custom: { home_address: { country: 'IE' } } });
     });
 
     it('leaves a member with no rows out entirely', function () {

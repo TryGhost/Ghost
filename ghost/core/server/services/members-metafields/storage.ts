@@ -24,6 +24,7 @@ export interface ValueRow {
 
 export interface StoredValueRow extends ValueRow {
   member_id: string;
+  namespace: string;
   key: string;
 }
 
@@ -104,27 +105,34 @@ export function valueFromRows(rows: readonly ValueRow[]): unknown {
   return value;
 }
 
-/** Every member's values, keyed by member and then field key; a member with no rows is absent. */
+/**
+ * Every member's values, keyed by member, then namespace, then field key. A member with no
+ * rows is absent, and so is a namespace they hold nothing in.
+ */
 export function valuesFromRows(
   rows: readonly StoredValueRow[],
-): Map<string, Record<string, unknown>> {
-  const byMemberAndField = new Map<string, Map<string, ValueRow[]>>();
+): Map<string, Record<string, Record<string, unknown>>> {
+  const byMember = new Map<string, Map<string, Map<string, ValueRow[]>>>();
 
-  for (const { member_id: memberId, key, path, value_text: valueText } of rows) {
-    const fields = byMemberAndField.get(memberId) ?? new Map<string, ValueRow[]>();
+  for (const { member_id: memberId, namespace, key, path, value_text: valueText } of rows) {
+    const namespaces = byMember.get(memberId) ?? new Map<string, Map<string, ValueRow[]>>();
+    const fields = namespaces.get(namespace) ?? new Map<string, ValueRow[]>();
     const forField = fields.get(key) ?? [];
     forField.push({ path, value_text: valueText });
     fields.set(key, forField);
-    byMemberAndField.set(memberId, fields);
+    namespaces.set(namespace, fields);
+    byMember.set(memberId, namespaces);
   }
 
-  const byMember = new Map<string, Record<string, unknown>>();
-  for (const [memberId, fields] of byMemberAndField) {
-    byMember.set(
+  return new Map(
+    [...byMember].map(([memberId, namespaces]) => [
       memberId,
-      Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromRows(forField)])),
-    );
-  }
-
-  return byMember;
+      Object.fromEntries(
+        [...namespaces].map(([namespace, fields]) => [
+          namespace,
+          Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromRows(forField)])),
+        ]),
+      ),
+    ]),
+  );
 }

@@ -85,6 +85,7 @@ describe('automation link redirects', function () {
       status: 'active',
       name: `Automation ${automationId}`,
       slug: `automation-${automationId}`,
+      trigger_type: 'membership_started',
       created_at: currentTime,
       updated_at: currentTime,
     });

@@ -79,6 +79,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('name').notNullable();
     table.text('description').notNullable();
     table.text('status').notNullable();
+    table.text('trigger_type').notNullable();
     table.text('trigger_tier_scope');
   });
 
@@ -239,6 +240,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
       description: 'Welcome new free members after they sign up.',
+      trigger_type: 'membership_started',
       trigger_tier_scope: 'free',
       status: 'active',
     },
@@ -249,6 +251,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
       description: 'Welcome new paid members after they start their subscription.',
+      trigger_type: 'membership_started',
       trigger_tier_scope: 'all_paid',
       status: 'active',
     },
@@ -477,7 +480,7 @@ describe('automations repository', function () {
       .first();
 
   const getAutomationBySlug = async (slug: string) => {
-    const automationSummaries = await repo.browse({ includeStats: false });
+    const automationSummaries = await repo.browse();
     const automationSummary = automationSummaries.data.find(
       (automation) => automation.slug === slug,
     );
@@ -571,6 +574,7 @@ describe('automations repository', function () {
       name: slug ?? 'Automation with no slug',
       description: slug ?? 'Automation with no slug',
       status,
+      trigger_type: 'membership_started',
       trigger_tier_scope: triggerTierScope,
     });
     if (triggerTierIds.length > 0) {
@@ -762,6 +766,7 @@ describe('automations repository', function () {
       assert.deepEqual(await repo.getById(automation.id), automation);
       const row = await knex('automations').where({ id: automation.id }).first();
       assert.equal(row.trigger_tier_scope, 'selected_paid');
+      assert.equal(row.trigger_type, 'membership_started');
       assert.equal(row.created_at, row.updated_at);
       assert.deepEqual(
         await knex('automation_trigger_tiers')
@@ -785,7 +790,7 @@ describe('automations repository', function () {
         assert.deepEqual(await repo.getById(saved.id), saved);
         assert.deepEqual(saved.actions, []);
         assert.deepEqual(saved.edges, []);
-        const browse = await repo.browse({ includeStats: true });
+        const browse = await repo.browse();
         assert(browse.data.some((automation) => automation.id === saved.id));
       },
     );
@@ -937,7 +942,7 @@ describe('automations repository', function () {
         assert(automation.slug);
         await createWelcomeEmailsForAutomations([{ id: automation.id, slug: automation.slug }]);
 
-        await repo.browse({ includeStats: false });
+        await repo.browse();
 
         const converted = await repo.getById(automation.id);
         assert(converted);
@@ -949,14 +954,12 @@ describe('automations repository', function () {
 
         await repo.edit(automation.id, { status, actions: [], edges: [] });
 
-        for (const includeStats of [false, true]) {
-          await repo.browse({ includeStats });
-          const cleared = await repo.getById(automation.id);
-          assert(cleared);
-          assert.equal(cleared.status, status);
-          assert.deepEqual(cleared.actions, []);
-          assert.deepEqual(cleared.edges, []);
-        }
+        await repo.browse();
+        const cleared = await repo.getById(automation.id);
+        assert(cleared);
+        assert.equal(cleared.status, status);
+        assert.deepEqual(cleared.actions, []);
+        assert.deepEqual(cleared.edges, []);
         assert.deepEqual(
           await knex('automation_action_revisions').where('id', revision.id).first(),
           revision,
@@ -968,149 +971,55 @@ describe('automations repository', function () {
       },
     );
 
-    for (const includeStats of [false, true]) {
-      it(`returns newest automations first with includeStats=${includeStats}`, async function () {
-        await knex('automations')
-          .where('name', 'Free member welcome flow')
-          .update({ created_at: toDatabaseDate('2020-01-01T00:00:00.000Z') });
-        await knex('automations')
-          .where('name', 'Paid member welcome flow')
-          .update({ created_at: toDatabaseDate('2021-01-01T00:00:00.000Z') });
-        await knex('automations').insert([
-          {
-            id: '000000000000000000000001',
-            created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
-            updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
-            slug: 'alpha-flow',
-            name: 'Alpha flow',
-            description: '',
-            status: 'inactive',
-          },
-          {
-            id: '000000000000000000000002',
-            created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
-            updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
-            slug: 'zulu-flow',
-            name: 'Zulu flow',
-            description: '',
-            status: 'inactive',
-          },
-        ]);
+    it('returns newest automations first', async function () {
+      await knex('automations')
+        .where('name', 'Free member welcome flow')
+        .update({ created_at: toDatabaseDate('2020-01-01T00:00:00.000Z') });
+      await knex('automations')
+        .where('name', 'Paid member welcome flow')
+        .update({ created_at: toDatabaseDate('2021-01-01T00:00:00.000Z') });
+      await knex('automations').insert([
+        {
+          id: '000000000000000000000001',
+          created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          slug: 'alpha-flow',
+          name: 'Alpha flow',
+          description: '',
+          status: 'inactive',
+          trigger_type: 'membership_started',
+        },
+        {
+          id: '000000000000000000000002',
+          created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          slug: 'zulu-flow',
+          name: 'Zulu flow',
+          description: '',
+          status: 'inactive',
+          trigger_type: 'membership_started',
+        },
+      ]);
 
-        const result = await repo.browse({ includeStats });
+      const result = await repo.browse();
 
-        assert.deepEqual(
-          result.data.map((automation) => automation.name),
-          ['Zulu flow', 'Alpha flow', 'Paid member welcome flow', 'Free member welcome flow'],
-        );
-      });
-    }
-
-    it('can omit stats', async function () {
-      const result = await repo.browse({ includeStats: false });
-
-      assert(result.data.every((automation) => automation.stats === undefined));
-    });
-
-    it('returns null for "last run created at" if the automation has no runs', async function () {
-      const result = await repo.browse({ includeStats: true });
-
-      assert(result.data.every((automation) => automation.stats?.last_run_created_at === null));
-    });
-
-    it('returns the newest run creation time for the automation', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
-      const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
-      const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
-
-      await insertRun(automationId, latestRunCreatedAt);
-      await insertRun(automationId, olderRunCreatedAt);
-
-      const browseResult = await repo.browse({ includeStats: true });
-      const automation = browseResult.data.find((candidate) => candidate.id === automationId);
-      assert(automation?.stats);
-
-      assert.deepEqual(automation.stats.last_run_created_at, latestRunCreatedAt);
-    });
-
-    it('returns zero for "total run count" if the automation has no runs', async function () {
-      const result = await repo.browse({ includeStats: true });
-
-      assert(result.data.every((automation) => automation.stats?.total_run_count === 0));
-    });
-
-    it('returns the number of runs for the automation', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
-      const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
-
-      await insertRun(automationId);
-      await insertRun(automationId);
-      await insertRun(automationId);
-      await insertRun(otherAutomationId);
-
-      const browseResult = await repo.browse({ includeStats: true });
-      const automation = browseResult.data.find((candidate) => candidate.id === automationId);
-      const otherAutomation = browseResult.data.find(
-        (candidate) => candidate.id === otherAutomationId,
+      assert.deepEqual(
+        result.data.map((automation) => automation.name),
+        ['Zulu flow', 'Alpha flow', 'Paid member welcome flow', 'Free member welcome flow'],
       );
-      assert(automation?.stats);
-      assert(otherAutomation?.stats);
-
-      assert.equal(automation.stats.total_run_count, 3);
-      assert.equal(otherAutomation.stats.total_run_count, 1);
     });
 
-    it('returns zero for "in progress run count" if the automation has no runs', async function () {
-      const result = await repo.browse({ includeStats: true });
-
-      assert(result.data.every((automation) => automation.stats?.in_progress_run_count === 0));
-    });
-
-    it('returns zero for "in progress run count" if none of the runs have pending steps', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
-      const { revision_id: revisionId } = await getActionByIndex(automationId, 0);
-      const run = await insertRun(automationId);
-      await insertStep(run.id, revisionId, { status: 'finished' });
-
-      const browseResult = await repo.browse({ includeStats: true });
-      const automation = browseResult.data.find((candidate) => candidate.id === automationId);
-      assert(automation?.stats);
-
-      assert.equal(automation.stats.in_progress_run_count, 0);
-    });
-
-    it('returns the number of runs with pending steps for the automation', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
-      const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
-      const { revision_id: revisionId } = await getActionByIndex(automationId, 0);
-      const { revision_id: otherRevisionId } = await getActionByIndex(otherAutomationId, 0);
-
-      const pendingRun = await insertRun(automationId);
-      await insertStep(pendingRun.id, revisionId, { status: 'finished' });
-      await insertStep(pendingRun.id, revisionId, { status: 'pending' });
-
-      const multiStepPendingRun = await insertRun(automationId);
-      await insertStep(multiStepPendingRun.id, revisionId, { status: 'pending' });
-      await insertStep(multiStepPendingRun.id, revisionId, { status: 'pending' });
-
-      const finishedRun = await insertRun(automationId);
-      await insertStep(finishedRun.id, revisionId, { status: 'finished' });
-
-      await insertRun(automationId);
-
-      const otherPendingRun = await insertRun(otherAutomationId);
-      await insertStep(otherPendingRun.id, otherRevisionId, { status: 'pending' });
-
-      const browseResult = await repo.browse({ includeStats: true });
-      const automation = browseResult.data.find((candidate) => candidate.id === automationId);
-      const otherAutomation = browseResult.data.find(
-        (candidate) => candidate.id === otherAutomationId,
-      );
-      assert(automation?.stats);
-      assert(otherAutomation?.stats);
-
-      assert.equal(automation.stats.in_progress_run_count, 2);
-      assert.equal(otherAutomation.stats.in_progress_run_count, 1);
+    it('omits stats without querying run tables', async function () {
+      const queries: string[] = [];
+      const captureQuery = (query: { sql: string }) => queries.push(query.sql);
+      knex.on('query', captureQuery);
+      try {
+        const result = await repo.browse();
+        assert(result.data.every((automation) => !Object.hasOwn(automation, 'stats')));
+        assert(!queries.some((sql) => /\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)));
+      } finally {
+        knex.removeListener('query', captureQuery);
+      }
     });
 
     it('creates missing default free and paid automations', async function () {
@@ -1121,18 +1030,19 @@ describe('automations repository', function () {
       await deleteActionsForAutomationIds(automationIds);
       await knex('automations').whereIn('id', automationIds).del();
 
-      await repo.browse({ includeStats: false });
+      await repo.browse();
 
       const automations = await knex('automations')
-        .select('id', 'name', 'slug', 'status', 'trigger_tier_scope')
+        .select('id', 'name', 'slug', 'status', 'trigger_type', 'trigger_tier_scope')
         .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status, trigger_tier_scope }) => ({
+        automations.map(({ name, slug, status, trigger_type, trigger_tier_scope }) => ({
           name,
           slug,
           status,
+          trigger_type,
           trigger_tier_scope,
         })),
         [
@@ -1140,12 +1050,14 @@ describe('automations repository', function () {
             name: 'Free member welcome flow',
             slug: 'member-welcome-email-free',
             status: 'inactive',
+            trigger_type: 'membership_started',
             trigger_tier_scope: 'free',
           },
           {
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid',
             status: 'inactive',
+            trigger_type: 'membership_started',
             trigger_tier_scope: 'all_paid',
           },
         ],
@@ -1153,7 +1065,7 @@ describe('automations repository', function () {
 
       const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
 
-      await repo.browse({ includeStats: false });
+      await repo.browse();
 
       await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
     });
@@ -1167,11 +1079,11 @@ describe('automations repository', function () {
       await deleteActionsForAutomationIds(automationIds);
       const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
 
-      await repo.browse({ includeStats: false });
+      await repo.browse();
 
       await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
 
-      await repo.browse({ includeStats: false });
+      await repo.browse();
 
       const totalActions = await knex('automation_actions')
         .whereIn('automation_id', automationIds)
@@ -1207,13 +1119,11 @@ describe('automations repository', function () {
     it('includes archived automations in browse results', async function () {
       const initial = await getAutomationBySlug('member-welcome-email-free');
       await repo.edit(initial.id, { status: 'archived' });
-      for (const includeStats of [false, true]) {
-        const result = await repo.browse({ includeStats });
-        assert.equal(
-          result.data.find((automation) => automation.id === initial.id)?.status,
-          'archived',
-        );
-      }
+      const result = await repo.browse();
+      assert.equal(
+        result.data.find((automation) => automation.id === initial.id)?.status,
+        'archived',
+      );
     });
 
     it('returns zero for an empty automations table', async function () {

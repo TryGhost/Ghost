@@ -9,6 +9,7 @@ let mailer;
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const emailAddress = require('../../../../../core/server/services/email-address');
+const settingsHelpers = require('../../../../../core/server/services/settings-helpers');
 
 // Mock SMTP config
 const SMTP = {
@@ -59,6 +60,28 @@ describe('Mail: Ghostmailer', function () {
 
     assertExists(mailer);
     assert.equal(typeof mailer.send, 'function');
+  });
+
+  it('reads sender defaults at send time on one mailer and preserves delivery formatting', async function () {
+    configUtils.set({ mail: { transport: 'stub' } });
+    configUtils.set('hostSettings:managedEmail:enabled', false);
+    const getDefaultEmail = sandbox.stub(settingsHelpers, 'getDefaultEmail').returns({
+      address: 'first@example.com',
+      name: 'First ✅',
+    });
+    mailer = new mail.GhostMailer();
+    const sendMail = sandbox.stub(mailer, 'sendMail').resolves({});
+
+    await mailer.send(mailDataNoServer);
+    assert.equal(sendMail.firstCall.args[0].from, '"First" <first@example.com>');
+    assert.equal(sendMail.firstCall.args[0].headers.Sender, '"First" <first@example.com>');
+
+    getDefaultEmail.returns({ address: 'second@example.com', name: 'a\\b"c ✔' });
+    await mailer.send(mailDataNoServer);
+
+    assert.equal(sendMail.secondCall.args[0].from, '"a\\\\b\\"c" <second@example.com>');
+    assert.equal(sendMail.secondCall.args[0].headers.Sender, '"a\\\\b\\"c" <second@example.com>');
+    assert.equal(sendMail.secondCall.args[0].replyTo, null);
   });
 
   it('should setup SMTP transport on initialization', function () {

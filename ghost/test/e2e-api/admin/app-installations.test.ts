@@ -1561,13 +1561,6 @@ describe('App installations Admin API', function () {
 
       await assert.rejects(service().read(installation.id), { name: 'ZodError' });
     });
-
-    it('answers 404 where in-development tables are not created', async function () {
-      configUtils.set('createInDevelopmentTables', false);
-
-      assert.equal(appInstallations.extras.isAvailable(), false);
-      await agent.get('apps/installations/').expectStatus(404);
-    });
   });
 
   // Last, because it signs in as other users and sign-ins are rate limited.

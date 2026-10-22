@@ -4,13 +4,12 @@ import {
   type AskedPart,
   type AskedParts,
   type Asking,
-  type CheckoutCollection,
   type CheckoutDefinition,
   type CheckoutSessionConfig,
   type CollectedSection,
   type StripeCheckoutDesign,
 } from './models';
-import type { StripeCheckoutConfigService } from './service';
+import type { RequestedParts, StripeCheckoutConfigService } from './service';
 
 /** The private flag the config is behind. The collected parts are behind their own flag too. */
 const DESIGN_FLAG = 'stripeCheckoutDesign';
@@ -46,21 +45,6 @@ function checkoutForTier(config: CheckoutSessionConfig, tierId: string): Checkou
       phone: ask('phone', config.phone),
       taxNumber: ask('taxNumber', config.taxNumber),
     },
-  };
-}
-
-/**
- * The collected parts as saved, with the parts a preview gives in their place. A part the
- * preview gives as undefined asks as saved, like one it leaves out.
- */
-function withPreviewed(
-  saved: CheckoutCollection | null,
-  previewed: Partial<CheckoutCollection>,
-): CheckoutCollection {
-  return {
-    shipping: previewed.shipping !== undefined ? previewed.shipping : (saved?.shipping ?? null),
-    phone: previewed.phone !== undefined ? previewed.phone : (saved?.phone ?? null),
-    taxNumber: previewed.taxNumber !== undefined ? previewed.taxNumber : (saved?.taxNumber ?? null),
   };
 }
 
@@ -103,16 +87,17 @@ export class CheckoutService {
 
   /**
    * The checkout a preview opens for this paid tier: in the given design, asking for the
-   * collected parts it gives in place of the saved ones, and for the rest as saved.
+   * collected parts it gives as checkouts would once they were saved, and for the rest as saved.
+   * Refuses parts that saving would refuse.
    */
   async preview(
     tierId: string,
-    draft: { design: StripeCheckoutDesign | null } & Partial<CheckoutCollection>,
+    { design, ...unsaved }: { design: StripeCheckoutDesign | null } & RequestedParts,
   ): Promise<CheckoutDefinition> {
     const collection = this.collecting()
-      ? withPreviewed(await this.readConfig(), draft)
+      ? await this.deps.config.readForCheckout(unsaved)
       : NOTHING_COLLECTED;
-    return checkoutForTier({ design: draft.design, ...collection }, tierId);
+    return checkoutForTier({ ...collection, design }, tierId);
   }
 
   /**

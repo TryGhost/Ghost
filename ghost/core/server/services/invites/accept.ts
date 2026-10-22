@@ -1,6 +1,40 @@
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const security = require('@tryghost/security');
+import type { Knex } from 'knex';
+import * as errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import * as security from '@tryghost/security';
+
+export type Invitation = {
+  invitation: Array<{ token: string; name: string; password: string }>;
+};
+
+type TransactionOptions<Transaction> = {
+  context: { internal: true };
+  transacting: Transaction;
+  forUpdate: true;
+};
+
+export type AcceptanceModels<Transaction = Knex.Transaction> = {
+  Base: {
+    transaction<T>(callback: (transacting: Transaction) => Promise<T>): Promise<T>;
+  };
+  Invite: {
+    findOne(
+      data: { token: string; status: 'sent' },
+      options: { context: { internal: true }; transacting?: Transaction; forUpdate?: true },
+    ): Promise<{
+      get(key: 'expires'): number;
+      get(key: 'email' | 'role_id'): string;
+      destroy(options: TransactionOptions<Transaction>): Promise<unknown>;
+    } | null>;
+  };
+  User: {
+    findOne(data: { email: string }, options: TransactionOptions<Transaction>): Promise<unknown>;
+    addWithRoles(
+      data: { email: string; name: string; password: string; roles: string[] },
+      options: TransactionOptions<Transaction>,
+    ): Promise<unknown>;
+  };
+};
 
 const messages = {
   inviteNotFound: 'Invite not found.',
@@ -12,17 +46,26 @@ const messages = {
   },
 };
 
-function validateInvite(invite) {
+type StoredInvite<Transaction> = NonNullable<
+  Awaited<ReturnType<AcceptanceModels<Transaction>['Invite']['findOne']>>
+>;
+
+function validateInvite<Transaction>(
+  invite: StoredInvite<Transaction> | null,
+): asserts invite is StoredInvite<Transaction> {
   if (!invite) {
     throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
   }
-
   if (invite.get('expires') < Date.now()) {
     throw new errors.NotFoundError({ message: tpl(messages.inviteExpired) });
   }
 }
 
-async function accept(invitation, models, lockStaffUsage) {
+export async function accept<Transaction>(
+  invitation: Invitation,
+  models: AcceptanceModels<Transaction>,
+  lockStaffUsage?: (transaction: Transaction) => Promise<void>,
+): Promise<void> {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
 
@@ -35,7 +78,11 @@ async function accept(invitation, models, lockStaffUsage) {
 
   return models.Base.transaction(async (transacting) => {
     await lockStaffUsage?.(transacting);
-    const options = { context: { internal: true }, transacting, forUpdate: true };
+    const options: TransactionOptions<Transaction> = {
+      context: { internal: true },
+      transacting,
+      forUpdate: true,
+    };
 
     const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
 
@@ -69,5 +116,3 @@ async function accept(invitation, models, lockStaffUsage) {
     );
   });
 }
-
-module.exports = accept;
