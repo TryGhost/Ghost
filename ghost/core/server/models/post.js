@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const ghostBookshelf = require('./base');
+const postEditTransaction = require('../lib/post-edit-transaction');
 const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
 const { limitService } = require('../services/limits');
@@ -1076,10 +1077,12 @@ Post = ghostBookshelf.Model.extend(
       // which changes the computed primary_author. See tags() below.
       // `id` is pivoted in so it is in the SELECT list — the query uses
       // DISTINCT, which requires ORDER BY columns to be selected.
-      return this.belongsToMany('User', 'posts_authors', 'post_id', 'author_id')
-        .withPivot(['sort_order', 'id'])
-        .query('orderBy', 'sort_order', 'ASC')
-        .query('orderBy', 'posts_authors.id', 'ASC');
+      return postEditTransaction.readAuthor(
+        this.belongsToMany('User', 'posts_authors', 'post_id', 'author_id')
+          .withPivot(['sort_order', 'id'])
+          .query('orderBy', 'sort_order', 'ASC')
+          .query('orderBy', 'posts_authors.id', 'ASC'),
+      );
     },
 
     tags: function tags() {
@@ -1404,6 +1407,10 @@ Post = ghostBookshelf.Model.extend(
       return ghostBookshelf.Model.findOne.call(this, data, options);
     },
 
+    editTransaction(callback) {
+      return postEditTransaction.transaction(ghostBookshelf, callback);
+    },
+
     /**
      * ### Edit
      * Fetches and saves to Post. See model.Base.edit
@@ -1443,7 +1450,7 @@ Post = ghostBookshelf.Model.extend(
       };
 
       if (!options.transacting) {
-        return ghostBookshelf.transaction((transacting) => {
+        return this.editTransaction((transacting) => {
           options.transacting = transacting;
           return editPost();
         });
