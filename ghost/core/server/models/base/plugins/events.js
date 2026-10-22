@@ -12,6 +12,8 @@ const forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process
 let numberGenerator = 0;
 
 module.exports = function (Bookshelf) {
+  const ParentModel = Bookshelf.Model;
+
   Bookshelf.Model = Bookshelf.Model.extend(
     {
       initializeEvents: function () {
@@ -123,6 +125,16 @@ module.exports = function (Bookshelf) {
         if (options.forUpdate && options.transacting) {
           options.query.forUpdate();
         }
+      },
+
+      // Only the target row is locked; locking eager-loaded relations takes shared
+      // rows (tags, users) in varying order and deadlocks concurrent edits
+      _handleEager(response, options) {
+        return ParentModel.prototype._handleEager.call(
+          this,
+          response,
+          _.omit(options, ['lock', 'forUpdate']),
+        );
       },
 
       onFetchedCollection() {},
