@@ -1,9 +1,10 @@
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {getImageDimensions} from './getImageDimensions';
+import type {FileUploadResult} from '../context/KoenigComposerContext';
 import type {LexicalEditor} from 'lexical';
 
-export const imageUploadHandler = async (files: File[] | FileList, nodeKey: string, editor: LexicalEditor, upload: (files: File[] | FileList) => Promise<{url: string}[] | null>) => {
+export const imageUploadHandler = async (files: File[] | FileList, nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
@@ -47,7 +48,7 @@ export const imageUploadHandler = async (files: File[] | FileList, nodeKey: stri
     return;
 };
 
-export const backgroundImageUploadHandler = async (files: File[], upload: (files: File[]) => Promise<{url: string}[] | null>) => {
+export const backgroundImageUploadHandler = async (files: File[], upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
