@@ -31,6 +31,7 @@ describe('Trial invitation admission', function () {
 
   beforeAll(async function () {
     await dbUtils.reset();
+    await models.Settings.populateDefaults();
     originalLimits = config.get('hostSettings:staffInvites');
     roleId = (await db.knex('roles').where({ name: 'Contributor' }).first()).id;
     actorId = (await db.knex('users').first()).id;
