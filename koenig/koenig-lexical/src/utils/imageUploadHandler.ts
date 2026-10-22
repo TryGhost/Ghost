@@ -53,9 +53,13 @@ export const backgroundImageUploadHandler = async (files: File[] | FileList | nu
         return;
     }
     const result = await upload(files);
-    const imageSrc = result?.[0].url;
+    const imageSrc = result?.[0]?.url;
 
-    const {width, height} = await getImageDimensions(imageSrc!);
+    if (!imageSrc) {
+        return;
+    }
+
+    const {width, height} = await getImageDimensions(imageSrc);
 
     return {
         imageSrc,
