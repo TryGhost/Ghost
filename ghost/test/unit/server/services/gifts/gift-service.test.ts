@@ -1763,6 +1763,7 @@ describe('GiftService', function () {
         { id: 'member_1' },
         { transacting, forUpdate: true },
       );
+      sinon.assert.callOrder(giftRepository.getByToken, memberRepository.get);
       sinon.assert.calledOnceWithExactly(
         memberRepository.update,
         {
@@ -1964,6 +1965,7 @@ describe('GiftService', function () {
     });
 
     it('throws NotFoundError when the member does not exist', async function () {
+      giftRepository.getByToken.resolves(buildGift());
       memberRepository.get.onFirstCall().resolves(null);
 
       const service = createService();

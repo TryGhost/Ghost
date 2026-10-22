@@ -903,20 +903,21 @@ export class GiftService {
     options: { transacting: Knex.Transaction; newMember?: boolean },
   ): Promise<{ redeemed: Gift; member: MemberModel }> {
     const { transacting } = options;
-    const member = await this.deps.memberRepository.get(
-      { id: memberId },
-      { transacting, forUpdate: true },
-    );
-    if (!member) {
-      throw new errors.NotFoundError({ message: `Member not found: ${memberId}` });
-    }
-
+    // Gift before member, the lock order every gift flow uses
     const gift = await this.deps.giftRepository.getByToken(token, { transacting, forUpdate: true });
     if (!gift) {
       throw new errors.NotFoundError({
         message: tpl(errorMessages.giftNotFound),
         code: 'GIFT_NOT_FOUND',
       });
+    }
+
+    const member = await this.deps.memberRepository.get(
+      { id: memberId },
+      { transacting, forUpdate: true },
+    );
+    if (!member) {
+      throw new errors.NotFoundError({ message: `Member not found: ${memberId}` });
     }
 
     if (options.newMember) {
