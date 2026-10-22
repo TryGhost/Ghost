@@ -12,9 +12,26 @@ const messages = {
   },
 };
 
+function validateInvite(invite) {
+  if (!invite) {
+    throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
+  }
+
+  if (invite.get('expires') < Date.now()) {
+    throw new errors.NotFoundError({ message: tpl(messages.inviteExpired) });
+  }
+}
+
 async function accept(invitation, models, lockStaffUsage) {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
+
+  // Reject invalid tokens before opening a transaction or waiting for the shared lock.
+  const candidate = await models.Invite.findOne(
+    { token: inviteToken, status: 'sent' },
+    { context: { internal: true } },
+  );
+  validateInvite(candidate);
 
   return models.Base.transaction(async (transacting) => {
     await lockStaffUsage?.(transacting);
@@ -22,13 +39,8 @@ async function accept(invitation, models, lockStaffUsage) {
 
     const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
 
-    if (!invite) {
-      throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
-    }
-
-    if (invite.get('expires') < Date.now()) {
-      throw new errors.NotFoundError({ message: tpl(messages.inviteExpired) });
-    }
+    // A resend, revocation or expiry may have invalidated the preliminary lookup.
+    validateInvite(invite);
 
     const email = invite.get('email');
 
