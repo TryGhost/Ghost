@@ -1,22 +1,25 @@
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {BookmarkCard} from './BookmarkCard';
 import {CardWrapper} from './../CardWrapper';
-import {MINIMAL_NODES} from '../../../index.js';
+import {MINIMAL_NODES} from '../../../index';
 import {createEditor} from 'lexical';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
     Selected: {isSelected: true, isEditing: false}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof BookmarkCard> & {display: keyof typeof displayOptions; caption?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Bookmark card',
     component: BookmarkCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -35,27 +38,27 @@ const story = {
 };
 export default story;
 
-const Template = ({display, caption, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, caption, ...args}) => {
     const captionEditor = createEditor({nodes: MINIMAL_NODES});
     populateEditor({editor: captionEditor, initialHtml: `${caption}`});
 
     return (
         <div className="kg-prose">
             <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px] p-4">
-                <CardWrapper {...display} {...args}>
-                    <BookmarkCard {...display} {...args} captionEditor={captionEditor} />
+                <CardWrapper {...displayOptions[display]} {...args}>
+                    <BookmarkCard {...displayOptions[display]} {...args} captionEditor={captionEditor} />
                 </CardWrapper>
             </div>
             <div className="not-kg-prose dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black p-4">
-                <CardWrapper {...display} {...args}>
-                    <BookmarkCard {...display} {...args} captionEditor={captionEditor} />
+                <CardWrapper {...displayOptions[display]} {...args}>
+                    <BookmarkCard {...displayOptions[display]} {...args} captionEditor={captionEditor} />
                 </CardWrapper>
             </div>
         </div>
     );
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Selected',
     url: '',
@@ -68,7 +71,7 @@ Empty.args = {
     thumbnail: 'https://ghost.org/images/meta/ghost.png'
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Selected',
     url: 'https://ghost.org/',
@@ -82,7 +85,7 @@ Populated.args = {
     caption: ''
 };
 
-export const WithCaption = Template.bind({});
+export const WithCaption: StoryFn<StoryArgs> = Template.bind({});
 WithCaption.args = {
     display: 'Selected',
     url: 'https://ghost.org/',

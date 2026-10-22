@@ -15,9 +15,9 @@ export const KoenigSnippetPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_SNIPPET_COMMAND,
-                async (dataset) => {
+                (dataset: Record<string, unknown>) => {
                     editor.update(() => {
-                        const snippetData = JSON.parse(dataset.value);
+                        const snippetData = JSON.parse(dataset.value as string);
                         const nodes = $generateNodesFromSerializedNodes(snippetData.nodes);
                         const firstNode = nodes.length === 1 && nodes[0];
                         const lastNode = !!nodes.length && nodes[nodes.length - 1];
@@ -29,7 +29,9 @@ export const KoenigSnippetPlugin = () => {
                         }
 
                         const selection = $getSelection();
-                        $insertGeneratedNodes(editor, nodes, selection);
+                        if (selection) {
+                            $insertGeneratedNodes(editor, nodes, selection);
+                        }
 
                         if (lastNode && $isKoenigCard(lastNode) && !lastNode.getNextSibling()) {
                             try {

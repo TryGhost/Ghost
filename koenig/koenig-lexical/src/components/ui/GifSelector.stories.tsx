@@ -1,8 +1,9 @@
 import GifSelector from './GifSelector';
-import {getGifProviderConfig, useGif} from '../../utils/services/gif.js';
+import {getGifProviderConfig, useGif} from '../../utils/services/gif';
 import {klipyConfig} from '../../../demo/utils/gifConfig';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof GifSelector> = {
     title: 'File Selectors/Gif',
     component: GifSelector,
     parameters: {
@@ -13,48 +14,41 @@ const story = {
 };
 export default story;
 
-const Template = (args) => {
-    const gifHook = useGif({config: getGifProviderConfig({klipy: klipyConfig})});
+const Template: StoryFn<typeof GifSelector> = (args) => {
+    const gifHook = useGif({config: getGifProviderConfig({klipy: klipyConfig})!});
 
     return (
         <GifSelector {...gifHook} {...args} />
     );
 };
 
-export const Base = Template.bind({});
-Base.args = {
-    config: klipyConfig
-};
+export const Base: StoryFn<typeof GifSelector> = Template.bind({});
+Base.args = {};
 
-export const Loading = Template.bind({});
+export const Loading: StoryFn<typeof GifSelector> = Template.bind({});
 Loading.args = {
-    config: klipyConfig,
     isLoading: true,
     isLazyLoading: false
 };
 
-export const LazyLoading = Template.bind({});
+export const LazyLoading: StoryFn<typeof GifSelector> = Template.bind({});
 LazyLoading.args = {
-    config: klipyConfig,
     isLoading: true,
     isLazyLoading: true,
     loadNextPage: () => {}
 };
 
-export const ErrorCommon = Template.bind({});
+export const ErrorCommon: StoryFn<typeof GifSelector> = Template.bind({});
 ErrorCommon.args = {
-    config: klipyConfig,
     error: 'common'
 };
 
-export const ErrorInvalidKey = Template.bind({});
+export const ErrorInvalidKey: StoryFn<typeof GifSelector> = Template.bind({});
 ErrorInvalidKey.args = {
-    config: klipyConfig,
     error: 'invalid_key'
 };
 
-export const ErrorSpecific = Template.bind({});
+export const ErrorSpecific: StoryFn<typeof GifSelector> = Template.bind({});
 ErrorSpecific.args = {
-    config: klipyConfig,
     error: 'Something went wrong'
 };

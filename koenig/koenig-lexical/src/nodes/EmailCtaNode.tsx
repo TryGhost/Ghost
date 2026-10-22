@@ -2,18 +2,21 @@ import EmailCtaCardIcon from '../assets/icons/kg-card-type-email-cta.svg?react';
 import EmailIndicatorIcon from '../assets/icons/kg-indicator-email.svg?react';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
-import {EmailCtaNode as BaseEmailCtaNode} from '@tryghost/kg-default-nodes';
+import {BASIC_NODES, KoenigCardWrapper} from '../index';
+import {EmailCtaNode as BaseEmailCtaNode, type EmailCtaData} from '@tryghost/kg-default-nodes';
 import {EmailCtaNodeComponent} from './EmailCtaNodeComponent';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_EMAIL_CTA_COMMAND = createCommand();
+export type EmailCtaNodeData = EmailCtaData & {htmlEditor?: unknown};
+
+export const INSERT_EMAIL_CTA_COMMAND = createCommand<EmailCtaNodeData>();
 
 export class EmailCtaNode extends BaseEmailCtaNode {
-    __htmlEditor;
-    __htmlEditorInitialState;
+    __htmlEditor!: LexicalEditor;
+    __htmlEditorInitialState: unknown;
 
     static kgMenu = {
         label: 'Email call to action',
@@ -24,8 +27,8 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         priority: 7,
         postType: 'post',
         shortcut: '/email-cta',
-        isHidden: ({config}) => {
-            return config?.deprecated?.emailCta ?? true;
+        isHidden: ({config}: {config?: Record<string, unknown>}) => {
+            return (config?.deprecated as Record<string, unknown> | undefined)?.emailCta ?? true;
         }
     };
 
@@ -33,7 +36,7 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         return EmailCtaCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: EmailCtaNodeData = {}, key?: string) {
         super(dataset, key);
 
         // set up nested editor instances
@@ -84,9 +87,9 @@ export class EmailCtaNode extends BaseEmailCtaNode {
                     buttonText={this.buttonText}
                     buttonUrl={this.buttonUrl}
                     htmlEditor={this.__htmlEditor}
-                    htmlEditorInitialState={this.__htmlEditorInitialState}
+                    htmlEditorInitialState={this.__htmlEditorInitialState as string | undefined}
                     nodeKey={this.getKey()}
-                    segment={this.__segment}
+                    segment={this.segment}
                     showButton={this.showButton}
                     showDividers={this.showDividers}
                 />
@@ -106,6 +109,6 @@ export function $createEmailCtaNode() {
     return new EmailCtaNode();
 }
 
-export function $isEmailCtaNode(node) {
+export function $isEmailCtaNode(node: unknown): node is EmailCtaNode {
     return node instanceof EmailCtaNode;
 }

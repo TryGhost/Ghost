@@ -1,4 +1,4 @@
-export function isInternalUrl(url, siteUrl) {
+export function isInternalUrl(url: string, siteUrl: string): boolean {
     if (!url || !siteUrl) {
         return false;
     }
@@ -8,7 +8,7 @@ export function isInternalUrl(url, siteUrl) {
         const subdir = `/${new URL(siteUrl).pathname.split('/')[1]}`;
         return urlObj.hostname === new URL(siteUrl).hostname
             && urlObj.pathname.startsWith(subdir);
-    } catch (e) {
+    } catch {
         return false;
     }
 }

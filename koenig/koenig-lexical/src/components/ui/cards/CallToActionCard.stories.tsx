@@ -1,9 +1,11 @@
 import VisibilityIndicatorIcon from '../../../assets/icons/kg-indicator-visibility.svg?react';
-import populateEditor from '../../../utils/storybook/populate-storybook-editor.js';
-import {BASIC_NODES} from '../../../index.js';
+import populateEditor from '../../../utils/storybook/populate-storybook-editor';
+import {BASIC_NODES} from '../../../index';
 import {CallToActionCard} from './CallToActionCard';
 import {CardWrapper} from '../CardWrapper';
 import {createEditor} from 'lexical';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -16,14 +18,15 @@ const layoutOptions = {
     Immersive: 'immersive'
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof CallToActionCard> & {display: keyof typeof displayOptions; value?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Call to Action card',
     component: CallToActionCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -54,18 +57,16 @@ const story = {
 };
 export default story;
 
-const Template = ({display, value, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, value, ...args}) => {
     // Main editor setup
     const htmlEditor = createEditor({nodes: BASIC_NODES});
     populateEditor({editor: htmlEditor, initialHtml: `${value}`});
 
     // Sponsor label editor setup
-    let sponsorLabelHtmlEditor = null;
-    let sponsorLabelHtmlEditorInitialState = null;
+    const sponsorLabelHtmlEditor = createEditor({nodes: BASIC_NODES});
 
     if (args.hasSponsorLabel) {
-        sponsorLabelHtmlEditor = createEditor({nodes: BASIC_NODES});
-        sponsorLabelHtmlEditorInitialState = populateEditor({
+        populateEditor({
             editor: sponsorLabelHtmlEditor,
             initialHtml: 'Sponsored'
         });
@@ -79,15 +80,14 @@ const Template = ({display, value, ...args}) => {
                     indicatorPosition={{
                         top: '1.2rem'
                     }}
-                    {...(args.color === '' && {wrapperStyle: 'wide'})}
-                    {...display}
+                    {...(args.color === 'none' && {wrapperStyle: 'wide'})}
+                    {...displayOptions[display]}
                     {...args}>
                     <CallToActionCard
-                        {...display}
+                        {...displayOptions[display]}
                         {...args}
                         htmlEditor={htmlEditor}
                         sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
-                        sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
                     />
                 </CardWrapper>
             </div>
@@ -95,7 +95,7 @@ const Template = ({display, value, ...args}) => {
     );
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     value: '',
@@ -106,11 +106,10 @@ Empty.args = {
     buttonColor: '#2e398a',
     layout: 'immersive',
     buttonText: '',
-    buttonUrl: '',
-    suggestedUrls: []
+    buttonUrl: ''
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     value: 'Introducing the Air Stride 90X – where bold design meets unmatched performance. Engineered for ultimate support and breathability, it’s the perfect companion for your active lifestyle. Step up your game, in style.',
@@ -121,7 +120,6 @@ Populated.args = {
     buttonColor: '#2e398a',
     layout: 'immersive',
     buttonText: 'Grab 20% discount',
-    buttonUrl: 'https://ghost.org/',
-    suggestedUrls: [{label: 'Homepage', value: 'https://localhost.org/'}]
+    buttonUrl: 'https://ghost.org/'
 };
 

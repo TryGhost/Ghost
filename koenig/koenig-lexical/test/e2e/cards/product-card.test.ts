@@ -2,12 +2,13 @@ import path from 'path';
 import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Product card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -701,7 +702,7 @@ test.describe('Product card', async () => {
     });
 });
 
-async function uploadImg(page, src = 'large-image.png') {
+async function uploadImg(page: Page, src = 'large-image.png') {
     // Placeholder should be visible
     const mediaPlaceholder = await page.getByTestId('media-placeholder');
     await expect(mediaPlaceholder).toBeVisible();

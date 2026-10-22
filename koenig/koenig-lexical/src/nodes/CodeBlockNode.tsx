@@ -1,25 +1,31 @@
 import CodeBlockIcon from '../assets/icons/kg-card-type-gen-embed.svg?react';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';
+import {CodeBlockNode as BaseCodeBlockNode, type CodeBlockData} from '@tryghost/kg-default-nodes';
 import {CodeBlockNodeComponent} from './CodeBlockNodeComponent';
-import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {KoenigCardWrapper, MINIMAL_NODES} from '../index';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_CODE_BLOCK_COMMAND = createCommand();
+export type CodeBlockNodeData = CodeBlockData & {
+    _openInEditMode?: boolean;
+    captionEditor?: unknown;
+};
+
+export const INSERT_CODE_BLOCK_COMMAND = createCommand<CodeBlockNodeData>();
 
 export class CodeBlockNode extends BaseCodeBlockNode {
     // transient properties used to control node behaviour
     __openInEditMode = false;
-    __captionEditor;
-    __captionEditorInitialState;
+    __captionEditor!: LexicalEditor;
+    __captionEditorInitialState: unknown;
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: CodeBlockNodeData = {}, key?: string) {
         super(dataset, key);
 
         const {_openInEditMode} = dataset;
-        this.__openInEditMode = _openInEditMode || false;
+        this.__openInEditMode = !!_openInEditMode;
 
         setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
 
@@ -80,10 +86,10 @@ export class CodeBlockNode extends BaseCodeBlockNode {
     }
 }
 
-export function $createCodeBlockNode(dataset) {
+export function $createCodeBlockNode(dataset: CodeBlockNodeData) {
     return new CodeBlockNode(dataset);
 }
 
-export function $isCodeBlockNode(node) {
+export function $isCodeBlockNode(node: unknown): node is CodeBlockNode {
     return node instanceof CodeBlockNode;
 }

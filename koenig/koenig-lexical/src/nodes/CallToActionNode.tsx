@@ -1,20 +1,28 @@
 import EmailCtaCardIcon from '../assets/icons/kg-card-type-email-cta.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {BASIC_NODES} from '../index.js';
-import {CallToActionNode as BaseCallToActionNode} from '@tryghost/kg-default-nodes';
+import {BASIC_NODES} from '../index';
+import {CallToActionNode as BaseCallToActionNode, type CallToActionData} from '@tryghost/kg-default-nodes';
 import {CallToActionNodeComponent} from './CallToActionNodeComponent';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_CALL_TO_ACTION_COMMAND = createCommand();
+export type CallToActionNodeData = CallToActionData & {
+    callToActionHtmlEditor?: LexicalEditor;
+    callToActionHtmlEditorInitialState?: unknown;
+    sponsorLabelHtmlEditor?: LexicalEditor;
+    sponsorLabelHtmlEditorInitialState?: unknown;
+};
+
+export const INSERT_CALL_TO_ACTION_COMMAND = createCommand<CallToActionNodeData>();
 
 export class CallToActionNode extends BaseCallToActionNode {
-    __callToActionHtmlEditor;
-    __callToActionHtmlEditorInitialState;
-    __sponsorLabelHtmlEditor;
-    __sponsorLabelHtmlEditorInitialState;
+    __callToActionHtmlEditor!: LexicalEditor;
+    __callToActionHtmlEditorInitialState: unknown;
+    __sponsorLabelHtmlEditor!: LexicalEditor;
+    __sponsorLabelHtmlEditorInitialState: unknown;
 
     static kgMenu = {
         label: 'Call to action',
@@ -35,7 +43,7 @@ export class CallToActionNode extends BaseCallToActionNode {
         return EmailCtaCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: CallToActionNodeData = {}, key?: string) {
         super(dataset, key);
 
         // set up nested editor instances
@@ -101,9 +109,8 @@ export class CallToActionNode extends BaseCallToActionNode {
                     buttonTextColor={this.buttonTextColor}
                     buttonUrl={this.buttonUrl}
                     hasSponsorLabel={this.hasSponsorLabel}
-                    href={this.href}
                     htmlEditor={this.__callToActionHtmlEditor}
-                    htmlEditorInitialState={this.__callToActionHtmlEditorInitialState}
+                    htmlEditorInitialState={this.__callToActionHtmlEditorInitialState as string | undefined}
                     imageUrl={this.imageUrl}
                     layout={this.layout}
                     linkColor={this.linkColor}
@@ -111,7 +118,7 @@ export class CallToActionNode extends BaseCallToActionNode {
                     showButton={this.showButton}
                     showDividers={this.showDividers}
                     sponsorLabelHtmlEditor={this.__sponsorLabelHtmlEditor}
-                    sponsorLabelHtmlEditorInitialState={this.__sponsorLabelHtmlEditorInitialState}
+                    sponsorLabelHtmlEditorInitialState={this.__sponsorLabelHtmlEditorInitialState as string | undefined}
                     textValue={this.textValue}
                 />
             </KoenigCardWrapper>
@@ -119,10 +126,10 @@ export class CallToActionNode extends BaseCallToActionNode {
     }
 }
 
-export function $createCallToActionNode(dataset) {
+export function $createCallToActionNode(dataset: CallToActionNodeData = {}) {
     return new CallToActionNode(dataset);
 }
 
-export function $isCallToActionNode(node) {
+export function $isCallToActionNode(node: unknown): node is CallToActionNode {
     return node instanceof CallToActionNode;
 }

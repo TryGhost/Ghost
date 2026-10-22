@@ -2,11 +2,12 @@ import path from 'path';
 import {assertHTML, createDataTransfer, ctrlOrCmd, dragMouse, focusEditor, getEditorState, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Gallery card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -345,7 +346,7 @@ test.describe('Gallery card', async () => {
         // Wait for upload to complete and images to be saved to node state
         // (preview images appear in the DOM before the upload finishes)
         await page.waitForFunction(() => {
-            const state = window.lexicalEditor.getEditorState().toJSON();
+            const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type?: string; images?: unknown[]}>}};
             const gallery = state.root.children.find(c => c.type === 'gallery');
             return gallery && gallery.images && gallery.images.length === 2;
         }, {timeout: 5000});
@@ -424,7 +425,7 @@ test.describe('Gallery card', async () => {
         // Wait for upload to fully complete - the image node needs its src
         // set in the Lexical state (not just the preview) for drag-to-gallery to work
         await page.waitForFunction(() => {
-            const state = window.lexicalEditor.getEditorState().toJSON();
+            const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type?: string; src?: string}>}};
             const imageNode = state.root.children.find(c => c.type === 'image');
             return imageNode && imageNode.src;
         }, {timeout: 5000});
@@ -436,7 +437,7 @@ test.describe('Gallery card', async () => {
         const imageBBox = await page.locator('[data-kg-card="image"]').nth(0).boundingBox();
         const galleryBBox = await page.locator('[data-kg-card="gallery"]').nth(0).boundingBox();
 
-        await dragMouse(page, imageBBox, galleryBBox, 'middle', 'middle', true, 100, 100);
+        await dragMouse(page, imageBBox!, galleryBBox!, 'middle', 'middle', true, 100, 100);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
@@ -494,7 +495,7 @@ test.describe('Gallery card', async () => {
         // (preview images appear in the DOM before the upload completes and
         // updates the node, so we need to poll the serialized state directly)
         await page.waitForFunction(() => {
-            const state = window.lexicalEditor.getEditorState().toJSON();
+            const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type?: string; images?: unknown[]}>}};
             const gallery = state.root.children.find(c => c.type === 'gallery');
             return gallery && gallery.images && gallery.images.length === 9;
         }, {timeout: 5000});

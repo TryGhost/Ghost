@@ -4,6 +4,7 @@ import {
     CardMenuSection,
     CardSnippetItem
 } from './CardMenu';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 import AudioCardIcon from '../../assets/icons/kg-card-type-audio.svg?react';
 import BookmarkCardIcon from '../../assets/icons/kg-card-type-bookmark.svg?react';
@@ -35,10 +36,10 @@ import VideoCardIcon from '../../assets/icons/kg-card-type-video.svg?react';
 import VimeoCardIcon from '../../assets/icons/kg-card-type-vimeo.svg?react';
 import YoutubeCardIcon from '../../assets/icons/kg-card-type-youtube.svg?react';
 
-const story = {
+const story: Meta<typeof CardMenu> = {
     title: 'Card menu/Card menu',
     component: CardMenu,
-    subcomponent: {CardMenuSection, CardMenuItem, CardSnippetItem},
+    subcomponents: {CardMenuSection, CardMenuItem, CardSnippetItem},
     parameters: {
         status: {
             type: 'functional'
@@ -47,9 +48,9 @@ const story = {
 };
 export default story;
 
-const Template = args => <CardMenu {...args} />;
+const Template: StoryFn<typeof CardMenu> = args => <CardMenu {...args} />;
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof CardMenu> = Template.bind({});
 Default.args = {
     menu: new Map([
         ['Primary', [

@@ -1,8 +1,21 @@
 import clsx from 'clsx';
 import {Button} from './Button';
 
-export function SubscribeForm({dataTestId, placeholder, value, buttonSize, buttonText, buttonStyle, onChange, onFocus, onBlur, disabled}) {
-    const onChangeWrapper = (e) => {
+export interface SubscribeFormProps {
+    dataTestId?: string;
+    placeholder?: string;
+    value?: string;
+    buttonSize?: 'small' | 'medium' | 'large';
+    buttonText?: string;
+    buttonStyle?: React.CSSProperties;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onFocus?: () => void;
+    onBlur?: () => void;
+    disabled?: boolean;
+}
+
+export function SubscribeForm({dataTestId, placeholder, value, buttonSize, buttonText, buttonStyle, onChange, onFocus, onBlur, disabled}: SubscribeFormProps) {
+    const onChangeWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (onChange) {
             onChange(e);
         }
@@ -22,7 +35,7 @@ export function SubscribeForm({dataTestId, placeholder, value, buttonSize, butto
                 )}
                 defaultValue={value}
                 placeholder={placeholder}
-                tabIndex={disabled ? '-1' : ''}
+                tabIndex={disabled ? -1 : undefined}
                 readOnly
                 onBlur={onBlur}
                 onChange={onChangeWrapper}

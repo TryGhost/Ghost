@@ -1,8 +1,13 @@
 import React from 'react';
+import type {SerializedEditorState} from 'lexical';
 
-const Context = React.createContext({});
+interface SharedOnChangeContextType {
+    onChange?: (serializedState: SerializedEditorState) => void;
+}
 
-export const SharedOnChangeContext = ({onChange, children}) => {
+const Context = React.createContext<SharedOnChangeContextType>({});
+
+export const SharedOnChangeContext = ({onChange, children}: {onChange?: SharedOnChangeContextType['onChange']; children: React.ReactNode}) => {
     const onChangeContext = React.useMemo(
         () => ({onChange}),
         [onChange]

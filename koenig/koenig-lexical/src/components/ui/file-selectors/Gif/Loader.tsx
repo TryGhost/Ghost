@@ -1,4 +1,8 @@
-export function Loader({isLazyLoading}) {
+interface LoaderProps {
+    isLazyLoading?: boolean;
+}
+
+export function Loader({isLazyLoading}: LoaderProps) {
     if (isLazyLoading) {
         return (
             <div className="inset-y-0 w-full p-6 text-center">

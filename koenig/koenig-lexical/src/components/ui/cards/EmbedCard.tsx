@@ -1,6 +1,5 @@
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import KoenigComposerContext from '../../../context/KoenigComposerContext';
-import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {
@@ -13,8 +12,28 @@ import {
     resolveEmbedHeight
 } from '../../../utils/embed-renderer';
 import {UrlInput} from '../UrlInput';
+import type {LexicalEditor} from 'lexical';
 
-export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, rendererUrl, url, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
+interface EmbedCardProps {
+    captionEditor?: LexicalEditor;
+    captionEditorInitialState?: string;
+    html?: string;
+    isSelected?: boolean;
+    // undefined previews in the editor's origin; null means the configured renderer can't be used
+    rendererUrl?: string | null;
+    url?: string;
+    urlInputValue?: string;
+    urlPlaceholder?: string;
+    urlError?: boolean;
+    isLoading?: boolean;
+    handleUrlChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleUrlSubmit: (e: KeyboardEvent | React.KeyboardEvent) => void;
+    handleRetry?: () => void;
+    handlePasteAsLink?: (value?: string) => void;
+    handleClose?: () => void;
+}
+
+export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, rendererUrl, url, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}: EmbedCardProps) {
     if (html) {
         return (
             <div>
@@ -33,13 +52,15 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
                     )}
                     <div className="absolute inset-0 z-50 mt-0"></div>
                 </div>
-                <CardCaptionEditor
-                    captionEditor={captionEditor}
-                    captionEditorInitialState={captionEditorInitialState}
-                    captionPlaceholder="Type caption for embed (optional)"
-                    dataTestId="embed-caption"
-                    isSelected={isSelected}
-                />
+                {captionEditor && (
+                    <CardCaptionEditor
+                        captionEditor={captionEditor}
+                        captionEditorInitialState={captionEditorInitialState}
+                        captionPlaceholder="Type caption for embed (optional)"
+                        dataTestId="embed-caption"
+                        isSelected={isSelected}
+                    />
+                )}
             </div>
         );
     }
@@ -59,12 +80,17 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
     );
 }
 
-function EmbedIframe({dataTestId, html}) {
-    const iframeRef = React.useRef(null);
+interface EmbedIframeProps {
+    dataTestId?: string;
+    html: string;
+}
+
+function EmbedIframe({dataTestId, html}: EmbedIframeProps) {
+    const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
     const handleResize = () => {
         // get ratio from nested iframe if present (eg, Vimeo)
-        const firstElement = iframeRef.current?.contentDocument?.body?.firstChild;
+        const firstElement = iframeRef.current?.contentDocument?.body?.firstChild as HTMLElement | null;
 
         // won't have an iframe if the embed is invalid or fetching
         if (!firstElement) {
@@ -72,20 +98,21 @@ function EmbedIframe({dataTestId, html}) {
         }
 
         if (firstElement.tagName === 'IFRAME') {
-            const widthAttr = firstElement.getAttribute('width');
-            const heightAttr = firstElement.getAttribute('height');
+            const iframeElement = firstElement as HTMLIFrameElement;
+            const widthAttr = iframeElement.getAttribute('width');
+            const heightAttr = iframeElement.getAttribute('height');
 
             if (widthAttr && heightAttr && widthAttr.indexOf('%') === -1 && heightAttr.indexOf('%') === -1) {
                 const ratio = parseInt(widthAttr) / parseInt(heightAttr);
-                const newHeight = iframeRef.current.offsetWidth / ratio;
-                firstElement.style.height = `${newHeight}px`;
-                iframeRef.current.style.height = `${newHeight}px`;
-                firstElement.style.width = '100%';
+                const newHeight = iframeRef.current!.offsetWidth / ratio;
+                iframeElement.style.height = `${newHeight}px`;
+                iframeRef.current!.style.height = `${newHeight}px`;
+                iframeElement.style.width = '100%';
                 return;
             }
 
             if (heightAttr && heightAttr.indexOf('%') === -1) {
-                iframeRef.current.style.height = `${heightAttr}px`;
+                iframeRef.current!.style.height = `${heightAttr}px`;
                 return;
             }
         }
@@ -97,11 +124,11 @@ function EmbedIframe({dataTestId, html}) {
             return;
         }
 
-        iframeRef.current.style.height = `${scrollHeight}px`;
+        iframeRef.current!.style.height = `${scrollHeight}px`;
     };
 
     // register mutation observer to handle changes to iframe content (e.g. twitter embeds loading richer content)
-    const config = {
+    const config: MutationObserverInit = {
         attributes: true,
         attributeOldValue: false,
         characterData: true,
@@ -112,7 +139,7 @@ function EmbedIframe({dataTestId, html}) {
     const mutationObserver = new MutationObserver(handleResize);
 
     const handleLoad = () => {
-        const iframeBody = iframeRef.current.contentDocument.body;
+        const iframeBody = iframeRef.current!.contentDocument!.body;
         // apply styles
         iframeBody.style.display = 'flex';
         iframeBody.style.margin = '0';
@@ -120,13 +147,13 @@ function EmbedIframe({dataTestId, html}) {
         // resize first load
         handleResize();
         // start listening to mutations when the iframe content is loaded
-        mutationObserver.observe(iframeRef.current.contentWindow.document, config);
+        mutationObserver.observe(iframeRef.current!.contentWindow!.document, config);
     };
 
     // register listener for window resize events
     React.useEffect(() => {
         const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(iframeRef.current);
+        resizeObserver.observe(iframeRef.current!);
 
         // cleanup listener when component unmounts
         return function cleanup() {
@@ -154,7 +181,14 @@ function EmbedIframe({dataTestId, html}) {
 // Previews embed html in the embed renderer, which runs on a separate origin
 // so embed scripts can't reach the editor. Fails closed when the renderer is
 // unusable or doesn't answer in time, but still renders a late answer.
-function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
+interface RendererEmbedIframeProps {
+    dataTestId?: string;
+    html: string;
+    rendererUrl: string | null;
+    url?: string;
+}
+
+function RendererEmbedIframe({dataTestId, html, rendererUrl, url}: RendererEmbedIframeProps) {
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
     const [unavailable, setUnavailable] = React.useState(!rendererUrl);
     const [timedOut, setTimedOut] = React.useState(false);
@@ -209,7 +243,7 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
                     setTimedOut(false);
                     reportLate(performance.now() - startedAt, loadedAtTimeout);
                 }
-                iframe.contentWindow.postMessage({type: EMBED_RENDER_MESSAGE, version: EMBED_RENDERER_VERSION, html}, rendererOrigin);
+                iframe.contentWindow?.postMessage({type: EMBED_RENDER_MESSAGE, version: EMBED_RENDERER_VERSION, html}, rendererOrigin);
                 return;
             }
 
@@ -256,7 +290,7 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
                 data-testid={dataTestId}
                 referrerPolicy="no-referrer"
                 sandbox={EMBED_RENDERER_PERMISSIONS}
-                src={rendererUrl}
+                src={rendererUrl ?? undefined}
                 tabIndex={-1}
                 title="embed-card-iframe"
                 onLoad={() => {
@@ -267,7 +301,7 @@ function RendererEmbedIframe({dataTestId, html, rendererUrl, url}) {
     );
 }
 
-function EmbedPreviewUnavailable({url}) {
+function EmbedPreviewUnavailable({url}: {url?: string}) {
     return (
         <div className="flex min-h-[120px] w-full flex-col items-center justify-center gap-1 rounded border border-grey-200 p-4 text-center font-sans text-sm text-grey-700 dark:border-grey-900 dark:text-grey-500" data-testid="embed-preview-unavailable">
             <span>Embed preview unavailable</span>
@@ -276,36 +310,3 @@ function EmbedPreviewUnavailable({url}) {
     );
 }
 
-EmbedCard.propTypes = {
-    html: PropTypes.string,
-    rendererUrl: PropTypes.string,
-    url: PropTypes.string,
-    isSelected: PropTypes.bool,
-    urlInputValue: PropTypes.string,
-    urlPlaceholder: PropTypes.string,
-    urlError: PropTypes.bool,
-    isLoading: PropTypes.bool,
-    handleUrlChange: PropTypes.func,
-    handleUrlSubmit: PropTypes.func,
-    handleRetry: PropTypes.func,
-    handlePasteAsLink: PropTypes.func,
-    handleClose: PropTypes.func,
-    captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.object
-};
-
-EmbedIframe.propTypes = {
-    dataTestId: PropTypes.string,
-    html: PropTypes.string
-};
-
-RendererEmbedIframe.propTypes = {
-    dataTestId: PropTypes.string,
-    html: PropTypes.string,
-    rendererUrl: PropTypes.string,
-    url: PropTypes.string
-};
-
-EmbedPreviewUnavailable.propTypes = {
-    url: PropTypes.string
-};

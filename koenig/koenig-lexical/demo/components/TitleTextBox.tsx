@@ -1,7 +1,21 @@
 import React from 'react';
 
-export const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref) => {
-    const titleEl = React.useRef(null);
+interface TitleTextBoxProps {
+    title: string;
+    setTitle: (title: string) => void;
+    editorAPI: {
+        editorIsEmpty: () => boolean;
+        insertParagraphAtTop: (options: {focus: boolean}) => void;
+        focusEditor: (options: {position: string}) => void;
+    } | null;
+}
+
+export interface TitleTextBoxHandle {
+    focus: () => void;
+}
+
+export const TitleTextBox = React.forwardRef<TitleTextBoxHandle, TitleTextBoxProps>(({title, setTitle, editorAPI}, ref) => {
+    const titleEl = React.useRef<HTMLTextAreaElement>(null);
 
     React.useImperativeHandle(ref, () => ({
         focus: () => {
@@ -16,7 +30,7 @@ export const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref)
         }
     }, [titleEl, title]);
 
-    const handleTitleInput = (e) => {
+    const handleTitleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setTitle(e.target.value);
     };
 
@@ -24,13 +38,13 @@ export const TitleTextBox = React.forwardRef(({title, setTitle, editorAPI}, ref)
     // - Tab
     // - Arrow Down/Right when input is empty or caret at end of input
     // - Enter, creating an empty paragraph when editor is not empty
-    const handleTitleKeyDown = (event) => {
+    const handleTitleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (!editorAPI) {
             return;
         }
 
         const {key} = event;
-        const {value, selectionStart} = event.target;
+        const {value, selectionStart} = event.target as HTMLTextAreaElement;
 
         const couldLeaveTitle = !value || selectionStart === value.length;
         const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;

@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTKContext} from '../context/TKContext';
 
-export default function TKCountPlugin({onChange}) {
+export default function TKCountPlugin({onChange}: {onChange?: (count: number) => void}) {
     const {tkCount} = useTKContext();
 
     React.useEffect(() => {
@@ -11,4 +11,6 @@ export default function TKCountPlugin({onChange}) {
 
         onChange(tkCount);
     }, [onChange, tkCount]);
+
+    return null;
 }

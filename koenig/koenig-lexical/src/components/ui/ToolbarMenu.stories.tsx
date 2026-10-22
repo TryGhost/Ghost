@@ -1,7 +1,7 @@
-/* eslint-disable react/jsx-key */
-
 import {ToolbarMenu} from './ToolbarMenu';
 import {ToolbarMenuSeparator} from './ToolbarMenu';
+import type {Meta, StoryFn} from '@storybook/react-vite';
+import type {ToolbarMenuItemProps} from './ToolbarMenu';
 
 import {Add} from './ToolbarMenuItem.stories';
 import {Bold} from './ToolbarMenuItem.stories';
@@ -17,7 +17,7 @@ import {Link} from './ToolbarMenuItem.stories';
 import {Quote} from './ToolbarMenuItem.stories';
 import {Snippet} from './ToolbarMenuItem.stories';
 
-const story = {
+const story: Meta<typeof ToolbarMenu> = {
     title: 'Toolbar/Toolbar',
     component: ToolbarMenu,
     subcomponents: {ToolbarMenuSeparator},
@@ -29,7 +29,7 @@ const story = {
 };
 export default story;
 
-const Template = (args) => {
+const Template: StoryFn<typeof ToolbarMenu> = (args) => {
     return (
         <div className="flex">
             <ToolbarMenu {...args} />
@@ -37,56 +37,56 @@ const Template = (args) => {
     );
 };
 
-export const Text = Template.bind({});
+export const Text: StoryFn<typeof ToolbarMenu> = Template.bind({});
 Text.args = {
     children: [
-        <Bold {...Bold.args} />,
-        <Italic {...Italic.args} />,
-        <HeadingTwo {...HeadingTwo.args} />,
-        <HeadingThree {...HeadingThree.args} />,
-        <ToolbarMenuSeparator />,
-        <Quote {...Quote.args} />,
-        <Link {...Link.args} />,
-        <ToolbarMenuSeparator />,
-        <Snippet {...Snippet.args} />
+        <Bold key='bold' {...(Bold.args as ToolbarMenuItemProps)} />,
+        <Italic key='italic' {...(Italic.args as ToolbarMenuItemProps)} />,
+        <HeadingTwo key='heading-two' {...(HeadingTwo.args as ToolbarMenuItemProps)} />,
+        <HeadingThree key='heading-three' {...(HeadingThree.args as ToolbarMenuItemProps)} />,
+        <ToolbarMenuSeparator key='sep-1' />,
+        <Quote key='quote' {...(Quote.args as ToolbarMenuItemProps)} />,
+        <Link key='link' {...(Link.args as ToolbarMenuItemProps)} />,
+        <ToolbarMenuSeparator key='sep-2' />,
+        <Snippet key='snippet' {...(Snippet.args as ToolbarMenuItemProps)} />
     ]
 };
 
-export const Image = Template.bind({});
+export const Image: StoryFn<typeof ToolbarMenu> = Template.bind({});
 Image.args = {
     children: [
-        <ImgRegular {...ImgRegular.args} />,
-        <ImgWide {...ImgWide.args} />,
-        <ImgFull {...ImgFull.args} />,
-        <ToolbarMenuSeparator />,
-        <Link {...Link.args} />,
-        <ImgReplace {...ImgReplace.args} />,
-        <ToolbarMenuSeparator />,
-        <Snippet {...Snippet.args} />
+        <ImgRegular key='img-regular' {...(ImgRegular.args as ToolbarMenuItemProps)} />,
+        <ImgWide key='img-wide' {...(ImgWide.args as ToolbarMenuItemProps)} />,
+        <ImgFull key='img-full' {...(ImgFull.args as ToolbarMenuItemProps)} />,
+        <ToolbarMenuSeparator key='sep-1' />,
+        <Link key='link' {...(Link.args as ToolbarMenuItemProps)} />,
+        <ImgReplace key='img-replace' {...(ImgReplace.args as ToolbarMenuItemProps)} />,
+        <ToolbarMenuSeparator key='sep-2' />,
+        <Snippet key='snippet' {...(Snippet.args as ToolbarMenuItemProps)} />
     ]
 };
 
-export const Gallery = Template.bind({});
+export const Gallery: StoryFn<typeof ToolbarMenu> = Template.bind({});
 Gallery.args = {
     children: [
-        <Add {...Add.args} />,
-        <ToolbarMenuSeparator />,
-        <Snippet {...Snippet.args} />
+        <Add key='add' {...(Add.args as ToolbarMenuItemProps)} />,
+        <ToolbarMenuSeparator key='sep-1' />,
+        <Snippet key='snippet' {...(Snippet.args as ToolbarMenuItemProps)} />
     ]
 };
 
-export const EditableCards = Template.bind({});
+export const EditableCards: StoryFn<typeof ToolbarMenu> = Template.bind({});
 EditableCards.args = {
     children: [
-        <Edit {...Edit.args} />,
-        <ToolbarMenuSeparator />,
-        <Snippet {...Snippet.args} />
+        <Edit key='edit' {...(Edit.args as ToolbarMenuItemProps)} />,
+        <ToolbarMenuSeparator key='sep-1' />,
+        <Snippet key='snippet' {...(Snippet.args as ToolbarMenuItemProps)} />
     ]
 };
 
-export const NonEditableCards = Template.bind({});
+export const NonEditableCards: StoryFn<typeof ToolbarMenu> = Template.bind({});
 NonEditableCards.args = {
     children: [
-        <Snippet {...Snippet.args} />
+        <Snippet key='snippet' {...(Snippet.args as ToolbarMenuItemProps)} />
     ]
 };

@@ -1,6 +1,16 @@
 import PlusIcon from '../../../assets/icons/plus.svg?react';
 import ReplaceIcon from '../../../assets/icons/kg-sync.svg?react';
 
+interface DropdownProps {
+    snippets: {name: string}[];
+    onCreateSnippet: () => void;
+    onUpdateSnippet: (name: string) => void;
+    value: string;
+    isCreateButtonActive: boolean;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+    activeMenuItem: number;
+}
+
 export const Dropdown = ({
     snippets,
     onCreateSnippet,
@@ -9,7 +19,7 @@ export const Dropdown = ({
     isCreateButtonActive,
     onKeyDown,
     activeMenuItem
-}) => {
+}: DropdownProps) => {
     return (
         <ul
             className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow-md dark:border-grey-900 dark:bg-grey-950"
@@ -39,7 +49,13 @@ export const Dropdown = ({
     );
 };
 
-const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
+interface DropdownSectionProps {
+    list?: {name: string}[];
+    onClick: (name: string) => void;
+    activeMenuItem: number;
+}
+
+const DropdownSection = ({list = [], onClick, activeMenuItem}: DropdownSectionProps) => {
     return (
         <li role="separator">
             <span className="block border-t border-grey-200 px-3 pb-2 pt-3 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600 dark:border-grey-900 dark:text-grey-800">Replace existing</span>
@@ -60,11 +76,17 @@ const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
     );
 };
 
-const DropdownItem = ({onClick, name, active, index}) => {
+interface DropdownItemProps {
+    onClick: (name: string) => void;
+    name: string;
+    active: number;
+    index: number;
+}
+
+const DropdownItem = ({onClick, name, active, index}: DropdownItemProps) => {
     return (
         <li className="mb-1">
             <button
-                // ref={buttonRef}
                 className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm hover:bg-grey-100 ${index === active ? 'bg-grey-100 dark:bg-black' : ''} dark:hover:bg-black`}
                 type="button"
                 onClick={() => onClick(name)}

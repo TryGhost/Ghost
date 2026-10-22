@@ -3,10 +3,11 @@ import {assertHTML, focusEditor, html, initialize, isMac} from '../../utils/e2e'
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 import {selectCustomColor, selectNamedColor, selectTitledColor} from '../../utils/color-select-helper';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function createHeaderCard({page, version = 1}) {
+async function createHeaderCard({page, version = 1}: {page: Page; version?: number}) {
     await focusEditor(page);
     if (version === 1) {
         await page.keyboard.type('/v1_header');
@@ -25,7 +26,7 @@ async function createHeaderCard({page, version = 1}) {
 
 test.describe('Header card V1', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -192,7 +193,7 @@ test.describe('Header card V1', async () => {
 
         // Get height of the card
         const box = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
-        const height = box.height;
+        const height = box!.height;
 
         // Click on the medium button
         const mediumButton = page.locator('[aria-label="M"]');
@@ -201,7 +202,7 @@ test.describe('Header card V1', async () => {
 
         // Check that the height has changed
         const box2 = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
-        const height2 = box2.height;
+        const height2 = box2!.height;
 
         expect(height2).toBeGreaterThan(height);
 
@@ -212,7 +213,7 @@ test.describe('Header card V1', async () => {
 
         // Check that the height has changed
         const box3 = await page.locator('[data-kg-card="header"] > div:first-child').nth(0).boundingBox();
-        const height3 = box3.height;
+        const height3 = box3!.height;
 
         expect(height3).toBeGreaterThan(height2);
     });
@@ -265,9 +266,9 @@ test.describe('Header card V1', async () => {
 
         // Get the bounding box of the span
         const box = await helloSpan.boundingBox();
-        const y = box.y + box.height / 2;
-        const startX = box.x + box.width / 2;
-        const endX = box.x + box.width;
+        const y = box!.y + box!.height / 2;
+        const startX = box!.x + box!.width / 2;
+        const endX = box!.x + box!.width;
 
         await page.mouse.move(startX, y);
         await page.mouse.down();
@@ -288,9 +289,9 @@ test.describe('Header card V1', async () => {
 
         // Get the bounding box of the span
         const box = await helloSpan.boundingBox();
-        const y = box.y + box.height / 2;
-        const startX = box.x + box.width / 2;
-        const endX = box.x + box.width;
+        const y = box!.y + box!.height / 2;
+        const startX = box!.x + box!.width / 2;
+        const endX = box!.x + box!.width;
 
         await page.mouse.move(startX, y);
         await page.mouse.down();
@@ -361,7 +362,7 @@ test.describe('Header card V1', async () => {
 
 test.describe('Header card V2', () => {
     // const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -375,7 +376,7 @@ test.describe('Header card V2', () => {
         await page.close();
     });
 
-    test('can import serialized header card nodes', async function () {
+    test('can import serialized header card v2 nodes', async function () {
         const contentParam = encodeURIComponent(JSON.stringify({
             root: {
                 children: [{
@@ -411,7 +412,7 @@ test.describe('Header card V2', () => {
         await expect(page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0)).toHaveText('hello world');
     });
 
-    test('renders header card node', async function () {
+    test('renders header card v2 node', async function () {
         await createHeaderCard({page, version: 2});
 
         await assertHTML(page, html`
@@ -423,7 +424,7 @@ test.describe('Header card V2', () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can edit header', async function () {
+    test('can edit header v2', async function () {
         await createHeaderCard({page, version: 2});
 
         await page.keyboard.type('Hello world');
@@ -431,7 +432,7 @@ test.describe('Header card V2', () => {
         await expect(firstEditor).toHaveText('Hello world');
     });
 
-    test('can edit sub header', async function () {
+    test('can edit sub header v2', async function () {
         await createHeaderCard({page, version: 2});
 
         await page.keyboard.type('Hello world');
@@ -446,7 +447,7 @@ test.describe('Header card V2', () => {
         await expect(secondEditor).toHaveText('Hello subheader');
     });
 
-    test('can edit sub header via arrow keys', async function () {
+    test('can edit sub header via arrow keys v2', async function () {
         await createHeaderCard({page, version: 2});
 
         await page.keyboard.type('Hello');
@@ -465,7 +466,7 @@ test.describe('Header card V2', () => {
         await expect(secondEditor).toHaveText('blah blah blah something very long');
     });
 
-    test('can add and remove button', async function () {
+    test('can add and remove button v2', async function () {
         await createHeaderCard({page, version: 2});
 
         // click on the toggle with data-testid="header-button-toggle"
@@ -509,7 +510,7 @@ test.describe('Header card V2', () => {
         await expect(page.locator('[data-testid="header-card-button"]')).toHaveCSS('color', 'rgb(255, 255, 255)');
 
         await page.click('[data-testid="header-button-color"] [data-testid="color-selector-button"]');
-        await selectCustomColor(page, '#f7f7f7', null);
+        await selectCustomColor(page, '#f7f7f7', undefined);
 
         await expect(page.locator('[data-testid="header-card-button"]')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
         await expect(page.locator('[data-testid="header-card-button"]')).toHaveCSS('color', 'rgb(0, 0, 0)');
@@ -530,7 +531,7 @@ test.describe('Header card V2', () => {
         await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
 
         await page.click('[data-testid="header-background-color"] [data-testid="color-selector-button"]');
-        await selectCustomColor(page, '#f7f7f7', null);
+        await selectCustomColor(page, '#f7f7f7', undefined);
 
         await expect(container).toHaveCSS('background-color', 'rgb(247, 247, 247)');
         await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
@@ -767,6 +768,6 @@ test.describe('Header card V2', () => {
                             <span data-lexical-text="true">This is second subheader</span>
                             </p>
                         </div>`,
-        {selector: '[data-kg-card="header"] [data-testid="header-subheader-editor"] [data-kg="editor"]'});    
+        {selector: '[data-kg-card="header"] [data-testid="header-subheader-editor"] [data-kg="editor"]'});
     });
 });

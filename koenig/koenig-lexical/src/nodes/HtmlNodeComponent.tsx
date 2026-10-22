@@ -1,19 +1,25 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {EDIT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
-import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
+import {SettingsPanel} from '../components/ui/SettingsPanel';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {VisibilitySettings} from '../components/ui/VisibilitySettings';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
+import type {HtmlNode} from '@tryghost/kg-default-nodes';
 
-export function HtmlNodeComponent({nodeKey, html}) {
+interface HtmlNodeComponentProps {
+    nodeKey: string;
+    html: string;
+}
+
+export function HtmlNodeComponent({nodeKey, html}: HtmlNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
@@ -27,24 +33,18 @@ export function HtmlNodeComponent({nodeKey, html}) {
         {id: 'visibility', label: 'Visibility'}
     ];
 
-    const updateHtml = (value) => {
+    const updateHtml = (value: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as HtmlNode | null;
+            if (!node) {return;}
             node.html = value;
         });
     };
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
-    };
-
-    // TODO: this isn't used? <HtmlCard> does not have a prop for `onBlur`
-    const onBlur = (event) => {
-        if (event?.relatedTarget?.className !== 'kg-prose') {
-            editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey});
-        }
     };
 
     const visibilitySettings = (
@@ -54,7 +54,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
         />
     );
 
-    const handleVisibilityToggle = React.useCallback((event) => {
+    const handleVisibilityToggle = React.useCallback((event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
@@ -67,7 +67,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 html={html}
                 isEditing={cardContext.isEditing}
                 updateHtml={updateHtml}
-                onBlur={onBlur}
             />
 
             <ActionToolbar
@@ -118,10 +117,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
                     darkMode={darkMode}
                     defaultTab="visibility"
                     tabs={settingsTabs}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
                 >
                     {{
                         visibility: visibilitySettings
