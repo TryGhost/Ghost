@@ -1,8 +1,9 @@
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import type {FileUploadResult} from '../context/KoenigComposerContext';
 import type {LexicalEditor} from 'lexical';
 
-export const thumbnailUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: (files: File[], options?: {formData: {url: string}}) => Promise<{url: string}[]>) => {
+export const thumbnailUploadHandler = async (files: File[], nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
@@ -17,11 +18,16 @@ export const thumbnailUploadHandler = async (files: File[], nodeKey: string, edi
     });
 
     const uploadResult = await upload(files, {formData: {url: mediaSrc}});
+    const thumbnailSrc = uploadResult?.[0]?.url;
+
+    if (!thumbnailSrc) {
+        return;
+    }
 
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
         if ($isKoenigCard(node)) {
-            node.thumbnailSrc = uploadResult[0].url;
+            node.thumbnailSrc = thumbnailSrc;
         }
     });
 
