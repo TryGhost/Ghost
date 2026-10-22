@@ -24,8 +24,7 @@ const serviceImplementations = {
 // Explicit code-library and contract allowances, not application instances.
 // Keep each package or file named individually and explain additions here.
 const serviceDependencyAllowlist = [
-  '^@tryghost/limit-service$|^packages/limit-service/src/index\\.ts$', // Stateless limit classes, not a configured service instance.
-  '^ghost/core/server/lib/staff-invite-usage\\.ts$', // Shared transactional staff-seat guard for models and invitations.
+  '^@tryghost/limit-service$|^packages/limit-service/src/index\\.ts$', // Reusable limit classes, not a configured service instance.
   '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
   '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
   '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.

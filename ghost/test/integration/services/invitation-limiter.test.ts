@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import ObjectId from 'bson-objectid';
+import {
+  lockStaffInvites,
+  checkTrialStaffLimit,
+  STAFF_INVITE_RATE_KEY,
+} from '../../../core/server/lib/staff-invite-usage';
 import InvitationLimiter, {
   type InvitationLimits,
 } from '../../../core/server/services/invites/invitation-limiter';
@@ -9,6 +14,8 @@ const db = require('../../../core/server/data/db');
 const dbUtils = require('../../utils/db-utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+
+const dependencies = { lockStaffInvites, checkTrialStaffLimit, STAFF_INVITE_RATE_KEY };
 
 describe('Trial invitation admission', function () {
   let now: number;
@@ -33,6 +40,7 @@ describe('Trial invitation admission', function () {
     limits = { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 };
     config.set('hostSettings:staffInvites', limits);
     limiter = new InvitationLimiter(
+      dependencies,
       db.knex,
       () => limits,
       () => now,
@@ -58,6 +66,7 @@ describe('Trial invitation admission', function () {
 
   it('admits exactly three of twenty concurrent requests across instances', async function () {
     const other = new InvitationLimiter(
+      dependencies,
       db.knex,
       () => limits,
       () => now,
@@ -77,6 +86,7 @@ describe('Trial invitation admission', function () {
     assert.equal(await limiter.rateLimit(), 1);
     now += 1000;
     const restarted = new InvitationLimiter(
+      dependencies,
       db.knex,
       () => limits,
       () => now,
@@ -112,6 +122,7 @@ describe('Trial invitation admission', function () {
     now += 90 * 86400_000;
     await dbUtils.truncate('brute');
     const restarted = new InvitationLimiter(
+      dependencies,
       db.knex,
       () => ({ ...limits! }),
       () => now,
