@@ -1,3 +1,4 @@
+import { replaceTriggerRules } from '../../../core/server/services/automations/trigger-rules';
 import { createRequire } from 'node:module';
 import got, { type ExtendOptions, type Got } from 'got';
 import logging from '@tryghost/logging';
@@ -54,6 +55,8 @@ type Automation = {
   slug: string;
   status: string;
   description: string | null;
+  trigger_type: string;
+  subscription_transition: { from: string | string[]; to: string | string[] } | null;
   trigger_tier_scope: string;
   trigger_tier_ids: string[];
   edges: { source_action_id: string; target_action_id: string }[];
@@ -294,6 +297,107 @@ describe('Automations API', function () {
       });
     }
 
+    it('creates, reads and edits a subscription change without exposing rule rows', async function () {
+      const transitionPayload = {
+        ...payload,
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+        subscription_transition: { from: [tierIds[0]], to: [tierIds[1]] },
+      };
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [transitionPayload] })
+        .expectStatus(201);
+      const created = body.automations[0];
+      assert.equal(created.trigger_type, 'paid_subscription_changed');
+      assert.deepEqual(created.subscription_transition, transitionPayload.subscription_transition);
+      const rows = await models.Base.knex('automation_trigger_rules').where(
+        'automation_id',
+        created.id,
+      );
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].from_product_id, tierIds[0]);
+      assert.equal(rows[0].to_product_id, tierIds[1]);
+      assert.equal(
+        (await models.Base.knex('automation_trigger_tiers').where('automation_id', created.id))
+          .length,
+        0,
+      );
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], created);
+      const { body: edited } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [
+            { ...created, subscription_transition: { from: 'any_paid', to: 'downgraded_to_free' } },
+          ],
+        })
+        .expectStatus(200);
+      assert.deepEqual(edited.automations[0].subscription_transition, {
+        from: 'any_paid',
+        to: 'downgraded_to_free',
+      });
+      const { body: disabled } = await agent
+        .put(`automations/${created.id}`)
+        .body({ automations: [{ status: 'inactive' }] })
+        .expectStatus(200);
+      assert.deepEqual(
+        disabled.automations[0].subscription_transition,
+        edited.automations[0].subscription_transition,
+      );
+      await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [
+            {
+              ...created,
+              trigger_type: 'membership_started',
+              subscription_transition: null,
+              trigger_tier_scope: 'free',
+            },
+          ],
+        })
+        .expectStatus(422);
+    });
+
+    it('rejects invalid transition edits atomically and allows unconfigured drafts', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({
+          automations: [
+            {
+              ...payload,
+              status: 'inactive',
+              trigger_type: 'paid_subscription_changed',
+              trigger_tier_scope: null,
+            },
+          ],
+        })
+        .expectStatus(201);
+      const draft = body.automations[0];
+      assert.equal(draft.subscription_transition, null);
+      await agent
+        .put(`automations/${draft.id}`)
+        .body({ automations: [{ ...draft, status: 'active' }] })
+        .expectStatus(422);
+      for (const transition of [
+        { from: [tierIds[0]], to: [tierIds[0]] },
+        { from: [], to: [tierIds[1]] },
+        { from: 'any_paid', to: [ObjectId().toHexString()] },
+      ]) {
+        await agent
+          .put(`automations/${draft.id}`)
+          .body({
+            automations: [
+              { ...draft, name: 'Must roll back', subscription_transition: transition },
+            ],
+          })
+          .expectStatus(422);
+        const { body: unchanged } = await agent.get(`automations/${draft.id}`).expectStatus(200);
+        assert.deepEqual(unchanged.automations[0], draft);
+      }
+    });
+
     it('Admin Integration can create an automation', async function () {
       await agent.useZapierAdminAPIKey();
       await agent
@@ -367,7 +471,9 @@ describe('Automations API', function () {
       const { body } = await agent
         .post('automations')
         .body({
-          automations: [{ ...payload, trigger_tier_scope: undefined, ...triggerData }],
+          automations: [
+            { ...payload, status: 'inactive', trigger_tier_scope: undefined, ...triggerData },
+          ],
         })
         .expectStatus(201);
       assert.equal(body.automations[0].trigger_tier_scope, triggerData.trigger_tier_scope ?? null);
@@ -1234,6 +1340,12 @@ describe('Automations API', function () {
         automation_id: automationId,
         product_id: tierId,
       });
+      await models.Base.knex.transaction((trx: import('knex').Knex.Transaction) =>
+        replaceTriggerRules(trx, automationId, {
+          trigger_tier_scope: 'selected_paid',
+          trigger_tier_ids: [tierId],
+        }),
+      );
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -1320,6 +1432,12 @@ describe('Automations API', function () {
         automation_id: id,
         product_id: tierId,
       });
+      await models.Base.knex.transaction((trx: import('knex').Knex.Transaction) =>
+        replaceTriggerRules(trx, id, {
+          trigger_tier_scope: 'selected_paid',
+          trigger_tier_ids: [tierId],
+        }),
+      );
 
       const { body: edited } = await agent
         .put(`automations/${id}`)

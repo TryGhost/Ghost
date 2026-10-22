@@ -4,6 +4,7 @@ import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { settleRequests } from '@test-utils/acceptance/worker';
 import {
   flags,
+  detail,
   run,
   history,
   setup,
@@ -16,6 +17,34 @@ import {
 } from './run-history.test-utils';
 
 describe('Automation run selection and canvas transitions', () => {
+  it('shows the subscription change trigger in a member run and returns to its saved picker', async () => {
+    setup();
+    fakeAdminEndpoint('GET', '/automations/first/', {
+      automations: [
+        {
+          ...detail('first'),
+          slug: null,
+          trigger_type: 'paid_subscription_changed',
+          trigger_tier_scope: null,
+          trigger_tier_ids: null,
+          subscription_transition: { from: 'any_paid', to: 'downgraded_to_free' },
+        },
+      ],
+    });
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    respond(history('a'));
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await select();
+    await expect
+      .element(canvas().getByText('Paid subscription changed', { exact: true }))
+      .toBeVisible();
+    await expect.element(canvas().getByText('Signed up', { exact: true })).not.toBeInTheDocument();
+    await close();
+    await expect.element(editingCanvas().getByText('Any paid tier', { exact: true })).toBeVisible();
+    await expect.element(editingCanvas().getByText('Free', { exact: true })).toBeVisible();
+  });
+
   it('keeps the selected member name in the pill while history loads or fails', async () => {
     setup();
     let finish!: () => void;

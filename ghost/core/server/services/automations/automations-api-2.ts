@@ -44,26 +44,38 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
     requestPoll,
 
-    trigger: async ({
-      event,
-      memberEmail,
-      memberId,
-      memberStatus,
-      memberTierIds,
-    }: ReadonlyDeep<{
-      event: 'membership_started';
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-      memberTierIds: string[];
-    }>): Promise<void> => {
-      // TypeScript makes this impossible in theory, but in practice there are
-      // untyped callers (and TypeScript doesn't have a sound type system
-      // anyway). This check is defense-in-depth.
-      if (event !== 'membership_started') {
-        throw new errors.IncorrectUsageError({
-          message: 'Member signup is the only supported event right now. More may be added later',
-        });
+    trigger: async (
+      input: ReadonlyDeep<
+        {
+          memberEmail: string;
+          memberId: string;
+        } & (
+          | { event: 'membership_started'; memberStatus: 'free' | 'paid'; memberTierIds: string[] }
+          | {
+              event: 'paid_subscription_changed';
+              memberStatus: 'free' | 'paid' | 'gift' | 'comped';
+              memberTierIds: string[];
+              previousMemberStatus: 'free' | 'paid' | 'gift' | 'comped';
+              previousMemberTierIds: string[];
+            }
+        )
+      >,
+    ): Promise<void> => {
+      const { event, memberEmail, memberId, memberStatus, memberTierIds } = input;
+      if (event !== 'membership_started' && event !== 'paid_subscription_changed') {
+        throw new errors.IncorrectUsageError({ message: 'Unsupported automation trigger event.' });
+      }
+      if (event === 'paid_subscription_changed') {
+        if (input.previousMemberStatus !== 'paid' || memberStatus === 'comped') {
+          return;
+        }
+        if (
+          input.previousMemberStatus === memberStatus &&
+          new Set(input.previousMemberTierIds).size === new Set(memberTierIds).size &&
+          input.previousMemberTierIds.every((id) => memberTierIds.includes(id))
+        ) {
+          return;
+        }
       }
 
       if (!labs.isSet('automations')) {
@@ -77,6 +89,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
           trx,
           memberStatus,
           memberTierIds,
+          ...(input.event === 'paid_subscription_changed' ? [input.previousMemberTierIds] : []),
         );
 
         const runsToInsert: RunToInsert[] = [];

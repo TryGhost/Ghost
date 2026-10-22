@@ -1,3 +1,4 @@
+import type { AutomationTriggerType } from '@tryghost/admin-x-framework/api/automations';
 import React, { useMemo } from 'react';
 import type {
   AutomationRunHistory,
@@ -13,14 +14,15 @@ import { HistoryEmailContent } from './history-email-content';
 export const HistoryFlow: React.FC<{
   history: AutomationRunHistory;
   automationSlug: string | null | undefined;
+  triggerType?: AutomationTriggerType;
   plan?: AutomationRunPlan;
-}> = ({ history, plan, automationSlug }) => {
+}> = ({ history, plan, automationSlug, triggerType }) => {
   const cards = useMemo(
     () => [
-      ...mapRunHistory(history, automationSlug),
+      ...mapRunHistory(history, automationSlug, triggerType),
       ...(plan ? mapUpcomingRunSteps(history, plan) : []),
     ],
-    [history, plan, automationSlug],
+    [history, plan, automationSlug, triggerType],
   );
   return (
     <Stack

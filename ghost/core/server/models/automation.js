@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+const { replaceTriggerRules } = require('../services/automations/trigger-rules');
 const logging = require('@tryghost/logging');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../services/member-welcome-emails/constants');
 
@@ -60,6 +61,18 @@ const Automation = ghostBookshelf.Model.extend(
     },
   },
   {
+    async add(data, options = {}) {
+      if (!options.transacting) {
+        return this.transaction((transacting) => this.add(data, { ...options, transacting }));
+      }
+      const model = await ghostBookshelf.Model.add.call(this, data, options);
+      await replaceTriggerRules(options.transacting, model.id, {
+        trigger_type: model.get('trigger_type'),
+        trigger_tier_scope: model.get('trigger_tier_scope'),
+      });
+      return model;
+    },
+
     orderDefaultRaw() {
       return '`created_at` ASC';
     },

@@ -18,6 +18,9 @@ import {
   updateSendEmailAction,
   updateWaitAction,
   useBrowseAutomationActionLinks,
+  useAddAutomation,
+  useEditAutomation,
+  useSetAutomationStatus,
 } from '../../../src/api/automations';
 
 const baseDetail = (
@@ -742,5 +745,61 @@ describe('automation run response validation', () => {
     },
   ])('rejects $name', ({ body }) => {
     expect(AutomationRunsResponseSchema.safeParse({ meta, ...body }).success).toBe(false);
+  });
+});
+
+describe('automation trigger mutations', () => {
+  const renderMutation = <T>(hook: () => T) => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(currentUserQueryKey, { staleTime: Infinity });
+    queryClient.setQueryData(currentUserQueryKey, {
+      users: [{ id: 'user', name: 'User', email: 'user@example.test', roles: [] }],
+    });
+    return renderHookWithProviders(hook, { queryClient });
+  };
+
+  it.each([useAddAutomation, useEditAutomation])(
+    'sends the complete transition configuration',
+    async (hook) => {
+      const automation: AutomationDetail = {
+        ...baseDetail([], []),
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+        subscription_transition: { from: ['bronze', 'silver'], to: ['gold', 'platinum'] },
+      };
+      await withMockFetch({ json: { automations: [automation] } }, async (mock) => {
+        const { result } = renderMutation<ReturnType<typeof hook>>(hook);
+        await act(() => result.current.mutateAsync(automation));
+        const sent = JSON.parse(mock.calls[0][1].body).automations[0];
+        expect(sent).toMatchObject({
+          trigger_type: 'paid_subscription_changed',
+          trigger_tier_scope: null,
+          trigger_tier_ids: null,
+          subscription_transition: automation.subscription_transition,
+        });
+        expect(sent).not.toHaveProperty('created_at');
+      });
+    },
+  );
+
+  it('keeps legacy signup requests compatible with older backends', async () => {
+    const automation = baseDetail([], []);
+    await withMockFetch({ json: { automations: [automation] } }, async (mock) => {
+      const { result } = renderMutation(useAddAutomation);
+      await act(() => result.current.mutateAsync(automation));
+      const sent = JSON.parse(mock.calls[0][1].body).automations[0];
+      expect(sent).toMatchObject({ trigger_tier_scope: 'free', trigger_tier_ids: null });
+      expect(sent).not.toHaveProperty('trigger_type');
+      expect(sent).not.toHaveProperty('subscription_transition');
+    });
+  });
+
+  it('keeps status-only updates independent of the trigger configuration', async () => {
+    await withMockFetch({ json: { automations: [baseDetail([], [])] } }, async (mock) => {
+      const { result } = renderMutation(useSetAutomationStatus);
+      await act(() => result.current.mutateAsync({ id: 'a1', status: 'inactive' }));
+      expect(JSON.parse(mock.calls[0][1].body)).toEqual({ automations: [{ status: 'inactive' }] });
+    });
   });
 });

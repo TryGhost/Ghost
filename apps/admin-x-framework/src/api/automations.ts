@@ -68,7 +68,17 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationTrigger =
+export type AutomationTriggerType = 'membership_started' | 'paid_subscription_changed';
+
+export type SubscriptionTransition = {
+  from: 'any_paid' | readonly string[];
+  to: 'downgraded_to_free' | readonly string[];
+};
+
+export type AutomationTrigger = {
+  trigger_type?: AutomationTriggerType;
+  subscription_transition?: SubscriptionTransition | null;
+} & (
   | {
       trigger_tier_scope: 'free' | 'all_paid' | null;
       trigger_tier_ids: null;
@@ -76,7 +86,8 @@ export type AutomationTrigger =
   | {
       trigger_tier_scope: 'selected_paid';
       trigger_tier_ids: readonly string[];
-    };
+    }
+);
 
 export type AutomationDetail = Automation &
   AutomationTrigger & {
@@ -98,7 +109,7 @@ export type EditAutomationPayload = AutomationTrigger & {
 type AutomationStatusPayload = Pick<EditAutomationPayload, 'id' | 'status'>;
 
 export interface AutomationsResponseType {
-  meta?: Meta;
+  meta?: Meta & { supported_trigger_types?: AutomationTriggerType[] };
   automations: AutomationBrowseItem[];
 }
 
@@ -325,6 +336,8 @@ const serializeEditableAction = (action: AutomationAction): AutomationAction => 
 const serializeEditableAutomation = ({
   name,
   description,
+  trigger_type: triggerType,
+  subscription_transition: subscriptionTransition,
   trigger_tier_scope: triggerTierScope,
   trigger_tier_ids: triggerTierIds,
   status,
@@ -335,6 +348,8 @@ const serializeEditableAutomation = ({
     {
       name,
       description,
+      trigger_type: triggerType,
+      subscription_transition: subscriptionTransition,
       trigger_tier_scope: triggerTierScope,
       trigger_tier_ids: triggerTierIds,
       status,

@@ -34,7 +34,7 @@ import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState, TierSelection } from './types';
-import { hasMissingTierSelection } from './utils/tier-selection';
+import { hasMissingTierSelection, selectedTransitionTierIds } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 
@@ -48,18 +48,29 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
+  trigger_type: automation.trigger_type,
+  subscription_transition: automation.subscription_transition
+    ? {
+        from:
+          typeof automation.subscription_transition.from === 'string'
+            ? automation.subscription_transition.from
+            : [...automation.subscription_transition.from].sort(),
+        to:
+          typeof automation.subscription_transition.to === 'string'
+            ? automation.subscription_transition.to
+            : [...automation.subscription_transition.to].sort(),
+      }
+    : null,
   trigger_tier_scope: automation.trigger_tier_scope,
   trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
   actions: automation.actions,
   edges: automation.edges,
 });
 
-const getTriggerErrors = (
-  automation: AutomationDetail,
-  tierSelection: TierSelection | undefined,
-): Record<string, string> => {
-  if (tierSelection) {
-    return hasMissingTierSelection(tierSelection)
+const getTriggerErrors = (automation: AutomationDetail): Record<string, string> => {
+  if (automation.trigger_type === 'paid_subscription_changed') {
+    return !automation.subscription_transition ||
+      hasMissingTierSelection(automation.subscription_transition)
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
       : {};
   }
@@ -100,7 +111,6 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
-    tierSelection?: TierSelection;
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -147,8 +157,10 @@ const AutomationEditorContent: React.FC<{
   const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
     creation?.initialAutomation,
   );
-  // Kept outside the draft until the API can hold it (NY-1733).
-  const [tierSelection, setTierSelection] = React.useState(creation?.tierSelection);
+  const tierSelection =
+    draft?.trigger_type === 'paid_subscription_changed'
+      ? (draft.subscription_transition ?? { from: [], to: [] })
+      : undefined;
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -184,7 +196,7 @@ const AutomationEditorContent: React.FC<{
 
       const nextErrors = {
         ...getActionErrors(next),
-        ...getTriggerErrors(next, tierSelection),
+        ...getTriggerErrors(next),
       };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
@@ -195,7 +207,7 @@ const AutomationEditorContent: React.FC<{
 
   const onTierSelectionChange = React.useCallback((next: TierSelection) => {
     setValidationFeedback(null);
-    setTierSelection(next);
+    setDraft((current) => (current ? { ...current, subscription_transition: next } : current));
     setActionErrors((oldErrors) =>
       oldErrors[TRIGGER_CANVAS_ID] && !hasMissingTierSelection(next)
         ? Object.fromEntries(
@@ -221,7 +233,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate, tierSelection),
+      ...getTriggerErrors(automationToValidate),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -285,14 +297,6 @@ const AutomationEditorContent: React.FC<{
       setEditState(errorState);
       toast.error('Automation couldn’t be saved');
     };
-
-    // The API would save the draft's stand-in scope instead, until NY-1733.
-    if (tierSelection) {
-      handleSaveError(
-        new Error('Saving a paid subscription changed trigger is not supported yet.'),
-      );
-      return;
-    }
 
     setEditState(requestState);
 
@@ -573,7 +577,11 @@ const AutomationEditorContent: React.FC<{
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
-        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        savedTriggerTierIds={
+          savedAutomation?.trigger_type === 'paid_subscription_changed'
+            ? selectedTransitionTierIds(savedAutomation.subscription_transition)
+            : (savedAutomation?.trigger_tier_ids ?? [])
+        }
         selectedRunId={selectedRunId}
         tierSelection={triggerTierSelection}
         onChange={onDraftChange}
@@ -674,13 +682,12 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop, tierSelection) => (
+          {(initialAutomation, triggerTop) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
-                tierSelection,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

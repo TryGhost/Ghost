@@ -16,7 +16,11 @@ import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import type { TierSelection } from '@/automations/types';
-import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
+import {
+  isTierSelectionEmpty,
+  updateFromSelection,
+  selectedTransitionTierIds,
+} from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
@@ -134,13 +138,27 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
 const SubscriptionChangedPicker: React.FC<{
   tierSelection: NonNullable<TriggerData['tierSelection']>;
   tierQuery: TriggerData['tierQuery'];
+  savedTierIds: readonly string[];
   errorMessage?: string;
-}> = ({ tierSelection, tierQuery, errorMessage }) => {
+}> = ({ tierSelection, tierQuery, savedTierIds, errorMessage }) => {
   const id = useId();
   const { value, onChange } = tierSelection;
+  const selectedIds = selectedTransitionTierIds(value);
   const tiers = (tierQuery.data?.tiers ?? [])
-    .filter((tier) => tier.type === 'paid' && tier.active)
-    .map((tier) => ({ id: tier.id, name: tier.name }));
+    .filter(
+      (tier) =>
+        tier.type === 'paid' &&
+        (tier.active || savedTierIds.includes(tier.id) || selectedIds.includes(tier.id)),
+    )
+    .map((tier) => ({ id: tier.id, name: tier.active ? tier.name : `${tier.name} (archived)` }));
+  for (const tierId of selectedIds) {
+    if (!tiers.some((tier) => tier.id === tierId)) {
+      tiers.push({
+        id: tierId,
+        name: tierQuery.isLoading ? 'Loading tier...' : 'Unavailable tier',
+      });
+    }
+  }
   const fromTierIds = value.from === 'any_paid' ? [] : value.from;
   const notice = tierQueryNotice(tierQuery);
   const emptyMessage = tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found';
@@ -210,6 +228,7 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
       content: (
         <SubscriptionChangedPicker
           errorMessage={errorMessage}
+          savedTierIds={trigger.savedTierIds}
           tierQuery={trigger.tierQuery}
           tierSelection={trigger.tierSelection}
         />

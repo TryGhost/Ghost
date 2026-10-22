@@ -1,3 +1,4 @@
+import type { AutomationTriggerType } from '@tryghost/admin-x-framework/api/automations';
 import React, { useEffect, useRef } from 'react';
 import { ErrorBoundary } from '@sentry/react';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
@@ -10,6 +11,7 @@ import { HistoryBackground } from './history-background';
 type RunHistoryProps = {
   automationId: string;
   automationSlug: string | null | undefined;
+  triggerType?: AutomationTriggerType;
   runId: string;
   memberName?: string;
   isAutomationSidebarOpen: boolean;
@@ -45,6 +47,7 @@ export const RunHistory: React.FC<RunHistoryProps> = (props) => (
 const RunHistoryContent: React.FC<RunHistoryProps> = ({
   automationId,
   automationSlug,
+  triggerType,
   runId,
   memberName,
   isAutomationSidebarOpen,
@@ -129,7 +132,14 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
             </Stack>
           )}
         </Stack>
-        {history && <HistoryFlow automationSlug={automationSlug} history={history} plan={plan} />}
+        {history && (
+          <HistoryFlow
+            automationSlug={automationSlug}
+            history={history}
+            plan={plan}
+            triggerType={triggerType}
+          />
+        )}
       </Stack>
     </Box>
   );

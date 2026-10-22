@@ -1395,6 +1395,8 @@ module.exports = class MemberRepository {
       throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.id }) });
     }
 
+    const previousMemberStatus = memberModel.get('status');
+
     const memberStripeCustomerModel = await memberModel
       .related('stripeCustomers')
       .query({
@@ -2120,6 +2122,38 @@ module.exports = class MemberRepository {
         updatedMember._previousAttributes.status !== 'gift'
       ) {
         await this.triggerMemberSignupAutomation(memberModel, 'paid', options);
+      }
+    }
+
+    if (
+      previousMemberStatus === 'paid' &&
+      WELCOME_EMAIL_SOURCES.includes(this._resolveContextSource(options.context || {}))
+    ) {
+      // Read persisted entitlements: Member.edit can fall back to a status-only update.
+      const persistedMember = await this._Member.findOne(
+        { id: data.id },
+        { ...options, withRelated: ['products'] },
+      );
+      if (persistedMember) {
+        const event = {
+          event: 'paid_subscription_changed',
+          memberId: persistedMember.id,
+          memberEmail: persistedMember.get('email'),
+          previousMemberStatus,
+          previousMemberTierIds: oldMemberProductIds,
+          memberStatus: persistedMember.get('status'),
+          memberTierIds: persistedMember.related('products').models.map((product) => product.id),
+        };
+        afterCommit(
+          options.transacting,
+          () => this._automationsApi.trigger(event),
+          (err) => {
+            logging.error({
+              err,
+              message: `Error triggering subscription change automations for member ${data.id}`,
+            });
+          },
+        );
       }
     }
 

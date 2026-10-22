@@ -79,6 +79,17 @@ export async function setupAutomationsFixture(): Promise<void> {
   const paidActions = buildAutomationActions(paidAutomationId, 20);
 
   await db.knex('automations').insert(automationRows);
+  await db.knex('automation_trigger_rules').insert(
+    automationRows.map((automation) => ({
+      id: ObjectId().toHexString(),
+      automation_id: automation.id,
+      trigger_type: 'membership_started',
+      from_scope: null,
+      from_product_id: null,
+      to_scope: automation.trigger_tier_scope,
+      to_product_id: null,
+    })),
+  );
 
   await db.knex('automation_actions').insert(
     [...freeActions, ...paidActions].map(({ id, automation_id, type, created_at }) => ({

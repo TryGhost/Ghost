@@ -55,8 +55,9 @@ export type AutomationsRepository2<Connection> = {
   /** Find the first action revision for all automations that match these trigger criteria. */
   findFirstActionRevisions: (
     connection: Connection,
-    memberStatus: 'free' | 'paid',
+    memberStatus: 'free' | 'paid' | 'gift' | 'comped',
     memberTierIds: ReadonlyArray<string>,
+    previousMemberTierIds?: ReadonlyArray<string>,
   ) => Promisable<NextActionRevisionRow[]>;
 
   /** Get the count of all automations. */

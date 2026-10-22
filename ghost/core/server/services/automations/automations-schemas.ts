@@ -53,12 +53,42 @@ const selectedPaidTriggerShape = {
     }),
 };
 
-export const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
-  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
-  z.strictObject({
-    ...automationShape,
-    ...selectedPaidTriggerShape,
-  }),
+const signupTriggerShape = {
+  trigger_type: z.literal('membership_started').optional(),
+  subscription_transition: z.null().optional(),
+};
+const transitionTierIds = z
+  .array(objectIdSchema)
+  .min(1)
+  .max(50)
+  .refine((ids) => new Set(ids).size === ids.length, {
+    error: 'Duplicate tier IDs are not allowed.',
+  });
+const subscriptionTransitionSchema = z
+  .strictObject({
+    from: z.union([z.literal('any_paid'), transitionTierIds]),
+    to: z.union([z.literal('downgraded_to_free'), transitionTierIds]),
+  })
+  .refine(
+    (value) =>
+      typeof value.from === 'string' ||
+      typeof value.to === 'string' ||
+      !value.from.some((id) => value.to.includes(id)),
+    {
+      error: 'From and To tiers must not overlap.',
+    },
+  );
+const transitionTriggerShape = {
+  trigger_type: z.literal('paid_subscription_changed'),
+  trigger_tier_scope: z.null().optional(),
+  trigger_tier_ids: z.null().optional(),
+  subscription_transition: subscriptionTransitionSchema.nullable().optional(),
+};
+
+export const addAutomationDataSchema = z.union([
+  z.strictObject({ ...automationShape, ...signupTriggerShape, ...defaultTriggerShape }),
+  z.strictObject({ ...automationShape, ...signupTriggerShape, ...selectedPaidTriggerShape }),
+  z.strictObject({ ...automationShape, ...transitionTriggerShape }),
 ]);
 
 export const editAutomationDataSchema = z
@@ -68,9 +98,10 @@ export const editAutomationDataSchema = z
     description: automationShape.description.optional(),
   })
   .and(
-    z.discriminatedUnion('trigger_tier_scope', [
-      z.object(defaultTriggerShape),
-      z.object(selectedPaidTriggerShape),
+    z.union([
+      z.object({ ...signupTriggerShape, ...defaultTriggerShape }),
+      z.object({ ...signupTriggerShape, ...selectedPaidTriggerShape }),
+      z.object(transitionTriggerShape),
     ]),
   );
 

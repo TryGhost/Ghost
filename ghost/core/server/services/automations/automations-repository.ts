@@ -1,3 +1,4 @@
+import type { TriggerConfiguration, TriggerSelection } from './trigger-rules';
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
 import type { AddAutomationData, AutomationTriggerTierScope } from './automations-repository-2';
@@ -80,16 +81,7 @@ export type AutomationBrowseResult = AutomationSummary & {
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & (
-    | {
-        trigger_tier_scope: null | 'free' | 'all_paid';
-        trigger_tier_ids: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+} & TriggerSelection;
 
 export type EditAutomationData = {
   name?: string;
@@ -99,16 +91,7 @@ export type EditAutomationData = {
   | { actions: AutomationAction[]; edges: AutomationEdge[] }
   | { actions?: never; edges?: never }
 ) &
-  (
-    | {
-        trigger_tier_scope?: null | 'free' | 'all_paid';
-        trigger_tier_ids?: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+  TriggerConfiguration;
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;

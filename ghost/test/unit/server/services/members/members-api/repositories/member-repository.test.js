@@ -614,6 +614,7 @@ describe('MemberRepository', function () {
 
       Member = {
         findOne: sinon.stub().resolves({
+          get: sinon.stub(),
           related: (relation) => {
             return {
               models: [],
@@ -2372,6 +2373,224 @@ describe('MemberRepository', function () {
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
         memberTierIds: [],
+      });
+    });
+
+    describe('paid subscription changes', function () {
+      let repo;
+      let member;
+      let status;
+      let tierIds;
+      let destination;
+      let remainingSubscriptions;
+
+      const product = (id) => ({
+        id,
+        get: (key) => ({ id, name: id })[key],
+        toJSON: () => ({ id }),
+      });
+      const subscription = (values) => ({
+        id: 'stripe_sub_id_123',
+        get: (key) =>
+          ({
+            created_at: new Date(),
+            cancel_at_period_end: false,
+            plan_amount: 500,
+            mrr: 500,
+            ...values,
+          })[key],
+        load: sinon.stub().resolvesThis(),
+      });
+
+      beforeEach(async function () {
+        status = 'paid';
+        tierIds = ['bronze'];
+        destination = 'silver';
+        remainingSubscriptions = [];
+        member = await Member.findOne();
+        const originalRelated = member.related;
+        const products = {
+          get models() {
+            return tierIds.map((id) => ({ id }));
+          },
+          toJSON: () => tierIds.map((id) => ({ id })),
+          fetch: async () => products,
+        };
+        member.related = (relation) => {
+          if (relation === 'products') {
+            return products;
+          }
+          if (relation === 'stripeSubscriptions') {
+            return {
+              models: [],
+              fetch: async () => ({
+                models: [
+                  subscription({
+                    status: subscriptionData.status,
+                    stripe_price_id: 'price_bronze',
+                  }),
+                  ...remainingSubscriptions,
+                ],
+              }),
+            };
+          }
+          return originalRelated(relation);
+        };
+        member.get.withArgs('status').callsFake(() => status);
+        Member.edit.callsFake(async (changes) => {
+          const previousStatus = status;
+          status = changes.status;
+          if (changes.products) {
+            tierIds = changes.products.map((item) => item.id);
+          }
+          return {
+            id: member.id,
+            attributes: { status },
+            _previousAttributes: { status: previousStatus },
+            get: member.get,
+            related: member.related,
+            load: sinon.stub().resolvesThis(),
+          };
+        });
+        productRepository.get.callsFake(async (filter) => {
+          if (filter.stripe_product_id) {
+            return product(destination);
+          }
+          return product(filter.stripe_price_id.replace('price_', ''));
+        });
+        StripeCustomerSubscription.edit.callsFake(async (values) => subscription(values));
+        repo = buildRepo();
+        sinon
+          .stub(repo, 'getSubscriptionByStripeID')
+          .resolves(subscription({ status: 'active', stripe_price_id: 'price_bronze' }));
+      });
+
+      const link = (options = {}) =>
+        repo.linkSubscription(
+          { id: 'member_id_123', subscription: subscriptionData },
+          {
+            transacting: { executionPromise: Promise.resolve() },
+            context: {},
+            ...options,
+          },
+        );
+      const changeCalls = () =>
+        automationsApi.trigger
+          .getCalls()
+          .filter((call) => call.args[0].event === 'paid_subscription_changed');
+
+      it('calls trigger after commit with before/after tier sets without looking for configured automations', async function () {
+        let commit;
+        const transacting = {
+          executionPromise: new Promise((resolve) => {
+            commit = resolve;
+          }),
+        };
+        await link({ transacting });
+        sinon.assert.notCalled(automationsApi.trigger);
+        commit();
+        await new Promise(setImmediate);
+        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+          event: 'paid_subscription_changed',
+          memberId: 'member_id_123',
+          memberEmail: 'test@example.com',
+          previousMemberStatus: 'paid',
+          previousMemberTierIds: ['bronze'],
+          memberStatus: 'paid',
+          memberTierIds: ['silver'],
+        });
+        sinon.assert.notCalled(Automation.findOne);
+        sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+      });
+
+      it('does not trigger a rolled-back change', async function () {
+        sinon.stub(logging, 'error');
+        let rollback;
+        const transacting = {
+          executionPromise: new Promise((_resolve, reject) => {
+            rollback = reject;
+          }),
+        };
+        await link({ transacting });
+        rollback(new Error('rolled back'));
+        await transacting.executionPromise.catch(() => {});
+        await new Promise(setImmediate);
+        sinon.assert.notCalled(automationsApi.trigger);
+      });
+
+      it.each([false, true])(
+        'passes unchanged tiers for cadence or auto-renew updates (cancel=%s)',
+        async function (cancel) {
+          destination = 'bronze';
+          subscriptionData.cancel_at_period_end = cancel;
+          subscriptionData.items.data[0].price.recurring.interval = 'year';
+          await link();
+          assert.equal(changeCalls().length, 1);
+          assert.deepEqual(changeCalls()[0].args[0].previousMemberTierIds, ['bronze']);
+          assert.deepEqual(changeCalls()[0].args[0].memberTierIds, ['bronze']);
+          assert.equal(changeCalls()[0].args[0].memberStatus, 'paid');
+        },
+      );
+
+      it('passes free destination only when access actually ends', async function () {
+        destination = 'bronze';
+        subscriptionData.status = 'canceled';
+        await link();
+        assert.equal(changeCalls().length, 1);
+        assert.equal(changeCalls()[0].args[0].previousMemberStatus, 'paid');
+        assert.equal(changeCalls()[0].args[0].memberStatus, 'free');
+        assert.deepEqual(changeCalls()[0].args[0].memberTierIds, []);
+      });
+
+      it('keeps remaining paid tiers after one subscription ends', async function () {
+        tierIds = ['bronze', 'silver'];
+        destination = 'bronze';
+        subscriptionData.status = 'canceled';
+        remainingSubscriptions = [
+          {
+            id: 'remaining',
+            get: (key) => ({ status: 'active', stripe_price_id: 'price_silver' })[key],
+          },
+        ];
+        await link();
+        assert.equal(changeCalls().length, 1);
+        assert.equal(changeCalls()[0].args[0].memberStatus, 'paid');
+        assert.deepEqual(changeCalls()[0].args[0].previousMemberTierIds, ['bronze', 'silver']);
+        assert.deepEqual(changeCalls()[0].args[0].memberTierIds, ['silver']);
+      });
+
+      it('uses persisted tiers if the product update falls back to status-only', async function () {
+        sinon.stub(logging, 'error');
+        Member.edit.onFirstCall().rejects(new Error('product update failed'));
+        await link();
+        assert.equal(changeCalls().length, 1);
+        assert.deepEqual(changeCalls()[0].args[0].memberTierIds, ['bronze']);
+      });
+
+      it.each([{ import: true }, { user: true }, { api_key: true }, { internal: true }])(
+        'preserves source exclusions %j',
+        async function (context) {
+          await link({ context });
+          sinon.assert.notCalled(automationsApi.trigger);
+        },
+      );
+
+      it.each(['free', 'gift', 'comped'])(
+        'does not trigger changes from %s',
+        async function (previousStatus) {
+          status = previousStatus;
+          await link();
+          assert.equal(changeCalls().length, 0);
+        },
+      );
+
+      it('logs trigger failures without rejecting the subscription change', async function () {
+        const log = sinon.stub(logging, 'error');
+        automationsApi.trigger.rejects(new Error('automation failed'));
+        await link();
+        await new Promise(setImmediate);
+        sinon.assert.calledOnce(automationsApi.trigger);
+        sinon.assert.calledOnce(log);
       });
     });
 
