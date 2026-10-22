@@ -674,8 +674,8 @@ const User = ghostBookshelf.Model.extend(
         await checkTrialStaffLimit(transacting, policy.maxStaff, getHelpLink());
         return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
       };
-      // Invitation acceptance already has a transaction. Reusing it
-      // keeps the seat check and user insertion atomic with the surrounding work.
+      // Reuse the caller's transaction so the seat check and user creation
+      // commit or roll back with the surrounding work.
       return unfilteredOptions.transacting
         ? create(unfilteredOptions.transacting)
         : ghostBookshelf.transaction(create);
