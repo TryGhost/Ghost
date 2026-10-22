@@ -14,6 +14,7 @@ const TIMEOUT = 24 * 60 * 60 * 1000;
 
 // Maximum amount of urls in the history
 const LIMIT = 15;
+const UTM_KEYS = ['utmSource', 'utmMedium', 'utmCampaign', 'utmTerm', 'utmContent'];
 
 // History is saved in JSON format, from old to new
 // Time is saved to be able to exclude old items
@@ -151,13 +152,22 @@ const LIMIT = 15;
     } else if (history.length > 0) {
       const lastEntry = history[history.length - 1];
       lastEntry.time = currentTime;
+      const hasStoredUtm = UTM_KEYS.some((key) => lastEntry[key]);
 
       // Update with any new attribution data (filters out null/undefined values)
       Object.entries(attributionData).forEach(([key, value]) => {
-        if (value) {
+        if (!UTM_KEYS.includes(key) && value) {
           lastEntry[key] = value;
         }
       });
+
+      // Preserve the first UTM-bearing visit as one snapshot. The server uses
+      // the earliest UTM data to represent the campaign that brought the member.
+      if (!hasStoredUtm && UTM_KEYS.some((key) => attributionData[key])) {
+        UTM_KEYS.forEach((key) => {
+          lastEntry[key] = attributionData[key];
+        });
+      }
 
       if (referrerUrl) {
         lastEntry.referrerUrl = referrerUrl;

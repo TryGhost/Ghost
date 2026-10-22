@@ -17,6 +17,7 @@ The Member Attribution Service tracks how members discover and sign up to a Ghos
 - **External Referrers**: Tracks referrer sources like Google, Facebook, Twitter, etc. using `@tryghost/referrer-parser`
 - **Manual Creation**: Tracks members created via Admin UI, API, or import tools
 - **Integration Attribution**: Associates members created via integrations with the integration name
+- **History Coalescing**: Repeated visits to one pathname share one entry, which retains the first UTM-bearing visit as a complete set including nulls for omitted fields
 - **Newsletter Links**: Adds attribution tracking to outbound links in newsletters with `?ref=` parameters
 
 ### Settings
