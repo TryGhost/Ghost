@@ -6,7 +6,6 @@ import {
   MEMBER_WELCOME_EMAIL_SLUGS,
   MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
 } from '../member-welcome-emails/constants';
-// @ts-expect-error Models currently lack type definitions.
 import { AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun } from '../../models';
 
 type Run = {

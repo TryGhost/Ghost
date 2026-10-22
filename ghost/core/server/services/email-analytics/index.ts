@@ -16,7 +16,6 @@ import EmailEventProcessor from '../email-service/email-event-processor';
 import type membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
 import type EmailSuppressionList from '../email-suppression-list';
-// @ts-expect-error This module lacks type definitions.
 import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../../models';
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';

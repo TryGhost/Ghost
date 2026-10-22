@@ -6,7 +6,6 @@ import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
-// @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
 
 const settingsCache = require('../../../shared/settings-cache');

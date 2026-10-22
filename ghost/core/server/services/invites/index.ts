@@ -6,7 +6,7 @@ export default defineService('Invites', () => {
   const settingsHelpers = require('../settings-helpers');
   const mailService = require('../../lib/mail');
   const urlUtils = require('../../../shared/url-utils').default;
-  const models = require('../../models');
+  const models: typeof import('../../models') = require('../../models');
   const logging = require('@tryghost/logging');
 
   return new Invites({
