@@ -2488,7 +2488,10 @@ services:
       delivery compatibility rules belong with sending. Mailbox mechanics now live in
       @tryghost/parse-email-address/mailbox; core/server/lib/mail/format-address-for-delivery.ts
       preserves delivery formatting for existing string-valued callers. The removed private
-      parser and its tests remain historical evidence at auditedAt. Package mailbox tests
+      [parser](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/email-address/email-address-parser.ts)
+      and its
+      [tests](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/test/unit/server/services/email-address/email-address-parser.test.ts)
+      remain historical evidence at auditedAt. Package mailbox tests
       protect the new library boundary; the Core delivery formatter tests protect compatibility.
       The configured service has not moved or adopted defineService. Reassess initialization
       after separating ownership rather than migrating this root in place.
