@@ -1,14 +1,29 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-import { EmailAnalyticsService } from '../../../../../core/server/services/email-analytics/email-analytics-service';
+import {
+  EmailAnalyticsService,
+  type EmailAnalyticsProvider,
+} from '../../../../../core/server/services/email-analytics/email-analytics-service';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
 
-type ServiceOptions = ConstructorParameters<typeof EmailAnalyticsService>[0];
-type ServiceDependencies = Omit<ServiceOptions, 'queries'> & {
-  queries?: Partial<ServiceOptions['queries']>;
-};
 type BatchHandler = (events: any[]) => Promise<void>;
+type FetchEvents = (options: {
+  batchHandler: BatchHandler;
+  begin: Date;
+  end: Date;
+  maxEvents: number;
+  events?: string[];
+}) => Promise<{ safeCursor?: Date } | void> | { safeCursor?: Date } | void;
+
+type ServiceOptions = ConstructorParameters<typeof EmailAnalyticsService>[0];
+type ServiceDependencies = Omit<ServiceOptions, 'queries' | 'providers'> & {
+  queries?: Partial<ServiceOptions['queries']>;
+  provider?: EmailAnalyticsProvider;
+  providers?: EmailAnalyticsProvider[];
+  /** Convenience for tests: a single provider expressed as its fetch callback, upstream-callback style. */
+  fetchEvents?: FetchEvents;
+};
 
 const JOB_NAMES = {
   latestNonOpened: 'email-analytics-latest-others',
@@ -28,17 +43,41 @@ const NEWSLETTER_CURSOR_SEED = {
 
 function createService({
   queries: queryOverrides,
+  provider,
+  providers,
+  fetchEvents,
   ...serviceOverrides
 }: Partial<ServiceDependencies> = {}) {
   const queries = sinon.createStubInstance(Queries);
   Object.assign(queries, queryOverrides);
 
+  // The service takes a `providers` array (the fork's multi-provider design).
+  // Tests express a single `provider`, or (for parity with upstream's
+  // now-removed single-callback style) a bare `fetchEvents` function --
+  // normalise all three into the `providers` array the service takes.
+  const resolvedProviders =
+    providers ??
+    (provider
+      ? [provider]
+      : fetchEvents
+        ? [
+            {
+              fetchLatest: async (
+                batchHandler: BatchHandler,
+                options: { begin: Date; end: Date; maxEvents: number; events?: string[] },
+              ) => {
+                return await fetchEvents({ batchHandler, ...options });
+              },
+            },
+          ]
+        : []);
+
   return new EmailAnalyticsService({
     queries,
-    fetchEvents: sinon.stub().resolves(),
     createEventProcessor: createStubEventProcessor,
     jobNames: JOB_NAMES,
     cursorSeed: NEWSLETTER_CURSOR_SEED,
+    providers: resolvedProviders,
     ...serviceOverrides,
   });
 }
