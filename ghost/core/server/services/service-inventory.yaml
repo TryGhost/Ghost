@@ -7335,7 +7335,9 @@ services:
     notes: >-
       Preserve the three exposed collaborators, retained consumers and different configuration
       timing. Attribution computes and reads data; its consumers own event persistence, mail,
-      subscriptions and HTTP handling.
+      subscriptions and HTTP handling. Tests-only root and retained-consumer coverage was
+      refreshed against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the historical audit and
+      migration assessment revisions remain above.
     contracts:
       exports:
         summary: >-
@@ -7346,7 +7348,9 @@ services:
           synchronous URL/event mapping with async history/context/resource queries. Returned
           Attribution objects expose fields, getResource and async fetchResource. Tagging returns
           copied URLs or async HTML. There is no readiness getter, reset or shutdown. Deep-class
-          tests cover behavior, not the root export shape or receiver requirements.
+          tests cover behavior. Root characterization pins import-before-init absence, synchronous
+          publication and retained collaborator identity; detached receiver requirements remain
+          source-only.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7354,6 +7358,7 @@ services:
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/url-history.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/unit/server/services/member-attribution/service.test.ts
           - test/unit/server/services/member-attribution/attribution.test.ts
           - test/unit/server/services/member-attribution/outbound-link-tagger.test.ts
@@ -7365,7 +7370,8 @@ services:
           constructs its own parser with site/admin URLs. Constructors perform no database
           query or subscription. Builder and tagger are published before service; a constructor
           failure can leave partial properties, but the service guard is assigned last so retry
-          attempts reconstruction. No root constructor-failure or retry test was found.
+          attempts reconstruction. Root tests pin retry after URL configuration and late event-model
+          acquisition failures; constructor-failure rollback remains source-only.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/url-translator.js
@@ -7374,7 +7380,8 @@ services:
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/member-attribution-service.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/member-attribution/index.test.ts
       consumers:
         summary: >-
           Members API construction retains service in its router controller, BREAD service and
@@ -7384,8 +7391,9 @@ services:
           EmailRenderer retains service and tagger for links. Content API post/page HTML mapping
           retains the wrapper and reads outboundLinkTagger per call. HTTP tests pin token data,
           checkout metadata, member read/feed attribution and subscription persistence; staff
-          and renderer units use injected fakes. Browser history capture is a separate producer,
-          not another server constructor.
+          and renderer units use injected fakes. Booted tests additionally pin Staff/Members
+          retained identity and EmailRenderer's real attribution/tagger use across a setting
+          change. Browser history capture is a separate producer, not another server constructor.
         sources:
           - core/server/services/members/api.js
           - core/server/services/members/members-api/members-api.js
@@ -7399,6 +7407,7 @@ services:
           - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
           - core/frontend/src/member-attribution/member-attribution.js
         tests:
+          - test/e2e-server/services/member-attribution.test.js
           - test/e2e-api/members/send-magic-link.test.js
           - test/e2e-api/members/create-stripe-checkout-session.test.js
           - test/e2e-api/admin/members.test.js
@@ -7412,8 +7421,10 @@ services:
           Promise.all argument list. Those consumers capture collaborators during construction;
           making attribution initialization asynchronous would require explicit dependency
           sequencing. Full-app readiness follows the group. There is no pre-init access guard;
-          methods/properties are missing until publication. Booted service/HTTP tests exercise
-          real composition but do not assert order, pre-init behavior or partial startup cleanup.
+          methods/properties are missing until publication. Root tests pin the pre-init absence;
+          booted consumer tests pin ready collaborators after actual boot, rather than holding a
+          fabricated asynchronous legacy init. Explicit async sequencing and partial-startup cleanup
+          remain source-only.
         sources:
           - core/boot.js
           - core/server/services/member-attribution/index.js
@@ -7421,6 +7432,7 @@ services:
           - core/server/services/members/api.js
           - core/server/services/email-service/email-service-wrapper.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/e2e-server/services/member-attribution.test.js
           - test/e2e-api/members/send-magic-link.test.js
       lifetime:
@@ -7432,7 +7444,8 @@ services:
           ordered created_at then id descending and fetch current resources; missing resources
           degrade to saved URL/null attribution. Booted tests pin deleted resources and current
           post/page/tag/author URLs. Unit event mocks ignore query callbacks, so they do not pin
-          the deterministic ordering or concurrent event-write/read behavior.
+          the deterministic ordering or concurrent event-write/read behavior. Root and booted
+          consumer tests pin retained identity across repeated initialization.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7440,6 +7453,7 @@ services:
           - core/server/services/member-attribution/url-history.js
           - core/server/services/member-attribution/url-translator.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/e2e-server/services/member-attribution.test.js
           - test/unit/server/services/member-attribution/service.test.ts
       configuration:
@@ -7453,7 +7467,9 @@ services:
           input order without sorting. Builder prefers latest post, then other identified content,
           then URL; referrer selection uses the latest match and earliest UTM-bearing entry.
           Units pin algorithms, URL/tagging rules and fixed callbacks; booted subdirectory tests
-          use test config replacement, not same-instance capture/reload contracts.
+          use test config replacement. Root tests pin same-instance live source-tracking, tagging
+          policy and tagger URL reads, plus init-only parser URL reads and captured Admin referrer
+          matching; they do not establish production hot reload.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7463,6 +7479,7 @@ services:
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/shared/url-utils.ts
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/unit/server/services/member-attribution/history.test.ts
           - test/unit/server/services/member-attribution/attribution.test.ts
           - test/unit/server/services/member-attribution/referrer-translator.test.ts
@@ -7502,7 +7519,8 @@ services:
           Staff catches failures in fallback event reads and still sends, but provided-attribution
           enrichment failure reaches the subscriber catch and skips that notification. Units pin
           missing-resource fallbacks and HTML preservation; most injected fault/consumer boundaries
-          and root retry behavior remain untested.
+          remain untested. Root characterization pins original synchronous errors and successful
+          retry after URL configuration or late model acquisition failure.
         sources:
           - core/server/services/member-attribution/index.js
           - core/server/services/member-attribution/member-attribution-service.js
@@ -7512,20 +7530,22 @@ services:
           - core/server/lib/link-replacer.js
           - core/server/services/staff/staff-service.js
         tests:
+          - test/unit/server/services/member-attribution/index.test.ts
           - test/unit/server/services/member-attribution/attribution.test.ts
           - test/unit/server/services/member-attribution/url-translator.test.ts
           - test/unit/server/services/member-attribution/outbound-link-tagger.test.ts
     unverified: []
     blockers:
       - >-
-        Pin root exports, synchronous startup dependency order, pre-init use, repeated init,
-        partial constructor failures and retained references. Existing booted tests establish
-        successful use, not restart/replacement or cleanup semantics.
+        Root and booted tests now pin pre-init absence, synchronous publication, repeated init,
+        retained Staff/Members references and EmailRenderer attribution/tagging. Keep explicit
+        async startup sequencing in the initializer change; constructor/parser failure cleanup
+        and restart/replacement semantics are not established by these tests.
       - >-
-        Test setting changes and captured URLs on the same graph using valid history and nonempty
-        context. Current disabled-context unit short-circuits on absent context; history-gating
-        cases already supply invalid histories. Test callback/parser/model faults and distinguish
-        URL-resolution fallback, integration lookup suppression and consumer error handling.
+        Same-graph root tests now cover valid history/context tracking changes, live outbound
+        tagging policy/source URL, captured parser URLs, integration lookup suppression and two
+        composition retry boundaries. Callback/parser faults, URL-resolution fallback through
+        the root and consumer error handling still need separate coverage.
       - >-
         Pin latest-event ordering with actual competing rows, relation-selection arguments,
         transaction visibility and pending-query ownership. Existing query mocks skip the ordering
@@ -7533,7 +7553,8 @@ services:
         and event subscriptions outside the attribution lifecycle; do not infer rollback or drain.
       - >-
         Characterize UTM reader omissions separately from history/checkout/persistence coverage,
-        and verify retained Staff/email and Content API tagging through real-root consumers.
+        and verify Content API tagging through its real-root consumer. Staff/Members retained
+        identity and EmailRenderer tagging now have booted composition checks.
         Preserve URL encoding, blocked-domain/internal-link rules and degradation boundaries;
         no setting reload or expanded output contract is implied by this migration.
   member-welcome-emails:
