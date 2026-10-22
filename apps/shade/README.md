@@ -21,9 +21,9 @@ export function Example() {
 
 ## Usage in standalone surfaces
 
-Building a Ghost app, which runs framed inside Admin? Follow `docs/ghost-apps.md`
-in the installed package instead: it also covers fonts, Admin's theme and the
-page frame.
+Building a Ghost app, which runs framed inside Admin? Follow
+[Using Shade in a Ghost app](https://shade.ghost.org/docs/ghost-apps.md)
+instead: it also covers fonts, Admin's theme and the page frame.
 
 Shade requires React 18 and Tailwind CSS 4.1+. The app compiles Shade's
 `styles.css` together with its own styles using Tailwind's Vite or PostCSS
@@ -112,29 +112,50 @@ Local docs with Storybook:
 
 - `pnpm storybook` — run Storybook and view docs under `src/docs/`
 - `pnpm build-storybook` — build a static export
-- `pnpm build` — build the JavaScript, type declarations and Markdown docs
+- `pnpm build` — build the JavaScript and type declarations
 
 ### Docs for agents
 
-The package ships its Storybook docs as Markdown in `docs/`, starting at
-`docs/index.md`, so agents read the rules for the installed version.
-`scripts/build-docs.ts` generates them from `src/**/*.mdx` during `pnpm build`
-(or `pnpm build:docs`). Edit the `.mdx` sources, never the generated `.md` files.
+Storybook serves the docs as plain Markdown at `/docs/<path>.md` (start at
+`/docs/index.md`), with an [`llms.txt`](https://llmstxt.org) index at
+`/llms.txt`: `http://localhost:6006/llms.txt` locally, and
+`https://shade.ghost.org` once hosted. `scripts/build-docs.ts` generates them
+from `src/**/*.mdx`; `pnpm storybook` regenerates them on change,
+`pnpm build-storybook` includes them in its output, and `pnpm build:docs`
+writes them to `.storybook-docs/` without starting Storybook. Edit the `.mdx` sources, never the generated files.
+Whatever hosts them should serve them as UTF-8 (`text/markdown; charset=utf-8`
+and `text/plain; charset=utf-8`).
 
-The package also ships agent skills in `skills/`, one folder per skill. Each
-says when to apply which doc and links into `docs/`, so the rules stay in one
-place. In an app, point the agent at `node_modules/@tryghost/shade/skills/`.
-The skills link to `../../docs/`, so read them in place rather than copying
-them out of the package.
-
-Agents don't load skills from `node_modules`, so a Ghost app starts from the
-entry skill in `entry-skill/shade-for-ghost-apps/`. It installs Shade and points
-the agent at the shipped skills and docs. It isn't in the package; install it
-from GitHub with the [`skills` CLI](https://github.com/vercel-labs/skills):
+The agent skills in `skills/` route to those docs and hold no rules. Ghost apps
+start from `build-ghost-app-ui`. Install them all with the
+[`skills` CLI](https://github.com/vercel-labs/skills):
 
 ```sh
-npx skills add TryGhost/Ghost/apps/shade/entry-skill/shade-for-ghost-apps
+npx skills add TryGhost/Ghost/apps/shade/skills
+# or, from a local checkout:
+npx skills add <path-to-checkout>/apps/shade/skills
 ```
+
+The npm package ships code only: no docs and no skills.
+
+### Try app development locally
+
+The internal `ghost-app-ui-dev-setup` skill in `dev-skill/` prepares an empty
+folder for building a Ghost app the way an outside developer would, with
+everything local. It checks Ghost, starts Storybook if needed, installs Shade's
+skills and a stand-in `build-ghost-app` skill, packs the app SDK into
+`vendor/`, and writes the folder's `AGENTS.md`. It isn't shipped.
+
+Install it once, for every folder:
+
+```sh
+npx skills add <path-to-checkout>/apps/shade/dev-skill -g -a claude-code codex -y
+```
+
+Run the same command again to pick up changes. Then make an empty folder, open
+it in your agent client, type `/ghost-app-ui-dev-setup`, and when it's done,
+start a new chat there and describe your app. The Storybook it starts keeps
+running; stop it with `lsof -ti tcp:6006 | xargs kill`.
 
 ### Source exports
 

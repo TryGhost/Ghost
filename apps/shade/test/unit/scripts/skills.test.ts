@@ -1,45 +1,35 @@
 /// <reference types="node" />
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, posix } from 'node:path';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildDocs } from '../../../scripts/build-docs';
 
 /**
- * The skills in `skills/` ship in the package and link into the generated
- * `docs/`, which is gitignored. These tests resolve every skill link against
- * the published layout, building the docs in memory, so a broken link fails
- * here without a prior `pnpm build`.
- *
- * The entry skills in `entry-skill/` don't ship: they're installed from GitHub
- * and name files inside `node_modules/@tryghost/shade/`, which must exist in
- * the published layout.
+ * The skills in `skills/` are installed into apps with `npx skills add`, apart
+ * from the package, and link to the docs Storybook serves at
+ * `https://shade.ghost.org/docs/<page>.md`. These tests build the docs in memory
+ * and check every docs link against the generated pages and their headings.
  */
 
 const packageRoot = join(import.meta.dirname, '../../..');
-const folders = (dir: string): string[] =>
-  readdirSync(join(packageRoot, dir), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
-const skillNames = folders('skills');
-const entrySkillNames = folders('entry-skill');
+const DOCS_URL = 'https://shade.ghost.org/docs/';
 
-/** Markdown files in the published layout, keyed by package-relative path. */
-function publishedMarkdown(): Map<string, string> {
-  const files = new Map<string, string>();
-  for (const doc of buildDocs(packageRoot).docs) {
-    files.set(`docs/${doc.output}`, doc.markdown);
-  }
-  files.set('docs/index.md', '');
-  files.set('README.md', readFileSync(join(packageRoot, 'README.md'), 'utf8'));
-  for (const name of skillNames) {
-    files.set(
-      `skills/${name}/SKILL.md`,
-      readFileSync(join(packageRoot, 'skills', name, 'SKILL.md'), 'utf8'),
-    );
-  }
-  return files;
-}
+const skillNames = readdirSync(join(packageRoot, 'skills'), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
+const skills = new Map(
+  skillNames.map((name) => [
+    name,
+    readFileSync(join(packageRoot, 'skills', name, 'SKILL.md'), 'utf8'),
+  ]),
+);
+
+/** Generated docs keyed by served path, e.g. `components/patterns/page-header.md`. */
+const docs = new Map<string, string>(
+  buildDocs(packageRoot).docs.map((doc) => [doc.output, doc.markdown]),
+);
+docs.set('index.md', '');
 
 /** GitHub-style heading anchors, outside fenced code. */
 function anchors(markdown: string): Set<string> {
@@ -68,82 +58,91 @@ function anchors(markdown: string): Set<string> {
   return found;
 }
 
-const linksIn = (markdown: string): string[] =>
-  [...markdown.matchAll(/\]\(([^()\s]+)\)/g)].map((match) => match[1]!);
+/** Every shade.ghost.org docs URL in the text, in links and code spans alike. */
+const docsUrlsIn = (markdown: string): string[] =>
+  [...markdown.matchAll(/https:\/\/shade\.ghost\.org\/docs\/[^\s)`>\]]+/g)].map(
+    (match) => match[0],
+  );
 
-describe('shipped skills', () => {
-  const files = publishedMarkdown();
-  const packageJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')) as {
-    files: string[];
-  };
-
-  it('ships the skills folder', () => {
+describe('skills', () => {
+  it('has skills', () => {
     expect(skillNames.length).toBeGreaterThan(0);
-    expect(packageJson.files).toEqual(expect.arrayContaining(['docs', 'skills']));
   });
 
-  it.each(skillNames)('%s is named after its folder and has a one-line description', (name) => {
-    const frontmatter = /^---\n([\s\S]*?)\n---\n/.exec(files.get(`skills/${name}/SKILL.md`)!);
+  it.each(skillNames)('%s is named after its folder and has a description', (name) => {
+    const frontmatter = /^---\n([\s\S]*?)\n---\n/.exec(skills.get(name)!);
     expect(frontmatter?.[1]).toMatch(new RegExp(`^name: ${name}$`, 'm'));
     expect(frontmatter?.[1]).toMatch(/^description: \S.*$/m);
   });
 
-  it.each(skillNames)('%s links resolve inside the published package', (name) => {
-    const from = `skills/${name}/SKILL.md`;
+  it.each(skillNames)('%s has no package-relative docs links or node_modules paths', (name) => {
+    const skill = skills.get(name)!;
+    expect(skill).not.toMatch(/\.\.\/\.\.\/docs\//);
+    expect(skill).not.toMatch(/node_modules/);
+  });
+
+  it.each(skillNames)('%s docs links point at generated pages and headings', (name) => {
     const broken: string[] = [];
-    for (const url of linksIn(files.get(from)!)) {
-      if (/^[a-z][a-z\d+.-]*:/i.test(url)) {
-        continue;
-      }
-      const [path = '', anchor] = url.split('#');
-      const target = path ? posix.normalize(posix.join(posix.dirname(from), path)) : from;
-      const markdown = files.get(target);
-      if (target.startsWith('..') || markdown === undefined) {
-        broken.push(`${url}: no file at ${target} in the package`);
+    for (const url of docsUrlsIn(skills.get(name)!)) {
+      const [path = '', anchor] = url.slice(DOCS_URL.length).split('#');
+      const markdown = docs.get(path);
+      if (markdown === undefined) {
+        broken.push(`${url}: the docs build generates no ${path}`);
       } else if (anchor && !anchors(markdown).has(anchor)) {
-        broken.push(`${url}: ${target} has no heading for #${anchor}`);
+        broken.push(`${url}: ${path} has no heading for #${anchor}`);
       }
     }
     expect(broken).toEqual([]);
   });
-});
 
-describe('entry skills', () => {
-  const files = publishedMarkdown();
-  const packageJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')) as {
-    files: string[];
-  };
-  const read = (name: string): string =>
-    readFileSync(join(packageRoot, 'entry-skill', name, 'SKILL.md'), 'utf8');
-
-  it('are not shipped in the package', () => {
-    expect(entrySkillNames.length).toBeGreaterThan(0);
-    expect(packageJson.files.filter((file) => file.startsWith('entry-skill'))).toEqual([]);
-  });
-
-  it.each(entrySkillNames)(
-    '%s is named after its folder and has a one-line description',
-    (name) => {
-      const frontmatter = /^---\n([\s\S]*?)\n---\n/.exec(read(name));
-      expect(frontmatter?.[1]).toMatch(new RegExp(`^name: ${name}$`, 'm'));
-      expect(frontmatter?.[1]).toMatch(/^description: \S.*$/m);
-    },
-  );
-
-  it.each(entrySkillNames)('%s names only files the published package has', (name) => {
-    const paths = [...read(name).matchAll(/node_modules\/@tryghost\/shade\/([^\s`)]*)/g)].map(
+  it.each(skillNames)('%s links to sibling skills that exist', (name) => {
+    const siblings = [...skills.get(name)!.matchAll(/\]\(\.\.\/([^/)]+)\/SKILL\.md\)/g)].map(
       (match) => match[1]!,
     );
-    expect(paths.length).toBeGreaterThan(0);
-    const missing = paths.filter((path) => {
-      const target = path.replace(/\/$/, '');
-      return (
-        target !== '' &&
-        target !== 'package.json' &&
-        !files.has(target) &&
-        ![...files.keys()].some((file) => file.startsWith(`${target}/`))
-      );
-    });
-    expect(missing).toEqual([]);
+    expect(siblings.filter((sibling) => !skills.has(sibling))).toEqual([]);
+  });
+});
+
+/**
+ * `dev-skill/` holds an internal skill for Ghost's own team: it runs only when
+ * typed, stays out of the npm package, and copies `build-ghost-app/` into the
+ * app folder it sets up.
+ */
+describe('dev skill', () => {
+  const devSkillDir = join(packageRoot, 'dev-skill', 'ghost-app-ui-dev-setup');
+  const frontmatterOf = (file: string) =>
+    /^---\n([\s\S]*?)\n---\n/.exec(readFileSync(join(devSkillDir, file), 'utf8'))?.[1];
+
+  it('is named after its folder and runs only when typed', () => {
+    const frontmatter = frontmatterOf('SKILL.md');
+    expect(frontmatter).toMatch(/^name: ghost-app-ui-dev-setup$/m);
+    expect(frontmatter).toMatch(/^description: \S.*$/m);
+    expect(frontmatter).toMatch(/^disable-model-invocation: true$/m);
+  });
+
+  it('is not in the npm package', () => {
+    const manifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')) as {
+      files: string[];
+    };
+    expect(manifest.files.some((entry) => entry.replace(/^!/, '').startsWith('dev-skill'))).toBe(
+      false,
+    );
+  });
+
+  it('has a valid build-ghost-app template', () => {
+    const frontmatter = frontmatterOf('build-ghost-app/SKILL.md');
+    expect(frontmatter).toMatch(/^name: build-ghost-app$/m);
+    expect(frontmatter).toMatch(/^description: \S.*$/m);
+  });
+
+  it('links to headings that exist in its reference', () => {
+    const reference = anchors(readFileSync(join(devSkillDir, 'reference.md'), 'utf8'));
+    const links = [
+      ...readFileSync(join(devSkillDir, 'SKILL.md'), 'utf8').matchAll(
+        /\]\(reference\.md#([^)]+)\)/g,
+      ),
+    ].map((match) => match[1]!);
+    expect(links.length).toBeGreaterThan(0);
+    expect(links.filter((anchor) => !reference.has(anchor))).toEqual([]);
   });
 });

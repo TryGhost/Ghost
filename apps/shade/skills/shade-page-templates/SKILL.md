@@ -7,19 +7,20 @@ description: Start a Ghost screen from the Shade page template for its page type
 
 A new screen starts with one question: what page type is this? The answer
 picks the template, and the template supplies the chrome. The rules live in
-[Page types](../../docs/page-types.md). Links point into the `docs/` folder
-beside this package's `skills/` folder (`node_modules/@tryghost/shade/docs/`
-in an app); if it's missing, run the package's `build:docs` script.
+[Page types](https://shade.ghost.org/docs/page-types.md).
+
+Docs links use `https://shade.ghost.org`. If the app's `AGENTS.md` names
+another `Shade docs:` address, use that instead. Fetch pages with `curl -s`.
 
 ## Workflow
 
-1. Name the page type from [Page types](../../docs/page-types.md): list page,
+1. Name the page type from [Page types](https://shade.ghost.org/docs/page-types.md): list page,
    detail page, or one of the shapes
-   [not in the taxonomy](../../docs/page-types.md#not-in-the-taxonomy).
+   [not in the taxonomy](https://shade.ghost.org/docs/page-types.md#not-in-the-taxonomy).
 2. Start from that type's template and the
-   [Example](../../docs/page-types.md#example). For shapes without a template,
+   [Example](https://shade.ghost.org/docs/page-types.md#example). For shapes without a template,
    assemble the page as that section says.
-3. Compose it with [Composing a page](../../docs/page-types.md#composing-a-page).
+3. Compose it with [Composing a page](https://shade.ghost.org/docs/page-types.md#composing-a-page).
 4. Build the header's controls with
    [`shade-page-header`](../shade-page-header/SKILL.md), and lay out the body
    with [`shade-use-primitives`](../shade-use-primitives/SKILL.md).
@@ -27,5 +28,5 @@ in an app); if it's missing, run the package's `build:docs` script.
 ## Self-check
 
 - You can name the page type, and the template matches it.
-- Every rule in [Composing a page](../../docs/page-types.md#composing-a-page)
+- Every rule in [Composing a page](https://shade.ghost.org/docs/page-types.md#composing-a-page)
   holds for your page.

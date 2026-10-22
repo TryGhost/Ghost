@@ -6,16 +6,17 @@ description: Make dark mode work through Shade's semantic tokens. Use when writi
 # Shade no dark variants
 
 Shade's semantic tokens carry both themes. The rules, the fix and the
-exceptions live in [Tokens: Dark mode](../../docs/tokens.md#dark-mode). Links
-point into the `docs/` folder beside this package's `skills/` folder
-(`node_modules/@tryghost/shade/docs/` in an app); if it's missing, run the
-package's `build:docs` script.
+exceptions live in
+[Tokens: Dark mode](https://shade.ghost.org/docs/tokens.md#dark-mode).
+
+Docs links use `https://shade.ghost.org`. If the app's `AGENTS.md` names
+another `Shade docs:` address, use that instead. Fetch pages with `curl -s`.
 
 ## Workflow
 
 1. Find every `dark:` class in the code you're writing or reviewing.
 2. For each one that sets a colour, follow the three fix steps in
-   [Dark mode](../../docs/tokens.md#dark-mode). Pick the replacement token
+   [Dark mode](https://shade.ghost.org/docs/tokens.md#dark-mode). Pick the replacement token
    with [`shade-tokens-not-hex`](../shade-tokens-not-hex/SKILL.md).
 3. Keep a `dark:` class only when it matches an exception that section names.
 4. When debugging a dark-mode-only problem, change the token rather than

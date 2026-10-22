@@ -17,8 +17,8 @@ Read the human documentation before changing Shade:
   [tokens](./src/docs/tokens.mdx) provide layer-specific guidance.
 
 - When building screens with Shade, use the design skills in
-  [`skills/`](./skills/), which ship with the package. For page headers and
-  their actions, use [`shade-page-header`](./skills/shade-page-header/SKILL.md).
+  [`skills/`](./skills/). For page headers and their actions, use
+  [`shade-page-header`](./skills/shade-page-header/SKILL.md).
 
 ## Required workflow
 
@@ -37,10 +37,14 @@ Read the human documentation before changing Shade:
   Storybook.
 - Update the Storybook human documentation when a shared Shade convention
   changes; do not make this file the only source.
-- The design skills in [`skills/`](./skills/) ship in the npm package, and the
-  `shade-design` repository skill points to them. They hold no rules: each routes to the
-  generated docs, so a rule change belongs in the `.mdx` source. Keep their
-  links relative to the published layout (`../../docs/<doc>.md`).
-- `entry-skill/shade-for-ghost-apps` is installed into Ghost apps from GitHub
-  and doesn't ship. It holds no rules either: it installs Shade and names files
-  under `node_modules/@tryghost/shade/`, which `skills.test.ts` checks.
+- The design skills in [`skills/`](./skills/) are installed into apps with
+  `npx skills add TryGhost/Ghost/apps/shade/skills`, and the `shade-design`
+  repository skill points to them. `build-ghost-app-ui` is the front door for
+  Ghost apps. They hold no rules: each routes to the docs, so a rule change
+  belongs in the `.mdx` source. Link docs as
+  `https://shade.ghost.org/docs/<page>.md`, which `skills.test.ts` checks
+  against the generated docs, and keep each skill standalone.
+- The npm package ships code only. Storybook serves the docs as Markdown at
+  `/docs/<page>.md` and `/llms.txt`.
+- `dev-skill/` holds the internal `ghost-app-ui-dev-setup` skill for Ghost's
+  own team. It isn't shipped or installed with the design skills.

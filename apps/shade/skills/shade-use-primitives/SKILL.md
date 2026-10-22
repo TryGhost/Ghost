@@ -7,28 +7,28 @@ description: Lay out Ghost UI with Shade's layout primitives. Use when laying ou
 
 Layout in Ghost UI reads by intent: `Stack`, `Inline`, `Box`, `Grid`,
 `Container` and `Text` replace hand-written flex and grid classes. The rules
-live in [Primitives](../../docs/primitives-guide.md). Links point into the
-`docs/` folder beside this package's `skills/` folder
-(`node_modules/@tryghost/shade/docs/` in an app); if it's missing, run the
-package's `build:docs` script.
+live in [Primitives](https://shade.ghost.org/docs/primitives-guide.md).
+
+Docs links use `https://shade.ghost.org`. If the app's `AGENTS.md` names
+another `Shade docs:` address, use that instead. Fetch pages with `curl -s`.
 
 ## Workflow
 
 1. Check for a larger shape first. A whole page starts from
    [`shade-page-templates`](../shade-page-templates/SKILL.md); a recurring
    product shape may already be a pattern in
-   [Patterns](../../docs/patterns-guide.md).
+   [Patterns](https://shade.ghost.org/docs/patterns-guide.md).
 2. Pick the primitive for each wrapper with
-   [Use a primitive when](../../docs/primitives-guide.md#use-a-primitive-when).
+   [Use a primitive when](https://shade.ghost.org/docs/primitives-guide.md#use-a-primitive-when).
 3. Set gaps and padding from the
-   [Spacing scale](../../docs/primitives-guide.md#spacing-scale).
+   [Spacing scale](https://shade.ghost.org/docs/primitives-guide.md#spacing-scale).
 4. Reserve `className` for what
-   [the props don't cover](../../docs/primitives-guide.md#classname).
+   [the props don't cover](https://shade.ghost.org/docs/primitives-guide.md#classname).
 
 ## Self-check
 
 - No wrapper element in your diff carries only layout classes.
 - Spacing on primitives uses the named steps, and direction, gap, alignment
   and justification come from props.
-- Nothing in [Don't](../../docs/primitives-guide.md#dont) applies to your
+- Nothing in [Don't](https://shade.ghost.org/docs/primitives-guide.md#dont) applies to your
   diff.

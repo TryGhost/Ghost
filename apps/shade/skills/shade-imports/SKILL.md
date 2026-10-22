@@ -7,20 +7,20 @@ description: Import Shade from its layer subpaths and set up its stylesheet and 
 
 Each Shade layer has its own import subpath, and whether an app loads Shade's
 stylesheet and `ShadeApp` depends on who owns its document. The rules live in
-[Shade: Imports](../../docs/introduction.md#imports). Links point into the
-`docs/` folder beside this package's `skills/` folder
-(`node_modules/@tryghost/shade/docs/` in an app); if it's missing, run the
-package's `build:docs` script.
+[Shade: Imports](https://shade.ghost.org/docs/introduction.md#imports).
+
+Docs links use `https://shade.ghost.org`. If the app's `AGENTS.md` names
+another `Shade docs:` address, use that instead. Fetch pages with `curl -s`.
 
 ## Workflow
 
 1. Take each import from the subpath table in
-   [Imports](../../docs/introduction.md#imports).
+   [Imports](https://shade.ghost.org/docs/introduction.md#imports).
 2. When adding Shade to an app, decide whether it is embedded or standalone
    with
-   [Embedded and standalone setup](../../docs/introduction.md#embedded-and-standalone-setup).
+   [Embedded and standalone setup](https://shade.ghost.org/docs/introduction.md#embedded-and-standalone-setup).
 3. For a standalone app, such as a Ghost app, follow
-   [`shade-in-ghost-app`](../shade-in-ghost-app/SKILL.md).
+   [`build-ghost-app-ui`](../build-ghost-app-ui/SKILL.md).
 
 ## Self-check
 
