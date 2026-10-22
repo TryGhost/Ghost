@@ -1,9 +1,8 @@
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const BREAD = require('./custom-theme-settings-bread-service');
 const nql = require('@tryghost/nql');
 const tpl = require('@tryghost/tpl');
 const { ValidationError } = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('custom-theme-settings-service');
 
 const messages = {
   problemFindingSetting: 'Unknown setting: {key}.',
@@ -16,10 +15,11 @@ const HIDDEN_SETTING_VALUE = null;
 module.exports = class CustomThemeSettingsService {
   /**
    * @param {Object} options
+   * @param {(message: string) => void} options.debug - Configured debug logger
    * @param {any} options.model - Bookshelf-like model instance for storing theme setting key/value pairs
    * @param {import('../../../shared/custom-theme-settings-cache/custom-theme-settings-cache')} options.cache - Instance of a custom key/value pair cache
    */
-  constructor({ model, cache }) {
+  constructor({ model, cache, debug }) {
     this.activeThemeName = null;
 
     /** @private */
@@ -29,6 +29,7 @@ module.exports = class CustomThemeSettingsService {
 
     this._repository = new BREAD({ model });
     this._valueCache = cache;
+    this._debug = debug;
     this._activeThemeSettings = {};
   }
 
@@ -198,14 +199,16 @@ module.exports = class CustomThemeSettingsService {
       });
 
       if (destinationCollection.toJSON().length > 0) {
-        debug(
+        this._debug(
           `Skipping copy of custom theme settings from '${fromThemeName}' to '${toThemeName}' - destination already has settings`,
         );
         return;
       }
 
       for (const setting of sourceCollection.toJSON()) {
-        debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
+        this._debug(
+          `Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`,
+        );
         await this._repository.add(
           {
             theme: toThemeName,
@@ -234,7 +237,7 @@ module.exports = class CustomThemeSettingsService {
     let knownSettings = settingsCollection.toJSON();
 
     // exit early if there's nothing to sync for this theme
-    if (knownSettings.length === 0 && _.isEmpty(themeSettings)) {
+    if (knownSettings.length === 0 && isEmpty(themeSettings)) {
       return [];
     }
 
@@ -248,7 +251,7 @@ module.exports = class CustomThemeSettingsService {
       const hasChangedType = themeSetting && themeSetting.type !== knownSetting.type;
 
       if (hasBeenRemoved || hasChangedType) {
-        debug(
+        this._debug(
           `Removing custom theme setting '${name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`,
         );
         await this._repository.destroy({ id: knownSetting.id });
@@ -258,7 +261,7 @@ module.exports = class CustomThemeSettingsService {
 
       // replace value with default if it's not a valid select option
       if (themeSetting.options && !themeSetting.options.includes(knownSetting.value)) {
-        debug(
+        this._debug(
           `Resetting custom theme setting value '${name}.${themeSetting.key}' - "${knownSetting.value}" is not a valid option`,
         );
         await this._repository.edit({ value: themeSetting.default }, { id: knownSetting.id });
@@ -280,7 +283,7 @@ module.exports = class CustomThemeSettingsService {
           value: setting.default,
         };
 
-        debug(`Adding custom theme setting '${name}.${key}'`);
+        this._debug(`Adding custom theme setting '${name}.${key}'`);
         await this._repository.add(newSettingValues);
       }
     }
@@ -295,7 +298,7 @@ module.exports = class CustomThemeSettingsService {
    * @private
    */
   _populateValueCacheForTheme(theme, settings) {
-    if (_.isEmpty(theme.customSettings)) {
+    if (isEmpty(theme.customSettings)) {
       this._valueCache.populate([]);
       return;
     }
@@ -309,7 +312,7 @@ module.exports = class CustomThemeSettingsService {
    * @private
    */
   _populateInternalCacheForTheme(theme, settings) {
-    if (_.isEmpty(theme.customSettings)) {
+    if (isEmpty(theme.customSettings)) {
       this._activeThemeSettings = new Map();
       return;
     }
