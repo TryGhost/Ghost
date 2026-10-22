@@ -52,7 +52,7 @@ describe('Custom theme settings root and retained consumers', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeJS.Module | undefined>;
   let previousCache: Record<string, unknown>;
-  let root: { init(): void; api: { listSettings(): unknown[] } };
+  let root: { init(): Promise<void>; service: { listSettings(): unknown[] } };
   let activation: Record<
     'activateFromBoot' | 'activateFromAPI' | 'activateFromAPIOverride',
     (name: string, loaded: typeof theme, checked: typeof checkedTheme) => Promise<void>
@@ -79,7 +79,7 @@ describe('Custom theme settings root and retained consumers', function () {
     sandbox.stub(settingsCache, 'get').callThrough().withArgs('active_theme').returns('casper');
 
     // These real consumers retain the root before boot constructs its implementation.
-    root = require(ROOT_PATH);
+    root = require(ROOT_PATH).default;
     activation = require(BRIDGE_PATH);
     controller = require(CONTROLLER_PATH);
     themes = require(THEMES_PATH);
@@ -102,7 +102,7 @@ describe('Custom theme settings root and retained consumers', function () {
     const init = loadBootFunction(
       'initServicesForFrontend',
       {
-        './server/services/custom-theme-settings': root,
+        './server/services/custom-theme-settings': { default: root },
         './server/services/themes': themes,
         './server/services/offers': offers,
       },
@@ -111,12 +111,12 @@ describe('Custom theme settings root and retained consumers', function () {
     return { init: () => init({ bootLogger: { metric() {} } }), offers };
   }
 
-  it('constructs without querying settings, activating a theme or replacing the shared cache', function () {
+  it('constructs without querying settings, activating a theme or replacing the shared cache', async function () {
     sinon.assert.notCalled(findAll);
     sinon.assert.notCalled(populate);
     sinon.assert.notCalled(activateFrontend);
 
-    root.init();
+    await root.init();
 
     assert.deepEqual(controller.browse.query(), []);
     assert.deepEqual(cache.getAll(), { previous: 'still cached' });
@@ -131,7 +131,7 @@ describe('Custom theme settings root and retained consumers', function () {
     'activateFromAPIOverride',
   ] as const) {
     it(`${method} waits for custom settings before activating the frontend`, async function () {
-      root.init();
+      await root.init();
       const read = Promise.withResolvers<ReturnType<typeof settingsCollection>>();
       findAll.onFirstCall().returns(read.promise);
       let completed = false;
@@ -206,8 +206,8 @@ describe('Custom theme settings root and retained consumers', function () {
   });
 
   it('keeps an in-flight activation usable after another init and lets retained consumers activate again', async function () {
-    root.init();
-    const retained = root.api;
+    await root.init();
+    const retained = root.service;
     const read = Promise.withResolvers<ReturnType<typeof settingsCollection>>();
     findAll.onFirstCall().returns(read.promise);
     const activationPromise = activation.activateFromBoot('casper', theme, checkedTheme);
@@ -216,7 +216,7 @@ describe('Custom theme settings root and retained consumers', function () {
     try {
       await setImmediate();
       sinon.assert.calledOnce(findAll);
-      root.init();
+      await root.init();
       assert.deepEqual(cache.getAll(), { previous: 'still cached' });
       read.resolve(settingsCollection());
       await activationPromise;

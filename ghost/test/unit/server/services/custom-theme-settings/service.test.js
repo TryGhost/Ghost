@@ -103,7 +103,7 @@ describe('Service', function () {
 
     cache = new Cache();
 
-    service = new Service({ model, cache });
+    service = new Service({ model, cache, debug: sinon.stub() });
   });
 
   describe('activateTheme()', function () {

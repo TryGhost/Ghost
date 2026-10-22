@@ -200,6 +200,7 @@
     {
       "files": [
         "ghost/core/server/services/app-installations/index.ts",
+        "ghost/core/server/services/custom-theme-settings/index.ts",
         "ghost/core/server/services/donations/index.ts",
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/gift-links/index.ts",
