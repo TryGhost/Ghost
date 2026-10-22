@@ -359,19 +359,8 @@ export function createDatabaseAutomationsRepository({
     async add(data) {
       return await knex.transaction(async (trx) => {
         await lockAutomationLimit(trx, data.status);
-        switch (data.status) {
-          case 'active':
-            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
-            break;
-          case 'inactive':
-          case 'archived':
-            break;
-          default: {
-            const _exhaustive: never = data.status;
-            throw new errors.InternalServerError({
-              message: `Unexpected automation status: ${_exhaustive}`,
-            });
-          }
+        if (data.status === 'active') {
+          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
         }
         const trigger = (() => {
           switch (data.trigger_type) {
