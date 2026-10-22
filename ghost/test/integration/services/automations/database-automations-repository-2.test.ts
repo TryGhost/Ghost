@@ -179,6 +179,69 @@ describe('database automations repository', function () {
       await knex('products').whereIn('id', tierIds).delete();
     });
 
+    it('matches complete alternatives without mixing From and To rows', async function () {
+      const bronze = await insertTier();
+      const silver = await insertTier();
+      const gold = await insertTier();
+      const platinum = await insertTier();
+      const action = await insertAutomation({
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+      });
+      await knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: action.automation_id,
+          trigger_type: 'paid_subscription_changed',
+          from_scope: 'specific_tier',
+          from_product_id: bronze,
+          to_scope: 'specific_tier',
+          to_product_id: gold,
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_id: action.automation_id,
+          trigger_type: 'paid_subscription_changed',
+          from_scope: 'specific_tier',
+          from_product_id: silver,
+          to_scope: 'specific_tier',
+          to_product_id: platinum,
+        },
+      ]);
+      const match = (from: string[], to: string[], status: 'paid' | 'gift' | 'comped' = 'paid') =>
+        repository.findFirstActionRevisions(knex, status, to, from);
+      expect(await match([bronze], [gold])).toEqual([action]);
+      expect(await match([silver], [platinum])).toEqual([action]);
+      expect(await match([bronze], [platinum])).toEqual([]);
+      expect(await match([silver], [gold])).toEqual([]);
+      expect(await match([bronze, silver], [gold, platinum])).toEqual([action]);
+      expect(await match([bronze, gold], [gold])).toEqual([]);
+      expect(await match([bronze], [bronze, gold])).toEqual([action]);
+      expect(await match([bronze], [gold], 'comped')).toEqual([]);
+      expect(await match([bronze], [gold], 'gift')).toEqual([action]);
+      expect(await findFirstActionRevisions('paid', [gold])).toEqual([]);
+    });
+
+    it('requires loss of paid access for an any-paid to free rule', async function () {
+      const bronze = await insertTier();
+      const silver = await insertTier();
+      const action = await insertAutomation({ trigger_type: 'paid_subscription_changed' });
+      await knex.transaction((trx) =>
+        replaceTriggerRules(trx, action.automation_id, {
+          trigger_type: 'paid_subscription_changed',
+          subscription_transition: { from: 'any_paid', to: 'downgraded_to_free' },
+        }),
+      );
+      expect(await repository.findFirstActionRevisions(knex, 'free', [], [bronze])).toEqual([
+        action,
+      ]);
+      expect(
+        await repository.findFirstActionRevisions(knex, 'paid', [silver], [bronze, silver]),
+      ).toEqual([]);
+      await knex('automations').where('id', action.automation_id).update('status', 'inactive');
+      expect(await repository.findFirstActionRevisions(knex, 'free', [], [bronze])).toEqual([]);
+    });
+
     it('returns an empty array when there are no automations', async function () {
       await expect(findFirstActionRevisions('free', [])).resolves.toEqual([]);
     });

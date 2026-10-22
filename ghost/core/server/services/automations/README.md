@@ -1,10 +1,10 @@
 # Automations
 
-Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+Automations run a series of actions for a member after signup or a paid subscription change. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
 
 ## How a run moves forward
 
-The member repository calls `trigger()` after signup.
+The member repository calls `trigger()` after the member transaction commits.
 
 The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
@@ -17,6 +17,55 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 - [`service.ts`](service.ts) starts checks and schedules future ones.
 - [`poll.ts`](poll.ts) runs ready steps.
 - [`welcome-email-automation-poll.ts`](welcome-email-automation-poll.ts) processes older welcome email runs.
+
+## Trigger configuration
+
+`automations.trigger_type` identifies the event. Each `automation_trigger_rules` row
+is a complete alternative; both From and To must match that same row. Rules are
+canonical for reads, enrollment, and pending-step eligibility. Signup writes also
+maintain `trigger_tier_scope` and `automation_trigger_tiers` during the compatibility
+period. The cutover migration reconciles signup rules from those legacy fields.
+Legacy welcome creation and development seeders create rules in the same transaction.
+
+The existing Admin automation endpoints accept selection-shaped configuration:
+
+- Signup: `trigger_type: "membership_started"` (also the default when omitted),
+  plus `trigger_tier_scope` and `trigger_tier_ids` as before.
+- Subscription change: `trigger_type: "paid_subscription_changed"`, plus
+  `subscription_transition: {from: [bronzeId, silverId], to: [goldId]}`.
+  `from` also accepts `"any_paid"`; `to` also accepts `"downgraded_to_free"`.
+  Legacy signup fields must be null or omitted.
+
+Each side's IDs must be distinct paid tiers, with no overlap between sides and
+at most 50 tiers per side. From/To selections expand into complete pairs. New
+selections must be active tiers; an edit can retain an already-selected archived
+tier. Rules and the graph are replaced atomically. The trigger type is immutable
+once created. Omitted trigger configuration on edit is preserved. Drafts may have
+no configured trigger, but activation requires one. Detail responses round-trip
+selections; a rule set that cannot be represented exactly by these selections
+fails rather than silently adding new combinations. Rule IDs stay server-owned.
+Browse metadata advertises `supported_trigger_types` so independently deployed
+Admin clients can detect support.
+
+Subscription changes require a previous paid member. From matches the tiers held
+before the change; To means a newly acquired tier or loss of all paid access.
+Retaining Bronze through another subscription while gaining Gold can match
+Bronze → Gold. Losing Bronze while retaining an existing Gold tier does not. Renewals,
+cadence changes, cancellation scheduling, and unchanged entitlement sets do not
+match. A downgrade to free waits until access actually ends. Gift destinations
+use paid-tier eligibility; complimentary destinations do not enter. Existing
+member-source exclusions apply.
+
+Entry is once per member per automation, including subscription changes. Member
+locking serializes concurrent deliveries before checking existing runs. Events
+carry persisted before/after entitlements and dispatch after commit; they are not
+a durable queue, so a process crash between commit and dispatch can lose an event.
+
+Pending steps use the destinations from the **current** automation rules, matching
+the existing signup edit behavior. They do not store an enrollment-rule snapshot.
+A member who no longer qualifies exits before the next action. Raw rule editing,
+repeat entry, durable event delivery, and historical trigger evidence are outside
+this backend spike.
 
 ## Performance statistics
 

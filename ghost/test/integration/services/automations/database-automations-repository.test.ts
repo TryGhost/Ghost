@@ -1,3 +1,4 @@
+import { onTestFinished } from 'vitest';
 import { replaceTriggerRules } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -195,63 +196,87 @@ describe('database automations repository', function () {
       assert.equal(steps.length, 1);
     });
 
-    it('only triggers automations once per automation+member, even with race conditions', async function () {
-      const memberId = ObjectId().toHexString();
-      const memberEmail = await insertMember(memberId);
-
-      {
-        // Lock a member.
-        const memberLockTxn = await knex.transaction();
-        await memberLockTxn('members').where('id', memberId).forUpdate().first('id');
-
-        // Wait until both triggers try to lock the member.
-        const bothMemberLocksRequested = Promise.withResolvers<void>();
-        const timeout = setTimeout(
-          () => bothMemberLocksRequested.reject(new Error('Triggers did not reach member lock')),
-          10_000,
-        );
-        let memberLockCount = 0;
-        const onKnexQuery = (query: { sql: string }) => {
-          if (!query.sql.includes('from `members`') || !query.sql.includes('for update')) {
-            return;
-          }
-          memberLockCount += 1;
-          if (memberLockCount === 2) {
-            bothMemberLocksRequested.resolve();
-          }
-        };
-        knex.on('query', onKnexQuery);
-
-        // Actually do the triggers.
-        const api = createApi();
-        const triggerOptions = {
-          event: 'membership_started' as const,
-          memberId,
-          memberEmail,
-          memberStatus: 'free' as const,
-          memberTierIds: [],
-        };
-        const triggers = Promise.all([api.trigger(triggerOptions), api.trigger(triggerOptions)]);
-        triggers.catch(bothMemberLocksRequested.reject);
-
-        try {
-          await bothMemberLocksRequested.promise;
-        } finally {
-          clearTimeout(timeout);
-          knex.removeListener('query', onKnexQuery);
-          await memberLockTxn.rollback();
-          await triggers;
+    it.each(['membership_started', 'paid_subscription_changed'] as const)(
+      'only triggers %s once per member, even with race conditions',
+      async function (event) {
+        if (event === 'paid_subscription_changed') {
+          onTestFinished(async () => {
+            await knex('automation_trigger_rules').where('automation_id', automationId).delete();
+            await knex('automations')
+              .where('id', automationId)
+              .update('trigger_type', 'membership_started');
+            await knex.transaction((trx) =>
+              replaceTriggerRules(trx, automationId, { trigger_tier_scope: 'free' }),
+            );
+          });
+          await knex('automation_trigger_rules').where('automation_id', automationId).delete();
+          await knex('automations').where('id', automationId).update('trigger_type', event);
+          await knex.transaction((trx) =>
+            replaceTriggerRules(trx, automationId, {
+              trigger_type: event,
+              subscription_transition: { from: 'any_paid', to: 'downgraded_to_free' },
+            }),
+          );
         }
-      }
+        const memberId = ObjectId().toHexString();
+        const memberEmail = await insertMember(memberId);
 
-      const runs = await knex('automation_runs').where({
-        automation_id: automationId,
-        member_id: memberId,
-      });
-      assert.equal(runs.length, 1);
-      const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
-      assert.equal(steps.length, 1);
-    });
+        {
+          // Lock a member.
+          const memberLockTxn = await knex.transaction();
+          await memberLockTxn('members').where('id', memberId).forUpdate().first('id');
+
+          // Wait until both triggers try to lock the member.
+          const bothMemberLocksRequested = Promise.withResolvers<void>();
+          const timeout = setTimeout(
+            () => bothMemberLocksRequested.reject(new Error('Triggers did not reach member lock')),
+            10_000,
+          );
+          let memberLockCount = 0;
+          const onKnexQuery = (query: { sql: string }) => {
+            if (!query.sql.includes('from `members`') || !query.sql.includes('for update')) {
+              return;
+            }
+            memberLockCount += 1;
+            if (memberLockCount === 2) {
+              bothMemberLocksRequested.resolve();
+            }
+          };
+          knex.on('query', onKnexQuery);
+
+          // Actually do the triggers.
+          const api = createApi();
+          const triggerOptions = {
+            event,
+            previousMemberStatus: 'paid' as const,
+            previousMemberTierIds: [],
+            memberId,
+            memberEmail,
+            memberStatus: 'free' as const,
+            memberTierIds: [],
+          };
+          const triggers = Promise.all([api.trigger(triggerOptions), api.trigger(triggerOptions)]);
+          triggers.catch(bothMemberLocksRequested.reject);
+
+          try {
+            await bothMemberLocksRequested.promise;
+          } finally {
+            clearTimeout(timeout);
+            knex.removeListener('query', onKnexQuery);
+            await memberLockTxn.rollback();
+            await triggers;
+          }
+        }
+
+        const runs = await knex('automation_runs').where({
+          automation_id: automationId,
+          member_id: memberId,
+        });
+        assert.equal(runs.length, 1);
+        const steps = await knex('automation_run_steps').where('automation_run_id', runs[0].id);
+        assert.equal(steps.length, 1);
+      },
+    );
 
     it('enrolls different members concurrently without deadlocking', async function () {
       const memberIds = [ObjectId().toHexString(), ObjectId().toHexString()];

@@ -128,6 +128,63 @@ describe('automations API', function () {
       vi.useRealTimers();
     });
 
+    it('enrolls subscription changes once, even after later qualifying changes', async function () {
+      firstActions = [createFirstAction()];
+      const api = createApi({ repository, domainEvents });
+      const change = {
+        ...trigger,
+        event: 'paid_subscription_changed' as const,
+        previousMemberStatus: 'paid' as const,
+        previousMemberTierIds: ['bronze'],
+        memberStatus: 'paid' as const,
+        memberTierIds: ['gold'],
+      };
+      await api.trigger(change);
+      await api.trigger(change);
+      await api.trigger({ ...change, previousMemberTierIds: ['silver'] });
+      expect(runs).toHaveLength(1);
+      expect(steps).toHaveLength(1);
+      expect(domainEvents.dispatch).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      {
+        previousMemberStatus: 'free',
+        memberStatus: 'paid',
+        previousMemberTierIds: [],
+        memberTierIds: ['gold'],
+      },
+      {
+        previousMemberStatus: 'gift',
+        memberStatus: 'paid',
+        previousMemberTierIds: ['bronze'],
+        memberTierIds: ['gold'],
+      },
+      {
+        previousMemberStatus: 'comped',
+        memberStatus: 'paid',
+        previousMemberTierIds: ['bronze'],
+        memberTierIds: ['gold'],
+      },
+      {
+        previousMemberStatus: 'paid',
+        memberStatus: 'comped',
+        previousMemberTierIds: ['bronze'],
+        memberTierIds: ['gold'],
+      },
+      {
+        previousMemberStatus: 'paid',
+        memberStatus: 'paid',
+        previousMemberTierIds: ['bronze', 'silver'],
+        memberTierIds: ['silver', 'bronze'],
+      },
+    ] as const)('ignores nonqualifying changes %j', async function (change) {
+      const withTransaction = vi.fn();
+      const api = createApi({ repository: { ...repository, withTransaction } });
+      await api.trigger({ ...trigger, ...change, event: 'paid_subscription_changed' });
+      expect(withTransaction).not.toHaveBeenCalled();
+    });
+
     it('fails if called with an unexpected `event`', async function () {
       const withTransaction = vi.fn();
       const api = createApi({ repository: { ...repository, withTransaction } });
