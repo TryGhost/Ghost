@@ -8,18 +8,18 @@ import db from '../data/db';
 
 export const limitService = new LimitService();
 
-export const init = () => {
-  let helpLink;
-
+export const getHelpLink = (): string => {
   if (
-    config.get('hostSettings:billing:enabled') &&
     config.get('hostSettings:billing:enabled') === true &&
     config.get('hostSettings:billing:url')
   ) {
-    helpLink = config.get('hostSettings:billing:url');
-  } else {
-    helpLink = 'https://ghost.org/help/';
+    return config.get('hostSettings:billing:url');
   }
+  return 'https://ghost.org/help/';
+};
+
+export const init = () => {
+  const helpLink = getHelpLink();
 
   let subscription: Subscription | undefined;
 

@@ -31,6 +31,7 @@ const messages = {
   webmentionsBlock: 'Too many mention attempts',
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
   upgradeBlock: 'Too many update requests. Try again in a minute.',
+  staffInviteBlock: 'Too many invitation requests. Try again in a minute.',
   supportRequestBlock: 'Too many support requests. Please try again later.',
 };
 let spamPrivateBlock = spam.private_block || {};
@@ -48,6 +49,7 @@ const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
 let spamUpgradeBlock = spam.upgrade_block || {};
 let spamUpgradeApiBlock = spam.upgrade_api_block || {};
+let spamStaffInviteBlock = spam.staff_invite_block || {};
 let spamSupportRequestBlock = spam.support_request_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
@@ -70,6 +72,7 @@ let contentApiKeyInstance;
 let emailPreviewBlockInstance;
 let upgradeBlockInstance;
 let upgradeApiBlockInstance;
+let staffInviteBlockInstance;
 let supportRequestBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
@@ -252,7 +255,7 @@ const emailPreviewBlock = () => {
   return emailPreviewBlockInstance;
 };
 
-const createUpgradeBlock = (name, settings, context, options = {}) => {
+const createRequestBlock = (name, settings, errorOptions, options = {}) => {
   const ExpressBrute = require('express-brute');
   const BruteKnex = require('@tryghost/brute-knex');
   const db = require('../../../../data/db');
@@ -276,13 +279,7 @@ const createUpgradeBlock = (name, settings, context, options = {}) => {
             String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
           );
 
-          return next(
-            new errors.TooManyRequestsError({
-              message: messages.upgradeBlock,
-              context,
-              help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
-            }),
-          );
+          return next(new errors.TooManyRequestsError({ ...errorOptions }));
         },
         handleStoreError: handleStoreError,
       },
@@ -301,11 +298,11 @@ const createUpgradeBlock = (name, settings, context, options = {}) => {
 const upgradeBlock = () => {
   upgradeBlockInstance =
     upgradeBlockInstance ||
-    createUpgradeBlock(
-      'upgrade_requests',
-      spamUpgradeBlock,
-      'The staff user budget for update POST attempts has been exhausted.',
-    );
+    createRequestBlock('upgrade_requests', spamUpgradeBlock, {
+      message: messages.upgradeBlock,
+      context: 'The staff user budget for update POST attempts has been exhausted.',
+      help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
+    });
 
   return upgradeBlockInstance;
 };
@@ -313,10 +310,14 @@ const upgradeBlock = () => {
 const upgradeApiBlock = () => {
   upgradeApiBlockInstance =
     upgradeApiBlockInstance ||
-    createUpgradeBlock(
+    createRequestBlock(
       'upgrade_api',
       spamUpgradeApiBlock,
-      'The shared IP budget for update API requests has been exhausted.',
+      {
+        message: messages.upgradeBlock,
+        context: 'The shared IP budget for update API requests has been exhausted.',
+        help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
+      },
       {
         // Continuous polling must not extend the counting window indefinitely.
         refreshTimeoutOnRequest: false,
@@ -324,6 +325,19 @@ const upgradeApiBlock = () => {
     );
 
   return upgradeApiBlockInstance;
+};
+
+const staffInviteBlock = () => {
+  staffInviteBlockInstance =
+    staffInviteBlockInstance ||
+    createRequestBlock(
+      'staff_invites',
+      spamStaffInviteBlock,
+      { message: messages.staffInviteBlock, code: 'STAFF_INVITE_RATE_LIMIT' },
+      { refreshTimeoutOnRequest: false },
+    );
+
+  return staffInviteBlockInstance;
 };
 
 const supportRequestBlock = () => {
@@ -833,6 +847,7 @@ const contentApiKey = () => {
 module.exports = {
   upgradeBlock,
   upgradeApiBlock,
+  staffInviteBlock,
   globalBlock: globalBlock,
   globalReset: globalReset,
   userLogin: userLogin,
@@ -853,6 +868,7 @@ module.exports = {
   reset: () => {
     upgradeBlockInstance = undefined;
     upgradeApiBlockInstance = undefined;
+    staffInviteBlockInstance = undefined;
     store = undefined;
     memoryStore = undefined;
     privateBlogInstance = undefined;
@@ -874,6 +890,7 @@ module.exports = {
     spam = config.get('spam') || {};
     spamUpgradeBlock = spam.upgrade_block || {};
     spamUpgradeApiBlock = spam.upgrade_api_block || {};
+    spamStaffInviteBlock = spam.staff_invite_block || {};
     spamPrivateBlock = spam.private_block || {};
     spamGlobalBlock = spam.global_block || {};
     spamGlobalReset = spam.global_reset || {};

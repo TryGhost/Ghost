@@ -4,6 +4,7 @@ const security = require('@tryghost/security');
 const moment = require('moment');
 
 const settingsCache = require('../../shared/settings-cache');
+const config = require('../../shared/config');
 const { limitService } = require('../services/limits');
 const ghostBookshelf = require('./base');
 const { setIsRoles } = require('./role-utils');
@@ -22,6 +23,26 @@ const Invite = ghostBookshelf.Model.extend(
     actionsCollectCRUD: true,
     actionsResourceType: 'invite',
     actionsExtraContext: ['status', 'role_id'],
+
+    onCreated(model, options) {
+      if (!config.get('hostSettings:staffInvites')) {
+        return ghostBookshelf.Model.prototype.onCreated.call(this, model, options);
+      }
+
+      const action = model.getAction('added', options);
+      if (!options.transacting || !action) {
+        throw new errors.IncorrectUsageError({
+          message: 'Trial invitations require a transaction and an audit actor.',
+        });
+      }
+
+      // This entry is also the trial's email reservation. It must commit with
+      // the invitation and fail closed, unlike the general best-effort logger.
+      return ghostBookshelf.model('Action').add(action, {
+        transacting: options.transacting,
+        autoRefresh: false,
+      });
+    },
 
     toJSON: function (unfilteredOptions) {
       const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);

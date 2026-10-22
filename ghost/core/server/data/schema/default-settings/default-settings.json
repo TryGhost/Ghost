@@ -1,5 +1,9 @@
 {
   "core": {
+    "staff_invitation_lock": {
+      "defaultValue": null,
+      "type": "string"
+    },
     "last_mentions_report_email_timestamp": {
       "defaultValue": null,
       "type": "number"

@@ -56,7 +56,7 @@ describe('Unit: services/invites/accept', function () {
     models = {
       Base: { transaction: transactionStub },
       Invite: { findOne: findOneInviteStub },
-      User: { findOne: findOneUserStub, add: addUserStub },
+      User: { findOne: findOneUserStub, addWithRoles: addUserStub },
     };
   });
 
@@ -74,7 +74,7 @@ describe('Unit: services/invites/accept', function () {
     await accept(invitation, models);
 
     const options = [
-      findOneInviteStub.firstCall.args[1],
+      findOneInviteStub.secondCall.args[1],
       findOneUserStub.firstCall.args[1],
       destroyStub.firstCall.args[0],
       addUserStub.firstCall.args[1],
@@ -102,8 +102,8 @@ describe('Unit: services/invites/accept', function () {
   it('looks up only sent invitations using the decoded URL-safe token', async function () {
     await accept(invitation, models);
 
-    sinon.assert.calledOnceWithExactly(
-      findOneInviteStub,
+    sinon.assert.calledWithExactly(
+      findOneInviteStub.secondCall,
       { token: 'a+b/cA==', status: 'sent' },
       {
         context: { internal: true },
@@ -141,28 +141,46 @@ describe('Unit: services/invites/accept', function () {
     );
   });
 
-  it('rejects a missing sent invite without looking up or creating a user', async function () {
-    findOneInviteStub.resolves(null);
+  for (const expired of [false, true]) {
+    it(`rejects ${expired ? 'expired' : 'unknown'} tokens before opening a transaction or taking the shared lock`, async function () {
+      const lockStaffUsage = sinon.stub().resolves();
+      if (expired) {
+        inviteAttributes.expires = now - 1;
+      } else {
+        findOneInviteStub.resolves(null);
+      }
+      await assert.rejects(accept(invitation, models, lockStaffUsage), {
+        errorType: 'NotFoundError',
+        message: expired ? 'Invite is expired.' : 'Invite not found.',
+      });
+      sinon.assert.notCalled(findOneUserStub);
+      sinon.assert.notCalled(destroyStub);
+      sinon.assert.notCalled(addUserStub);
+      sinon.assert.notCalled(transactionStub);
+      sinon.assert.notCalled(lockStaffUsage);
+    });
+  }
 
-    await assert.rejects(accept(invitation, models), {
-      errorType: 'NotFoundError',
+  it('rechecks the token after taking the shared lock', async function () {
+    findOneInviteStub.onSecondCall().resolves(null);
+    const lockStaffUsage = sinon.stub().resolves();
+    await assert.rejects(accept(invitation, models, lockStaffUsage), {
       message: 'Invite not found.',
     });
-
-    sinon.assert.notCalled(findOneUserStub);
+    sinon.assert.calledOnceWithExactly(lockStaffUsage, transacting);
+    sinon.assert.callOrder(findOneInviteStub, lockStaffUsage);
+    assert.ok(lockStaffUsage.firstCall.calledBefore(findOneInviteStub.secondCall));
     sinon.assert.notCalled(destroyStub);
     sinon.assert.notCalled(addUserStub);
   });
 
-  it('rejects an invite expired by one millisecond without consuming it', async function () {
-    inviteAttributes.expires = now - 1;
-
-    await assert.rejects(accept(invitation, models), {
-      errorType: 'NotFoundError',
+  it('rechecks expiry after waiting for the shared lock', async function () {
+    const lockStaffUsage = sinon.stub().callsFake(async () => {
+      inviteAttributes.expires = now - 1;
+    });
+    await assert.rejects(accept(invitation, models, lockStaffUsage), {
       message: 'Invite is expired.',
     });
-
-    sinon.assert.notCalled(findOneUserStub);
     sinon.assert.notCalled(destroyStub);
     sinon.assert.notCalled(addUserStub);
   });
@@ -256,13 +274,13 @@ describe('Unit: services/invites/accept', function () {
     });
   }
 
-  it('propagates transaction startup failure without touching models', async function () {
+  it('propagates transaction startup failure after the preliminary lookup', async function () {
     const failure = new Error('Transaction unavailable');
     transactionStub.rejects(failure);
 
     await assert.rejects(accept(invitation, models), (error) => error === failure);
 
-    sinon.assert.notCalled(findOneInviteStub);
+    sinon.assert.calledOnce(findOneInviteStub);
     sinon.assert.notCalled(findOneUserStub);
     sinon.assert.notCalled(destroyStub);
     sinon.assert.notCalled(addUserStub);
