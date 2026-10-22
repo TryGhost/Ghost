@@ -5,7 +5,8 @@ const { assertObjectMatches } = require('../../utils/assertions');
 const { agentProvider, fixtureManager, configUtils } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const urlServiceUtils = require('../../utils/url-service-utils');
-const memberAttributionService = require('../../../core/server/services/member-attribution');
+const memberAttributionService =
+  require('../../../core/server/services/member-attribution').default;
 const urlUtils = require('../../../core/shared/url-utils').default;
 const settingsCache = require('../../../core/shared/settings-cache');
 const config = require('../../../core/shared/config');
@@ -23,7 +24,7 @@ describe('Member Attribution Service', function () {
       sandbox.restore();
     });
 
-    it('gives Staff and Members the same ready attribution instance across later init calls', function () {
+    it('gives Staff and Members the same ready attribution instance across later init calls', async function () {
       const staff = require('../../../core/server/services/staff');
       const members = require('../../../core/server/services/members');
       const service = memberAttributionService.service;
@@ -32,7 +33,7 @@ describe('Member Attribution Service', function () {
       assert.equal(members.api.memberBREADService.memberAttributionService, service);
       assert.equal(members.api.events._memberAttributionService, service);
 
-      memberAttributionService.init();
+      await memberAttributionService.init();
 
       assert.equal(memberAttributionService.service, service);
       assert.equal(staff.api.memberAttributionService, service);
@@ -59,7 +60,10 @@ describe('Member Attribution Service', function () {
         memberAttributionService.service,
         'addPostAttributionTracking',
       );
-      const tagOutboundLink = sandbox.spy(memberAttributionService.outboundLinkTagger, 'addToUrl');
+      const tagOutboundLink = sandbox.spy(
+        memberAttributionService.service.outboundLinkTagger,
+        'addToUrl',
+      );
 
       const renderLinks = async () => {
         const result = await renderer.renderBody(post, newsletter, null, {

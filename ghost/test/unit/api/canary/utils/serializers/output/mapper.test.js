@@ -7,7 +7,8 @@ const urlUtil = require('../../../../../../../core/server/api/endpoints/utils/se
 const cleanUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/clean');
 const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
-const memberAttribution = require('../../../../../../../core/server/services/member-attribution');
+const memberAttribution =
+  require('../../../../../../../core/server/services/member-attribution').default;
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 function createJsonModel(data) {
@@ -78,9 +79,11 @@ describe('Unit: utils/serializers/output/mappers', function () {
       sinon.stub(cleanUtil, 'tag').returns({});
       sinon.stub(cleanUtil, 'author').returns({});
 
-      memberAttribution.outboundLinkTagger = {
-        addToHtml: sinon.stub().callsFake((html) => Promise.resolve(html)),
-      };
+      sinon.stub(memberAttribution, 'service').get(() => ({
+        outboundLinkTagger: {
+          addToHtml: sinon.stub().callsFake((html) => Promise.resolve(html)),
+        },
+      }));
     });
 
     for (const includeEmail of [false, true]) {
