@@ -23,7 +23,7 @@ function createCoreHarness() {
     './server/services/signing-keys': { default: signingKeys },
     './server/services/internal-keys': { default: { init() {} } },
     './server/services/i18n': i18n,
-    './server/services/gift-links': { init() {} },
+    './server/services/gift-links': { default: { init() {} } },
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
     './server/services/export-requests': { default: { init() {} } },
