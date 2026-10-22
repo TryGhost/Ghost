@@ -91,7 +91,7 @@ class PostsService {
 
     const { model, sendEmail } = frame.options.transacting
       ? await save(frame.options.transacting)
-      : await this.models.Post.transaction(save);
+      : await this.models.Post.editTransaction(save);
 
     if (sendEmail && frame.options.transacting) {
       // The caller commits later. Rolling back leaves nothing to send.

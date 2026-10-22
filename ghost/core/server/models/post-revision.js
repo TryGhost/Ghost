@@ -1,11 +1,12 @@
 const ghostBookshelf = require('./base');
 const _ = require('lodash');
+const { readAuthor } = require('../lib/post-edit-transaction');
 
 const PostRevision = ghostBookshelf.Model.extend({
   tableName: 'post_revisions',
 
   author() {
-    return this.belongsTo('User', 'author_id');
+    return readAuthor(this.belongsTo('User', 'author_id'));
   },
 
   permittedOptions(methodName) {
