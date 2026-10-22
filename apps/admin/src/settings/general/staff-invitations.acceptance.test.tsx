@@ -208,7 +208,7 @@ describe('Staff invitations', () => {
     await item.getByRole('button', { name: 'Resend' }).click();
     const toast = settingsScreen.errorToast();
     await expect.element(toast).toHaveTextContent('Trial invitation allowance exhausted');
-    await toast.getByRole('button', { name: 'Upgrade to invite more people', exact: true }).click();
+    await toast.getByRole('button', { name: 'Upgrade', exact: true }).click();
     await expect.poll(() => window.location.hash).toBe('#/pro');
   });
 
