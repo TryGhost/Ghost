@@ -159,7 +159,6 @@ e2e/
 │   ├── services/               # Test doubles (fake Stripe, Mailgun, upgrade host, etc.)
 │   └── utils/                  # Shared utilities
 ├── data-factory/               # Test data factories (see its own README)
-├── visual-regression/          # Screenshot baseline suite (separate config)
 ├── scripts/                    # Infra and runner shell scripts
 ├── playwright.config.mjs       # Playwright configuration
 ├── eslint.config.js            # Lint config for the workspace

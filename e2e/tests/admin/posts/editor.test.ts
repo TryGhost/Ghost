@@ -4,7 +4,7 @@ import { expect, test } from '@/helpers/playwright';
 import type { Page } from '@playwright/test';
 
 /**
- * The data-loss-critical draft journey through the **React** post editor.
+ * The data-loss-critical draft journey through the post editor.
  *
  * Every assertion here is about content surviving: the create that gives a new
  * draft its id, the autosaves that follow, and what the server actually holds
@@ -100,7 +100,7 @@ async function expectNoFurtherWrites(page: Page): Promise<void> {
   ).rejects.toThrow();
 }
 
-test.describe('Ghost Admin - Post editor (React)', () => {
+test.describe('Ghost Admin - Post editor', () => {
   let postFactory: PostFactory;
   let editor: PostEditorPage;
   let writes: PostWrite[];
