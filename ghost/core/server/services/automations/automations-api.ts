@@ -121,12 +121,19 @@ export async function browse() {
     repository.browse(),
     tinybirdClient ? fetchAutomationStats(tinybirdClient) : null,
   ]);
+  const result = {
+    ...browseResult,
+    meta: {
+      ...browseResult.meta,
+      supported_trigger_types: ['membership_started', 'paid_subscription_changed'],
+    },
+  };
   if (stats === null) {
-    return browseResult;
+    return result;
   }
 
   return {
-    ...browseResult,
+    ...result,
     data: browseResult.data.map((automation) => ({
       ...automation,
       stats: stats.get(automation.id) ?? { ...EMPTY_AUTOMATION_STATS },

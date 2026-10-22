@@ -40,11 +40,34 @@ export class AutomationsImporter extends TableImporter<Automation> {
   static dependencies: string[] = [];
 
   #generated = 0;
+  #automations: Automation[] = [];
 
   defaultQuantity = 2;
 
   constructor(knex: Knex, transaction: Knex.Transaction) {
     super(AutomationsImporter.table, knex, transaction);
+  }
+
+  async finalise(): Promise<void> {
+    if (this.#automations.length === 0) {
+      return;
+    }
+    await this.knex
+      .batchInsert(
+        'automation_trigger_rules',
+        this.#automations.map((automation) => ({
+          id: this.fastFakeObjectId(),
+          automation_id: automation.id,
+          trigger_type: automation.trigger_type,
+          from_scope: null,
+          from_product_id: null,
+          to_scope: automation.trigger_tier_scope,
+          to_product_id: null,
+        })),
+        1000,
+      )
+      .transacting(this.transaction);
+    this.#automations = [];
   }
 
   generate(): Automation {
@@ -57,7 +80,7 @@ export class AutomationsImporter extends TableImporter<Automation> {
 
     this.#generated += 1;
 
-    return {
+    const automation: Automation = {
       id,
       status: faker.helpers.arrayElement(['active', 'inactive']),
       name,
@@ -68,5 +91,7 @@ export class AutomationsImporter extends TableImporter<Automation> {
       created_at: toDatabaseDate(createdAt),
       updated_at: toDatabaseDate(createdAt),
     };
+    this.#automations.push(automation);
+    return automation;
   }
 }

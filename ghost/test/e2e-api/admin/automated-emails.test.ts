@@ -376,6 +376,14 @@ describe('Automated Emails API', function () {
       const automation = await models.Base.knex('automations')
         .where('id', automatedEmail.id)
         .first('trigger_tier_scope', 'description');
+      const rules = await models.Base.knex('automation_trigger_rules').where(
+        'automation_id',
+        automatedEmail.id,
+      );
+      assert.equal(rules.length, 1);
+      assert.equal(rules[0].trigger_type, 'membership_started');
+      assert.equal(rules[0].to_scope, 'all_paid');
+      assert.equal(rules[0].from_scope, null);
       assert.equal(automation.trigger_tier_scope, 'all_paid');
       assert.equal(
         automation.description,

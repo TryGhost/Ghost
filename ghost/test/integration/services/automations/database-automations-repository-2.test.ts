@@ -1,3 +1,7 @@
+import {
+  replaceTriggerRules,
+  type TriggerConfiguration,
+} from '../../../../core/server/services/automations/trigger-rules';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
@@ -28,7 +32,7 @@ describe('database automations repository', function () {
     name: `Test automation ${id}`,
     status: 'active',
     trigger_type: 'membership_started',
-    trigger_tier_scope: 'free',
+    trigger_tier_scope: 'free' as string | null,
     created_at: now,
   });
 
@@ -123,6 +127,9 @@ describe('database automations repository', function () {
       const automation = { ...createAutomation(), ...overrides };
       automationIds.push(automation.id);
       await knex('automations').insert(automation);
+      await knex.transaction((trx) =>
+        replaceTriggerRules(trx, automation.id, automation as TriggerConfiguration),
+      );
       return await insertAction(automation.id);
     };
 
@@ -140,6 +147,12 @@ describe('database automations repository', function () {
     };
 
     const insertAutomationTriggerTiers = async (automationId: string, productIds: string[]) => {
+      await knex.transaction((trx) =>
+        replaceTriggerRules(trx, automationId, {
+          trigger_tier_scope: 'selected_paid',
+          trigger_tier_ids: productIds,
+        }),
+      );
       await knex('automation_trigger_tiers').insert(
         productIds.map((product_id) => ({ automation_id: automationId, product_id })),
       );

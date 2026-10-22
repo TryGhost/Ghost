@@ -468,6 +468,16 @@ describe('Importer', function () {
       table.date('updated_at');
     });
 
+    await db.schema.createTable('automation_trigger_rules', (table) => {
+      table.string('id').primary();
+      table.string('automation_id');
+      table.string('trigger_type');
+      table.string('from_scope');
+      table.string('from_product_id');
+      table.string('to_scope');
+      table.string('to_product_id');
+    });
+
     await db.schema.createTable('automations', function (table) {
       table.string('id');
       table.string('status');
@@ -515,6 +525,7 @@ describe('Importer', function () {
     const transaction = await db.transaction();
     const automationsImporter = new AutomationsImporter(db, transaction);
     await automationsImporter.import(3);
+    await automationsImporter.finalise();
     await transaction.commit();
 
     const automations = await db
@@ -522,6 +533,16 @@ describe('Importer', function () {
       .from('automations');
 
     assert.equal(automations.length, 3);
+    const rules = await db('automation_trigger_rules');
+    assert.equal(rules.length, 3);
+    for (const automation of automations) {
+      const rule = rules.find((row) => row.automation_id === automation.id);
+      assert.equal(rule.to_scope, automation.trigger_tier_scope);
+      assert.equal(rule.trigger_type, 'membership_started');
+      assert.equal(rule.from_scope, null);
+      assert.equal(rule.from_product_id, null);
+      assert.equal(rule.to_product_id, null);
+    }
     assert.deepEqual(
       automations.slice(0, 2).map(({ name, description, slug }) => ({ name, description, slug })),
       [

@@ -40,6 +40,7 @@ describe('Automations controller', function () {
     const emptyPage = {
       data: [],
       meta: {
+        supported_trigger_types: ['membership_started', 'paid_subscription_changed'],
         pagination: {
           page: 1,
           pages: 1,

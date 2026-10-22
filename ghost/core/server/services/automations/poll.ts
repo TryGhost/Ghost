@@ -149,7 +149,7 @@ const processStep = async ({
     return null;
   }
 
-  // NOTE: This will change once we support additional automation triggers.
+  // The repository projects the current rules into their destination tiers.
   const triggerTierScope = step.automation_trigger_tier_scope;
   if (!triggerTierScope) {
     logging.error(

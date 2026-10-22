@@ -1,3 +1,10 @@
+import {
+  compileTriggerRules,
+  getTriggerProductIds,
+  readTriggerConfiguration,
+  replaceTriggerRules,
+  type TriggerType,
+} from './trigger-rules';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
@@ -106,7 +113,7 @@ type AutomationSummaryRow = {
 };
 
 type AutomationRow = AutomationSummaryRow & {
-  trigger_type: 'membership_started';
+  trigger_type: TriggerType;
   trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
@@ -362,22 +369,9 @@ export function createDatabaseAutomationsRepository({
         if (data.status === 'active') {
           await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
         }
+        await validateTriggerProducts(trx, data);
+        assertConfiguredTrigger(data, data.status);
         const tierIds = data.trigger_tier_ids ?? [];
-        if (tierIds.length > 0) {
-          // Lock the products so they aren't archived or deleted while we're adding.
-          const tiers = await trx('products')
-            .select('id')
-            .whereIn('id', tierIds)
-            .where({ type: 'paid', active: true })
-            .orderBy('id')
-            .forUpdate();
-          if (tiers.length !== tierIds.length) {
-            throw new errors.ValidationError({
-              message: 'Trigger tiers must all be active paid tiers.',
-              property: 'trigger_tier_ids',
-            });
-          }
-        }
 
         const now = toDatabaseDate(new Date());
         const automation: AutomationRow = {
@@ -386,13 +380,14 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
-          trigger_type: 'membership_started',
+          trigger_type: data.trigger_type ?? 'membership_started',
           trigger_tier_scope: data.trigger_tier_scope ?? null,
           created_at: now,
           updated_at: now,
         };
 
         await trx('automations').insert(automation);
+        await replaceTriggerRules(trx, automation.id, data);
 
         if (tierIds.length > 0) {
           await trx('automation_trigger_tiers').insert(
@@ -433,21 +428,32 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
-        if (data.trigger_tier_scope === 'selected_paid') {
-          // Lock the products so they aren't deleted while we're editing.
-          const tiers = await trx('products')
-            .select('id')
-            .whereIn('id', data.trigger_tier_ids)
-            .where('type', 'paid')
-            .orderBy('id')
-            .forUpdate();
-          if (tiers.length !== new Set(data.trigger_tier_ids).size) {
-            throw new errors.ValidationError({
-              message: 'Trigger tiers must all be paid tiers.',
-              property: 'trigger_tier_ids',
-            });
-          }
+        if (data.trigger_type !== undefined && data.trigger_type !== automation.trigger_type) {
+          throw new errors.ValidationError({
+            message: 'An automation cannot change its trigger type.',
+            property: 'trigger_type',
+          });
         }
+        if (
+          automation.trigger_type === 'paid_subscription_changed' &&
+          data.trigger_type === undefined &&
+          data.trigger_tier_scope !== undefined
+        ) {
+          throw new errors.ValidationError({
+            message: 'Subscription changes require an explicit trigger_type.',
+            property: 'trigger_type',
+          });
+        }
+        const existingTrigger = await readTriggerConfiguration(trx, id, automation.trigger_type);
+        const changesTrigger =
+          automation.trigger_type === 'membership_started'
+            ? data.trigger_tier_scope !== undefined
+            : data.subscription_transition !== undefined;
+        const trigger = changesTrigger
+          ? { ...data, trigger_type: automation.trigger_type }
+          : existingTrigger;
+        await validateTriggerProducts(trx, trigger, getTriggerProductIds(existingTrigger));
+        assertConfiguredTrigger(trigger, data.status);
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
@@ -471,6 +477,10 @@ export function createDatabaseAutomationsRepository({
               })),
             );
           }
+        }
+
+        if (changesTrigger) {
+          await replaceTriggerRules(trx, id, trigger);
         }
 
         if (data.actions !== undefined) {
@@ -942,10 +952,11 @@ async function ensureAutomation(
 ): Promise<Pick<AutomationRow, 'id'>> {
   const now = toDatabaseDate(new Date());
 
+  const newId = ObjectId().toHexString();
   // Insert the automation if it doesn't exist.
   await trx('automations')
     .insert({
-      id: ObjectId().toHexString(),
+      id: newId,
       status: 'inactive',
       name: defaults.name,
       description: defaults.description,
@@ -963,6 +974,9 @@ async function ensureAutomation(
     throw new errors.InternalServerError({
       message: `Default automation ${defaults.slug} was missing`,
     });
+  }
+  if (row.id === newId) {
+    await replaceTriggerRules(trx, row.id, defaults);
   }
   return row;
 }
@@ -1149,42 +1163,36 @@ async function fetchAndLockSteps(
     .where('step.locked_by', lockId)
     .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
 
-  const tierIdsByAutomation = await getTierIdsByAutomation(trx, rows);
-
+  const ruleRows: {
+    automation_id: string;
+    to_scope: 'free' | 'all_paid' | 'specific_tier';
+    to_product_id: string | null;
+  }[] = rows.length
+    ? await trx('automation_trigger_rules')
+        .select('automation_id', 'to_scope', 'to_product_id')
+        .whereIn('automation_id', [...new Set(rows.map((row) => row.automation_id))])
+    : [];
+  const destinations = new DefaultMap<string, typeof ruleRows>(() => []);
+  for (const rule of ruleRows) {
+    destinations.get(rule.automation_id).push(rule);
+  }
   return {
-    steps: rows.map((row) => buildStepToRun(row, tierIdsByAutomation.get(row.automation_id))),
+    steps: rows.map((row) => {
+      const rules = destinations.get(row.automation_id);
+      const scopes = new Set(rules.map((rule) => rule.to_scope));
+      const scope = scopes.size === 1 ? rules[0].to_scope : null;
+      return buildStepToRun(
+        {
+          ...row,
+          automation_trigger_tier_scope: scope === 'specific_tier' ? 'selected_paid' : scope,
+        },
+        [
+          ...new Set(rules.flatMap((rule) => (rule.to_product_id ? [rule.to_product_id] : []))),
+        ].sort(),
+      );
+    }),
     nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
   };
-}
-
-async function getTierIdsByAutomation(
-  trx: Knex.Transaction,
-  stepsToRun: ReadonlyDeep<StepToRunRow[]>,
-): Promise<DefaultMap<string, string[]>> {
-  const result = new DefaultMap<string, string[]>(() => []);
-
-  const automationIdsToLookAt = new Set<string>();
-  for (const stepToRun of stepsToRun) {
-    if (stepToRun.automation_trigger_tier_scope === 'selected_paid') {
-      automationIdsToLookAt.add(stepToRun.automation_id);
-    }
-  }
-
-  if (automationIdsToLookAt.size === 0) {
-    return result;
-  }
-
-  const triggerTiers: { automation_id: string; product_id: string }[] = await trx(
-    'automation_trigger_tiers',
-  )
-    .select('automation_id', 'product_id')
-    .whereIn('automation_id', [...automationIdsToLookAt]);
-
-  for (const triggerTier of triggerTiers) {
-    result.get(triggerTier.automation_id).push(triggerTier.product_id);
-  }
-
-  return result;
 }
 
 async function findNextPendingReadyAt(
@@ -1456,6 +1464,7 @@ async function loadAutomation(
       'updated_at',
     )
     .where('id', automationId)
+    .forUpdate()
     .first();
   return row ?? null;
 }
@@ -1845,27 +1854,7 @@ async function buildAutomation(
   );
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
 
-  let triggerData;
-  switch (automation.trigger_tier_scope) {
-    case null:
-    case 'free':
-    case 'all_paid':
-      triggerData = { trigger_tier_scope: automation.trigger_tier_scope, trigger_tier_ids: null };
-      break;
-    case 'selected_paid':
-      triggerData = {
-        trigger_tier_scope: automation.trigger_tier_scope,
-        trigger_tier_ids: await trx('automation_trigger_tiers')
-          .where('automation_id', automation.id)
-          .orderBy('product_id')
-          .pluck<string[]>('product_id'),
-      };
-      break;
-    default:
-      throw new errors.InternalServerError({
-        message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
-      });
-  }
+  const triggerData = await readTriggerConfiguration(trx, automation.id, automation.trigger_type);
 
   return {
     ...buildAutomationSummary(automation),
@@ -2012,4 +2001,46 @@ function buildPagination(total: number) {
     prev: null,
     next: null,
   };
+}
+
+async function validateTriggerProducts(
+  trx: Knex.Transaction,
+  config: import('./trigger-rules').TriggerConfiguration,
+  existingIds: string[] = [],
+): Promise<void> {
+  const ids = getTriggerProductIds(config);
+  if (!ids.length) {
+    return;
+  }
+  const products = await trx('products')
+    .select('id', 'active')
+    .whereIn('id', ids)
+    .where('type', 'paid')
+    .orderBy('id')
+    .forUpdate();
+  if (
+    products.length !== ids.length ||
+    products.some((product) => !product.active && !existingIds.includes(product.id))
+  ) {
+    throw new errors.ValidationError({
+      message:
+        'Trigger tiers must be active paid tiers, or archived tiers already selected by this automation.',
+      property:
+        config.trigger_type === 'paid_subscription_changed'
+          ? 'subscription_transition'
+          : 'trigger_tier_ids',
+    });
+  }
+}
+
+function assertConfiguredTrigger(
+  config: import('./trigger-rules').TriggerConfiguration,
+  status: AutomationStatus,
+): void {
+  if (status === 'active' && compileTriggerRules(config).length === 0) {
+    throw new errors.ValidationError({
+      message: 'Active automations require a configured trigger.',
+      property: 'trigger_type',
+    });
+  }
 }

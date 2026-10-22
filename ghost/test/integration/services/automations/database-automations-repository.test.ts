@@ -1,3 +1,4 @@
+import { replaceTriggerRules } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
@@ -54,6 +55,12 @@ describe('database automations repository', function () {
         triggerTierIds.map((product_id) => ({ automation_id: id, product_id })),
       );
     }
+    await knex.transaction((trx) =>
+      replaceTriggerRules(trx, id, {
+        trigger_tier_scope: triggerTierScope,
+        trigger_tier_ids: triggerTierIds,
+      }),
+    );
     await knex('automation_actions').insert({
       id: actionId,
       automation_id: id,
@@ -128,6 +135,7 @@ describe('database automations repository', function () {
         assert(ObjectId.isValid(automation.id));
         assert.deepEqual(automation, {
           id: automation.id,
+          trigger_type: 'membership_started',
           slug: null,
           ...data,
           created_at: automation.created_at,
@@ -336,7 +344,7 @@ describe('database automations repository', function () {
       );
 
       await repo.finishStepAndEnqueueNext(first.steps[0]);
-      await knex('automation_trigger_tiers')
+      await knex('automation_trigger_rules')
         .where({ automation_id: selectedAutomationId })
         .delete();
       const second = await repo.fetchAndLockSteps(1);

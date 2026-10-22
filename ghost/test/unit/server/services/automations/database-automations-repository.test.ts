@@ -1,3 +1,4 @@
+import { replaceTriggerRules } from '../../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
@@ -93,6 +94,21 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('automation_id').notNullable().references('id').inTable('automations');
     table.text('product_id').notNullable();
     table.unique(['automation_id', 'product_id']);
+  });
+
+  await database.schema.createTable('automation_trigger_rules', (table) => {
+    table.text('id').primary();
+    table
+      .text('automation_id')
+      .notNullable()
+      .references('id')
+      .inTable('automations')
+      .onDelete('CASCADE');
+    table.text('trigger_type').notNullable();
+    table.text('from_scope');
+    table.text('from_product_id');
+    table.text('to_scope').notNullable();
+    table.text('to_product_id');
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -256,6 +272,11 @@ const createDatabase = async (): Promise<Knex> => {
       status: 'active',
     },
   ]);
+
+  await database.transaction(async (trx) => {
+    await replaceTriggerRules(trx, freeAutomationId, { trigger_tier_scope: 'free' });
+    await replaceTriggerRules(trx, paidAutomationId, { trigger_tier_scope: 'all_paid' });
+  });
 
   const freeAction1Id = id();
   const freeAction2Id = id();
@@ -582,6 +603,12 @@ describe('automations repository', function () {
         triggerTierIds.map((product_id) => ({ automation_id: automationId, product_id })),
       );
     }
+    await knex.transaction((trx) =>
+      replaceTriggerRules(trx, automationId, {
+        trigger_tier_scope: triggerTierScope,
+        trigger_tier_ids: triggerTierIds,
+      }),
+    );
     await knex('automation_actions').insert({
       id: actionId,
       created_at: now,
@@ -750,6 +777,84 @@ describe('automations repository', function () {
         await knex('automation_trigger_tiers').where({ automation_id: automation.id }),
         [],
       );
+    });
+
+    it('persists transition rules atomically with the graph and keeps legacy scope empty', async function () {
+      const saved = await repo.add({
+        ...data,
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+        subscription_transition: { from: [tierIds[0]], to: [tierIds[1]] },
+      });
+      assert.deepEqual(saved.subscription_transition, { from: [tierIds[0]], to: [tierIds[1]] });
+      assert.equal(saved.trigger_tier_scope, null);
+      assert.deepEqual(await knex('automation_trigger_tiers').where('automation_id', saved.id), []);
+      const rules = await knex('automation_trigger_rules').where('automation_id', saved.id);
+      assert.equal(rules.length, 1);
+      assert.equal(rules[0].from_product_id, tierIds[0]);
+      assert.equal(rules[0].to_product_id, tierIds[1]);
+      const existing = await getAutomationBySlug('member-welcome-email-free');
+      await assert.rejects(
+        repo.edit(saved.id, {
+          ...saved,
+          subscription_transition: { from: 'any_paid', to: 'downgraded_to_free' },
+          actions: existing.actions,
+          edges: existing.edges,
+        }),
+      );
+      assert.deepEqual(await repo.getById(saved.id), saved);
+      assert.deepEqual(
+        await knex('automation_trigger_rules').where('automation_id', saved.id),
+        rules,
+      );
+      await knex('products').where('id', tierIds[0]).update('active', false);
+      const edited = await repo.edit(saved.id, { ...saved, name: 'Retain archived source' });
+      assert.deepEqual(edited?.subscription_transition, saved.subscription_transition);
+      await repo.edit(saved.id, {
+        ...saved,
+        subscription_transition: { from: 'any_paid', to: [tierIds[1]] },
+      });
+      await assert.rejects(repo.edit(saved.id, { ...saved }), {
+        property: 'subscription_transition',
+      });
+    });
+
+    it('uses transition destinations for pending steps and rechecks edits', async function () {
+      const saved = await repo.add({
+        ...data,
+        trigger_type: 'paid_subscription_changed',
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+        subscription_transition: { from: [tierIds[0]], to: [tierIds[1]] },
+      });
+      const { id: runId } = await insertRun(saved.id);
+      const revision = await knex('automation_action_revisions')
+        .where('action_id', saved.actions[0].id)
+        .first();
+      await knex('automation_run_steps').insert({
+        id: ObjectId().toHexString(),
+        automation_run_id: runId,
+        automation_action_revision_id: revision.id,
+        created_at: toDatabaseDate(new Date()),
+        updated_at: toDatabaseDate(new Date()),
+        ready_at: '2024-01-01 00:00:00',
+      });
+      const { steps } = await repo.fetchAndLockSteps(10);
+      const step = steps.find((item) => item.automation_id === saved.id);
+      assert(step);
+      assert.equal(step.automation_trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(step.automation_trigger_tier_ids, [tierIds[1]]);
+      await repo.edit(saved.id, {
+        ...saved,
+        subscription_transition: { from: 'any_paid', to: 'downgraded_to_free' },
+      });
+      await knex('automation_run_steps')
+        .where('id', step.id)
+        .update({ locked_at: null, locked_by: null });
+      const updated = (await repo.fetchAndLockSteps(10)).steps.find((item) => item.id === step.id);
+      assert.equal(updated?.automation_trigger_tier_scope, 'free');
+      assert.deepEqual(updated?.automation_trigger_tier_ids, []);
     });
 
     it('creates selected_paid automations', async function () {
@@ -1499,9 +1604,7 @@ describe('automations repository', function () {
     it('can edit the automation trigger tier scope and IDs', async function () {
       const initial = await getAutomationBySlug('member-welcome-email-free');
       const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
-      await knex('products').insert(
-        tierIds.map((id, index) => ({ id, type: 'paid', active: index === 0 })),
-      );
+      await knex('products').insert(tierIds.map((id) => ({ id, type: 'paid', active: true })));
       const edited = await repo.edit(initial.id, {
         ...initial,
         trigger_tier_scope: 'selected_paid',
@@ -1540,7 +1643,11 @@ describe('automations repository', function () {
           trigger_tier_scope: 'selected_paid',
           trigger_tier_ids: [firstId],
         });
-        const edited = await repo.edit(initial.id, { ...graph, trigger_tier_scope: scope });
+        const edited = await repo.edit(initial.id, {
+          ...graph,
+          status: scope === null ? 'inactive' : graph.status,
+          trigger_tier_scope: scope,
+        });
         assert.equal(edited?.trigger_tier_scope, scope);
         assert.equal(edited?.trigger_tier_ids, null);
         assert.deepEqual(
