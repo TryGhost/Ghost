@@ -6,7 +6,7 @@
 import type { Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import { service as giftLinksService } from '../../../services/gift-links';
+import giftLinks from '../../../services/gift-links';
 import membersService from '../../../services/members';
 
 const messages = {
@@ -42,7 +42,7 @@ export async function generateGiftKeyData(
     return undefined;
   }
 
-  const post = await giftLinksService!.getPostByToken(token);
+  const post = await giftLinks.service.getPostByToken(token);
   const postId = post ? post.id : null;
   frame.giftLinkPostId = postId;
 

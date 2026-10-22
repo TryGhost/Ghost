@@ -163,8 +163,8 @@ async function initCore({ ghostServer, config }) {
 
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
-  const giftLinksService = require('./server/services/gift-links');
-  giftLinksService.init();
+  const giftLinksService = require('./server/services/gift-links').default;
+  await giftLinksService.init();
   debug('End: Gift Links Service');
 
   // Member metafields service: knex-backed, wired once the DB is ready.

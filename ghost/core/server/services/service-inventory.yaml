@@ -3936,6 +3936,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:
       complexity: straightforward
@@ -3978,22 +3979,25 @@ services:
     entryPoints:
       - gift-links/index.ts
     notes: >-
-      Preserve deferred database binding, single live link per post, historical tokens and the
-      public access/cache boundary. Root restart, transaction faults and cache-enabled revocation
-      need stronger contracts before migration.
+      Migration rechecked against base e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the original
+      audit and dependency-assessment revisions are retained above. The root now supplies action
+      logging; case-key and date codecs use the existing exact-file library allowances. Deferred
+      database binding, token history and public access/cache policy are unchanged. No extras.
     contracts:
       exports:
         summary: >-
-          Named TypeScript init and live service exports; RequestContext is type-only. service
-          is undefined before synchronous receiver-independent init, which returns undefined.
+          The TypeScript root default-exports defineService with async init and a guarded service
+          getter; RequestContext remains type-only. Reading service before readiness throws,
+          and awaited receiver-independent init resolves undefined.
           The deep class requires its receiver: getPost/ensure/create return a post id plus
           giftLinks, getPostByToken returns that shape or null, and removeAll returns a number.
           Deep serializers map token/createdAt to gift_links token/created_at and removal count
           to meta.count. Admin tests assert list/field allowlists, replacement and count shape.
-          Root tests pin pre-init service access, init's return and retained binding identity;
-          detached calls remain untested.
+          Adapted root tests pin guarded pre-init service access, awaited init's return and
+          retained binding identity; detached business-method calls remain untested.
         sources:
           - core/server/services/gift-links/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/gift-links/service.ts
           - core/server/services/gift-links/models.ts
           - core/server/services/gift-links/serializers.ts
@@ -4004,10 +4008,11 @@ services:
           - test/unit/server/services/gift-links/index.test.ts
       construction:
         summary: >-
-          Import loads the class/action helper without constructing a service. First init reads the
-          shared database knex and models, partially applies the best-effort action recorder and
-          publishes one GiftLinksService retaining knex and the callback. Later init calls preserve
-          it. No separate production deep construction was found. The constructor validates neither
+          Import declares the initializer without constructing a service. Its factory reads the
+          shared database knex and models, partially applies the best-effort action recorder with
+          root-supplied logging and returns one GiftLinksService retaining knex and the callback.
+          The recorder still reads models.Action per invocation. Later init calls preserve it.
+          No separate production deep construction was found. The constructor validates neither
           dependency nor database readiness; an early init can publish an unusable captured
           dependency. Integration tests construct the class with real model knex and matching
           recorder wiring. Root tests assert deferred acquisition and retained knex/instance across
@@ -4023,8 +4028,9 @@ services:
           - test/unit/server/services/gift-links/index.test.ts
       consumers:
         summary: >-
-          Boot initializes the root. Admin posts/pages gift-link endpoints use the live binding
-          for browse/ensure/create and site-wide removal, with permission checks and actor mapping
+          Boot awaits the root. Admin posts/pages gift-link endpoints retain the initializer and
+          read its ready service for browse/ensure/create and site-wide removal, with permission
+          checks and actor mapping
           in the endpoint. Public posts/pages reads use gift-link-access to resolve internal
           context before the posts response cache, then apply a paid-member shim for the matched post.
           Pages currently has no response cache but resolves the same key data.
@@ -4057,14 +4063,15 @@ services:
           - test/unit/server/services/gift-links/index.test.ts
       startup:
         summary: >-
-          initCore calls init after database setup, settings, signing keys and i18n and before
-          request serving. There is no awaited initialization work or root readiness check;
-          consumers dereference service directly. Gift-access key resolution additionally needs
+          initCore awaits init after database setup, settings, signing keys and i18n, before
+          members-metafields and request serving. The factory is synchronous, but the shared
+          initializer publishes only after its promise settles; consumers use the guarded getter.
+          Gift-access key resolution additionally needs
           the live-link tables, while the paid-member shim reads Product models. Root and deep
           codec/serializer imports do not need service initialization. Frontend/Admin suites
-          exercise booted composition. Root tests pin deferred database acquisition and publication
-          during init; premature consumer calls, failed/early init and a real repeated boot with
-          a different database instance remain untested.
+          exercise booted composition. Adapted root tests pin deferred database acquisition,
+          guarded pre-init access and publication after awaited init; failed/early init and a
+          real repeated boot with a different database instance remain untested.
         sources:
           - core/boot.js
           - core/server/services/gift-links/index.ts
@@ -4151,7 +4158,9 @@ services:
       failures:
         summary: >-
           Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query, codec,
-          random generation and transaction errors propagate, without retries; action writes run
+          random generation and transaction errors propagate, without retries. Factory rejection
+          leaves service unavailable and boot fails; the shared initializer permits an explicit
+          retry, without service-specific failure/retry coverage. Action writes run
           after persistence and the production recorder logs/swallows failures, skipping writes when
           actor is absent. That boundary is enforced by action units and a real-DB deep-service test
           with a failing recorder. Gift access refuses missing key-resolution setup and rejects
@@ -4161,6 +4170,8 @@ services:
           and old-token retention for a failing live write, including retry; delete/codec failures
           and cache-enabled revoked-token responses remain untested.
         sources:
+          - core/kernel/define-service.ts
+          - core/boot.js
           - core/server/services/gift-links/service.ts
           - core/server/services/gift-links/actions.ts
           - core/server/services/gift-links/codec.ts

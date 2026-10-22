@@ -33,7 +33,7 @@ describe('Gift links Content API', function () {
 
     // require, not import: an ESM import resolves to a separate module
     // instance from the one the booted Ghost initialized the singleton on.
-    const giftLinksService = require('../../../core/server/services/gift-links');
+    const giftLinksService = require('../../../core/server/services/gift-links').default;
     token = (await giftLinksService.service.ensure({ actor: null }, paidPost.id)).giftLinks[0]
       .token;
   });
