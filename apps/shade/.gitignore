@@ -4,3 +4,6 @@ dist
 playwright-report
 test-results
 storybook-static
+
+# Tarball written by scripts/pack-local.ts
+/.local-pack
