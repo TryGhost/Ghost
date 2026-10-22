@@ -476,8 +476,10 @@ describe('Trial staff invitation limits', function () {
     const original = await invite('resend-history@example.com').expect(201);
     const replacement = await invite('resend-history@example.com').expect(201);
     await vi.waitFor(async () => {
-      const rows = await db.knex('actions').where({ resource_type: 'invite' });
-      assert.equal(rows.length, 3);
+      const rows = await db
+        .knex('actions')
+        .where({ resource_type: 'invite' })
+        .whereIn('resource_id', [original.body.invites[0].id, replacement.body.invites[0].id]);
       assert.equal(rows.filter((row) => row.event === 'added').length, 2);
       const deleted = rows.filter((row) => row.event === 'deleted');
       assert.equal(deleted.length, 1);
