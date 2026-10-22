@@ -1,39 +1,10 @@
-import type { Knex } from 'knex';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import * as security from '@tryghost/security';
+import type { AcceptanceRepository } from './acceptance-repository';
 
 export type Invitation = {
   invitation: Array<{ token: string; name: string; password: string }>;
-};
-
-type TransactionOptions<Transaction> = {
-  context: { internal: true };
-  transacting: Transaction;
-  forUpdate: true;
-};
-
-export type AcceptanceModels<Transaction = Knex.Transaction> = {
-  Base: {
-    transaction<T>(callback: (transacting: Transaction) => Promise<T>): Promise<T>;
-  };
-  Invite: {
-    findOne(
-      data: { token: string; status: 'sent' },
-      options: TransactionOptions<Transaction>,
-    ): Promise<{
-      get(key: 'expires'): number;
-      get(key: 'email' | 'role_id'): string;
-      destroy(options: TransactionOptions<Transaction>): Promise<unknown>;
-    } | null>;
-  };
-  User: {
-    findOne(data: { email: string }, options: TransactionOptions<Transaction>): Promise<unknown>;
-    add(
-      data: { email: string; name: string; password: string; roles: string[] },
-      options: TransactionOptions<Transaction>,
-    ): Promise<unknown>;
-  };
 };
 
 const messages = {
@@ -46,34 +17,26 @@ const messages = {
   },
 };
 
-export async function accept<Transaction>(
+export async function accept(
   invitation: Invitation,
-  models: AcceptanceModels<Transaction>,
+  repository: AcceptanceRepository,
 ): Promise<void> {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
 
-  return models.Base.transaction(async (transacting) => {
-    const options: TransactionOptions<Transaction> = {
-      context: { internal: true },
-      transacting,
-      forUpdate: true,
-    };
-
-    const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
+  return repository.transaction(async (transaction) => {
+    const invite = await transaction.findSentInvite(inviteToken);
 
     if (!invite) {
       throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
     }
 
-    if (invite.get('expires') < Date.now()) {
+    if (invite.expires < Date.now()) {
       throw new errors.NotFoundError({ message: tpl(messages.inviteExpired) });
     }
 
-    const email = invite.get('email');
-
-    const user = await models.User.findOne({ email }, options);
-    if (user) {
+    const email = invite.email;
+    if (await transaction.userExists(email)) {
       throw new errors.ValidationError({
         message: tpl(messages.inviteEmailAlreadyExist.message),
         context: tpl(messages.inviteEmailAlreadyExist.context),
@@ -81,18 +44,12 @@ export async function accept<Transaction>(
       });
     }
 
-    const roleId = invite.get('role_id');
-
-    await invite.destroy(options);
-
-    await models.User.add(
-      {
-        email,
-        name: data.name,
-        password: data.password,
-        roles: [roleId],
-      },
-      options,
-    );
+    await invite.consume();
+    await transaction.addUser({
+      email,
+      name: data.name,
+      password: data.password,
+      roles: [invite.roleId],
+    });
   });
 }

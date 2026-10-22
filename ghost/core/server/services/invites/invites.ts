@@ -1,6 +1,7 @@
 import * as security from '@tryghost/security';
 import tpl from '@tryghost/tpl';
-import { accept, type AcceptanceModels, type Invitation } from './accept';
+import { accept, type Invitation } from './accept';
+import type { AcceptanceRepository } from './acceptance-repository';
 
 type Invite = {
   id: string;
@@ -32,7 +33,7 @@ type Dependencies = {
     urlFor(context: 'admin', absolute: true): string;
     urlJoin(...parts: string[]): string;
   };
-  models: AcceptanceModels;
+  acceptanceRepository: AcceptanceRepository;
   logging: { warn(message: string): void };
 };
 
@@ -83,7 +84,7 @@ export class Invites {
   private readonly settingsHelpers: Dependencies['settingsHelpers'];
   private readonly mailService: Dependencies['mailService'];
   private readonly urlUtils: Dependencies['urlUtils'];
-  private readonly models: Dependencies['models'];
+  private readonly acceptanceRepository: AcceptanceRepository;
   private readonly logging: Dependencies['logging'];
 
   constructor({
@@ -91,19 +92,19 @@ export class Invites {
     settingsHelpers,
     mailService,
     urlUtils,
-    models,
+    acceptanceRepository,
     logging,
   }: Dependencies) {
     this.settingsCache = settingsCache;
     this.settingsHelpers = settingsHelpers;
     this.mailService = mailService;
     this.urlUtils = urlUtils;
-    this.models = models;
+    this.acceptanceRepository = acceptanceRepository;
     this.logging = logging;
   }
 
   accept(invitation: Invitation) {
-    return accept(invitation, this.models);
+    return accept(invitation, this.acceptanceRepository);
   }
 
   add({ api, InviteModel, invites, options, user }: AddInviteRequest): Promise<Invite> {
