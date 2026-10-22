@@ -20,6 +20,7 @@ export {
 export { isGhostOrigin } from './ghost-origin.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 export type { AppIcon } from './icon.ts';
+export type { PublicKeyJwk } from './keys.ts';
 export { URL_MAX_LENGTH } from './limits.ts';
 export {
   parseManifest,
