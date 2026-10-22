@@ -1155,15 +1155,18 @@ export class GiftService {
       return false;
     }
 
-    const refunded = gift.refund();
-
-    if (!refunded) {
-      return true;
-    }
-
-    const { redeemerMemberId } = gift;
-
     await this.deps.giftRepository.transaction(async (transacting) => {
+      const locked = await this.deps.giftRepository.getByToken(gift.token, {
+        transacting,
+        forUpdate: true,
+      });
+      const refunded = locked?.refund();
+
+      if (!refunded) {
+        return;
+      }
+
+      const { redeemerMemberId } = refunded;
       const member = redeemerMemberId
         ? await this.deps.memberRepository.get(
             { id: redeemerMemberId },

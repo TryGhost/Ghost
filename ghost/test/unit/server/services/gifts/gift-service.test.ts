@@ -2160,6 +2160,7 @@ describe('GiftService', function () {
       const gift = buildGift();
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
 
       const service = createService();
       const result = await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
@@ -2197,6 +2198,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('gift'),
@@ -2223,7 +2225,7 @@ describe('GiftService', function () {
       );
     });
 
-    it('locks the redeemer before saving the refunded gift', async function () {
+    it('locks the gift, then the redeemer, before saving the refund', async function () {
       const gift = buildGift({
         status: 'redeemed',
         redeemerMemberId: 'redeemer_1',
@@ -2232,6 +2234,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('gift'),
@@ -2240,17 +2243,37 @@ describe('GiftService', function () {
       const service = createService();
       await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
 
+      sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {
+        transacting,
+        forUpdate: true,
+      });
       sinon.assert.callOrder(
+        giftRepository.getByToken,
         memberRepository.get,
         giftRepository.update,
         giftDeliveryService.cancelPendingForGift,
       );
     });
 
+    it('refunds the gift as it is once locked', async function () {
+      giftRepository.getByPaymentIntentId.resolves(buildGift());
+      giftRepository.getByToken.resolves(
+        buildGift({ status: 'refunded', refundedAt: new Date('2026-02-01T00:00:00.000Z') }),
+      );
+
+      const service = createService();
+      const result = await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
+
+      assert.equal(result, true);
+      sinon.assert.notCalled(giftRepository.update);
+      sinon.assert.notCalled(memberRepository.get);
+    });
+
     it('does not downgrade when the gift was not redeemed', async function () {
       const gift = buildGift();
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
 
       const service = createService();
       await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
@@ -2268,6 +2291,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('paid'),
@@ -2290,6 +2314,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('gift'),
@@ -2311,6 +2336,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
 
       const service = createService();
       const result = await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
