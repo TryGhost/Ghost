@@ -820,7 +820,7 @@ overrides:
   moment-timezone: 0.6.5
   '@types/bookshelf>knex': 2.4.2
   juice>cheerio: 1.2.0
-  mppx>ox: 0.14.33
+  mppx>ox: 0.14.56
   '@tryghost/kg-default-cards': workspace:*
   '@babel/runtime@<7.26.10': ^7.26.10
   braces@<3.0.3: ^3.0.3
@@ -14050,6 +14050,9 @@ packages:
   ox@0.14.33:
     resolution: {integrity: sha512-rooA/4o7bBof4Ge2VH/eovfNPb/AEEYyrNj03wggc55g5HZD8Pjs/OeWhttgjic3dDcqn0r29bDuvQEdTiUemQ==}
 
+  ox@0.14.56:
+    resolution: {integrity: sha512-Feinlj+deWEam6RIwurRE+eHZ2N3hoUb3AAjQ10BmxRCYIymfqNkv0eZ+4ln4GkgDmSGLD2rGtTMqsFYSVDC6w==}
+
   oxc-parser@0.127.0:
     resolution: {integrity: sha512-bkgD4qHlN7WxLdX8bLXdaU54TtQtAIg/ZBAfm0aje/mo3MRDo3P0hZSgr4U7O3xfX+fQmR5AP04JS/TGcZLcFA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -26574,7 +26577,7 @@ snapshots:
   mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.13)(viem@2.55.11):
     dependencies:
       incur: 0.4.26
-      ox: 0.14.33
+      ox: 0.14.56
       viem: 2.55.11
       zod: 4.6.5
     optionalDependencies:
@@ -27045,6 +27048,17 @@ snapshots:
       safe-push-apply: 1.0.0
 
   ox@0.14.33:
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.1
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.2.3
+      eventemitter3: 5.0.1
+
+  ox@0.14.56:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
