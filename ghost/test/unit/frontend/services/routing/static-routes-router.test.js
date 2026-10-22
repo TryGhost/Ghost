@@ -119,6 +119,41 @@ describe('services/routing/StaticRoutesRouter', function () {
     });
   });
 
+  describe('Markdown routes', function () {
+    for (const data of [
+      { tags: 'tag.news' },
+      { posts: { type: 'browse', resource: 'posts' } },
+      { page: 'page.about', post: 'post.welcome' },
+    ]) {
+      it(`does not export ambiguous or non-entry data: ${JSON.stringify(data)}`, function () {
+        const router = new StaticRoutesRouter('/landing/', { data }, routerCreatedSpy);
+        assert.equal(router.getPermalinks(), undefined);
+        assert.equal(
+          mountRouteSpy.getCalls().some((call) => call.args[0].endsWith('.md')),
+          false,
+        );
+      });
+    }
+
+    it('keeps the original canonical URL when the data opts out of redirects', function () {
+      const router = new StaticRoutesRouter(
+        '/landing/',
+        {
+          data: { page: { type: 'read', resource: 'pages', slug: 'about', redirect: false } },
+        },
+        routerCreatedSpy,
+      );
+      assert.equal(router.getPermalinks(), undefined);
+      assert.ok(mountRouteSpy.getCalls().some((call) => call.args[0] === '/landing.md'));
+    });
+
+    it('exports a data-bound homepage at index.md', function () {
+      const router = new StaticRoutesRouter('/', { data: 'page.about' }, routerCreatedSpy);
+      assert.equal(router.getPermalinks().getValue(), '/');
+      assert.ok(mountRouteSpy.getCalls().some((call) => call.args[0] === '/index.md'));
+    });
+  });
+
   describe('channels', function () {
     describe('initialize', function () {
       it('initialize with controller+data+filter', function () {
