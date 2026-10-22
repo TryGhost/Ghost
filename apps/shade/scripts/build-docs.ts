@@ -1,15 +1,14 @@
 /// <reference types="node" />
-/* eslint-disable no-console -- this is a CLI script; stdout is the UI */
 
 /**
- * Builds Shade's Storybook `.mdx` docs into plain Markdown under `docs/`, so
- * the npm package carries the design rules that match its code.
+ * Builds Shade's Storybook `.mdx` docs into plain Markdown, which Storybook
+ * serves at `/docs/<path>.md` with an `/llms.txt` index (see
+ * `scripts/storybook-docs.ts`). The npm package doesn't ship them.
  *
  * Every `src/**\/*.mdx` file becomes `docs/<path>.md`, with a leading `docs/`
  * segment dropped: `src/docs/tokens.mdx` → `docs/tokens.md` and
  * `src/components/patterns/page-header.mdx` →
- * `docs/components/patterns/page-header.md`, beside the matching
- * `types/components/patterns/page-header.d.ts`. `docs/index.md` lists them all.
+ * `docs/components/patterns/page-header.md`. `docs/index.md` lists them all.
  *
  * The transform is line- and fence-aware rather than an MDX compile:
  * - import lines and `<Meta>` are removed; `<div>`/`<p>` wrappers are unwrapped;
@@ -52,6 +51,9 @@ const PAGE_ORDER = ['Introduction', 'Ghost Apps', 'Layers', 'Contributing'];
 
 const GITHUB_SHADE_PREFIX =
   /^https:\/\/github\.com\/TryGhost\/Ghost\/(?:blob|tree)\/[^/]+\/apps\/shade\//;
+
+/** The served docs have no README beside them, so links to it go to GitHub. */
+const README_URL = 'https://github.com/TryGhost/Ghost/blob/main/apps/shade/README.md';
 
 export class DocsBuildError extends Error {
   name = 'DocsBuildError';
@@ -796,9 +798,6 @@ function rewriteLink(
     if (generated) {
       return relativeLink(output, generated, anchor);
     }
-    if (path === 'README.md') {
-      return `${posix.relative(posix.dirname(`docs/${output}`), 'README.md')}${anchor}`;
-    }
     return url;
   }
   if (/^[a-z][a-z\d+.-]*:/i.test(url)) {
@@ -833,7 +832,7 @@ function rewriteLink(
     throw new DocsBuildError(`${source}:${line}: link to "${url}" points at a missing .mdx file.`);
   }
   if (target === 'README.md') {
-    return `${posix.relative(posix.dirname(`docs/${output}`), 'README.md')}${anchor}`;
+    return `${README_URL}${anchor}`;
   }
   return warn(`"${url}" points outside the generated docs; kept the link text as plain text.`);
 }
@@ -1140,7 +1139,13 @@ function docIdFor(packageRoot: string, source: string, content: string): string 
   return title ? `${sanitize(title)}--${sanitize(attributes.name ?? 'Docs')}` : undefined;
 }
 
-function indexMarkdown(docs: ConvertedDoc[]): string {
+interface IndexSection {
+  name: string;
+  docs: ConvertedDoc[];
+}
+
+/** Docs grouped into Storybook sections, in sidebar order. Shared by `index.md` and `llms.txt`. */
+function indexSections(docs: ConvertedDoc[]): IndexSection[] {
   const sectionOf = (doc: ConvertedDoc): string =>
     doc.storybookTitle?.split('/')[0]?.trim() || 'Other';
   const pageOf = (doc: ConvertedDoc): string => doc.storybookTitle?.split('/').at(-1)?.trim() ?? '';
@@ -1151,16 +1156,10 @@ function indexMarkdown(docs: ConvertedDoc[]): string {
   const sections = [...new Set(docs.map(sectionOf))].sort(
     (a, b) => rank(SECTION_ORDER, a) - rank(SECTION_ORDER, b) || a.localeCompare(b),
   );
-  const lines = [
-    `<!-- Generated from src/**/*.mdx by ${SCRIPT}. Do not edit. -->`,
-    '',
-    '# Shade docs',
-    '',
-    "Shade's design rules for this version of `@tryghost/shade`, generated from its Storybook docs. Story examples import from the package's public subpaths.",
-  ];
-  for (const section of sections) {
-    const entries = docs
-      .filter((doc) => sectionOf(doc) === section)
+  return sections.map((name) => ({
+    name,
+    docs: docs
+      .filter((doc) => sectionOf(doc) === name)
       .sort((a, b) => {
         const guideA = /guide$|^page types$/i.test(pageOf(a)) ? 0 : 1;
         const guideB = /guide$|^page types$/i.test(pageOf(b)) ? 0 : 1;
@@ -1169,17 +1168,55 @@ function indexMarkdown(docs: ConvertedDoc[]): string {
           guideA - guideB ||
           a.title.localeCompare(b.title)
         );
-      });
-    lines.push('', `## ${section}`, '');
-    for (const doc of entries) {
-      lines.push(`- [${doc.title}](${doc.output})${doc.description ? `: ${doc.description}` : ''}`);
+      }),
+  }));
+}
+
+function sectionLines(docs: ConvertedDoc[], href: (doc: ConvertedDoc) => string): string[] {
+  const lines: string[] = [];
+  for (const section of indexSections(docs)) {
+    lines.push('', `## ${section.name}`, '');
+    for (const doc of section.docs) {
+      lines.push(`- [${doc.title}](${href(doc)})${doc.description ? `: ${doc.description}` : ''}`);
     }
   }
+  return lines;
+}
+
+export function indexMarkdown(docs: ConvertedDoc[]): string {
+  const lines = [
+    `<!-- Generated from src/**/*.mdx by ${SCRIPT}. Do not edit. -->`,
+    '',
+    '# Shade docs',
+    '',
+    "Shade's design rules, generated from its Storybook docs. Story examples import from the package's public subpaths.",
+    ...sectionLines(docs, (doc) => doc.output),
+  ];
+  return `${lines.join('\n')}\n`;
+}
+
+/**
+ * The llmstxt.org index Storybook serves at `/llms.txt`. Links are root-relative
+ * (`/docs/tokens.md`), so the same file works on localhost and on the hosted
+ * Storybook without knowing its address.
+ */
+export function llmsTxt(docs: ConvertedDoc[]): string {
+  const lines = [
+    '# Shade',
+    '',
+    "> Shade is Ghost's design system for React apps (`@tryghost/shade`). These are its design rules as plain Markdown, generated from the Storybook docs: tokens, layers, components, patterns and page templates, with story examples that import from the package's public subpaths.",
+    '',
+    'Every link below is a Markdown file on this server; the [docs index](/docs/index.md) lists the same docs. Links inside a doc are relative to that doc.',
+    ...sectionLines(docs, (doc) => `/docs/${doc.output}`),
+  ];
   return `${lines.join('\n')}\n`;
 }
 
 /** Converts every `src/**\/*.mdx` in `packageRoot`; writes nothing. */
 export function buildDocs(packageRoot: string): BuildResult {
+  // A long-lived process (Storybook) rebuilds after edits, so parse files afresh.
+  storiesCache.clear();
+  parsedModules.clear();
   const sources = listFiles(join(packageRoot, 'src'), (file) => file.endsWith('.mdx')).map(
     (file) => `src/${file}`,
   );
@@ -1216,11 +1253,8 @@ export function buildDocs(packageRoot: string): BuildResult {
   return { docs, warnings };
 }
 
-/** Builds and writes `outDir` (default `<packageRoot>/docs`), replacing what was there. */
-export async function writeDocs(
-  packageRoot: string,
-  outDir = join(packageRoot, 'docs'),
-): Promise<BuildResult> {
+/** Builds and writes `outDir`, replacing what was there. */
+export async function writeDocs(packageRoot: string, outDir: string): Promise<BuildResult> {
   const result = buildDocs(packageRoot);
   await rm(outDir, { recursive: true, force: true });
   for (const doc of result.docs) {
@@ -1233,27 +1267,15 @@ export async function writeDocs(
   return result;
 }
 
-if (import.meta.main) {
-  const packageRoot = join(import.meta.dirname, '..');
-  try {
-    const { docs, warnings } = await writeDocs(packageRoot);
-    const unresolved = warnings.filter((warning) => warning.kind === 'unresolved');
-    const storybookOnly = warnings.length - unresolved.length;
-    for (const warning of unresolved) {
-      console.warn(`warning: ${warning.file}:${warning.line}: ${warning.message}`);
-    }
-    console.log(
-      `Generated ${docs.length} docs and docs/index.md` +
-        (storybookOnly > 0
-          ? `; ${storybookOnly} links to Storybook-only pages became plain text`
-          : '') +
-        '.',
-    );
-  } catch (error) {
-    if (error instanceof DocsBuildError) {
-      console.error(`Building Shade's Markdown docs failed:\n${error.message}`);
-      process.exit(1);
-    }
-    throw error;
-  }
+/**
+ * Builds the docs Storybook serves: `<siteDir>/docs/**` and `<siteDir>/llms.txt`.
+ * Nothing is written if the build fails.
+ */
+export async function writeStorybookDocs(
+  packageRoot: string,
+  siteDir: string,
+): Promise<BuildResult> {
+  const result = await writeDocs(packageRoot, join(siteDir, 'docs'));
+  await writeFile(join(siteDir, 'llms.txt'), llmsTxt(result.docs));
+  return result;
 }

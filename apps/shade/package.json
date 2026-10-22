@@ -20,9 +20,7 @@
     "tailwind.theme.css",
     "theme-variables.css",
     "tokens.css",
-    "preflight.css",
-    "docs",
-    "skills"
+    "preflight.css"
   ],
   "type": "module",
   "sideEffects": [
@@ -136,8 +134,8 @@
   },
   "scripts": {
     "dev": "vite build --watch",
-    "build": "node scripts/build-docs.ts && tsc -p tsconfig.declaration.json && tsc-alias -p tsconfig.declaration.json && node scripts/check-declarations.ts && vite build",
-    "build:docs": "node scripts/build-docs.ts",
+    "build": "tsc -p tsconfig.declaration.json && tsc-alias -p tsconfig.declaration.json && node scripts/check-declarations.ts && vite build",
+    "build:docs": "node scripts/storybook-docs.ts",
     "pack:local": "node scripts/pack-local.ts",
     "test": "pnpm test:types && vitest run --coverage",
     "test:unit": "vitest run",
@@ -257,8 +255,7 @@
         ],
         "outputs": [
           "{projectRoot}/es",
-          "{projectRoot}/types",
-          "{projectRoot}/docs"
+          "{projectRoot}/types"
         ]
       },
       "test:unit": {

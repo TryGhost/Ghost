@@ -307,10 +307,7 @@ async function packAndInstall(appDir: string): Promise<boolean> {
     console.log(`Installing ${PACKAGE_NAME}@${version} into ${appDir}…`);
     await install(appDir);
     const installed = await installedVersion(appDir);
-    const hasDocs = existsSync(join(appDir, 'node_modules', PACKAGE_NAME, 'docs', 'index.md'));
-    console.log(
-      `\nInstalled ${PACKAGE_NAME}@${installed} in ${seconds(started)}. docs/: ${hasDocs ? 'present' : 'missing'}.`,
-    );
+    console.log(`\nInstalled ${PACKAGE_NAME}@${installed} in ${seconds(started)}.`);
     return true;
   } catch (error) {
     console.error(`\n✖ ${error instanceof Error ? error.message : String(error)}\n`);

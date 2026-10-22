@@ -575,7 +575,7 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
  * Compose optional ViewBar and FilterBar rows beside it in ListPage.Header.
  * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
  * See the design contract for the action ordering and interaction rules:
- * `docs/components/patterns/page-header.md` in the package, generated from page-header.mdx.
+ * https://shade.ghost.org/docs/components/patterns/page-header.md (generated from page-header.mdx).
  */
 const PageHeader: PageHeaderComponent = Object.assign(
   function PageHeader({

@@ -3,7 +3,12 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { buildDocs, DocsBuildError, writeDocs } from '../../../scripts/build-docs';
+import {
+  buildDocs,
+  DocsBuildError,
+  writeDocs,
+  writeStorybookDocs,
+} from '../../../scripts/build-docs';
 
 const STORIES = `import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Plus } from 'lucide-react';
@@ -178,7 +183,7 @@ describe('build-docs', () => {
     expect(markdown.match(/function IconWidget/g)).toHaveLength(1);
   });
 
-  it('rewrites links between docs and flattens links that leave the package', async () => {
+  it('rewrites links between docs, sends README links to GitHub and flattens the rest', async () => {
     await write('src/docs/other.mdx', doc('# Other', 'Overview / Other Page'));
     const { markdown, warnings } = await build(
       [
@@ -190,6 +195,7 @@ describe('build-docs', () => {
         '- [Broken](?path=/docs/nothing-here--docs)',
         '- [Monorepo](../../../../docs/guide.md)',
         '- [README](https://github.com/TryGhost/Ghost/blob/main/apps/shade/README.md#usage)',
+        '- [Local README](../../README.md#test)',
         '- [External](https://example.com/page)',
         '- `[code](?path=/docs/overview-other-page--docs)`',
       ].join('\n'),
@@ -202,7 +208,8 @@ describe('build-docs', () => {
         '- Gallery',
         '- Broken',
         '- Monorepo',
-        '- [README](../README.md#usage)',
+        '- [README](https://github.com/TryGhost/Ghost/blob/main/apps/shade/README.md#usage)',
+        '- [Local README](https://github.com/TryGhost/Ghost/blob/main/apps/shade/README.md#test)',
         '- [External](https://example.com/page)',
         '- `[code](?path=/docs/overview-other-page--docs)`',
       ].join('\n'),
@@ -248,12 +255,31 @@ describe('build-docs', () => {
     await mkdir(outDir, { recursive: true });
     await writeFile(join(outDir, 'stale.md'), 'old');
 
-    await writeDocs(root);
+    await writeDocs(root, outDir);
 
     expect(await readFile(join(outDir, 'guide.md'), 'utf8')).toContain('Start [here](./guide.md).');
     await expect(readFile(join(outDir, 'stale.md'), 'utf8')).rejects.toThrow();
     expect(await readFile(join(outDir, 'index.md'), 'utf8')).toContain(
       '## Overview\n\n- [Guide](guide.md): Start here.\n',
+    );
+  });
+
+  it('writes the docs and an llms.txt with root-relative links for Storybook', async () => {
+    await write('src/docs/guide.mdx', doc('# Guide\n\n<p className="excerpt">Start here.</p>'));
+    await write(
+      'src/components/widget.mdx',
+      doc('# Widget\n\nOne widget.', 'Components / Widget Guide'),
+    );
+    const siteDir = join(root, 'site');
+
+    await writeStorybookDocs(root, siteDir);
+
+    expect(await readFile(join(siteDir, 'docs/index.md'), 'utf8')).toContain('# Shade docs');
+    const llms = await readFile(join(siteDir, 'llms.txt'), 'utf8');
+    expect(llms).toMatch(/^# Shade\n\n> .+\n/);
+    expect(llms).toContain(
+      '## Overview\n\n- [Guide](/docs/guide.md): Start here.\n\n' +
+        '## Components\n\n- [Widget](/docs/components/widget.md): One widget.\n',
     );
   });
 });
