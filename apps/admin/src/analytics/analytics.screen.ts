@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { type Locator, page } from 'vitest/browser';
 import * as sel from '@tryghost/test-data/selectors/analytics';
 
 /** Site analytics screen locators for acceptance specs; no assertions. */
@@ -48,7 +48,35 @@ export const analyticsScreen = {
 
   // Header
   activeVisitors: () => page.getByText(/\d+ online/),
-  // The header's date-range select (the only combobox on the stats views).
-  dateRangeSelect: () => page.getByRole('combobox'),
-  rangeOption: (name: string) => page.getByRole('option', { name }),
+  // The header's date range button, and the picker it opens: presets beside
+  // a calendar
+  dateRangeSelect: () => page.getByRole('button', { name: 'Date range' }),
+  rangeOption: (name: string) => page.getByRole('option', { name, exact: true }),
+  customRangePicker: () => page.getByRole('dialog', { name: 'Date range' }),
+  /** A month's dropdowns in the custom range calendar: 0 is the left-hand month. */
+  calendarYearSelect: (month = 0) =>
+    analyticsScreen
+      .customRangePicker()
+      .getByRole('combobox', { name: 'Choose the Year' })
+      .nth(month),
+  calendarMonthSelect: (month = 0) =>
+    analyticsScreen
+      .customRangePicker()
+      .getByRole('combobox', { name: 'Choose the Month' })
+      .nth(month),
+  /** Every YYYY-MM-DD day the custom range calendar shows, with whether it can be picked. */
+  calendarDays: () =>
+    Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"] td[data-day]')).map(
+      (cell) => ({ date: cell.dataset.day!, disabled: cell.dataset.disabled === 'true' }),
+    ),
+  /**
+   * A day of the custom range calendar by its YYYY-MM-DD date. Days of the
+   * neighbouring months repeat in each grid, so this skips those copies.
+   */
+  calendarDay: (isoDate: string): Locator | null => {
+    const element = document.querySelector<HTMLElement>(
+      `[role="dialog"] td[data-day="${isoDate}"]:not([data-outside]) button`,
+    );
+    return element && page.elementLocator(element);
+  },
 };

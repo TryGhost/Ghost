@@ -1,5 +1,5 @@
 import moment, { type Moment } from 'moment-timezone';
-import { STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
+import { ALL_TIME_START, STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
 
 export type AggregationType = 'sum' | 'avg' | 'exact';
 
@@ -15,15 +15,115 @@ export const centsToDollars = (value: number) => {
   return Math.round(value / 100);
 };
 
-// Return today and startdate for charts
-export const getRangeDates = (range: number) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// Where the site's history starts (YYYY-MM-DD): its first published post or
+// page, first member or first visit, whichever came first. Loaded once when
+// Analytics opens (useAllTimeStart); until then All time starts at the floor
+let siteHistoryStart: string | null = null;
+
+export const setAllTimeStart = (date: string | null) => {
+  siteHistoryStart = date;
+};
+
+/** The day All time starts: where the site's history does, never before ALL_TIME_START */
+export const getAllTimeStart = (): string =>
+  siteHistoryStart && siteHistoryStart > ALL_TIME_START ? siteHistoryStart : ALL_TIME_START;
+
+/**
+ * A date range picked on the calendar: inclusive calendar dates (YYYY-MM-DD)
+ * read in the viewer's timezone, the same frame preset ranges resolve in.
+ */
+export interface CustomDateRange {
+  from: string;
+  to: string;
+}
+
+/**
+ * A date range selection: either a preset (a day count or one of the
+ * STATS_RANGES sentinels) or a custom pair of dates.
+ */
+export type StatsRange = number | CustomDateRange;
+
+export const isCustomRange = (range: StatsRange): range is CustomDateRange => {
+  return typeof range === 'object';
+};
+
+// Number of calendar days a custom range covers, counting both ends
+export const getCustomRangeDays = ({ from, to }: CustomDateRange): number => {
+  return moment(to).diff(moment(from), 'days') + 1;
+};
+
+// The one day a single-day range covers (Today or a one-day custom range),
+// as YYYY-MM-DD, or null for longer ranges
+export const getSingleDay = (range: StatsRange): string | null => {
+  if (range === STATS_RANGES.today.value) {
+    // The site's today, which near midnight can differ from the viewer's
+    return moment().tz(getStatsTimezone()).format('YYYY-MM-DD');
+  }
+  if (isCustomRange(range) && range.from === range.to) {
+    return range.from;
+  }
+  return null;
+};
+
+// Formats the two ends of a custom range for display, dropping the year when
+// the whole range falls in the current year and repeating it only when the
+// range crosses a year boundary
+const formatCustomRangeEnds = ({ from, to }: CustomDateRange): [string, string] => {
+  const start = moment(from);
+  const end = moment(to);
+  const currentYear = moment().tz(getStatsTimezone()).year();
+  const showYear = start.year() !== currentYear || end.year() !== currentYear;
+  const startFormat = showYear && start.year() !== end.year() ? 'D MMM YYYY' : 'D MMM';
+  const endFormat = showYear ? 'D MMM YYYY' : 'D MMM';
+
+  return [start.format(startFormat), end.format(endFormat)];
+};
+
+// Formats a custom range for display, e.g. "3 Jan – 14 Feb" or "3 Jan"
+export const formatCustomRange = (range: CustomDateRange): string => {
+  const [start, end] = formatCustomRangeEnds(range);
+  return range.from === range.to ? end : `${start} – ${end}`;
+};
+
+// Servers that can answer a single day by the hour say so in the response
+export const hasHourlyInterval = (response: unknown): boolean =>
+  (response as { meta?: { interval?: string } } | undefined)?.meta?.interval === 'hour';
+
+// The timezone Analytics counts days in: the site's own (Settings → General),
+// so everyone on a team sees the same days, and they match the post dates
+// shown alongside. Set once Analytics has the site's settings
+// (useStatsTimezone); until then, the viewer's
+let statsTimezone: string | null = null;
+
+export const setStatsTimezone = (timezone: string | null) => {
+  statsTimezone = timezone;
+};
+
+export const getStatsTimezone = (): string =>
+  statsTimezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+// Return the start and end dates for a range selection
+export const getRangeDates = (range: StatsRange) => {
+  const timezone = getStatsTimezone();
+
+  if (isCustomRange(range)) {
+    return {
+      startDate: moment.tz(range.from, timezone).startOf('day'),
+      endDate: moment.tz(range.to, timezone).endOf('day'),
+      timezone,
+    };
+  }
+
   const endDate = moment().tz(timezone).endOf('day');
   let startDate;
 
   if (range === -1) {
     // Year to date - use January 1st of current year
     startDate = moment().tz(timezone).startOf('year');
+  } else if (range === STATS_RANGES.allTime.value) {
+    // All time starts where the site's history does, however old it is,
+    // imported posts and members included
+    startDate = moment.tz(getAllTimeStart(), timezone).startOf('day');
   } else {
     // Regular range calculation
     startDate = moment()
@@ -37,7 +137,7 @@ export const getRangeDates = (range: number) => {
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getStatsTimezone();
   const publishedDate = moment(startDate).tz(timezone).startOf('day');
   const today = moment().tz(timezone).startOf('day');
   const diffInDays = today.diff(publishedDate, 'days') + 1;
@@ -47,16 +147,20 @@ export const getRangeForStartDate = (startDate: string) => {
 };
 
 // formatDisplayDateWithRange (Shade) and GhAreaChart derive their tick/tooltip
-// format from a range day count: > 365 renders "MMM YYYY", >= 91 renders
+// format from a range day count: >= 365 renders "MMM YYYY", >= 90 renders
 // "Week of ...", anything below renders a plain date. These constants are the
 // smallest values that land in each display band.
-const WEEKLY_DISPLAY_RANGE = 91;
-const MONTHLY_DISPLAY_RANGE = 366;
+const WEEKLY_DISPLAY_RANGE = 90;
+const MONTHLY_DISPLAY_RANGE = 365;
 
 /**
  * Returns additional text for subheads
  */
-export const getPeriodText = (range: number): string => {
+export const getPeriodText = (range: StatsRange): string => {
+  if (isCustomRange(range)) {
+    const [start, end] = formatCustomRangeEnds(range);
+    return range.from === range.to ? `on ${end}` : `between ${start} and ${end}`;
+  }
   const option = STATS_RANGE_OPTIONS.find(
     (opt: { value: number; name: string }) => opt.value === range,
   );
@@ -92,13 +196,20 @@ export function truncateLeadingEmptyData<T>(
 
 /**
  * Resolves a range selection to the number of days the chart actually spans.
- * Fixed ranges are already day counts; the sentinels need resolving:
+ * Fixed ranges are already day counts and custom ranges count their days;
+ * the sentinels need resolving:
  * - Year to date (-1) resolves to the days elapsed since January 1st
- * - All time (1000) resolves to the span of the supplied data — the fetch
- *   window is a fixed 1000 days, but a younger site or post has far less
+ * - All time (100000) resolves to the span of the supplied data — the fetch
+ *   window starts where the site's history does, but a post has far less
  *   real data (pass data with leading empty rows already trimmed)
  */
-export function resolveEffectiveRangeDays(range: number, data: { date: string }[] = []): number {
+export function resolveEffectiveRangeDays(
+  range: StatsRange,
+  data: { date: string }[] = [],
+): number {
+  if (isCustomRange(range)) {
+    return getCustomRangeDays(range);
+  }
   if (range === STATS_RANGES.yearToDate.value) {
     const { startDate, endDate } = getRangeDates(range);
     return endDate.diff(startDate, 'days') + 1;
@@ -107,22 +218,23 @@ export function resolveEffectiveRangeDays(range: number, data: { date: string }[
     if (data.length > 0) {
       return moment(data[data.length - 1].date).diff(moment(data[0].date), 'days') + 1;
     }
-    return range;
+    const { startDate, endDate } = getRangeDates(range);
+    return endDate.diff(startDate, 'days') + 1;
   }
   return range;
 }
 
 /**
  * Determines the bucketing for a chart. One rule for every range, including
- * the sentinels (via resolveEffectiveRangeDays): spans under 91 days render
- * daily points, 91-270 days render weekly buckets, anything longer renders
+ * the sentinels (via resolveEffectiveRangeDays): spans under 90 days render
+ * daily points, 90-270 days render weekly buckets, anything longer renders
  * monthly buckets. The weekly band caps at ~9 months because beyond that
  * weekly charts get too dense (~40+ points) while monthly already gives a
  * readable 9-12; only span-resolved ranges (Year to date, All time, post age)
- * can land between the fixed dropdown options of 91 and 372 days.
+ * can land between the fixed dropdown options of 90 and 365 days.
  */
 export function getAggregationStrategy(
-  range: number,
+  range: StatsRange,
   data: { date: string }[] = [],
   overrideStrategy?: AggregationStrategy,
 ): AggregationStrategy {
@@ -135,7 +247,7 @@ export function getAggregationStrategy(
   if (effectiveDays > 270) {
     return 'monthly';
   }
-  if (effectiveDays >= 91) {
+  if (effectiveDays >= 90) {
     return 'weekly';
   }
   return 'none';
@@ -228,7 +340,7 @@ function aggregateByPeriod<T extends { date: string }>(
  * actually starts. All time has no calendar anchor, so its floor is the
  * first (trimmed) data point.
  */
-function getFirstBucketFloor(range: number, chartData: { date: string }[]): string {
+function getFirstBucketFloor(range: StatsRange, chartData: { date: string }[]): string {
   if (range === STATS_RANGES.allTime.value) {
     return chartData[0].date;
   }
@@ -238,7 +350,7 @@ function getFirstBucketFloor(range: number, chartData: { date: string }[]): stri
 
 function trimForRange<T extends { date: string }>(
   data: T[],
-  range: number,
+  range: StatsRange,
   fieldName: keyof T,
 ): T[] {
   // The All time fetch window is padded with empty leading rows by the API;
@@ -251,20 +363,20 @@ function trimForRange<T extends { date: string }>(
 
 /**
  * Sanitizes chart data based on the date range
- * - Spans under 91 days keep daily points
- * - Spans of 91-270 days aggregate into weekly buckets
+ * - Spans under 90 days keep daily points
+ * - Spans of 90-270 days aggregate into weekly buckets
  * - Longer spans aggregate into monthly buckets
  * Year to date and All time resolve to their real spans before the rule is
  * applied, so they bucket like the equivalent fixed range would.
  * @param data The chart data to sanitize
- * @param range The date range in days (or a STATS_RANGES sentinel)
+ * @param range The date range in days (or a STATS_RANGES sentinel), or a custom range
  * @param fieldName The name of the field to aggregate
  * @param aggregationType The type of aggregation to use: 'sum', 'avg', or 'exact'
  * @param overrideStrategy Forces a specific bucketing regardless of range
  */
 export const sanitizeChartData = <T extends { date: string }>(
   data: T[],
-  range: number,
+  range: StatsRange,
   fieldName: keyof T = 'value' as keyof T,
   aggregationType: AggregationType = 'avg',
   overrideStrategy?: AggregationStrategy,
@@ -306,7 +418,7 @@ export const sanitizeChartData = <T extends { date: string }>(
  * Pass the same raw data and field given to sanitizeChartData.
  */
 export function getEffectiveChartRange<T extends { date: string }>(
-  range: number,
+  range: StatsRange,
   data: T[] = [],
   options: { fieldName?: keyof T; overrideStrategy?: AggregationStrategy } = {},
 ): number {
@@ -320,6 +432,11 @@ export function getEffectiveChartRange<T extends { date: string }>(
     case 'weekly':
       return WEEKLY_DISPLAY_RANGE;
     default:
+      // A single custom day reports 1, matching Today: both fetch hourly
+      // visitor data
+      if (isCustomRange(range)) {
+        return getCustomRangeDays(range);
+      }
       if (range > 0 && range !== STATS_RANGES.allTime.value) {
         return range;
       }

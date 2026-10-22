@@ -15,7 +15,11 @@ import {
 } from '@tryghost/shade/patterns';
 import { KPI_METRICS } from '@/analytics/views/stats/web/web-kpi-metrics';
 import { formatDuration, formatNumber, formatPercentage, getYRange } from '@tryghost/shade/utils';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  getEffectiveChartRange,
+  sanitizeChartData,
+} from '@/shared/analytics/chart-helpers';
 import { useMemo, useState } from 'react';
 
 export interface KpiDataItem {
@@ -25,7 +29,7 @@ export interface KpiDataItem {
 
 interface WebKPIsProps {
   data: KpiDataItem[] | null;
-  range: number;
+  range: StatsRange;
   isLoading: boolean;
 }
 

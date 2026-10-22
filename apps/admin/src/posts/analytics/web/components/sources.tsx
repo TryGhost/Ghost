@@ -34,7 +34,7 @@ import {
 } from '@tryghost/shade/components';
 import { HTable } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { type StatsRange, getPeriodText } from '@/shared/analytics/chart-helpers';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 
 // Default source icon URL - apps can override this
@@ -42,7 +42,7 @@ const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost
 
 interface SourcesTableProps {
   data: ProcessedSourceData[] | null;
-  range?: number;
+  range?: StatsRange;
   defaultSourceIconUrl?: string;
   dataTableHeader: boolean;
   onSourceClick?: (source: string) => void;
@@ -128,12 +128,12 @@ interface SourcesCardProps {
   title?: string;
   description?: string;
   data: BaseSourceData[] | null;
-  range?: number;
+  range?: StatsRange;
   totalVisitors?: number;
   siteUrl?: string;
   siteIcon?: string;
   defaultSourceIconUrl?: string;
-  getPeriodText?: (range: number) => string;
+  getPeriodText?: (range: StatsRange) => string;
   tableOnly?: boolean;
   topSourcesLimit?: number;
   onSourceClick?: (source: string) => void;

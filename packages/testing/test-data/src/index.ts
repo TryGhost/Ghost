@@ -29,6 +29,7 @@ export { changelogEntry } from './builders/changelog';
 export type { ChangelogEntry } from './builders/changelog';
 export {
   analyticsActiveVisitors,
+  analyticsFirstVisit,
   analyticsDevice,
   analyticsGiftLinkVisits,
   analyticsKpi,
@@ -56,6 +57,7 @@ export {
 } from './builders/analytics';
 export type {
   AnalyticsActiveVisitors,
+  AnalyticsFirstVisit,
   AnalyticsDevice,
   AnalyticsGiftLinkVisits,
   AnalyticsKpi,
