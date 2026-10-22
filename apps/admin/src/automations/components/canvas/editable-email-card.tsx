@@ -26,7 +26,7 @@ import {
 import { useEmailHasNoLinks } from '@/automations/hooks/use-email-has-no-links';
 import type { NodeContextMenuEntry } from './nodes';
 import ModifiedDot from '@/automations/concepts/modified-dot';
-import { isConceptA, useConcept } from '@/automations/concepts/concept';
+import { isCanvasCardV2, isConceptA, useConcept } from '@/automations/concepts/concept';
 
 export type EditableEmailData = {
   subject: string;
@@ -124,7 +124,11 @@ export const EditableEmailCard: React.FC<
   // NY-1715 concepts B–D: the editor opens as an expanded view of this card, and the field
   // drops its hover fill for an outline button that appears on hover. The whole field
   // still opens the editor; the button only shows where.
-  const isConcept = isConceptA(useConcept());
+  const concept = useConcept();
+  const isConcept = isConceptA(concept);
+  // E (Canvas card v2): the subject moves inside the message preview, and a click opens the
+  // editor with the subject focused, so it's still one click to edit.
+  const combinesSubject = isCanvasCardV2(concept);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
@@ -132,7 +136,7 @@ export const EditableEmailCard: React.FC<
     <AutomationCard
       aria-label={`${email.subject ? `Send email: ${email.subject}` : 'Send email'}${modified ? ', modified' : ''}`}
       className={cn(
-        'nodrag nopan relative w-[400px] text-left',
+        'group/card nodrag nopan relative w-[400px] text-left',
         warning && 'border-state-warning',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
@@ -175,16 +179,18 @@ export const EditableEmailCard: React.FC<
         <div ref={emailView.ref}>
           <EmailCardCollapse open={!showAnalytics}>
             <Stack gap="md">
-              <InputGroup>
-                <InputGroupAddon>
-                  <InputGroupText>Subject</InputGroupText>
-                </InputGroupAddon>
-                <InputGroupInput
-                  aria-label="Subject line"
-                  value={email.subject}
-                  onChange={(event) => email.onUpdateSubject(event.target.value)}
-                />
-              </InputGroup>
+              {!combinesSubject && (
+                <InputGroup>
+                  <InputGroupAddon>
+                    <InputGroupText>Subject</InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    aria-label="Subject line"
+                    value={email.subject}
+                    onChange={(event) => email.onUpdateSubject(event.target.value)}
+                  />
+                </InputGroup>
+              )}
               <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
                 <button
                   aria-label="Edit email content"
@@ -192,21 +198,50 @@ export const EditableEmailCard: React.FC<
                     inputSurface('self'),
                     'group/field flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left',
                     isConcept ? 'hover:bg-muted/50' : 'hover:bg-muted',
+                    // E: roomier now it holds the subject as well as the message, and a soft grey
+                    // panel (Shade's read-only control surface, gray-50) at rest; on hover it turns
+                    // into a Shade input (control border, white control surface) as the maximize
+                    // button appears.
+                    combinesSubject &&
+                      'border-transparent bg-control-readonly-surface p-5 hover:border-control-border hover:bg-control-surface',
                   )}
                   type="button"
                   onClick={email.onEditContent}
                 >
-                  <EmailCardExcerpt className="line-clamp-5 min-h-[5lh] text-[length:var(--text-control)] text-muted-foreground">
-                    {text || 'Message'}
-                  </EmailCardExcerpt>
+                  {combinesSubject ? (
+                    <span className="block min-w-0 flex-1">
+                      <span
+                        className={cn(
+                          'mb-2 block truncate text-md font-medium',
+                          email.subject.trim() ? 'text-foreground' : 'text-muted-foreground',
+                        )}
+                      >
+                        {email.subject.trim() || 'Subject'}
+                      </span>
+                      <EmailCardExcerpt className="line-clamp-4 min-h-[4lh] text-[length:var(--text-control)] text-muted-foreground">
+                        {text || 'Message'}
+                      </EmailCardExcerpt>
+                    </span>
+                  ) : (
+                    <EmailCardExcerpt className="line-clamp-5 min-h-[5lh] text-[length:var(--text-control)] text-muted-foreground">
+                      {text || 'Message'}
+                    </EmailCardExcerpt>
+                  )}
                   {isConcept ? (
                     // Looks like an outline button, but is part of the field's own button:
                     // a button can't sit inside another.
                     <span
                       aria-hidden="true"
                       className={cn(
-                        buttonVariants({ variant: 'outline', size: 'icon-sm' }),
-                        '-my-0.5 shrink-0 bg-surface-elevated opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none',
+                        // E: Shade's plain borderless (ghost) button; B–D keep the solid outline one.
+                        buttonVariants({
+                          variant: combinesSubject ? 'ghost' : 'outline',
+                          size: 'icon-sm',
+                        }),
+                        '-my-0.5 shrink-0 opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none',
+                        !combinesSubject && 'bg-surface-elevated',
+                        // E: nudged 4px up and right, towards the corner.
+                        combinesSubject && 'translate-x-1 -translate-y-1',
                       )}
                     >
                       <LucideIcon.Maximize2 strokeWidth={2} />

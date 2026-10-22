@@ -1,11 +1,55 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  Indicator,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { isCanvasCardV2, useConcept } from './concept';
 
 // NY-1715 concepts: a muted pen button beside a card that differs from the last save; clicking
-// it explains what the pen means.
+// it explains what the pen means. E (Canvas card v2) shows an "Unsaved" label instead —
+// feedback was that a pen reads as an edit button, not as information.
 const ModifiedDot: React.FC<{ className?: string }> = ({ className }) => {
+  const concept = useConcept();
+  if (isCanvasCardV2(concept)) {
+    return <EditedLabel className={className} />;
+  }
+  return <PenMarker className={className} />;
+};
+
+// Not interactive, and hidden from screen readers: the card's own label says "modified".
+// Beside a card the word shows on hover; beside the open editor it always shows.
+export const EditedLabel: React.FC<{
+  className?: string;
+  showText?: boolean;
+  style?: React.CSSProperties;
+}> = ({ className, showText = false, style }) => (
+  <span
+    aria-hidden="true"
+    className={cn(
+      'flex h-9 items-center gap-1.5 text-sm whitespace-nowrap text-muted-foreground',
+      className,
+    )}
+    style={style}
+  >
+    <Indicator size="sm" state="active" variant="warning" />
+    {/* The dot always shows; the word joins it while the card is hovered or focused. */}
+    <span
+      className={cn(
+        !showText &&
+          'opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 motion-reduce:transition-none',
+      )}
+    >
+      Unsaved
+    </span>
+  </span>
+);
+
+const PenMarker: React.FC<{ className?: string }> = ({ className }) => {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);

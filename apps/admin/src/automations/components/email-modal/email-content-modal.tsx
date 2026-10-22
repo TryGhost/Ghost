@@ -24,6 +24,12 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getEmailValidationErrors } from './validation';
@@ -32,9 +38,15 @@ import { useEmailPreview } from './use-email-preview';
 import { useEmailSenderDetails } from './use-sender-details';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePreviewAutomationEmail } from '@tryghost/admin-x-framework/api/automations';
-import { isConceptA, useConcept } from '@/automations/concepts/concept';
+import {
+  isCanvasCard,
+  isCanvasCardV2,
+  isConceptA,
+  useConcept,
+} from '@/automations/concepts/concept';
 import { useExpandFromCard } from '@/automations/concepts/use-expand-from-card';
 import ChangesIndicator from '@/automations/concepts/changes-indicator';
+import { EditedLabel } from '@/automations/concepts/modified-dot';
 import type { PendingChangesKind } from '@/automations/concepts/pending-changes';
 import type { EmailModalMode } from '@/automations/components/types';
 
@@ -44,6 +56,8 @@ interface EmailPreviewModalContentProps {
   headerClassName?: string;
   centeredHeaderContent?: React.ReactNode;
   headerActions?: React.ReactNode;
+  // A full-width row under the title row, still inside the fixed header.
+  headerBelow?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   isEditMode?: boolean;
@@ -57,6 +71,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
       headerClassName,
       centeredHeaderContent,
       headerActions,
+      headerBelow,
       children,
       className,
       isEditMode = false,
@@ -81,6 +96,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
         <h3 className={cn('justify-self-start text-xl font-semibold', titleClassName)}>{title}</h3>
         <div className="justify-self-center">{centeredHeaderContent}</div>
         <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
+        {headerBelow && <div className="col-span-3 mt-6">{headerBelow}</div>}
       </div>
       <div className="flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
         {children}
@@ -140,6 +156,8 @@ export interface EmailContentModalProps {
   originStepId?: string;
   // NY-1715 concept B: the automation's unsaved/unpublished state, shown beside Test.
   pendingChanges?: PendingChangesKind | null;
+  // NY-1715 concept E: this email differs from the last save, for the Unsaved marker.
+  isEmailModified?: boolean;
   // NY-1715 concept C: shown below the panel, on the scrim — never inside the editor.
   footer?: React.ReactNode;
   // NY-1715 concept D: called as the editor starts closing, so the canvas can bring its
@@ -178,6 +196,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   onSave,
   originStepId,
   pendingChanges = null,
+  isEmailModified = false,
   footer,
   onCloseStart,
 }) => {
@@ -188,9 +207,12 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   const [appliesEditsLive] = useState(isConceptA(conceptAtOpen));
   // A2 and A3: the panel grows out of the email card. A2 settles as a narrower panel under
   // the automation header.
-  const [expandsInPlace] = useState(conceptAtOpen === 'a2' || conceptAtOpen === 'a3');
+  const [expandsInPlace] = useState(conceptAtOpen === 'a2' || isCanvasCard(conceptAtOpen));
   // A3: same panel as A2, centred on a cleared canvas instead of over a scrim.
-  const [clearsCanvas] = useState(conceptAtOpen === 'a3');
+  const [clearsCanvas] = useState(isCanvasCard(conceptAtOpen));
+  // E (Canvas card v2): the feedback round — subject at the top of the body, a slim header,
+  // and an "Unsaved" marker on edited cards. Clicking the canvas minimizes it, as in C.
+  const [isCanvasCardV2Editor] = useState(isCanvasCardV2(conceptAtOpen));
   // B shows the unsaved/unpublished indicator beside close; Test stays in the Preview tab
   // for every concept. B closes with a text Close.
   const isFullModal = appliesEditsLive && !expandsInPlace;
@@ -431,6 +453,35 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     [applyLive, lexicalAtOpen, setFormState, updateForm],
   );
 
+  // E: the email card's Subject field, kept in the editor's fixed header on the Content tab so
+  // it stays in view however far the body scrolls. Same value as the card's and Preview's.
+  const subjectField = (
+    <div>
+      <InputGroup>
+        <InputGroupAddon>
+          <InputGroupText>Subject</InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput
+          aria-label="Subject line"
+          data-testid="email-editor-subject"
+          value={formState.subject}
+          onChange={(e) => {
+            const nextSubject = e.target.value;
+            updateForm((state) => ({ ...state, subject: nextSubject }));
+            applyLive({
+              subject: nextSubject,
+              lexical: formStateRef.current.lexical,
+            });
+            clearError('subject');
+          }}
+        />
+      </InputGroup>
+      {errors.subject && (
+        <span className="mt-2 block text-xs text-destructive">{errors.subject}</span>
+      )}
+    </div>
+  );
+
   return (
     <>
       <Dialog
@@ -499,7 +550,20 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             // straight away; the editor takes that focus itself instead.
             if (appliesEditsLive) {
               event.preventDefault();
-              if (event.currentTarget instanceof HTMLElement) {
+              if (!(event.currentTarget instanceof HTMLElement)) {
+                return;
+              }
+              // E: the card's message preview carries the subject, so opening from it lands
+              // in the subject field, caret at the end — still one click to edit it.
+              const subject = isCanvasCardV2Editor
+                ? event.currentTarget.querySelector<HTMLInputElement>(
+                    '[data-testid="email-editor-subject"]',
+                  )
+                : null;
+              if (subject) {
+                subject.focus({ preventScroll: true });
+                subject.setSelectionRange(subject.value.length, subject.value.length);
+              } else {
                 event.currentTarget.focus();
               }
             }
@@ -519,31 +583,35 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           <EmailPreviewModalContent
             ref={expandFromCard.panelRef}
             centeredHeaderContent={
-              <Tabs
-                data-testid="email-mode-toggle"
-                value={mode}
-                variant="segmented-sm"
-                onValueChange={(value) => value && handleModeChange(value as EmailModalMode)}
-              >
-                <TabsList className="grid w-[240px] grid-cols-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-                  <TabsTrigger
-                    className="w-full justify-center"
-                    data-testid="email-mode-edit"
-                    value="edit"
-                  >
-                    {appliesEditsLive ? 'Content' : 'Email content'}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="w-full justify-center"
-                    data-testid="email-mode-preview"
-                    disabled={!automationId}
-                    title={!automationId ? 'Save automation to preview or send a test' : undefined}
-                    value="preview"
-                  >
-                    Preview
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              isCanvasCardV2Editor ? undefined : (
+                <Tabs
+                  data-testid="email-mode-toggle"
+                  value={mode}
+                  variant="segmented-sm"
+                  onValueChange={(value) => value && handleModeChange(value as EmailModalMode)}
+                >
+                  <TabsList className="grid w-[240px] grid-cols-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                    <TabsTrigger
+                      className="w-full justify-center"
+                      data-testid="email-mode-edit"
+                      value="edit"
+                    >
+                      {appliesEditsLive ? 'Content' : 'Email content'}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      className="w-full justify-center"
+                      data-testid="email-mode-preview"
+                      disabled={!automationId}
+                      title={
+                        !automationId ? 'Save automation to preview or send a test' : undefined
+                      }
+                      value="preview"
+                    >
+                      Preview
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )
             }
             className={cn(
               expandsInPlace &&
@@ -553,12 +621,54 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               expandsInPlace && !clearsCanvas && 'max-h-[80vh] self-center',
               // A3 sits on the cleared canvas, so it takes the canvas cards' own shadow.
               clearsCanvas && 'shadow-sm',
+              // E hugs its writing column: 600px of content plus 32px of padding each side.
+              isCanvasCardV2Editor && 'max-w-[664px]',
             )}
             headerActions={
               appliesEditsLive ? (
                 <TooltipProvider delayDuration={150}>
                   {hasHeaderIndicator && pendingChanges && (
                     <ChangesIndicator className="mr-1" kind={pendingChanges} />
+                  )}
+                  {isCanvasCardV2Editor && (
+                    // E: icon-only view toggle beside minimize, in place of the centred tabs.
+                    <ToggleGroup
+                      aria-label="Editor view"
+                      data-testid="email-mode-toggle"
+                      type="single"
+                      value={mode}
+                      onValueChange={(value) => value && handleModeChange(value as EmailModalMode)}
+                    >
+                      <HeaderTooltip label="Content">
+                        {/* The trigger wraps the item, as the tooltip's own data-state would
+                            otherwise replace the item's data-state="on". */}
+                        <span className="inline-flex">
+                          <ToggleGroupItem
+                            aria-label="Content"
+                            data-testid="email-mode-edit"
+                            value="edit"
+                          >
+                            <LucideIcon.PenLine className="size-3.5!" />
+                          </ToggleGroupItem>
+                        </span>
+                      </HeaderTooltip>
+                      <HeaderTooltip
+                        label={
+                          automationId ? 'Preview' : 'Save automation to preview or send a test'
+                        }
+                      >
+                        <span className="inline-flex">
+                          <ToggleGroupItem
+                            aria-label="Preview"
+                            data-testid="email-mode-preview"
+                            disabled={!automationId}
+                            value="preview"
+                          >
+                            <LucideIcon.Eye className="size-3.5!" />
+                          </ToggleGroupItem>
+                        </span>
+                      </HeaderTooltip>
+                    </ToggleGroup>
                   )}
                   {isFullModal ? (
                     <Button variant="ghost" onClick={closeEditor}>
@@ -588,10 +698,28 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 </>
               )
             }
-            headerClassName={cn(appliesEditsLive && 'px-6 py-5')}
+            headerBelow={isCanvasCardV2Editor && mode === 'edit' ? subjectField : undefined}
+            headerClassName={cn(
+              appliesEditsLive && 'px-6 py-5',
+              // E: 32px at the sides (matching the body) and on top, 24px below, and no rule
+              // under it, so it reads as part of the card.
+              isCanvasCardV2Editor && 'border-b-0 px-8 pt-8 pb-6',
+            )}
             isEditMode={mode === 'edit'}
             title={
-              appliesEditsLive ? (
+              isCanvasCardV2Editor ? (
+                // E: the email card's own icon, so the header reads as that card expanded; the
+                // subject is edited at the top of the email below.
+                <span className="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 rounded-md bg-muted p-2.5 text-foreground"
+                  >
+                    <LucideIcon.Mail className="size-4" />
+                  </span>
+                  <span className="truncate">Edit email</span>
+                </span>
+              ) : appliesEditsLive ? (
                 // Concept A: mirrors the email card's header, so the editor reads as that card expanded.
                 <span className="flex min-w-0 items-center gap-3">
                   <span
@@ -608,7 +736,14 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             }
             titleClassName={cn(appliesEditsLive && 'w-full min-w-0 pr-4 text-md font-medium')}
           >
-            <div className="flex grow flex-col items-center p-6">
+            <div
+              className={cn(
+                'flex grow flex-col items-center p-6',
+                // E, writing: 32px at the sides; the header's padding already sits above, so none
+                // on top. Preview keeps 24px all round, so the email sits clear of the header.
+                isCanvasCardV2Editor && mode === 'edit' && 'px-8 pt-0',
+              )}
+            >
               {mode === 'preview' && (
                 <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
                   <div className="flex flex-col gap-2">
@@ -648,21 +783,35 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     <div className="flex items-center">
                       <div className="w-20 shrink-0 text-sm font-semibold">Subject:</div>
                       <div className="grow">
-                        <Input
-                          className="w-full"
-                          data-testid="email-preview-subject"
-                          value={previewSubjectOverride ?? formState.subject}
-                          onChange={(e) => {
-                            const nextSubject = e.target.value;
-                            setPreviewSubjectOverride(nextSubject);
-                            updateForm((state) => ({ ...state, subject: nextSubject }));
-                            applyLive({
-                              subject: nextSubject,
-                              lexical: formStateRef.current.lexical,
-                            });
-                            clearError('subject');
-                          }}
-                        />
+                        {isCanvasCardV2Editor ? (
+                          // E: the subject is edited in the Content tab's header, so Preview shows
+                          // it as plain text, like the From line.
+                          <span
+                            className={cn(
+                              'block truncate text-sm',
+                              !formState.subject.trim() && 'text-gray-500 dark:text-gray-400',
+                            )}
+                            data-testid="email-preview-subject"
+                          >
+                            {formState.subject.trim() || 'No subject'}
+                          </span>
+                        ) : (
+                          <Input
+                            className="w-full"
+                            data-testid="email-preview-subject"
+                            value={previewSubjectOverride ?? formState.subject}
+                            onChange={(e) => {
+                              const nextSubject = e.target.value;
+                              setPreviewSubjectOverride(nextSubject);
+                              updateForm((state) => ({ ...state, subject: nextSubject }));
+                              applyLive({
+                                subject: nextSubject,
+                                lexical: formStateRef.current.lexical,
+                              });
+                              clearError('subject');
+                            }}
+                          />
+                        )}
                         {errors.subject && (
                           <span className="mt-2 block text-xs text-destructive">
                             {errors.subject}
@@ -676,7 +825,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               <EmailPreviewBody
                 className={cn(
                   mode === 'preview' && 'bg-white shadow-sm dark:bg-[#151719]',
-                  mode === 'edit' && 'px-6',
+                  mode === 'edit' && !isCanvasCardV2Editor && 'px-6',
                   mode === 'edit' && 'rounded-lg',
                   mode === 'edit' && errors.lexical && 'border border-red-500',
                 )}
@@ -684,6 +833,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 <div
                   className={cn(
                     'mx-auto w-full max-w-[600px] pt-10 pb-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
+                    // E: one 24px of padding round the body (from the content area), not three.
+                    isCanvasCardV2Editor && 'py-0',
                     mode === 'preview' && 'hidden',
                   )}
                   data-testid="email-editor"
@@ -707,6 +858,16 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               )}
             </div>
           </EmailPreviewModalContent>
+          {isCanvasCardV2Editor &&
+            isEmailModified && (
+              // E: the same Unsaved marker as on the cards, beside the panel's top-right corner
+              // (24px out, level with the header row), so the open email shows its state too.
+              <EditedLabel
+                className="absolute animate-in duration-200 fade-in-0 fill-mode-backwards [--tw-animation-delay:200ms] motion-reduce:animate-none"
+                style={{ top: panelGap + 32, left: 'calc(50% + 332px + 24px)' }}
+                showText
+              />
+            )}
           {expandsInPlace && !clearsCanvas && footer}
         </DialogContent>
       </Dialog>

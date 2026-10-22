@@ -39,7 +39,7 @@ import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import ChangesBar from './concepts/changes-bar';
 import ConceptSwitcher from './concepts/concept-switcher';
 import { countChanges, pendingChangesKind, withChangeCount } from './concepts/pending-changes';
-import { isConceptA, useConcept } from './concepts/concept';
+import { isCanvasCard, isConceptA, useConcept } from './concepts/concept';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
@@ -163,7 +163,7 @@ const AutomationEditorContent: React.FC<{
   const hasChangesBar = concept === 'a2';
   // C puts the count of changes in its Publish changes button (live automations, where
   // publishing reaches members) instead of a separate "Unpublished changes" line.
-  const countsChanges = concept === 'a3';
+  const countsChanges = isCanvasCard(concept);
   const changeCount =
     countsChanges && draft && savedAutomation ? countChanges(savedAutomation, draft) : 0;
   const headerPendingChanges =
@@ -574,7 +574,6 @@ const AutomationEditorContent: React.FC<{
         publishOnly={hasChangesBar}
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
-        spacious={isConceptA(concept)}
         validationFeedback={selectedRunId ? null : validationFeedback}
         onDismissValidationFeedback={() => setValidationFeedback(null)}
         onNameChange={

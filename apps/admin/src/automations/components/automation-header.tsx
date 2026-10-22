@@ -48,9 +48,6 @@ interface AutomationHeaderProps {
   // NY-1715 concept C: the corner only takes the automation live (Publish) or off (Turn off);
   // saving and publishing changes move to the floating changes bar.
   publishOnly?: boolean;
-  // NY-1715 concepts: 24px of padding all round, measured from the tallest thing in the
-  // header (the name field is taller than the buttons).
-  spacious?: boolean;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -71,7 +68,6 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onNameChange,
   pendingChanges = null,
   publishOnly = false,
-  spacious = false,
 }) => {
   const { isAdmin7 } = useShade();
   const entering = useScreenEntrance();
@@ -152,7 +148,6 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     <header
       className={cn(
         'screen-exit-chrome-top relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
-        spacious && 'h-auto p-6',
         entering && 'screen-enter-from-top',
       )}
     >

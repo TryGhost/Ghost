@@ -47,7 +47,12 @@ import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-fra
 import type { EmailModalMode } from '@/automations/components/types';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
-import { isConceptA, useConcept } from '@/automations/concepts/concept';
+import {
+  isCanvasCard,
+  isConceptA,
+  useConcept,
+  useShowEditMarkers,
+} from '@/automations/concepts/concept';
 import {
   hasEmailChanged,
   hasStepChanged,
@@ -457,6 +462,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 }) => {
   const layoutRef = useRef<HTMLElement>(null);
   const concept = useConcept();
+  const showEditMarkers = useShowEditMarkers();
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
   const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
     setNodeSizes((previous) => {
@@ -741,7 +747,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
-      savedActionsForMarks: isConceptA(concept) ? savedActions : undefined,
+      savedActionsForMarks: isConceptA(concept) && showEditMarkers ? savedActions : undefined,
       tierQuery,
       onChange,
       nodeSizes,
@@ -763,6 +769,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     savedTriggerTierIds,
     concept,
     savedActions,
+    showEditMarkers,
     tierQuery,
     onChange,
     automation,
@@ -801,7 +808,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   // NY-1715 concept A3: the email editor clears the canvas, so an open sidebar slides away
   // as the editor opens and comes back as it closes, both in step with the editor. Nothing
   // the publisher opened stays closed.
-  const clearsCanvas = concept === 'a3';
+  const clearsCanvas = isCanvasCard(concept);
   const sidebarOpenBeforeEmailRef = useRef<boolean | null>(null);
   const isEmailModalOpen = Boolean(emailModalAction);
   useEffect(() => {
@@ -995,6 +1002,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           initialMode={emailModalMode}
           initialSubject={emailModalAction.data.email_subject}
           isDiscardNavigationBlocked={isEmailNavigationBlocked}
+          isEmailModified={
+            showEditMarkers && !!savedActions && hasEmailChanged(emailModalAction, savedActions)
+          }
           originStepId={emailModalAction.id}
           pendingChanges={
             emailEditorPendingChanges &&
