@@ -31,6 +31,7 @@ import {
 import { toDatabaseDate } from '../../lib/db-types/date';
 import {
   ACTIVE_ONLY,
+  FIELDS_TABLE,
   definitions,
   fieldReference,
   fieldsTable,
@@ -38,11 +39,11 @@ import {
   onField,
   readableBy,
   type FieldIdentity,
+  type Plan,
 } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
 import { valueRowsToWrite, valuesFromRows, type StoredValueRow } from './storage';
 
-const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
 const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
 const MEMBERS_TABLE = 'members';
@@ -144,10 +145,21 @@ export class MetafieldValuesService {
   private knex: Knex;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
+  /** The site's plan, read each time it's needed rather than copied when this is built. */
+  private getPlan: () => Plan;
 
-  constructor({ knex, getMaxDefinitions }: { knex: Knex; getMaxDefinitions: () => number }) {
+  constructor({
+    knex,
+    getMaxDefinitions,
+    getPlan,
+  }: {
+    knex: Knex;
+    getMaxDefinitions: () => number;
+    getPlan: () => Plan;
+  }) {
     this.knex = knex;
     this.getMaxDefinitions = getMaxDefinitions;
+    this.getPlan = getPlan;
   }
 
   // The query is scoped to the audience, so a field they may not see is absent from
@@ -170,7 +182,11 @@ export class MetafieldValuesService {
     if (keysByNamespace.size === 0) {
       return new Map();
     }
-    const rows = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
+    const rows = await definitions(this.knex, {
+      audience,
+      status: ACTIVE_ONLY,
+      plan: this.getPlan(),
+    })
       .where((query) => {
         for (const [namespace, keys] of keysByNamespace) {
           query.orWhere((inNamespace) =>
@@ -246,7 +262,10 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      executor(VALUES_TABLE).join(fieldsTable(), onField(FIELDS_TABLE, VALUES_TABLE)),
+      executor(VALUES_TABLE).join(
+        fieldsTable(executor, this.getPlan()),
+        onField(FIELDS_TABLE, VALUES_TABLE),
+      ),
       audience,
     )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)

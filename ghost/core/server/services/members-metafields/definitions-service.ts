@@ -24,6 +24,7 @@ import {
   nql,
   type DefinitionQuery,
   type FieldIdentity,
+  type Plan,
 } from './queries';
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
@@ -115,15 +116,19 @@ export class MetafieldDefinitionsService {
   private knex: Knex;
   private recordAction: RecordMetafieldAction;
   private getMaxDefinitions: () => number;
+  /** The site's plan, read each time it's needed rather than copied when this is built. */
+  private getPlan: () => Plan;
 
   constructor({
     knex,
     recordAction,
     getMaxDefinitions,
+    getPlan,
   }: {
     knex: Knex;
     recordAction: RecordMetafieldAction;
     getMaxDefinitions: () => number;
+    getPlan: () => Plan;
   }) {
     this.knex = knex;
     this.recordAction = recordAction;
@@ -133,6 +138,7 @@ export class MetafieldDefinitionsService {
     // every create means a change takes effect on the next one, with no
     // restart. Where the number comes from is the caller's business.
     this.getMaxDefinitions = getMaxDefinitions;
+    this.getPlan = getPlan;
   }
 
   async browse(
@@ -152,12 +158,15 @@ export class MetafieldDefinitionsService {
         definitions(this.knex, {
           audience,
           status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
+          plan: this.getPlan(),
           namespace,
           filter: (query) => knexify(query, parsed, { tableName: TABLE }),
         }),
       );
     }
-    return this.list(definitions(this.knex, { audience, status: ACTIVE_ONLY, namespace }));
+    return this.list(
+      definitions(this.knex, { audience, status: ACTIVE_ONLY, plan: this.getPlan(), namespace }),
+    );
   }
 
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
@@ -167,7 +176,12 @@ export class MetafieldDefinitionsService {
 
   async read(namespace: Namespace, key: Key, audience: Audience): Promise<Metafield> {
     const [field] = await this.list(
-      definitions(this.knex, { audience, status: ANY_STATUS, field: { namespace, key } }),
+      definitions(this.knex, {
+        audience,
+        status: ANY_STATUS,
+        plan: this.getPlan(),
+        field: { namespace, key },
+      }),
     );
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
@@ -442,7 +456,9 @@ export class MetafieldDefinitionsService {
       }
 
       // An order covers the whole list, archived definitions included.
-      return this.list(definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }));
+      return this.list(
+        definitions(trx, { audience: ADMIN, status: ANY_STATUS, plan: this.getPlan(), namespace }),
+      );
     });
 
     await this.recordAction({
@@ -577,7 +593,12 @@ export class MetafieldDefinitionsService {
     }
     const patch = parsed.data;
 
-    const existing = await this.read(namespace, key, ADMIN);
+    // As stored rather than as the plan reads it, since the patch is compared with what
+    // the write would change.
+    const existing = await this.find({ namespace, key });
+    if (!existing) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
 
     // Key and type are immutable after creation: values are addressed by namespace and key
     // and interpreted by type, so changing either would silently orphan or

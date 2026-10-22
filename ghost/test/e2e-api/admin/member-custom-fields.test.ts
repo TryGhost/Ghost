@@ -2756,8 +2756,8 @@ describe('Member Custom Fields Admin API', function () {
   // what the first test pins: nothing changes for a site nobody has limited. When it is
   // set, changing definitions answers 403 with the host's copy, distinct from the 404 the
   // flag gives, because "your plan does not include this" is a different thing to tell a
-  // caller than "this does not exist here". Reading stays open either way, so a site whose
-  // plan drops can still see and export the fields it already has.
+  // caller than "this does not exist here". Every field the site has reads as archived
+  // meanwhile, without being stored as archived, so it all comes back as it was.
   describe('Host limit', function () {
     afterEach(async function () {
       await hostLimits.restoreHostLimits();
@@ -2800,16 +2800,72 @@ describe('Member Custom Fields Admin API', function () {
         });
       });
 
-      it('still lists the fields the site already has', async function () {
-        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
-        assert.equal(
-          body.members_metafields.some((field: { key: string }) => field.key === existingKey),
-          true,
+      it('reads every field the site has as archived', async function () {
+        const { body: active } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.deepEqual(active.members_metafields, []);
+
+        const { body: all } = await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200);
+        assert.deepEqual(
+          all.members_metafields.map((field: { key: string; status: string }) => [
+            field.key,
+            field.status,
+          ]),
+          [[existingKey, 'archived']],
         );
+
+        const { body: one } = await agent
+          .get(`members/metafields/custom/${existingKey}/`)
+          .expectStatus(200);
+        assert.equal(one.members_metafields[0].status, 'archived');
       });
 
-      it('still reads a single field', async function () {
-        await agent.get(`members/metafields/custom/${existingKey}/`).expectStatus(200);
+      it('hides what members hold and refuses new values, keeping what is stored', async function () {
+        const memberId = await createMember();
+        await hostLimits.restoreHostLimits();
+        await setValues(memberId, { [existingKey]: 'Ghost' });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        assert.deepEqual(await readValues(memberId), {});
+        const refused = await setValues(memberId, { [existingKey]: 'Acme' }, 422);
+        assert.equal(refused.errors[0].property, `metafields.custom.${existingKey}`);
+
+        await hostLimits.restoreHostLimits();
+        assert.deepEqual(await readValues(memberId), { [existingKey]: 'Ghost' });
+      });
+
+      it('brings every field back as it was once the plan includes them again', async function () {
+        await hostLimits.restoreHostLimits();
+        const memberId = await createMember();
+        await setValues(memberId, { [existingKey]: 'Ghost' });
+        const retired = await createField({ name: 'Retired earlier' });
+        await setStatus(retired.key, 'archived');
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        // What the site can still do meanwhile: edit the member, and be refused a value.
+        await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ name: 'Renamed meanwhile' }] })
+          .expectStatus(200);
+        await setValues(memberId, { [existingKey]: 'Acme' }, 422);
+
+        await hostLimits.restoreHostLimits();
+
+        assert.deepEqual(await readValues(memberId), { [existingKey]: 'Ghost' });
+        const { body } = await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200);
+        assert.deepEqual(
+          body.members_metafields.map((field: { key: string; status: string }) => [
+            field.key,
+            field.status,
+          ]),
+          [
+            [existingKey, 'active'],
+            [retired.key, 'archived'],
+          ],
+        );
       });
 
       it('403s the create endpoint, with the host copy', async function () {

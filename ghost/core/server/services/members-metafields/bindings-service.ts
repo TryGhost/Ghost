@@ -5,11 +5,16 @@ import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
 import { INTERNAL } from './access';
-import { fieldReference, fieldsTable, onField, type FieldIdentity } from './queries';
+import {
+  FIELDS_TABLE,
+  fieldReference,
+  fieldsTable,
+  onField,
+  type FieldIdentity,
+  type Plan,
+} from './queries';
 import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
-
-const FIELDS_TABLE = 'members_metafields';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
 
@@ -42,10 +47,21 @@ export interface RoutedPlans {
 export class MetafieldBindingsService {
   private knex: Knex;
   private values: Pick<MetafieldValuesService, 'planWrite'>;
+  /** The site's plan, read each time it's needed rather than copied when this is built. */
+  private getPlan: () => Plan;
 
-  constructor({ knex, values }: { knex: Knex; values: Pick<MetafieldValuesService, 'planWrite'> }) {
+  constructor({
+    knex,
+    values,
+    getPlan,
+  }: {
+    knex: Knex;
+    values: Pick<MetafieldValuesService, 'planWrite'>;
+    getPlan: () => Plan;
+  }) {
     this.knex = knex;
     this.values = values;
+    this.getPlan = getPlan;
   }
 
   async bind(db: Knex, port: string, field: FieldIdentity, now: Date): Promise<string> {
@@ -157,7 +173,7 @@ export class MetafieldBindingsService {
 
   private async resolve(port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
-      .join(fieldsTable(), onField(FIELDS_TABLE, BINDINGS_TABLE))
+      .join(fieldsTable(this.knex, this.getPlan()), onField(FIELDS_TABLE, BINDINGS_TABLE))
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value
       // can land, so the write drops rather than waiting.

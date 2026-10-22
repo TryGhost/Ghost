@@ -8387,8 +8387,8 @@ services:
         Boot already builds definitions, values and bindings together before their
         consumers; their constructors only store dependencies. Publish the completed
         three-part facade atomically through defineService and update consumers of the named
-        instance exports. Preserve bindings' reference to values, live limit getters and the
-        separate constant/type exports.
+        instance exports. Preserve bindings' reference to values, live limit and plan getters
+        and the separate constant/type exports.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/members-metafields/index.ts
@@ -8439,7 +8439,8 @@ services:
       exports:
         summary: >-
           Named runtime exports are synchronous init, mutable definitions/values/bindings,
-          audience/access constants, canWrite, actingContext and adminWriteOrigin. Service
+          audience/access constants, canWrite, actingContext, adminWriteOrigin and
+          fieldsTableForSite, the fields table as the site's plan lets it be read. Service
           bindings are undefined before init; class methods depend on their receiver. Definitions
           exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
@@ -8460,7 +8461,7 @@ services:
           Init obtains the shared Knex getter, models and config, then publishes definitions,
           values and bindings sequentially; bindings retains that values instance. Definitions
           receives an action-recording closure over models.Action; definitions and values receive
-          limit callbacks. Constructors store dependencies without querying or starting work.
+          limit callbacks, and all three a plan getter read from the limit service. Constructors store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
           No other production construction of these classes was found. Binding units construct
           the class with fake query/values collaborators, not the root or publication sequence.
@@ -8477,7 +8478,8 @@ services:
         summary: >-
           Admin/member endpoints use definitions; members retains values for BREAD, account,
           member deletion and activity feeds, and definitions/values for CSV import/export.
-          Webhooks read values through members BREAD. Member filtering and API serialization
+          Webhooks read values through members BREAD. The Stripe Checkout config reads the fields
+          table through fieldsTableForSite. Member filtering and API serialization
           also deep-import helpers. No production calls to the exported bindings service were
           found in the inspected Core source after checkout collection was removed; it remains
           constructed and exported. Real HTTP asserts field/value visibility, CSV cells/import

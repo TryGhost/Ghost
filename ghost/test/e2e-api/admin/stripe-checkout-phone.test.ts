@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 describe('Stripe Checkout phone number collection', function () {
@@ -153,5 +158,26 @@ describe('Stripe Checkout phone number collection', function () {
 
     await agent.delete('members/metafields/custom/contact_phone/').expectStatus(204);
     assert.deepEqual((await readCheckout()).phone, NO_PHONE);
+  });
+
+  // A plan without custom fields reads every field as archived, so the phone keeps its
+  // field as it does while that field is archived, and no other field can be chosen.
+  describe('on a plan without custom fields', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('keeps its field and saves it back, but takes no newly chosen one', async function () {
+      await createField('Mobile', 'short_text');
+      await setCheckout(phone());
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+      const saved = await readCheckout();
+      assert.deepEqual(saved.phone, phone().phone);
+      await setCheckout(saved);
+
+      const refused = await refusal(phone({ custom_field_key: 'mobile' }));
+      assert.equal(refused.property, 'phone.custom_field_key');
+    });
   });
 });

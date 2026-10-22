@@ -1,9 +1,30 @@
 import type { Knex } from 'knex';
-import type { Identity, Namespace } from '@tryghost/metafield-types/identity';
+import {
+  CUSTOM_NAMESPACE,
+  type Identity,
+  type Namespace,
+} from '@tryghost/metafield-types/identity';
 import { readableLevels, type Audience } from './access';
 import { FIELD_STATUS, type MetafieldRow } from './schema';
 
-const FIELDS_TABLE = 'members_metafields';
+/** The fields table's name, which is also the name `fieldsTable` reads it under by default. */
+export const FIELDS_TABLE = 'members_metafields';
+
+/**
+ * The columns a field is read with, besides the status a plan can override. Every column of
+ * the row is named, so a column added to it doesn't compile until it is added here too.
+ */
+const COLUMNS_BESIDE_STATUS = Object.keys({
+  id: true,
+  namespace: true,
+  key: true,
+  name: true,
+  type: true,
+  member_access: true,
+  sort_order: true,
+  created_at: true,
+  updated_at: true,
+} satisfies Record<Exclude<keyof MetafieldRow, 'status'>, true>);
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to our
 // raw-knex queries: nql parses a `filter` string to a Mongo query, mongo-knex turns that
@@ -37,21 +58,52 @@ export type StatusScope = typeof ACTIVE_ONLY | typeof ANY_STATUS;
 
 declare const scoped: unique symbol;
 
-/**
- * The fields table, under the name a query gives it.
- *
- * Every read that asks what a field is, or whether it can take a value, names the table
- * through this rather than directly, here or in another domain, so a rule about how
- * fields read holds for every one of them. Writes name the table itself.
- */
-export function fieldsTable(alias: string = FIELDS_TABLE): string {
-  return alias === FIELDS_TABLE ? FIELDS_TABLE : `${FIELDS_TABLE} as ${alias}`;
+/** What the site's plan includes, as far as reading fields goes. */
+export interface Plan {
+  includesCustomFields: boolean;
 }
 
-// The row type is stated rather than derived from the table registration, which a name
-// `fieldsTable` hands back does not carry.
+/**
+ * The fields table as the site's plan lets it be read, under the name a query gives it.
+ *
+ * Every read that asks what a field is, or whether it can take a value, names the table
+ * through this rather than directly, here or in another domain, so the plan holds for
+ * every one of them. That includes the check before writing a value, which is how such a
+ * plan refuses one. Only changes to the field list read the table as stored, since the
+ * plan refuses those before they run.
+ *
+ * A plan without custom fields makes each of the publisher's fields read as archived,
+ * whatever status it holds, so whatever already happens to an archived field happens to
+ * every one of them. Nothing is stored, so each comes back as it was, archived or not,
+ * once the plan includes them again.
+ */
+export function fieldsTable(
+  db: Knex,
+  plan: Plan,
+  alias: string = FIELDS_TABLE,
+): Knex.TableDescriptor {
+  if (plan.includesCustomFields) {
+    return alias === FIELDS_TABLE ? FIELDS_TABLE : `${FIELDS_TABLE} as ${alias}`;
+  }
+  return db(FIELDS_TABLE)
+    .select(
+      ...COLUMNS_BESIDE_STATUS,
+      db.raw('CASE WHEN ?? = ? THEN ? ELSE ?? END AS ??', [
+        'namespace',
+        CUSTOM_NAMESPACE,
+        FIELD_STATUS.archived,
+        'status',
+        'status',
+      ]),
+    )
+    .as(alias);
+}
+
+// Typed with the row itself rather than the table registration: the query goes on to read
+// from whatever `fieldsTable` hands back, which can be a subquery the registration doesn't
+// describe.
 function metafieldsTable(db: Knex) {
-  return db<MetafieldRow>(fieldsTable());
+  return db<MetafieldRow>(FIELDS_TABLE);
 }
 
 /**
@@ -68,6 +120,7 @@ export function definitions(
   scope: {
     audience: Audience;
     status: StatusScope;
+    plan: Plan;
     /** One namespace's fields. Without it, every namespace's. */
     namespace?: Namespace;
     /** One field. A key alone names none: each namespace has its own. */
@@ -79,9 +132,13 @@ export function definitions(
 ): DefinitionQuery {
   let query = metafieldsTable(db);
 
+  // Applied while the query still reads the table by its name, then pointed at the table as
+  // the plan lets it be read: the NQL bridge qualifies every column with whatever the query
+  // reads from, and a plan without custom fields makes that a subquery.
   if (scope.filter) {
     query = scope.filter(query);
   }
+  query = query.from<MetafieldRow>(fieldsTable(db, scope.plan));
   if (scope.namespace !== undefined) {
     query = query.where(`${FIELDS_TABLE}.namespace`, scope.namespace);
   }

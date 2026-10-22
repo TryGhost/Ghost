@@ -4,7 +4,7 @@ import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
-import type { FieldStatus } from '../members-metafields/schema';
+import type { FieldStatus, MetafieldRow } from '../members-metafields/schema';
 import {
   CUSTOM_NAMESPACE,
   type Identity,
@@ -247,8 +247,8 @@ export interface PortBinder {
   remove(db: Knex, port: string): Promise<void>;
 }
 
-/** Names the custom fields table for a read, the way the custom fields domain reads it. */
-export type FieldsTable = (alias?: string) => string;
+/** The custom fields table for a read, as the custom fields domain reads it for this site. */
+export type FieldsTable = (db: Knex, alias?: string) => Knex.TableDescriptor;
 
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
@@ -350,7 +350,7 @@ export class StripeCheckoutConfigService {
             .onIn('binding.port', COLLECTED_PORTS)
             .andOnVal('binding.metafield_namespace', '=', CUSTOM_NAMESPACE),
         )
-        .leftJoin(this.fieldsTable('field'), (join) =>
+        .leftJoin(this.fieldsTable(db, 'field'), (join) =>
           join
             .on('field.namespace', '=', 'binding.metafield_namespace')
             .andOn('field.key', '=', 'binding.metafield_key')
@@ -575,7 +575,7 @@ async function assertTargets(
 
   const destinations = switchedOn.flatMap((part) => part.destinations);
   const fields = z.array(LockedField).parse(
-    await trx(fieldsTable())
+    await trx<MetafieldRow>(fieldsTable(trx))
       .where('namespace', CUSTOM_NAMESPACE)
       .whereIn(
         'key',

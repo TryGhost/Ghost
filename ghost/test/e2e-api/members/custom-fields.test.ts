@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 
 const MEMBER_EMAIL = 'member@example.com';
 const SHOE_SIZE = 'Shoe size';
@@ -181,6 +186,41 @@ describe('Member Custom Fields Members API', function () {
       { custom: { [fieldKey]: '9' } },
       'and the answer they gave for the archived one is not handed back',
     );
+  });
+
+  // A plan without custom fields keeps every field and every answer, and reads them all as
+  // archived until the plan includes them again.
+  describe('on a plan without custom fields', function () {
+    beforeEach(async function () {
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+    });
+
+    // Before the outer cleanup, which archives and deletes fields: the plan refuses both.
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('offers a member no fields and hands back none of their answers', async function () {
+      const { body: offered } = await membersAgent
+        .get('/api/member/metafields/custom/')
+        .expectStatus(200);
+      assert.deepEqual(offered.members_metafields, []);
+
+      const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(account.metafields?.custom?.[fieldKey], undefined);
+    });
+
+    it('refuses a member writing to a field, and keeps the answer they gave', async function () {
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: '12' } } })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, `metafields.custom.${fieldKey}`);
+
+      await hostLimits.restoreHostLimits();
+      const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.deepEqual(account.metafields, { custom: { [fieldKey]: '9' } });
+    });
   });
 
   it('will not name the fields to someone who is not signed in', async function () {
