@@ -1,8 +1,4 @@
-import {
-  lockStaffInvites,
-  checkTrialStaffLimit,
-  STAFF_INVITE_RATE_KEY,
-} from '../../lib/staff-invite-usage';
+import { lockStaffInvites, checkTrialStaffLimit } from '../../lib/staff-invite-usage';
 import { defineService } from '../../../kernel/define-service';
 import InvitationLimiter from './invitation-limiter';
 import { getHelpLink } from '../limits';
@@ -29,11 +25,9 @@ export default defineService('Invites', () => {
     invitationLimiter: new InvitationLimiter({
       knex: db.knex,
       getLimits: () => config.get('hostSettings:staffInvites'),
-      now: Date.now,
       getUpgradeUrl: getHelpLink,
       lockStaffInvites,
       checkTrialStaffLimit,
-      STAFF_INVITE_RATE_KEY,
     }),
   });
 });
