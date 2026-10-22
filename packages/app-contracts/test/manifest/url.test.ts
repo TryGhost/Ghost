@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { devOptions, errorsOf, manifest, manifestOf, options } from './helpers.ts';
+import { devManifest, devOptions, errorsOf, manifest, manifestOf, options } from './helpers.ts';
 
 describe('URLs', () => {
   function surfaceUrlError(url: unknown, parseOptions = options) {
@@ -32,16 +32,24 @@ describe('URLs', () => {
   });
 
   it('rejects values that are not usable as a URL', () => {
-    expect(surfaceUrlError('')).toContain('Expected a URL');
-    expect(surfaceUrlError(42)).toContain('Expected a URL');
-    expect(surfaceUrlError('https://')).toContain('Expected a URL');
-    expect(surfaceUrlError(`/${'a'.repeat(2000)}`)).toContain('at most 2000');
+    expect(surfaceUrlError('')).toBe('Expected an absolute URL');
+    expect(surfaceUrlError(42)).toBe('Expected an absolute URL');
+    expect(surfaceUrlError('https://')).toBe('Expected an absolute URL');
   });
 
-  it('measures a URL once it is resolved', () => {
-    const path = 'a'.repeat(2000 - 'https://podcast.example.com/'.length);
-    expect(manifestOf(manifest({ surfaces: [{ type: 'admin_page', url: path }] }))).toBeTruthy();
-    expect(surfaceUrlError(`${path}a`)).toContain('at most 2000');
+  // The signature has to cover every origin Ghost loads, which a relative URL would leave
+  // to wherever the manifest happens to be served from.
+  it('rejects relative URLs', () => {
+    expect(surfaceUrlError('/admin')).toBe('Expected an absolute URL');
+    expect(surfaceUrlError('admin')).toBe('Expected an absolute URL');
+    expect(surfaceUrlError('//podcast.example.com/admin')).toBe('Expected an absolute URL');
+  });
+
+  it('measures a URL as the URL parser reads it', () => {
+    const base = 'https://podcast.example.com/';
+    const url = `${base}${'a'.repeat(2000 - base.length)}`;
+    expect(manifestOf(manifest({ surfaces: [{ type: 'admin_page', url }] }))).toBeTruthy();
+    expect(surfaceUrlError(`${url}a`)).toContain('at most 2000');
   });
 
   it('applies the same rules to the icon', () => {
@@ -57,12 +65,12 @@ describe('URLs', () => {
     expect(surfaceUrlError('https://admin.example.com/anything')).toContain('Ghost itself');
   });
 
-  it('rejects relative URLs when the manifest itself is served from Ghost', () => {
-    const errors = errorsOf(manifest(), {
-      ...options,
-      manifestUrl: 'https://site.example.com/content/files/ghost-app.json',
-    });
-    expect(errors.map((error) => error.path)).toEqual(['icon.url', 'surfaces[0].url']);
+  // Ghost fetches it server-side and never loads it as a page.
+  it('accepts a manifest_url on the site', () => {
+    const manifestUrl = 'https://site.example.com/content/files/ghost-app.json';
+    expect(
+      manifestOf(manifest({ manifest_url: manifestUrl }), { ...options, manifestUrl }).manifest_url,
+    ).toBe(manifestUrl);
   });
 
   it('rejects an icon served from the site or from Admin', () => {
@@ -103,7 +111,10 @@ describe('localhost', () => {
 
   it('is accepted in development', () => {
     for (const url of localUrls) {
-      const parsed = manifestOf(manifest({ surfaces: [{ type: 'admin_page', url }] }), devOptions);
+      const parsed = manifestOf(
+        devManifest({ surfaces: [{ type: 'admin_page', url }] }),
+        devOptions,
+      );
       expect(parsed.surfaces[0]?.url).toBe(new URL(url).href);
     }
   });
@@ -111,7 +122,7 @@ describe('localhost', () => {
   it('still requires https for other hosts in development', () => {
     expect(
       errorsOf(
-        manifest({ surfaces: [{ type: 'admin_page', url: 'http://podcast.example.com/' }] }),
+        devManifest({ surfaces: [{ type: 'admin_page', url: 'http://podcast.example.com/' }] }),
         devOptions,
       ),
     ).toEqual([{ path: 'surfaces[0].url', message: 'Expected an https URL' }]);
@@ -120,7 +131,7 @@ describe('localhost', () => {
   it('still rejects other schemes in development', () => {
     expect(
       errorsOf(
-        manifest({ surfaces: [{ type: 'admin_page', url: 'ftp://localhost/admin' }] }),
+        devManifest({ surfaces: [{ type: 'admin_page', url: 'ftp://localhost/admin' }] }),
         devOptions,
       ),
     ).toEqual([{ path: 'surfaces[0].url', message: 'Expected an http or https URL' }]);
@@ -129,7 +140,7 @@ describe('localhost', () => {
   it('still rejects a surface on the port Ghost is served from', () => {
     expect(
       errorsOf(
-        manifest({ surfaces: [{ type: 'admin_page', url: 'http://localhost:2368/app' }] }),
+        devManifest({ surfaces: [{ type: 'admin_page', url: 'http://localhost:2368/app' }] }),
         devOptions,
       ),
     ).toEqual([{ path: 'surfaces[0].url', message: expect.stringContaining('Ghost itself') }]);

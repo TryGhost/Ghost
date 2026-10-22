@@ -4,12 +4,12 @@ import type { LoadedManifest } from './load-manifest';
 
 /** One field that differs from what the publisher approved. */
 export interface AppManifestChange {
-  /** Where the change is: a path in the manifest, or `manifest_url` when the app moved. */
+  /** Where the change is: a path in the manifest, such as `surfaces[0].url`. */
   path: string;
   requires_approval: boolean;
 }
 
-type Approved = Pick<Installation, 'manifest_url' | 'manifest'>;
+type Approved = Pick<Installation, 'manifest'>;
 
 /**
  * Lists what differs between the approved manifest and a loaded one. The preview shows
@@ -20,10 +20,7 @@ export function changesFrom(approved: Approved, loaded: LoadedManifest): AppMani
 }
 
 function compare(approved: Approved, loaded: LoadedManifest) {
-  const { changes, requiresApproval } = compareManifests(
-    { manifestUrl: approved.manifest_url, manifest: approved.manifest },
-    { manifestUrl: loaded.manifestUrl, manifest: loaded.manifest },
-  );
+  const { changes, requiresApproval } = compareManifests(approved.manifest, loaded.manifest);
   return {
     changes: changes.map(({ path, requiresApproval: requires }) => ({
       path,

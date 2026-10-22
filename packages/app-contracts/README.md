@@ -21,6 +21,7 @@ Each contract is its own entry point, so a consumer only loads the one it uses.
 | `@tryghost/app-contracts`          | Types, and rules and limits that depend on nothing (`isLocalhost`, `isContainedPath`) |
 | `@tryghost/app-contracts/manifest` | The app manifest and its validation                                                   |
 | `@tryghost/app-contracts/bridge`   | The channel between Admin and an app's page, and its validation                       |
+| `@tryghost/app-contracts/identity` | Signing and verifying signed manifests and challenges, for servers only               |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.
@@ -30,7 +31,8 @@ entry point.
 
 ## The manifest
 
-An app describes itself to Ghost in a JSON manifest served next to the app:
+An app describes itself to Ghost in a JSON manifest, which it serves as a
+[signed manifest](#identity):
 
 ```json
 {
@@ -40,12 +42,17 @@ An app describes itself to Ghost in a JSON manifest served next to the app:
   "author": { "name": "Example Audio", "url": "https://example.com" },
   "accent_color": "#ff5500",
   "icon": { "name": "audio-lines" },
-  "surfaces": [{ "type": "admin_page", "url": "/admin" }]
+  "surfaces": [{ "type": "admin_page", "url": "https://podcast.example.com/admin" }],
+  "manifest_url": "https://podcast.example.com/ghost-app.json",
+  "identity_key": { "kty": "OKP", "crv": "Ed25519", "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo" },
+  "backend_key": { "kty": "OKP", "crv": "Ed25519", "x": "H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk" },
+  "development": false
 }
 ```
 
-- `id` is chosen by the developer, in reverse-domain style. It is the app's
-  identity: it stays the same wherever the app is served from.
+- `id` is chosen by the developer, in reverse-domain style. It names the app: a
+  site has at most one current installation per ID. It proves nothing about who
+  made the app; `identity_key` does.
 - `name`, `description` and `author` are all required. The author's `url` is only
   ever linked to.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
@@ -53,8 +60,17 @@ An app describes itself to Ghost in a JSON manifest served next to the app:
   `{ "url": "/icon.svg" }`, an SVG the app serves, which Ghost shows as an image
   and never inlines. A name Admin does not know is not rejected here; Admin falls
   back to a default icon.
-- URLs may be relative. They resolve against the URL the manifest was fetched
-  from, so one manifest works on `localhost`, behind a tunnel and in production.
+- Every URL is absolute, so the signature covers every origin Ghost loads or
+  links to. Served from anywhere else, the same signed bytes still point at the
+  app that signed them.
+- `manifest_url` is the address the signed manifest is served from. A manifest
+  read from any other address is refused, so a copy can't pass as the app.
+- `identity_key` and `backend_key` are public Ed25519 keys as JWKs, with exactly
+  `kty`, `crv` and `x`. A key that includes its private part `d` is refused, and
+  so are two keys that are the same.
+- `development` says whether this is a development build, which Admin labels.
+  It must be `true` when any URL is on `localhost` or another address of the
+  machine itself. A production site may run a development build to test it.
 - `surfaces` lists what the app asks for. Only `admin_page` exists today, at
   most once.
 - URLs must be `https`. `localhost` and other addresses of the machine itself are
@@ -81,9 +97,10 @@ if (result.success) {
 }
 ```
 
-`manifestUrl` is where the manifest was fetched from, after any redirects, so its
-relative URLs resolve as they would in a browser. It is checked by the same rules as
-the URLs inside the manifest.
+`manifestUrl` is the address Ghost was asked to fetch the manifest from, before any
+redirects. It is checked by the same rules as the URLs inside the manifest, and the
+manifest must name it as its `manifest_url`; one that names another address fails with
+`reason: 'manifest_url_mismatch'`, any other problem with `reason: 'invalid'`.
 
 `parseManifest` is for a manifest as an app serves it. A manifest it has accepted is
 read back, from a database say, with `AppManifestSchema`: the same shape, with every
@@ -115,10 +132,10 @@ must serve only the app (the SDK's README lists what to keep off it).
 
 `parseManifestUrl(input, allowLocalhost)` applies the same rules to the address a
 manifest is read from, so it can run before anything is fetched. It hands back the
-address to keep, as the URL parser reads it and without a fragment, which never reaches
-the server. The parser settles most differences in spelling, but a trailing dot on the
-host or the case of a percent-encoding stays as given, so such an address reads as a
-change of manifest URL.
+address to keep, as the URL parser reads it. An address with a fragment, even an empty
+one, is refused, as is a `manifest_url` with one. The parser settles most differences
+in spelling, but a trailing dot on the host or the case of a percent-encoding stays as
+given, so such an address reads as a change of manifest URL.
 
 ```ts
 import { parseManifestUrl } from '@tryghost/app-contracts/manifest';
@@ -135,24 +152,78 @@ if (result.success) {
 ### Comparing manifests
 
 `compareManifests(approved, next)` lists every field that differs between two
-versions of a manifest, each a parsed manifest with the address it was read
-from, and whether each change needs the publisher to approve it again. Only
-`description`, `accent_color` and `icon.name` change silently. Everything else
-says who the app is or is a URL Ghost loads or links to, so it needs approval,
-and so does any field added to the manifest later until it is listed as silent.
-A change of address is listed first, as `manifest_url`, and always needs
-approval: it decides what future updates say.
+parsed manifests, and whether each change needs the publisher to approve it
+again. Only `description`, `accent_color`, `icon.name` and `backend_key` change
+silently: the identity key vouches for the backend key, so a leaked one can be
+replaced without every site approving it. Everything else says who the app is
+or is a URL Ghost loads or links to, so it needs approval, and so does any
+field added to the manifest later until it is listed as silent. That includes
+`manifest_url`, which decides what future updates say.
 
 ```ts
-compareManifests(
-  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: approved },
-  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: next },
-);
+compareManifests(approved, next);
 // {
 //   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
 //   requiresApproval: true,
 // }
 ```
+
+## Identity
+
+`@tryghost/app-contracts/identity` signs and verifies what proves an app is who
+it says it is. It loads `jose` and is for servers and an app's tooling only;
+Admin never imports it.
+
+### Signed manifests
+
+An app serves its manifest as flattened JWS JSON, signed with its identity key,
+which the developer keeps offline. The protected header is exactly
+`{"alg":"Ed25519","typ":"ghost-app-manifest"}`, and the payload is the
+manifest's exact bytes.
+
+```ts
+import {
+  readSignedManifest,
+  signManifest,
+  verifySignedManifest,
+} from '@tryghost/app-contracts/identity';
+
+const signed = await signManifest(manifest, identityPrivateKey);
+
+const read = readSignedManifest(body);
+// Parse read.payload with parseManifest, then:
+await verifySignedManifest(read.signed, parsed.manifest.identity_key); // { success: true }
+```
+
+The key to verify with is named inside the manifest, so `readSignedManifest`
+hands back the payload unverified. Nothing in it may be used until
+`verifySignedManifest` has passed with the manifest's own `identity_key`.
+
+`thumbprintOf(key)` is a key's RFC 7638 thumbprint, the same however its JWK is
+written, for storing a key to recognise it again.
+
+### Challenges
+
+A challenge asks an origin to prove it holds the app's backend key. Ghost posts
+`createChallenge(origin)`, the JSON `{purpose, origin, nonce}` with a nonce of
+32 random bytes, to `challengeUrl(origin)`
+(`/.well-known/ghost-app/challenge`). The backend answers
+`{"signature": "<compact JWS>"}`, whose payload is the exact bytes it received,
+signed with its backend key. Its protected header is exactly `{"alg":"Ed25519"}`.
+
+```ts
+// The app's backend:
+const result = await answerChallenge(body, {
+  backendKey: backendPrivateKey,
+  origins: ['https://podcast.example.com'],
+});
+
+// Ghost:
+await verifyChallengeAnswer(challenge, answerText, manifest.backend_key); // { success: true }
+```
+
+`answerChallenge` refuses a challenge for any origin but the backend's own, so
+nobody can relay one to it to prove an origin it doesn't serve.
 
 ## The bridge
 

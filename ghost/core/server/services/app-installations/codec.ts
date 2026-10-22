@@ -5,6 +5,7 @@ import { DbAppInstallation, DbAppInstallationManifest } from './schema';
 export const InstallationFields = DbAppInstallation.pick({
   id: true,
   app_id: true,
+  identity_key_thumbprint: true,
   status: true,
   manifest_id: true,
   pending_manifest_id: true,

@@ -18,7 +18,6 @@ import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
-import { isDevelopmentApp } from '@/apps/lib/served-from';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 import type { AppPinsState } from '@/apps/lib/use-app-pins';
 
@@ -54,7 +53,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                       <Link className="text-md font-semibold" to={appRoute(id)}>
                         {manifest.name}
                       </Link>
-                      {isDevelopmentApp(manifest) && <Badge variant="secondary">Development</Badge>}
+                      {manifest.development && <Badge variant="secondary">Development</Badge>}
                       {status === 'suspended' && (
                         <Badge data-testid="app-needs-approval-badge" variant="warning">
                           Needs approval

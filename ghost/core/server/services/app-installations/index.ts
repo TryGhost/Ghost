@@ -9,6 +9,7 @@ import {
   type RecordAppInstallationAction,
 } from './actions';
 import { createAppFetcher } from './fetch-from-app';
+import { createIdentityChecker } from './identity-check';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
@@ -19,10 +20,19 @@ export type { AppInstallationPreview, AppSession } from './service';
 
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.
- * `localhostAlias` is set when Ghost runs in a container in development, where `localhost`
- * is the container rather than the developer's machine. Ignored anywhere else.
+ *
+ * - `localhostAlias` is set when Ghost runs in a container in development, where
+ *   `localhost` is the container rather than the developer's machine. Ignored anywhere
+ *   else.
+ * - `trustedOrigins` lists the origins the site trusts to skip the challenge. Each entry
+ *   is checked on every identity check, which fails on one that isn't an origin.
  */
-const AppsConfig = z.object({ localhostAlias: z.string().min(1).nullable().default(null) });
+const AppsConfig = z.object({
+  localhostAlias: z.string().min(1).nullable().default(null),
+  trustedOrigins: z.unknown().default([]),
+});
+
+const appsConfig = () => AppsConfig.parse(config.get('apps') ?? {});
 
 // Localhost manifest URLs, and the alias they are fetched through, are for development only.
 const isDevelopment = () => config.get('env') === 'development';
@@ -31,7 +41,7 @@ function localhostAlias(): string | null {
   if (!isDevelopment()) {
     return null;
   }
-  return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
+  return appsConfig().localhostAlias;
 }
 
 const extras = { actingContext };
@@ -62,6 +72,15 @@ export default defineService(
         getManifestRules: () => ({
           ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
           allowLocalhost: isDevelopment(),
+        }),
+      }),
+      checkIdentity: createIdentityChecker({
+        fetchFromApp,
+        logging,
+        // Read per check, not once at boot: it's config, which tests change.
+        getTrustConfig: () => ({
+          trustedOrigins: appsConfig().trustedOrigins,
+          trustLoopback: isDevelopment(),
         }),
       }),
     });

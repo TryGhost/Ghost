@@ -8,9 +8,10 @@ changes are defined in [App Contracts](../../../../../packages/app-contracts/CON
 
 1. **Install.** A publisher opens an install link, reviews the preview and
    confirms it. The site gets a new installation, active and running that
-   manifest as its approved manifest.
+   manifest as its approved manifest, and pins the app's identity key.
 2. **Re-check.** Each time an app session starts, the manifest is fetched
-   again. Silent changes are applied straight away. Any other change becomes
+   again and must pass the identity check. Silent changes are applied straight
+   away. Any other change becomes
    the pending manifest and suspends the installation; a re-check that finds
    only silent changes, or the approved manifest, lifts the suspension. A
    manifest that can't be used makes the app unavailable until it can.
@@ -55,6 +56,18 @@ _Avoid_: paused, disabled
 An installation that has ended. It is kept as a record and never runs again.
 _Avoid_: deleted, removed
 
+**Pinned identity key**:
+The identity key an installation was created with. It never changes: a manifest
+for the app signed with any other key is refused, so changing keys means
+uninstalling the app and installing it again.
+_Avoid_: trusted key, saved key
+
+**Retired backend key**:
+A backend key an installation has seen replaced, because a manifest it verified
+named a newer one. A manifest naming a retired key is refused, so the app can
+never go back to it.
+_Avoid_: revoked key, old key
+
 **Revision**:
 The installation's change counter. Every change to the installation increments
 it. An approval fails if the revision changed since the review, and an app
@@ -68,20 +81,29 @@ An Admin link that carries a manifest URL and opens a publisher's review of
 that app.
 
 **Loaded manifest**:
-A manifest fetched server-side from its manifest URL and parsed, ready to
-preview, compare or store. A manifest is only ever used in this form, never as
-the browser sent it.
+A manifest fetched server-side from its manifest URL, its signature verified and
+parsed, ready to preview, compare or store. A manifest is only ever used in this
+form, never as the browser sent it.
 _Avoid_: intake, fetched manifest, raw manifest
 
 **Preview**:
-What a publisher reviews before installing or approving: the loaded manifest
-and, when the site already has the app, the changes from its approved manifest.
+What a publisher reviews before installing or approving: the loaded manifest,
+once it has passed the identity check, and, when the site already has the app,
+the changes from its approved manifest.
 _Avoid_: dry run
 
+**Trusted origin**:
+An origin the site's own configuration exempts from the challenge, and from
+nothing else: the signature, the pinned identity key and the publisher's review
+still apply. When Ghost runs in development, the machine's own origins are
+trusted too. A preview says an app on trusted origins is trusted by the site's
+configuration, not verified.
+_Avoid_: allowlisted origin, allowed origin
+
 **Digest**:
-The fingerprint of a manifest together with its manifest URL. Confirming sends
-it back, so only what the publisher reviewed is installed or approved. It also
-identifies the pending manifest.
+The fingerprint of a manifest, which names its own manifest URL. Confirming
+sends it back, so only what the publisher reviewed is installed or approved. It
+also identifies the pending manifest.
 _Avoid_: hash, checksum, token
 
 **Install**:
@@ -104,9 +126,10 @@ _Avoid_: login, token, connection
 
 **Re-check**:
 Fetching an installed app's manifest again from its approved manifest URL when
-an app session starts, and storing what changed. A manifest that can't be
-loaded, or one for another app, makes the app unavailable: the session fails
-and nothing is stored, so the app opens again once its manifest is back.
+an app session starts, running the identity check, and storing what changed. A
+manifest that can't be loaded, fails the identity check, or is for another app
+makes the app unavailable: the session fails and nothing is stored, so the app
+opens again once its manifest is back.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:
