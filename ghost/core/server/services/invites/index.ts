@@ -26,12 +26,14 @@ export default defineService('Invites', () => {
     urlUtils,
     models,
     logging,
-    invitationLimiter: new InvitationLimiter(
-      { lockStaffInvites, checkTrialStaffLimit, STAFF_INVITE_RATE_KEY },
-      db.knex,
-      () => config.get('hostSettings:staffInvites'),
-      Date.now,
-      getHelpLink,
-    ),
+    invitationLimiter: new InvitationLimiter({
+      knex: db.knex,
+      getLimits: () => config.get('hostSettings:staffInvites'),
+      now: Date.now,
+      getUpgradeUrl: getHelpLink,
+      lockStaffInvites,
+      checkTrialStaffLimit,
+      STAFF_INVITE_RATE_KEY,
+    }),
   });
 });

@@ -9,13 +9,18 @@ import InvitationLimiter, {
   type InvitationLimits,
 } from '../../../../../core/server/services/invites/invitation-limiter';
 
-const dependencies = { lockStaffInvites, checkTrialStaffLimit, STAFF_INVITE_RATE_KEY };
+const dependencies = {
+  knex: {} as Knex,
+  now: Date.now,
+  getUpgradeUrl: () => undefined,
+  lockStaffInvites,
+  checkTrialStaffLimit,
+  STAFF_INVITE_RATE_KEY,
+};
 
 describe('Invitation limiter configuration', function () {
-  const noDatabase = {} as Knex;
-
   it('leaves unconfigured hosts unrestricted without accessing the database', async function () {
-    const limiter = new InvitationLimiter(dependencies, noDatabase, () => undefined);
+    const limiter = new InvitationLimiter({ ...dependencies, getLimits: () => undefined });
     assert.equal(await limiter.rateLimit(), 0);
     assert.equal(await limiter.run('recipient@example.com', async () => 'prepared'), 'prepared');
   });
@@ -30,11 +35,10 @@ describe('Invitation limiter configuration', function () {
     { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: '60' },
   ]) {
     it(`rejects invalid configured policy ${JSON.stringify(limits)}`, async function () {
-      const limiter = new InvitationLimiter(
-        dependencies,
-        noDatabase,
-        () => limits as InvitationLimits,
-      );
+      const limiter = new InvitationLimiter({
+        ...dependencies,
+        getLimits: () => limits as InvitationLimits,
+      });
       await assert.rejects(
         limiter.run('recipient@example.com', async () => assert.fail()),
         {
