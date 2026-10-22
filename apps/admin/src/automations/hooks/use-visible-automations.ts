@@ -32,6 +32,8 @@ export const useVisibleAutomations = () => {
   return {
     automations,
     allAutomations: data?.automations,
+    supportsSubscriptionChanges:
+      data?.meta?.supported_trigger_types?.includes('paid_subscription_changed') ?? false,
     stripeEnabled,
     isStripeReady: !!settingsData && !!configData && !isSettingsFetching && !isConfigFetching,
     automationCount: data?.automations?.length,

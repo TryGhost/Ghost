@@ -1,3 +1,4 @@
+import type { AutomationTriggerType } from '@tryghost/admin-x-framework/api/automations';
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { formatNumber } from '@tryghost/shade/utils';
 import { emailTextExcerpt } from './history-email-preview';
@@ -184,11 +185,12 @@ const mapEnd = (
 export const mapRunHistory = (
   history: AutomationRunHistory,
   automationSlug?: string | null,
+  triggerType?: AutomationTriggerType,
 ): HistoryCardData[] => [
   {
     id: `entry:${history.id}`,
     kind: 'trigger',
-    title: 'Signed up',
+    title: triggerType === 'paid_subscription_changed' ? 'Paid subscription changed' : 'Signed up',
     state: 'occurred',
     statusLabel: 'Entered',
     timestamp: { label: 'Entered', value: history.created_at },

@@ -201,6 +201,7 @@ export const AutomationSidebar: React.FC<{
   description: string;
   triggerTierScope: AutomationTrigger['trigger_tier_scope'];
   triggerTierIds: readonly string[];
+  isSubscriptionChange?: boolean;
   tiers: readonly Tier[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
@@ -217,6 +218,7 @@ export const AutomationSidebar: React.FC<{
   description,
   triggerTierScope,
   triggerTierIds,
+  isSubscriptionChange,
   tiers,
   performanceEnabled,
   metadata,
@@ -267,6 +269,10 @@ export const AutomationSidebar: React.FC<{
   let stopConditionDescription: string;
   switch (triggerTierScope) {
     case 'free':
+      stopConditionDescription = isSubscriptionChange
+        ? 'Members stop early if they unsubscribe or start a paid subscription.'
+        : 'Members stop early if they unsubscribe.';
+      break;
     case null:
       stopConditionDescription = 'Members stop early if they unsubscribe.';
       break;

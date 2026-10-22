@@ -493,7 +493,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   } = useBrowseTiers({
     searchParams: { filter: 'type:paid', limit: 'all' },
     defaultErrorHandler: false,
-    enabled: tiersEnabled,
+    enabled: tiersEnabled || automation?.trigger_type === 'paid_subscription_changed',
   });
   const tierQuery = useMemo(
     () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
@@ -868,13 +868,28 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         description={automation.description}
         isOpen={sidebar.open}
         isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+        isSubscriptionChange={automation.trigger_type === 'paid_subscription_changed'}
         metadata={isHistoryOpen ? 'readonly' : 'editable'}
         performanceEnabled={isPerformanceEnabled}
         selectedRunId={selectedRunId}
         selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
         tiers={tierData?.tiers ?? []}
-        triggerTierIds={automation.trigger_tier_ids ?? []}
-        triggerTierScope={automation.trigger_tier_scope}
+        triggerTierIds={
+          automation.trigger_type === 'paid_subscription_changed'
+            ? typeof automation.subscription_transition?.to === 'object'
+              ? automation.subscription_transition.to
+              : []
+            : (automation.trigger_tier_ids ?? [])
+        }
+        triggerTierScope={
+          automation.trigger_type === 'paid_subscription_changed'
+            ? automation.subscription_transition?.to === 'downgraded_to_free'
+              ? 'free'
+              : automation.subscription_transition
+                ? 'selected_paid'
+                : null
+            : automation.trigger_tier_scope
+        }
         onDescriptionChange={(description) => onChange({ ...automation, description })}
         onOpenChange={setAutomationSidebarOpen}
         onSelectRun={handleSelectRun}
@@ -938,6 +953,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             isAutomationSidebarOpen={sidebar.open}
             memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
             runId={selectedRunId}
+            triggerType={automation.trigger_type}
             onClose={handleCloseHistory}
           />
         )}

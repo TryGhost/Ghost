@@ -13,8 +13,16 @@ export function updateFromSelection(
   from: TierSelection['from'],
 ): TierSelection {
   let to = selection.to;
-  if (Array.isArray(from) && Array.isArray(to)) {
+  if (typeof from !== 'string' && typeof to !== 'string') {
     to = to.filter((tierId) => !from.includes(tierId));
   }
   return { from, to };
 }
+
+export const selectedTransitionTierIds = (selection?: TierSelection | null): readonly string[] =>
+  selection
+    ? [
+        ...(typeof selection.from === 'string' ? [] : selection.from),
+        ...(typeof selection.to === 'string' ? [] : selection.to),
+      ]
+    : [];

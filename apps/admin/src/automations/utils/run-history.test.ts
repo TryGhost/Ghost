@@ -111,6 +111,14 @@ describe('recorded run history presentation', () => {
       timestamp: { label: 'est.', value: eligible, estimated: true },
     });
   });
+  it('labels entry from a paid subscription change', () => {
+    expect(mapRunHistory(history, null, 'paid_subscription_changed')[0]).toMatchObject({
+      title: 'Paid subscription changed',
+      statusLabel: 'Entered',
+      timestamp: { label: 'Entered', value: entered },
+    });
+  });
+
   it('uses entry and completion timestamps without fabricating a run-end timestamp', () => {
     const cards = mapRunHistory(history);
     expect(cards.map(({ kind }) => kind)).toEqual(['trigger', 'wait', 'end']);
