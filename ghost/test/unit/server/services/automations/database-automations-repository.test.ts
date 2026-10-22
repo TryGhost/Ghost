@@ -744,6 +744,7 @@ describe('automations repository', function () {
         trigger_tier_scope: scope,
         trigger_tier_ids: null,
       });
+      assert('trigger_tier_scope' in automation);
       assert.equal(automation.trigger_tier_scope, scope);
       assert.deepEqual(automation.trigger_tier_ids, null);
       assert.deepEqual(
@@ -759,12 +760,14 @@ describe('automations repository', function () {
       assert.equal(automation.description, data.description);
       assert.equal(automation.status, data.status);
       assert.equal(automation.slug, null);
+      assert('trigger_tier_scope' in automation);
       assert.equal(automation.trigger_tier_scope, 'selected_paid');
       assert.deepEqual(automation.trigger_tier_ids.sort(), [...tierIds].sort());
       assert.deepEqual(automation.actions, data.actions);
       assert.deepEqual(automation.edges, data.edges);
       assert.deepEqual(await repo.getById(automation.id), automation);
       const row = await knex('automations').where({ id: automation.id }).first();
+      assert(row && 'trigger_tier_scope' in row);
       assert.equal(row.trigger_tier_scope, 'selected_paid');
       assert.equal(row.trigger_type, 'membership_started');
       assert.equal(row.created_at, row.updated_at);
@@ -820,6 +823,7 @@ describe('automations repository', function () {
       });
       const automation = await repo.getById(automationId);
       assert(automation);
+      assert(automation && 'trigger_tier_scope' in automation);
       assert.equal(automation.trigger_tier_scope, 'selected_paid');
       assert.deepEqual([...automation.trigger_tier_ids].sort(), [...tierIds].sort());
 
@@ -829,6 +833,7 @@ describe('automations repository', function () {
         edges: automation.edges,
       });
       assert(edited);
+      assert(edited && 'trigger_tier_scope' in edited);
       assert.equal(edited.trigger_tier_scope, 'selected_paid');
       assert.deepEqual([...edited.trigger_tier_ids].sort(), [...tierIds].sort());
     });
@@ -837,6 +842,7 @@ describe('automations repository', function () {
       const automationId = await insertAutomation({ slug: null, triggerTierScope: null });
       const automation = await repo.getById(automationId);
       assert(automation);
+      assert(automation && 'trigger_tier_scope' in automation);
       assert.equal(automation.trigger_tier_scope, null);
       assert.deepEqual(automation.trigger_tier_ids, null);
     });
@@ -1509,6 +1515,7 @@ describe('automations repository', function () {
       });
 
       assert(edited);
+      assert(edited && 'trigger_tier_scope' in edited);
       assert.equal(edited.trigger_tier_scope, 'selected_paid');
       assert.deepEqual(edited.trigger_tier_ids, [...tierIds].toSorted());
     });
@@ -1532,6 +1539,7 @@ describe('automations repository', function () {
         trigger_tier_ids: [secondId],
       });
       const unchanged = await repo.edit(initial.id, graph);
+      assert(unchanged && 'trigger_tier_scope' in unchanged);
       assert.equal(unchanged?.trigger_tier_scope, 'selected_paid');
       assert.deepEqual(unchanged?.trigger_tier_ids, [secondId]);
       for (const scope of [null, 'free', 'all_paid'] as const) {
@@ -1541,6 +1549,7 @@ describe('automations repository', function () {
           trigger_tier_ids: [firstId],
         });
         const edited = await repo.edit(initial.id, { ...graph, trigger_tier_scope: scope });
+        assert(edited && 'trigger_tier_scope' in edited);
         assert.equal(edited?.trigger_tier_scope, scope);
         assert.equal(edited?.trigger_tier_ids, null);
         assert.deepEqual(

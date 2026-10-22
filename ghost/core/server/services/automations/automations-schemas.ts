@@ -53,11 +53,42 @@ const selectedPaidTriggerShape = {
     }),
 };
 
-export const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
-  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
+const transitionTierIdsSchema = z
+  .array(objectIdSchema)
+  .min(1)
+  .refine((ids) => new Set(ids).size === ids.length, {
+    message: 'Duplicate tier IDs are not allowed.',
+  });
+
+const subscriptionTransitionSchema = z
+  .strictObject({
+    from: z.union([z.literal('any_paid'), transitionTierIdsSchema]),
+    to: z.union([z.literal('downgraded_to_free'), transitionTierIdsSchema]),
+  })
+  .refine(
+    ({ from, to }) =>
+      !Array.isArray(from) || !Array.isArray(to) || !from.some((id) => to.includes(id)),
+    { message: 'From and To tiers must not overlap.', path: ['to'] },
+  );
+
+export const addAutomationDataSchema = z.discriminatedUnion('trigger_type', [
+  z.discriminatedUnion('trigger_tier_scope', [
+    z.strictObject({
+      ...automationShape,
+      ...defaultTriggerShape,
+      // Legacy frontends omit trigger_type; membership_started remains the default.
+      trigger_type: z.literal('membership_started').optional(),
+    }),
+    z.strictObject({
+      ...automationShape,
+      ...selectedPaidTriggerShape,
+      trigger_type: z.literal('membership_started').optional(),
+    }),
+  ]),
   z.strictObject({
     ...automationShape,
-    ...selectedPaidTriggerShape,
+    trigger_type: z.literal('paid_subscription_changed'),
+    subscription_transition: subscriptionTransitionSchema,
   }),
 ]);
 
