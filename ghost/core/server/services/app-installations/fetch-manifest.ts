@@ -5,16 +5,8 @@ import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
 const MANIFEST_MAX_BYTES = 64 * 1024;
 
-interface FetchedManifest {
-  /**
-   * Where the manifest was finally read from, after any redirects on the same host. Its
-   * relative URLs resolve against this, as they would in a browser.
-   */
-  url: string;
-  body: unknown;
-}
-
-type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
+/** The signed manifest's JSON, as the app served it. */
+type FetchManifest = (manifestUrl: string) => Promise<unknown>;
 
 // Says only how the app answered, never why any other request failed, so the preview
 // can't be used to probe the server's network. The reason is logged, so an operator can
@@ -89,19 +81,22 @@ export function createManifestFetcher({
       throw manifestError(manifestUrl, fetched.failure, logging);
     }
 
-    // A byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
-    const { text } = fetched;
-    try {
-      return {
-        url: fetched.url,
-        body: JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text),
-      };
-    } catch {
-      throw new errors.ValidationError({
-        message: 'The app’s manifest is not JSON.',
-        code: 'APP_MANIFEST_NOT_JSON',
-        context: manifestUrl,
-      });
-    }
+    return parseJson(fetched.text, manifestUrl);
   };
+}
+
+/**
+ * Parses JSON the app served: the signed manifest, or the manifest inside it. A byte order
+ * mark is valid at the start of a JSON file, but JSON.parse rejects it.
+ */
+export function parseJson(text: string, manifestUrl: string): unknown {
+  try {
+    return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
+  } catch {
+    throw new errors.ValidationError({
+      message: 'The app’s manifest is not JSON.',
+      code: 'APP_MANIFEST_NOT_JSON',
+      context: manifestUrl,
+    });
+  }
 }
