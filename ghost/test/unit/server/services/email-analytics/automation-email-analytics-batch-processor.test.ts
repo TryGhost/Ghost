@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
 import { AutomationEmailAnalyticsBatchProcessor } from '../../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
+import { AutomationEmailOpenedEvent } from '../../../../../core/server/services/email-service/events/automation-email-opened-event';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import type { AutomatedEmailRecipientWithMailgunId } from '../../../../../core/server/services/automations/automations-repository';
 
@@ -11,28 +12,37 @@ function buildRecipient(
 ): AutomatedEmailRecipientWithMailgunId {
   return {
     id: 'recipient-1',
+    member_id: 'member-1',
     mailgun_message_id: 'message-1',
     automation_action_revision_id: 'revision-1',
     ...overrides,
   };
 }
 
-function buildAutomationsApi(recipients: AutomatedEmailRecipientWithMailgunId[] = []) {
-  return {
-    getAutomatedEmailRecipientsByMailgunIds: sinon.stub().resolves(recipients),
-    trackEmailDeliveredAndOpened: sinon.stub().resolves(),
-  };
-}
-
 describe('AutomationEmailAnalyticsBatchProcessor', function () {
+  const domainEvents = { dispatch: sinon.stub() };
+
+  function buildProcessor(recipients: AutomatedEmailRecipientWithMailgunId[] = []) {
+    const automationsApi = {
+      getAutomatedEmailRecipientsByMailgunIds: sinon.stub().resolves(recipients),
+      trackEmailDeliveredAndOpened: sinon.stub().resolves(),
+    };
+    const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi, domainEvents });
+    return { automationsApi, processor };
+  }
+
+  beforeEach(function () {
+    domainEvents.dispatch.reset();
+  });
+
   afterEach(function () {
     sinon.restore();
   });
 
   describe('processBatch', function () {
     it('handles delivered', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
+
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -48,6 +58,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
         fetchData,
       );
 
+      sinon.assert.notCalled(domainEvents.dispatch);
       assert.deepEqual(result, new EventProcessingResult({ delivered: 1 }));
       assert.deepEqual(fetchData, { lastEventTimestamp: new Date(1) });
 
@@ -63,8 +74,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('handles opened', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
+
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -80,6 +91,14 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
         fetchData,
       );
 
+      sinon.assert.calledOnceWithExactly(
+        domainEvents.dispatch,
+        AutomationEmailOpenedEvent.create({
+          memberId: 'member-1',
+          emailRecipientId: 'recipient-1',
+          timestamp: new Date(1),
+        }),
+      );
       assert.deepEqual(result, new EventProcessingResult({ opened: 1 }));
       assert.deepEqual(fetchData, { lastEventTimestamp: new Date(1) });
 
@@ -91,8 +110,23 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
     });
 
+    it('does not dispatch opens when storing analytics fails', async function () {
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
+      automationsApi.trackEmailDeliveredAndOpened.rejects(new Error('Storage failed'));
+
+      await assert.rejects(
+        processor.processBatch(
+          [{ type: 'opened', providerId: 'message-1', timestamp: new Date(1) }],
+          new EventProcessingResult(),
+          {},
+        ),
+        /Storage failed/,
+      );
+      sinon.assert.notCalled(domainEvents.dispatch);
+    });
+
     it('handles a mix of events for several recipients', async function () {
-      const automationsApi = buildAutomationsApi([
+      const { automationsApi, processor } = buildProcessor([
         buildRecipient({ id: 'recipient-1', mailgun_message_id: 'message-1' }),
         buildRecipient({
           id: 'recipient-2',
@@ -100,7 +134,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
           automation_action_revision_id: 'revision-2',
         }),
       ]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -146,7 +180,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('reports each opening recipient with its revision', async function () {
-      const automationsApi = buildAutomationsApi([
+      const { automationsApi, processor } = buildProcessor([
         buildRecipient({
           id: 'recipient-1',
           mailgun_message_id: 'message-1',
@@ -163,7 +197,6 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
           automation_action_revision_id: 'revision-2',
         }),
       ]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
 
       await processor.processBatch(
         [
@@ -199,8 +232,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('keeps the earliest timestamp when a recipient has several events of the same type', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
 
       await processor.processBatch(
         [
@@ -229,6 +261,12 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
         {},
       );
 
+      assert.deepEqual(
+        domainEvents.dispatch.getCalls().map((call) => call.args[0].timestamp),
+        [new Date(4), new Date(2)],
+        'member activity should receive every open, including out-of-order events',
+      );
+
       sinon.assert.calledOnceWithExactly(
         automationsApi.trackEmailDeliveredAndOpened,
         // A recipient that opens repeatedly is still one opener, reported
@@ -247,8 +285,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('normalizes provider ids before looking recipients up', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
+
       const result = new EventProcessingResult();
 
       await processor.processBatch(
@@ -270,8 +308,7 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('deduplicates provider ids before looking recipients up', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
 
       await processor.processBatch(
         [
@@ -296,8 +333,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('counts events with no matching recipient as unprocessable', async function () {
-      const automationsApi = buildAutomationsApi([]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([]);
+
       const result = new EventProcessingResult();
 
       await processor.processBatch(
@@ -317,13 +354,14 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
         {},
       );
 
+      sinon.assert.notCalled(domainEvents.dispatch);
       assert.deepEqual(result, new EventProcessingResult({ unprocessable: 2 }));
       sinon.assert.calledOnceWithExactly(automationsApi.trackEmailDeliveredAndOpened, new Map());
     });
 
     it(`doesn't handle other event types`, async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([buildRecipient()]);
+
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
@@ -345,8 +383,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('merges into an existing result rather than replacing it', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { processor } = buildProcessor([buildRecipient()]);
+
       const result = new EventProcessingResult({ delivered: 2, opened: 1 });
 
       await processor.processBatch(
@@ -365,8 +403,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('advances lastEventTimestamp to the latest event', async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { processor } = buildProcessor([buildRecipient()]);
+
       const fetchData = { lastEventTimestamp: new Date(2) };
 
       await processor.processBatch(
@@ -390,8 +428,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it(`doesn't move lastEventTimestamp backwards`, async function () {
-      const automationsApi = buildAutomationsApi([buildRecipient()]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { processor } = buildProcessor([buildRecipient()]);
+
       const fetchData = { lastEventTimestamp: new Date(10) };
 
       await processor.processBatch(
@@ -410,8 +448,8 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
     });
 
     it('handles an empty batch', async function () {
-      const automationsApi = buildAutomationsApi([]);
-      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const { automationsApi, processor } = buildProcessor([]);
+
       const result = new EventProcessingResult();
       const fetchData: { lastEventTimestamp?: Date } = {};
 
