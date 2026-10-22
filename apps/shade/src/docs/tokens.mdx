@@ -28,16 +28,78 @@ Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 
 ## Source files
 
-- `apps/shade/theme-variables.css` — semantic tokens + dark-mode overrides.
-- `apps/shade/tailwind.theme.css` — Tailwind `@theme` block: raw catalogue and bindings.
-- Semantic color variables should resolve directly to raw `--color-*` tokens, not to another semantic token. For example, prefer `--text-primary: var(--color-black)` over `--text-primary: var(--foreground)`.
+Shade defines its tokens in two stylesheets at the root of the package:
+
+- `theme-variables.css` holds every semantic token's value, with the `.dark` overrides.
+- `tailwind.theme.css` is the Tailwind `@theme` block: the raw `--color-*` catalogue, and the bindings that turn semantic tokens into utility names such as `bg-surface-elevated`.
+
+Apps read these files; they don't add to them. An app that needs a colour no semantic token covers uses a raw token, never a literal value or a colour variable of its own.
+
+Inside Shade, change a token's value in `theme-variables.css` and wire a new utility name or raw colour in `tailwind.theme.css`. Don't introduce ad-hoc CSS variables in component files. Semantic color variables should resolve directly to raw `--color-*` tokens, not to another semantic token. For example, prefer `--text-primary: var(--color-black)` over `--text-primary: var(--foreground)`.
+
+## Common semantic tokens
+
+| Use for                                                                                                         | Tailwind utility                                    | CSS variable                             |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
+| Page canvas                                                                                                     | `bg-background`                                     | `--background`                           |
+| One step above the page                                                                                         | `bg-surface-elevated`                               | `--surface-elevated`                     |
+| Floating menu on top of an elevated surface                                                                     | `bg-surface-elevated-2`                             | `--surface-elevated-2`                   |
+| Primary text                                                                                                    | `text-foreground`, or `Text tone="primary"`         | `--foreground`, `--text-primary`         |
+| Secondary, muted text                                                                                           | `text-muted-foreground`, or `Text tone="secondary"` | `--muted-foreground`, `--text-secondary` |
+| Default border: cards, banners, dividers (opaque)                                                               | `border-border-default`                             | `--border-default`                       |
+| Border of a floating surface: popover, dropdown, select (translucent in dark mode, usually with `/60` or `/30`) | `border-border`                                     | `--border`                               |
+| Form-control border: inputs, selects, outline buttons                                                           | `border-control-border`                             | `--control-border`                       |
+| Generic hover                                                                                                   | `bg-interactive-hover`                              | `--interactive-hover`                    |
+| Outline button hover                                                                                            | `bg-button-hover`                                   | `--button-hover`                         |
+| Tab and page menu hover, active                                                                                 | `bg-tab-hover`, `bg-tab-active`                     | `--tab-hover`, `--tab-active`            |
+| Table row hover                                                                                                 | `bg-table-row-hover`                                | `--table-row-hover`                      |
+| Destructive                                                                                                     | `bg-destructive`, `text-destructive`                | `--destructive`                          |
+| Focus ring                                                                                                      | `ring-focus-ring`, `border-focus-ring`              | `--focus-ring`                           |
+
+The sections below explain how to choose between the surface, hover and border tokens. `theme-variables.css` lists every token.
 
 ## Rules of consumption
 
 - Prefer Tailwind utilities — `bg-background`, `text-foreground`, `rounded-md` — over inline styles.
-- Never hard-code hex or `hsl()` values for UI chrome. They don't theme and don't dark-mode. Chart tokens are the current exception until the chart palette has its own raw scale.
-- Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions.
-- Don't write `dark:` variants for colour. The tokens do that. (Exceptions: assets like logos and illustrations.)
+- Never hard-code hex or `hsl()` values, or raw palette utilities such as `bg-gray-200` and `text-zinc-500`, for UI chrome. They don't theme and don't dark-mode. Chart tokens are the current exception until the chart palette has its own raw scale.
+- Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions: they already hold complete colours, so `hsl(var(--surface-elevated))` is an invalid colour.
+- Use the dedicated hover and active tokens below rather than an opacity modifier on a raw grey, such as `hover:bg-gray-900/30`.
+
+```tsx
+// Correct
+<div className="rounded-md border border-border-default bg-surface-elevated p-4">
+    <p className="text-foreground">Primary copy</p>
+    <p className="text-sm text-muted-foreground">Secondary copy</p>
+</div>
+
+// Incorrect
+<div className="border border-gray-200 bg-gray-50 dark:bg-gray-900">            // raw palette
+<div style={{backgroundColor: '#f9fafb', color: '#111'}}>                       // hex
+<div style={{background: 'hsl(var(--background))'}}>                            // wrapped variable
+<div className="hover:bg-gray-900/30">                                          // raw grey hover
+```
+
+```css
+/* Correct */
+.thing { background: var(--surface-elevated); }
+
+/* Incorrect: wraps a complete colour */
+.thing { background: hsl(var(--surface-elevated)); }
+```
+
+## Dark mode
+
+Semantic tokens carry both themes, so colour needs no `dark:` variants. A colour `dark:` variant means the wrong token was picked. Either it patches a raw palette utility (`bg-white dark:bg-gray-900`), or it repeats a semantic token (`bg-surface-elevated dark:bg-surface-elevated`), which adds a duplicate rule and suggests dark mode is special-cased when it isn't.
+
+To fix one:
+
+1. Identify what the class describes: a surface, text, a border or a hover state.
+2. Pick the matching semantic token from the tables on this page.
+3. Drop both the light class and its `dark:` variant; the token handles both modes.
+
+Use `dark:` only for assets that genuinely differ in dark mode and can't be expressed as a token: logos and brand marks, illustrations and SVG art, screenshots and other imagery. A narrow `dark:` opacity modifier on an existing token is acceptable when no token covers it, as in `dark:ring-destructive/40` inside the `inputSurface` recipe and the dropdown border below. Inside Shade, first check whether a new token belongs in `theme-variables.css`.
+
+When something looks wrong only in dark mode, the fix is almost always a different token, not an added `dark:` variant.
 
 ## Surface elevation
 
