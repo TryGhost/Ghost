@@ -141,32 +141,6 @@ describe('Unit: services/invites/accept', function () {
     );
   });
 
-  it('rejects a missing sent invite without looking up or creating a user', async function () {
-    findOneInviteStub.resolves(null);
-
-    await assert.rejects(accept(invitation, models), {
-      errorType: 'NotFoundError',
-      message: 'Invite not found.',
-    });
-
-    sinon.assert.notCalled(findOneUserStub);
-    sinon.assert.notCalled(destroyStub);
-    sinon.assert.notCalled(addUserStub);
-  });
-
-  it('rejects an invite expired by one millisecond without consuming it', async function () {
-    inviteAttributes.expires = now - 1;
-
-    await assert.rejects(accept(invitation, models), {
-      errorType: 'NotFoundError',
-      message: 'Invite is expired.',
-    });
-
-    sinon.assert.notCalled(findOneUserStub);
-    sinon.assert.notCalled(destroyStub);
-    sinon.assert.notCalled(addUserStub);
-  });
-
   for (const expired of [false, true]) {
     it(`rejects ${expired ? 'expired' : 'unknown'} tokens before opening a transaction or taking the shared lock`, async function () {
       const lockStaffUsage = sinon.stub().resolves();
@@ -177,7 +151,11 @@ describe('Unit: services/invites/accept', function () {
       }
       await assert.rejects(accept(invitation, models, lockStaffUsage), {
         errorType: 'NotFoundError',
+        message: expired ? 'Invite is expired.' : 'Invite not found.',
       });
+      sinon.assert.notCalled(findOneUserStub);
+      sinon.assert.notCalled(destroyStub);
+      sinon.assert.notCalled(addUserStub);
       sinon.assert.notCalled(transactionStub);
       sinon.assert.notCalled(lockStaffUsage);
     });

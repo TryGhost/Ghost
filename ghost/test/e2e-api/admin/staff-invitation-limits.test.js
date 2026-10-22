@@ -1,3 +1,4 @@
+/* global vi */
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -16,6 +17,7 @@ describe('Trial staff invitation limits', function () {
   let request;
   let originalLimits;
   let send;
+  let clock;
 
   beforeAll(async function () {
     await localUtils.startGhost();
@@ -26,6 +28,7 @@ describe('Trial staff invitation limits', function () {
   });
 
   beforeEach(async function () {
+    clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
     spamPrevention.reset();
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
@@ -48,9 +51,9 @@ describe('Trial staff invitation limits', function () {
     sinon.restore();
   });
 
-  function invite(email, roleName = 'Contributor', integration = false) {
+  function invite(email, roleName = 'Contributor', integration = false, session = request) {
     const role = testUtils.getExistingData().roles.find((entry) => entry.name === roleName);
-    const client = integration ? supertest(config.get('url')) : request;
+    const client = integration ? supertest(config.get('url')) : session;
     const call = client
       .post(localUtils.API.getApiQuery('invites/'))
       .set('Origin', config.get('url'));
@@ -61,14 +64,7 @@ describe('Trial staff invitation limits', function () {
   }
 
   async function nextMinute() {
-    await db
-      .knex('brute')
-      .where('count', '>', 0)
-      .update({
-        firstRequest: Date.now() - 60_001,
-        lastRequest: Date.now() - 60_001,
-        lifetime: Date.now() - 1,
-      });
+    clock.tick(60_001);
   }
 
   function invitationActions() {
@@ -240,22 +236,26 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('counts authenticated Contributor attempts toward the shared burst limit', async function () {
-    const ownerRole = await db.knex('roles').where({ name: 'Owner' }).first();
-    const contributorRole = await db.knex('roles').where({ name: 'Contributor' }).first();
-    const ownerAssignment = await db.knex('roles_users').where({ role_id: ownerRole.id }).first();
-    await db
-      .knex('roles_users')
-      .where({ id: ownerAssignment.id })
-      .update({ role_id: contributorRole.id });
-    try {
-      for (let i = 0; i < 3; i++) {
-        await invite(`unauthorized-${i}@example.com`).expect(403);
-      }
-    } finally {
-      await db
-        .knex('roles_users')
-        .where({ id: ownerAssignment.id })
-        .update({ role_id: ownerRole.id });
+    const contributor = await models.User.add(
+      {
+        name: 'Trial contributor',
+        email: 'trial-created-burst-contributor@example.com',
+        password: 'Sl1m3rson99',
+        roles: ['Contributor'],
+        status: 'active',
+      },
+      { context: { internal: true } },
+    );
+    const contributorSession = supertest.agent(config.get('url'));
+    contributorSession.user = { email: contributor.get('email') };
+    await testUtils.API.login(contributorSession, localUtils.API.getApiQuery('session/'));
+    for (let i = 0; i < 3; i++) {
+      await invite(
+        `unauthorized-${i}@example.com`,
+        'Contributor',
+        false,
+        contributorSession,
+      ).expect(403);
     }
     await invite('owner@example.com').expect(429);
     sinon.assert.notCalled(send);
@@ -282,11 +282,9 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('allows a steady request every fifty seconds without extending the window', async function () {
-    let now = Date.now();
-    sinon.stub(Date, 'now').callsFake(() => now);
     for (let i = 0; i < 4; i++) {
       await invite('steady@example.com').expect(201);
-      now += 50_000;
+      clock.tick(50_000);
     }
     sinon.assert.callCount(send, 4);
   });
@@ -412,16 +410,18 @@ describe('Trial staff invitation limits', function () {
     }
     const pending = await models.Invite.findOne({ email: 'trial-created-0@example.com' });
     const security = require('@tryghost/security');
-    const invitesService = require('../../../core/server/services/invites').default;
-    await invitesService.service.accept({
-      invitation: [
-        {
-          token: security.url.encodeBase64(pending.get('token')),
-          name: 'Accepted contributor',
-          password: 'Sl1m3rson99',
-        },
-      ],
-    });
+    await supertest(config.get('url'))
+      .post(localUtils.API.getApiQuery('authentication/invitation/'))
+      .send({
+        invitation: [
+          {
+            token: security.url.encodeBase64(pending.get('token')),
+            name: 'Accepted contributor',
+            password: 'Sl1m3rson99',
+          },
+        ],
+      })
+      .expect(200);
     assert.equal(await models.Invite.findOne({ email: 'trial-created-0@example.com' }), null);
     const total =
       Number((await db.knex('users').count('id', { as: 'count' }).first()).count) +
@@ -451,22 +451,39 @@ describe('Trial staff invitation limits', function () {
     await invite('new-after-import@example.com').expect(403);
     const pending = await models.Invite.findOne({ email });
     const security = require('@tryghost/security');
-    const invitesService = require('../../../core/server/services/invites').default;
-    await invitesService.service.accept({
-      invitation: [
-        {
-          token: security.url.encodeBase64(pending.get('token')),
-          name: 'Accepted contributor',
-          password: 'Sl1m3rson99',
-        },
-      ],
-    });
+    await supertest(config.get('url'))
+      .post(localUtils.API.getApiQuery('authentication/invitation/'))
+      .send({
+        invitation: [
+          {
+            token: security.url.encodeBase64(pending.get('token')),
+            name: 'Accepted contributor',
+            password: 'Sl1m3rson99',
+          },
+        ],
+      })
+      .expect(200);
     assert.equal(await models.Invite.findOne({ email }), null);
     assert.equal(
       Number((await db.knex('users').count('id', { as: 'count' }).first()).count),
       seatsBefore,
     );
     assert.equal((await invitationActions()).length, 2);
+    sinon.assert.calledTwice(send);
+  });
+
+  it('records both additions and the deletion when resending an invitation', async function () {
+    const original = await invite('resend-history@example.com').expect(201);
+    const replacement = await invite('resend-history@example.com').expect(201);
+    await vi.waitFor(async () => {
+      const rows = await db.knex('actions').where({ resource_type: 'invite' });
+      assert.equal(rows.length, 3);
+      assert.equal(rows.filter((row) => row.event === 'added').length, 2);
+      const deleted = rows.filter((row) => row.event === 'deleted');
+      assert.equal(deleted.length, 1);
+      assert.equal(deleted[0].resource_id, original.body.invites[0].id);
+    });
+    assert.notEqual(replacement.body.invites[0].id, original.body.invites[0].id);
     sinon.assert.calledTwice(send);
   });
 
