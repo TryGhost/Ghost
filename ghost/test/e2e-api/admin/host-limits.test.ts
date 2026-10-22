@@ -4,6 +4,11 @@ import path from 'node:path';
 
 import FormData from 'form-data';
 import sinon from 'sinon';
+import { MaxLimit } from '@tryghost/limit-service';
+
+const models = require('../../../core/server/models');
+const security = require('@tryghost/security');
+const invitesService = require('../../../core/server/services/invites').default;
 
 import type { HostLimitConfig, HostSettings } from '../../utils/host-limits-utils';
 
@@ -550,6 +555,75 @@ describe('Host limits', function () {
         .expectStatus(403);
 
       assert.equal(body.errors?.[0].type, 'HostLimitError');
+    });
+
+    it('resends a counted invitation at capacity but refuses a Contributor promotion', async function () {
+      await hostLimits.setHostLimits({ staff: { max: 100 } });
+      const author = await roleId('Author');
+      const contributor = await roleId('Contributor');
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email: 'capacity-author@example.com', role_id: author }] })
+        .expectStatus(201);
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email: 'capacity-contributor@example.com', role_id: contributor }] })
+        .expectStatus(201);
+      const count = Number(await (limits.limits.staff as MaxLimit).currentCountQuery());
+      await hostLimits.setHostLimits({ staff: { max: count } });
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email: 'capacity-author@example.com', role_id: author }] })
+        .expectStatus(201);
+      assert.equal(Number(await (limits.limits.staff as MaxLimit).currentCountQuery()), count);
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email: 'capacity-contributor@example.com', role_id: author }] })
+        .expectStatus(403);
+    });
+
+    it('rejects a resend if acceptance consumes its reserved seat after permission checking', async function () {
+      await hostLimits.setHostLimits({ staff: { max: 100 } });
+      const email = 'accepted-during-resend@example.com';
+      const author = await roleId('Author');
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email, role_id: author }] })
+        .expectStatus(201);
+      const pending = await models.Invite.findOne({ email });
+      const count = Number(await (limits.limits.staff as MaxLimit).currentCountQuery());
+      await hostLimits.setHostLimits({ staff: { max: count } });
+      const check = limits.errorIfWouldGoOverLimit.bind(limits);
+      let accepted = false;
+      sinon.stub(limits, 'errorIfWouldGoOverLimit').callsFake(async (name, options) => {
+        await check(name, options);
+        if (name === 'staff' && options?.addedCount === 0 && !accepted) {
+          accepted = true;
+          await invitesService.service.accept({
+            invitation: [
+              {
+                token: security.url.encodeBase64(pending.get('token')),
+                name: 'Accepted author',
+                password: 'Sl1m3rson99',
+              },
+            ],
+          });
+        }
+      });
+      try {
+        await agent
+          .post('invites/')
+          .body({ invites: [{ email, role_id: author }] })
+          .expectStatus(422);
+        assert.equal(accepted, true);
+        assert.equal(await models.Invite.findOne({ email }), null);
+        assert.equal(Number(await (limits.limits.staff as MaxLimit).currentCountQuery()), count);
+      } finally {
+        const user = await models.User.findOne({ email });
+        if (user) {
+          await models.User.destroy({ id: user.id, context: { internal: true } });
+        }
+      }
     });
 
     it('invites a contributor regardless, because they are not staff', async function () {
