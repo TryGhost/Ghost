@@ -97,7 +97,7 @@ To fix one:
 2. Pick the matching semantic token from the tables on this page.
 3. Drop both the light class and its `dark:` variant; the token handles both modes.
 
-Use `dark:` only for assets that genuinely differ in dark mode and can't be expressed as a token: logos and brand marks, illustrations and SVG art, screenshots and other imagery. A narrow `dark:` opacity modifier on an existing token is acceptable when no token covers it, as in `dark:aria-[invalid=true]:ring-destructive/40` inside the `inputSurface` recipe, which only applies to invalid fields and the dropdown border below. Inside Shade, first check whether a new token belongs in `theme-variables.css`.
+Use `dark:` only for assets that genuinely differ in dark mode and can't be expressed as a token: logos and brand marks, illustrations and SVG art, screenshots and other imagery. A narrow `dark:` opacity modifier on an existing token is acceptable when no token covers it, Two examples: `dark:aria-[invalid=true]:ring-destructive/40` in the `inputSurface` recipe, which only applies to invalid fields, and `dark:border-border/30` on the dropdown surfaces described below. Inside Shade, first check whether a new token belongs in `theme-variables.css`.
 
 When something looks wrong only in dark mode, the fix is almost always a different token, not an added `dark:` variant.
 
