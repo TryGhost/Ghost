@@ -1,6 +1,5 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-import type { AppInstallationEvent } from './actions';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
@@ -149,5 +148,18 @@ function newestFirst(entries: Entry[]): Entry[] {
   );
 }
 
-const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>
-  action.event === event;
+/** The names the action log gives an installation's actions, which its history is made from. */
+type ActionName = 'installed' | 'changes_approved' | 'uninstalled';
+
+const NamedAction = z.object({ action_name: z.string().nullish() });
+
+/**
+ * What an action is called: the specific name the action log stores alongside its verb, such
+ * as "installed". Actions logged before those names existed carry the name as their verb.
+ */
+function nameOf(action: HistoryAction): string {
+  const named = NamedAction.safeParse(JSON.parse(action.context ?? 'null'));
+  return (named.success && named.data.action_name) || action.event;
+}
+
+const withEvent = (name: ActionName) => (action: HistoryAction) => nameOf(action) === name;

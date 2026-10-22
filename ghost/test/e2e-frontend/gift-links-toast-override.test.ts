@@ -7,6 +7,9 @@ import { afterAll, beforeAll } from 'vitest';
 
 const fs = require('fs-extra');
 const testUtils = require('../utils');
+
+// Who the setup makes gift links as. Through the Admin API, this is the signed-in staff user.
+const asStaff = { actor: { type: 'user', id: testUtils.DataGenerator.Content.users[0].id } };
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
 const themeActivator = require('../../core/server/services/themes/activate');
@@ -87,7 +90,7 @@ describe('Front-end gift links — theme toast override', function () {
     await testUtils.fixtures.insertPosts([paidPost]);
 
     const giftLinksService = require('../../core/server/services/gift-links');
-    const post = await giftLinksService.service.ensure({ actor: null }, paidPost.id);
+    const post = await giftLinksService.service.ensure(asStaff, paidPost.id);
     token = post.giftLinks[0].token;
 
     request = supertest.agent(configUtils.config.get('url'));
