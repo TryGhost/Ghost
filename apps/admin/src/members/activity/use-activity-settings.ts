@@ -1,5 +1,6 @@
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 import type { ActivitySettings } from './activity-filters';
 
 /**
@@ -10,13 +11,15 @@ import type { ActivitySettings } from './activity-filters';
 export function useActivitySettings() {
   const settingsQuery = useBrowseSettings({ defaultErrorHandler: false });
   const settings = settingsQuery.data?.settings ?? [];
-  const customFieldsAvailable = useCustomFieldsAvailable();
+  // Changes to custom fields stay in a member's history whatever the plan, as they do for
+  // an archived field, so only the flag decides whether they show.
+  const customFieldsShown = useFeatureFlag(CUSTOM_FIELDS_FLAG);
   const activitySettings: ActivitySettings = {
     editorDefaultEmailRecipients:
       getSettingValue<string>(settings, 'editor_default_email_recipients') ?? undefined,
     commentsEnabled: getSettingValue<string>(settings, 'comments_enabled') ?? undefined,
     emailTrackClicks: getSettingValue<boolean>(settings, 'email_track_clicks') ?? undefined,
-    customFieldsAvailable,
+    customFieldsShown,
   };
   return { settingsQuery, settings, activitySettings };
 }

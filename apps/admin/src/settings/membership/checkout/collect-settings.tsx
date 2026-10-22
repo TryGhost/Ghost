@@ -13,6 +13,10 @@ import {
   Switch,
 } from '@tryghost/shade/components';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
+import {
+  useCanCreateCustomFields,
+  useCustomFieldsPlanNotice,
+} from '@/shared/member-custom-fields/availability';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { type CollectFormState, tierChoiceOf } from './collect-form';
@@ -93,24 +97,32 @@ export const Destination: React.FC<{
   value: string | null;
   error?: string;
   onChange: (key: string) => void;
-}> = ({ id, label, type, fields, chosen, value, error, onChange }) => (
-  <SubRow error={error} htmlFor={id} label={label}>
-    <CustomFieldPicker
-      createTypes={[type]}
-      // A field archived after it was chosen stays chosen, so the setting can be saved back.
-      fields={fields.filter(
-        (field) =>
-          field.key === value ||
-          (field.type === type && field.status === 'active' && !chosen.includes(field.key)),
-      )}
-      id={id}
-      invalid={Boolean(error)}
-      label={label}
-      value={value}
-      onChange={onChange}
-    />
-  </SubRow>
-);
+}> = ({ id, label, type, fields, chosen, value, error, onChange }) => {
+  // On a plan without custom fields every field reads as archived, so the list holds at most
+  // the one already chosen, and the server would refuse a new one.
+  const canCreate = useCanCreateCustomFields();
+  const planNotice = useCustomFieldsPlanNotice();
+
+  return (
+    <SubRow error={error} htmlFor={id} label={label}>
+      <CustomFieldPicker
+        createTypes={canCreate ? [type] : undefined}
+        // A field archived after it was chosen stays chosen, so the setting can be saved back.
+        fields={fields.filter(
+          (field) =>
+            field.key === value ||
+            (field.type === type && field.status === 'active' && !chosen.includes(field.key)),
+        )}
+        id={id}
+        invalid={Boolean(error)}
+        label={label}
+        notice={planNotice}
+        value={value}
+        onChange={onChange}
+      />
+    </SubRow>
+  );
+};
 
 /**
  * A part checkout can ask for: a switch, and while it's on, the paid tiers that ask for it

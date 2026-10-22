@@ -52,7 +52,7 @@ import { memberCustomFieldCsvColumns } from '@tryghost/admin-x-framework/api/mem
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { parseCSV } from '@/members/components/bulk-action-modals/import-members/csv';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { useCanCreateCustomFields } from '@/shared/member-custom-fields/availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLabelPicker } from '@/members/hooks/use-label-picker';
 
@@ -74,7 +74,7 @@ export function ImportMembersModal({
   const { mutateAsync: importMembers } = useImportMembers();
   const importMemberTier = useFeatureFlag('importMemberTier');
 
-  const canCreateCustomFields = useCustomFieldsAvailable();
+  const canCreateCustomFields = useCanCreateCustomFields();
   // Asked for only once the dialog is open. It stays mounted behind the members list with
   // `open` toggled, so an unconditional query is a request on every visit to a page that may
   // never open it. Nothing is lost by waiting: a file cannot be chosen before the dialog is

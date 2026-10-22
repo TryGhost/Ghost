@@ -58,14 +58,14 @@ describe('activity filters', () => {
   it('offers custom field changes only where the site has custom fields', () => {
     const events = (settings: Parameters<typeof availableActivityTypes>[0]) =>
       availableActivityTypes(settings, 'abc').map(({ event }) => event);
-    expect(events({ customFieldsAvailable: true })).toContain('metafield_change_event');
+    expect(events({ customFieldsShown: true })).toContain('metafield_change_event');
     expect(events({})).not.toContain('metafield_change_event');
     expect(
       activityQueryOptions({ settings: {}, excluded: null, memberId: 'abc' }).excludedEvents,
     ).toContain('metafield_change_event');
     expect(
       activityQueryOptions({
-        settings: { customFieldsAvailable: true },
+        settings: { customFieldsShown: true },
         excluded: null,
         memberId: 'abc',
       }).excludedEvents,

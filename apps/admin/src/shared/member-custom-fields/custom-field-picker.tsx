@@ -35,8 +35,9 @@ import {
   type MemberCustomField,
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { Text } from '@tryghost/shade/primitives';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 // cmdk scores an item's value and keywords as one joined string, and a match may run from
 // one into the other. Identity here is the field key; the name is the keyword, and only the
@@ -62,6 +63,8 @@ export interface CustomFieldPickerProps {
    * would make a field this picker then refuses to list. Omit to hide the create action.
    */
   createTypes?: MemberCustomField['type'][];
+  /** Said at the end of the list, such as why no field can be created here. */
+  notice?: ReactNode;
 }
 
 /**
@@ -88,6 +91,7 @@ export function CustomFieldPicker({
   invalid,
   onChange,
   createTypes,
+  notice,
 }: CustomFieldPickerProps) {
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState<{ initialName: string } | null>(null);
@@ -199,6 +203,11 @@ export function CustomFieldPicker({
                     <span>Add custom field</span>
                   </CommandItem>
                 </CommandGroup>
+              )}
+              {notice && (
+                <Text as="p" className="px-2 py-1.5" size="sm" tone="secondary">
+                  {notice}
+                </Text>
               )}
             </CommandList>
           </Command>
