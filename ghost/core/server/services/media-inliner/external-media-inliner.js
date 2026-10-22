@@ -89,7 +89,7 @@ class ExternalMediaInliner {
     requestURL = requestURL.replace(/^\/\//g, 'http://');
 
     // Encode to handle special characters in URLs
-    requestURL = encodeURI(requestURL);
+    requestURL = new URL(requestURL).href;
     try {
       const response = await request(requestURL, {
         followRedirect: true,

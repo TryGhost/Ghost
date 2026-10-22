@@ -1052,6 +1052,41 @@ describe('ExternalMediaInliner', function () {
       assert.equal(fileData.extension, '.png');
     });
 
+    it('preserves existing percent-encoded URL components', async function () {
+      const cases = [
+        {
+          url: 'https://img.stockfresh.com/files/f/cover%20image.png',
+          requestPath: '/files/f/cover%20image.png',
+        },
+        {
+          url: 'https://img.stockfresh.com/files/f/caf%C3%A9.png',
+          requestPath: '/files/f/caf%C3%A9.png',
+        },
+        {
+          url: 'https://img.stockfresh.com/files/f/sale%25.png',
+          requestPath: '/files/f/sale%25.png',
+        },
+        {
+          url: 'https://img.stockfresh.com/files/f/query.png?ref=a%2Fb',
+          requestPath: '/files/f/query.png?ref=a%2Fb',
+        },
+        {
+          url: 'https://img.stockfresh.com/files/f/chapter%2Fone.png',
+          requestPath: '/files/f/chapter%2Fone.png',
+        },
+      ];
+      const inliner = new ExternalMediaInliner({});
+
+      for (const { url, requestPath } of cases) {
+        const requestMock = nock('https://img.stockfresh.com')
+          .get(requestPath)
+          .reply(200, ghostLogoPng);
+
+        await inliner.getRemoteMedia(url);
+        assert.ok(requestMock.isDone(), url);
+      }
+    });
+
     it('Handles URLs with no extension', async function () {
       const imageURL = 'https://img.stockfresh.com/files/f/ghost-logo';
       const requestMock = nock('https://img.stockfresh.com')
