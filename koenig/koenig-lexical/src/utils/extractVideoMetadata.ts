@@ -1,6 +1,6 @@
 // taken from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/lib/koenig-editor/addon/utils/extract-video-metadata.js
 
-interface VideoMetadata {
+export interface VideoMetadata {
     duration: number;
     width: number;
     height: number;
