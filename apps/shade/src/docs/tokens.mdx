@@ -133,6 +133,6 @@ Inputs, textareas, outline `Button`s, dropdown triggers, and the `inputSurface` 
 
 ## Dropdown surface contract
 
-`DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. Treat them as one component for any surface decision — change all three together.
+`DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. The one exception is a `DropdownMenu` submenu, which uses `shadow-lg` so it stands apart from the menu it overlaps. Treat them as one component for any surface decision — change all three together.
 
 </div>
