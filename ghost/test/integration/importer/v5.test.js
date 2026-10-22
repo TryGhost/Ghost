@@ -90,8 +90,6 @@ describe('Importing 5.x export', function () {
     config.set('hostSettings:staffInvites', {
       maxStaff: 10,
       maxInvites: 15,
-      maxRequests: 3,
-      rateWindowSeconds: 60,
     });
     try {
       const exportData = exportedBodyV5().db[0];

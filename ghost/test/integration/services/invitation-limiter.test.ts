@@ -4,7 +4,6 @@ import ObjectId from 'bson-objectid';
 import {
   lockStaffInvites,
   checkTrialStaffLimit,
-  STAFF_INVITE_RATE_KEY,
 } from '../../../core/server/lib/staff-invite-usage';
 import InvitationLimiter, {
   type InvitationLimits,
@@ -20,11 +19,9 @@ const dependencies = {
   getUpgradeUrl: () => undefined,
   lockStaffInvites,
   checkTrialStaffLimit,
-  STAFF_INVITE_RATE_KEY,
 };
 
 describe('Trial invitation admission', function () {
-  let now: number;
   let limits: InvitationLimits | undefined;
   let limiter: InvitationLimiter;
   let originalLimits: InvitationLimits | undefined;
@@ -42,13 +39,11 @@ describe('Trial invitation admission', function () {
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
-    now = Date.parse('2026-10-20T12:00:00Z');
-    limits = { maxStaff: 10, maxInvites: 15, maxRequests: 3, rateWindowSeconds: 60 };
+    limits = { maxStaff: 10, maxInvites: 15 };
     config.set('hostSettings:staffInvites', limits);
     limiter = new InvitationLimiter({
       ...dependencies,
       getLimits: () => limits,
-      now: () => now,
     });
   });
 
@@ -69,34 +64,6 @@ describe('Trial invitation admission', function () {
     return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
   }
 
-  it('admits exactly three of twenty concurrent requests across instances', async function () {
-    const other = new InvitationLimiter({
-      ...dependencies,
-      getLimits: () => limits,
-      now: () => now,
-    });
-    const results = await Promise.all(
-      Array.from({ length: 20 }, (_, index) => (index % 2 ? limiter : other).rateLimit()),
-    );
-    assert.equal(results.filter((wait) => wait === 0).length, 3);
-    assert.equal(results.filter((wait) => wait === 60).length, 17);
-  });
-
-  it('does not extend the minute when requests are rejected and survives restarts', async function () {
-    assert.equal(await limiter.rateLimit(), 0);
-    assert.equal(await limiter.rateLimit(), 0);
-    assert.equal(await limiter.rateLimit(), 0);
-    now += 59_000;
-    assert.equal(await limiter.rateLimit(), 1);
-    now += 1000;
-    const restarted = new InvitationLimiter({
-      ...dependencies,
-      getLimits: () => limits,
-      now: () => now,
-    });
-    assert.equal(await restarted.rateLimit(), 0);
-  });
-
   it('admits only fifteen concurrent email preparations even without the HTTP guard', async function () {
     limits!.maxStaff = 50;
     const results = await Promise.allSettled(
@@ -115,19 +82,16 @@ describe('Trial invitation admission', function () {
     assert.equal((await actions()).length, 15);
   });
 
-  it('never resets the trial allowance at midnight, after extensions, or after rate cleanup', async function () {
+  it('preserves the trial allowance after rate cleanup and refreshing the policy', async function () {
     for (let i = 0; i < 15; i++) {
       await limiter.run('resend@example.com', (transaction) =>
         prepare('resend@example.com', transaction),
       );
-      now += 60_000;
     }
-    now += 90 * 86400_000;
     await dbUtils.truncate('brute');
     const restarted = new InvitationLimiter({
       ...dependencies,
       getLimits: () => ({ ...limits! }),
-      now: () => now,
     });
     await assert.rejects(
       restarted.run('new@example.com', async () => assert.fail()),
@@ -170,14 +134,12 @@ describe('Trial invitation admission', function () {
     await limiter.run('person@example.com', (transaction) =>
       prepare('person@example.com', transaction),
     );
-    await limiter.rateLimit();
     limits = undefined;
-    assert.equal(await limiter.rateLimit(), 0);
     await limiter.run('paid@example.com', async (transaction) =>
       assert.equal(transaction, undefined),
     );
     assert.equal((await actions()).length, 1);
-    limits = { maxStaff: 10, maxInvites: 1, maxRequests: 3, rateWindowSeconds: 60 };
+    limits = { maxStaff: 10, maxInvites: 1 };
     await assert.rejects(
       limiter.run('trial-again@example.com', async () => assert.fail()),
       /Upgrade/,

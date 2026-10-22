@@ -10,6 +10,7 @@ const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const mailService = require('../../../core/server/lib/mail');
 const localUtils = require('./utils');
+const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 describe('Trial staff invitation limits', function () {
   let request;
@@ -25,14 +26,13 @@ describe('Trial staff invitation limits', function () {
   });
 
   beforeEach(async function () {
+    spamPrevention.reset();
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
     config.set('hostSettings:staffInvites', {
       maxStaff: 10,
       maxInvites: 15,
-      maxRequests: 3,
-      rateWindowSeconds: 60,
     });
     send = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
   });
@@ -63,8 +63,12 @@ describe('Trial staff invitation limits', function () {
   async function nextMinute() {
     await db
       .knex('brute')
-      .where({ key: 'staff-invites:requests' })
-      .update({ firstRequest: Date.now() - 60_001, lastRequest: Date.now() - 60_001 });
+      .where('count', '>', 0)
+      .update({
+        firstRequest: Date.now() - 60_001,
+        lastRequest: Date.now() - 60_001,
+        lifetime: Date.now() - 1,
+      });
   }
 
   function invitationActions() {
@@ -199,10 +203,14 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.callCount(send, remaining + 1);
   });
 
-  it('shares the minute across recipients, API keys and staff sessions', async function () {
-    await invite('integration@example.com', 'Contributor', true).expect(201);
-    await invite('burst-2@example.com').expect(201);
-    await invite('burst-3@example.com').expect(201);
+  it('shares the minute across recipients, API keys, staff sessions and IP addresses', async function () {
+    await invite('integration@example.com', 'Contributor', true)
+      .set('X-Forwarded-For', '192.0.2.1')
+      .expect(201);
+    await invite('burst-2@example.com').set('X-Forwarded-For', '192.0.2.2').expect(201);
+    await invite('burst-3@example.com').set('X-Forwarded-For', '192.0.2.3').expect(201);
+    spamPrevention.reset();
+    spamPrevention.globalBlock();
     const rejected = await invite('other@example.com', 'Author').expect(429);
     assert.equal(rejected.body.errors[0].code, 'STAFF_INVITE_RATE_LIMIT');
     assert.ok(Number(rejected.headers['retry-after']) > 0);
@@ -219,20 +227,19 @@ describe('Trial staff invitation limits', function () {
     ]);
   });
 
-  it('does not consume burst capacity for registered addresses or permission denials', async function () {
-    for (let i = 0; i < 4; i++) {
-      await invite(testUtils.DataGenerator.Content.users[0].email).expect(422);
-      await invite('owner-role@example.com', 'Owner').expect(403);
-    }
-    for (let i = 0; i < 3; i++) {
-      await invite(`valid-${i}@example.com`).expect(201);
-    }
+  it('counts registered addresses, validation errors and permission denials toward the burst limit', async function () {
+    await invite(testUtils.DataGenerator.Content.users[0].email).expect(422);
+    await invite('not-an-email').expect(422);
+    await invite('owner-role@example.com', 'Owner').expect(403);
     await invite('burst-full@example.com').expect(429);
-    assert.equal((await invitationActions()).length, 3);
-    sinon.assert.callCount(send, 3);
+    assert.deepEqual(await invitationActions(), []);
+    sinon.assert.notCalled(send);
+    await nextMinute();
+    await invite('valid@example.com').expect(201);
+    assert.equal((await invitationActions()).length, 1);
   });
 
-  it('does not let a Contributor consume the owner burst allowance', async function () {
+  it('counts authenticated Contributor attempts toward the shared burst limit', async function () {
     const ownerRole = await db.knex('roles').where({ name: 'Owner' }).first();
     const contributorRole = await db.knex('roles').where({ name: 'Contributor' }).first();
     const ownerAssignment = await db.knex('roles_users').where({ role_id: ownerRole.id }).first();
@@ -241,7 +248,7 @@ describe('Trial staff invitation limits', function () {
       .where({ id: ownerAssignment.id })
       .update({ role_id: contributorRole.id });
     try {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         await invite(`unauthorized-${i}@example.com`).expect(403);
       }
     } finally {
@@ -250,10 +257,38 @@ describe('Trial staff invitation limits', function () {
         .where({ id: ownerAssignment.id })
         .update({ role_id: ownerRole.id });
     }
-    for (let i = 0; i < 3; i++) {
-      await invite(`owner-${i}@example.com`).expect(201);
+    await invite('owner@example.com').expect(429);
+    sinon.assert.notCalled(send);
+    await nextMinute();
+    await invite('owner@example.com').expect(201);
+    sinon.assert.calledOnce(send);
+  });
+
+  it('does not consume the shared burst allowance before authentication', async function () {
+    for (let i = 0; i < 4; i++) {
+      await supertest(config.get('url'))
+        .post(localUtils.API.getApiQuery('invites/'))
+        .set('Origin', config.get('url'))
+        .send({
+          invites: [{ email: 'anonymous@example.com', role_id: testUtils.roles.ids.author }],
+        })
+        .expect(403);
     }
+    for (let i = 0; i < 3; i++) {
+      await invite(`authenticated-${i}@example.com`).expect(201);
+    }
+    await invite('fourth@example.com').expect(429);
     sinon.assert.callCount(send, 3);
+  });
+
+  it('allows a steady request every fifty seconds without extending the window', async function () {
+    let now = Date.now();
+    sinon.stub(Date, 'now').callsFake(() => now);
+    for (let i = 0; i < 4; i++) {
+      await invite('steady@example.com').expect(201);
+      now += 50_000;
+    }
+    sinon.assert.callCount(send, 4);
   });
 
   it('keeps the existing invitation and token when a resend is rate limited', async function () {
@@ -307,9 +342,10 @@ describe('Trial staff invitation limits', function () {
       })),
     );
     config.set('hostSettings:staffInvites', undefined);
-    await invite('paid-1@example.com').expect(201);
-    await invite('paid-2@example.com').expect(201);
-    sinon.assert.calledTwice(send);
+    for (let i = 0; i < 5; i++) {
+      await invite(`paid-${i}@example.com`).expect(201);
+    }
+    sinon.assert.callCount(send, 5);
   });
   it('counts imported staff toward subsequent invitations without emailing them', async function () {
     const users = await db.knex('users').count('id', { as: 'count' }).first();

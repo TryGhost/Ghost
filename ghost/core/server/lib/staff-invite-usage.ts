@@ -2,17 +2,15 @@ import type { Knex } from 'knex';
 import errors from '@tryghost/errors';
 import { MaxLimit } from '@tryghost/limit-service';
 
-export const STAFF_INVITE_RATE_KEY = 'staff-invites:requests';
+const STAFF_INVITE_LOCK_KEY = 'staff-invites:lock';
 
 /** All trial staff creation and invitation replacement use the same lock order. */
-export async function lockStaffInvites(
-  transaction: Knex.Transaction,
-): Promise<{ count: number; firstRequest: number; lastRequest: number }> {
-  // Reuse the request limiter's row as the site-wide lock. Its expiry is safe:
-  // the durable allowance lives in actions, not in this temporary rate state.
+export async function lockStaffInvites(transaction: Knex.Transaction): Promise<void> {
+  // Use a separate brute row as the site-wide lock. Its expiry is safe:
+  // the durable allowance lives in actions, not in this temporary row.
   await transaction('brute')
     .insert({
-      key: STAFF_INVITE_RATE_KEY,
+      key: STAFF_INVITE_LOCK_KEY,
       firstRequest: 0,
       lastRequest: 0,
       lifetime: 0,
@@ -20,7 +18,7 @@ export async function lockStaffInvites(
     })
     .onConflict('key')
     .merge(['key']);
-  return transaction('brute').where({ key: STAFF_INVITE_RATE_KEY }).forUpdate().first();
+  await transaction('brute').where({ key: STAFF_INVITE_LOCK_KEY }).forUpdate().first();
 }
 
 export async function checkTrialStaffLimit(

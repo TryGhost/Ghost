@@ -1,17 +1,22 @@
 const url = require('url');
 const spamPrevention = require('./api/spam-prevention');
-const { STAFF_INVITE_RATE_LIMIT } = require('../../../services/invites/constants');
+const config = require('../../../../shared/config');
 
 /**
  * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {
-  staffInviteRateLimitError(err, req, res, next) {
-    if (err.code === STAFF_INVITE_RATE_LIMIT && err.errorDetails?.retryAfter > 0) {
-      res.set('Retry-After', String(err.errorDetails.retryAfter));
+  staffInviteLimiter(req, res, next) {
+    if (!config.get('hostSettings:staffInvites')) {
+      return next();
     }
-    next(err);
+    return spamPrevention.staffInviteBlock().getMiddleware({
+      ignoreIP: true,
+      key(_req, _res, done) {
+        done('staff_invite_requests');
+      },
+    })(req, res, next);
   },
   // Limit authentication work across all upgrade routes, before staff identity
   // is available. This is separate from the stricter per-user POST budget.

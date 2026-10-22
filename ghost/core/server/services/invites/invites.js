@@ -33,10 +33,6 @@ class Invites {
     this.limitService = limitService;
   }
 
-  rateLimit() {
-    return this.invitationLimiter.rateLimit();
-  }
-
   accept(invitation) {
     return accept(invitation, this.models, (transaction) =>
       this.invitationLimiter.lockStaffUsage(transaction),

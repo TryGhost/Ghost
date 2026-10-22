@@ -7,18 +7,14 @@ import type { lockStaffInvites, checkTrialStaffLimit } from '../../lib/staff-inv
 interface InvitationLimiterDeps {
   knex: Knex;
   getLimits: () => InvitationLimits | undefined;
-  now: () => number;
   getUpgradeUrl: () => string | undefined;
   lockStaffInvites: typeof lockStaffInvites;
   checkTrialStaffLimit: typeof checkTrialStaffLimit;
-  STAFF_INVITE_RATE_KEY: string;
 }
 
 export interface InvitationLimits {
   maxStaff: number;
   maxInvites: number;
-  maxRequests: number;
-  rateWindowSeconds: number;
 }
 
 /** A host-enabled trial allowance, independent of the mutable invitation list. */
@@ -36,41 +32,11 @@ export default class InvitationLimiter {
       (!Number.isSafeInteger(limits.maxStaff) ||
         limits.maxStaff < 1 ||
         !Number.isSafeInteger(limits.maxInvites) ||
-        limits.maxInvites < 0 ||
-        !Number.isSafeInteger(limits.maxRequests) ||
-        limits.maxRequests < 1 ||
-        !Number.isSafeInteger(limits.rateWindowSeconds) ||
-        limits.rateWindowSeconds < 1)
+        limits.maxInvites < 0)
     ) {
       throw new errors.IncorrectUsageError({ message: 'Invalid staff invitation limits.' });
     }
     return limits;
-  }
-
-  /** Returns seconds to wait. Admission is atomic across processes and IPs. */
-  async rateLimit(): Promise<number> {
-    const limits = this.policy();
-    if (!limits) {
-      return 0;
-    }
-    return this.deps.knex.transaction(async (transaction) => {
-      const row = await this.deps.lockStaffInvites(transaction);
-      const now = this.deps.now();
-      const windowEnds = Number(row.firstRequest) + limits.rateWindowSeconds * 1000;
-      const inWindow = Number(row.count) > 0 && now < windowEnds;
-      if (inWindow && Number(row.count) >= limits.maxRequests) {
-        return Math.ceil((windowEnds - now) / 1000);
-      }
-      await transaction('brute')
-        .where({ key: this.deps.STAFF_INVITE_RATE_KEY })
-        .update({
-          firstRequest: inWindow ? row.firstRequest : now,
-          lastRequest: now,
-          lifetime: inWindow ? windowEnds : now + limits.rateWindowSeconds * 1000,
-          count: inWindow ? Number(row.count) + 1 : 1,
-        });
-      return 0;
-    });
   }
 
   async lockStaffUsage(transaction: Knex.Transaction): Promise<void> {
