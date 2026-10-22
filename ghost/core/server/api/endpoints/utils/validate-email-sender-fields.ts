@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import type { EmailAddressService } from '../../../services/email-address/email-address-service';
+import type { EmailAddressService } from '../../../../shared/email-address/email-address-service';
 import type { ReadonlyDeep } from 'type-fest';
 
 const EMAIL_VALIDATIONS = [

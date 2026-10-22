@@ -8,7 +8,6 @@ const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils').default;
 const metrics = require('@tryghost/metrics');
-const emailAddress = require('../../services/email-address');
 const messages = {
   title: 'Ghost at {domain}',
   checkEmailConfigInstructions: 'Please see {url} for instructions on configuring email.',
@@ -31,16 +30,17 @@ function getDomain() {
 /**
  * @param {string} requestedFromAddress
  * @param {string} requestedReplyToAddress
+ * @param {import('../../../shared/email-address/email-address-service').EmailAddressService} emailAddressService
  * @returns {{from: string, replyTo?: string|null}}
  */
-function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
+function getFromAddress(requestedFromAddress, requestedReplyToAddress, emailAddressService) {
   if (!requestedFromAddress) {
     // Use the default config
-    requestedFromAddress = emailAddress.service.defaultFromEmail;
+    requestedFromAddress = emailAddressService.defaultFromEmail;
   }
 
   // Clean up email addresses (checks whether sending is allowed + email address is valid)
-  const addresses = emailAddress.service.getAddressFromString(
+  const addresses = emailAddressService.getAddressFromString(
     requestedFromAddress,
     requestedReplyToAddress,
   );
@@ -66,9 +66,10 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
  * @param {boolean} [message.forceTextContent] - force text content
  * @param {string} [message.from] - sender email address
  * @param {string} [message.replyTo]
+ * @param {import('../../../shared/email-address/email-address-service').EmailAddressService} emailAddressService
  * @returns {Object}
  */
-function createMessage(message) {
+function createMessage(message, emailAddressService) {
   const encoding = 'base64';
   const generateTextFromHTML = !message.forceTextContent;
   const cleanMessage = { ...message };
@@ -77,7 +78,7 @@ function createMessage(message) {
   delete cleanMessage.trackOpens;
   delete cleanMessage.disableTracking;
 
-  const addresses = getFromAddress(message.from, message.replyTo);
+  const addresses = getFromAddress(message.from, message.replyTo, emailAddressService);
 
   return {
     ...cleanMessage,
@@ -115,7 +116,13 @@ function createMailError({ message, err, ignoreDefaultMessage } = { message: '' 
 }
 
 module.exports = class GhostMailer {
-  constructor() {
+  #getEmailAddressService;
+
+  /**
+   * @param {{getEmailAddressService: () => import('../../../shared/email-address/email-address-service').EmailAddressService}} dependencies
+   */
+  constructor({ getEmailAddressService }) {
+    this.#getEmailAddressService = getEmailAddressService;
     const nodemailer = require('@tryghost/nodemailer');
 
     let transport = (config.get('mail') && config.get('mail').transport) || 'direct';
@@ -157,7 +164,7 @@ module.exports = class GhostMailer {
       });
     }
 
-    const messageToSend = createMessage(message);
+    const messageToSend = createMessage(message, this.#getEmailAddressService());
     if (this.state.usingMailgun) {
       const tags = this.getTags(message.tags);
       if (tags.length > 0) {

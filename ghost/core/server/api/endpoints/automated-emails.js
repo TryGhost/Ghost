@@ -4,7 +4,6 @@ const errors = require('@tryghost/errors');
 const models = require('../../models');
 const { lockAutomationLimit } = require('../../services/automations/automation-limit');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
-const emailAddressService = require('../../services/email-address');
 const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
   MEMBER_WELCOME_EMAIL_SLUGS,
@@ -102,310 +101,310 @@ function getChangedSenderData(senderData, designSettings) {
   return _.pickBy(senderData, (value, field) => value !== designSettings?.get(field));
 }
 
-/** @type {import('@tryghost/api-framework').Controller} */
-const controller = {
-  docName: 'automated_emails',
+module.exports = ({ getEmailAddressService }) => {
+  /** @type {import('@tryghost/api-framework').Controller} */
+  const controller = {
+    docName: 'automated_emails',
 
-  browse: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['fields', 'limit', 'order', 'page'],
-    permissions: true,
-    async query(frame) {
-      const result = await models.Automation.findPage({
-        ...restrictAdminApiQueryOptions(frame.options),
-        filter: MEMBER_WELCOME_EMAIL_FILTER,
-        withRelated: [
-          'welcomeEmailAutomatedEmail',
-          'welcomeEmailAutomatedEmail.emailDesignSetting',
-        ],
-      });
-      const defaultDesignSettings = await getDefaultEmailDesignSettings();
-      return {
-        ...result,
-        data: result.data.map((automation) =>
-          flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings),
-        ),
-      };
-    },
-  },
-
-  read: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['fields'],
-    data: ['id'],
-    permissions: true,
-    async query(frame) {
-      const model = await models.Automation.findOne(frame.data, {
-        ...restrictAdminApiQueryOptions(frame.options),
-        withRelated: [
-          'welcomeEmailAutomatedEmail',
-          'welcomeEmailAutomatedEmail.emailDesignSetting',
-        ],
-      });
-      if (!model) {
-        throw new errors.NotFoundError({
-          message: tpl(messages.automatedEmailNotFound),
+    browse: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      options: ['fields', 'limit', 'order', 'page'],
+      permissions: true,
+      async query(frame) {
+        const result = await models.Automation.findPage({
+          ...restrictAdminApiQueryOptions(frame.options),
+          filter: MEMBER_WELCOME_EMAIL_FILTER,
+          withRelated: [
+            'welcomeEmailAutomatedEmail',
+            'welcomeEmailAutomatedEmail.emailDesignSetting',
+          ],
         });
-      }
-
-      const defaultDesignSettings = await getDefaultEmailDesignSettings();
-      return flattenAutomationWithDefaultSenderSettings(model, defaultDesignSettings);
-    },
-  },
-
-  add: {
-    statusCode: 201,
-    headers: {
-      cacheInvalidate: false,
-    },
-    permissions: true,
-    async query(frame) {
-      const data = frame.data.automated_emails[0];
-
-      const emailData = _.pick(data, EMAIL_FIELDS);
-      const senderData = _.pick(data, SENDER_FIELDS);
-      const automationData = _.pick(data, AUTOMATION_FIELDS);
-      automationData.description = DEFAULT_DESCRIPTION_BY_SLUG[data.slug];
-      automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
-      emailAddressService.init();
-      validateEmailSenderFields(emailAddressService.service, senderData);
-
-      return models.Base.transaction(async (transacting) => {
-        const automation = await models.Automation.add(automationData, {
-          ...frame.options,
-          transacting,
-        });
-        const email = await models.WelcomeEmailAutomatedEmail.add(
-          {
-            ...emailData,
-            welcome_email_automation_id: automation.id,
-            delay_days: 0,
-          },
-          { ...frame.options, transacting },
-        );
-        const designSettings = await updateEmailDesignSenderFields(email, senderData, {
-          ...frame.options,
-          transacting,
-        });
-        return flattenAutomation(automation, email, designSettings);
-      });
-    },
-  },
-
-  edit: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['id'],
-    validation: {
-      options: {
-        id: {
-          required: true,
-        },
+        const defaultDesignSettings = await getDefaultEmailDesignSettings();
+        return {
+          ...result,
+          data: result.data.map((automation) =>
+            flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings),
+          ),
+        };
       },
     },
-    permissions: true,
-    // oxlint-disable-next-line ghost/ghost-custom/max-api-complexity
-    async query(frame) {
-      const data = frame.data.automated_emails[0];
 
-      const emailData = _.pick(data, EMAIL_FIELDS);
-      const senderData = _.pick(data, SENDER_FIELDS);
-      const automationData = _.pick(data, AUTOMATION_FIELDS);
-
-      return models.Base.transaction(async (transacting) => {
-        // Serialize every legacy status write with conversion, including deactivation.
-        // The shared helper acquires no lock when the automation limit is absent.
-        if (Object.hasOwn(automationData, 'status')) {
-          await lockAutomationLimit(transacting, 'legacy');
-        }
-        let automation = await models.Automation.findOne(
-          { id: frame.options.id },
-          {
-            transacting,
-            withRelated: [
-              'welcomeEmailAutomatedEmail',
-              'welcomeEmailAutomatedEmail.emailDesignSetting',
-            ],
-          },
-        );
-        if (!automation) {
+    read: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      options: ['fields'],
+      data: ['id'],
+      permissions: true,
+      async query(frame) {
+        const model = await models.Automation.findOne(frame.data, {
+          ...restrictAdminApiQueryOptions(frame.options),
+          withRelated: [
+            'welcomeEmailAutomatedEmail',
+            'welcomeEmailAutomatedEmail.emailDesignSetting',
+          ],
+        });
+        if (!model) {
           throw new errors.NotFoundError({
             message: tpl(messages.automatedEmailNotFound),
           });
         }
-        if (
-          Object.hasOwn(automationData, 'status') &&
-          automationData.status !== automation.get('status')
-        ) {
-          const action = await transacting('automation_actions')
-            .select('id')
-            .where('automation_id', automation.id)
-            .whereNull('deleted_at')
-            .first();
-          if (action) {
-            throw new errors.ValidationError({
-              message:
-                'Welcome email has been converted to an automation. Change its status through the automations API.',
-              property: 'status',
+
+        const defaultDesignSettings = await getDefaultEmailDesignSettings();
+        return flattenAutomationWithDefaultSenderSettings(model, defaultDesignSettings);
+      },
+    },
+
+    add: {
+      statusCode: 201,
+      headers: {
+        cacheInvalidate: false,
+      },
+      permissions: true,
+      async query(frame) {
+        const data = frame.data.automated_emails[0];
+
+        const emailData = _.pick(data, EMAIL_FIELDS);
+        const senderData = _.pick(data, SENDER_FIELDS);
+        const automationData = _.pick(data, AUTOMATION_FIELDS);
+        automationData.description = DEFAULT_DESCRIPTION_BY_SLUG[data.slug];
+        automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
+        validateEmailSenderFields(getEmailAddressService(), senderData);
+
+        return models.Base.transaction(async (transacting) => {
+          const automation = await models.Automation.add(automationData, {
+            ...frame.options,
+            transacting,
+          });
+          const email = await models.WelcomeEmailAutomatedEmail.add(
+            {
+              ...emailData,
+              welcome_email_automation_id: automation.id,
+              delay_days: 0,
+            },
+            { ...frame.options, transacting },
+          );
+          const designSettings = await updateEmailDesignSenderFields(email, senderData, {
+            ...frame.options,
+            transacting,
+          });
+          return flattenAutomation(automation, email, designSettings);
+        });
+      },
+    },
+
+    edit: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      options: ['id'],
+      validation: {
+        options: {
+          id: {
+            required: true,
+          },
+        },
+      },
+      permissions: true,
+      // oxlint-disable-next-line ghost/ghost-custom/max-api-complexity
+      async query(frame) {
+        const data = frame.data.automated_emails[0];
+
+        const emailData = _.pick(data, EMAIL_FIELDS);
+        const senderData = _.pick(data, SENDER_FIELDS);
+        const automationData = _.pick(data, AUTOMATION_FIELDS);
+
+        return models.Base.transaction(async (transacting) => {
+          // Serialize every legacy status write with conversion, including deactivation.
+          // The shared helper acquires no lock when the automation limit is absent.
+          if (Object.hasOwn(automationData, 'status')) {
+            await lockAutomationLimit(transacting, 'legacy');
+          }
+          let automation = await models.Automation.findOne(
+            { id: frame.options.id },
+            {
+              transacting,
+              withRelated: [
+                'welcomeEmailAutomatedEmail',
+                'welcomeEmailAutomatedEmail.emailDesignSetting',
+              ],
+            },
+          );
+          if (!automation) {
+            throw new errors.NotFoundError({
+              message: tpl(messages.automatedEmailNotFound),
             });
           }
-        }
-        if (Object.hasOwn(data, 'slug') && data.slug !== automation.get('slug')) {
-          throw new errors.ValidationError({
-            message: tpl(messages.slugCannotBeChanged),
-            property: 'slug',
-          });
-        }
-        let email = automation.related('welcomeEmailAutomatedEmail');
-        const hasEmailContent = Boolean(email.id);
-        const designSettings = hasEmailContent ? email.related('emailDesignSetting') : null;
-        const changedSenderData = hasEmailContent
-          ? getChangedSenderData(senderData, designSettings)
-          : {};
+          if (
+            Object.hasOwn(automationData, 'status') &&
+            automationData.status !== automation.get('status')
+          ) {
+            const action = await transacting('automation_actions')
+              .select('id')
+              .where('automation_id', automation.id)
+              .whereNull('deleted_at')
+              .first();
+            if (action) {
+              throw new errors.ValidationError({
+                message:
+                  'Welcome email has been converted to an automation. Change its status through the automations API.',
+                property: 'status',
+              });
+            }
+          }
+          if (Object.hasOwn(data, 'slug') && data.slug !== automation.get('slug')) {
+            throw new errors.ValidationError({
+              message: tpl(messages.slugCannotBeChanged),
+              property: 'slug',
+            });
+          }
+          let email = automation.related('welcomeEmailAutomatedEmail');
+          const hasEmailContent = Boolean(email.id);
+          const designSettings = hasEmailContent ? email.related('emailDesignSetting') : null;
+          const changedSenderData = hasEmailContent
+            ? getChangedSenderData(senderData, designSettings)
+            : {};
 
-        emailAddressService.init();
-        validateEmailSenderFields(emailAddressService.service, changedSenderData);
+          validateEmailSenderFields(getEmailAddressService(), changedSenderData);
 
-        if (hasEmailContent && Object.keys(emailData).length > 0) {
-          email = await models.WelcomeEmailAutomatedEmail.edit(emailData, {
-            ...frame.options,
-            transacting,
-            id: email.id,
-          });
-        }
+          if (hasEmailContent && Object.keys(emailData).length > 0) {
+            email = await models.WelcomeEmailAutomatedEmail.edit(emailData, {
+              ...frame.options,
+              transacting,
+              id: email.id,
+            });
+          }
 
-        let updatedDesignSettings = designSettings;
+          let updatedDesignSettings = designSettings;
 
-        if (hasEmailContent) {
-          updatedDesignSettings = await updateEmailDesignSenderFields(email, changedSenderData, {
-            ...frame.options,
-            transacting,
-          });
-        }
+          if (hasEmailContent) {
+            updatedDesignSettings = await updateEmailDesignSenderFields(email, changedSenderData, {
+              ...frame.options,
+              transacting,
+            });
+          }
 
-        if (Object.keys(automationData).length > 0) {
-          automation = await models.Automation.edit(automationData, {
-            ...frame.options,
-            transacting,
-          });
-        }
+          if (Object.keys(automationData).length > 0) {
+            automation = await models.Automation.edit(automationData, {
+              ...frame.options,
+              transacting,
+            });
+          }
 
-        if (!hasEmailContent) {
-          updatedDesignSettings = await getDefaultEmailDesignSettings({
-            ...frame.options,
-            transacting,
-          });
-        }
+          if (!hasEmailContent) {
+            updatedDesignSettings = await getDefaultEmailDesignSettings({
+              ...frame.options,
+              transacting,
+            });
+          }
 
-        return flattenAutomation(automation, email, updatedDesignSettings);
-      });
-    },
-  },
-
-  editSenders: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    permissions: {
-      method: 'edit',
-    },
-    async query(frame) {
-      memberWelcomeEmailService.init();
-      const data = frame.data;
-      const result = await memberWelcomeEmailService.api.editSharedSenderOptions({
-        sender_name: data.sender_name,
-        sender_email: data.sender_email,
-        sender_reply_to: data.sender_reply_to,
-      });
-      const defaultDesignSettings = await getDefaultEmailDesignSettings();
-      return {
-        ...result,
-        data: result.data.map((automation) =>
-          flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings),
-        ),
-      };
-    },
-  },
-
-  verifySenderUpdate: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    permissions: {
-      method: 'edit',
-    },
-    data: ['token'],
-    async query(frame) {
-      memberWelcomeEmailService.init();
-      const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(
-        frame.data.token,
-      );
-      const defaultDesignSettings = await getDefaultEmailDesignSettings();
-      return {
-        ...result,
-        data: result.data.map((automation) =>
-          flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings),
-        ),
-      };
-    },
-  },
-  preview: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['id'],
-    data: ['subject', 'lexical'],
-    validation: {
-      options: {
-        id: {
-          required: true,
-        },
+          return flattenAutomation(automation, email, updatedDesignSettings);
+        });
       },
     },
-    permissions: {
-      method: 'edit',
-    },
-    async query(frame) {
-      memberWelcomeEmailService.init();
-      return await memberWelcomeEmailService.api.previewEmail({
-        subject: frame.data.subject,
-        lexical: frame.data.lexical,
-        automatedEmailId: frame.options.id,
-      });
-    },
-  },
-  sendTestEmail: {
-    statusCode: 204,
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['id'],
-    data: ['email', 'subject', 'lexical'],
-    validation: {
-      options: {
-        id: {
-          required: true,
-        },
+
+    editSenders: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      permissions: {
+        method: 'edit',
+      },
+      async query(frame) {
+        memberWelcomeEmailService.init();
+        const data = frame.data;
+        const result = await memberWelcomeEmailService.api.editSharedSenderOptions({
+          sender_name: data.sender_name,
+          sender_email: data.sender_email,
+          sender_reply_to: data.sender_reply_to,
+        });
+        const defaultDesignSettings = await getDefaultEmailDesignSettings();
+        return {
+          ...result,
+          data: result.data.map((automation) =>
+            flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings),
+          ),
+        };
       },
     },
-    permissions: {
-      method: 'edit',
+
+    verifySenderUpdate: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      permissions: {
+        method: 'edit',
+      },
+      data: ['token'],
+      async query(frame) {
+        memberWelcomeEmailService.init();
+        const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(
+          frame.data.token,
+        );
+        const defaultDesignSettings = await getDefaultEmailDesignSettings();
+        return {
+          ...result,
+          data: result.data.map((automation) =>
+            flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings),
+          ),
+        };
+      },
     },
-    async query(frame) {
-      memberWelcomeEmailService.init();
-      await memberWelcomeEmailService.api.sendTestEmail({
-        email: frame.data.email,
-        subject: frame.data.subject,
-        lexical: frame.data.lexical,
-        automatedEmailId: frame.options.id,
-      });
+    preview: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      options: ['id'],
+      data: ['subject', 'lexical'],
+      validation: {
+        options: {
+          id: {
+            required: true,
+          },
+        },
+      },
+      permissions: {
+        method: 'edit',
+      },
+      async query(frame) {
+        memberWelcomeEmailService.init();
+        return await memberWelcomeEmailService.api.previewEmail({
+          subject: frame.data.subject,
+          lexical: frame.data.lexical,
+          automatedEmailId: frame.options.id,
+        });
+      },
     },
-  },
+    sendTestEmail: {
+      statusCode: 204,
+      headers: {
+        cacheInvalidate: false,
+      },
+      options: ['id'],
+      data: ['email', 'subject', 'lexical'],
+      validation: {
+        options: {
+          id: {
+            required: true,
+          },
+        },
+      },
+      permissions: {
+        method: 'edit',
+      },
+      async query(frame) {
+        memberWelcomeEmailService.init();
+        await memberWelcomeEmailService.api.sendTestEmail({
+          email: frame.data.email,
+          subject: frame.data.subject,
+          lexical: frame.data.lexical,
+          automatedEmailId: frame.options.id,
+        });
+      },
+    },
+  };
+
+  return controller;
 };
-
-module.exports = controller;

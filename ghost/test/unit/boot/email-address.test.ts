@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-const config = require('../../../../../core/shared/config');
-const settingsHelpers = require('../../../../../core/server/services/settings-helpers');
-const EmailAddressServiceWrapper = require('../../../../../core/server/services/email-address/email-address-service-wrapper');
-const EmailRenderer = require('../../../../../core/server/services/email-service/email-renderer');
-const SendingService = require('../../../../../core/server/services/email-service/sending-service');
+const config = require('../../../core/shared/config');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const EmailAddressServiceWrapper = require('../../../core/boot/email-address-service-wrapper');
+const EmailRenderer = require('../../../core/server/services/email-service/email-renderer');
+const SendingService = require('../../../core/server/services/email-service/sending-service');
 
 // How consumers choose addresses from these values is covered by the
 // EmailAddressService, EmailRenderer and SendingService tests. This file covers

@@ -2341,9 +2341,10 @@ describe('RouterController', function () {
       it('uses the retained real sender policy and live defaults in inbox links', async function () {
         const {
           EmailAddressService,
-        } = require('../../../../../../../core/server/services/email-address/email-address-service');
+        } = require('../../../../../../../core/shared/email-address/email-address-service');
         let defaultAddress = 'noreply@first.example';
         const policy = new EmailAddressService({
+          logging: require('@tryghost/logging'),
           getManagedEmailEnabled: () => true,
           getSendingDomain: () => null,
           getFallbackDomain: () => null,

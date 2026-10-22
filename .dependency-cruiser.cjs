@@ -71,6 +71,34 @@ const serviceDependencyAllowlist = [
 module.exports = {
   forbidden: [
     {
+      name: 'email-address-dependencies',
+      comment:
+        'Boot supplies the Shared sender policy dependencies; keep library imports explicit.',
+      severity: 'error',
+      from: { path: '^ghost/core/shared/email-address/' },
+      to: {
+        pathNot: [...serviceDependencyAllowlist, '^ghost/core/shared/email-address/'],
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'email-address-via-composition',
+      comment: 'Inject the configured sender policy from Boot; import only its types in consumers.',
+      severity: 'error',
+      from: { path: '^ghost/core/', pathNot: '^ghost/core/(boot/|shared/email-address/)' },
+      to: {
+        path: '^ghost/core/shared/email-address/',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'email-address-unresolved',
+      comment: 'Resolve runtime imports so the Shared sender policy boundary can be checked.',
+      severity: 'error',
+      from: { path: '^ghost/core/shared/email-address/' },
+      to: { couldNotResolve: true, dependencyTypesNot: ['type-only', 'type-import'] },
+    },
+    {
       name: 'service-dependencies',
       comment:
         'Wire application dependencies in the root index.ts and inject them into the implementation.',

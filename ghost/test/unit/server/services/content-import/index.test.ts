@@ -105,7 +105,7 @@ describe('Content import composition root', function () {
     const GhostMailer = mail.GhostMailer;
     sandbox
       .stub(mail, 'GhostMailer')
-      .callsFake(() => new GhostMailer())
+      .callsFake((dependencies: unknown) => new GhostMailer(dependencies))
       .onFirstCall()
       .throws(failure);
     assert.throws(

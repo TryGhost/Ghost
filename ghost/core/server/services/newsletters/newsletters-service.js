@@ -30,7 +30,7 @@ class NewslettersService {
    * @param {Object} options.singleUseTokenProvider
    * @param {Object} options.urlUtils
    * @param {ILimitService} options.limitService
-   * @param {Object} options.emailAddressService
+   * @param {() => Object} options.getEmailAddressService
    * @param {Object} options.labs
    */
   constructor({
@@ -41,7 +41,7 @@ class NewslettersService {
     urlUtils,
     limitService,
     labs,
-    emailAddressService,
+    getEmailAddressService,
   }) {
     this.NewsletterModel = NewsletterModel;
     this.MemberModel = MemberModel;
@@ -51,11 +51,11 @@ class NewslettersService {
     /** @private */
     this.labs = labs;
     /** @private */
-    this.emailAddressService = emailAddressService;
+    this.getEmailAddressService = getEmailAddressService;
 
     /* email verification setup */
 
-    this.ghostMailer = new mail.GhostMailer();
+    this.ghostMailer = new mail.GhostMailer({ getEmailAddressService });
 
     const { transporter, getSubject, getText, getHTML, getSigninURL } = {
       transporter: {
@@ -329,7 +329,7 @@ class NewslettersService {
           continue;
         }
 
-        const validated = this.emailAddressService.service.validate(email, type);
+        const validated = this.getEmailAddressService().validate(email, type);
 
         if (!validated.allowed) {
           throw new errors.ValidationError({
@@ -359,7 +359,7 @@ class NewslettersService {
       attrs.sender_email !== undefined &&
       newsletter.get('sender_email') !== attrs.sender_email;
     if (didChangeReplyTo && !didChangeSenderEmail && newsletter.get('sender_email')) {
-      const validated = this.emailAddressService.service.validate(
+      const validated = this.getEmailAddressService().validate(
         newsletter.get('sender_email'),
         'from',
       );
@@ -394,7 +394,7 @@ class NewslettersService {
    * @private
    */
   async sendEmailVerificationMagicLink({ id, email, property = 'sender_from' }) {
-    const fromEmail = this.emailAddressService.service.defaultFromAddress;
+    const fromEmail = this.getEmailAddressService().defaultFromAddress;
     const { ghostMailer } = this;
 
     this.magicLinkService.transporter = {

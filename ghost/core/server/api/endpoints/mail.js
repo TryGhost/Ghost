@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const tpl = require('@tryghost/tpl');
 const mailService = require('../../lib/mail');
 const api = require('./');
@@ -12,7 +13,9 @@ const messages = {
 
 _private.sendMail = (object) => {
   if (!(mailer instanceof mailService.GhostMailer)) {
-    mailer = new mailService.GhostMailer();
+    mailer = new mailService.GhostMailer({
+      getEmailAddressService: () => emailAddressService.service,
+    });
   }
 
   return mailer.send(object.mail[0].message).catch((err) => {

@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const staffService = require('../../../../../core/server/services/staff');
-const emailAddressService = require('../../../../../core/server/services/email-address');
+const emailAddressService = require('../../../../../core/boot/email-address');
 
 const DomainEvents = require('@tryghost/domain-events');
 const { mockManager } = require('../../../../utils/e2e-framework');

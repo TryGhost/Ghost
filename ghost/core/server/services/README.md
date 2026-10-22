@@ -45,9 +45,9 @@ and provider adapters as private implementation details.
 For example:
 
 - `email-service` exposes an application-owned wrapper initialized during boot.
-- `email-address` constructs and exposes the application's email-address
-  implementation through `init()` and `service`. It qualifies without owning a
-  background worker.
+- [Email Address](../../shared/email-address/README.md) is configured Shared
+  policy with construction in Boot. Its relocation preserves the application
+  instance and readiness contract without retaining a service directory here.
 - Staff invitation acceptance is a domain action owned by `invites`. Its
   `accept.ts` function keeps transaction state local to each invocation; it
   does not need its own service root or lifecycle.

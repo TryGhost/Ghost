@@ -12,5 +12,8 @@ use the delivery formatter because their interfaces already return delivery
 strings. This is a compatibility bridge: retain their escaping, checkmark removal
 and cached string values during extraction. As those interfaces accept structured
 mailboxes, move formatting to the transactional and bulk delivery adapters and
-remove these earlier calls. The `email-address` service still owns sender policy
-and its lifecycle; the mail adapters own provider compatibility.
+remove these earlier calls. [Shared Email Address](../../../shared/email-address/README.md)
+owns sender policy, with construction and readiness in Boot; the mail adapters
+own provider compatibility. Each caller supplies a policy getter to GhostMailer
+so a mailer constructed before boot still reads current sender defaults when
+sending. GhostMailer keeps its existing constructor identity.

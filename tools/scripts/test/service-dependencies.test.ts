@@ -85,6 +85,45 @@ const edges = (graph: ICruiseResult) =>
     )
     .sort();
 
+it('keeps relocated Email Address policy independent of application wiring and injects it into consumers', (t) => {
+  const policy = 'ghost/core/shared/email-address';
+  const boot = 'ghost/core/boot/email-address.js';
+  const consumer = `${services}/legacy/consumer.ts`;
+  const f = fixture(t, {
+    [`${policy}/email-address-service.ts`]: [
+      "import './helper';",
+      "import '@tryghost/parse-email-address/mailbox';",
+      "import type { Config } from '../config';",
+    ].join('\n'),
+    [`${policy}/helper.ts`]: 'export const value = true;',
+    'packages/parse-email-address/package.json': JSON.stringify({
+      name: '@tryghost/parse-email-address',
+      exports: { './mailbox': './src/mailbox.ts' },
+    }),
+    'packages/parse-email-address/src/mailbox.ts': 'export const parseMailbox = () => null;',
+    [boot]: "require('../shared/email-address/email-address-service');",
+    [consumer]: "import type {} from '../../../shared/email-address/email-address-service';",
+  });
+  f.link('packages/parse-email-address', 'node_modules/@tryghost/parse-email-address');
+  assert.deepEqual(violations(f.graph(false, 'ghost/core')), []);
+
+  f.write(
+    `${policy}/helper.ts`,
+    "require('../config'); require('../../boot/email-address'); require('./missing');",
+  );
+  f.write(consumer, "require('../../../shared/email-address/email-address-service');");
+  assert.deepEqual(
+    violations(f.graph(false, 'ghost/core')),
+    [
+      ['email-address-dependencies', `${policy}/helper.ts`, boot],
+      ['email-address-dependencies', `${policy}/helper.ts`, config],
+      ['email-address-dependencies', `${policy}/helper.ts`, './missing'],
+      ['email-address-unresolved', `${policy}/helper.ts`, './missing'],
+      ['email-address-via-composition', consumer, `${policy}/email-address-service.ts`],
+    ].sort(),
+  );
+});
+
 it('enforces migrated services and reports all services through native Markdown and JSON audit output', (t) => {
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: "import '../../../shared/config';",

@@ -49,7 +49,7 @@ class EmailServiceWrapper {
     const membersRepository = membersService.api.members;
     const { limitService } = require('../limits');
     const labs = require('../../../shared/labs');
-    const emailAddressService = require('../email-address');
+    const emailAddressService = require('../../../boot/email-address');
     const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;

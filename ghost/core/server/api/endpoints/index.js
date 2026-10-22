@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const apiFramework = require('@tryghost/api-framework');
 const localUtils = require('./utils');
 
@@ -109,11 +110,19 @@ module.exports = {
   },
 
   get automatedEmails() {
-    return apiFramework.pipeline(require('./automated-emails'), localUtils);
+    return apiFramework.pipeline(
+      require('./automated-emails')({ getEmailAddressService: () => emailAddressService.service }),
+      localUtils,
+    );
   },
 
   get automatedEmailDesign() {
-    return apiFramework.pipeline(require('./automated-email-design'), localUtils);
+    return apiFramework.pipeline(
+      require('./automated-email-design')({
+        getEmailAddressService: () => emailAddressService.service,
+      }),
+      localUtils,
+    );
   },
 
   get membersStripeConnect() {

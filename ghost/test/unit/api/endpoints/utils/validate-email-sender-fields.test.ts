@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type { EmailAddressService } from '../../../../../core/server/services/email-address/email-address-service';
+import type { EmailAddressService } from '../../../../../core/shared/email-address/email-address-service';
 import { validateEmailSenderFields } from '../../../../../core/server/api/endpoints/utils/validate-email-sender-fields';
 
 type ValidationResult = ReturnType<EmailAddressService['validate']>;

@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
-const emailAddressService = require('../../services/email-address');
 const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
 } = require('../../services/member-welcome-emails/constants');
@@ -35,55 +34,56 @@ async function resolveDefaultDesign(options) {
   return model;
 }
 
-/** @type {import('@tryghost/api-framework').Controller} */
-const controller = {
-  docName: 'automated_email_design',
+module.exports = ({ getEmailAddressService }) => {
+  /** @type {import('@tryghost/api-framework').Controller} */
+  const controller = {
+    docName: 'automated_email_design',
 
-  read: {
-    headers: {
-      cacheInvalidate: false,
+    read: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      permissions: {
+        docName: 'email_design_setting',
+        method: 'read',
+      },
+      async query(frame) {
+        return await resolveDefaultDesign(frame.options);
+      },
     },
-    permissions: {
-      docName: 'email_design_setting',
-      method: 'read',
-    },
-    async query(frame) {
-      return await resolveDefaultDesign(frame.options);
-    },
-  },
 
-  edit: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    permissions: {
-      docName: 'email_design_setting',
-      method: 'edit',
-    },
-    async query(frame) {
-      const data = frame.data.automated_email_design[0];
+    edit: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      permissions: {
+        docName: 'email_design_setting',
+        method: 'edit',
+      },
+      async query(frame) {
+        const data = frame.data.automated_email_design[0];
 
-      // Strip id from the payload — Bookshelf uses the options id
-      // for the WHERE clause and a mismatched id causes "No Rows Updated"
-      delete data.id;
+        // Strip id from the payload — Bookshelf uses the options id
+        // for the WHERE clause and a mismatched id causes "No Rows Updated"
+        delete data.id;
 
-      // Reject slug changes — the slug is an immutable identifier
-      if ('slug' in data) {
-        throw new errors.ValidationError({
-          message: 'The slug field cannot be modified.',
+        // Reject slug changes — the slug is an immutable identifier
+        if ('slug' in data) {
+          throw new errors.ValidationError({
+            message: 'The slug field cannot be modified.',
+          });
+        }
+        validateEmailSenderFields(getEmailAddressService(), data);
+
+        const defaultDesign = await resolveDefaultDesign(frame.options);
+
+        return await models.EmailDesignSetting.edit(data, {
+          ...frame.options,
+          id: defaultDesign.get('id'),
         });
-      }
-      emailAddressService.init();
-      validateEmailSenderFields(emailAddressService.service, data);
-
-      const defaultDesign = await resolveDefaultDesign(frame.options);
-
-      return await models.EmailDesignSetting.edit(data, {
-        ...frame.options,
-        id: defaultDesign.get('id'),
-      });
+      },
     },
-  },
-};
+  };
 
-module.exports = controller;
+  return controller;
+};

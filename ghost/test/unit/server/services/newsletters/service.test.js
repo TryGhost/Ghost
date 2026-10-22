@@ -11,7 +11,7 @@ const urlUtils = require('../../../../utils/url-utils');
 const { mockManager } = require('../../../../utils/e2e-framework');
 const {
   EmailAddressService,
-} = require('../../../../../core/server/services/email-address/email-address-service');
+} = require('../../../../../core/shared/email-address/email-address-service');
 const NewslettersService = require('../../../../../core/server/services/newsletters/newsletters-service');
 
 class TestTokenProvider {
@@ -37,6 +37,29 @@ describe('NewslettersService', function () {
       async errorIfWouldGoOverLimit() {},
     };
 
+    const emailAddressService = new EmailAddressService({
+      logging: require('@tryghost/logging'),
+      getManagedEmailEnabled: () => {
+        return false;
+      },
+      getSendingDomain: () => {
+        return null;
+      },
+      getDefaultEmail: () => {
+        return {
+          address: 'default@example.com',
+        };
+      },
+      isValidEmailAddress: () => {
+        return true;
+      },
+      labs: {
+        isSet() {
+          return false;
+        },
+      },
+    });
+
     newsletterService = new NewslettersService({
       NewsletterModel: Newsletter,
       MemberModel: Member,
@@ -44,29 +67,7 @@ describe('NewslettersService', function () {
       singleUseTokenProvider: tokenProvider,
       urlUtils: urlUtils.stubUrlUtilsFromConfig(),
       limitService,
-      emailAddressService: {
-        service: new EmailAddressService({
-          getManagedEmailEnabled: () => {
-            return false;
-          },
-          getSendingDomain: () => {
-            return null;
-          },
-          getDefaultEmail: () => {
-            return {
-              address: 'default@example.com',
-            };
-          },
-          isValidEmailAddress: () => {
-            return true;
-          },
-          labs: {
-            isSet() {
-              return false;
-            },
-          },
-        }),
-      },
+      getEmailAddressService: () => emailAddressService,
     });
   });
 

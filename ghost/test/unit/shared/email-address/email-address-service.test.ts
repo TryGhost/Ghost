@@ -1,11 +1,12 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
-import { EmailAddressService } from '../../../../../core/server/services/email-address/email-address-service';
+import { EmailAddressService } from '../../../../core/shared/email-address/email-address-service';
 
 describe('EmailAddressService', function () {
   // Helper to create service config with overrides
   const createConfig = (overrides: any = {}) => ({
+    logging,
     getManagedEmailEnabled: () => true,
     getSendingDomain: () => 'custom.example.com',
     getFallbackDomain: () => 'fallback.example.com',

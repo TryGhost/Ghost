@@ -47,6 +47,7 @@ Admin is a single React application. See
 | Path                                                      | Contains                                                        |
 | --------------------------------------------------------- | --------------------------------------------------------------- |
 | [`ghost/core/kernel/`](../../ghost/core/kernel/README.md) | Application-independent framework primitives                    |
+| [`ghost/core/boot/`](../../ghost/core/boot/README.md)     | Application construction extracted from `core/boot.js`          |
 | `ghost/core/server/`                                      | APIs, models, services, data access, and server startup         |
 | `ghost/core/frontend/`                                    | Theme rendering, helpers, middleware, and public assets         |
 | `ghost/core/shared/`                                      | Configuration and code shared across server boundaries          |

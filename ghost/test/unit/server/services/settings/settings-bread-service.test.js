@@ -4,7 +4,7 @@ const mail = require('../../../../../core/server/lib/mail');
 const SettingsBreadService = require('../../../../../core/server/services/settings/settings-bread-service');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { mockManager } = require('../../../../utils/e2e-framework');
-const emailAddress = require('../../../../../core/server/services/email-address');
+const emailAddress = require('../../../../../core/boot/email-address');
 const logging = require('@tryghost/logging');
 
 describe('Settings BREAD Service', function () {
@@ -210,17 +210,18 @@ describe('Settings BREAD Service', function () {
             return false;
           },
         },
-        emailAddressService: {
-          service: {
-            validate() {
-              return {
-                allowed: true,
-                verificationEmailRequired: true,
-              };
-            },
-            defaultFromAddress: 'noreply@example.com',
+        getEmailAddressService: () => ({
+          getAddressFromString: emailAddress.service.getAddressFromString.bind(
+            emailAddress.service,
+          ),
+          validate() {
+            return {
+              allowed: true,
+              verificationEmailRequired: true,
+            };
           },
-        },
+          defaultFromAddress: 'noreply@example.com',
+        }),
       });
 
       const settings = await defaultSettingsManager.edit(

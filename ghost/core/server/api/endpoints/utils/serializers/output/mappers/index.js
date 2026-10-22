@@ -1,3 +1,5 @@
+const emailAddressService = require('../../../../../../../boot/email-address');
+
 module.exports = {
   actions: require('./actions'),
   activityFeedEvents: require('./activity-feed-events'),
@@ -15,7 +17,9 @@ module.exports = {
   snippets: require('./snippets'),
   tags: require('./tags'),
   offers: require('./offers'),
-  newsletters: require('./newsletters'),
+  newsletters: require('./newsletters')({
+    getEmailAddressService: () => emailAddressService.service,
+  }),
   users: require('./users'),
   mentions: require('./mentions'),
 };

@@ -1,6 +1,6 @@
 class EmailAddressServiceWrapper {
   /**
-   * @type {import('./email-address-service').EmailAddressService}
+   * @type {import('../shared/email-address/email-address-service').EmailAddressService}
    */
   service;
 
@@ -9,15 +9,15 @@ class EmailAddressServiceWrapper {
       return;
     }
 
-    const labs = require('../../../shared/labs');
-    const config = require('../../../shared/config');
-    const settingsHelpers = require('../settings-helpers');
+    const config = require('../shared/config');
+    const settingsHelpers = require('../server/services/settings-helpers');
     const validator = require('@tryghost/validator');
+    const logging = require('@tryghost/logging');
 
-    const { EmailAddressService } = require('./email-address-service');
+    const { EmailAddressService } = require('../shared/email-address/email-address-service');
 
     this.service = new EmailAddressService({
-      labs,
+      logging,
       getManagedEmailEnabled: () => {
         return config.get('hostSettings:managedEmail:enabled') ?? false;
       },

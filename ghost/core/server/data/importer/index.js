@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
@@ -24,7 +25,7 @@ module.exports = {
       importsStorage: adapterManager.getAdapter('storage:imports'),
       handlers: [...createContentFileHandlers(), RevueHandler, JSONHandler, MarkdownHandler],
       importers: [...createContentFileImporters(), RevueImporter, DataImporter],
-      mailer: new GhostMailer(),
+      mailer: new GhostMailer({ getEmailAddressService: () => emailAddressService.service }),
       config,
       urlUtils,
       logging,

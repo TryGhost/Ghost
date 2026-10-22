@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const DomainEvents = require('@tryghost/domain-events');
 const MentionCreatedEvent = require('../mentions/mention-created-event');
 const logging = require('@tryghost/logging');
@@ -117,7 +118,9 @@ class RecommendationServiceWrapper {
     });
 
     const mail = require('../../lib/mail');
-    const mailer = new mail.GhostMailer();
+    const mailer = new mail.GhostMailer({
+      getEmailAddressService: () => emailAddressService.service,
+    });
     const emailService = {
       async send(to, subject, html, text) {
         return mailer.send({

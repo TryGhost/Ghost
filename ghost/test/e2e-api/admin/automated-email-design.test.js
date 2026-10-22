@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
 const { anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag } = matchers;
 const sinon = require('sinon');
-const emailAddressService = require('../../../core/server/services/email-address');
+const emailAddressService = require('../../../core/boot/email-address');
 const models = require('../../../core/server/models');
 
 const matchEmailDesignSetting = {
@@ -139,7 +139,6 @@ describe('Automated Email Design API', function () {
           sender_reply_to: 'existing-reply@example.com',
         });
 
-      emailAddressService.init();
       const validateStub = sinon
         .stub(emailAddressService.service, 'validate')
         .returns({ allowed: false, verificationEmailRequired: false });

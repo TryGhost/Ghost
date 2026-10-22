@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const DomainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 
@@ -14,7 +15,7 @@ class StaffServiceWrapper {
     const models = require('../../models');
     const memberAttribution = require('../member-attribution');
     const { GhostMailer } = require('../../lib/mail');
-    const mailer = new GhostMailer();
+    const mailer = new GhostMailer({ getEmailAddressService: () => emailAddressService.service });
     const settingsCache = require('../../../shared/settings-cache');
     const urlUtils = require('../../../shared/url-utils').default;
     const { blogIcon } = require('../../../server/lib/image');

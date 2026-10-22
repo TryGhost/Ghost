@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 class CommentsServiceWrapper {
   init() {
     const CommentsService = require('./comments-service');
@@ -8,7 +9,7 @@ class CommentsServiceWrapper {
     const logging = require('@tryghost/logging');
     const models = require('../../models');
     const { GhostMailer } = require('../../lib/mail');
-    const mailer = new GhostMailer();
+    const mailer = new GhostMailer({ getEmailAddressService: () => emailAddressService.service });
     const settingsCache = require('../../../shared/settings-cache');
     const urlService = require('../url');
     const urlUtils = require('../../../shared/url-utils').default;

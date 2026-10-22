@@ -1,4 +1,3 @@
-import logging from '@tryghost/logging';
 import { parseMailbox } from '@tryghost/parse-email-address/mailbox';
 import type { Mailbox as EmailAddress } from '@tryghost/parse-email-address/mailbox';
 
@@ -27,8 +26,10 @@ export class EmailAddressService {
   #getFallbackEmail: () => EmailAddress | null;
   #getMembersSupportAddress: () => string;
   #isValidEmailAddress: (email: string) => boolean;
+  #logging: { error(message: string): void; warn(message: string): void };
 
   constructor(dependencies: {
+    logging: { error(message: string): void; warn(message: string): void };
     getManagedEmailEnabled: () => boolean;
     getSendingDomain: () => string | null;
     getFallbackDomain: () => string | null;
@@ -37,6 +38,7 @@ export class EmailAddressService {
     getMembersSupportAddress: () => string;
     isValidEmailAddress: (email: string) => boolean;
   }) {
+    this.#logging = dependencies.logging;
     this.#getManagedEmailEnabled = dependencies.getManagedEmailEnabled;
     this.#getSendingDomain = dependencies.getSendingDomain;
     this.#getFallbackDomain = dependencies.getFallbackDomain;
@@ -113,9 +115,11 @@ export class EmailAddressService {
       // silences a genuinely malformed mail:from, not just the known IP-domain case —
       // demote to warn instead of dropping the signal entirely.
       if (preferred.replyTo.address.toLowerCase() !== this.defaultFromEmail.address.toLowerCase()) {
-        logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
+        this.#logging.error(
+          `[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`,
+        );
       } else {
-        logging.warn(
+        this.#logging.warn(
           `[EmailAddresses] replyTo address ${preferred.replyTo.address} matches the default from-address and failed generic validation; removing it`,
         );
       }
@@ -150,7 +154,7 @@ export class EmailAddressService {
           replyTo: preferred.replyTo || preferred.from || this.defaultFromEmail,
         };
       } else {
-        logging.error(
+        this.#logging.error(
           '[EmailAddresses] Fallback email address is not configured, cannot use fallback address for sending email.',
         );
       }
@@ -175,7 +179,7 @@ export class EmailAddressService {
       // Not an error: this is the expected, handled fallback for any sender address that
       // doesn't match the sending domain (staff/member/newsletter senders routinely don't) —
       // we fall through to the default from-address below. Warn-level, not error-level.
-      logging.warn(
+      this.#logging.warn(
         `[EmailAddresses] Cannot send emails from ${preferred.from.address} when sending domain is ${this.sendingDomain} — falling back to the default from-address`,
       );
     }

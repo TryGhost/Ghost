@@ -20,7 +20,7 @@ const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
 const commentsService = require('../comments');
-const emailAddressService = require('../email-address');
+const emailAddressService = require('../../../boot/email-address');
 const giftService = require('../gifts');
 const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafieldsService = require('../members-metafields');
@@ -32,7 +32,9 @@ const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
-const ghostMailer = new mail.GhostMailer();
+const ghostMailer = new mail.GhostMailer({
+  getEmailAddressService: () => emailAddressService.service,
+});
 
 module.exports = createApiInstance;
 

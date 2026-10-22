@@ -33,7 +33,7 @@ const {
  */
 
 /**
- * @typedef {import("../email-address/email-address-service").EmailAddressService} EmailAddressService
+ * @typedef {import("../../../shared/email-address/email-address-service").EmailAddressService} EmailAddressService
  */
 
 /**

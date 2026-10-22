@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
@@ -30,7 +31,9 @@ module.exports = async ({
   }
 
   const mailService = require('../../lib/mail');
-  const ghostMailer = new mailService.GhostMailer();
+  const ghostMailer = new mailService.GhostMailer({
+    getEmailAddressService: () => emailAddressService.service,
+  });
 
   const notificationEmailService = new NotificationEmailService({
     mailer: ghostMailer,

@@ -39,7 +39,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './shared/url-utils': { default: { urlFor: () => 'https://example.com/ghost/api/admin' } },
       './shared/settings-cache': { get: () => 'site-id' },
       './server/services/stripe': { init: stripe },
-      './server/services/email-address': { init: emailAddress },
+      './boot/email-address': { init: emailAddress },
       './server/services/gifts': {
         init: gifts,
         deliveryService: {},

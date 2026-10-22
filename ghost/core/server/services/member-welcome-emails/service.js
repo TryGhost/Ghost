@@ -5,7 +5,6 @@ const settingsCache = require('../../../shared/settings-cache');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
 const MagicLink = require('../../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
-const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const { parseMailbox } = require('@tryghost/parse-email-address/mailbox');
 const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
@@ -56,6 +55,7 @@ const getSenderDetails = (designSettingsJson) => {
 };
 
 class MemberWelcomeEmailService {
+  #emailAddressService;
   #transactionalMailer;
   #bulkMailer;
   #renderer;
@@ -63,9 +63,11 @@ class MemberWelcomeEmailService {
   #memberWelcomeEmails = { free: null, paid: null };
   #defaultNewsletterSenderOptions = null;
 
-  constructor({ t, dir, singleUseTokenProvider }) {
-    emailAddressService.init();
-    this.#transactionalMailer = new mail.GhostMailer();
+  constructor({ t, dir, singleUseTokenProvider, emailAddressService }) {
+    this.#emailAddressService = emailAddressService;
+    this.#transactionalMailer = new mail.GhostMailer({
+      getEmailAddressService: () => emailAddressService,
+    });
     this.#bulkMailer = new MailgunClient({ config, settings: settingsCache });
     this.#renderer = new MemberWelcomeEmailRenderer({ t, dir });
 
@@ -146,7 +148,7 @@ class MemberWelcomeEmailService {
       fromAddress = newsletter.get('sender_email');
     }
 
-    const fromAddresses = emailAddressService.service.getAddress({
+    const fromAddresses = this.#emailAddressService.getAddress({
       from: {
         address: fromAddress,
         name: senderName || undefined,
@@ -159,13 +161,10 @@ class MemberWelcomeEmailService {
 
     if (replyToSetting === 'support') {
       replyTo = settingsHelpers.getMembersSupportAddress();
-    } else if (
-      replyToSetting === 'newsletter' &&
-      !emailAddressService.service.managedEmailEnabled
-    ) {
+    } else if (replyToSetting === 'newsletter' && !this.#emailAddressService.managedEmailEnabled) {
       replyTo = from;
     } else {
-      const addresses = emailAddressService.service.getAddress({
+      const addresses = this.#emailAddressService.getAddress({
         from: {
           address: fromAddress,
           name: senderName || undefined,
@@ -200,7 +199,7 @@ class MemberWelcomeEmailService {
   async #getEffectiveSenderOptions(automatedSender = {}) {
     const defaultOptions = await this.#getSenderOptions();
     const defaultFrom =
-      parseMailbox(defaultOptions.from || '') || emailAddressService.service.defaultFromEmail;
+      parseMailbox(defaultOptions.from || '') || this.#emailAddressService.defaultFromEmail;
     const defaultReplyTo = defaultOptions.replyTo
       ? parseMailbox(defaultOptions.replyTo)
       : undefined;
@@ -209,7 +208,7 @@ class MemberWelcomeEmailService {
     const senderEmail = trimValue(automatedSender.senderEmail) || defaultFrom.address;
     const senderReplyTo = trimValue(automatedSender.senderReplyTo);
 
-    const addresses = emailAddressService.service.getAddress({
+    const addresses = this.#emailAddressService.getAddress({
       from: {
         address: senderEmail,
         ...(senderName ? { name: senderName } : {}),
@@ -280,7 +279,7 @@ class MemberWelcomeEmailService {
       };
     }
 
-    const validated = emailAddressService.service.validate(value, validationType);
+    const validated = this.#emailAddressService.validate(value, validationType);
     if (!validated.allowed) {
       throw new errors.ValidationError({
         message: `You cannot set ${field} to ${value}`,
@@ -326,7 +325,7 @@ class MemberWelcomeEmailService {
   }
 
   async #sendEmailVerificationMagicLink({ email, property }) {
-    const fromEmail = emailAddressService.service.defaultFromEmail;
+    const fromEmail = this.#emailAddressService.defaultFromEmail;
 
     this.#magicLinkService.transporter = {
       sendMail: (message) => {
@@ -910,8 +909,10 @@ class MemberWelcomeEmailServiceWrapper {
 
     const SingleUseTokenProvider = require('../members/single-use-token-provider');
     const models = require('../../models');
+    const emailAddressService = require('../../../boot/email-address').service;
 
     this.api = new MemberWelcomeEmailService({
+      emailAddressService,
       t: this.i18n.t,
       dir: this.i18n.dir.bind(this.i18n),
       singleUseTokenProvider: new SingleUseTokenProvider({

@@ -399,7 +399,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
   const recommendationsService = require('./server/services/recommendations');
-  const emailAddressService = require('./server/services/email-address');
+  const emailAddressService = require('./boot/email-address');
   const statsService = require('./server/services/stats');
   const explorePingService = require('./server/services/explore-ping');
   const domainEvents = require('@tryghost/domain-events');

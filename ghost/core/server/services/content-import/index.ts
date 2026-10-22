@@ -39,8 +39,11 @@ function makeImporter(): ContentCSVImporter {
   const mediaInlinerService = require('../media-inliner');
   const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
+  const emailAddressService = require('../../../boot/email-address');
   const { GhostMailer } = require('../../lib/mail');
-  const ghostMailer = new GhostMailer();
+  const ghostMailer = new GhostMailer({
+    getEmailAddressService: () => emailAddressService.service,
+  });
 
   // Row aggregates and best-effort cleanup are intentionally reported without
   // failing a run. Fatal handler errors are reported by the class-based jobs service.

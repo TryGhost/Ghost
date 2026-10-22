@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -31,7 +32,7 @@ const messages = {
     'Cannot use remote webhooks in development. See https://docs.ghost.org/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
-const ghostMailer = new GhostMailer();
+const ghostMailer = new GhostMailer({ getEmailAddressService: () => emailAddressService.service });
 
 const membersConfig = new MembersConfigProvider({
   settingsHelpers,

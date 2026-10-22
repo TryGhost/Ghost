@@ -1,3 +1,4 @@
+const emailAddressService = require('../../../boot/email-address');
 const adapterManager = require('../../services/adapter-manager').default;
 const createSessionService = require('./session-service');
 const { sessionFromToken } = require('./session-from-token');
@@ -49,7 +50,7 @@ function getOriginOfRequest(req) {
   return null;
 }
 
-const mailer = new GhostMailer();
+const mailer = new GhostMailer({ getEmailAddressService: () => emailAddressService.service });
 
 const sessionService = createSessionService({
   getOriginOfRequest,

@@ -50,7 +50,7 @@ class SettingsBREADService {
    * @param {Object} options.urlUtils
    * @param {Object} options.labsService - labs service instance
    * @param {Object} options.limitsService - limits service instance
-   * @param {{service: Object}} options.emailAddressService
+   * @param {() => Object} options.getEmailAddressService
    */
   constructor({
     SettingsModel,
@@ -60,17 +60,17 @@ class SettingsBREADService {
     mail,
     singleUseTokenProvider,
     urlUtils,
-    emailAddressService,
+    getEmailAddressService,
   }) {
     this.SettingsModel = SettingsModel;
     this.settingsCache = settingsCache;
     this.labs = labsService;
     this.limitsService = limitsService;
-    this.emailAddressService = emailAddressService;
+    this.getEmailAddressService = getEmailAddressService;
 
     /* email verification setup */
 
-    this.ghostMailer = new mail.GhostMailer();
+    this.ghostMailer = new mail.GhostMailer({ getEmailAddressService });
 
     const { transporter, getSubject, getText, getHTML, getSigninURL } = {
       transporter: {
@@ -424,7 +424,7 @@ class SettingsBREADService {
         const hasChanged = getSetting(setting).value !== email;
 
         if (await this.requiresEmailVerification({ email, hasChanged })) {
-          const validated = this.emailAddressService.service.validate(email, 'replyTo');
+          const validated = this.getEmailAddressService().validate(email, 'replyTo');
           if (!validated.allowed) {
             throw new ValidationError({
               message: messages.invalidEmail,
@@ -480,7 +480,7 @@ class SettingsBREADService {
    * @private
    */
   async sendEmailVerificationMagicLink({ email, key }) {
-    const fromEmail = this.emailAddressService.service.defaultFromAddress;
+    const fromEmail = this.getEmailAddressService().defaultFromAddress;
     const { ghostMailer } = this;
 
     this.magicLinkService.transporter = {

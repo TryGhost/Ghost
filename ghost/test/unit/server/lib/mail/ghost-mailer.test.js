@@ -8,7 +8,7 @@ const logging = require('@tryghost/logging');
 let mailer;
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
-const emailAddress = require('../../../../../core/server/services/email-address');
+const emailAddress = require('../../../../../core/boot/email-address');
 const settingsHelpers = require('../../../../../core/server/services/settings-helpers');
 
 // Mock SMTP config
@@ -56,7 +56,7 @@ describe('Mail: Ghostmailer', function () {
   });
 
   it('should attach mail provider to ghost instance', function () {
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
     assertExists(mailer);
     assert.equal(typeof mailer.send, 'function');
@@ -69,7 +69,7 @@ describe('Mail: Ghostmailer', function () {
       address: 'first@example.com',
       name: 'First ✅',
     });
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
     const sendMail = sandbox.stub(mailer, 'sendMail').resolves({});
 
     await mailer.send(mailDataNoServer);
@@ -86,7 +86,7 @@ describe('Mail: Ghostmailer', function () {
 
   it('should setup SMTP transport on initialization', function () {
     configUtils.set({ mail: SMTP });
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
     assert('transport' in mailer);
     assert.equal(mailer.transport.transporter.name, 'SMTP');
@@ -96,7 +96,7 @@ describe('Mail: Ghostmailer', function () {
   it('should fallback to direct if config is empty', function () {
     configUtils.set({ mail: {} });
 
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
     assert('transport' in mailer);
     assert.equal(mailer.transport.transporter.name, 'SMTP');
@@ -107,7 +107,7 @@ describe('Mail: Ghostmailer', function () {
     const { promise, resolve, reject } = Promise.withResolvers();
     configUtils.set({ mail: { transport: 'stub' } });
 
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
     assert.equal(mailer.transport.transporter.name, 'Stub');
 
@@ -128,7 +128,7 @@ describe('Mail: Ghostmailer', function () {
     const { promise, resolve, reject } = Promise.withResolvers();
     configUtils.set({ mail: { transport: 'stub', options: { error: 'Stub made a boo boo :(' } } });
 
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
     assert.equal(mailer.transport.transporter.name, 'Stub');
 
@@ -146,7 +146,7 @@ describe('Mail: Ghostmailer', function () {
   });
 
   it('should fail to send messages when given insufficient data', async function () {
-    mailer = new mail.GhostMailer();
+    mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
     await assert.rejects(mailer.send(), { message: 'Incomplete message data.' });
     await assert.rejects(mailer.send({ subject: '123' }), { message: 'Incomplete message data.' });
@@ -159,7 +159,7 @@ describe('Mail: Ghostmailer', function () {
     beforeEach(function () {
       configUtils.set({ mail: {} });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
     });
 
     afterEach(function () {
@@ -221,7 +221,7 @@ describe('Mail: Ghostmailer', function () {
         },
       });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
       const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
       mailer.transport.transporter.name = 'NOT DIRECT';
@@ -237,7 +237,7 @@ describe('Mail: Ghostmailer', function () {
 
     describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
       beforeEach(async function () {
-        mailer = new mail.GhostMailer();
+        mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
         sandbox.stub(mailer, 'sendMail').resolves();
         mailer.transport.transporter.name = 'NOT DIRECT';
         sandbox.stub(settingsCache, 'get').returns('Test');
@@ -303,7 +303,7 @@ describe('Mail: Ghostmailer', function () {
       // Standard domain
       configUtils.set({ mail: { from: '"bar" <from@default.com>' } });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
       const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
       mailer.transport.transporter.name = 'NOT DIRECT';
@@ -322,7 +322,7 @@ describe('Mail: Ghostmailer', function () {
 
       configUtils.set({ mail: { from: 'from@default.com' } });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
       const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
       mailer.transport.transporter.name = 'NOT DIRECT';
@@ -350,7 +350,7 @@ describe('Mail: Ghostmailer', function () {
     it('should ignore theme title if from address is Title <email@address.com> format', async function () {
       configUtils.set({ mail: { from: '"R2D2" <from@default.com>' } });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
       const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
       mailer.transport.transporter.name = 'NOT DIRECT';
@@ -378,7 +378,7 @@ describe('Mail: Ghostmailer', function () {
       configUtils.set({ mail: { from: null } });
       sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
       const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
       mailer.transport.transporter.name = 'NOT DIRECT';
@@ -407,7 +407,7 @@ describe('Mail: Ghostmailer', function () {
       });
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       // Mock the state to simulate Mailgun transport
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
@@ -431,7 +431,7 @@ describe('Mail: Ghostmailer', function () {
       });
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
@@ -451,7 +451,7 @@ describe('Mail: Ghostmailer', function () {
     it('should enable Mailgun open tracking when explicitly requested', async function () {
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
@@ -470,7 +470,7 @@ describe('Mail: Ghostmailer', function () {
     it('should not enable Mailgun open tracking when explicitly disabled', async function () {
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
@@ -511,7 +511,7 @@ describe('Mail: Ghostmailer', function () {
         })
         .reply(200, { id: '<message-id@domain.com>', message: 'Queued. Thank you.' });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
 
       await mailer.send({
         to: 'recipient@example.com',
@@ -529,7 +529,7 @@ describe('Mail: Ghostmailer', function () {
       });
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
@@ -550,7 +550,7 @@ describe('Mail: Ghostmailer', function () {
       });
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
@@ -575,7 +575,7 @@ describe('Mail: Ghostmailer', function () {
       sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
       const warnStub = sandbox.stub(logging, 'warn');
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
@@ -603,7 +603,7 @@ describe('Mail: Ghostmailer', function () {
     });
 
     it('should copy headers to h: prefixed keys for Mailgun transport', async function () {
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       mailer.state.usingMailgun = true;
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
       sandbox.stub(settingsCache, 'get').returns(false);
@@ -624,7 +624,7 @@ describe('Mail: Ghostmailer', function () {
         hostSettings: { siteId: '999999' },
       });
 
-      mailer = new mail.GhostMailer();
+      mailer = new mail.GhostMailer({ getEmailAddressService: () => emailAddress.service });
       // usingMailgun defaults to false when using stub transport
       const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
