@@ -179,6 +179,63 @@ it('allows same-service code, explicit types, approved libraries and root wiring
   assert.equal(f.run('err').status, 0);
 });
 
+it('allows the exact libraries required by Member Attribution without allowing siblings', (t) => {
+  const approved = [
+    '@tryghost/string',
+    '@tryghost/string/lib/index',
+    '@tryghost/referrer-parser',
+    '@tryghost/referrer-parser/dist/index.cjs',
+    '@tryghost/referrer-parser/dist/index.js',
+    '../../lib/common/to-plain',
+    '../../lib/link-replacer',
+  ];
+  const rejected = [
+    '@tryghost/string/other',
+    '@tryghost/referrer-parser/other',
+    '@tryghost/string-extra',
+    '@tryghost/referrer-parser-extra',
+    '../../lib/common/to-plain-extra',
+    '../../lib/link-replacer-extra',
+  ];
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
+    'ghost/core/server/lib/common/to-plain.ts': 'export const toPlain = (value) => value;',
+    'ghost/core/server/lib/link-replacer.js': 'module.exports = {};',
+    'ghost/core/server/lib/common/to-plain-extra.ts': 'export {};',
+    'ghost/core/server/lib/link-replacer-extra.js': 'module.exports = {};',
+  });
+  for (const [name, main] of [
+    ['@tryghost/string', 'lib/index.js'],
+    ['@tryghost/referrer-parser', 'dist/index.cjs'],
+    ['@tryghost/string-extra', 'index.js'],
+    ['@tryghost/referrer-parser-extra', 'index.js'],
+  ]) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main }));
+    f.write(`node_modules/${name}/${main}`, 'module.exports = {};');
+    f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/@tryghost/referrer-parser/dist/index.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(
+    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
+    approved.length,
+  );
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/string/other.js',
+      'node_modules/@tryghost/referrer-parser/other.js',
+      'node_modules/@tryghost/string-extra/index.js',
+      'node_modules/@tryghost/referrer-parser-extra/index.js',
+      'ghost/core/server/lib/common/to-plain-extra.ts',
+      'ghost/core/server/lib/link-replacer-extra.js',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",

@@ -3146,10 +3146,11 @@ services:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-
-          Boot initializes email-address first, invokes members/attribution/feedback before
-          email-service in the required-service array, then registers handlers and starts jobs
-          after that group settles. This relies on sibling publication timing; the array does
-          not await each initializer before invoking the next. Background recovery runs after
+          Boot initializes email-address and awaits member-attribution before entering the
+          required-service array. It invokes members/feedback before email-service in that array,
+          then registers handlers and starts jobs after the group settles. Members and feedback
+          still rely on sibling publication timing; the array does not await each initializer
+          before invoking the next. Background recovery runs after
           readiness, is skipped for test-prefixed environments and catches/logs its failure
           before continuing. scheduleEmail awaits dispatch, not completion of a send; emailJob
           refetches and transactionally claims pending/failed email status. VM boot tests hold
@@ -7305,6 +7306,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -7317,7 +7319,7 @@ services:
         not require a lifecycle extension.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/member-attribution/index.js
+        - core/server/services/member-attribution/index.ts
         - core/server/services/staff/index.js
         - core/server/services/email-service/email-service-wrapper.js
         - core/boot.js
@@ -7339,7 +7341,7 @@ services:
             and Email capture its service, builder or tagger.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/url-translator.js
@@ -7347,28 +7349,32 @@ services:
           - core/server/services/members/api.js
           - core/boot.js
     entryPoints:
-      - member-attribution/index.js
+      - member-attribution/index.ts
     notes: >-
       Preserve the three exposed collaborators, retained consumers and different configuration
       timing. Attribution computes and reads data; its consumers own event persistence, mail,
       subscriptions and HTTP handling. Tests-only root and retained-consumer coverage was
       refreshed against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the historical audit and
-      migration assessment revisions remain above.
+      migration assessment revisions remain above. Initializer adoption was inspected against
+      8de2cd47ce1614f877695695a48b41e69f26e650. The historical helper-injection preparation
+      above is superseded by source-reviewed exact direct-library allowances included
+      with this migration.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper with receiver-dependent synchronous init returning
-          undefined. First init exposes attributionBuilder, outboundLinkTagger and service.
+          The TypeScript root default-exports defineService with awaited init and a guarded
+          service getter. Its ready MemberAttributionService instance exposes the existing
+          attributionBuilder and the constructor-wired outboundLinkTagger alongside normal methods.
+          CommonJS consumers read the default export. No transitional extras are exposed.
           Deep modules export constructible service/builder/translator/tagger/history classes;
           Attribution itself is produced by builder.build/getAttribution. Service methods mix
           synchronous URL/event mapping with async history/context/resource queries. Returned
           Attribution objects expose fields, getResource and async fetchResource. Tagging returns
-          copied URLs or async HTML. There is no readiness getter, reset or shutdown. Deep-class
-          tests cover behavior. Root characterization pins import-before-init absence, synchronous
-          publication and retained collaborator identity; detached receiver requirements remain
-          source-only.
+          copied URLs or async HTML. There is no reset or shutdown hook. Existing root tests
+          mechanically adopt guarded pre-init access and awaited initialization while retaining
+          collaborator identity and operation assertions. Deep-class behavior tests are unchanged.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/attribution-builder.js
           - core/server/services/member-attribution/outbound-link-tagger.js
@@ -7384,12 +7390,12 @@ services:
           production init caller found. init creates URL and referrer translators, builder,
           tagger and service with borrowed model classes and callbacks. ReferrerTranslator
           constructs its own parser with site/admin URLs. Constructors perform no database
-          query or subscription. Builder and tagger are published before service; a constructor
-          failure can leave partial properties, but the service guard is assigned last so retry
-          attempts reconstruction. Root tests pin retry after URL configuration and late event-model
-          acquisition failures; constructor-failure rollback remains source-only.
+          query or subscription. The factory returns the complete service graph for atomic
+          publication; a failed attempt exposes no partial collaborators. Root tests preserve
+          retry after URL configuration and late event-model acquisition failures. Allocated
+          helpers own no external resource requiring failure cleanup.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/url-translator.js
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/attribution-builder.js
@@ -7405,7 +7411,7 @@ services:
           use context attribution, member reads enrich creation/subscription events, and activity
           feeds map loaded event relations. Staff retains service for notification attribution;
           EmailRenderer retains service and tagger for links. Content API post/page HTML mapping
-          retains the wrapper and reads outboundLinkTagger per call. HTTP tests pin token data,
+          retains the root and reads service.outboundLinkTagger per call. HTTP tests pin token data,
           checkout metadata, member read/feed attribution and subscription persistence; staff
           and renderer units use injected fakes. Booted tests additionally pin Staff/Members
           retained identity and EmailRenderer's real attribution/tagger use across a setting
@@ -7432,18 +7438,14 @@ services:
           - test/unit/server/services/email-service/email-renderer.test.js
       startup:
         summary: >-
-          Boot loads core models/settings and routing before the service group, and evaluates
-          synchronous memberAttribution.init before staff, members and email init in its
-          Promise.all argument list. Those consumers capture collaborators during construction;
-          making attribution initialization asynchronous would require explicit dependency
-          sequencing. Full-app readiness follows the group. There is no pre-init access guard;
-          methods/properties are missing until publication. Root tests pin the pre-init absence;
-          booted consumer tests pin ready collaborators after actual boot, rather than holding a
-          fabricated asynchronous legacy init. Explicit async sequencing and partial-startup cleanup
-          remain source-only.
+          Boot loads core models/settings and routing, then awaits memberAttribution.init
+          before entering the service group in which Staff, Members and Email capture the ready
+          collaborators. Full-app readiness follows that group. Root tests mechanically adopt
+          the guarded getter and awaited initializer; existing booted consumer tests keep proving
+          ready collaborators after actual boot. Initialization acquires no external resources.
         sources:
           - core/boot.js
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/staff/index.js
           - core/server/services/members/api.js
           - core/server/services/email-service/email-service-wrapper.js
@@ -7453,9 +7455,9 @@ services:
           - test/e2e-api/members/send-magic-link.test.js
       lifetime:
         summary: >-
-          A truthy service keeps the whole graph across repeat init and same-process boots.
-          Replacing wrapper properties does not retarget retained consumers or Attribution
-          objects, which retain their URL translator. There is no root history/result cache;
+          defineService retains the whole ready graph across repeated init and same-process boots.
+          Staff, Members and Email retain that instance; Attribution objects retain their URL
+          translator. There is no root history/result cache;
           histories and attributions are created per operation. Event reads query current rows
           ordered created_at then id descending and fetch current resources; missing resources
           degrade to saved URL/null attribution. Booted tests pin deleted resources and current
@@ -7463,7 +7465,7 @@ services:
           the deterministic ordering or concurrent event-write/read behavior. Root and booted
           consumer tests pin retained identity across repeated initialization.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/attribution-builder.js
           - core/server/services/member-attribution/url-history.js
@@ -7487,7 +7489,7 @@ services:
           policy and tagger URL reads, plus init-only parser URL reads and captured Admin referrer
           matching; they do not establish production hot reload.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/url-history.js
@@ -7513,7 +7515,7 @@ services:
           service's three event-reading methods rebuild only attribution/referrer fields, omitting
           stored UTM. Tests for UTM persistence do not prove its return on those reader surfaces.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/url-translator.js
@@ -7526,7 +7528,8 @@ services:
           - test/e2e-api/members/webhooks.test.js
       failures:
         summary: >-
-          Root init throws synchronously without rollback. Invalid history normally becomes
+          Root init rejects with the factory error, leaves the guarded service unavailable and
+          permits a later explicit retry. Invalid history normally becomes
           empty; path-resolution rejection degrades to URL attribution, while explicit resource
           lookup, event queries, callbacks and parser failures otherwise propagate. Integration
           lookup exceptions are swallowed; a null integration instead yields Integration: undefined.
@@ -7535,10 +7538,11 @@ services:
           Staff catches failures in fallback event reads and still sends, but provided-attribution
           enrichment failure reaches the subscriber catch and skips that notification. Units pin
           missing-resource fallbacks and HTML preservation; most injected fault/consumer boundaries
-          remain untested. Root characterization pins original synchronous errors and successful
-          retry after URL configuration or late model acquisition failure.
+          remain untested. Root characterization mechanically adopts rejected init promises,
+          preserving original error identity and successful retry after URL configuration or late
+          model acquisition failure.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/url-translator.js
           - core/server/services/member-attribution/outbound-link-tagger.js
@@ -7553,10 +7557,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Root and booted tests now pin pre-init absence, synchronous publication, repeated init,
-        retained Staff/Members references and EmailRenderer attribution/tagging. Keep explicit
-        async startup sequencing in the initializer change; constructor/parser failure cleanup
-        and restart/replacement semantics are not established by these tests.
+        Root and booted tests now pin guarded pre-init access, awaited publication, repeated init,
+        retained Staff/Members references and EmailRenderer attribution/tagging. Broader parser
+        fault coverage and a restart/replacement contract are not established by these tests;
+        no external initialization resource requires cleanup.
       - >-
         Same-graph root tests now cover valid history/context tracking changes, live outbound
         tagging policy/source URL, captured parser URLs, integration lookup suppression and two
@@ -8041,7 +8045,8 @@ services:
         summary: >-
           Source-checked: settings, signing keys, i18n, metafields and the Stripe Checkout config,
           whose checkout service the members API reads when it is built, precede members; boot
-          awaits Stripe and initializes email-address/gifts before the parallel service group.
+          awaits Stripe and member-attribution and initializes email-address/gifts before the
+          parallel service group.
           Members publishes its graph synchronously before awaiting historical migrations, so
           later group expressions already read api.members. Tiers is initialized afterward in
           that group; member and router controllers retain its wrapper and read its API during
@@ -13232,15 +13237,15 @@ services:
       startup:
         summary: >-
           Foreground boot invokes staff init before mounting the app and notifying readiness.
-          Email-address initialization runs earlier; the synchronous member-attribution init
-          appears before staff in the Promise.all argument list, making its service available
-          before staff captures it. Stripe and gifts are composed earlier but defer reading
+          Email-address initialization runs earlier; boot awaits member-attribution init before
+          entering the Promise.all group in which staff captures its ready service.
+          Stripe and gifts are composed earlier but defer reading
           api.emails. Staff init registers listeners and prepares rendering/transport objects;
           it does not send or verify delivery. Direct use before init has no readiness guard.
         sources:
           - core/boot.js
           - core/server/services/staff/index.js
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
         tests: []
@@ -13321,8 +13326,8 @@ services:
     blockers:
       - >-
         Add exact root/consumer export and identity contracts, repeat-init subscription counts,
-        use-before-init behavior and real boot dependency ordering. Making member-attribution
-        init asynchronous could leave staff retaining an unavailable dependency.
+        use-before-init behavior and real boot dependency ordering. Preserve boot's explicit
+        await of member-attribution init before staff captures its service.
       - >-
         Decide and test startup failure recovery. Mailer creation can precede a renderer failure
         without disposal; api assignment precedes subscription completion, so partial listener
@@ -15800,7 +15805,7 @@ services:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/machine-payments/index.js
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/members/api.js
           - core/server/services/mentions/service.js
           - core/server/services/slack-ping/index.ts

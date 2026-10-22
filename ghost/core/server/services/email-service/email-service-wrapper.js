@@ -53,7 +53,7 @@ class EmailServiceWrapper {
     const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;
-    const memberAttribution = require('../member-attribution');
+    const memberAttribution = require('../member-attribution').default;
     const linkReplacer = require('../../lib/link-replacer');
     const linkTracking = require('../link-tracking');
     const audienceFeedback = require('../audience-feedback');
@@ -95,7 +95,7 @@ class EmailServiceWrapper {
       linkTracking,
       memberAttributionService: memberAttribution.service,
       audienceFeedbackService: audienceFeedback.service,
-      outboundLinkTagger: memberAttribution.outboundLinkTagger,
+      outboundLinkTagger: memberAttribution.service.outboundLinkTagger,
       emailAddressService: emailAddressService.service,
       labs,
       models: { Post },

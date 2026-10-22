@@ -382,7 +382,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const postScheduling = require('./server/services/post-scheduling').default;
   const comments = require('./server/services/comments');
   const staffService = require('./server/services/staff');
-  const memberAttribution = require('./server/services/member-attribution');
+  const memberAttribution = require('./server/services/member-attribution').default;
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
   const audienceFeedback = require('./server/services/audience-feedback');
@@ -437,9 +437,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
+  await memberAttribution.init();
+
   await Promise.all([
     identityTokens.init(),
-    memberAttribution.init(),
     mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
