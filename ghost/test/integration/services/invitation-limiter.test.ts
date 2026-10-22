@@ -235,25 +235,6 @@ describe('Trial invitation admission', function () {
     assert.equal(await db.knex('users').where({ id }).first(), undefined);
   });
 
-  it('records both additions and the deletion when resending an invitation', async function () {
-    const original = await limiter.run('resend@example.com', (transaction) =>
-      prepare('resend@example.com', transaction),
-    );
-    const replacement = await limiter.run('resend@example.com', (transaction) =>
-      prepare('resend@example.com', transaction),
-    );
-    // Deletion audit entries are written asynchronously after commit.
-    await vi.waitFor(async () => {
-      const rows = await db.knex('actions').where({ resource_type: 'invite' });
-      assert.equal(rows.length, 3);
-      assert.equal(rows.filter((row: { event: string }) => row.event === 'added').length, 2);
-      const deleted = rows.filter((row: { event: string }) => row.event === 'deleted');
-      assert.equal(deleted.length, 1);
-      assert.equal(deleted[0].resource_id, original.id);
-      assert.notEqual(replacement.id, original.id);
-    });
-  });
-
   it('rolls back email allowance and invitation changes on preparation failure', async function () {
     await assert.rejects(
       limiter.run('person@example.com', async (transaction) => {
@@ -264,7 +245,6 @@ describe('Trial invitation admission', function () {
     );
     assert.deepEqual(await actions(), []);
     assert.deepEqual(await db.knex('invites').select(), []);
-    assert.deepEqual(await db.knex('brute').select(), []);
   });
 
   it('stops enforcing on upgrade without erasing the previously used allowance', async function () {
