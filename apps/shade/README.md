@@ -21,6 +21,10 @@ export function Example() {
 
 ## Usage in standalone surfaces
 
+Building a Ghost app, which runs framed inside Admin? Follow
+[Using Shade in a Ghost app](https://shade.ghost.org/docs/ghost-apps.md)
+instead: it also covers fonts, Admin's theme and the page frame.
+
 Shade requires React 18 and Tailwind CSS 4.1+. The app compiles Shade's
 `styles.css` together with its own styles using Tailwind's Vite or PostCSS
 integration. Shade does not ship a compiled stylesheet.
@@ -110,6 +114,49 @@ Local docs with Storybook:
 - `pnpm build-storybook` — build a static export
 - `pnpm build` — build the JavaScript and type declarations
 
+### Docs for agents
+
+Storybook serves the docs as plain Markdown at `/docs/<path>.md` (start at
+`/docs/index.md`), with an [`llms.txt`](https://llmstxt.org) index at
+`/llms.txt`: `http://localhost:6006/llms.txt` locally, and
+`https://shade.ghost.org` once hosted. `scripts/build-docs.ts` generates them
+from `src/**/*.mdx`; `pnpm storybook` regenerates them on change,
+`pnpm build-storybook` includes them in its output, and `pnpm build:docs`
+writes them to `.storybook-docs/` without starting Storybook. Edit the `.mdx` sources, never the generated files.
+Whatever hosts them should serve them as UTF-8 (`text/markdown; charset=utf-8`
+and `text/plain; charset=utf-8`).
+
+The agent skills in `skills/` route to those docs and hold no rules. Ghost apps
+start from `build-ghost-app-ui`. Install them all with the
+[`skills` CLI](https://github.com/vercel-labs/skills):
+
+```sh
+npx skills add TryGhost/Ghost/apps/shade/skills
+# or, from a local checkout:
+npx skills add <path-to-checkout>/apps/shade/skills
+```
+
+The npm package ships code only: no docs and no skills.
+
+### Try app development locally
+
+The internal `ghost-app-ui-dev-setup` skill in `dev-skill/` prepares an empty
+folder for building a Ghost app the way an outside developer would, with
+everything local. It checks Ghost, starts Storybook if needed, installs Shade's
+skills and a stand-in `build-ghost-app` skill, packs the app SDK into
+`vendor/`, and writes the folder's `AGENTS.md`. It isn't shipped.
+
+Install it once, for every folder:
+
+```sh
+npx skills add <path-to-checkout>/apps/shade/dev-skill -g -a claude-code codex -y
+```
+
+Run the same command again to pick up changes. Then make an empty folder, open
+it in your agent client, type `/ghost-app-ui-dev-setup`, and when it's done,
+start a new chat there and describe your app. The Storybook it starts keeps
+running; stop it with `lsof -ti tcp:6006 | xargs kill`.
+
 ### Source exports
 
 Admin’s Vite development, production and test configurations select the `source`
@@ -119,6 +166,16 @@ using the compiled exports; TypeScript continues using the generated declaration
 The library build remains required for those consumers. Published exports only
 refer to compiled modules and declarations; the workspace-only `source`
 conditions are removed when packing.
+
+### Test in an external app
+
+`pnpm pack:local <app-dir>` builds Shade, packs it exactly as CI publishes it,
+stamps the version as `<x.y.z>-local.<YYYYMMDD-HHMMSS>`, installs it into an npm
+app with `npm install --no-save` and clears the app's Vite cache. The app's
+`package.json` and lockfile don't change. Restart the app's dev server to pick
+it up. `--watch` also runs the app's `npm run dev` and repeats the install on
+every change under `src/` (add `-- <args>` to pass arguments to the dev server).
+Run `npm install` in the app to go back to the published release.
 
 ## Test
 
