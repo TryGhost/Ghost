@@ -3,6 +3,7 @@ import sinon from 'sinon';
 
 const factoryPath =
   require.resolve('../../../../../core/server/services/integrations/integrations-service');
+const rootPath = require.resolve('../../../../../core/server/services/integrations');
 const endpointPath = require.resolve('../../../../../core/server/api/endpoints/integrations');
 const createService = require(factoryPath);
 const models = require('../../../../../core/server/models');
@@ -17,10 +18,11 @@ describe('Integrations with its retained endpoint', function () {
   let findKey: sinon.SinonStub;
   let refreshSecret: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     previousModules = new Map(
-      [factoryPath, endpointPath].map((path) => [path, require.cache[path]]),
+      [factoryPath, rootPath, endpointPath].map((path) => [path, require.cache[path]]),
     );
+    delete require.cache[rootPath];
     delete require.cache[endpointPath];
     edit = sandbox.stub(models.Integration, 'edit');
     findIntegration = sandbox.stub(models.Integration, 'findOne');
@@ -28,8 +30,11 @@ describe('Integrations with its retained endpoint', function () {
     refreshSecret = sandbox.stub(models.ApiKey, 'refreshSecret');
     factory = sandbox.spy(createService);
     sandbox.replace(require.cache[factoryPath]!, 'exports', factory);
-    // Load the real endpoint and retain the actual service created by the real factory.
+    // The endpoint must be importable before boot initializes its service.
     endpoint = require(endpointPath);
+    sinon.assert.notCalled(factory);
+    const root = require(rootPath).default;
+    await root.init();
   });
 
   afterEach(function () {
@@ -42,7 +47,7 @@ describe('Integrations with its retained endpoint', function () {
     }
   });
 
-  it('constructs once at endpoint import without querying either borrowed model', function () {
+  it('constructs once at initialization without querying either borrowed model', function () {
     sinon.assert.calledOnceWithExactly(factory, {
       IntegrationModel: models.Integration,
       ApiKeyModel: models.ApiKey,
