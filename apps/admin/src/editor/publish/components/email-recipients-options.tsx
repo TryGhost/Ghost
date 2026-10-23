@@ -11,14 +11,14 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { getNewsletterRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { publishNewsletterSelect } from '@tryghost/test-data/selectors/editor';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings } from '@/editor/use-editor-settings';
+import { useLabelValueSource } from '@/shared/filter-sources';
 import { useEffect, useId, useMemo } from 'react';
 import { z } from 'zod';
-import { parseRecipientSegments } from './email-recipients-boundary';
+import { parseRecipientTiers } from './email-recipients-boundary';
 import { RecipientSelect, type SegmentOption } from './recipient-select';
 import type { NewsletterInput, PublishOptionsState } from '@/editor/publish/publish-options';
 
@@ -34,6 +34,13 @@ const stripeBoundarySchema = z.object({
   }),
   configData: z.looseObject({ config: z.looseObject({ stripeDirect: z.boolean() }) }),
 });
+
+/** The flow handles failures and expired sessions itself, for labels as for every other read. */
+const LABEL_QUERY_OPTIONS = {
+  defaultErrorHandler: false,
+  requestOptions: EDITOR_REQUEST_OPTIONS,
+} as const;
+
 export function EmailRecipientsOptions({
   state,
   onSetNewsletter,
@@ -50,18 +57,6 @@ export function EmailRecipientsOptions({
     requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: PAID_TIERS_SEARCH_PARAMS,
   });
-  const labelsQuery = useBrowseLabelsInfinite({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: { limit: 'all' },
-  });
-  const {
-    data: labelsData,
-    fetchNextPage: fetchNextLabelPage,
-    hasNextPage: hasNextLabelPage,
-    isError: labelsError,
-    isFetchingNextPage: isFetchingNextLabelPage,
-  } = labelsQuery;
   const {
     data: tiersData,
     fetchNextPage: fetchNextTierPage,
@@ -69,23 +64,18 @@ export function EmailRecipientsOptions({
     isError: tiersError,
     isFetchingNextPage: isFetchingNextTierPage,
   } = tiersQuery;
+  // Labels are not walked the same way: a site can have thousands, so the
+  // source serves a page and searches the server for the rest on demand.
+  const labelSource = useLabelValueSource({ queryOptions: LABEL_QUERY_OPTIONS });
 
   // Core caps `limit=all`, so the response can still contain a next page.
-  // Exhaust both collections before exposing segments to avoid a partial list.
-  useEffect(() => {
-    if (hasNextLabelPage && !isFetchingNextLabelPage && !labelsError) {
-      void fetchNextLabelPage();
-    }
-  }, [fetchNextLabelPage, hasNextLabelPage, isFetchingNextLabelPage, labelsError]);
-
+  // Tiers are few: exhaust them before offering any, to avoid a partial list.
   useEffect(() => {
     if (hasNextTierPage && !isFetchingNextTierPage && !tiersError) {
       void fetchNextTierPage();
     }
   }, [fetchNextTierPage, hasNextTierPage, isFetchingNextTierPage, tiersError]);
 
-  const labelsSettled =
-    !labelsQuery.isLoading && !isFetchingNextLabelPage && (!hasNextLabelPage || labelsError);
   const tiersSettled =
     !tiersQuery.isLoading && !isFetchingNextTierPage && (!hasNextTierPage || tiersError);
 
@@ -107,37 +97,26 @@ export function EmailRecipientsOptions({
       })()
     : false;
 
-  const segmentOptions = useMemo<SegmentOption[]>(() => {
-    if (!labelsSettled || !tiersSettled) {
+  const tierOptions = useMemo<SegmentOption[]>(() => {
+    if (!tiersSettled) {
       return [];
     }
 
-    const { tiers, labels } = parseRecipientSegments(
-      tiersError ? undefined : tiersData,
-      labelsError ? undefined : labelsData,
-    );
+    const tiers = parseRecipientTiers(tiersError ? undefined : tiersData);
     // A single paid tier adds nothing to a paid/free split, so Ember hides it.
-    const tierOptions =
-      tiers.length > 1
-        ? [...tiers]
-            .sort((a, b) => Number(b.active) - Number(a.active))
-            .map((tier) => ({
-              segment: `tier:${tier.slug}`,
-              aliases: [`tier_id:${tier.id}`],
-              name: tier.name,
-              group: tier.active ? 'Active tiers' : 'Archived tiers',
-            }))
-        : [];
+    if (tiers.length <= 1) {
+      return [];
+    }
 
-    return [
-      ...tierOptions,
-      ...labels.map((label) => ({
-        segment: `label:${label.slug}`,
-        name: label.name,
-        group: 'Labels',
-      })),
-    ];
-  }, [labelsData, labelsError, labelsSettled, tiersData, tiersError, tiersSettled]);
+    return [...tiers]
+      .sort((a, b) => Number(b.active) - Number(a.active))
+      .map((tier) => ({
+        segment: `tier:${tier.slug}`,
+        aliases: [`tier_id:${tier.id}`],
+        name: tier.name,
+        group: tier.active ? 'Active tiers' : 'Archived tiers',
+      }));
+  }, [tiersData, tiersError, tiersSettled]);
 
   const newsletterRecipientFilter = state.newsletter
     ? getNewsletterRecipientFilter({
@@ -150,9 +129,10 @@ export function EmailRecipientsOptions({
     <Stack gap="lg">
       <RecipientSelect
         filter={state.recipientFilter}
+        labelSource={labelSource}
         newsletterRecipientFilter={newsletterRecipientFilter}
         paidAvailable={paidAvailable}
-        segmentOptions={segmentOptions}
+        tierOptions={tierOptions}
         onChange={onSetRecipientFilter}
       />
 

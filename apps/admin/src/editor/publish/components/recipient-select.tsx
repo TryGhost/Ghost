@@ -11,12 +11,17 @@ import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useId, useState } from 'react';
 import { LabelPicker } from '@/members/api';
+import type { HybridValueSource } from '@/shared/filter-sources';
+import type { ComboboxOptionSource } from '@tryghost/shade/components';
 import {
   publishRecipientFree,
   publishRecipientPaid,
   publishRecipientSegments,
   publishRecipientSpecific,
 } from '@tryghost/test-data/selectors/editor';
+
+const LABEL_SEGMENT_PREFIX = 'label:';
+const LABELS_GROUP = 'Labels';
 
 export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */
@@ -32,7 +37,15 @@ export interface RecipientSelectProps {
   /** The newsletter's own audience filter, used to scope the free/paid counts. */
   newsletterRecipientFilter: string | null;
   paidAvailable: boolean;
-  segmentOptions: SegmentOption[];
+  /** The paid tiers offered as segments, already grouped as active or archived. */
+  tierOptions: SegmentOption[];
+  /**
+   * The site's labels. The source decides how they load: a site with up to a
+   * page of labels has them all at once, a larger site searches the server as
+   * the user types and pages as they scroll, so the picker never waits for
+   * every label before it can be used.
+   */
+  labelSource: HybridValueSource<string>;
   onChange: (filter: string | null) => void;
 }
 
@@ -50,6 +63,12 @@ function SegmentCount({ filter }: { filter: string | null }) {
   );
 }
 
+function labelSlug(segment: string): string | null {
+  return segment.startsWith(LABEL_SEGMENT_PREFIX)
+    ? segment.slice(LABEL_SEGMENT_PREFIX.length)
+    : null;
+}
+
 /**
  * Ported from `gh-members-recipient-select`: free/paid checkboxes plus an
  * optional "Specific people" segment selection, all expressed as one NQL
@@ -59,13 +78,14 @@ export function RecipientSelect({
   filter,
   newsletterRecipientFilter,
   paidAvailable,
-  segmentOptions,
+  tierOptions,
+  labelSource,
   onChange,
 }: RecipientSelectProps) {
   const id = useId();
   const parsed = parseRecipientFilter(filter);
   const canonicalSegment = (segment: string) =>
-    segmentOptions.find((option) => option.aliases?.includes(segment))?.segment ?? segment;
+    tierOptions.find((option) => option.aliases?.includes(segment))?.segment ?? segment;
   const segments = {
     ...parsed,
     specific: [...new Set(parsed.specific.map(canonicalSegment))],
@@ -74,6 +94,19 @@ export function RecipientSelect({
   // when "Specific people" is checked with nothing selected yet.
   const [forceSpecific, setForceSpecific] = useState(false);
   const [previousSpecific, setPreviousSpecific] = useState<string[] | null>(null);
+  const [search, setSearch] = useState('');
+
+  // The selected labels ride along so the source resolves their names, whether
+  // or not the current page or search happens to include them.
+  const selectedLabelSlugs = segments.specific.flatMap((segment) => {
+    const slug = labelSlug(segment);
+    return slug === null ? [] : [slug];
+  });
+  const labelState = labelSource.useOptions({ query: search, selectedValues: selectedLabelSlugs });
+  // One label is enough to offer the segment picker: the first page says how
+  // many there are without anyone waiting for the rest.
+  const hasLabels = (labelSource.probe.total ?? 0) > 0;
+  const hasSpecificOptions = tierOptions.length > 0 || hasLabels;
 
   const specificChecked = forceSpecific || segments.specific.length > 0;
 
@@ -127,6 +160,43 @@ export function RecipientSelect({
   const scopedFilter = (segment: string) =>
     newsletterRecipientFilter ? `${newsletterRecipientFilter}+${segment}` : segment;
 
+  const tierLabels = tierOptions.map((option) => ({
+    id: option.segment,
+    slug: option.segment,
+    name: option.name,
+    group: option.group,
+  }));
+  const labelLabels = labelState.options.map((option) => ({
+    id: `${LABEL_SEGMENT_PREFIX}${option.value}`,
+    slug: `${LABEL_SEGMENT_PREFIX}${option.value}`,
+    name: option.label,
+    group: LABELS_GROUP,
+  }));
+  // The labels arrive from the source already matching the search; the tiers
+  // are few and already here, so they are narrowed to it in place.
+  const normalizedSearch = search.trim().toLowerCase();
+  const pickerLabels = [
+    ...tierLabels.filter((label) => label.name.toLowerCase().includes(normalizedSearch)),
+    ...labelLabels,
+  ];
+  // Named from everything known, not only what the search left, so a selected
+  // segment keeps its pill while the writer types. A label the site no longer
+  // has is shown as its slug.
+  const resolvedSelectedLabels = segments.specific.map(
+    (segment) =>
+      [...tierLabels, ...labelLabels].find((label) => label.slug === segment) ?? {
+        id: segment,
+        slug: segment,
+        name: labelSlug(segment) ?? segment,
+      },
+  );
+  const optionSource: ComboboxOptionSource<string> = {
+    ...labelState,
+    options: pickerLabels.map((label) => ({ value: label.slug, label: label.name })),
+    shouldClientFilter: false,
+    onSearchChange: setSearch,
+  };
+
   return (
     <Stack gap="md">
       <Stack gap="sm">
@@ -156,7 +226,7 @@ export function RecipientSelect({
           </Inline>
         ) : null}
 
-        {segmentOptions.length > 0 ? (
+        {hasSpecificOptions ? (
           <Inline gap="sm">
             <Checkbox
               checked={specificChecked}
@@ -175,25 +245,10 @@ export function RecipientSelect({
             Selection
           </Text>
           <LabelPicker
-            labels={segmentOptions.map((option) => ({
-              id: option.segment,
-              slug: option.segment,
-              name: option.name,
-              group: option.group,
-            }))}
-            optionSource={{
-              options: segmentOptions.map((option) => ({
-                value: option.segment,
-                label: option.name,
-              })),
-              isInitialLoad: false,
-              isSearching: false,
-              isLoadingMore: false,
-              hasMore: false,
-              loadMore: () => {},
-              shouldClientFilter: true,
-            }}
+            labels={pickerLabels}
+            optionSource={optionSource}
             placeholder="Search labels and tiers..."
+            resolvedSelectedLabels={resolvedSelectedLabels}
             selectedSlugs={segments.specific}
             onToggle={toggleSegment}
           />
