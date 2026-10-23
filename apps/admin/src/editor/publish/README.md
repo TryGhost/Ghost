@@ -89,6 +89,8 @@ Following visibility maps a public or members-only post to everyone (`status:fre
 
 Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`. A segment that is a bare tier id, which Core rejects, is rewritten to `tier_id:<id>`; the recipient picker shows and toggles it as that tier's `tier:<slug>` option.
 
+The recipient picker offers "Specific people" when there is something to pick: more than one paid tier (a single tier adds nothing to the free/paid split), or at least one label. Tiers are few and are read in full before any is offered. Labels come from the shared hybrid label source, which never walks every page: the first page decides whether the site's labels fit in one page, in which case they are all offered and filtered locally, or not, in which case the picker searches the server as the writer types and requests the next page as the list is scrolled to its end. Only that first page has to arrive before "Specific people" appears, so a site with thousands of labels is not kept waiting. A persisted or default `label:<slug>` segment is named by a browse filtered on slug, whether or not the current page or search includes it; a slug the site no longer has is shown as the slug.
+
 `fullRecipientFilter` is what the email service receives: the newsletter's own audience filter (subscribed to that newsletter, email not disabled, plus paid-only for a paid newsletter), AND-ed with the recipient filter when there is one. It is `null` while no newsletter is selected.
 
 ## Whether the post emails
@@ -233,7 +235,7 @@ Flow-owned queries also disable the global error handler. `usePublishInputs()` r
 
 Recipient counts come from the framework's members-count hook, and the flow reads them wherever it states an audience: the options step, the confirm and complete steps, each recipient segment, and the update flow's description of a scheduled send.
 
-An audience that could not be counted is not an audience of none: the hook resolves a failed request to `null`, never to `0`. Where the flow states a count in a sentence it drops to descriptive copy ("all members"); the segment checkboxes, which have nothing to say without a number, render no count at all. A 401 on the tier or label queries is quieter still — those segments simply do not appear in the recipient picker, leaving the free/paid split, and that is not surfaced to the user.
+An audience that could not be counted is not an audience of none: the hook resolves a failed request to `null`, never to `0`. Where the flow states a count in a sentence it drops to descriptive copy ("all members"); the segment checkboxes, which have nothing to say without a number, render no count at all. A 401 on the tier or label queries is quieter still — those segments simply do not appear in the recipient picker, leaving the free/paid split, and that is not surfaced to the user. The label source takes the same request options and disabled error handler as the flow's own reads.
 
 ## Update flow
 

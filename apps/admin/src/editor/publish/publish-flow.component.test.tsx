@@ -715,7 +715,7 @@ describe('Publish flow', () => {
     expect(section.element().getBoundingClientRect().height).toBe(before);
   });
 
-  it('loads every page before exposing tier and label recipients', async () => {
+  it('loads every page of tiers before offering them as recipients', async () => {
     const pagination = (pageNumber: number) => ({
       page: pageNumber,
       limit: 100,
@@ -736,32 +736,137 @@ describe('Publish flow', () => {
         meta: { pagination: pagination(pageNumber) },
       };
     });
-    const labelsApi = fakeAdminEndpoint('GET', /^\/labels\/\?/, ({ url }) => {
-      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
-
-      return {
-        labels: [
-          pageNumber === 1
-            ? { slug: 'first-label', name: 'First label' }
-            : { slug: 'last-label', name: 'Last label' },
-        ],
-        meta: { pagination: pagination(pageNumber) },
-      };
-    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [] });
 
     await renderPublishFlow();
     await publishScreen.setting('email-recipients').click();
     await expect.poll(() => tiersApi.requests.length).toBe(2);
-    await expect.poll(() => labelsApi.requests.length).toBe(2);
     await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
     await page.getByLabelText('Specific people').click();
     await page.getByPlaceholder('Search labels and tiers...').click();
     await expect.element(page.getByRole('option', { name: 'First tier' })).toBeInTheDocument();
     await expect.element(page.getByRole('option', { name: 'Last tier' })).toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: 'First label' })).toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: 'Last label' })).toBeInTheDocument();
     expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
-    expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  describe('with more labels than one page', () => {
+    const PAGE_SIZE = 100;
+    const allLabels = Array.from({ length: 150 }, (_, index) => ({
+      slug: `label-${index + 1}`,
+      name: `Label ${index + 1}`,
+    }));
+    const unquote = (value: string) => value.trim().replace(/^'(.*)'$/, '$1');
+
+    /** Pages labels the way Core does, honouring a name search or a slug lookup. */
+    function fakePagedLabels() {
+      return fakeAdminEndpoint('GET', /^\/labels\/\?/, ({ url }) => {
+        const params = new URL(url).searchParams;
+        const pageNumber = Number(params.get('page') ?? '1');
+        const filter = params.get('filter') ?? '';
+        const nameSearch = filter.match(/^name:~(.*)$/);
+        const slugLookup = filter.match(/^slug:\[(.*)\]$/);
+        let matching = allLabels;
+        if (nameSearch) {
+          const term = unquote(nameSearch[1]).toLowerCase();
+          matching = allLabels.filter((label) => label.name.toLowerCase().includes(term));
+        } else if (slugLookup) {
+          const slugs = slugLookup[1].split(',').map(unquote);
+          matching = allLabels.filter((label) => slugs.includes(label.slug));
+        }
+        const pages = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
+
+        return {
+          labels: matching.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE),
+          meta: {
+            pagination: {
+              page: pageNumber,
+              limit: PAGE_SIZE,
+              pages,
+              total: matching.length,
+              next: pageNumber < pages ? pageNumber + 1 : null,
+              prev: pageNumber > 1 ? pageNumber - 1 : null,
+            },
+          },
+        };
+      });
+    }
+
+    const filtersRequested = (labelsApi: EndpointCapture) =>
+      labelsApi.requests.map((request) => new URL(request.url).searchParams.get('filter'));
+
+    beforeEach(() => {
+      // One paid tier adds nothing to the free/paid split, so labels are the only segments.
+      fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+        tiers: [{ id: 'only-id', slug: 'only', name: 'Only tier', active: true }],
+      });
+    });
+
+    it('offers specific people after the first page and loads more as the list scrolls', async () => {
+      const labelsApi = fakePagedLabels();
+
+      await renderPublishFlow();
+      await publishScreen.setting('email-recipients').click();
+      await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
+      expect(
+        labelsApi.requests.map((request) => new URL(request.url).searchParams.get('page')),
+      ).toEqual([null]);
+
+      await page.getByLabelText('Specific people').click();
+      await page.getByPlaceholder('Search labels and tiers...').click();
+      await expect
+        .element(page.getByRole('option', { name: 'Label 1', exact: true }))
+        .toBeInTheDocument();
+      await expect(page.getByRole('option', { name: 'Label 150' })).toHaveCount(0);
+
+      const list = page.getByRole('listbox').element();
+      list.scrollTop = list.scrollHeight;
+
+      await expect.element(page.getByRole('option', { name: 'Label 150' })).toBeInTheDocument();
+      const lastRequest = labelsApi.requests[labelsApi.requests.length - 1];
+      expect(new URL(lastRequest.url).searchParams.get('page')).toBe('2');
+    });
+
+    it('searches labels on the server as the author types', async () => {
+      const labelsApi = fakePagedLabels();
+
+      await renderPublishFlow();
+      await publishScreen.setting('email-recipients').click();
+      await page.getByLabelText('Specific people').click();
+      await page.getByPlaceholder('Search labels and tiers...').fill('Label 150');
+
+      await expect.element(page.getByRole('option', { name: 'Label 150' })).toBeInTheDocument();
+      await expect(page.getByRole('option', { name: 'Label 1', exact: true })).toHaveCount(0);
+      const search = filtersRequested(labelsApi).find((filter) => filter?.startsWith('name:~'));
+      expect(search).toContain('Label 150');
+      // The first page is kept on screen until the search answers, so the typing
+      // never scrolled the stale list into asking for its next page.
+      expect(
+        labelsApi.requests.map((request) => new URL(request.url).searchParams.get('page')),
+      ).not.toContain('2');
+    });
+
+    it('names a persisted label that is not on the first page', async () => {
+      const labelsApi = fakePagedLabels();
+
+      await renderPublishFlow({
+        site: {
+          ...SITE,
+          editorDefaultEmailRecipients: 'filter',
+          editorDefaultEmailRecipientsFilter: 'label:label-150',
+        },
+      });
+      await publishScreen.setting('email-recipients').click();
+
+      const picker = page.getByTestId(publishRecipientSegments);
+      await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();
+      const lookup = filtersRequested(labelsApi).find((filter) => filter?.startsWith('slug:'));
+      expect(lookup).toContain('label-150');
+
+      // The pill keeps its name while a search that does not match it is typed.
+      await picker.getByRole('combobox').fill('nothing like it');
+      await expect.element(page.getByText('No labels found')).toBeVisible();
+      await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();
+    });
   });
 
   it('groups specific recipients into active tiers, archived tiers, and labels', async () => {

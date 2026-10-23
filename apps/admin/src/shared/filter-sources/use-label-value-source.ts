@@ -11,7 +11,11 @@ import {
 } from '@tryghost/shade/patterns';
 import { buildQuotedListFilter, filterOptionsByQuery, mergeFilterOptions } from './utils';
 import { createGhostBrowseValueSource } from './create-ghost-browse-value-source';
-import { createHybridValueSource } from './create-hybrid-value-source';
+import {
+  type HybridValueSource,
+  type HybridValueSourceOptions,
+  createHybridValueSource,
+} from './create-hybrid-value-source';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { keepPreviousData } from '@tanstack/react-query';
 
@@ -91,8 +95,9 @@ const useRemoteLabelValueSource = createGhostBrowseValueSource<Label, LabelsResp
     order: 'name asc',
   }),
   selectItems: (data) => data?.labels,
-  useQuery: ({ enabled, searchParams }) => {
+  useQuery: ({ enabled, searchParams, queryOptions }) => {
     return useBrowseLabelsInfinite({
+      ...queryOptions,
       enabled,
       placeholderData: keepPreviousData,
       searchParams,
@@ -109,6 +114,11 @@ const useHybridLabelValueSource = createHybridValueSource<Label, string>({
   useRemoteSource: useRemoteLabelValueSource,
 });
 
-export function useLabelValueSource(): ValueSource<string> {
-  return useHybridLabelValueSource();
+/**
+ * Labels for a picker. Sites with up to a page of labels get the whole list up
+ * front and filter it locally; larger sites search the server as the user types
+ * and page through the matches, so no caller ever walks every page.
+ */
+export function useLabelValueSource(options?: HybridValueSourceOptions): HybridValueSource<string> {
+  return useHybridLabelValueSource(options);
 }
