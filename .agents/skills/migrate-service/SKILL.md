@@ -58,7 +58,9 @@ Do not inject stateless utilities to evade the policy or duplicate shared helper
 Inspect the source before adding a library allowance. Justify why the dependency
 is a library rather than an application-owned instance, and allow only its exact
 entry or file. Include the reason and a boundary regression in the migration PR
-that needs the allowance. Keep allowances out of standalone skill/tooling PRs.
+that needs the allowance. Assert each rejected target as well as its rule and
+source in boundary regressions. Keep allowances out of standalone skill/tooling
+PRs.
 Seek review when that distinction is unclear or a broader policy change is
 needed; do not widen the rule merely to make lint pass. Normal inventory and
 root-shape opt-ins still belong in each migration.
@@ -138,8 +140,9 @@ coverage gates, lint or types to make the refactor pass.
 ## 5. Update metadata and verify
 
 Update this service's inventory entry: `migrated`, entry points, evidence,
-contracts, extras and remaining gaps. Repair references to its moved or renamed
-files in other entries mechanically, without changing their assessments.
+contracts, extras and remaining gaps. Repair affected file references and
+startup-order descriptions in other entries mechanically, without changing
+their unrelated assessments.
 Preserve historical audit provenance;
 record the inspected base and distinguish old evidence from new validation.
 Do not restore manual totals or erase unrelated backlog items.
@@ -157,8 +160,8 @@ retry or an unchanged file alone does not establish that a failure belongs to
 main. Keep unrelated fixes out of the migration.
 
 Review the final diff: one service, unchanged operation behavior, no hidden
-composition, no new behavioral tests, and only justified metadata/enforcement
-changes.
+composition, and only justified metadata/enforcement changes. New test cases
+are limited to boundary regressions for new exact dependency allowances.
 Use the repository commit skill and make **one commit for this service**.
 Keep unrelated tooling/skill changes on their own branch. Report the branch,
 commit, validation and unresolved prerequisites. Push/open a PR only within the
