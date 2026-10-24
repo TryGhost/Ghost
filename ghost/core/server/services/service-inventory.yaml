@@ -2738,11 +2738,6 @@ services:
         contracts. Existing wrapper tests instantiate the wrapper class directly; real consumer
         tests do not deliberately exercise missing readiness or service replacement on restart.
       - >-
-        Reconcile verification consumers reading nonexistent service.defaultFromAddress.
-        Settings/newsletters currently pass undefined to GhostMailer, which supplies the default;
-        a settings unit fake invents that property. Characterize the real fallback before fixing
-        the mismatch; this audit has not established incorrect delivery.
-      - >-
         Cover captured implementation consumers and welcome-email cached sender values across
         configuration changes, reload and replacement. Existing welcome tests often recreate
         their service; cached design-content coverage does not establish cached sender timing.
@@ -9583,8 +9578,8 @@ services:
           Root token limits are fixed at 24 hours total, ten minutes after first use and
           seven uses; they are not true single-use tokens. Mail transport/options are
           captured at construction, while address policy is read through the wrapper per call.
-          Verification reads absent defaultFromAddress; GhostMailer handles that falsy from
-          with its actual defaultFromEmail fallback and reads settings for names/tracking.
+          Verification omits from; GhostMailer delegates default sender selection to the
+          email-address policy at send time and reads settings for names/tracking.
           URL generation calls a retained facade whose site/admin bases are frozen.
           Changes requiring verification are withheld, then metadata names sent/verified
           fields; special newsletter/support reply-to values bypass address validation.
@@ -12399,11 +12394,10 @@ services:
           changing test config alone does not refresh them. Calculated functions bind helpers that
           read current cache/config, while shared URL utilities retain frozen base URLs. BREAD
           consults current labs/limits/email-address service; its mailer retains construction-time
-          transport. It reads absent defaultFromAddress for verification, with GhostMailer falling
-          back to actual defaultFromEmail. Tests pin selected override refresh/removal, parsing,
+          transport. Verification omits from; GhostMailer delegates default sender selection to
+          the email-address policy at send time. Tests pin selected override refresh/removal, parsing,
           managed/self-hosted verification and masked/read-only HTTP responses, not refusal of
-          underlying override-row writes. Production config hot reload
-          or this sender-property mismatch in isolation is not established.
+          underlying override-row writes. Production config hot reload is not established.
         sources:
           - core/server/services/settings/settings-service.js
           - core/shared/settings-cache/cache-manager.js

@@ -34,16 +34,11 @@ function getDomain() {
 }
 
 /**
- * @param {string} requestedFromAddress
- * @param {string} requestedReplyToAddress
+ * @param {string} [requestedFromAddress]
+ * @param {string} [requestedReplyToAddress]
  * @returns {{from: string, replyTo?: string|null}}
  */
 function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
-  if (!requestedFromAddress) {
-    // Use the default config
-    requestedFromAddress = emailAddress.service.defaultFromEmail;
-  }
-
   // Clean up email addresses (checks whether sending is allowed + email address is valid)
   const addresses = emailAddress.service.getAddressFromString(
     requestedFromAddress,
