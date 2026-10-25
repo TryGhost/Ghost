@@ -5137,17 +5137,19 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Keep this business service. Its endpoint currently constructs one instance that only
-        retains model dependencies. Move that composition to a boot-owned factory and update
-        the endpoint to use the ready instance; editing and key-rotation behavior can stay
-        in the implementation without a lifecycle extension.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root constructs one instance with the shared Integration
+        and ApiKey models. initCore awaits initialization before the endpoint reads that
+        ready instance during edit requests. Existing editing and key-rotation behavior stays
+        in the unchanged implementation; no extras or lifecycle extension is needed.
+      reviewedAt: 8de2cd47ce1614f877695695a48b41e69f26e650
       sources:
+        - core/server/services/integrations/index.ts
         - core/server/services/integrations/integrations-service.js
         - core/server/api/endpoints/integrations.js
         - core/boot.js
@@ -5169,36 +5171,42 @@ services:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
     entryPoints:
-      - integrations/integrations-service.js
+      - integrations/index.ts
     notes: >-
-      Keep integration editing and key-rotation business rules outside HTTP. The endpoint
-      currently constructs and retains this service; boot composition must preserve its
-      model calls, mutation/error contracts and dependent persistence behavior. Characterization
-      prepared against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36 covers the unchanged factory,
-      retained real endpoint, model receivers, option handling and awaited edit/rotation results.
-      The original auditedAt remains historical; this preparation does not adopt an initializer
-      or establish same-process reboot, transaction, association or action-write guarantees.
+      Migration inspected 8de2cd47ce1614f877695695a48b41e69f26e650 after the characterization
+      prerequisite merged. Boot now owns the instance; the endpoint retains the root, reads
+      its service inside the edit query, and the implementation stays unchanged.
+      Characterization originally prepared against
+      e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36 protects model receivers, option handling and
+      awaited edit/rotation results. auditedAt and the dependency assessment retain historical
+      provenance. Initialization owns no resources; same-process reboot, transaction,
+      association and action-write guarantees remain outside this bounded change.
     contracts:
       exports:
         summary: >-
-          CommonJS exports a receiver-independent factory returning a new IntegrationsService
-          each time; the class itself is private. Instances expose async edit(data, options)
-          and mutable IntegrationModel/ApiKeyModel fields. edit requires its receiver and an
-          options object. There is no singleton, init, reset, shutdown or readiness export.
+          The TypeScript root default-exports defineService with init and guarded service;
+          it exposes no extras. service is the retained IntegrationsService with async
+          edit(data, options) and borrowed IntegrationModel/ApiKeyModel fields. edit still
+          requires its receiver and an options object. The private CommonJS implementation
+          retains its receiver-independent factory for construction and implementation tests;
+          normal runtime callers use the ready root. No reset or shutdown is exposed.
         sources:
+          - core/server/services/integrations/index.ts
           - core/server/services/integrations/integrations-service.js
         tests:
           - test/unit/server/services/integrations/integrations-service.test.ts
       construction:
         summary: >-
-          The integrations endpoint is the only production factory caller found. Module
-          evaluation constructs once with shared Integration and ApiKey models and retains
-          the result in a private constant. The constructor only stores references; it makes
-          no query or subscription. The factory could create independent instances, but no
-          other runtime constructor was found. Preparation units exercise the real factory and
-          retained endpoint with stubbed model methods, proving idle composition and receiver
-          identity without claiming persisted database behavior.
+          The boot-owned root is the only production factory caller. Its init factory supplies
+          the shared Integration and ApiKey models and returns the existing implementation.
+          Construction only stores model references; it makes no query or subscription. The
+          endpoint retains the root and reads the ready instance inside its edit query, not at
+          module evaluation. Root units import the real endpoint before init and assert the
+          factory has not run, then initialize the root before exercising edits. They prove idle
+          composition and retained receiver identity with stubbed models, not persisted behavior.
         sources:
+          - core/boot.js
+          - core/server/services/integrations/index.ts
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
         tests:
@@ -5225,15 +5233,19 @@ services:
           - test/unit/server/services/integrations/index.test.ts
       startup:
         summary: >-
-          Admin router construction accesses the lazy endpoint getter. Normal backend/API mounts
-          defer this router construction until an Admin API request, so boot does not explicitly
-          construct the service before readiness. Direct factory construction can occur earlier
-          because dependencies are merely stored. There is no pre-use guard. Existing HTTP
-          tests exercise completed request composition, not construction timing, concurrent
-          first-request behavior or dependency failure during lazy router creation. Preparation
-          units establish idle endpoint-time composition and retained identity without booting
-          the HTTP router or introducing a pre-init contract that does not yet exist.
+          initCore awaits Integrations initialization after Invites and before Support Requests,
+          frontend initialization and API request serving. The root defers model acquisition and
+          construction until init, and its guarded getter rejects pre-init access according to
+          the kernel contract. Admin router construction still uses the lazy endpoint getter, and
+          loading the endpoint reads no service, so router construction does not depend on
+          initialization; each edit request reads the published instance. Existing HTTP cases
+          exercise real boot and request composition; adapted preparation fixtures explicitly
+          await root initialization. initCore orchestration units hold the root's init promise
+          pending and reject it, proving awaited readiness and unchanged error propagation
+          before Support Requests starts. These units stub the root; real factory failure and
+          same-process restart behavior remain untested.
         sources:
+          - core/server/services/integrations/index.ts
           - core/boot.js
           - core/server/api/endpoints/index.js
           - core/shared/express.js
@@ -5244,17 +5256,23 @@ services:
           - core/server/api/endpoints/integrations.js
           - core/server/services/integrations/integrations-service.js
         tests:
+          - test/unit/boot/init-core.test.ts
           - test/e2e-api/admin/integrations.test.js
           - test/unit/server/services/integrations/index.test.ts
       lifetime:
         summary: >-
-          Module caching retains the endpoint's instance and model references across requests
-          and same-process boots. Each edit queries current rows and keeps no per-integration
-          cache. Ordinary edit mutates the caller's options with require true; key rotation
-          instead clones options for refresh and uses fresh relation options for the reread.
-          Replacing a module export would not update the endpoint's private reference. There
-          is no serialization, deduplication or concurrency guard around edits/rotations.
+          The root retains one instance after successful init; repeated init does not replace
+          it under the kernel contract. The endpoint reads that same instance through the root on
+          each edit request, sharing its model references. Each edit queries current rows and
+          keeps no per-integration cache. Ordinary edit mutates the caller's options with require
+          true; rotation instead clones options for refresh and uses fresh relation options for
+          reread. Replacing the root's module export would not update the endpoint's private root
+          reference. Retained-endpoint
+          units cover repeated edits; no same-process reboot, serialization, deduplication or
+          concurrency guard around edits/rotations is established.
         sources:
+          - core/boot.js
+          - core/server/services/integrations/index.ts
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
         tests:
@@ -5262,7 +5280,8 @@ services:
           - test/unit/server/services/integrations/index.test.ts
       configuration:
         summary: >-
-          The factory retains model dependencies and reads no application configuration itself.
+          Root initialization and the implementation read no application configuration; the
+          ready instance retains the model dependencies supplied at boot.
           Truthy options.keyid selects rotation and ignores edit data: it reads the key by
           keyid alone, refreshes that key and then reads the integration named by options.id
           with api_keys/webhooks. The service does not compare the key's integration_id with

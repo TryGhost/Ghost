@@ -189,6 +189,11 @@ async function initCore({ ghostServer, config }) {
   await invites.init();
   debug('End: Invites Service');
 
+  debug('Begin: Integrations Service');
+  const integrations = require('./server/services/integrations').default;
+  await integrations.init();
+  debug('End: Integrations Service');
+
   debug('Begin: Support Requests Service');
   const supportRequests = require('./server/services/support-requests').default;
   await supportRequests.init();
