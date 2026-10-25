@@ -236,6 +236,27 @@ it('allows the exact libraries required by Member Attribution without allowing s
   );
 });
 
+it('allows the debug tracing library without allowing sibling packages', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]:
+      "require('@tryghost/debug')('alpha'); require('@tryghost/debug/lib/debug');",
+    [`${alpha}/rejected.ts`]: "import '@tryghost/debug-extra'; import 'debug';",
+  });
+  for (const name of ['@tryghost/debug', '@tryghost/debug-extra', 'debug']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/@tryghost/debug/lib/debug.js', 'module.exports = () => () => {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 2);
+  assert.deepEqual(
+    violations(graph),
+    ['node_modules/@tryghost/debug-extra/index.js', 'node_modules/debug/index.js']
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",
