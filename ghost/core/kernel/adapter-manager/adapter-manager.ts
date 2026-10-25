@@ -1,12 +1,13 @@
 import errors from '@tryghost/errors';
-import {
-  loadAdapterClass,
-  resolveAdapterOptions,
-  normalizeAdapterConfig,
-  getConfiguredFeatures,
-} from './utils';
-import type { ConfigInstance } from '../../../shared/config/loader';
-import type { Adapter, AdapterConstructor, AdapterName, ResolvedAdapter } from './types';
+import { loadAdapterClass } from './loader';
+import { getConfiguredFeatures, resolveAdapterOptions } from './options';
+import type {
+  Adapter,
+  AdapterConfig,
+  AdapterConstructor,
+  AdapterName,
+  ResolvedAdapter,
+} from './types';
 
 /**
  * A map from an adapter type name (e.g. "storage") to the base class every
@@ -30,8 +31,12 @@ export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseCl
   loadAdapterFromPath: (path: string) => unknown;
   /** The base classes keyed by adapter type name, e.g. {storage: GhostStorageBase} */
   baseClasses: BaseClasses;
-  /** The config instance used to resolve which adapter and options to load */
-  config: ConfigInstance;
+  /**
+   * Returns the current adapter configuration, keyed by adapter type. Called on
+   * every lookup and validation rather than once at construction, so the
+   * application decides whether runtime configuration changes are reflected.
+   */
+  getConfig: () => AdapterConfig;
 }
 
 /**
@@ -46,32 +51,38 @@ export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseCl
  * const mgr = new AdapterManager({
  *     pathsToAdapters,
  *     loadAdapterFromPath,
- *     config,
+ *     getConfig: () => ({sso: {active: 'MySSO'}, storage: {active: 'LocalStorage'}}),
  *     baseClasses: {sso: SSOBase, storage: StorageBase}
  * });
  *
  * mgr.getAdapter('sso');            // => SSOBase instance
  * mgr.getAdapter('storage:images'); // => StorageBase instance
  * ```
+ *
+ * The manager has no knowledge of where configuration or base classes come
+ * from: the application supplies them, along with the search paths and the
+ * module loader. Construction performs no loading; `init` validates the
+ * configured adapters without constructing them; `getAdapter` constructs
+ * lazily and caches by requested name and class.
  */
 export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
   private baseClasses: BaseClassMap;
   private instanceCache: Record<string, Record<string, Adapter>>;
   private pathsToAdapters: string[];
   private loadAdapterFromPath: (path: string) => unknown;
-  private config: ConfigInstance;
+  private getConfig: () => AdapterConfig;
 
   constructor({
     pathsToAdapters,
     loadAdapterFromPath,
     baseClasses,
-    config,
+    getConfig,
   }: AdapterManagerOptions<BaseClasses>) {
     this.baseClasses = {};
     this.instanceCache = {};
     this.pathsToAdapters = pathsToAdapters;
     this.loadAdapterFromPath = loadAdapterFromPath;
-    this.config = config;
+    this.getConfig = getConfig;
 
     for (const [type, BaseClass] of Object.entries(baseClasses)) {
       if (type.includes(':')) {
@@ -173,8 +184,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
   } {
     // Re-read config on every call so runtime config changes (and test config
     // overrides) are reflected, matching the original JS implementation.
-    const adapterServiceConfig = normalizeAdapterConfig(this.config);
-    const { adapterClassName, adapterConfig } = resolveAdapterOptions(name, adapterServiceConfig);
+    const { adapterClassName, adapterConfig } = resolveAdapterOptions(name, this.getConfig());
 
     const [adapterType] = name.split(':');
 
@@ -213,7 +223,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
    * presence is still enforced on use by `getAdapter`.
    */
   init(): void {
-    const adapterServiceConfig = normalizeAdapterConfig(this.config);
+    const adapterServiceConfig = this.getConfig();
 
     // 1. Enumerate every configured adapter name (active + feature variants).
     const names: string[] = [];

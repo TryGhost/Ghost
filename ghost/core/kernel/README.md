@@ -22,6 +22,44 @@ existing Moment Timezone operations available while services migrate; callers
 can change their import without rewriting date logic. It shares the existing
 library instance and leaves Ghost's timezone configuration unchanged.
 
+## Adapter manager
+
+[`adapter-manager/`](adapter-manager/index.ts) loads, validates and caches
+adapter instances by type. It knows nothing about which adapters exist, where
+they are installed or how they are configured: the application constructs
+`AdapterManager` with its base-class registry, search paths, module loader and
+a `getConfig` callback returning the [adapter configuration](adapter-manager/types.ts)
+keyed by type. Ghost's registry, search paths and configuration normalization
+live in [`server/services/adapter-manager`](../server/services/adapter-manager/index.ts),
+which exports the configured instance; `bin/validate-adapters.ts` shares the
+same loader and registry so a build-time check resolves adapters exactly as the
+server does.
+
+### Contract
+
+- **Construction** registers base classes only. It reads no configuration and
+  loads nothing.
+- **`init()`** validates every configured adapter up front: it resolves each
+  configured type and feature to a distinct class and options, loads the class,
+  calls its optional static `validate`, and aggregates all failures into one
+  error. It constructs no instances and does not touch cached ones. Boot calls
+  it before anything uses an adapter; it is safe to call again.
+- **`getAdapter(name)`** resolves `name` (`type` or `type:feature`) through
+  `getConfig()` on every call, loads the class, and constructs and validates the
+  instance on first use. Instances are cached by requested name and class, so a
+  changed option reaches a new instance only after `clearCache()`, while
+  switching the active class and back returns the earlier instance. A cached
+  lookup still resolves and loads, so a class that can no longer be loaded
+  throws even for a cached name. There is no readiness guard: lookups before
+  `init()` work and are not validated up front.
+- **`clearCache()`** drops the manager's references so the next lookup
+  constructs afresh. It is not disposal: adapters own their resources, and
+  consumers that retained an instance keep it.
+
+[`loadAdapterClass`](adapter-manager/loader.ts) and
+[`resolveAdapterOptions`](adapter-manager/options.ts) are exported for callers
+that need resolution without a manager, such as the validation CLI.
+
 ## Service initialization
 
 [`defineService(name, create)`](define-service.ts) gives a service root `init()`

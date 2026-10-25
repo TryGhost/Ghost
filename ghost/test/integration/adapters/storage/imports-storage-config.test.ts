@@ -4,10 +4,8 @@ import _ from 'lodash';
 
 import defaults from '../../../../core/shared/config/defaults.json';
 import { configSources } from '../../../utils/config-sources';
-import {
-  normalizeAdapterConfig,
-  resolveAdapterOptions,
-} from '../../../../core/server/services/adapter-manager/utils';
+import { resolveAdapterOptions } from '../../../../core/kernel/adapter-manager';
+import { normalizeAdapterConfig } from '../../../../core/server/services/adapter-manager/config';
 import { createConfig } from '../../../../core/shared/config/validated';
 
 // The shape Ghost(Pro) configures: image, media and file features on a shared

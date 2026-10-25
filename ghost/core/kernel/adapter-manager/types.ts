@@ -19,6 +19,28 @@ export type AdapterConstructor<T extends Adapter = Adapter> = (abstract new (
 };
 
 /**
+ * The configuration of one adapter type. `active` names the class used when a
+ * lookup does not select another one. A key matching a class name holds that
+ * class's constructor options. Any other key is a feature (e.g. `images` for
+ * `storage:images`) that either names a class as a string or carries inline
+ * feature options as an object with an `adapter` property naming the class.
+ */
+export interface AdapterTypeConfig {
+  active?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Adapter configuration keyed by adapter type name, e.g.
+ * `{storage: {active: 'LocalStorage', media: 'S3Storage', S3Storage: {...}}}`.
+ *
+ * The manager reads this through the `getConfig` callback it is constructed
+ * with, on every lookup, so the application decides where the configuration
+ * comes from and whether it can change at runtime.
+ */
+export type AdapterConfig = Record<string, AdapterTypeConfig | undefined>;
+
+/**
  * A type-only registry mapping an adapter type name (e.g. "storage") to the
  * instance type of the base class registered for it. Derived from the
  * `baseClasses` map passed to `AdapterManager` — see `RegistryOf`.
