@@ -34,12 +34,16 @@ const serviceDependencyAllowlist = [
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
   '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
   '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
+  '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
+  '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
+  '^ghost/core/server/lib/common/to-plain\\.ts$', // Bookshelf/plain-object normalization; no application instances or captured state.
+  '^ghost/core/server/lib/link-replacer\\.js$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
   '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.

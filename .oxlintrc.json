@@ -207,6 +207,7 @@
         "ghost/core/server/services/integrations/index.ts",
         "ghost/core/server/services/internal-keys/index.ts",
         "ghost/core/server/services/invites/index.ts",
+        "ghost/core/server/services/member-attribution/index.ts",
         "ghost/core/server/services/posts-public/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
         "ghost/core/server/services/slack-ping/index.ts",

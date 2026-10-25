@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { IncorrectUsageError } from '@tryghost/errors';
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
@@ -10,19 +11,18 @@ type Attribution = {
   referrerMedium: string | null;
 };
 
-type LegacyRoot = {
-  init(): void;
-  service?: {
+type Root = {
+  init(): Promise<void>;
+  readonly service: {
     getAttributionFromContext(context: object): Promise<Attribution | null>;
     getAttribution(history: object[]): Promise<Attribution>;
     isTrackingEnabled: boolean;
     models: { MemberCreatedEvent: unknown };
     attributionBuilder: unknown;
-  };
-  attributionBuilder?: unknown;
-  outboundLinkTagger?: {
-    addToUrl(url: URL): URL;
-    isEnabled: boolean;
+    outboundLinkTagger: {
+      addToUrl(url: URL): URL;
+      isEnabled: boolean;
+    };
   };
 };
 
@@ -31,7 +31,7 @@ describe('Member attribution service root', function () {
   const modulePath = require.resolve('../../../../../core/server/services/member-attribution');
   const now = new Date('2026-01-01T12:00:00Z').getTime();
   let savedModule: NodeJS.Module | undefined;
-  let root: LegacyRoot;
+  let root: Root;
   let getSetting: sinon.SinonStub;
   let getSiteUrl: sinon.SinonStub;
   let lookupIntegration: sinon.SinonStub;
@@ -50,7 +50,7 @@ describe('Member attribution service root', function () {
     lookupIntegration = sandbox
       .stub(models.Integration, 'findOne')
       .resolves({ get: () => 'Importer' });
-    root = require('../../../../../core/server/services/member-attribution');
+    root = require('../../../../../core/server/services/member-attribution').default;
   });
 
   afterEach(function () {
@@ -62,22 +62,22 @@ describe('Member attribution service root', function () {
   });
 
   it('retains the same usable graph across repeated initialization', async function () {
-    assert.equal(Object.hasOwn(root, 'service'), false);
-    assert.equal(Object.hasOwn(root, 'attributionBuilder'), false);
-    assert.equal(Object.hasOwn(root, 'outboundLinkTagger'), false);
-    assert.equal(root.init(), undefined);
+    assert.throws(() => root.service, IncorrectUsageError);
+    assert.throws(() => root.service.attributionBuilder, IncorrectUsageError);
+    assert.throws(() => root.service.outboundLinkTagger, IncorrectUsageError);
+    assert.equal(await root.init(), undefined);
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
     const service = root.service;
-    const builder = root.attributionBuilder;
-    const tagger = root.outboundLinkTagger;
-    root.init();
+    const builder = root.service.attributionBuilder;
+    const tagger = root.service.outboundLinkTagger;
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
 
     assert.equal(root.service, service);
-    assert.equal(root.attributionBuilder, builder);
-    assert.equal(root.outboundLinkTagger, tagger);
+    assert.equal(root.service.attributionBuilder, builder);
+    assert.equal(root.service.outboundLinkTagger, tagger);
     assert.equal(
       (await service.getAttributionFromContext({ user: 'owner-id' }))?.referrerSource,
       'Created manually',
@@ -89,9 +89,9 @@ describe('Member attribution service root', function () {
   });
 
   it('honours tracking changes for a valid context without reconstructing the root', async function () {
-    root.init();
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
     const service = root.service;
     const context = { api_key: 'key-id', integration: { id: 'integration-id' } };
     assert.equal(
@@ -114,9 +114,9 @@ describe('Member attribution service root', function () {
   });
 
   it('keeps API attribution when integration lookup rejects', async function () {
-    root.init();
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
     lookupIntegration.rejects(new Error('Integration lookup failed'));
 
     const attribution = await root.service.getAttributionFromContext({
@@ -130,9 +130,9 @@ describe('Member attribution service root', function () {
   });
 
   it('honours tracking changes for valid history on the retained graph', async function () {
-    root.init();
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
     const history = [{ referrerSource: 'Newsletter', referrerMedium: 'Email', time: now }];
     assert.equal((await root.service.getAttribution(history)).referrerSource, 'Newsletter');
 
@@ -145,11 +145,11 @@ describe('Member attribution service root', function () {
     assert.equal((await root.service.getAttribution(history)).referrerSource, 'Newsletter');
   });
 
-  it('reads outbound tagging policy and source URL when the retained tagger is called', function () {
-    root.init();
+  it('reads outbound tagging policy and source URL when the retained tagger is called', async function () {
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
-    const tagger = root.outboundLinkTagger;
+    assert.ok(root.service.outboundLinkTagger);
+    const tagger = root.service.outboundLinkTagger;
     const input = new URL('https://external.example/article?existing=1#heading');
     getSetting.withArgs('outbound_link_tagging').returns(false);
     assert.equal(tagger.addToUrl(input).href, input.href);
@@ -164,23 +164,20 @@ describe('Member attribution service root', function () {
     assert.equal(input.searchParams.has('ref'), false);
   });
 
-  it('allows initialization to retry after a URL prerequisite throws', function () {
+  it('allows initialization to retry after a URL prerequisite throws', async function () {
     const failure = new Error('URL configuration unavailable');
     urlUtils.urlFor.withArgs('home', true).throws(failure);
-    assert.throws(
-      () => root.init(),
-      (error) => error === failure,
-    );
-    assert.equal(Object.hasOwn(root, 'service'), false);
+    await assert.rejects(root.init(), (error) => error === failure);
+    assert.throws(() => root.service, IncorrectUsageError);
 
     urlUtils.urlFor.withArgs('home', true).returns('https://publication.example/');
-    root.init();
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
 
     assert.equal(root.service.isTrackingEnabled, true);
     assert.equal(
-      root.outboundLinkTagger
+      root.service.outboundLinkTagger
         .addToUrl(new URL('https://external.example/'))
         .searchParams.get('ref'),
       'publication.example',
@@ -188,9 +185,9 @@ describe('Member attribution service root', function () {
   });
 
   it('captures parser URLs at init while retaining live tracking callbacks', async function () {
-    root.init();
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
     const service = root.service;
     urlUtils.urlFor.withArgs('home', true).returns('https://updated.example/');
     urlUtils.urlFor.withArgs('admin', true).returns('https://admin.updated.example/ghost/');
@@ -217,26 +214,23 @@ describe('Member attribution service root', function () {
     sinon.assert.calledOnceWithExactly(urlUtils.urlFor.withArgs('admin', true), 'admin', true);
   });
 
-  it('retries a failed composition after its helpers have been created', function () {
+  it('retries a failed composition after its helpers have been created', async function () {
     const failure = new Error('Event model unavailable');
     const eventModel = models.MemberCreatedEvent;
     const readEventModel = sandbox.stub().onFirstCall().throws(failure);
     readEventModel.returns(eventModel);
     sandbox.stub(models, 'MemberCreatedEvent').get(readEventModel);
 
-    assert.throws(
-      () => root.init(),
-      (error) => error === failure,
-    );
-    assert.equal(Object.hasOwn(root, 'service'), false);
+    await assert.rejects(root.init(), (error) => error === failure);
+    assert.throws(() => root.service, IncorrectUsageError);
 
-    root.init();
+    await root.init();
     assert.ok(root.service);
-    assert.ok(root.outboundLinkTagger);
+    assert.ok(root.service.outboundLinkTagger);
 
     assert.equal(root.service.models.MemberCreatedEvent, eventModel);
-    assert.equal(root.service.attributionBuilder, root.attributionBuilder);
+    assert.ok(root.service.attributionBuilder);
     assert.equal(root.service.isTrackingEnabled, true);
-    assert.equal(root.outboundLinkTagger.isEnabled, true);
+    assert.equal(root.service.outboundLinkTagger.isEnabled, true);
   });
 });
