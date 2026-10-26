@@ -205,6 +205,20 @@ describe('reviewed regressions', () => {
     expect(isAboutAccount(getSearchTerms('change the price of my tiers'))).toBe(false);
   });
 
+  it('needs half the question’s words to match, so one ordinary word in common isn’t an answer', () => {
+    const businessModel = article(
+      'how-ghost-makes-money',
+      'How does Ghost make money?',
+      'We think a product people love pays for itself.',
+    );
+    expect(rankHelpArticles([businessModel], getSearchTerms('I think I got hacked'), null)).toEqual(
+      [],
+    );
+    expect(
+      rankHelpArticles([businessModel], getSearchTerms('how does ghost make money'), null),
+    ).toEqual([businessModel]);
+  });
+
   it('spells -ise words the help center’s way, at the end of the word', () => {
     const visualizing = article('visualizing', 'Visualizing your audience');
     expect(rankHelpArticles([visualizing], getSearchTerms('visualise my audience'), null)).toEqual([

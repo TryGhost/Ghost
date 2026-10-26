@@ -13,9 +13,10 @@ import { PAGE_TOPICS, type HelpPageKey } from './help-pages';
  *   2. getTermGroups: each word's forms (its -ize spelling, SYNONYMS), and
  *      each pair of words joined ("go daddy" → godaddy).
  *   3. rankHelpArticles: each word scores where it appears in each article
- *      (title, topic, the opening of its text), then lifts for articles about
- *      the user's page, their own account (isAboutAccount) and the question
- *      before; the best three are kept.
+ *      (title, topic, the opening of its text); an article must match at least
+ *      half the question's words. Then lifts for articles about the user's
+ *      page, their own account (isAboutAccount) and the question before; the
+ *      best three are kept.
  *
  * The weights were tuned by hand against a few dozen real questions on the
  * live help center (see README.md), not against data. Measuring what people
@@ -35,6 +36,10 @@ const FOLLOW_UP_WORD_LIFT = 1;
 const FOLLOW_UP_TOPIC_LIFT = 1;
 // Only results nearly as good as the best, so a word in common isn't enough
 const RELATIVE_CUTOFF = 0.5;
+// An article must match at least this share of the question's words, so one
+// ordinary word in common ("I *think* I got hacked") isn't an answer, and a
+// question the help center doesn't cover finds nothing
+const MIN_COVERAGE = 0.5;
 
 /** The most articles an answer, or the matches as the user types, show. */
 export const MAX_RESULTS = 3;
@@ -166,25 +171,41 @@ const SYNONYMS: Array<[word: string, alternatives: string[]]> = [
 // British -ise spellings, as the help center writes -ize ("Customizing Stripe")
 const BRITISH_ISE = /is(e|es|ed|ing|ation|ations)$/;
 
+interface TermGroup {
+  /** What to match: one word's forms, or a pair of words joined */
+  terms: string[];
+  /** Which of the question's words it stands for (their indexes) */
+  words: number[];
+}
+
 /**
  * What to match each of a question's words on, one group per word so its
  * alternatives count once: the word, its -ize spelling, and the help center's
  * word for it. Each pair of words is also tried joined, for names people
  * split ("go daddy" finds GoDaddy).
  */
-function getTermGroups(words: string[]): string[][] {
-  const groups = words.map((word) => [
-    word,
-    ...(BRITISH_ISE.test(word) ? [word.replace(BRITISH_ISE, 'iz$1')] : []),
-    ...SYNONYMS.flatMap(([synonym, alternatives]) =>
-      termMatches(synonym, word) ? alternatives : [],
-    ),
-  ]);
-  const joined = words.slice(1).map((word, index) => [`${words[index]}${word}`]);
+function getTermGroups(words: string[]): TermGroup[] {
+  const groups = words.map((word, index) => ({
+    terms: [
+      word,
+      ...(BRITISH_ISE.test(word) ? [word.replace(BRITISH_ISE, 'iz$1')] : []),
+      ...SYNONYMS.flatMap(([synonym, alternatives]) =>
+        termMatches(synonym, word) ? alternatives : [],
+      ),
+    ],
+    words: [index],
+  }));
+  const joined = words.slice(1).map((word, index) => ({
+    terms: [`${words[index]}${word}`],
+    words: [index, index + 1],
+  }));
 
   return [...groups, ...joined]
-    .map((group) => [...new Set(group)].filter((term) => term.length >= MIN_TERM))
-    .filter((group) => group.length > 0);
+    .map((group) => ({
+      ...group,
+      terms: [...new Set(group.terms)].filter((term) => term.length >= MIN_TERM),
+    }))
+    .filter((group) => group.terms.length > 0);
 }
 
 // What people ask about their own Ghost(Pro) account with, cancelling, pausing
@@ -281,16 +302,20 @@ export function rankHelpArticles(
   followUp: HelpFollowUp | null = null,
 ): HelpArticle[] {
   const groups = getTermGroups(terms);
-  const matchTerms = groups.flat();
+  const matchTerms = groups.flatMap((group) => group.terms);
   const earlierTerms = followUp
     ? getTermGroups(followUp.terms)
-        .flat()
+        .flatMap((group) => group.terms)
         .filter((term) => !matchTerms.includes(term))
     : [];
+  // The question's words that can match: shorter ones only count through a
+  // joined pair ("go daddy")
+  const questionWords = new Set(groups.flatMap((group) => group.words));
+  const wordsNeeded = Math.ceil(questionWords.size * MIN_COVERAGE);
   const aboutAccount = isAboutAccount(terms);
   // The groups for account words: the account lift needs one of them to match
   // the article, not just any word ("change my plan" isn't about passwords)
-  const accountGroups = groups.map((group) => mentionsAny(group.slice(0, 1), ACCOUNT_WORDS));
+  const accountGroups = groups.map((group) => mentionsAny(group.terms.slice(0, 1), ACCOUNT_WORDS));
 
   const scored = articles.map((article) => {
     const words = getArticleWords(article);
@@ -307,13 +332,17 @@ export function rankHelpArticles(
     // Each word scores once, however many ways it matches
     let score = 0;
     let accountWordMatched = false;
+    const matchedWords = new Set<number>();
     groups.forEach((group, index) => {
-      const groupScore = Math.max(...group.map(scoreOf));
+      const groupScore = Math.max(...group.terms.map(scoreOf));
       score += groupScore;
+      if (groupScore > 0) {
+        group.words.forEach((word) => matchedWords.add(word));
+      }
       accountWordMatched ||= groupScore > 0 && accountGroups[index] === true;
     });
-    if (score === 0) {
-      return { article, score };
+    if (score === 0 || matchedWords.size < wordsNeeded) {
+      return { article, score: 0 };
     }
 
     // Its main topic only, as an article's first tag is
