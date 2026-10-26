@@ -80,6 +80,7 @@ cli.command({
   flags: 'services',
   desc: 'Inspect service migration and dependency work.',
   setup(group) {
+    group.showHelpByDefault();
     for (const command of [
       { flags: 'list', desc: 'List service ownership, migration status and dependency counts.' },
       { flags: 'report', desc: 'Show migration totals or details for one service.' },
@@ -171,9 +172,12 @@ cli.command({
 // Parse only the command path; tool arguments and help flags pass through untouched.
 const rootHelp =
   args.length === 0 || (args.length === 1 && ['--help', '-h'].includes(args[0] ?? ''));
+const servicesHelp =
+  args[0] === 'services' &&
+  (args.length === 1 || (args.length === 2 && ['--help', '-h'].includes(args[1] ?? '')));
 const result = await cli.parse(rootHelp ? ['--help'] : args.slice(0, args[0] === 'repl' ? 1 : 2));
 if (!commandRun) {
-  process.exitCode = rootHelp ? result.code : result.code || 1;
+  process.exitCode = rootHelp || servicesHelp ? result.code : result.code || 1;
   const output = result.output || cli.getHelp();
   const stream = process.exitCode === 0 ? process.stdout : process.stderr;
   stream.write(`${output}\n`);
