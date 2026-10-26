@@ -85,6 +85,46 @@ describe('extractMetadata', function () {
     }
   });
 
+  it('keeps other JSON-LD images ahead of an image URL array', function () {
+    const article = { '@type': 'Article', image: ['https://example.com/hero.jpg'] };
+    for (const [other, expected] of [
+      [
+        { '@type': 'Person', image: { url: 'https://example.com/avatar.jpg' } },
+        'https://example.com/avatar.jpg',
+      ],
+      [
+        { '@type': 'Organization', image: 'https://example.com/org.jpg' },
+        'https://example.com/org.jpg',
+      ],
+    ] as const) {
+      const metadata = extractMetadata(
+        page(
+          `<script type="application/ld+json">${JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [other, article],
+          })}</script>`,
+        ),
+        'https://example.com/post',
+      );
+
+      assert.equal(metadata.image, expected, other['@type']);
+    }
+  });
+
+  it('keeps an ImageObject URL ahead of a string in a mixed image array', function () {
+    const metadata = extractMetadata(
+      page(
+        `<script type="application/ld+json">${JSON.stringify({
+          '@type': 'Article',
+          image: ['https://example.com/a.jpg', { url: 'https://example.com/b.jpg' }],
+        })}</script>`,
+      ),
+      'https://example.com/post',
+    );
+
+    assert.equal(metadata.image, 'https://example.com/b.jpg');
+  });
+
   it('ignores invalid JSON-LD', function () {
     const metadata = extractMetadata(
       page('<title>Title</title><script type="application/ld+json">{nope</script>'),

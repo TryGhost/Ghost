@@ -649,9 +649,9 @@ export const extractMetadata = (html: string, pageUrl: string): PageMetadata => 
       () => toImage(attr('meta[property="twitter:image"]'), pageUrl),
       () => toImage(attr('meta[itemprop="image"]'), pageUrl),
       () => toImage(jsonld('image.0.url'), pageUrl),
-      () => toImage(jsonld('image.0'), pageUrl),
       () => toImage(jsonld('image.url'), pageUrl),
       () => toImage(jsonld('image'), pageUrl),
+      () => toImage(jsonld('image.0'), pageUrl),
       () =>
         toImage(
           text('article img[src]', (el) => el.attr('src')),
