@@ -339,23 +339,16 @@ class PostsService {
       tagIds.length && postIds.length
         ? await options
             .transacting('posts_tags')
-            .whereIn('tag_id', tagIds)
             .whereIn('post_id', postIds)
-            .select('post_id', 'tag_id')
+            .select('post_id', 'tag_id', 'sort_order')
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
 
-    const sortOrderRows = postIds.length
-      ? await options
-          .transacting('posts_tags')
-          .whereIn('post_id', postIds)
-          .groupBy('post_id')
-          .select('post_id')
-          .max('sort_order as max_sort_order')
-      : [];
-    const nextSortOrders = new Map(
-      sortOrderRows.map((row) => [row.post_id, row.max_sort_order + 1]),
-    );
+    const nextSortOrders = new Map();
+    for (const row of existingRows) {
+      const next = Math.max(nextSortOrders.get(row.post_id) ?? 0, row.sort_order + 1);
+      nextSortOrders.set(row.post_id, next);
+    }
 
     const postTags = [];
     for (const tagId of tagIds) {

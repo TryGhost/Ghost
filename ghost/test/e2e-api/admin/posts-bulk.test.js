@@ -534,7 +534,7 @@ describe('Posts Bulk API', function () {
       }
     });
 
-    it('Adds new tags after the tags a post already has', async function () {
+    it('Adds new tags after the tags a post already has', async function ({ onTestFinished }) {
       const {
         body: {
           posts: [post],
@@ -547,6 +547,9 @@ describe('Posts Bulk API', function () {
           ],
         })
         .expectStatus(201);
+      onTestFinished(async () => {
+        await agent.delete(`/posts/${post.id}/`).expectStatus(204);
+      });
 
       await agent
         .put('/posts/bulk/?filter=' + encodeURIComponent(`id:'${post.id}'`))
@@ -579,11 +582,9 @@ describe('Posts Bulk API', function () {
       assert.deepEqual(await findByPrimaryTag('bulk-primary'), [post.id]);
       assert.deepEqual(await findByPrimaryTag('bulk-second'), []);
       assert.deepEqual(await findByPrimaryTag('bulk-third'), []);
-
-      await agent.delete(`/posts/${post.id}/`).expectStatus(204);
     });
 
-    it('Keeps the order of new tags on a post without tags', async function () {
+    it('Keeps the order of new tags on a post without tags', async function ({ onTestFinished }) {
       const {
         body: {
           posts: [post],
@@ -592,6 +593,9 @@ describe('Posts Bulk API', function () {
         .post('/posts/')
         .body({ posts: [{ title: 'Bulk tag order without tags', status: 'published' }] })
         .expectStatus(201);
+      onTestFinished(async () => {
+        await agent.delete(`/posts/${post.id}/`).expectStatus(204);
+      });
 
       await agent
         .put('/posts/bulk/?filter=' + encodeURIComponent(`id:'${post.id}'`))
@@ -619,9 +623,10 @@ describe('Posts Bulk API', function () {
       } = await agent
         .get('/posts/?filter=' + encodeURIComponent('primary_tag:bulk-next'))
         .expectStatus(200);
-      assert.deepEqual(posts, []);
-
-      await agent.delete(`/posts/${post.id}/`).expectStatus(204);
+      assert.deepEqual(
+        posts.map((p) => p.id),
+        [],
+      );
     });
 
     it('Can unpublish posts', async function () {
