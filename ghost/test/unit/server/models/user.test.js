@@ -29,11 +29,8 @@ describe('Unit: models/user', function () {
   });
 
   it('allows migration-owned transactions when trial invitation limits are enabled', async function () {
-    const config = require('../../../../core/shared/config');
-    sinon
-      .stub(config, 'get')
-      .withArgs('hostSettings:staffInvites')
-      .returns({ maxStaff: 10, maxInvites: 15 });
+    const { limitService } = require('../../../../core/server/services/limits');
+    sinon.stub(limitService, 'isLimited').withArgs('limitTrialStaff').returns(true);
     const owner = { name: 'Ghost', email: 'ghost@example.com', status: 'inactive', roles: [] };
     const options = { migrating: true, transacting: {}, context: { internal: true } };
     const created = { id: 'owner' };

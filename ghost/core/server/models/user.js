@@ -1,10 +1,9 @@
 const validator = require('@tryghost/validator');
-const config = require('../../shared/config');
-const { lockStaffInvites, checkTrialStaffLimit } = require('../lib/staff-invite-usage');
+const { lockStaffInvites } = require('../lib/staff-invite-usage');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
-const { limitService, getHelpLink } = require('../services/limits');
+const { limitService } = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
@@ -664,9 +663,9 @@ const User = ghostBookshelf.Model.extend(
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
     add: async function add(dataToClone, unfilteredOptions = {}) {
-      const policy = config.get('hostSettings:staffInvites');
+      const isTrialStaffLimited = limitService.isLimited('limitTrialStaff');
       // Imports and installation fixtures create users without sending invitation emails.
-      if (!policy || unfilteredOptions.importing || unfilteredOptions.migrating) {
+      if (!isTrialStaffLimited || unfilteredOptions.importing || unfilteredOptions.migrating) {
         return this.addWithRoles(dataToClone, unfilteredOptions);
       }
       if (unfilteredOptions.transacting) {
@@ -676,7 +675,7 @@ const User = ghostBookshelf.Model.extend(
       }
       return ghostBookshelf.transaction(async (transacting) => {
         await lockStaffInvites(transacting);
-        await checkTrialStaffLimit(transacting, policy.maxStaff, getHelpLink());
+        await limitService.errorIfWouldGoOverLimit('limitTrialStaff', { transacting });
         return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
       });
     },

@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { LimitService } from '@tryghost/limit-service';
-import type { Subscription } from '@tryghost/limit-service';
+import type { Subscription, LimitConfig } from '@tryghost/limit-service';
 import type { RequestHandler } from 'express';
 import config from '../../shared/config';
 import db from '../data/db';
@@ -30,7 +30,37 @@ export const init = () => {
     };
   }
 
-  const hostLimits = config.get('hostSettings:limits') || {};
+  const hostLimits: Record<string, LimitConfig> = { ...config.get('hostSettings:limits') };
+  const trialStaff = hostLimits.limitTrialStaff;
+  if (trialStaff) {
+    hostLimits.limitTrialStaff = {
+      ...trialStaff,
+      currentCountQuery: async (knex) => {
+        // All roles and statuses occupy a trial seat. Only the threshold matters.
+        const users = await knex('users')
+          .select('id')
+          .limit(trialStaff.max! + 1);
+        const invites = await knex('invites')
+          .select('id')
+          .limit(trialStaff.max! + 1);
+        return users.length + invites.length;
+      },
+    };
+  }
+  const staffInvites = hostLimits.limitTrialStaffInvites;
+  if (staffInvites) {
+    hostLimits.limitTrialStaffInvites = {
+      ...staffInvites,
+      currentCountQuery: async (knex) => {
+        // LIMIT bounds returned rows, not rows scanned; retain the existing schema.
+        const actions = await knex('actions')
+          .select('id')
+          .where({ resource_type: 'invite', event: 'added' })
+          .limit(staffInvites.max! + 1);
+        return actions.length;
+      },
+    };
+  }
 
   try {
     limitService.loadLimits({

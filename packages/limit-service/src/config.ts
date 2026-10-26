@@ -60,6 +60,8 @@ const config: Record<string, LimitConfig> = {
             return result.length;
         }
     },
+    limitTrialStaff: {},
+    limitTrialStaffInvites: {},
     customIntegrations: {},
     customThemes: {},
     uploads: {
