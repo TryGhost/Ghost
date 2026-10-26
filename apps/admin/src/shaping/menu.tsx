@@ -8,11 +8,17 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Switch,
 } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { ShadeApp } from '@tryghost/shade/app';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { SCENARIOS, type ScenarioId, setScenario, useScenario } from './data/scenario';
 import { setPatternsView, usePatternsView } from './patterns-view';
 
 // The prototype menu, carried over from the automations build-proto. A 64px
@@ -36,6 +42,7 @@ export const ShapingMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
   const dark = useSyncExternalStore(subscribeToTheme, isDark);
   const patternsView = usePatternsView();
+  const scenario = useScenario();
 
   // Close on a press anywhere else, in the capture phase so a screen that
   // stops pointer events can't keep it open. Presses inside the panel or its
@@ -90,6 +97,27 @@ export const ShapingMenu: React.FC = () => {
                   id="shaping-patterns-view"
                   onCheckedChange={setPatternsView}
                 />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="shaping-scenario">Data</FieldLabel>
+                <Select
+                  value={scenario}
+                  onValueChange={(value) => setScenario(value as ScenarioId)}
+                >
+                  <SelectTrigger id="shaping-scenario">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SCENARIOS.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldDescription>
+                  Fakes Analytics’ numbers on every screen. Changing it reloads the page.
+                </FieldDescription>
               </Field>
             </Stack>
           </PopoverContent>

@@ -3,6 +3,7 @@ import { defaultUnsplashConfig } from '@tryghost/admin-x-framework';
 import './index.css';
 import { AdminAppRoot } from './app-root.tsx';
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
+import { installAnalyticsFakes } from './shaping/data/install';
 import { mountShapingMenu } from './shaping/mount-menu';
 
 const framework = {
@@ -10,5 +11,7 @@ const framework = {
   unsplashConfig: defaultUnsplashConfig,
 };
 
+// SHAPING PROTOTYPE ONLY: fake analytics data goes in before the first request
+installAnalyticsFakes();
 createRoot(document.getElementById('root')!).render(<AdminAppRoot framework={framework} />);
 mountShapingMenu();

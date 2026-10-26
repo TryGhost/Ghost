@@ -31,6 +31,37 @@ The one swap point is the `analytics` route in `routes.tsx`, which renders
 `PatternsSwap` (`patterns/patterns-swap.tsx`) where it used to render
 `<Outlet />`.
 
+## Data scenarios
+
+The menu's **Data** picker chooses which publisher the analytics numbers
+describe: **No data yet**, **Small**, **Mid-sized** (the default) or **Large
+publisher**, or **Site data** to turn the fakes off. Changing it reloads the
+page. Both the patterns page and the real screens follow it, so every screen
+can be checked at every scale without Tinybird or seeded data.
+
+- `data/profiles.ts`: each scenario's numbers (today's totals and rates).
+  Tweak these to tune a scenario.
+- `data/generate.ts`: turns a profile into daily series, posts, sends,
+  sources and locations for any date range. Seeded, so a day's numbers match
+  everywhere.
+- `data/handlers.ts`: answers the Analytics screens' requests in the real
+  API's shapes: Ghost's stats endpoints, the latest post and the made-up
+  posts the screens link to, and Tinybird (`config.stats`, its token and each
+  pipe). Anything else reaches the real Ghost.
+- `data/install.ts`: wraps `fetch` before Admin renders (called from
+  `main.tsx`).
+
+While faking, the settings Analytics checks (web analytics, paid members,
+member sources, email open and click tracking) read as on, and are stripped
+from settings saves so they never reach the database. So Settings shows them
+as on, and toggling them there won't stick until **Site data** is picked.
+
+## Changes log
+
+The patterns page ends with a **Changes** section: a high-level log of the
+design changes made on this branch, newest first. Add an entry to
+`patterns/changes.ts` with each change worth reviewing.
+
 ## Adding a pattern
 
 Components that take their data as props can go straight on the page with

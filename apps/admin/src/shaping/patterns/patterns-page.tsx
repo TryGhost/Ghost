@@ -5,7 +5,7 @@ import LocationsCard from '@/analytics/views/stats/locations/components/location
 import NewsletterKPIs from '@/analytics/views/stats/newsletters/components/newsletters-kpis';
 import OverviewKPIs from '@/analytics/views/stats/overview/components/overview-kpis';
 import PaidMembersChangeChart from '@/analytics/views/stats/growth/components/paid-subscription-change-chart';
-import React from 'react';
+import React, { useMemo } from 'react';
 import SourcesCard from '@/analytics/views/stats/web/components/sources-card';
 import StatsHeader from '@/analytics/views/stats/layout/stats-header';
 import StatsLayout from '@/analytics/views/stats/layout/stats-layout';
@@ -29,49 +29,29 @@ import {
   PostAnalyticsContext,
   type PostAnalyticsContextType,
 } from '@/posts/analytics/providers/post-analytics-context';
-import {
-  CURRENCY,
-  RANGE,
-  clickedRadial,
-  growthChart,
-  growthTotals,
-  latestPost,
-  locations,
-  membersChart,
-  mrrChart,
-  newsletterSends,
-  newsletterTotals,
-  openedRadial,
-  paidSubscriptionChanges,
-  postSources,
-  postVisitorsChart,
-  radialConfig,
-  sentRadial,
-  sources,
-  subscribers,
-  topPosts,
-  totalVisitors,
-  visitorsChart,
-  webKpis,
-} from './fixtures';
+import { CHANGES } from './changes';
+import { CURRENCY, buildFixtures, radialConfig } from './fixtures';
+import { patternsScenario, useScenario } from '@/shaping/data/scenario';
+import { useAnalytics } from '@/analytics/providers/analytics-context';
 
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
 //
 // Every building block the Analytics screens are made of, on one page, so they
 // can be designed together. Each block is the real component the screens
 // render, fed sample data (fixtures.ts) instead of a query: change a component
-// and this page and the real screens change with it.
+// and this page and the real screens change with it. The data follows the
+// prototype menu's scenario and the header's date range.
 
 // The post screens read their post from PostAnalyticsContext. The cards shown
 // here only ask whether it has loaded, so no post is needed.
-const patternPostContext: PostAnalyticsContextType = {
+const postContextFor = (range: number): PostAnalyticsContextType => ({
   postId: 'pattern-post',
   post: undefined,
   isPostLoading: false,
   refetchPost: async () => {},
-  range: RANGE,
+  range,
   setRange: () => {},
-};
+});
 
 interface PatternProps {
   title: string;
@@ -120,6 +100,35 @@ const Variant: React.FC<{ label: string; children: React.ReactNode }> = ({ label
 );
 
 const PatternsPage: React.FC = () => {
+  const scenario = patternsScenario(useScenario());
+  const { range: RANGE } = useAnalytics();
+  const fixtures = useMemo(() => buildFixtures(scenario, RANGE), [scenario, RANGE]);
+  const patternPostContext = useMemo(() => postContextFor(RANGE), [RANGE]);
+  const {
+    clickedRadial,
+    growthChart,
+    growthTotals,
+    latestPost,
+    locations,
+    membersChart,
+    mrrChart,
+    newsletterSends,
+    newsletterTotals,
+    openedRadial,
+    paidSubscriptionChanges,
+    postSources,
+    postVisitors,
+    postVisitorsChart,
+    radialLabels,
+    sentRadial,
+    sources,
+    subscribers,
+    topPosts,
+    totalVisitors,
+    visitorsChart,
+    webKpis,
+  } = fixtures;
+
   return (
     <StatsLayout>
       <StatsHeader>
@@ -236,20 +245,20 @@ const PatternsPage: React.FC = () => {
                   config={radialConfig('Sent')}
                   data={sentRadial}
                   percentageLabel="Sent"
-                  percentageValue="100%"
+                  percentageValue={radialLabels.sent}
                   tooltip={false}
                 />
                 <NewsletterRadialChart
                   config={radialConfig('Opened')}
                   data={openedRadial}
                   percentageLabel="Open rate"
-                  percentageValue="61%"
+                  percentageValue={radialLabels.opened}
                 />
                 <NewsletterRadialChart
                   config={radialConfig('Clicked')}
                   data={clickedRadial}
                   percentageLabel="Click rate"
-                  percentageValue="12%"
+                  percentageValue={radialLabels.clicked}
                 />
               </CardContent>
             </Card>
@@ -268,7 +277,7 @@ const PatternsPage: React.FC = () => {
               isLoading={false}
               range={RANGE}
               sourcesData={postSources}
-              visitors={postVisitorsChart.reduce((sum, item) => sum + item.value, 0)}
+              visitors={postVisitors}
             />
           </PostAnalyticsContext.Provider>
         </Pattern>
@@ -346,6 +355,34 @@ const PatternsPage: React.FC = () => {
               <Text key={item} size="sm" tone="secondary">
                 · {item}
               </Text>
+            ))}
+          </Stack>
+        </Pattern>
+
+        <Pattern
+          source="shaping/patterns/changes.ts"
+          title="Changes"
+          usedOn="this prototype branch, newest first"
+        >
+          <Stack gap="xl">
+            {CHANGES.map((change) => (
+              <Stack key={`${change.date}-${change.title}`} gap="sm">
+                <Stack gap="none">
+                  <Text className="font-mono" size="xs" tone="tertiary">
+                    {change.date}
+                  </Text>
+                  <Text size="md" weight="semibold">
+                    {change.title}
+                  </Text>
+                </Stack>
+                <Stack className="max-w-3xl" gap="xs">
+                  {change.points.map((point) => (
+                    <Text key={point} size="sm" tone="secondary">
+                      · {point}
+                    </Text>
+                  ))}
+                </Stack>
+              </Stack>
             ))}
           </Stack>
         </Pattern>
