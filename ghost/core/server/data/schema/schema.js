@@ -2190,6 +2190,38 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
+  automation_trigger_rules: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    automation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'automations.id',
+      cascadeDelete: true,
+    },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['free_signup', 'paid_subscription_started']] },
+    },
+    scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['any_paid_tier', 'specific_paid_tier']] },
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    created_at: { type: 'dateTime', nullable: false },
+    // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
+    '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
+  },
   automation_trigger_tiers: {
     automation_id: {
       type: 'string',
