@@ -206,6 +206,45 @@ describe('renderers/transistor-renderer', function () {
             });
         });
 
+        describe('embed script iframe lookup', function () {
+            const membersOnly = {
+                web: {nonMember: false, memberSegment: visibility.ALL_MEMBERS_SEGMENT},
+                email: {memberSegment: visibility.ALL_MEMBERS_SEGMENT}
+            };
+
+            // Ghost serves a permitted member the gated content without its wrapping comments
+            function renderForMember(siteUuid: string) {
+                const {html: gatedHtml} = renderForWeb(getTestData({visibility: membersOnly}), {siteUuid});
+                return gatedHtml.replace(/<!--kg-gated-block:begin[^>]*-->([\s\S]*?)<!--kg-gated-block:end-->/g, '$1');
+            }
+
+            function loadEmbedSources(contentHtml: string) {
+                const page = new JSDOM(`<body><div class="post-content">${contentHtml}</div></body>`, {
+                    runScripts: 'dangerously',
+                    beforeParse(window) {
+                        window.getComputedStyle = () => ({backgroundColor: 'rgba(0, 0, 0, 0)'}) as CSSStyleDeclaration;
+                    }
+                });
+
+                return [...page.window.document.querySelectorAll('iframe[data-kg-transistor-embed]')].map(iframe => iframe.getAttribute('src'));
+            }
+
+            it('loads every card when several cards share a parent', function () {
+                const sources = loadEmbedSources(`<p>First</p>${renderForMember('first-card')}<p>Second</p>${renderForMember('second-card')}`);
+
+                assert.deepEqual(sources, [
+                    'https://partner.transistor.fm/ghost/embed/%7Buuid%7D?ctx=first-card',
+                    'https://partner.transistor.fm/ghost/embed/%7Buuid%7D?ctx=second-card'
+                ]);
+            });
+
+            it('leaves the iframe alone when the script is not rendered directly after it', function () {
+                const sources = loadEmbedSources(renderForMember('moved-card').replace('</iframe><script>', '</iframe><p>Moved</p><script>'));
+
+                assert.deepEqual(sources, [null]);
+            });
+        });
+
         it('includes siteUuid as ctx param', function () {
             const result = renderForWeb(getTestData(), {siteUuid: 'my-site-uuid'});
 
