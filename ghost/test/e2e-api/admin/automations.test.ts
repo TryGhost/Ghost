@@ -1,3 +1,4 @@
+import { buildTriggerRuleRows } from '../../../core/server/services/automations/trigger-rules';
 import { createRequire } from 'node:module';
 import got, { type ExtendOptions, type Got } from 'got';
 import logging from '@tryghost/logging';
@@ -329,7 +330,7 @@ describe('Automations API', function () {
       assert.deepEqual([...created.trigger_tier_ids].sort(), [...tierIds].sort());
       assert.deepEqual(
         (
-          await models.Base.knex('automation_trigger_tiers')
+          await models.Base.knex('automation_trigger_rules')
             .where({ automation_id: created.id })
             .pluck('product_id')
         ).sort(),
@@ -1234,13 +1235,17 @@ describe('Automations API', function () {
       const automationId = browseBody.automations[0].id;
       const [tierId] = await models.Base.knex('products').pluck('id');
       assert(tierId);
-      await models.Base.knex('automations').where({ id: automationId }).update({
-        trigger_tier_scope: 'selected_paid',
-      });
-      await models.Base.knex('automation_trigger_tiers').insert({
-        automation_id: automationId,
-        product_id: tierId,
-      });
+      await models.Base.knex('automation_trigger_rules')
+        .where('automation_id', automationId)
+        .delete();
+      await models.Base.knex('automation_trigger_rules').insert(
+        buildTriggerRuleRows({
+          automationId,
+          scope: 'selected_paid',
+          tierIds: [tierId],
+          createdAt: new Date(),
+        }),
+      );
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -1320,13 +1325,17 @@ describe('Automations API', function () {
       const original = {
         name: 'Created automation',
         description: 'Welcome selected members',
-        trigger_tier_scope: 'selected_paid',
       };
       await models.Base.knex('automations').where({ id }).update(original);
-      await models.Base.knex('automation_trigger_tiers').insert({
-        automation_id: id,
-        product_id: tierId,
-      });
+      await models.Base.knex('automation_trigger_rules').where('automation_id', id).delete();
+      await models.Base.knex('automation_trigger_rules').insert(
+        buildTriggerRuleRows({
+          automationId: id,
+          scope: 'selected_paid',
+          tierIds: [tierId],
+          createdAt: new Date(),
+        }),
+      );
 
       const { body: edited } = await agent
         .put(`automations/${id}`)

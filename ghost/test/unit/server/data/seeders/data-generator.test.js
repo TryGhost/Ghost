@@ -475,9 +475,16 @@ describe('Importer', function () {
       table.string('slug').unique();
       table.string('description', 2000);
       table.string('trigger_type');
-      table.string('trigger_tier_scope');
       table.dateTime('created_at');
       table.dateTime('updated_at');
+    });
+    await db.schema.createTable('automation_trigger_rules', function (table) {
+      table.string('id');
+      table.string('automation_id');
+      table.string('trigger_type');
+      table.string('scope');
+      table.string('product_id');
+      table.dateTime('created_at');
     });
   });
 
@@ -518,8 +525,14 @@ describe('Importer', function () {
     await transaction.commit();
 
     const automations = await db
-      .select('id', 'status', 'name', 'description', 'slug', 'trigger_tier_scope')
+      .select('id', 'status', 'name', 'description', 'slug')
       .from('automations');
+    const rules = await db('automation_trigger_rules').select(
+      'automation_id',
+      'trigger_type',
+      'scope',
+      'product_id',
+    );
 
     assert.equal(automations.length, 3);
     assert.deepEqual(
@@ -540,13 +553,22 @@ describe('Importer', function () {
     assert.equal(new Set(automations.map((automation) => automation.name)).size, 3);
     assert.equal(new Set(automations.map((automation) => automation.slug)).size, 3);
     assert.equal(automations[2].description, '');
-    assert.deepEqual(
-      automations.map((automation) => automation.trigger_tier_scope),
-      ['free', 'all_paid', 'all_paid'],
-    );
     assert.ok(
       automations.every((automation) => ['active', 'inactive'].includes(automation.status)),
     );
+    for (const [index, automation] of automations.entries()) {
+      assert.deepEqual(
+        rules.filter((rule) => rule.automation_id === automation.id),
+        [
+          {
+            automation_id: automation.id,
+            trigger_type: index === 0 ? 'free_signup' : 'paid_subscription_started',
+            scope: index === 0 ? null : 'any_paid_tier',
+            product_id: null,
+          },
+        ],
+      );
+    }
   });
 
   it('Should update products to reference price ids', async function () {

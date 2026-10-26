@@ -1,4 +1,5 @@
 import { omit } from 'lodash';
+import { buildTriggerRuleRows } from '../../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
@@ -81,7 +82,6 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('description').notNullable();
     table.text('status').notNullable();
     table.text('trigger_type').notNullable();
-    table.text('trigger_tier_scope');
   });
 
   await database.schema.createTable('products', (table) => {
@@ -90,10 +90,18 @@ const createDatabase = async (): Promise<Knex> => {
     table.boolean('active').notNullable();
   });
 
-  await database.schema.createTable('automation_trigger_tiers', (table) => {
-    table.text('automation_id').notNullable().references('id').inTable('automations');
-    table.text('product_id').notNullable();
-    table.unique(['automation_id', 'product_id']);
+  await database.schema.createTable('automation_trigger_rules', (table) => {
+    table.text('id').primary();
+    table
+      .text('automation_id')
+      .notNullable()
+      .references('id')
+      .inTable('automations')
+      .onDelete('CASCADE');
+    table.text('trigger_type').notNullable();
+    table.text('scope');
+    table.text('product_id');
+    table.dateTime('created_at').notNullable();
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -242,7 +250,6 @@ const createDatabase = async (): Promise<Knex> => {
       name: 'Free member welcome flow',
       description: 'Welcome new free members after they sign up.',
       trigger_type: 'membership_started',
-      trigger_tier_scope: 'free',
       status: 'active',
     },
     {
@@ -253,9 +260,23 @@ const createDatabase = async (): Promise<Knex> => {
       name: 'Paid member welcome flow',
       description: 'Welcome new paid members after they start their subscription.',
       trigger_type: 'membership_started',
-      trigger_tier_scope: 'all_paid',
       status: 'active',
     },
+  ]);
+
+  await database('automation_trigger_rules').insert([
+    ...buildTriggerRuleRows({
+      automationId: freeAutomationId,
+      scope: 'free',
+      tierIds: [],
+      createdAt: fromDatabaseDate(now()),
+    }),
+    ...buildTriggerRuleRows({
+      automationId: paidAutomationId,
+      scope: 'all_paid',
+      tierIds: [],
+      createdAt: fromDatabaseDate(now()),
+    }),
   ]);
 
   const freeAction1Id = id();
@@ -559,7 +580,7 @@ describe('automations repository', function () {
     status = 'active',
   }: {
     slug: null | string;
-    triggerTierScope: null | AutomationTriggerTierScope;
+    triggerTierScope: AutomationTriggerTierScope;
     triggerTierIds?: string[];
     status?: AutomationStatus;
   }) => {
@@ -576,12 +597,15 @@ describe('automations repository', function () {
       description: slug ?? 'Automation with no slug',
       status,
       trigger_type: 'membership_started',
-      trigger_tier_scope: triggerTierScope,
     });
-    if (triggerTierIds.length > 0) {
-      await knex('automation_trigger_tiers').insert(
-        triggerTierIds.map((product_id) => ({ automation_id: automationId, product_id })),
-      );
+    const rules = buildTriggerRuleRows({
+      automationId,
+      scope: triggerTierScope,
+      tierIds: triggerTierIds,
+      createdAt: fromDatabaseDate(now),
+    });
+    if (rules.length > 0) {
+      await knex('automation_trigger_rules').insert(rules);
     }
     await knex('automation_actions').insert({
       id: actionId,
@@ -748,8 +772,10 @@ describe('automations repository', function () {
       assert.equal(automation.trigger_tier_scope, scope);
       assert.deepEqual(automation.trigger_tier_ids, null);
       assert.deepEqual(
-        await knex('automation_trigger_tiers').where({ automation_id: automation.id }),
-        [],
+        await knex('automation_trigger_rules')
+          .where({ automation_id: automation.id })
+          .pluck('trigger_type'),
+        [scope === 'free' ? 'free_signup' : 'paid_subscription_started'],
       );
     });
 
@@ -766,11 +792,10 @@ describe('automations repository', function () {
       assert.deepEqual(automation.edges, data.edges);
       assert.deepEqual(await repo.getById(automation.id), automation);
       const row = await knex('automations').where({ id: automation.id }).first();
-      assert.equal(row.trigger_tier_scope, 'selected_paid');
       assert.equal(row.trigger_type, 'membership_started');
       assert.equal(row.created_at, row.updated_at);
       assert.deepEqual(
-        await knex('automation_trigger_tiers')
+        await knex('automation_trigger_rules')
           .where({ automation_id: automation.id })
           .pluck('product_id'),
         tierIds,
@@ -808,7 +833,7 @@ describe('automations repository', function () {
         },
       );
       assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
-      assert.deepEqual(await knex('automation_trigger_tiers').whereIn('product_id', tierIds), []);
+      assert.deepEqual(await knex('automation_trigger_rules').whereIn('product_id', tierIds), []);
       assert.deepEqual(await repo.getById(existingId), existing);
     });
 
@@ -834,13 +859,29 @@ describe('automations repository', function () {
       assert.deepEqual([...edited.trigger_tier_ids].sort(), [...tierIds].sort());
     });
 
-    it('returns null scope and no tiers for legacy automations', async function () {
-      const automationId = await insertAutomation({ slug: null, triggerTierScope: null });
-      const automation = await repo.getById(automationId);
-      assert(automation);
-      assert.equal(automation.trigger_tier_scope, null);
-      assert.deepEqual(automation.trigger_tier_ids, null);
+    it('rejects automations without trigger rules', async function () {
+      const automationId = await insertAutomation({ slug: null, triggerTierScope: 'free' });
+      await knex('automation_trigger_rules').where('automation_id', automationId).delete();
+      await assert.rejects(repo.getById(automationId), {
+        errorType: 'InternalServerError',
+        message: `No trigger rules for automation ${automationId}`,
+      });
     });
+
+    it.each([null, ''])(
+      'rejects trying to load invalid trigger rules from the database when product_id is %j',
+      async function (productId) {
+        const automationId = await insertAutomation({
+          slug: null,
+          triggerTierScope: 'selected_paid',
+          triggerTierIds: tierIds,
+        });
+        await knex('automation_trigger_rules')
+          .where('automation_id', automationId)
+          .update({ product_id: productId });
+        await assert.rejects(repo.getById(automationId), { name: 'ZodError' });
+      },
+    );
 
     it('rejects missing tiers when creating an automation', async function () {
       await knex('products').where({ id: tierIds[1] }).delete();
@@ -849,7 +890,7 @@ describe('automations repository', function () {
         property: 'trigger_tier_ids',
       });
       assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
-      assert.deepEqual(await knex('automation_trigger_tiers'), []);
+      assert.deepEqual(await knex('automation_trigger_rules').whereNotNull('product_id'), []);
     });
 
     it('rejects free tiers when creating an automation', async function () {
@@ -859,7 +900,7 @@ describe('automations repository', function () {
         property: 'trigger_tier_ids',
       });
       assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
-      assert.deepEqual(await knex('automation_trigger_tiers'), []);
+      assert.deepEqual(await knex('automation_trigger_rules').whereNotNull('product_id'), []);
     });
 
     it('rejects archived tiers when creating an automation', async function () {
@@ -869,7 +910,7 @@ describe('automations repository', function () {
         property: 'trigger_tier_ids',
       });
       assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
-      assert.deepEqual(await knex('automation_trigger_tiers'), []);
+      assert.deepEqual(await knex('automation_trigger_rules').whereNotNull('product_id'), []);
     });
   });
 
@@ -1034,17 +1075,16 @@ describe('automations repository', function () {
       await repo.browse();
 
       const automations = await knex('automations')
-        .select('id', 'name', 'slug', 'status', 'trigger_type', 'trigger_tier_scope')
+        .select('id', 'name', 'slug', 'status', 'trigger_type')
         .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status, trigger_type, trigger_tier_scope }) => ({
+        automations.map(({ name, slug, status, trigger_type }) => ({
           name,
           slug,
           status,
           trigger_type,
-          trigger_tier_scope,
         })),
         [
           {
@@ -1052,17 +1092,18 @@ describe('automations repository', function () {
             slug: 'member-welcome-email-free',
             status: 'inactive',
             trigger_type: 'membership_started',
-            trigger_tier_scope: 'free',
           },
           {
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid',
             status: 'inactive',
             trigger_type: 'membership_started',
-            trigger_tier_scope: 'all_paid',
           },
         ],
       );
+
+      assert.equal((await repo.getById(automations[0].id))?.trigger_tier_scope, 'free');
+      assert.equal((await repo.getById(automations[1].id))?.trigger_tier_scope, 'all_paid');
 
       const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
 
@@ -1514,6 +1555,27 @@ describe('automations repository', function () {
       assert.deepEqual(edited.trigger_tier_ids, [...tierIds].toSorted());
     });
 
+    it('rolls back edits that would remove all trigger rules', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const before = await knex('automation_trigger_rules').where('automation_id', initial.id);
+      await assert.rejects(
+        repo.edit(initial.id, {
+          status: initial.status,
+          trigger_tier_scope: 'selected_paid',
+          trigger_tier_ids: [],
+        }),
+        {
+          errorType: 'InternalServerError',
+          message: `No trigger rules for automation ${initial.id}`,
+        },
+      );
+      assert.deepEqual(await repo.getById(initial.id), initial);
+      assert.deepEqual(
+        await knex('automation_trigger_rules').where('automation_id', initial.id),
+        before,
+      );
+    });
+
     it('replaces selected tiers, preserves omitted triggers, and clears tiers for other scopes', async function () {
       const initial = await getAutomationBySlug('member-welcome-email-free');
       const graph = { status: initial.status, actions: initial.actions, edges: initial.edges };
@@ -1545,7 +1607,9 @@ describe('automations repository', function () {
         assert.equal(edited?.trigger_tier_scope, scope);
         assert.equal(edited?.trigger_tier_ids, null);
         assert.deepEqual(
-          await knex('automation_trigger_tiers').where('automation_id', initial.id),
+          await knex('automation_trigger_rules')
+            .where('automation_id', initial.id)
+            .whereNotNull('product_id'),
           [],
         );
       }
@@ -1966,6 +2030,10 @@ describe('automations repository', function () {
       const run = await insertRun(automation.id);
       const readyAt = new Date('2024-01-01T00:00:00.000Z');
       const stepRow = await insertStep(run.id, action.revision_id, { ready_at: readyAt });
+      const ruleRow = await knex('automation_trigger_rules')
+        .where('automation_id', automation.id)
+        .first();
+      assert(ruleRow);
 
       const { steps } = await repo.fetchAndLockSteps(1);
       assert.deepEqual(steps, [
@@ -1974,8 +2042,16 @@ describe('automations repository', function () {
           locked_by: assertSingleBatchLock(steps),
           automation_run_id: run.id,
           automation_id: automation.id,
-          automation_trigger_tier_scope: 'free',
-          automation_trigger_tier_ids: [],
+          automation_trigger_rules: [
+            {
+              id: ruleRow.id,
+              automation_id: automation.id,
+              created_at: fromDatabaseDate(ruleRow.created_at),
+              trigger_type: 'free_signup',
+              scope: null,
+              product_id: null,
+            },
+          ],
           automation_status: 'active',
           member_id: run.member_id,
           member_email: run.member_email,
@@ -1989,18 +2065,48 @@ describe('automations repository', function () {
       ]);
     });
 
+    it.each(['unsupported', 'missing product'])(
+      'rejects %s trigger rules and rolls back step locks',
+      async function (invalidRules) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const step = await insertStep(run.id, action.revision_id, {
+          ready_at: new Date('2024-01-01'),
+        });
+        const rules = knex('automation_trigger_rules').where('automation_id', automation.id);
+        await rules.update(
+          invalidRules === 'unsupported'
+            ? { trigger_type: 'unsupported' }
+            : {
+                trigger_type: 'paid_subscription_started',
+                scope: 'specific_paid_tier',
+                product_id: null,
+              },
+        );
+        await assert.rejects(repo.fetchAndLockSteps(1), { name: 'ZodError' });
+        const stored = await getStepById(step.id);
+        assert.equal(stored.locked_by, null);
+        assert.equal(stored.step_attempts, 0);
+      },
+    );
+
     it('loads per-tier trigger tiers', async function () {
+      const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
       const automationId = await insertAutomation({
         slug: null,
         triggerTierScope: 'selected_paid',
-        triggerTierIds: ['bronze', 'silver'],
+        triggerTierIds: tierIds,
       });
       const action = await getActionByIndex(automationId, 0);
       const run = await insertRun(automationId);
       await insertStep(run.id, action.revision_id, { ready_at: new Date('2024-01-01') });
       const { steps } = await repo.fetchAndLockSteps(10);
       assert.equal(steps.length, 1);
-      assert.deepEqual([...steps[0].automation_trigger_tier_ids].toSorted(), ['bronze', 'silver']);
+      assert.deepEqual(
+        [...steps[0].automation_trigger_rules.map((rule) => rule.product_id)].toSorted(),
+        tierIds.toSorted(),
+      );
     });
 
     it('locks ready and steps with stale locks, but skips future and recently-locked steps', async function () {

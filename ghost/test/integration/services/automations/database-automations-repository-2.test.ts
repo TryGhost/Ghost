@@ -1,3 +1,4 @@
+import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
@@ -28,7 +29,6 @@ describe('database automations repository', function () {
     name: `Test automation ${id}`,
     status: 'active',
     trigger_type: 'membership_started',
-    trigger_tier_scope: 'free',
     created_at: now,
   });
 
@@ -118,11 +118,23 @@ describe('database automations repository', function () {
     };
 
     const insertAutomation = async (
-      overrides: Partial<ReturnType<typeof createAutomation>> = {},
+      overrides: Partial<ReturnType<typeof createAutomation>> & {
+        triggerScope?: 'free' | 'all_paid' | 'selected_paid';
+      } = {},
     ) => {
-      const automation = { ...createAutomation(), ...overrides };
+      const { triggerScope = 'free', ...automationOverrides } = overrides;
+      const automation = { ...createAutomation(), ...automationOverrides };
       automationIds.push(automation.id);
       await knex('automations').insert(automation);
+      const rules = buildTriggerRuleRows({
+        automationId: automation.id,
+        scope: triggerScope,
+        tierIds: [],
+        createdAt: now,
+      });
+      if (rules.length > 0) {
+        await knex('automation_trigger_rules').insert(rules);
+      }
       return await insertAction(automation.id);
     };
 
@@ -140,8 +152,13 @@ describe('database automations repository', function () {
     };
 
     const insertAutomationTriggerTiers = async (automationId: string, productIds: string[]) => {
-      await knex('automation_trigger_tiers').insert(
-        productIds.map((product_id) => ({ automation_id: automationId, product_id })),
+      await knex('automation_trigger_rules').insert(
+        buildTriggerRuleRows({
+          automationId,
+          scope: 'selected_paid',
+          tierIds: productIds,
+          createdAt: now,
+        }),
       );
     };
 
@@ -161,9 +178,17 @@ describe('database automations repository', function () {
       await knex('automation_action_edges').whereIn('source_action_id', actionIds).delete();
       await knex('automation_action_revisions').whereIn('action_id', actionIds).delete();
       await knex('automation_actions').whereIn('id', actionIds).delete();
-      await knex('automation_trigger_tiers').whereIn('automation_id', automationIds).delete();
       await knex('automations').whereIn('id', automationIds).delete();
       await knex('products').whereIn('id', tierIds).delete();
+    });
+
+    it('uses current trigger rules for matching', async function () {
+      const first = await insertAutomation();
+      await knex('automation_trigger_rules')
+        .where('automation_id', first.automation_id)
+        .update({ trigger_type: 'paid_subscription_started', scope: 'any_paid_tier' });
+      assert.deepEqual(await findFirstActionRevisions('free', []), []);
+      assert.deepEqual(await findFirstActionRevisions('paid', []), [first]);
     });
 
     it('returns an empty array when there are no automations', async function () {
@@ -195,8 +220,8 @@ describe('database automations repository', function () {
 
     it('returns only free automations for free members, even with tier IDs', async function () {
       const free = await insertAutomation();
-      await insertAutomation({ trigger_tier_scope: 'all_paid' });
-      const selected = await insertAutomation({ trigger_tier_scope: 'selected_paid' });
+      await insertAutomation({ triggerScope: 'all_paid' });
+      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
       const tierId = await insertTier();
       await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
@@ -205,18 +230,18 @@ describe('database automations repository', function () {
 
     it('returns only all-paid automations for paid members without tier IDs', async function () {
       await insertAutomation();
-      const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
-      await insertAutomation({ trigger_tier_scope: 'selected_paid' });
+      const paid = await insertAutomation({ triggerScope: 'all_paid' });
+      await insertAutomation({ triggerScope: 'selected_paid' });
 
       await expect(findFirstActionRevisions('paid', [])).resolves.toEqual([paid]);
     });
 
     it('returns matching selected-tier and all-paid automations without duplicates', async function () {
       await insertAutomation();
-      const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
-      const selected = await insertAutomation({ trigger_tier_scope: 'selected_paid' });
-      const unmatched = await insertAutomation({ trigger_tier_scope: 'selected_paid' });
-      await insertAutomation({ trigger_tier_scope: 'selected_paid' });
+      const paid = await insertAutomation({ triggerScope: 'all_paid' });
+      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
+      const unmatched = await insertAutomation({ triggerScope: 'selected_paid' });
+      await insertAutomation({ triggerScope: 'selected_paid' });
       const firstTierId = await insertTier();
       const secondTierId = await insertTier();
       const otherTierId = await insertTier();
@@ -233,10 +258,10 @@ describe('database automations repository', function () {
       'excludes %s automations for every tier scope',
       async function (status) {
         const free = await insertAutomation();
-        const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
+        const paid = await insertAutomation({ triggerScope: 'all_paid' });
         await insertAutomation({ status });
-        await insertAutomation({ status, trigger_tier_scope: 'all_paid' });
-        const selected = await insertAutomation({ status, trigger_tier_scope: 'selected_paid' });
+        await insertAutomation({ status, triggerScope: 'all_paid' });
+        const selected = await insertAutomation({ status, triggerScope: 'selected_paid' });
         const tierId = await insertTier();
         await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
