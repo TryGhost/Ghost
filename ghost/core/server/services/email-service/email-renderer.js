@@ -11,6 +11,25 @@ const clsx = require('clsx');
 function isUnsplashImage(url) {
   return /images\.unsplash\.com/.test(url);
 }
+
+/**
+ * Parsing a link with `new URL()` percent-encodes replacement strings in its
+ * path (`%%{uuid}%%` becomes `%%%7Buuid%7D%%`), which hides them from the
+ * per-recipient replacements. The decoded string is HTML-escaped because the
+ * result is written back into an `href` attribute.
+ *
+ * @param {URL} url
+ * @returns {string}
+ */
+function restoreReplacementStrings(url) {
+  return url.toString().replace(/%%%7B(.*?)%7D%%/gi, (encoded, replacement) => {
+    try {
+      return `%%{${escapeHtml(decodeURIComponent(replacement))}}%%`;
+    } catch (e) {
+      return encoded;
+    }
+  });
+}
 const { DateTime } = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
@@ -695,7 +714,7 @@ class EmailRenderer {
           if (originalPath === '#') {
             return originalPath;
           }
-          return url;
+          return restoreReplacementStrings(url);
         },
         { base },
       );
