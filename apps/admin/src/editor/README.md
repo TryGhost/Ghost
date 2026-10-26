@@ -151,6 +151,15 @@ have, such as 30 February, with `Invalid date`. A refused date stays in the
 field, marked invalid and described by the message, until it is corrected or
 discarded; Cmd/Ctrl+S from the field saves nothing meanwhile.
 
+The time is typed on the 24-hour clock, led by the site's timezone, as `HH:mm`,
+`H:mm`, `HHmm` or the hour alone, so `20:00`, `2000` and `20` are all 20:00.
+Surrounding spaces are ignored. A typed time is taken on blur, and an emptied
+field puts back the time already held. Anything else, including three digits
+such as `930`, is refused with `Must be in format: "15:00"` and stays in the
+field, marked invalid and described by the message, until it is corrected or
+emptied; Cmd/Ctrl+S from the field saves nothing meanwhile. Unlike the date,
+the time ignores Enter and Escape.
+
 A new date keeps the time of day already held, and where that time does not
 exist on the new day because the clocks go forward, it moves forward with them.
 Typing reaches days the calendar does not offer: a publish date still to come

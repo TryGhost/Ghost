@@ -15,6 +15,7 @@ import { Grid } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type KeyboardEvent, useId, useRef, useState } from 'react';
 import { siteCalendarDay } from '@/editor/publish/publish-copy';
+import { typedTime } from '@/editor/typed-time';
 
 const DATE_FORMAT = 'YYYY-MM-DD';
 const TIME_FORMAT = 'HH:mm';
@@ -29,17 +30,6 @@ function typedDateError(input: string, timezone: string): string | null {
     return INVALID_DATE_FORMAT;
   }
   return moment.tz(input, DATE_FORMAT, timezone).isValid() ? null : INVALID_DATE;
-}
-
-/** A typed 24-hour time as H:mm or HH:mm, the colon and minutes optional, or null. */
-function typedTime(input: string): { hour: number; minute: number } | null {
-  const match = /^(\d?\d)(?::?(\d\d))?$/.exec(input);
-  if (!match) {
-    return null;
-  }
-  const hour = parseInt(match[1], 10);
-  const minute = match[2] ? parseInt(match[2], 10) : 0;
-  return hour > 23 || minute > 59 ? null : { hour, minute };
 }
 
 function isSaveChord(event: KeyboardEvent): boolean {
@@ -184,8 +174,8 @@ export function DateTimePicker({
       return;
     }
 
-    const time = timeDraft ? typedTime(timeDraft) : null;
-    if (timeDraft && !time) {
+    const time = typedTime(timeDraft);
+    if (!time && timeDraft.trim()) {
       setTimeError(INVALID_TIME);
       return;
     }
@@ -204,7 +194,7 @@ export function DateTimePicker({
   };
 
   const onTimeKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (timeDraft && !typedTime(timeDraft) && isSaveChord(event)) {
+    if (timeDraft?.trim() && !typedTime(timeDraft) && isSaveChord(event)) {
       // Keeps the document-level save shortcut from saving past a refused time.
       event.preventDefault();
       event.stopPropagation();
@@ -240,7 +230,7 @@ export function DateTimePicker({
                   <InputGroupButton
                     aria-label="Choose date"
                     // Spaces the icon as the time field's timezone is spaced.
-                    className="-mr-1 ml-1"
+                    className="relative -mr-1 ml-1"
                     disabled={disabled}
                     size="icon-xs"
                     onClick={() => setCalendarFrom('button')}

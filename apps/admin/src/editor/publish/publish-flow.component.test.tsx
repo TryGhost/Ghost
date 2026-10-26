@@ -511,6 +511,30 @@ describe('Publish flow', () => {
     });
   });
 
+  it('keeps the scheduled time while a typed one is refused', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleTime().tripleClick();
+    await userEvent.keyboard('9:30 PM');
+    await userEvent.tab();
+
+    await expect
+      .element(publishScreen.scheduleTime())
+      .toHaveAccessibleDescription('Must be in format: "15:00"');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T20:10:00.000Z' },
+    });
+  });
+
   it('moves a typed past date up to the earliest time a post can be scheduled', async () => {
     await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
 
