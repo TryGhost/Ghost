@@ -727,6 +727,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -739,7 +740,7 @@ services:
         the current partial publication before controller construction.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/audience-feedback/index.js
+        - core/server/services/audience-feedback/index.ts
         - core/server/services/audience-feedback/audience-feedback-service.js
         - core/server/services/email-service/email-service-wrapper.js
         - core/server/web/members/app.js
@@ -760,30 +761,33 @@ services:
             its controller.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/web/members/app.js
     entryPoints:
-      - audience-feedback/index.js
+      - audience-feedback/index.ts
     notes: >-
       Preserve the repository, service and controller surfaces, captured fallback URL and
       retained email-renderer dependency. Keep feedback rules and persistence outside HTTP;
-      the existing controller also contains an Express redirect adapter.
+      the existing controller also contains an Express redirect adapter. Initializer wiring was
+      rechecked against 2196fa4e4cf4ef4ecf41df16cfe9f460270cadf5; the original contract audit and
+      migration-assessment revisions above remain historical evidence. Permissions is now
+      root-injected. The earlier proposal to inject toPlain is superseded by direct use of the
+      stateless shared helper under an exact-file library allowance.
     contracts:
       exports:
         summary: >-
-          CommonJS exports an eager wrapper with receiver-dependent async init(); repository,
-          service and controller are absent until initialization publishes them. Deep modules
-          export constructible classes. Service link methods are synchronous: buildLink and
-          buildFallbackLink return URL objects, while buildEmailLink returns a string. Controller
-          and repository operations are async and use their instance receivers. There is no
-          reset, shutdown, readiness getter or public wrapper constructor. Class tests exercise
-          link output but do not pin the root export shape or receiver behavior. Root units pin
-          that repeated init retains the published repository, service and controller.
+          Root default-exports defineService; CommonJS callers read .default. Its guarded .service
+          contains the repository, link service and controller, published together only after their
+          construction completes. Deep modules still export constructible classes. Link methods are
+          synchronous: buildLink and buildFallbackLink return URL objects, while buildEmailLink returns
+          a string. Controller and repository operations remain async and receiver-dependent. There
+          are no extras, reset or service-owned shutdown hooks. Root units pin that repeated init
+          retains all three composition members; the guarded getter follows the shared kernel contract.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -793,17 +797,16 @@ services:
           - test/unit/server/services/audience-feedback/index.test.ts
       construction:
         summary: >-
-          Import loads shared URL utilities, URL service and permissions dependencies. Boot is
-          the only production init caller found. init constructs a model-backed repository,
-          a link service with a new home URL, then a controller retaining both. The constructors
-          store dependencies without querying. A truthy service guards repeat calls. Repository
-          publication precedes URL/service construction, and service publication precedes
-          controller construction; there is no rollback of partial initialization. No other
-          production construction of these private classes was found. Root units pin no URL read
-          on import, one home-URL read and no model or URL-service query across repeated init,
-          and a successful later init after the home-URL lookup throws.
+          Import loads shared URL utilities, URL service and the permissions facade without building
+          the composition or reading the home URL. Boot is the only production init caller found. The
+          factory resolves shared models and constructs a model-backed repository, a link service with
+          a captured home URL, then a controller retaining both plus permissions. Constructors only
+          store references; the complete graph is returned for publication. No other production
+          construction of these private classes was found. Root units pin no URL read on import, one
+          home-URL read and no model or URL-service queries across repeated init, and successful retry
+          after home-URL lookup throws.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -813,17 +816,17 @@ services:
           - test/unit/server/services/audience-feedback/index.test.ts
       consumers:
         summary: >-
-          Email initialization passes service itself to EmailRenderer, which retains it and
-          builds both links on each render even when newsletter feedback buttons are disabled.
-          Members GET redirects and Members POST/Admin GET endpoint queries retain the wrapper
-          and read controller per call. POST authenticates by session or signed member UUID;
+          Email initialization passes the ready composition's link service to EmailRenderer, which
+          retains it and builds both links on each render even when feedback buttons are disabled.
+          Members GET redirects and Members POST/Admin GET endpoint queries retain the initializer
+          and read .service.controller per call. POST authenticates by session or signed member UUID;
           GET redirect only forwards UUID/key. Admin browse requires post-browse permission and
           conditionally includes member details. No external repository consumer was found;
-          getMemberByUuid has no caller. HTTP tests exercise submission and two redirect paths.
-          Renderer units inject a fake link service and pin button inclusion/exclusion and
-          preservation through link tracking. An HTTP case renders feedback links through the
-          booted EmailRenderer and follows both through Members redirects; root units drive the
-          retained controller's redirect through its repository and live URL routing.
+          getMemberByUuid has no caller. HTTP tests exercise submission and redirects. Renderer units
+          inject a fake link service and pin button inclusion/exclusion and link tracking. An HTTP
+          case obtains feedback links from the booted EmailRenderer's template data and follows both
+          through Members redirects; root units drive the retained controller through its real
+          repository and live URL routing.
         sources:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
@@ -840,17 +843,16 @@ services:
           - test/unit/server/services/audience-feedback/index.test.ts
       startup:
         summary: >-
-          Boot initializes models, settings and routing before awaiting the service group and
-          making the full app ready. In that Promise.all argument list, audienceFeedback.init()
-          precedes emailService.init(). Feedback init has no await, so publication finishes
-          synchronously before email captures service despite its async signature. Introducing
-          asynchronous work would require preserving that dependency explicitly. Members routes
-          can be composed before init because their handlers defer controller lookup. There is
-          no pre-use guard. HTTP tests exercise a booted root, not startup order, repeated init,
-          pre-init access or partial-construction failure.
+          Boot initializes models, settings and routing first, then explicitly awaits this initializer
+          before starting the service group that includes Email. This preserves Email's captured
+          collaborator when the kernel publishes its synchronously constructed graph after awaiting
+          the factory. It no longer relies on Promise.all argument evaluation completing publication
+          synchronously. Members routes can be composed early because request handlers defer the
+          guarded .service.controller lookup. The HTTP characterization exercises a booted Email
+          renderer and both redirect paths, not deliberate startup-failure injection.
         sources:
           - core/boot.js
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/web/members/app.js
           - core/server/api/endpoints/feedback-members.js
@@ -858,17 +860,16 @@ services:
           - test/e2e-api/members/feedback.test.js
       lifetime:
         summary: >-
-          Module caching and the service guard retain the same graph across requests and
-          same-process boots. Replacing wrapper properties would not update EmailRenderer or
-          the controller's private references. Feedback is persisted in members_feedback;
-          each submission rereads the post and existing member/post row, with no local cache.
-          A changed score mutates the fetched Feedback and writes it; the same score returns
-          without a write. HTTP assertions pin stable feedback ID, changed score and updated_at
-          advancing once then remaining unchanged on a sequential repeat. They do not establish
-          simultaneous-write behavior. There is no transaction, lock or deduplication around
+          Module caching and the kernel retain the same complete graph across requests and same-process
+          boots. EmailRenderer and the controller keep their original collaborator references. Feedback
+          is persisted in members_feedback; each submission rereads the post and existing member/post
+          row, with no local cache. A changed score mutates the fetched Feedback and writes it; the same
+          score returns without a write. HTTP assertions pin stable feedback ID, changed score and
+          updated_at advancing once then remaining unchanged on a sequential repeat. They do not
+          establish simultaneous-write behavior. There is no transaction, lock or deduplication around
           read-then-add, and the declared schema has no unique member/post pair constraint.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/feedback-repository.js
           - core/server/services/email-service/email-renderer.js
@@ -889,7 +890,7 @@ services:
           requested order is not forwarded. Root units pin init-time capture: changing the home
           URL after init and re-init leaves email and fallback links on the captured base.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -915,7 +916,7 @@ services:
           Model tests pin missing-field validation and disabled destroy, not cleanup, cascades,
           transaction behavior or pending-query ownership.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/feedback-repository.js
           - core/server/services/url/index.js
           - core/server/models/member-feedback.js
@@ -928,20 +929,20 @@ services:
           - test/unit/server/models/member-feedback.test.ts
       failures:
         summary: >-
-          init rejects without clearing published properties; a failure after service publication
-          makes later init skip controller repair. Link building propagates serialization/URL
-          failures. Redirect catches errors and passes them to next; a unit pins repository
-          rejection identity and no redirect. Add rejects invalid numeric score, absent member
-          context or missing post, otherwise propagating repository/ID-conversion failures;
-          there is no retry or compensation. Browse swallows any permission-check failure and
-          continues without member data, but propagates query failures. Units pin allowed/denied
-          browse delegation. HTTP tests pin invalid-score 422, missing-post 404 and authentication
-          401; the malformed/unknown UUID cases omit the key and fail before member lookup.
-          Root units pin that a home-URL failure before service publication propagates and a later
-          init succeeds. Failure after service publication, write/read failures and concurrent
-          submissions lack direct coverage.
+          Factory failure rejects init without publishing a partial composition; the kernel leaves
+          .service unavailable and permits a later explicit retry. Locally constructed repositories
+          only borrow models and acquire no resources requiring rollback. Root units pin propagation
+          of a home-URL lookup failure and successful later init; later constructor failure is not
+          fault-injected. Link building still propagates serialization/URL failures. Redirect catches
+          errors and passes them to next; a unit pins repository rejection identity and no redirect.
+          Add rejects invalid numeric score, absent member context or missing post, otherwise propagating
+          repository/ID-conversion failures; there is no retry or compensation. Browse swallows any
+          permission-check failure and continues without member data, but propagates query failures.
+          Units pin allowed/denied browse delegation. HTTP tests pin invalid-score 422, missing-post 404
+          and authentication 401; malformed/unknown UUID cases omit the key and fail before member
+          lookup. Write/read failures and concurrent submissions lack direct coverage.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -954,10 +955,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Root units now pin repeated-init retention, init-time URL capture and retry after a
-        home-URL failure. Still pin receiver requirements and pre-init behavior, and preserve
-        publication before email initialization. A failure after service publication remains
-        untested; the service guard can conceal an unfinished controller.
+        Root units pin repeated-init retention, init-time URL capture and retry after a
+        home-URL failure. The shared kernel owns guarded access and publication; service-specific
+        receiver requirements, pre-init access and later-constructor failure lack direct tests.
+        The booted Email renderer HTTP case covers successful dependency readiness only.
       - >-
         Characterize simultaneous submissions and failing writes. Read-then-add has no uniqueness
         or transaction protection, so sequential ID/timestamp assertions do not rule out duplicate
@@ -3171,11 +3172,11 @@ services:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-
-          Boot initializes email-address and awaits member-attribution before entering the
-          required-service array. It invokes members/feedback before email-service in that array,
-          then registers handlers and starts jobs after the group settles. Members and feedback
-          still rely on sibling publication timing; the array does not await each initializer
-          before invoking the next. Background recovery runs after
+          Boot initializes email-address and awaits member-attribution and audience-feedback before
+          entering the required-service array. It invokes members before email-service in that
+          array, then registers handlers and starts jobs after the group settles. Members still
+          relies on sibling publication timing; the array does not await each initializer before
+          invoking the next. Background recovery runs after
           readiness, is skipped for test-prefixed environments and catches/logs its failure
           before continuing. scheduleEmail awaits dispatch, not completion of a send; emailJob
           refetches and transactionally claims pending/failed email status. VM boot tests hold
@@ -15843,7 +15844,7 @@ services:
           - core/frontend/helpers/tags.js
           - core/frontend/meta/url.js
           - core/frontend/meta/author-url.js
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/comments/index.js
           - core/server/services/content-import/index.ts
           - core/server/services/email-service/email-service-wrapper.js
