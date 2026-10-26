@@ -6,7 +6,6 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  TimePicker,
   Popover,
   PopoverAnchor,
   PopoverContent,
@@ -63,7 +62,8 @@ export interface DateTimePickerProps {
  * A date field and a time field led by the site's timezone abbreviation. The
  * writer edits in the site's timezone; the caller is handed a real instant. The date
  * is typed as YYYY-MM-DD or picked from a calendar, which the field's button
- * opens with focus inside it and a click on the field opens beside the caret.
+ * opens with focus inside it and a click on the field opens beside the caret. The
+ * time is typed as 24-hour HH:mm text, as in the Ember editor.
  */
 export function DateTimePicker({
   value,
@@ -302,17 +302,22 @@ export function DateTimePicker({
             />
           </PopoverContent>
         </Popover>
-        <TimePicker
-          aria-label={timeLabel}
-          data-testid={timeTestId}
-          disabled={disabled}
-          prefix={current.format('z')}
-          value={timeDraft ?? current.format(TIME_FORMAT)}
-          onBlur={(event) => commitTime(event.target.value)}
-          onChange={(event) => setTimeDraft(event.target.value)}
-          {...invalidProps}
-          {...describedByProps}
-        />
+        <InputGroup className="min-w-0" data-disabled={disabled}>
+          <InputGroupAddon className="text-sm font-normal">{current.format('z')}</InputGroupAddon>
+          <InputGroupInput
+            aria-label={timeLabel}
+            autoComplete="off"
+            className="min-w-0"
+            data-testid={timeTestId}
+            disabled={disabled}
+            placeholder={TIME_FORMAT}
+            value={timeDraft ?? current.format(TIME_FORMAT)}
+            onBlur={(event) => commitTime(event.target.value)}
+            onChange={(event) => setTimeDraft(event.target.value)}
+            {...invalidProps}
+            {...describedByProps}
+          />
+        </InputGroup>
       </Grid>
       {dateError ? (
         <FieldError className={errorClassName} id={dateErrorId}>
