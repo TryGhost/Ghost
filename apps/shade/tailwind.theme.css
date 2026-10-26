@@ -3,6 +3,9 @@
  */
 
 @custom-variant dark (&:is(.dark *):not(.light *));
+/* ANALYTICS PROTOTYPE: styles for the Admin 7 analytics milestone, applied
+   while the app sets `data-admin7-analytics` on <html> */
+@custom-variant admin7-analytics (&:where([data-admin7-analytics] *));
 
 @theme {
   /* Breakpoints */
