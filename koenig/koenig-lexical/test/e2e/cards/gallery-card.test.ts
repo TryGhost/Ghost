@@ -481,6 +481,8 @@ test.describe('Gallery card', async () => {
 
         const fileNames = gallery => gallery.images.map(image => image.fileName);
 
+        const rightHalf = bbox => ({...bbox, x: bbox.x + bbox.width / 2, width: bbox.width / 2});
+
         // selects the first gallery and drags one of its images onto the right half of `target`
         async function dragFromFirstGallery(imageIndex, target) {
             const firstGallery = page.locator('[data-kg-card="gallery"]').nth(0);
@@ -489,15 +491,14 @@ test.describe('Gallery card', async () => {
 
             const imageBBox = await firstGallery.locator('[data-image]').nth(imageIndex).boundingBox();
             const targetBBox = await target.boundingBox();
-            const dropBBox = {...targetBBox, x: targetBBox.x + targetBBox.width / 2, width: targetBBox.width / 2};
 
-            await dragMouse(page, imageBBox, dropBBox, 'middle', 'middle', true, 100, 100);
+            await dragMouse(page, imageBBox, rightHalf(targetBBox), 'middle', 'middle', true, 100, 100);
         }
 
-        async function initializeGalleries(...galleries) {
+        async function initializeContent(children) {
             const contentParam = encodeURIComponent(JSON.stringify({
                 root: {
-                    children: galleries.map(numbers => ({type: 'gallery', version: 1, images: galleryImages(numbers)})),
+                    children,
                     direction: null,
                     format: '',
                     indent: 0,
@@ -507,6 +508,10 @@ test.describe('Gallery card', async () => {
             }));
 
             await initialize({page, uri: `/#/?content=${contentParam}`});
+        }
+
+        async function initializeGalleries(...galleries) {
+            await initializeContent(galleries.map(numbers => ({type: 'gallery', version: 1, images: galleryImages(numbers)})));
         }
 
         test('reordering does not remove the image from another gallery with the same image', async function () {
@@ -541,6 +546,37 @@ test.describe('Gallery card', async () => {
 
             expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg']);
             expect(fileNames(editorState.root.children[1])).toEqual(['retreat-3.jpg', 'retreat-1.jpg']);
+        });
+
+        test('dropping an image card into a gallery does not remove the image from another gallery', async function () {
+            // image cards size from the loaded image and gallery drops need an absolute src, so use a served file
+            const src = new URL('/Koenig-editor-1.png', page.url()).href;
+            const sharedImage = {row: 0, fileName: 'Koenig-editor-1.png', src, width: 2560, height: 840};
+
+            await initializeContent([
+                {type: 'image', version: 1, src, width: sharedImage.width, height: sharedImage.height},
+                {type: 'gallery', version: 1, images: galleryImages([1, 2])},
+                {type: 'gallery', version: 1, images: [sharedImage]}
+            ]);
+
+            const imageCard = page.locator('[data-kg-card="image"]');
+            await expect(imageCard.locator('img')).toHaveJSProperty('naturalWidth', sharedImage.width);
+
+            const imageCardBBox = await imageCard.boundingBox();
+            const targetBBox = await page.locator('[data-kg-card="gallery"]').nth(0).locator('[data-image]').nth(0).boundingBox();
+
+            await dragMouse(page, imageCardBBox, rightHalf(targetBBox), 'middle', 'middle', true, 100, 100);
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                return !state.root.children.some(node => node.type === 'image');
+            }, {timeout: 5000});
+
+            const editorState = await getEditorState(page);
+
+            expect(editorState.root.children.map(node => node.type)).toEqual(['gallery', 'gallery']);
+            expect(fileNames(editorState.root.children[0])).toEqual(['retreat-1.jpg', 'Koenig-editor-1.png', 'retreat-2.jpg']);
+            expect(fileNames(editorState.root.children[1])).toEqual(['Koenig-editor-1.png']);
         });
     });
 
