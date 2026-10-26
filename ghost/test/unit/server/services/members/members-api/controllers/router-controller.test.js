@@ -373,7 +373,7 @@ describe('RouterController', function () {
         },
       );
 
-      it('passes the request referer to the sign-in email for a logged-out existing member', async function () {
+      it('passes the request referer to the sign-in email for a logged-out paid member', async function () {
         const sendEmailWithMagicLink = sinon.stub().resolves();
         const routerController = new RouterController({
           tiersService,
@@ -386,14 +386,17 @@ describe('RouterController', function () {
           urlUtils,
           sendEmailWithMagicLink,
           memberRepository: {
-            get: sinon.stub().resolves({ get: sinon.stub().withArgs('status').returns('free') }),
+            get: sinon.stub().resolves({
+              get: (key) => (key === 'status' ? 'paid' : undefined),
+            }),
           },
         });
 
         await assert.rejects(
           routerController.createCheckoutSession(
             {
-              get: sinon.stub().withArgs('referer').returns('https://example.com/some-post/'),
+              get: (header) =>
+                header === 'referer' ? 'https://example.com/some-post/' : undefined,
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
