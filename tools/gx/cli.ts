@@ -81,7 +81,7 @@ cli.command({
   desc: 'Inspect service migration and dependency work.',
   setup(group) {
     for (const command of [
-      { flags: 'list', desc: 'List services with migration categories and dependency counts.' },
+      { flags: 'list', desc: 'List service ownership, migration status and dependency counts.' },
       { flags: 'report', desc: 'Show migration totals or details for one service.' },
       { flags: 'dependencies', desc: 'Rank disallowed dependencies by importing files.' },
       { flags: 'audit', desc: 'Use Dependency Cruiser’s native dependency reports.' },
