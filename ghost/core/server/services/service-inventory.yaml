@@ -7123,7 +7123,7 @@ services:
         tests:
           - test/unit/server/services/machine-payments/service.test.js
           - test/unit/server/services/machine-payments/adapters.test.js
-          - test/unit/server/services/machine-payments/content-loader.test.js
+          - test/unit/server/services/machine-payments/content-loader.test.ts
           - test/integration/services/machine-payments/orchestration.test.js
     unverified: []
     blockers:
