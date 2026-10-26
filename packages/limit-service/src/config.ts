@@ -60,8 +60,32 @@ const config: Record<string, LimitConfig> = {
             return result.length;
         }
     },
-    limitTrialStaff: {},
-    limitTrialStaffInvites: {},
+    limitTrialStaff: {
+        currentCountQuery: async (knex: Knex, _periodStart?: string, max?: number) => {
+            // All roles and statuses occupy a trial seat.
+            const usersQuery = knex('users').select('id');
+            const invitesQuery = knex('invites').select('id');
+            if (max !== undefined) {
+                usersQuery.limit(max + 1);
+                invitesQuery.limit(max + 1);
+            }
+            const users = await usersQuery;
+            const invites = await invitesQuery;
+            return users.length + invites.length;
+        }
+    },
+    limitTrialStaffInvites: {
+        currentCountQuery: async (knex: Knex, _periodStart?: string, max?: number) => {
+            const query = knex('actions')
+                .select('id')
+                .where({resource_type: 'invite', event: 'added'});
+            // Bound returned rows; this does not bound rows scanned without an index.
+            if (max !== undefined) {
+                query.limit(max + 1);
+            }
+            return (await query).length;
+        }
+    },
     customIntegrations: {},
     customThemes: {},
     uploads: {
