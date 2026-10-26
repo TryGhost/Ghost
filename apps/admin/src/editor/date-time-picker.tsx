@@ -21,6 +21,7 @@ const TIME_FORMAT = 'HH:mm';
 
 const INVALID_DATE_FORMAT = 'Invalid date format, must be YYYY-MM-DD';
 const INVALID_DATE = 'Invalid date';
+const INVALID_TIME = 'Must be in format: "15:00"';
 
 /** The message refusing a typed date, or null for a real YYYY-MM-DD day. */
 function typedDateError(input: string, timezone: string): string | null {
@@ -28,6 +29,17 @@ function typedDateError(input: string, timezone: string): string | null {
     return INVALID_DATE_FORMAT;
   }
   return moment.tz(input, DATE_FORMAT, timezone).isValid() ? null : INVALID_DATE;
+}
+
+/** A typed H:mm or HH:mm time on the 24-hour clock, or null. */
+function typedTime(input: string): { hour: number; minute: number } | null {
+  const match = /^(\d?\d):(\d\d)$/.exec(input);
+  if (!match) {
+    return null;
+  }
+  const hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  return hour > 23 || minute > 59 ? null : { hour, minute };
 }
 
 function isSaveChord(event: KeyboardEvent): boolean {
@@ -45,7 +57,7 @@ export interface DateTimePickerProps {
   disabled?: boolean;
   /** For the fields' grid. */
   className?: string;
-  /** For a typed date's refusal, rendered after the fields as a sibling the caller places. */
+  /** For a typed date's or time's refusal, rendered after the fields as a sibling the caller places. */
   errorClassName?: string;
   dateLabel: string;
   timeLabel: string;
@@ -63,7 +75,7 @@ export interface DateTimePickerProps {
  * writer edits in the site's timezone; the caller is handed a real instant. The date
  * is typed as YYYY-MM-DD or picked from a calendar, which the field's button
  * opens with focus inside it and a click on the field opens beside the caret. The
- * time is typed as 24-hour HH:mm text, as in the Ember editor.
+ * time is typed as 24-hour HH:mm.
  */
 export function DateTimePicker({
   value,
@@ -87,6 +99,7 @@ export function DateTimePicker({
   const [timeDraft, setTimeDraft] = useState<string | null>(null);
   const [dateDraft, setDateDraft] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [timeError, setTimeError] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   // Not reset on close: the close's focus handling still reads it.
   const [calendarFrom, setCalendarFrom] = useState<'button' | 'field'>('button');
@@ -94,6 +107,7 @@ export function DateTimePicker({
   const anchorRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const dateErrorId = useId();
+  const timeErrorId = useId();
 
   const commitDay = (day: string) => {
     // Parsed rather than set, so a held time the day's clock change skips moves forward.
@@ -165,31 +179,41 @@ export function DateTimePicker({
     }
   };
 
-  const commitTime = (input: string) => {
+  const commitTime = () => {
     if (timeDraft === null) {
       return;
     }
-    const normalized = /^\d:\d\d$/.test(input) ? `0${input}` : input;
-    const [hour, minute] = normalized.split(':').map((part) => parseInt(part, 10));
 
-    // An unparseable time reverts to the current one, as the Ember field does.
-    setTimeDraft(null);
-
-    if (
-      !/^\d\d:\d\d$/.test(normalized) ||
-      hour > 23 ||
-      minute > 59 ||
-      normalized === current.format(TIME_FORMAT)
-    ) {
+    const time = timeDraft ? typedTime(timeDraft) : null;
+    if (timeDraft && !time) {
+      setTimeError(INVALID_TIME);
       return;
     }
 
-    onChange(current.clone().set({ hour, minute, second: 0, millisecond: 0 }).toDate());
+    setTimeDraft(null);
+    setTimeError(null);
+    // An emptied field falls back to the time already held.
+    if (time && (time.hour !== current.hour() || time.minute !== current.minute())) {
+      onChange(
+        current
+          .clone()
+          .set({ ...time, second: 0, millisecond: 0 })
+          .toDate(),
+      );
+    }
   };
 
-  const invalidProps = invalid ? { 'aria-invalid': true } : {};
-  const describedByProps = describedBy ? { 'aria-describedby': describedBy } : {};
+  const onTimeKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (timeDraft && !typedTime(timeDraft) && isSaveChord(event)) {
+      // Keeps the document-level save shortcut from saving past a refused time.
+      event.preventDefault();
+      event.stopPropagation();
+      setTimeError(INVALID_TIME);
+    }
+  };
+
   const dateDescribedBy = [describedBy, dateError ? dateErrorId : null].filter(Boolean).join(' ');
+  const timeDescribedBy = [describedBy, timeError ? timeErrorId : null].filter(Boolean).join(' ');
 
   return (
     <>
@@ -305,6 +329,8 @@ export function DateTimePicker({
         <InputGroup className="min-w-0" data-disabled={disabled}>
           <InputGroupAddon className="text-sm font-normal">{current.format('z')}</InputGroupAddon>
           <InputGroupInput
+            aria-describedby={timeDescribedBy || undefined}
+            aria-invalid={invalid || timeError !== null || undefined}
             aria-label={timeLabel}
             autoComplete="off"
             className="min-w-0"
@@ -312,16 +338,20 @@ export function DateTimePicker({
             disabled={disabled}
             placeholder={TIME_FORMAT}
             value={timeDraft ?? current.format(TIME_FORMAT)}
-            onBlur={(event) => commitTime(event.target.value)}
+            onBlur={commitTime}
             onChange={(event) => setTimeDraft(event.target.value)}
-            {...invalidProps}
-            {...describedByProps}
+            onKeyDown={onTimeKeyDown}
           />
         </InputGroup>
       </Grid>
       {dateError ? (
         <FieldError className={errorClassName} id={dateErrorId}>
           {dateError}
+        </FieldError>
+      ) : null}
+      {timeError ? (
+        <FieldError className={errorClassName} id={timeErrorId}>
+          {timeError}
         </FieldError>
       ) : null}
     </>

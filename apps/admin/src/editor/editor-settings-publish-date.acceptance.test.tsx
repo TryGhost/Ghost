@@ -207,22 +207,50 @@ describe('Post settings publish date', () => {
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
-  it('takes a time typed as text, reverting one it cannot read', async () => {
+  it('takes a whole time typed over the field, padding a single-digit hour', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
     await openPublishDate();
 
-    await setTime('8:15 PM');
-    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
-    expect(saveApi.requests).toHaveLength(0);
-
-    await setTime('8:15');
+    await editorScreen.settingsPublishTime().tripleClick();
+    await userEvent.keyboard('8:15');
+    await userEvent.tab();
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).published_at).toBe(
       moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
     );
     await expect.element(editorScreen.settingsPublishTime()).toHaveValue('08:15');
+  });
+
+  it('keeps a time it cannot read with an error, saving nothing', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // A published post's title waits for an explicit save, which Cmd-S would send.
+    await editorScreen.titleInput().fill('Changed title');
+    await editorScreen.settingsPublishTime().tripleClick();
+    await userEvent.keyboard('8:15 PM');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect
+      .element(editorScreen.settingsPublishTime())
+      .toHaveAccessibleDescription('Must be in format: "15:00"');
+    await userEvent.tab();
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('8:15 PM');
+    await expect
+      .element(editorScreen.settingsPublishTime())
+      .toHaveAttribute('aria-invalid', 'true');
+    expect(saveApi.requests).toHaveLength(0);
+
+    // An emptied field returns to the time already held.
+    await editorScreen.settingsPublishTime().fill('');
+    await userEvent.tab();
+
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
+    await expect.element(editorScreen.settingsPublishTime()).not.toHaveAccessibleDescription();
+    expect(saveApi.requests).toHaveLength(0);
   });
 
   it('refuses a published post a publish time that has not passed', async () => {

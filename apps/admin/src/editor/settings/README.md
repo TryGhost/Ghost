@@ -148,10 +148,11 @@ link to its `/p/<uuid>/` preview instead, and a draft shows neither.
 When the post is published, edited in the site's timezone and carried as a UTC
 instant. A post that has no publish time yet shows the current moment, and only
 an edit stages a value, so an untouched draft still leaves the time to the
-server. The fields share the row equally, with calendar and clock icons and the
-timezone inside the time field. The date is typed as `YYYY-MM-DD` or chosen from
-a calendar, and the time entered
-through Shade's native `TimePicker`, whose value is `HH:mm`; an unparseable time returns to the value already held. Both fields commit at minute
+server. The fields share the row equally, with a calendar icon in the date field
+and the timezone leading the time field. The date is typed as `YYYY-MM-DD` or
+chosen from a calendar, and the time is typed as 24-hour `HH:mm`, with a
+single-digit hour accepted. A time that cannot be read is kept in the field with
+an error, and an emptied field returns to the value already held. Both fields commit at minute
 granularity, and the seconds a publish stamped are kept whenever the committed
 minute is the one already saved. Tabbing through an untouched field, retyping the
 value it shows, or choosing the displayed calendar day does not commit a value.
