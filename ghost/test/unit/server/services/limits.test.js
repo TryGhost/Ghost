@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const {
   limitService: limits,
   init: initLimits,
-  getHelpLink,
 } = require('../../../../core/server/services/limits');
 const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
@@ -36,13 +35,15 @@ describe('Limit Service Init', function () {
       configUtils.set({
         hostSettings: { billing: { enabled, url: 'https://billing.example.com' } },
       });
+      initLimits();
       assert.equal(
-        getHelpLink(),
+        limitServiceStub.lastCall.args[0].helpLink,
         enabled === true ? 'https://billing.example.com' : 'https://ghost.org/help/',
       );
     }
     configUtils.set({ hostSettings: { billing: { enabled: true } } });
-    assert.equal(getHelpLink(), 'https://ghost.org/help/');
+    initLimits();
+    assert.equal(limitServiceStub.lastCall.args[0].helpLink, 'https://ghost.org/help/');
   });
 
   it('initiates and loads limits - minimal setup', async function () {
