@@ -105,7 +105,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     // Periodic limits need a subscription to build, and registration stops at the first
     // limit that throws, so without one they're skipped to keep the rest working
     const limits = Object.fromEntries(
-      Object.entries(config.hostSettings?.limits || {}).filter(([name, limit]) => {
+      Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
         // Invitation email usage is authoritative on the server, not the pending-invite list.
         if (name === 'limitTrialStaffInvites') {
           return false;
@@ -221,6 +221,5 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     sessionExpiryRedirect,
     users,
     wanted,
-    wantsStaff,
   ]);
 };
