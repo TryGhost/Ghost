@@ -31,6 +31,7 @@ import { Link, useFeaturebase } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
+import { useHelpPanel } from '@/help/help-panel-context';
 
 function UserMenuProfile() {
   const currentUser = useCurrentUser();
@@ -55,6 +56,7 @@ function UserMenuHelp() {
     preloadFeedbackWidget,
   } = useFeaturebase();
   const { isMobile, setOpenMobile } = useSidebar();
+  const helpPanel = useHelpPanel();
   const showFeedback = currentUser && featurebaseAvailable && !isContributorUser(currentUser);
 
   // Leaving the menu for another tab or the feedback widget also closes the mobile sheet
@@ -66,16 +68,29 @@ function UserMenuHelp() {
 
   return (
     <>
-      <UserMenuItem onSelect={closeMobileSidebar}>
-        <a
-          href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
-          rel="noopener noreferrer"
-          target="_blank"
+      {helpPanel ? (
+        <UserMenuItem
+          asChild={false}
+          onSelect={() => {
+            closeMobileSidebar();
+            helpPanel.setOpen(true);
+          }}
         >
           <LucideIcon.HelpCircle />
           <UserMenuItem.Label>Help</UserMenuItem.Label>
-        </a>
-      </UserMenuItem>
+        </UserMenuItem>
+      ) : (
+        <UserMenuItem onSelect={closeMobileSidebar}>
+          <a
+            href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <LucideIcon.HelpCircle />
+            <UserMenuItem.Label>Help</UserMenuItem.Label>
+          </a>
+        </UserMenuItem>
+      )}
       {showFeedback && (
         <UserMenuItem
           asChild={false}

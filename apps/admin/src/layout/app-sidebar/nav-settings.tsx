@@ -7,6 +7,7 @@ import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
 import { NavGhostProItem } from './nav-ghost-pro';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
+import { useHelpPanel } from '@/help/help-panel-context';
 
 interface NavSettingsProps extends React.ComponentProps<typeof SidebarGroup> {
   /** Admin 7 lists Ghost(Pro) here and moves Help to the account menu. */
@@ -17,6 +18,7 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
   const { data: currentUser } = useCurrentUser();
   const showSettings = currentUser && canAccessSettings(currentUser);
   const settingsReturnToState = useSettingsReturnToState();
+  const helpPanel = useHelpPanel();
 
   return (
     <SidebarGroup {...props}>
@@ -34,14 +36,24 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
 
           {!admin7Design && (
             <NavMenuItem>
-              <NavMenuItem.Link
-                rel="noopener noreferrer"
-                target="_blank"
-                to="https://ghost.org/help?utm_source=admin&utm_campaign=help"
-              >
-                <LucideIcon.HelpCircle />
-                <NavMenuItem.Label>Help</NavMenuItem.Label>
-              </NavMenuItem.Link>
+              {helpPanel ? (
+                <NavMenuItem.Button
+                  isActive={helpPanel.open}
+                  onClick={() => helpPanel.setOpen(!helpPanel.open)}
+                >
+                  <LucideIcon.HelpCircle />
+                  <NavMenuItem.Label>Help</NavMenuItem.Label>
+                </NavMenuItem.Button>
+              ) : (
+                <NavMenuItem.Link
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  to="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+                >
+                  <LucideIcon.HelpCircle />
+                  <NavMenuItem.Label>Help</NavMenuItem.Label>
+                </NavMenuItem.Link>
+              )}
             </NavMenuItem>
           )}
         </SidebarMenu>
