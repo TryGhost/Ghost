@@ -4,11 +4,11 @@
  * @typedef {object} SubscriptionActivatedEventData
  * @prop {string} source
  * @prop {string} memberId
- * @prop {string} batchId
- * @prop {string} tierId
+ * @prop {string} [batchId]
+ * @prop {string} [tierId]
  * @prop {string} subscriptionId
- * @prop {string} attribution
- * @prop {string} offerId
+ * @prop {string} [offerId]
+ * @prop {import('../../server/services/member-attribution/attribution-builder').AttributionResource} [attribution]
  */
 
 module.exports = class SubscriptionActivatedEvent {

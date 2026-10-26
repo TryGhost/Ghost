@@ -443,6 +443,226 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('removeComplimentarySubscription', function () {
+    /**
+     * @param {Object} options
+     * @param {string} options.status - the member's status
+     * @param {Array} options.products - tiers currently linked to the member
+     * @param {Array} options.subscriptions - the member's Stripe subscriptions, as
+     *   `{status, tierId}`; `tierId` is the Ghost tier the subscription's price maps to,
+     *   or null when the Stripe product has no mapping
+     */
+    const buildMember = ({ status, products, subscriptions }) => {
+      const subscriptionModels = subscriptions.map((subscription) => ({
+        get: sinon.stub().callsFake(
+          (key) =>
+            ({
+              status: subscription.status,
+              plan_nickname: subscription.planNickname ?? 'Monthly',
+              subscription_id: 'sub_123',
+            })[key],
+        ),
+        related: sinon
+          .stub()
+          .withArgs('stripePrice')
+          .returns({
+            related: sinon
+              .stub()
+              .withArgs('stripeProduct')
+              .returns({
+                get: sinon.stub().withArgs('product_id').returns(subscription.tierId),
+              }),
+          }),
+      }));
+
+      return {
+        id: 'member_id_123',
+        get: sinon.stub().withArgs('status').returns(status),
+        load: sinon.stub().resolves(),
+        related: sinon.stub().callsFake((relation) => {
+          if (relation === 'products') {
+            // `models` for update(), `toJSON()` for removeComplimentaryProducts
+            return {
+              models: products.map(({ id }) => ({ id })),
+              toJSON: () => products,
+            };
+          }
+          return {
+            models: subscriptionModels,
+            fetch: sinon.stub().resolves({ models: subscriptionModels }),
+          };
+        }),
+      };
+    };
+
+    const buildStubbedRepo = (member) => {
+      Member = {
+        transaction: sinon.stub().callsFake((callback) => callback('txn')),
+        findOne: sinon.stub().resolves(member),
+        // update() reads these off the edited model to decide which events to record
+        edit: sinon.stub().resolves({
+          id: 'member_id_123',
+          attributes: { email: 'member@example.com', status: 'free' },
+          _previousAttributes: { email: 'member@example.com', status: 'free' },
+          _changed: {},
+        }),
+      };
+
+      return buildRepo({
+        Member,
+        stripeAPIService: { configured: true },
+        OfferRedemption: mockOfferRedemption,
+      });
+    };
+
+    it('leaves a paid member on their tier when no subscription resolves to one', async function () {
+      // A member comped on the tier they then paid for holds exactly one tier. If the
+      // subscription behind it does not resolve, every tier looks complimentary and the
+      // removal would strip the tier they are paying for.
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_premium' }],
+        subscriptions: [],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.notCalled(Member.edit);
+    });
+
+    it('leaves a paid member on their tier when their subscription has no tier mapping', async function () {
+      // Same protection, reached a different way: the subscription is visible and active,
+      // but its Stripe product maps to no tier, so it contributes nothing to the set of
+      // tiers worth keeping.
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_premium' }],
+        subscriptions: [{ status: 'active', tierId: null }],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.notCalled(Member.edit);
+    });
+
+    it('removes a complimentary tier while keeping the one an active subscription pays for', async function () {
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_comped' }, { id: 'tier_premium' }],
+        subscriptions: [{ status: 'active', tierId: 'tier_premium' }],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.calledOnce(Member.edit);
+      assert.deepEqual(Member.edit.firstCall.args[0], {
+        products: [{ id: 'tier_premium' }],
+      });
+    });
+
+    it('keeps all tiers backed by multiple active subscriptions', async function () {
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_1' }, { id: 'tier_2' }],
+        subscriptions: [
+          { status: 'active', tierId: 'tier_1' },
+          { status: 'active', tierId: 'tier_2' },
+        ],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.notCalled(Member.edit);
+    });
+
+    it('removes complimentary tier while preserving multiple active subscription tiers', async function () {
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_comped' }, { id: 'tier_1' }, { id: 'tier_2' }],
+        subscriptions: [
+          { status: 'active', tierId: 'tier_1' },
+          { status: 'active', tierId: 'tier_2' },
+        ],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.calledOnce(Member.edit);
+      assert.deepEqual(Member.edit.firstCall.args[0], {
+        products: [{ id: 'tier_1' }, { id: 'tier_2' }],
+      });
+    });
+
+    it('removes every tier and sets status to free for a comped member with no active subscription', async function () {
+      const member = buildMember({
+        status: 'comped',
+        products: [{ id: 'tier_comped' }],
+        subscriptions: [],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.calledOnce(Member.edit);
+      assert.deepEqual(Member.edit.firstCall.args[0], { products: [], status: 'free' });
+    });
+
+    it('records the removal as a member product event', async function () {
+      const member = buildMember({
+        status: 'paid',
+        products: [{ id: 'tier_comped' }, { id: 'tier_premium' }],
+        subscriptions: [{ status: 'active', tierId: 'tier_premium' }],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.calledOnce(MemberProductEvent.add);
+      assert.deepEqual(MemberProductEvent.add.firstCall.args[0], {
+        member_id: 'member_id_123',
+        product_id: 'tier_comped',
+        action: 'removed',
+      });
+    });
+
+    it('locks the member row and writes in the caller transaction', async function () {
+      const member = buildMember({
+        status: 'comped',
+        products: [{ id: 'tier_comped' }],
+        subscriptions: [],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' }, { transacting: 'txn' });
+
+      sinon.assert.calledWith(
+        Member.findOne,
+        { id: 'member_id_123' },
+        sinon.match({ transacting: 'txn', forUpdate: true }),
+      );
+      assert.equal(Member.edit.firstCall.args[1].transacting, 'txn');
+    });
+
+    it('opens a transaction when the caller does not supply one', async function () {
+      const member = buildMember({
+        status: 'comped',
+        products: [{ id: 'tier_comped' }],
+        subscriptions: [],
+      });
+      const repo = buildStubbedRepo(member);
+
+      await repo.removeComplimentarySubscription({ id: 'member_id_123' });
+
+      sinon.assert.calledOnce(Member.transaction);
+      assert.equal(Member.edit.firstCall.args[1].transacting, 'txn');
+    });
+  });
+
   describe('newsletter subscriptions', function () {
     let existingNewsletters;
 
@@ -1999,6 +2219,91 @@ describe('MemberRepository', function () {
       );
 
       sinon.assert.notCalled(offerRedemptionNotifySpy);
+    });
+
+    describe('when upgrading from a complimentary tier with an end date', function () {
+      it('replaces the complimentary tier with an open-ended paid tier without expiry_at', async function () {
+        const repo = buildRepo();
+        sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+        // Member currently holds the tier with an expiry date
+        const compTier = {
+          id: 'product_123',
+          expiry_at: '2026-11-01T00:00:00.000Z',
+        };
+
+        const memberModel = {
+          id: 'member_id_123',
+          get: sinon.stub().callsFake((prop) => {
+            if (prop === 'id') {
+              return 'member_id_123';
+            }
+            return null;
+          }),
+          related: (relation) => {
+            if (relation === 'stripeCustomers') {
+              return {
+                query: sinon.stub().returns({
+                  fetchOne: sinon.stub().resolves({}),
+                }),
+              };
+            }
+            if (relation === 'products') {
+              return {
+                fetch: sinon.stub().resolves({
+                  toJSON: () => [compTier],
+                }),
+                toJSON: () => [compTier],
+              };
+            }
+            if (relation === 'stripeSubscriptions') {
+              return {
+                fetch: sinon.stub().resolves({ models: [] }),
+              };
+            }
+            return {
+              models: [],
+            };
+          },
+          toJSON: () => ({ id: 'member_id_123' }),
+        };
+
+        Member.findOne = sinon.stub().resolves(memberModel);
+
+        const paidProduct = {
+          id: 'product_123',
+          get: sinon.stub().returns('product_123'),
+          toJSON: () => ({
+            id: 'product_123',
+            name: 'Gold',
+            expiry_at: null,
+          }),
+        };
+
+        productRepository.get = sinon.stub().resolves(paidProduct);
+        productRepository.getDefaultProduct = sinon.stub().resolves(paidProduct);
+
+        await repo.linkSubscription(
+          {
+            id: 'member_id_123',
+            subscription: subscriptionData,
+          },
+          {
+            transacting: {
+              executionPromise: Promise.resolve(),
+            },
+          },
+        );
+
+        sinon.assert.calledWith(
+          Member.edit,
+          sinon.match({
+            status: 'paid',
+            products: [{ id: 'product_123', name: 'Gold', expiry_at: null }],
+          }),
+          sinon.match.any,
+        );
+      });
     });
   });
 

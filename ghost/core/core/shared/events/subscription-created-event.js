@@ -8,7 +8,7 @@
  * @prop {string} tierId
  * @prop {string} subscriptionId
  * @prop {string} offerId
- * @prop {import('../../server/services/member-attribution/attribution-builder').Attribution} [attribution]
+ * @prop {import('../../server/services/member-attribution/attribution-builder').AttributionResource} [attribution]
  */
 
 module.exports = class SubscriptionCreatedEvent {
