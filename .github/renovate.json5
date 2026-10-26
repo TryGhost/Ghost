@@ -9,14 +9,8 @@
     // (the Tinybird CLI in .github/workflows/tinybird.yml).
     'customManagers:githubActionsVersions',
   ],
-  // Keep Renovate's own concurrency guardrails in place. The shared preset
-  // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
-  // so these override that unlimited default. The true "no more than 10
-  // open Renovate PRs" cap is enforced in .github/workflows/renovate.yml
-  // because Renovate's vulnerability-alert path can bypass these limits and
-  // because we need the cap to be based on the live GitHub PR count.
-  prConcurrentLimit: 10,
-  branchConcurrentLimit: 10,
+  // No prConcurrentLimit/branchConcurrentLimit: they count PRs Renovate will
+  // never automerge. The open-PR cap lives in .github/workflows/renovate.yml.
   // Keep manually-closed immortal/grouped PRs closed unless explicitly
   // reopened from the Dependency Dashboard.
   recreateWhen: 'never',

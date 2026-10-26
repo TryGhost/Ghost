@@ -82,9 +82,8 @@ jobs:
       # maintain and automerge the PRs that already exist.
       #
       # Why this lives outside renovate.json5:
-      # - prConcurrentLimit/branchConcurrentLimit are useful guardrails, but
-      #   Renovate computes them from the branches in the current run rather
-      #   than by asking GitHub for every open Renovate PR.
+      # - prConcurrentLimit/branchConcurrentLimit count every open Renovate PR,
+      #   parked ones included, so they stay unset (unlimited via the preset).
       # - vulnerability-alert PRs can bypass Renovate's normal branch, PR,
       #   hourly, and schedule limits.
       #
