@@ -1959,7 +1959,7 @@ module.exports = class MemberRepository {
         // Note: we add the product here
         // We don't override the products because in an edge case a member can have multiple subscriptions
         // We'll need to keep all the products related to those subscriptions to avoid creating other issues
-        // The subscribed tier replaces any existing entry for it, such as a complimentary one with an expiry date, so the paid tier is open-ended
+        // Replace any existing entry for this tier so a comp or gift expiry_at doesn't carry over
         memberProducts = memberProducts.filter((product) => product.id !== ghostProduct.id);
         memberProducts.push(ghostProduct.toJSON());
       }
