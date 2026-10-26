@@ -431,18 +431,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
               config={paidChangeChartConfig}
             >
               <Recharts.BarChart data={paidChangeChartData} stackOffset="sign">
-                <defs>
-                  <linearGradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={'var(--color-new)'} stopOpacity={0.8} />
-                    <stop offset="100%" stopColor={'var(--color-new)'} stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-                <defs>
-                  <linearGradient id="roseGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={'var(--color-cancelled)'} stopOpacity={0.6} />
-                    <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
-                  </linearGradient>
-                </defs>
+                {/* ANALYTICS PROTOTYPE: flat bars (were gradients) */}
                 <Recharts.CartesianGrid stroke="var(--border)" vertical={false} />
                 <Recharts.XAxis
                   axisLine={false}
@@ -551,8 +540,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                 <Recharts.Bar
                   activeBar={{ fillOpacity: 1 }}
                   dataKey="new"
-                  fill="url(#tealGradient)"
-                  fillOpacity={0.75}
+                  fill="var(--color-new)"
+                  fillOpacity={0.5}
                   maxBarSize={32}
                   minPointSize={3}
                   radius={[4, 4, 0, 0]}
@@ -561,8 +550,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                 <Recharts.Bar
                   activeBar={{ fillOpacity: 1 }}
                   dataKey="cancelled"
-                  fill="url(#roseGradient)"
-                  fillOpacity={0.75}
+                  fill="var(--color-cancelled)"
+                  fillOpacity={0.5}
                   maxBarSize={32}
                   radius={[4, 4, 0, 0]}
                   stackId="a"

@@ -430,20 +430,7 @@ const NewsletterKPIs: React.FC<{
                       setIsHoveringClickable(!!activePostId);
                     }}
                   >
-                    <defs>
-                      <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop
-                          offset="0%"
-                          stopColor={tabConfig[currentTab].color}
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor={tabConfig[currentTab].color}
-                          stopOpacity={0.6}
-                        />
-                      </linearGradient>
-                    </defs>
+                    {/* ANALYTICS PROTOTYPE: flat bars (was a gradient) */}
                     <Recharts.CartesianGrid
                       horizontal={true}
                       stroke="var(--border)"
@@ -491,8 +478,8 @@ const NewsletterKPIs: React.FC<{
                     <Recharts.Bar
                       activeBar={{ fillOpacity: 1 }}
                       dataKey={tabConfig[currentTab].datakey}
-                      fill="url(#barGradient)"
-                      fillOpacity={0.6}
+                      fill={tabConfig[currentTab].color}
+                      fillOpacity={0.5}
                       isAnimationActive={false}
                       maxBarSize={32}
                       minPointSize={3}

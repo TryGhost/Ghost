@@ -114,7 +114,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
   range,
   yAxisRange,
   color = 'var(--chart-blue)',
-  id,
+  // `id` named the gradient; unused while the fill is flat
   className,
   syncId,
   allowDataOverflow = false,
@@ -194,17 +194,12 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
           isAnimationActive={false}
           position={{ y: 10 }}
         />
-        <defs>
-          <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-            <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-          </linearGradient>
-        </defs>
+        {/* ANALYTICS PROTOTYPE: flat fill (was a fading gradient) */}
         <Area
           baseValue={baseValue}
           dataKey="value"
-          fill={`url(#fillChart-${id})`}
-          fillOpacity={0.2}
+          fill={color}
+          fillOpacity={0.1}
           isAnimationActive={false}
           stroke={color}
           strokeWidth={1.5}

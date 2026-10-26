@@ -97,34 +97,23 @@ export const NewsletterRadialChart: React.FC<NewsletterRadialChartProps> = ({
 
   return (
     <ChartContainer className={cn('mx-auto', className)} config={config}>
+      {/* ANALYTICS PROTOTYPE: flat rings. Callers still pass gradient fills
+          (url(#gradient…)); each ring is drawn in its solid `color` instead. */}
       <Recharts.RadialBarChart
-        data={data}
+        data={data.map((item) => ({ ...item, fill: item.color }))}
         endAngle={chartComponentConfig.endAngle}
         innerRadius={chartComponentConfig.innerRadius}
         outerRadius={chartComponentConfig.outerRadius}
         startAngle={chartComponentConfig.startAngle}
       >
-        <defs>
-          {/* Define gradients for each data type */}
-          <radialGradient cx="30%" cy="30%" id="gradientPurple" r="70%">
-            <stop offset="0%" stopColor="var(--chart-purple)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-purple)" stopOpacity={1} />
-          </radialGradient>
-          <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
-            <stop offset="0%" stopColor="var(--chart-blue)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-blue)" stopOpacity={1} />
-          </radialGradient>
-          <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
-            <stop offset="0%" stopColor="var(--chart-teal)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-teal)" stopOpacity={1} />
-          </radialGradient>
-          <radialGradient cx="30%" cy="30%" id="gradientGray" r="70%">
-            <stop offset="0%" stopColor="var(--chart-gray)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-gray)" stopOpacity={1} />
-          </radialGradient>
-        </defs>
         <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
-        <Recharts.RadialBar cornerRadius={10} dataKey="value" minPointSize={-2} background>
+        <Recharts.RadialBar
+          cornerRadius={10}
+          dataKey="value"
+          fillOpacity={0.8}
+          minPointSize={-2}
+          background
+        >
           {data.length > 1 && (
             <Recharts.LabelList
               className="fill-foreground opacity-60"
