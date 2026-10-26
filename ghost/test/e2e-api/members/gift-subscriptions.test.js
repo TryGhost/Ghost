@@ -1553,6 +1553,141 @@ describe('Gift Subscriptions', function () {
           );
         }
       });
+
+      describe('Restricted signup sites', function () {
+        async function sendGiftMagicLink({ email, giftToken }, expectedStatus) {
+          const { text: integrityToken } = await membersAgent
+            .get('/api/integrity-token/')
+            .expectStatus(200);
+
+          return membersAgent
+            .post('/api/send-magic-link/')
+            .body({
+              email,
+              emailType: 'subscribe',
+              giftToken,
+              integrityToken,
+            })
+            .expectStatus(expectedStatus);
+        }
+
+        it('lets a new member redeem a gift on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'gift-paid-only-redeemer@test.com';
+          const gift = await createGift();
+
+          await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 201);
+
+          const mail = mockManager.assert.sentEmail({ to: email });
+          const [url] = mail.text.match(/https?:\/\/[^\s]+\/members\/\?token=[^\s]+/);
+          const token = new URL(url).searchParams.get('token');
+
+          await membersAgent
+            .get(`/?token=${token}&action=subscribe`)
+            .expectStatus(302)
+            .expectHeader('Set-Cookie', /members-ssr.*/);
+
+          await DomainEvents.allSettled();
+
+          const member = await models.Member.findOne({ email }, { require: true });
+          assert.equal(member.get('status'), 'gift');
+
+          await gift.refresh();
+          assert.equal(gift.get('status'), 'redeemed');
+          assert.equal(gift.get('redeemer_member_id'), member.id);
+        });
+
+        it('rejects a gift that does not exist on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'gift-paid-only-missing@test.com';
+
+          const res = await sendGiftMagicLink(
+            {
+              email,
+              giftToken: 'gift-token-does-not-exist',
+            },
+            404,
+          );
+
+          assert.equal(res.body.errors[0].message, errorMessages.notFound);
+
+          mockManager.assert.sentEmailCount(0);
+          assert.equal(await models.Member.findOne({ email }, { require: false }), null);
+        });
+
+        it('rejects an already redeemed gift on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'gift-paid-only-redeemed@test.com';
+          const gift = await createGift({ status: 'redeemed', redeemed_at: new Date() });
+
+          const res = await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 400);
+
+          assert.equal(res.body.errors[0].message, errorMessages.alreadyRedeemed);
+
+          mockManager.assert.sentEmailCount(0);
+          assert.equal(await models.Member.findOne({ email }, { require: false }), null);
+        });
+
+        it('creates no free member when the gift is redeemed before the link is used on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const firstEmail = 'gift-paid-only-first@test.com';
+          const secondEmail = 'gift-paid-only-second@test.com';
+          const gift = await createGift();
+
+          await sendGiftMagicLink({ email: firstEmail, giftToken: gift.get('token') }, 201);
+          await sendGiftMagicLink(
+            {
+              email: secondEmail,
+              giftToken: gift.get('token'),
+            },
+            201,
+          );
+
+          const tokenFor = (email) => {
+            const mail = mockManager.assert.sentEmail({ to: email });
+            const [url] = mail.text.match(/https?:\/\/[^\s]+\/members\/\?token=[^\s]+/);
+            return new URL(url).searchParams.get('token');
+          };
+          const firstToken = tokenFor(firstEmail);
+          const secondToken = tokenFor(secondEmail);
+
+          await membersAgent.get(`/?token=${firstToken}&action=subscribe`).expectStatus(302);
+          const secondRes = await membersAgent
+            .get(`/?token=${secondToken}&action=subscribe`)
+            .expectStatus(302);
+
+          const secondLocation = new URL(secondRes.headers.location, urlUtils.getSiteUrl());
+          assert.equal(secondLocation.searchParams.get('success'), 'false');
+
+          // The member is created and the gift redeemed together, so the failed redemption must not leave a free member behind
+          assert.equal(
+            await models.Member.findOne({ email: secondEmail }, { require: false }),
+            null,
+          );
+        });
+
+        it('still rejects gift signups on an invite-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'invite');
+
+          const email = 'gift-invite-only-redeemer@test.com';
+          const gift = await createGift();
+
+          const res = await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 400);
+
+          assert.equal(
+            res.body.errors[0].message,
+            'This site is invite-only, contact the owner for access.',
+          );
+
+          mockManager.assert.sentEmailCount(0);
+          await gift.refresh();
+          assert.equal(gift.get('status'), 'purchased');
+        });
+      });
     });
   });
 
