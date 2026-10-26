@@ -26,6 +26,7 @@ const serviceImplementations = {
 const serviceDependencyAllowlist = [
   '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
   '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
+  '(^|/)node_modules/@tryghost/debug/|^@tryghost/debug$', // Namespaced developer tracing gated by the DEBUG environment variable; no configuration or application instance.
   '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
