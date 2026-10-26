@@ -2,9 +2,6 @@ import { useEffect } from 'react';
 import { useDocsBot } from './use-docsbot';
 import { SupportRequestModal } from '@/support-request-modal';
 
-const THANKS_MESSAGE =
-  'Thanks — your support request has been sent. Our team will follow up by email.';
-
 export function DocsBotWidgetHost() {
   const {
     isAvailable,
@@ -32,13 +29,20 @@ export function DocsBotWidgetHost() {
 
   const onSent = async () => {
     try {
-      await addBotMessage(THANKS_MESSAGE);
+      await openWidget();
+
+      const added = await addBotMessage(
+        'Thanks - your support request has been sent. Our team will follow up by email within 48 hours.',
+      );
+
+      if (!added) {
+        // eslint-disable-next-line no-console
+        console.error('[DocsBot] Failed to add confirmation message');
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('[DocsBot] Failed to add confirmation message:', error);
     }
-
-    void openWidget();
   };
 
   return (

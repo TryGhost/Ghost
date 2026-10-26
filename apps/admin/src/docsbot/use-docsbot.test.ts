@@ -1,4 +1,5 @@
 import {
+  addBotMessageWhenReady,
   formatDocsBotHistory,
   normalizeDocsBotHistory,
   normalizeDocsBotMetadata,
@@ -142,35 +143,100 @@ describe('toSupportRequestDraft', () => {
     );
 
     expect(draft).toEqual({
-      name: 'Jamie Larson',
-      email: 'jamie@example.com',
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.',
       source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/#/posts',
-      conversationUrl: 'https://docsbot.ai/conversation/conv-1',
-      transcript: [
-        '**User** (8 May 2025, 22:56)',
-        'I cannot publish a post',
-        '',
-        '**Assistant** (8 May 2025, 22:56)',
-        'Have you checked your permissions?',
-      ].join('\n'),
+      context: {
+        chat_url: 'https://docsbot.ai/conversation/conv-1',
+        chat_transcript: [
+          '**User** (8 May 2025, 22:56)',
+          'I cannot publish a post',
+          '',
+          '**Assistant** (8 May 2025, 22:56)',
+          'Have you checked your permissions?',
+        ].join('\n'),
+      },
     });
   });
 
-  it('leaves identity and ticket fields empty when DocsBot does not provide them', () => {
+  it('leaves out ticket fields and context that DocsBot does not provide', () => {
     const draft = toSupportRequestDraft([], null, null, 'http://localhost:2368/ghost/');
 
     expect(draft).toEqual({
-      name: undefined,
-      email: undefined,
       subject: undefined,
       message: undefined,
       source: 'chat',
       pageUrl: 'http://localhost:2368/ghost/',
-      conversationUrl: undefined,
-      transcript: '',
+      context: {},
     });
+  });
+});
+
+describe('addBotMessageWhenReady', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    delete window.DocsBotAI;
+  });
+
+  // Mirrors DocsBot: a message sent before the chat panel is ready is dropped
+  // and its promise never settles.
+  function mockWidget({ readyAfterAttempts }: { readyAfterAttempts: number }) {
+    const messages: string[] = [];
+    let attempts = 0;
+
+    window.DocsBotAI = {
+      addBotMessage: vi.fn((message: string) => {
+        attempts += 1;
+
+        if (attempts <= readyAfterAttempts) {
+          return new Promise<void>(() => {});
+        }
+
+        messages.push(message);
+
+        return Promise.resolve();
+      }),
+    };
+
+    return { messages };
+  }
+
+  it('retries until the chat panel is ready and adds the message once', async () => {
+    const { messages } = mockWidget({ readyAfterAttempts: 2 });
+
+    const result = addBotMessageWhenReady('Thanks');
+
+    await vi.runAllTimersAsync();
+
+    await expect(result).resolves.toBe(true);
+    expect(messages).toEqual(['Thanks']);
+    expect(window.DocsBotAI?.addBotMessage).toHaveBeenCalledTimes(3);
+  });
+
+  it('gives up when the chat panel never becomes ready', async () => {
+    const { messages } = mockWidget({ readyAfterAttempts: Infinity });
+
+    const result = addBotMessageWhenReady('Thanks');
+
+    await vi.runAllTimersAsync();
+
+    await expect(result).resolves.toBe(false);
+    expect(messages).toEqual([]);
+  });
+
+  it('returns false when the widget is not mounted', async () => {
+    window.DocsBotAI = { addBotMessage: vi.fn(() => Promise.resolve(false as const)) };
+
+    await expect(addBotMessageWhenReady('Thanks')).resolves.toBe(false);
+    expect(window.DocsBotAI.addBotMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns false when the SDK is not loaded', async () => {
+    await expect(addBotMessageWhenReady('Thanks')).resolves.toBe(false);
   });
 });

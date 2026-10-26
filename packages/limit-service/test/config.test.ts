@@ -15,6 +15,7 @@ describe('Config', function () {
     interface MockOptions {
         firstResult?: { count?: number | string | null };
         unionResult?: unknown[];
+        rows?: unknown[];
     }
 
     function createMockKnex(options: MockOptions = {}): Knex & Mock {
@@ -23,7 +24,10 @@ describe('Config', function () {
             return chain;
         }
 
+        const rows = Promise.resolve(options.rows || []);
         const chain = {
+            then: rows.then.bind(rows),
+            limit: vi.fn(returnsChain),
             count: vi.fn(returnsChain),
             sum: vi.fn(returnsChain),
             where: vi.fn(returnsChain),
@@ -114,6 +118,48 @@ describe('Config', function () {
             assert.equal(result, 3);
             expect(knex).toHaveBeenCalledWith('users');
             expect(knex).toHaveBeenCalledWith('invites');
+        });
+    });
+
+    describe('limitTrialStaff', function () {
+        it.each([undefined, 0, 10, 25])('counts all seats with maximum %s', async function (max) {
+            const knex = createMockKnex({rows: [{id: 1}, {id: 2}]});
+            const countQuery = config.limitTrialStaff?.currentCountQuery;
+            assertExists(countQuery);
+
+            assert.equal(await countQuery(knex, undefined, max), 4);
+            expect(knex).toHaveBeenCalledWith('users');
+            expect(knex).toHaveBeenCalledWith('invites');
+            const chain = knex.mock.results[0]?.value;
+            assertExists(chain);
+            expect(chain.where).not.toHaveBeenCalled();
+            expect(chain.whereNot).not.toHaveBeenCalled();
+            expect(chain.leftJoin).not.toHaveBeenCalled();
+            if (max === undefined) {
+                expect(chain.limit).not.toHaveBeenCalled();
+            } else {
+                expect(chain.limit).toHaveBeenCalledTimes(2);
+                expect(chain.limit).toHaveBeenCalledWith(max + 1);
+            }
+        });
+    });
+
+    describe('limitTrialStaffInvites', function () {
+        it.each([undefined, 0, 15, 30])('counts invitation audit entries with maximum %s', async function (max) {
+            const knex = createMockKnex({rows: [{id: 1}, {id: 2}, {id: 3}]});
+            const countQuery = config.limitTrialStaffInvites?.currentCountQuery;
+            assertExists(countQuery);
+
+            assert.equal(await countQuery(knex, undefined, max), 3);
+            expect(knex).toHaveBeenCalledWith('actions');
+            const chain = knex.mock.results[0]?.value;
+            assertExists(chain);
+            expect(chain.where).toHaveBeenCalledExactlyOnceWith({resource_type: 'invite', event: 'added'});
+            if (max === undefined) {
+                expect(chain.limit).not.toHaveBeenCalled();
+            } else {
+                expect(chain.limit).toHaveBeenCalledExactlyOnceWith(max + 1);
+            }
         });
     });
 
