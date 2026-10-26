@@ -355,10 +355,12 @@ for questions (`use-help-conversation.ts`) and for matches as the user types
    | Follow-up: names a word from the question before                        | +1     | `FOLLOW_UP_WORD_LIFT`  |
    | Follow-up: shares the primary topic of the question before's best match | +1     | `FOLLOW_UP_TOPIC_LIFT` |
 
-   Lifts only apply to articles that already match. Results scoring under half
-   the best (`RELATIVE_CUTOFF`) are dropped, and at most three show
-   (`MAX_RESULTS`). The best match's excerpt leads the answer, with the
-   articles beneath.
+   An article must match at least half the question's words
+   (`MIN_COVERAGE`), so one ordinary word in common isn't an answer: "I think
+   I got hacked" finds nothing, and offers a person instead. Lifts only apply
+   to articles that already match. Results scoring under half the best
+   (`RELATIVE_CUTOFF`) are dropped, and at most three show (`MAX_RESULTS`).
+   The best match's excerpt leads the answer, with the articles beneath.
 
 The weights were tuned by hand against a few dozen real questions on the live
 help center, not against data. Measuring what people ask and open is how they
@@ -478,6 +480,11 @@ Search the code for `PROTOTYPE:`. In short:
 - **Some account questions rank weakly.** "Downgrade my plan" leads with how
   plans are calculated rather than "Manage your Ghost(Pro) subscription". A
   custom excerpt, or the search-word tags above, would fix it.
+- **Short questions can still get a wrong answer.** With two words, one match
+  is half: "why was I charged twice" leads with "Ghost charges 0% transaction
+  fees". A wrong answer never offers a person the way no answer does (only its
+  thumbs down does), so this matters most if support is only offered when
+  search fails.
 - **Ordering within a page is coarse:** featured first, then most recently
   updated. Ghost has no per-tag order.
 
