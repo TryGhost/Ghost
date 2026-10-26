@@ -13,8 +13,15 @@ import StatsView from '@/analytics/views/stats/layout/stats-view';
 import TopPosts from '@/analytics/views/stats/overview/components/top-posts';
 import WebKPIs from '@/analytics/views/stats/web/components/web-kpis';
 import WebOverview from '@/posts/analytics/overview/components/web-overview';
-import { Card, CardContent, NavbarActions } from '@tryghost/shade/components';
-import { H2, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import {
+  Card,
+  CardContent,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+  NavbarActions,
+} from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { HelpCard } from '@/analytics/views/stats/overview/overview';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { NewsletterRadialChart } from '@/posts/analytics/newsletter/components/newsletter-radial-chart';
@@ -67,29 +74,38 @@ const patternPostContext: PostAnalyticsContextType = {
 };
 
 interface PatternProps {
-  number: number;
   title: string;
   usedOn: string;
   source: string;
   children: React.ReactNode;
 }
 
-const Pattern: React.FC<PatternProps> = ({ number, title, usedOn, source, children }) => (
-  <section className="flex flex-col gap-5 border-t border-border pt-10 first:border-t-0 first:pt-2">
-    <Stack gap="xs">
-      <Inline align="baseline" gap="sm">
-        <Text className="font-mono" size="sm" tone="tertiary">
-          {String(number).padStart(2, '0')}
-        </Text>
-        <H2 className="text-xl">{title}</H2>
-      </Inline>
-      <Text size="sm" tone="secondary">
-        Used on {usedOn}
-      </Text>
-      <Text className="font-mono" size="xs" tone="tertiary">
-        {source}
-      </Text>
-    </Stack>
+// A quiet one-line label ("STAT CARDS"); where it's used and which files it
+// lives in show on hover, or on keyboard focus. Light SF Mono where there is
+// one: Ghost's mono stack (Menlo on a Mac) has no light weight. Generous space
+// between sections; the first sits close under the header.
+const Pattern: React.FC<PatternProps> = ({ title, usedOn, source, children }) => (
+  <section className="flex flex-col gap-4 pt-4 [section+&]:pt-24">
+    <h2>
+      <HoverCard closeDelay={100} openDelay={150}>
+        <HoverCardTrigger asChild>
+          <button
+            className="inline-flex items-center gap-1.5 rounded-xs [font-family:ui-monospace,var(--font-mono)] text-md font-light tracking-wide text-gray-500 uppercase outline-none hover:text-text-secondary focus-visible:ring-2 focus-visible:ring-ring/50 data-[state=open]:text-text-secondary"
+            type="button"
+          >
+            <span>{title}</span>
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent align="start" className="w-auto max-w-md">
+          <Stack gap="xs">
+            <Text size="sm">Used on {usedOn}</Text>
+            <Text className="font-mono" size="xs" tone="tertiary">
+              {source}
+            </Text>
+          </Stack>
+        </HoverCardContent>
+      </HoverCard>
+    </h2>
     {children}
   </section>
 );
@@ -112,21 +128,7 @@ const PatternsPage: React.FC = () => {
         </NavbarActions>
       </StatsHeader>
       <StatsView isLoading={false}>
-        <Inline
-          align="center"
-          className="rounded-lg border border-dashed border-border px-4 py-3"
-          gap="sm"
-        >
-          <LucideIcon.FlaskConical className="shrink-0 text-muted-foreground" size={16} />
-          <Text size="sm" tone="secondary">
-            Patterns view, with sample data. Every block is the real component the Analytics screens
-            use. The header above is the real one too. Turn it off in the prototype menu, bottom
-            right.
-          </Text>
-        </Inline>
-
         <Pattern
-          number={1}
           source="analytics/views/stats/overview/components/overview-kpis.tsx"
           title="Stat cards"
           usedOn="Overview"
@@ -146,39 +148,47 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={2}
           source="web/components/web-kpis.tsx · growth/components/growth-kpis.tsx · newsletters/components/newsletters-kpis.tsx"
           title="Metric tabs with a chart"
           usedOn="Web traffic, Growth, Newsletters, post Web traffic"
         >
+          {/* Each wrapped in a Card the way its screen does (web.tsx,
+              growth.tsx, newsletters.tsx) */}
           <Variant label="Two metrics (Web traffic)">
             <Card>
-              <CardContent className="pt-6">
+              <CardContent>
                 <WebKPIs data={webKpis} isLoading={false} range={RANGE} />
               </CardContent>
             </Card>
           </Variant>
           <Variant label="Four metrics (Growth)">
-            <GrowthKPIs
-              chartData={growthChart}
-              currencySymbol={CURRENCY}
-              isLoading={false}
-              totals={growthTotals}
-            />
+            <Card>
+              <CardContent>
+                <GrowthKPIs
+                  chartData={growthChart}
+                  currencySymbol={CURRENCY}
+                  isLoading={false}
+                  totals={growthTotals}
+                />
+              </CardContent>
+            </Card>
           </Variant>
           <Variant label="Three metrics, bar chart for rates (Newsletters)">
-            <NewsletterKPIs
-              avgsData={newsletterSends}
-              isAvgsLoading={false}
-              isLoading={false}
-              subscribersData={subscribers}
-              totals={newsletterTotals}
-            />
+            <Card>
+              <CardContent>
+                <NewsletterKPIs
+                  avgsData={newsletterSends}
+                  isAvgsLoading={false}
+                  isLoading={false}
+                  subscribersData={subscribers}
+                  totals={newsletterTotals}
+                />
+              </CardContent>
+            </Card>
           </Variant>
         </Pattern>
 
         <Pattern
-          number={3}
           source="overview/components/latest-post.tsx · overview/components/top-posts.tsx"
           title="Posts"
           usedOn="Overview"
@@ -192,7 +202,6 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={4}
           source="web/components/sources-card.tsx · locations/components/locations-card.tsx"
           title="Ranked lists"
           usedOn="Web traffic, post Web traffic, post Overview"
@@ -209,7 +218,6 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={5}
           source="growth/components/paid-subscription-change-chart.tsx · posts/analytics/newsletter/components/newsletter-radial-chart.tsx"
           title="Other charts"
           usedOn="Growth (bars), post Newsletter (rings)"
@@ -249,7 +257,6 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={6}
           source="posts/analytics/overview/components/web-overview.tsx"
           title="Post analytics cards"
           usedOn="post Overview"
@@ -267,7 +274,6 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={7}
           source="the same components, with no data"
           title="Empty states"
           usedOn="every screen, on a quiet site"
@@ -285,7 +291,7 @@ const PatternsPage: React.FC = () => {
           </Variant>
           <Variant label="Metric tabs, no visitors">
             <Card>
-              <CardContent className="pt-6">
+              <CardContent>
                 <WebKPIs data={[]} isLoading={false} range={RANGE} />
               </CardContent>
             </Card>
@@ -293,7 +299,6 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={8}
           source="analytics/views/stats/overview/overview.tsx (HelpCard)"
           title="Banner"
           usedOn="Overview"
@@ -325,7 +330,6 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          number={9}
           source="these fetch their own data, so they need fake responses first"
           title="Not on this page yet"
           usedOn="Web traffic, Growth, Newsletters, post Newsletter"
