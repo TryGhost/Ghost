@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import path from 'path';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 
 /**

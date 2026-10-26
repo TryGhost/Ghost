@@ -12503,7 +12503,7 @@ services:
           - test/unit/server/services/settings-helpers/settings-helpers.test.js
           - test/utils/vitest-setup.ts
           - test/utils/vitest-setup-db.ts
-          - test/utils/config-utils.js
+          - test/utils/config-utils.ts
           - test/integration/services/q-email-addresses.test.js
       resources:
         summary: >-

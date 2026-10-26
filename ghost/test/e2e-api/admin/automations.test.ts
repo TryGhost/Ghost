@@ -7,7 +7,6 @@ import sinon from 'sinon';
 import nock from 'nock';
 // @ts-expect-error Module has no type declarations.
 import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
-// @ts-expect-error Module has no type declarations.
 import configUtils from '../../utils/config-utils';
 // @ts-expect-error Module has no type declarations.
 import domainEvents from '@tryghost/domain-events';
