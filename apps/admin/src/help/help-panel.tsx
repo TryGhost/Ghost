@@ -113,8 +113,11 @@ function HelpPanelContent({
   }, [open]);
 
   // Each new question (or message to support) scrolls up to the top, so its
-  // answer reads from the start as it comes in beneath it
+  // answer reads from the start as it comes in beneath it. Again once the
+  // answer is in: while it's working, it's too short to scroll that far.
   const lastTurnId = [...messages].reverse().find(({ type }) => type !== 'answer')?.id;
+  const lastMessage = messages.at(-1);
+  const lastAnswerStatus = lastMessage?.type === 'answer' ? lastMessage.status : null;
   useEffect(() => {
     const scroller = scrollRef.current;
     const turn = scroller?.querySelector<HTMLElement>(`[data-help-message="${lastTurnId}"]`);
@@ -124,7 +127,7 @@ function HelpPanelContent({
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
       });
     }
-  }, [lastTurnId]);
+  }, [lastTurnId, lastAnswerStatus]);
 
   // Back from reading an article or writing to support, the user picks up
   // where they left off
