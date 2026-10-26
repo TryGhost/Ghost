@@ -114,10 +114,8 @@ function emailTemplate(node: TransistorNodeData, document: Document, options: Tr
 
 function buildEmbedScript() {
     // This script runs in the browser, not Node. It is emitted as verbatim
-    // source text (rather than a serialized function) so the rendered output
-    // stays byte-identical to Ghost core's transistor-renderer, which
-    // serializes its implementation via Function.prototype.toString().
-    return `<script>(function initTransistorEmbed() {
+    // source text; String.raw keeps the regex backslashes intact.
+    return String.raw`<script>(function initTransistorEmbed() {
         const script = document.currentScript;
         if (!script) {
             return;
@@ -131,42 +129,64 @@ function buildEmbedScript() {
         // Set src with background color detection
         const baseSrc = el.getAttribute('data-src');
 
-        function colorToRgb(color) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1;
-            canvas.height = 1;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = color;
-            ctx.fillRect(0, 0, 1, 1);
-            const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
-            return {r, g, b, a};
+        // Colours are resolved from computed styles only. Reading canvas
+        // pixels back is unreliable: anti-fingerprinting browsers randomise
+        // getImageData, which sent a different colour on every page load.
+        function toChannels(match, max) {
+            const [r, g, b] = match.slice(1, 4).map(c => Math.round(Math.min(Math.max(Number(c) / max, 0), 1) * 255));
+            const a = match[4] === undefined ? 1 : Number(match[4]);
+            return [r, g, b, a].every(Number.isFinite) ? {r, g, b, a} : null;
         }
 
-        let node = el.parentElement;
-        let bg;
-        while (node) {
-            bg = window.getComputedStyle(node).backgroundColor;
-            if (bg && bg !== 'transparent') {
-                const {a} = colorToRgb(bg);
-                if (a > 0) {
-                    break;
+        function parseRgb(color) {
+            const match = color.match(/^rgba?\(([^,]+), ([^,]+), ([^,]+?)(?:, ([^,]+))?\)$/);
+            return match ? toChannels(match, 255) : null;
+        }
+
+        function parseSrgb(color) {
+            const match = color.match(/^color\(srgb (\S+) (\S+) (\S+?)(?: \/ (\S+))?\)$/);
+            return match ? toChannels(match, 1) : null;
+        }
+
+        // Computed styles keep modern colour spaces such as oklch() as
+        // authored, so let CSS convert them to sRGB via color-mix().
+        function convertToSrgb(color) {
+            const probe = document.createElement('span');
+            probe.hidden = true;
+            probe.style.setProperty('background-color', 'color-mix(in srgb, ' + color + ' 100%, transparent)', 'important');
+            script.parentElement.appendChild(probe);
+            const converted = window.getComputedStyle(probe).backgroundColor;
+            probe.remove();
+            return parseSrgb(converted);
+        }
+
+        function findBackground() {
+            for (let node = el.parentElement; node; node = node.parentElement) {
+                const bg = window.getComputedStyle(node).backgroundColor;
+                if (bg === 'transparent') {
+                    // Older engines serialise transparent backgrounds as the keyword
+                    continue;
+                }
+                const color = parseRgb(bg) || parseSrgb(bg) || convertToSrgb(bg);
+                if (!color) {
+                    // Unknown format: let Transistor fall back to its default
+                    return null;
+                }
+                if (color.a > 0) {
+                    return color;
                 }
             }
-            node = node.parentElement;
+            return null;
         }
 
-        if (!node || !bg || bg === 'transparent') {
-            el.src = baseSrc;
+        const background = findBackground();
+        if (background) {
+            const hex = [background.r, background.g, background.b].map(c => c.toString(16).padStart(2, '0')).join('');
+            const u = new URL(baseSrc);
+            u.searchParams.set('background', hex);
+            el.src = u.toString();
         } else {
-            const {r, g, b, a} = colorToRgb(bg);
-            if (a === 0) {
-                el.src = baseSrc;
-            } else {
-                const hex = [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
-                const u = new URL(baseSrc);
-                u.searchParams.set('background', hex);
-                el.src = u.toString();
-            }
+            el.src = baseSrc;
         }
 
         // Listen for resize messages from the Transistor iframe
