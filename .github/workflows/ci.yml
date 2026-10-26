@@ -1162,9 +1162,10 @@ jobs:
         # The runner image already has Firefox's other libraries; `playwright install-deps`
         # also pulls ~50MB of fonts and encoders the video-card tests don't use.
         run: |
-          sudo apt-get update -yq -o Acquire::Retries=3 -o Acquire::http::Timeout=30
           for i in 1 2 3; do
-            if sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
+            if sudo timeout -k 5 120 apt-get update -yq \
+                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
+               sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 libavcodec60; then
               exit 0
             fi
