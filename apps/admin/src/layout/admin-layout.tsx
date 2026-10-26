@@ -29,6 +29,8 @@ import { AdminFrame, type AdminFrameMode } from './admin-frame';
 import { AdminFrameTopBar } from './admin-frame-top-bar';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
+import { HelpPanel } from '@/help/help-panel';
+import { HelpPanelProvider } from '@/help/help-panel-provider';
 
 const networkPageChrome = {
   contentClassName: 'max-w-[1920px]',
@@ -387,6 +389,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {!dunningLocked && <MobileNavBar />}
         <DunningOverlay />
       </SidebarInset>
+      {/* Docked beside the page, which narrows to make room */}
+      <HelpPanel />
       {/* After the inset, so its refs are attached when this first sets its variables */}
       {floatingSidebar && (
         <FloatingSidebarContentSync
@@ -402,18 +406,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <GlobalSearchProvider>
-      {!dunningLocked && <SkipLink target={mainRef} />}
-      {adminFrame ? (
-        <AdminFrame
-          locked={dunningLocked}
-          mode={frameMode}
-          topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
-        >
-          {sidebarLayout}
-        </AdminFrame>
-      ) : (
-        sidebarLayout
-      )}
+      <HelpPanelProvider>
+        {!dunningLocked && <SkipLink target={mainRef} />}
+        {adminFrame ? (
+          <AdminFrame
+            locked={dunningLocked}
+            mode={frameMode}
+            topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
+          >
+            {sidebarLayout}
+          </AdminFrame>
+        ) : (
+          sidebarLayout
+        )}
+      </HelpPanelProvider>
     </GlobalSearchProvider>
   );
 }

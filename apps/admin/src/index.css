@@ -115,6 +115,27 @@ body {
   }
 }
 
+/* The help panel's status verb while it searches: a light sweeping across
+   muted text, on the same keyframes as the send shimmer. */
+@utility help-working-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--text-tertiary) 40%,
+    var(--foreground) 50%,
+    var(--text-tertiary) 60%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: email-sending-shimmer 2s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    background-image: none;
+    color: var(--text-secondary);
+    animation: none;
+  }
+}
+
 /* Admin overlays mount beside #root, so mirror typography into Shade portals
    and the alerts host.
    Do not set body fonts or change component weights, sizes, or line heights. */

@@ -1,0 +1,120 @@
+import { Kbd, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
+import { type HelpArticle, HELP_CENTER_URL } from './help-center';
+import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
+import type { HelpSuggestion } from './use-help-suggestions';
+
+/*
+ * What the panel shows before the user asks anything: a greeting and up to
+ * three numbered suggestions for the page they're on (use-help-suggestions.ts).
+ * The keys 1 to 3 pick them (handled in help-panel.tsx). While they load, rows
+ * of the same size stand in, and when they change (a new page) they cascade in
+ * afresh.
+ */
+
+// Where suggestions go, shown as rows of the same size while they load
+const SUGGESTION_SLOTS = [
+  { key: 'first', placeholderWidth: 'w-3/5' },
+  { key: 'second', placeholderWidth: 'w-2/5' },
+  { key: 'third', placeholderWidth: 'w-1/2' },
+];
+
+const SUGGESTION_ROW_CLASS_NAME = 'flex w-full items-center gap-3 rounded-lg p-2';
+
+interface HelpWelcomeProps {
+  firstName: string;
+  suggestions: HelpSuggestion[];
+  loading: boolean;
+  /** The help center couldn't be reached, so there's nothing to suggest */
+  failed: boolean;
+  onPick: (article: HelpArticle) => void;
+}
+
+export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }: HelpWelcomeProps) {
+  return (
+    <Stack className="mt-auto pt-6" gap="lg">
+      <Stack className={REVEAL_CLASS_NAME} gap="xs">
+        <Text leading="heading" size="xl" weight="semibold">
+          {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
+        </Text>
+        <Text leading="snug" size="sm" tone="secondary">
+          Answers come from the Ghost help center. A person on the support team is a click away if
+          you need one.
+        </Text>
+      </Stack>
+      {failed && (
+        <Text leading="snug" size="sm" tone="secondary">
+          The help center couldn’t be reached just now.{' '}
+          <a
+            className="underline underline-offset-2"
+            href={HELP_CENTER_URL}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Open it in a new tab
+          </a>
+          , or ask the support team.
+        </Text>
+      )}
+      {/* Keyed by what it shows, so each change (loading, or a new page's
+          articles) cascades in row by row and reads as new */}
+      <ol
+        key={loading ? 'loading' : suggestions.map(({ article }) => article.id).join()}
+        aria-busy={loading}
+        aria-label="Suggested articles"
+        className="-mx-2 flex flex-col"
+      >
+        {(loading ? SUGGESTION_SLOTS : SUGGESTION_SLOTS.slice(0, suggestions.length)).map(
+          ({ key, placeholderWidth }, index) => {
+            const suggestion = suggestions[index];
+
+            return (
+              <li key={key} className={REVEAL_CLASS_NAME} style={revealAt(index + 1)}>
+                {suggestion ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        aria-keyshortcuts={String(index + 1)}
+                        className={cn(
+                          SUGGESTION_ROW_CLASS_NAME,
+                          'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring',
+                        )}
+                        data-help-source={suggestion.source}
+                        type="button"
+                        onClick={() => onPick(suggestion.article)}
+                      >
+                        <Kbd>{index + 1}</Kbd>
+                        <Text
+                          as="span"
+                          className="transition-colors group-hover:text-text-primary"
+                          leading="snug"
+                          tone="secondary"
+                        >
+                          {suggestion.article.title}
+                        </Text>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">{suggestion.reason}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <div className={SUGGESTION_ROW_CLASS_NAME} aria-hidden>
+                    <Kbd>{index + 1}</Kbd>
+                    {/* The zero-width space gives it a title's line height */}
+                    <Text as="span" className="flex flex-1 items-center" leading="snug">
+                      {'​'}
+                      <Skeleton
+                        className={cn('h-3.5', placeholderWidth)}
+                        containerClassName="flex flex-1"
+                      />
+                    </Text>
+                  </div>
+                )}
+              </li>
+            );
+          },
+        )}
+      </ol>
+    </Stack>
+  );
+}
