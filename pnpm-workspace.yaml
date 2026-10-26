@@ -239,7 +239,7 @@ catalog:
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2
   '@dnd-kit/utilities': 3.2.2
-  '@floating-ui/react-dom': 2.1.8
+  '@floating-ui/react-dom': 2.1.9
   shell-quote: 1.11.0
   unidecode: 1.1.0
   mppx: 0.6.20
