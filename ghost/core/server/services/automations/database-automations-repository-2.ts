@@ -76,7 +76,6 @@ export const createDatabaseAutomationsRepository2 = ({
             });
           }
         })
-        .where('automation.trigger_type', 'membership_started')
         .where('automation.status', 'active')
         .whereNull('actions.deleted_at')
         .whereNotExists(
