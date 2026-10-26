@@ -31,12 +31,29 @@ export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPri
 }
 
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
-  ({ variant = 'segmented', ...props }, ref) => {
+  ({ variant = 'segmented', onValueChange, ...props }, ref) => {
     const { controlShape } = useShade();
+    const reportedValueRef = React.useRef<string | null>(null);
+
+    // Radix Tabs focuses a clicked trigger on mousedown, so its onFocus and onMouseDown
+    // both report the same value to a controlled Tabs (radix-ui/primitives#4162).
+    const handleValueChange = React.useCallback(
+      (value: string) => {
+        if (reportedValueRef.current === value) {
+          return;
+        }
+        reportedValueRef.current = value;
+        queueMicrotask(() => {
+          reportedValueRef.current = null;
+        });
+        onValueChange?.(value);
+      },
+      [onValueChange],
+    );
 
     return (
       <TabsContext.Provider value={{ variant, controlShape }}>
-        <TabsPrimitive.Root ref={ref} {...props} />
+        <TabsPrimitive.Root ref={ref} onValueChange={handleValueChange} {...props} />
       </TabsContext.Provider>
     );
   },

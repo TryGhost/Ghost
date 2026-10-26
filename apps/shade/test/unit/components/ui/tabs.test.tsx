@@ -75,4 +75,24 @@ describe('Tabs Component', () => {
     assert.equal(handleValueChange.mock.calls.length, 1, 'Value change handler should run once');
     assert.equal(secondTab.getAttribute('aria-selected'), 'true');
   });
+
+  it('reports a later click on a tab its owner did not select', async () => {
+    const handleValueChange = vi.fn();
+
+    render(
+      <Tabs value="first" onValueChange={handleValueChange}>
+        <TabsList>
+          <TabsTrigger value="first">First</TabsTrigger>
+          <TabsTrigger value="second">Second</TabsTrigger>
+        </TabsList>
+      </Tabs>,
+    );
+    const secondTab = screen.getByRole('tab', { name: 'Second' });
+
+    fireEvent.mouseDown(secondTab);
+    await act(async () => {});
+    fireEvent.mouseDown(secondTab);
+
+    assert.deepEqual(handleValueChange.mock.calls, [['second'], ['second']]);
+  });
 });
