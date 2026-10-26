@@ -1,16 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  CONCEPTS,
-  type ConceptId,
-  setConcept,
-  setShowEditMarkers,
-  useConcept,
-  useShowEditMarkers,
-} from './concept';
+import { CONCEPTS, type ConceptId, setConcept, useConcept } from './concept';
 import { CANVAS_CLEARED_ATTRIBUTE } from './use-expand-from-card';
 import {
   Button,
-  Checkbox,
   Field,
   FieldLabel,
   Popover,
@@ -18,7 +10,6 @@ import {
   PopoverTrigger,
   RadioGroup,
   RadioGroupItem,
-  Separator,
 } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -49,7 +40,6 @@ ${CLEARED} ${FLOW} { opacity: 0; }
 // is open.
 const ConceptSwitcher: React.FC = () => {
   const concept = useConcept();
-  const showEditMarkers = useShowEditMarkers();
   const [open, setOpen] = useState(false);
   const cornerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -101,22 +91,13 @@ const ConceptSwitcher: React.FC = () => {
                 value={concept}
                 onValueChange={(next) => setConcept(next as ConceptId)}
               >
-                {CONCEPTS.map(({ id, label }) => (
+                {CONCEPTS.filter((option) => !option.hidden).map(({ id, label }) => (
                   <Field key={id} orientation="horizontal">
                     <RadioGroupItem id={`ny1715-concept-${id}`} value={id} />
                     <FieldLabel htmlFor={`ny1715-concept-${id}`}>{label}</FieldLabel>
                   </Field>
                 ))}
               </RadioGroup>
-              <Separator />
-              <Field orientation="horizontal">
-                <Checkbox
-                  checked={showEditMarkers}
-                  id="ny1715-edit-markers"
-                  onCheckedChange={(checked) => setShowEditMarkers(checked === true)}
-                />
-                <FieldLabel htmlFor="ny1715-edit-markers">Show edit markers</FieldLabel>
-              </Field>
             </Stack>
           </PopoverContent>
         </Popover>
