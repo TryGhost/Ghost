@@ -239,6 +239,8 @@ export function DateTimePicker({
                 <PopoverTrigger asChild>
                   <InputGroupButton
                     aria-label="Choose date"
+                    // Spaces the icon as the time field's timezone is spaced.
+                    className="-mr-1 ml-1"
                     disabled={disabled}
                     size="icon-xs"
                     onClick={() => setCalendarFrom('button')}
