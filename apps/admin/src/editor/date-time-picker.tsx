@@ -31,14 +31,14 @@ function typedDateError(input: string, timezone: string): string | null {
   return moment.tz(input, DATE_FORMAT, timezone).isValid() ? null : INVALID_DATE;
 }
 
-/** A typed 24-hour time as H:mm or HH:mm, the colon optional, or null. */
+/** A typed 24-hour time as H:mm or HH:mm, the colon and minutes optional, or null. */
 function typedTime(input: string): { hour: number; minute: number } | null {
-  const match = /^(\d?\d):?(\d\d)$/.exec(input);
+  const match = /^(\d?\d)(?::?(\d\d))?$/.exec(input);
   if (!match) {
     return null;
   }
   const hour = parseInt(match[1], 10);
-  const minute = parseInt(match[2], 10);
+  const minute = match[2] ? parseInt(match[2], 10) : 0;
   return hour > 23 || minute > 59 ? null : { hour, minute };
 }
 
