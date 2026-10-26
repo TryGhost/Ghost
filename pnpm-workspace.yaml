@@ -227,7 +227,7 @@ catalog:
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
   typescript-eslint: 8.71.1
-  undici: 8.11.0
+  undici: 8.12.3
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 5.2.0

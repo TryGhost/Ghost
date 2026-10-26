@@ -171,6 +171,7 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  tierSelection?: TriggerData['tierSelection'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -192,6 +193,7 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
+  tierSelection,
   tierQuery,
   onChange,
   nodeSizes,
@@ -245,6 +247,7 @@ const buildGraph = ({
           tierIds: automation.trigger_tier_ids ?? [],
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
+          tierSelection,
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -396,6 +399,7 @@ type AutomationCanvasProps = {
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
+  tierSelection?: TriggerData['tierSelection'];
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
   isError: boolean;
@@ -423,6 +427,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
+  tierSelection,
   onWaitValidityChange,
   automation,
   isEmailNavigationBlocked = false,
@@ -720,6 +725,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
+      tierSelection,
       tierQuery,
       onChange,
       nodeSizes,
@@ -739,6 +745,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors,
     connecting,
     savedTriggerTierIds,
+    tierSelection,
     tierQuery,
     onChange,
     automation,

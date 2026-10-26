@@ -39,7 +39,7 @@ export default function Reset() {
       }),
     );
     setInvalid({ newPassword: newPasswordErrors.length > 0, confirmPassword: Boolean(mismatch) });
-    return mismatch ? "The two new passwords don't match." : newPasswordErrors[0];
+    return mismatch ? 'The two new passwords don’t match.' : newPasswordErrors[0];
   };
 
   const save = async (event: FormEvent) => {
