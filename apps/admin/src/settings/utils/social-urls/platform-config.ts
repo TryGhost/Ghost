@@ -142,6 +142,12 @@ export const SOCIAL_PLATFORM_CONFIGS: SocialPlatformConfig[] = [
   },
 ];
 
+// UI lists render this alphabetical copy; SOCIAL_PLATFORM_CONFIGS stays in
+// SOCIAL_PLATFORM_KEYS order because callers pair the two by index.
+export const SOCIAL_PLATFORM_DISPLAY_CONFIGS = [...SOCIAL_PLATFORM_CONFIGS].sort((a, b) =>
+  a.staffTitle.localeCompare(b.staffTitle, 'en'),
+);
+
 export const SOCIAL_PLATFORM_CONFIG_BY_KEY = Object.fromEntries(
   SOCIAL_PLATFORM_CONFIGS.map((config) => [config.key, config]),
 ) as Record<SocialPlatformKey, SocialPlatformConfig>;

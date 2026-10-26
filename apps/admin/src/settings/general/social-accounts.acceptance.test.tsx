@@ -109,6 +109,28 @@ describe('Social account settings', () => {
     );
   });
 
+  it('lists the social platforms alphabetically', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings');
+
+    const section = settingsScreen.socialAccounts();
+    const labels = () =>
+      [...section.element().querySelectorAll('label')].map((label) => label.textContent);
+    await expect
+      .poll(labels)
+      .toEqual([
+        'Bluesky',
+        'Facebook',
+        'Instagram',
+        'LinkedIn',
+        'Mastodon',
+        'Threads',
+        'TikTok',
+        'X',
+        'YouTube',
+      ]);
+  });
+
   it('hides new platforms when the backend has not deployed them', async () => {
     fakeSettingsScreens();
     await renderAdminApp('/settings', {

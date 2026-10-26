@@ -1,15 +1,13 @@
 import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
-import { SOCIAL_PLATFORM_CONFIGS, normalizeSocialInput } from '@/settings/utils/social-urls/index';
+import {
+  SOCIAL_PLATFORM_CONFIGS,
+  SOCIAL_PLATFORM_DISPLAY_CONFIGS,
+  normalizeSocialInput,
+} from '@/settings/utils/social-urls/index';
 import { SettingGroup, SettingGroupContent } from '@tryghost/shade/patterns';
 import { type UserDetailProps } from '@/settings/general/user-detail-modal';
 import { useState } from 'react';
 import type { SocialPlatformKey } from '@/settings/utils/social-urls/index';
-
-// Website stays first as the primary link; the social platforms follow in
-// alphabetical order so the list stays scannable as platforms are added
-const SOCIAL_PLATFORMS_ALPHABETICAL = [...SOCIAL_PLATFORM_CONFIGS].sort((a, b) =>
-  a.staffTitle.localeCompare(b.staffTitle),
-);
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({
   errors,
@@ -45,7 +43,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({
         />
         {errors?.website && <FieldError>{errors.website}</FieldError>}
       </Field>
-      {SOCIAL_PLATFORMS_ALPHABETICAL.map((config) => (
+      {SOCIAL_PLATFORM_DISPLAY_CONFIGS.map((config) => (
         <Field key={config.key} data-invalid={Boolean(errors?.[config.key]) || undefined}>
           <FieldLabel htmlFor={`staff-${config.key}`}>{config.staffTitle}</FieldLabel>
           <Input

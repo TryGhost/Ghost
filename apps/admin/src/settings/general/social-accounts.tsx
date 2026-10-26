@@ -4,6 +4,7 @@ import useSettingGroup from '@/settings/hooks/use-setting-group';
 import { Field, FieldError, FieldLabel, Input } from '@tryghost/shade/components';
 import {
   SOCIAL_PLATFORM_CONFIGS,
+  SOCIAL_PLATFORM_DISPLAY_CONFIGS,
   SOCIAL_PLATFORM_KEYS,
   getSocialValidationError,
   normalizeSocialInput,
@@ -67,8 +68,10 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const visiblePlatforms = useMemo(() => {
     return backendSupportsNewPlatforms
-      ? SOCIAL_PLATFORM_CONFIGS
-      : SOCIAL_PLATFORM_CONFIGS.filter((config) => LEGACY_PLATFORM_KEYS.includes(config.key));
+      ? SOCIAL_PLATFORM_DISPLAY_CONFIGS
+      : SOCIAL_PLATFORM_DISPLAY_CONFIGS.filter((config) =>
+          LEGACY_PLATFORM_KEYS.includes(config.key),
+        );
   }, [backendSupportsNewPlatforms]);
 
   // Depend on stored values, not the localSettings reference (which churns on every updateSetting).

@@ -460,23 +460,22 @@ describe('Staff profile social links', () => {
     await renderAdminApp(`/settings/staff/${administrator.slug}/social-links`, { boot });
 
     const modal = settingsScreen.userDetailModal();
-    await expect.element(modal.getByTestId('website-input')).toBeVisible();
-
-    const labels = Array.from(modal.element().querySelectorAll('label')).map(
-      (label) => label.textContent,
-    );
-    expect(labels).toEqual([
-      'Website',
-      'Bluesky',
-      'Facebook',
-      'Instagram',
-      'LinkedIn',
-      'Mastodon',
-      'Threads',
-      'TikTok',
-      'X',
-      'YouTube',
-    ]);
+    const labels = () =>
+      [...modal.element().querySelectorAll('label')].map((label) => label.textContent);
+    await expect
+      .poll(labels)
+      .toEqual([
+        'Website',
+        'Bluesky',
+        'Facebook',
+        'Instagram',
+        'LinkedIn',
+        'Mastodon',
+        'Threads',
+        'TikTok',
+        'X',
+        'YouTube',
+      ]);
   });
 
   it.each(socialCases)(
