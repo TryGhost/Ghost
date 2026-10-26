@@ -34,7 +34,7 @@ services:
       start_interval: 1s
 
   redis:
-    image: redis:7.4@sha256:44960b3100c48159a66d28c18b0588c193492e25f7551d60e51dd464fc3eca5b
+    image: redis:7.4@sha256:bd28fff4b665fdf1b73e8b5b73ec05d2f858f4fa3c8ea0d7c9bc09f7f6bf7039
     container_name: ghost-dev-redis
     command: ['redis-server', '--loglevel', 'warning']
     ports:
