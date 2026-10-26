@@ -31,9 +31,9 @@ function typedDateError(input: string, timezone: string): string | null {
   return moment.tz(input, DATE_FORMAT, timezone).isValid() ? null : INVALID_DATE;
 }
 
-/** A typed H:mm or HH:mm time on the 24-hour clock, or null. */
+/** A typed 24-hour time as H:mm or HH:mm, the colon optional, or null. */
 function typedTime(input: string): { hour: number; minute: number } | null {
-  const match = /^(\d?\d):(\d\d)$/.exec(input);
+  const match = /^(\d?\d):?(\d\d)$/.exec(input);
   if (!match) {
     return null;
   }

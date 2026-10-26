@@ -207,21 +207,24 @@ describe('Post settings publish date', () => {
     await expect.element(editorScreen.updateButton()).toBeDisabled();
   });
 
-  it('takes a whole time typed over the field, padding a single-digit hour', async () => {
-    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
-    await openPublishDate();
+  it.each(['8:15', '815', '0815'])(
+    'takes a whole time typed over the field (%s)',
+    async (typed) => {
+      const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+      await openPublishDate();
 
-    await editorScreen.settingsPublishTime().tripleClick();
-    await userEvent.keyboard('8:15');
-    await userEvent.tab();
+      await editorScreen.settingsPublishTime().tripleClick();
+      await userEvent.keyboard(typed);
+      await userEvent.tab();
 
-    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-    expect(submittedPost(saveApi).published_at).toBe(
-      moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
-    );
-    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('08:15');
-  });
+      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+      expect(submittedPost(saveApi).published_at).toBe(
+        moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
+      );
+      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('08:15');
+    },
+  );
 
   it('keeps a time it cannot read with an error, saving nothing', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
