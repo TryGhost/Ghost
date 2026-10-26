@@ -4,4 +4,4 @@
 
 // Metric labels: small caps mono, without a leading icon
 export const admin7AnalyticsLabel =
-  'admin7-analytics:font-mono admin7-analytics:text-xs admin7-analytics:font-normal admin7-analytics:tracking-wide admin7-analytics:uppercase admin7-analytics:[&_svg]:hidden';
+  'admin7-analytics:font-mono admin7-analytics:text-sm admin7-analytics:font-normal admin7-analytics:tracking-wide admin7-analytics:uppercase admin7-analytics:[&_svg]:hidden';

@@ -17,7 +17,7 @@ import {
   KpiCardHeaderLabel,
   KpiCardHeaderValue,
 } from '@tryghost/shade/patterns';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber, useRootFlag } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
 import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import {
@@ -46,26 +46,20 @@ interface OverviewKPICardProps {
   onClick?: () => void;
 }
 
-const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
-  // linkto,
-  title,
-  iconName,
-  description,
-  color,
+// The trend badge's tooltip, shared by both stat cards
+const useDiffTooltip = ({
   diffDirection,
   diffValue,
   formattedValue,
   trendingFromValue,
-  children,
-  onClick,
-}) => {
-  // const navigate = useNavigate();
+}: Pick<
+  OverviewKPICardProps,
+  'diffDirection' | 'diffValue' | 'formattedValue' | 'trendingFromValue'
+>) => {
   const { range } = useAnalytics();
-  const { isAdmin7 } = useShade();
-  const IconComponent = iconName && (LucideIcon[iconName] as LucideIcon.LucideIcon);
 
   // Construct tooltip message based on input parameters
-  const diffTooltip = React.useMemo(() => {
+  return React.useMemo(() => {
     if (
       !diffDirection ||
       diffDirection === 'empty' ||
@@ -104,6 +98,32 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
       </span>
     );
   }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
+};
+
+// Today's stat card
+const ClassicOverviewKPICard: React.FC<OverviewKPICardProps> = ({
+  // linkto,
+  title,
+  iconName,
+  description,
+  color,
+  diffDirection,
+  diffValue,
+  formattedValue,
+  trendingFromValue,
+  children,
+  onClick,
+}) => {
+  // const navigate = useNavigate();
+  const { range } = useAnalytics();
+  const { isAdmin7 } = useShade();
+  const IconComponent = iconName && (LucideIcon[iconName] as LucideIcon.LucideIcon);
+  const diffTooltip = useDiffTooltip({
+    diffDirection,
+    diffValue,
+    formattedValue,
+    trendingFromValue,
+  });
 
   return (
     <Card className="group" data-testid={title}>
@@ -145,6 +165,66 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     </Card>
   );
 };
+
+// ANALYTICS PROTOTYPE: the Admin 7 analytics stat card. Open columns rather
+// than a card, with a rule between the number and the chart. The label's
+// style (small caps, no icon) comes from Shade; the trend badge and View
+// more stay as they are.
+const Admin7OverviewKPICard: React.FC<OverviewKPICardProps> = ({
+  title,
+  diffDirection,
+  diffValue,
+  formattedValue,
+  trendingFromValue,
+  children,
+  onClick,
+}) => {
+  const { range } = useAnalytics();
+  const diffTooltip = useDiffTooltip({
+    diffDirection,
+    diffValue,
+    formattedValue,
+    trendingFromValue,
+  });
+
+  return (
+    <div className="group flex flex-col" data-testid={title}>
+      <div className="relative flex items-start justify-between gap-5 pb-5">
+        <div className="flex flex-col gap-2">
+          <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
+            {title}
+          </KpiCardHeaderLabel>
+          <KpiCardHeaderValue
+            diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
+            diffTooltip={diffTooltip}
+            diffValue={diffValue}
+            value={formattedValue}
+          />
+        </div>
+        {onClick && (
+          <Button
+            className="absolute right-0 translate-x-4 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
+            size="sm"
+            variant="subtle"
+            onClick={onClick}
+          >
+            View more →
+          </Button>
+        )}
+      </div>
+      <div className="border-t border-border pt-5">{children}</div>
+    </div>
+  );
+};
+
+// ANALYTICS PROTOTYPE: the one switch between today's stat card and the
+// Admin 7 one; the cards below don't know which they get
+const OverviewKPICard: React.FC<OverviewKPICardProps> = (props) =>
+  useRootFlag('admin7-analytics') ? (
+    <Admin7OverviewKPICard {...props} />
+  ) : (
+    <ClassicOverviewKPICard {...props} />
+  );
 
 interface OverviewKPIsProps {
   kpiValues: { visits: string };
@@ -207,7 +287,8 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   } else if (cardCount === 1) {
     cols = 'lg:grid-cols-1';
   }
-  const containerClass = `flex flex-col lg:grid ${cols} gap-6`;
+  // ANALYTICS PROTOTYPE: open columns need more room between them than cards
+  const containerClass = `flex flex-col lg:grid ${cols} gap-6 admin7-analytics:gap-10`;
 
   return (
     <div className={containerClass}>
