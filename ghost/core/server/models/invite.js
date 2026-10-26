@@ -122,9 +122,16 @@ const Invite = ghostBookshelf.Model.extend(
             limitService.isLimited('staff') &&
             roleToInvite.get('name') !== 'Contributor'
           ) {
-            // CASE: if your site is limited to a certain number of staff users
-            // Inviting a new user requires we check we won't go over the limit
-            await limitService.errorIfWouldGoOverLimit('staff');
+            // Replacing an existing counted invitation doesn't use another seat.
+            const existingInvite = unsafeAttrs.email
+              ? await Invite.findOne({ email: unsafeAttrs.email })
+              : null;
+            const existingRole = existingInvite
+              ? await ghostBookshelf.model('Role').findOne({ id: existingInvite.get('role_id') })
+              : null;
+            await limitService.errorIfWouldGoOverLimit('staff', {
+              addedCount: existingRole && existingRole.get('name') !== 'Contributor' ? 0 : 1,
+            });
           }
 
           let allowed = [];
