@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
 const config = require('../../../core/shared/config');
+const limitsService = require('../../../core/server/services/limits');
 const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const mailService = require('../../../core/server/lib/mail');
@@ -24,7 +25,7 @@ describe('Trial staff invitation limits', function () {
     request = supertest.agent(config.get('url'));
     await localUtils.doAuth(request, 'invites');
     await testUtils.initFixtures('api_keys');
-    originalLimits = config.get('hostSettings:staffInvites');
+    originalLimits = config.get('hostSettings:limits');
   });
 
   beforeEach(async function () {
@@ -33,10 +34,18 @@ describe('Trial staff invitation limits', function () {
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
-    config.set('hostSettings:staffInvites', {
-      maxStaff: 10,
-      maxInvites: 15,
+    config.set('hostSettings:limits', {
+      limitTrialStaff: {
+        max: 10,
+        error:
+          'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+      },
+      limitTrialStaffInvites: {
+        max: 15,
+        error: 'Your trial allows {{max}} staff invitation emails in total, including resends.',
+      },
     });
+    limitsService.init();
     send = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
   });
 
@@ -47,7 +56,8 @@ describe('Trial staff invitation limits', function () {
       .pluck('id');
     await db.knex('roles_users').whereIn('user_id', created).delete();
     await db.knex('users').whereIn('id', created).delete();
-    config.set('hostSettings:staffInvites', originalLimits);
+    config.set('hostSettings:limits', originalLimits);
+    limitsService.init();
     sinon.restore();
   });
 
@@ -79,6 +89,7 @@ describe('Trial staff invitation limits', function () {
     beforeEach(async function () {
       originalPlanLimits = config.get('hostSettings:limits');
       config.set('hostSettings:limits', {
+        ...originalPlanLimits,
         staff: { max: 2, error: 'Your plan supports up to {{max}} staff users.' },
       });
       planLimits.init();
@@ -339,7 +350,8 @@ describe('Trial staff invitation limits', function () {
         created_at: new Date(),
       })),
     );
-    config.set('hostSettings:staffInvites', undefined);
+    config.set('hostSettings:limits', undefined);
+    limitsService.init();
     for (let i = 0; i < 5; i++) {
       await invite(`paid-${i}@example.com`).expect(201);
     }
@@ -533,7 +545,8 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('retains best-effort audit logging when the trial policy is absent', async function () {
-    config.set('hostSettings:staffInvites', undefined);
+    config.set('hostSettings:limits', undefined);
+    limitsService.init();
     sinon
       .stub(models.Action, 'add')
       .rejects(new errors.InternalServerError({ message: 'Audit insert failed' }));

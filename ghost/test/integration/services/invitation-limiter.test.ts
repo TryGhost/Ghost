@@ -1,13 +1,10 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import ObjectId from 'bson-objectid';
-import {
-  lockStaffInvites,
-  checkTrialStaffLimit,
-} from '../../../core/server/lib/staff-invite-usage';
-import InvitationLimiter, {
-  type InvitationLimits,
-} from '../../../core/server/services/invites/invitation-limiter';
+import { lockStaffInvites } from '../../../core/server/lib/staff-invite-usage';
+import InvitationLimiter from '../../../core/server/services/invites/invitation-limiter';
+const { limitService, init: initLimits } = require('../../../core/server/services/limits');
+import type { LimitConfig } from '@tryghost/limit-service';
 
 const db = require('../../../core/server/data/db');
 const dbUtils = require('../../utils/db-utils');
@@ -17,22 +14,21 @@ const models = require('../../../core/server/models');
 const dependencies = {
   transaction: <T>(callback: (transaction: Knex.Transaction) => Promise<T>): Promise<T> =>
     models.Base.transaction(callback),
-  getUpgradeUrl: () => undefined,
+  limitService,
   lockStaffInvites,
-  checkTrialStaffLimit,
 };
 
 describe('Trial invitation admission', function () {
-  let limits: InvitationLimits | undefined;
+  let limits: Record<string, LimitConfig> | undefined;
   let limiter: InvitationLimiter;
-  let originalLimits: InvitationLimits | undefined;
+  let originalLimits: Record<string, LimitConfig> | undefined;
   let roleId: string;
   let actorId: string;
 
   beforeAll(async function () {
     await dbUtils.reset();
     await models.Settings.populateDefaults();
-    originalLimits = config.get('hostSettings:staffInvites');
+    originalLimits = config.get('hostSettings:limits');
     roleId = (await db.knex('roles').where({ name: 'Contributor' }).first()).id;
     actorId = (await db.knex('users').first()).id;
   });
@@ -41,16 +37,27 @@ describe('Trial invitation admission', function () {
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
-    limits = { maxStaff: 10, maxInvites: 15 };
-    config.set('hostSettings:staffInvites', limits);
+    limits = {
+      limitTrialStaff: {
+        max: 10,
+        error:
+          'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+      },
+      limitTrialStaffInvites: {
+        max: 15,
+        error: 'Your trial allows {{max}} staff invitation emails in total, including resends.',
+      },
+    };
+    config.set('hostSettings:limits', limits);
+    initLimits();
     limiter = new InvitationLimiter({
       ...dependencies,
-      getLimits: () => limits,
     });
   });
 
   afterEach(function () {
-    config.set('hostSettings:staffInvites', originalLimits);
+    config.set('hostSettings:limits', originalLimits);
+    initLimits();
   });
 
   async function prepare(email: string, transacting?: Knex.Transaction) {
@@ -65,6 +72,40 @@ describe('Trial invitation admission', function () {
   function actions() {
     return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
   }
+
+  it('enforces the email allowance without a trial seat cap', async function () {
+    config.set('hostSettings:limits', { limitTrialStaffInvites: { max: 1 } });
+    initLimits();
+    await limiter.run('first@example.com', (transaction) =>
+      prepare('first@example.com', transaction),
+    );
+    await assert.rejects(
+      limiter.run('second@example.com', (transaction) =>
+        prepare('second@example.com', transaction),
+      ),
+      { errorType: 'HostLimitError' },
+    );
+    assert.equal((await actions()).length, 1);
+  });
+
+  it('enforces the trial seat cap without an email allowance', async function () {
+    const [{ count }] = await db.knex('users').count('* as count');
+    config.set('hostSettings:limits', { limitTrialStaff: { max: Number(count) + 1 } });
+    initLimits();
+    await limiter.run('first@example.com', (transaction) =>
+      prepare('first@example.com', transaction),
+    );
+    await assert.rejects(
+      limiter.run('second@example.com', (transaction) =>
+        prepare('second@example.com', transaction),
+      ),
+      { errorType: 'HostLimitError' },
+    );
+    await limiter.run('first@example.com', (transaction) =>
+      prepare('first@example.com', transaction),
+    );
+    assert.equal((await db.knex('invites')).length, 1);
+  });
 
   it('initializes the internal lock setting and restores it on an existing site', async function () {
     const initial = await db.knex('settings').where({ key: 'staff_invitation_lock' }).first();
@@ -127,7 +168,9 @@ describe('Trial invitation admission', function () {
   });
 
   it('admits only fifteen concurrent email preparations even without the HTTP guard', async function () {
-    limits!.maxStaff = 50;
+    limits!.limitTrialStaff.max = 50;
+    config.set('hostSettings:limits', limits);
+    initLimits();
     const results = await Promise.allSettled(
       Array.from({ length: 25 }, (_, i) => {
         const email = `person-${i}@example.com`;
@@ -153,7 +196,6 @@ describe('Trial invitation admission', function () {
     await dbUtils.truncate('brute');
     const restarted = new InvitationLimiter({
       ...dependencies,
-      getLimits: () => ({ ...limits! }),
     });
     await assert.rejects(
       restarted.run('new@example.com', async () => assert.fail()),
@@ -164,7 +206,9 @@ describe('Trial invitation admission', function () {
 
   it('reserves the last seat atomically, including pending Contributor invitations', async function () {
     const users = await db.knex('users').count('id', { as: 'count' }).first();
-    limits!.maxStaff = Number(users.count) + 1;
+    limits!.limitTrialStaff.max = Number(users.count) + 1;
+    config.set('hostSettings:limits', limits);
+    initLimits();
     const results = await Promise.allSettled(
       Array.from({ length: 5 }, (_, i) =>
         limiter.run(`person-${i}@example.com`, (transaction) =>
@@ -252,12 +296,17 @@ describe('Trial invitation admission', function () {
     await limiter.run('person@example.com', (transaction) =>
       prepare('person@example.com', transaction),
     );
-    limits = undefined;
+    config.set('hostSettings:limits', undefined);
+    initLimits();
     await limiter.run('paid@example.com', async (transaction) =>
       assert.equal(transaction, undefined),
     );
     assert.equal((await actions()).length, 1);
-    limits = { maxStaff: 10, maxInvites: 1 };
+    config.set('hostSettings:limits', {
+      ...limits,
+      limitTrialStaffInvites: { ...limits!.limitTrialStaffInvites, max: 1 },
+    });
+    initLimits();
     await assert.rejects(
       limiter.run('trial-again@example.com', async () => assert.fail()),
       /staff invitation emails/,

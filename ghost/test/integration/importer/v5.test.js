@@ -86,11 +86,20 @@ describe('Importing 5.x export', function () {
   });
   it('imports a trial publication with more than ten authors, preserving posts and attribution', async function () {
     const config = require('../../../core/shared/config');
-    const originalPolicy = config.get('hostSettings:staffInvites');
-    config.set('hostSettings:staffInvites', {
-      maxStaff: 10,
-      maxInvites: 15,
+    const limitsService = require('../../../core/server/services/limits');
+    const originalPolicy = config.get('hostSettings:limits');
+    config.set('hostSettings:limits', {
+      limitTrialStaff: {
+        max: 10,
+        error:
+          'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+      },
+      limitTrialStaffInvites: {
+        max: 15,
+        error: 'Your trial allows {{max}} staff invitation emails in total, including resends.',
+      },
     });
+    limitsService.init();
     try {
       const exportData = exportedBodyV5().db[0];
       const role = testUtils.DataGenerator.forKnex.createRole({ name: 'Contributor' });
@@ -128,7 +137,8 @@ describe('Importing 5.x export', function () {
         assert.equal(post.related('authors').at(0).get('email'), `import-author-${i}@example.com`);
       }
     } finally {
-      config.set('hostSettings:staffInvites', originalPolicy);
+      config.set('hostSettings:limits', originalPolicy);
+      limitsService.init();
     }
   });
 });

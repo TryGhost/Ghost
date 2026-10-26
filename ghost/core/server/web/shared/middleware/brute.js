@@ -8,7 +8,7 @@ const config = require('../../../../shared/config');
  */
 module.exports = {
   staffInviteLimiter(req, res, next) {
-    if (!config.get('hostSettings:staffInvites')) {
+    if (!config.get('hostSettings:limits:limitTrialStaffInvites')) {
       return next();
     }
     return spamPrevention.staffInviteBlock().getMiddleware({
