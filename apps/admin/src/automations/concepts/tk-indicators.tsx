@@ -35,10 +35,12 @@ const findTkRanges = (block: Element): Range[] => {
   return ranges;
 };
 
-const TkIndicators: React.FC<{ container: HTMLElement | null; marginRight?: number }> = ({
-  container,
-  marginRight = MARGIN_RIGHT,
-}) => {
+// offsetFromText places each TK's left edge that far past the end of the text instead.
+const TkIndicators: React.FC<{
+  container: HTMLElement | null;
+  marginRight?: number;
+  offsetFromText?: number;
+}> = ({ container, marginRight = MARGIN_RIGHT, offsetFromText }) => {
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [highlight, setHighlight] = useState<Rect[]>([]);
   const rangesRef = useRef<Range[][]>([]);
@@ -132,7 +134,11 @@ const TkIndicators: React.FC<{ container: HTMLElement | null; marginRight?: numb
           aria-label="Select TK reminder"
           className="absolute cursor-pointer p-1 text-sm font-medium text-gray-600"
           data-testid="tk-indicator"
-          style={{ top: indicator.top, right: marginRight }}
+          style={
+            offsetFromText === undefined
+              ? { top: indicator.top, right: marginRight }
+              : { top: indicator.top, left: `calc(100% + ${offsetFromText}px)` }
+          }
           type="button"
           onClick={() => selectNext(index)}
           onMouseDown={(event) => event.preventDefault()}

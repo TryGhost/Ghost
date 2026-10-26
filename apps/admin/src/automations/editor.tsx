@@ -229,7 +229,7 @@ const AutomationEditorContent: React.FC<{
   // toast — no Undo, a pattern Ghost doesn't use elsewhere. Each swap restarts an open email
   // editor from the automation's content, as Koenig keeps its own copy once mounted.
   const [emailEditorResetKey, setEmailEditorResetKey] = React.useState(0);
-  const isEUndoWording = isCanvasCardV2(concept) && !isConceptF(concept);
+  const isConceptE = isCanvasCardV2(concept) && !isConceptF(concept);
   const discardChanges = () => {
     if (!draft || !savedAutomation) {
       return;
@@ -238,7 +238,7 @@ const AutomationEditorContent: React.FC<{
     setPendingDeleteIds(new Set());
     setEmailEditorResetKey((key) => key + 1);
     // E is trying "undo" wording for discards; the other concepts keep "discard".
-    toast(isEUndoWording ? 'Changes undone' : 'Changes discarded');
+    toast('Changes discarded');
   };
   // With no Undo, Discard all asks first, in the same dialog as the email editor's discard.
   const [isConfirmDiscardAllOpen, setIsConfirmDiscardAllOpen] = React.useState(false);
@@ -296,12 +296,12 @@ const AutomationEditorContent: React.FC<{
       return;
     }
     setStepData(stepId, savedAutomation);
-    // E's menu says "Undo changes", so its toast matches Undo all; F keeps its Revert words.
+    // E's menu says "Discard changes", so its toast matches Discard all; F keeps its Revert words.
     const revertedMessage = isConceptF(concept)
       ? isEmail
         ? 'Email reverted'
         : 'Wait reverted'
-      : 'Changes undone';
+      : 'Changes discarded';
     toast(revertedMessage);
   };
 
@@ -679,11 +679,12 @@ const AutomationEditorContent: React.FC<{
               onDiscard: requestDiscardChanges,
             }
           : {})}
+        discardInOverflow={isConceptE}
         neutralDiscard={isCanvasCardV2(concept) && !isConceptF(concept)}
+        plainStatus={isConceptE}
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
         saveSplit={isCanvasCardV2(concept) && !isConceptF(concept)}
-        showsUnsavedMarker={isEUndoWording && hasUnsavedChanges && !selectedRunId}
         validationFeedback={selectedRunId ? null : validationFeedback}
         onDismissValidationFeedback={() => setValidationFeedback(null)}
         onNameChange={
@@ -787,9 +788,7 @@ const AutomationEditorContent: React.FC<{
       <AlertDialog open={isConfirmDiscardAllOpen} onOpenChange={setIsConfirmDiscardAllOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isEUndoWording ? 'Undo all changes?' : 'Discard changes?'}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
             <AlertDialogDescription>
               {draft?.status === 'active'
                 ? 'Your changes to this automation haven’t been published.'
@@ -805,7 +804,7 @@ const AutomationEditorContent: React.FC<{
                 discardChanges();
               }}
             >
-              {isEUndoWording ? 'Undo all' : 'Discard'}
+              Discard
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

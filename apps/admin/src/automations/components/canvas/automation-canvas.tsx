@@ -104,7 +104,7 @@ const buildNodeContextMenuItems = ({
   onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
   onPreviewEmail?: (previewEmailStepId: string) => void;
   // NY-1715 concept E: the card itself opens and previews the email, so the menu skips those
-  // (and the rule above Delete), and gains "Undo changes" while the step has some.
+  // (and the rule above Delete), and gains "Discard changes" while the step has some.
   compact?: boolean;
   onUndoChanges?: () => void;
   stepId: string;
@@ -128,8 +128,8 @@ const buildNodeContextMenuItems = ({
   }
 
   if (onUndoChanges) {
-    // The header's "Undo all changes", for one step.
-    items.push({ icon: LucideIcon.Undo2, label: 'Undo changes', onSelect: onUndoChanges });
+    // The header's "Discard all changes", for one step.
+    items.push({ icon: LucideIcon.Undo2, label: 'Discard changes', onSelect: onUndoChanges });
   }
 
   if (canDelete && onDelete) {
@@ -216,7 +216,7 @@ type BuildGraphParams = {
   onRevertStep?: (stepId: string) => void;
   // NY-1715 concept F: saved steps deleted since the last save, shown until it.
   pendingDeleteIds?: ReadonlySet<string>;
-  // NY-1715 concept E: steps offer "Undo changes" in their ⋯ menu.
+  // NY-1715 concept E: steps offer "Discard changes" in their ⋯ menu.
   offersRevertInMenu?: boolean;
 };
 
@@ -295,6 +295,8 @@ const buildGraph = ({
   // E: the marker's revert, for a changed step the last save has (a new one has nothing to
   // go back to; its menu deletes it).
   const revertLabel = automation.status === 'active' ? 'Revert to published' : 'Revert to saved';
+  // E: what the yellow dot means, on hovering it.
+  const unsavedHint = automation.status === 'active' ? 'Unpublished changes' : 'Unsaved changes';
   ordered.forEach((action) => {
     const editableEmail = action.type === 'send_email';
     const editableWait = action.type === 'wait';
@@ -329,6 +331,7 @@ const buildGraph = ({
                 onEditContent: () => onEditEmailBody(action.id),
                 deleted,
                 changeKind,
+                unsavedHint,
                 ...revert,
               },
             }
@@ -342,6 +345,7 @@ const buildGraph = ({
                 onUpdate: (hours: number) => onUpdateWait(action.id, hours),
                 deleted,
                 changeKind,
+                unsavedHint,
                 ...revert,
               },
             }
@@ -1086,6 +1090,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           }
           resetKey={emailEditorResetKey}
           revertLabel={automation.status === 'active' ? 'Revert to published' : 'Revert to saved'}
+          unsavedHint={automation.status === 'active' ? 'Unpublished changes' : 'Unsaved changes'}
           onClose={closeEmailModal}
           onCloseStart={handleEmailEditorCloseStart}
           onDirtyChange={onEmailDirtyChange}

@@ -20,7 +20,6 @@ import { useScreenEntrance } from '@/layout/screen-transition';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import ChangesIndicator from '@/automations/concepts/changes-indicator';
-import { EditedLabel } from '@/automations/concepts/modified-dot';
 import { isCanvasCardV2, useConcept } from '@/automations/concepts/concept';
 import type { PendingChangesKind } from '@/automations/concepts/pending-changes';
 
@@ -63,10 +62,20 @@ interface AutomationHeaderProps {
   // NY-1715 concept E: Discard all changes is a plain item with the undo arrow, as it can be
   // undone; F keeps the red trash can.
   neutralDiscard?: boolean;
-  // NY-1715 concept E: the cards' Unsaved changes marker, for the whole automation, beside
-  // the buttons that settle it.
-  showsUnsavedMarker?: boolean;
+  // NY-1715 concept E: the status beside the name as plain muted text, like the post editor's
+  // status line, rather than a pill badge.
+  plainStatus?: boolean;
+  // NY-1715 concept E: on an automation that's off, "Discard all changes" lives in a ⋯ menu to
+  // the left of the buttons, shown while there are changes to undo; a live one keeps it in the
+  // Publish changes split button.
+  discardInOverflow?: boolean;
 }
+
+const plainStatusLabels: Record<AutomationDetail['status'], string> = {
+  active: 'Live',
+  inactive: 'Off',
+  archived: 'Archived',
+};
 
 // NY-1715 concepts E and F: `button` with a chevron beside it, joined, whose menu discards the
 // changes it would keep.
@@ -102,8 +111,7 @@ const DiscardSplitButton: React.FC<{
           ) : (
             <LucideIcon.Trash2 className="size-4" />
           )}
-          {/* E is trying "Undo all changes"; F keeps "Discard all changes". */}
-          {neutral ? 'Undo all changes' : 'Discard all changes'}
+          Discard all changes
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -131,7 +139,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onDiscard,
   saveSplit = false,
   neutralDiscard = false,
-  showsUnsavedMarker = false,
+  plainStatus = false,
+  discardInOverflow = false,
 }) => {
   const { isAdmin7 } = useShade();
   // NY-1715 concept E: shorter publish validation copy.
@@ -206,7 +215,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         const saveButton = withValidationFeedback(
           'save',
           <Button
-            className={cn(onDiscard && 'rounded-r-none')}
+            className={cn(onDiscard && !discardInOverflow && 'rounded-r-none')}
             disabled={!isSaveButtonEnabled}
             variant={variant}
             onClick={onSave}
@@ -214,22 +223,23 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
             {saveButtonChildren}
           </Button>,
         );
-        statusAction = onDiscard ? (
-          <DiscardSplitButton
-            button={saveButton}
-            // One line between the halves: Save's own edge. The chevron drops its left edge,
-            // both the border (Admin) and the outline shadow (Admin 7, a ring drawn outside the
-            // button, clipped away on the left only so its drop shadow stays).
-            chevronClassName="border-l-0 [clip-path:inset(-8px_-8px_-8px_0)]"
-            disabled={!isSaveButtonEnabled}
-            label="More save options"
-            neutral={neutralDiscard}
-            variant={variant}
-            onDiscard={onDiscard}
-          />
-        ) : (
-          saveButton
-        );
+        statusAction =
+          onDiscard && !discardInOverflow ? (
+            <DiscardSplitButton
+              button={saveButton}
+              // One line between the halves: Save's own edge. The chevron drops its left edge,
+              // both the border (Admin) and the outline shadow (Admin 7, a ring drawn outside the
+              // button, clipped away on the left only so its drop shadow stays).
+              chevronClassName="border-l-0 [clip-path:inset(-8px_-8px_-8px_0)]"
+              disabled={!isSaveButtonEnabled}
+              label="More save options"
+              neutral={neutralDiscard}
+              variant={variant}
+              onDiscard={onDiscard}
+            />
+          ) : (
+            saveButton
+          );
         break;
       }
       statusAction = withValidationFeedback(
@@ -271,13 +281,39 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
             ) : (
               <span className="truncate text-control font-medium">{name}</span>
             )}
-            {status && <AutomationStatusBadge status={status} />}
+            {status &&
+              (plainStatus ? (
+                <Text
+                  as="span"
+                  className="shrink-0 text-[length:var(--text-control)]"
+                  tone="secondary"
+                  weight="medium"
+                >
+                  {plainStatusLabels[status]}
+                </Text>
+              ) : (
+                <AutomationStatusBadge status={status} />
+              ))}
           </>
         )}
       </Inline>
       <Inline className="shrink-0" gap="sm">
         {pendingChanges && <ChangesIndicator className="mr-1" kind={pendingChanges} />}
-        {showsUnsavedMarker && <EditedLabel className="mr-1" showText />}
+        {discardInOverflow && onDiscard && status !== 'active' && (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button aria-label="More actions" size="icon" type="button" variant="ghost">
+                <LucideIcon.Ellipsis />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onDiscard}>
+                <LucideIcon.Undo2 className="size-4" />
+                Discard all changes
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         {statusAction}
         {!(publishOnly && status === 'active') &&
           (onDiscard && status === 'active' ? (

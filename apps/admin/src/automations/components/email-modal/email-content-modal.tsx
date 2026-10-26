@@ -186,6 +186,8 @@ export interface EmailContentModalProps {
   onRevert?: () => void;
   // NY-1715 concept E: what the next save does to this email, named on the marker.
   emailChangeKind?: StepChangeKind;
+  // NY-1715 concept E: what the yellow dot means, on hovering it.
+  unsavedHint?: string;
   revertLabel?: string;
 }
 
@@ -227,6 +229,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   onRevert,
   revertLabel,
   emailChangeKind,
+  unsavedHint,
 }) => {
   // Concept A applies edits straight to the automation, like edits made on the
   // canvas, so the modal has no save step of its own. Read once so switching
@@ -241,9 +244,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   // E (Canvas card v2): the feedback round — subject at the top of the body, a slim header,
   // and an "Unsaved" marker on edited cards. Clicking the canvas minimizes it, as in C.
   const [isCanvasCardV2Editor] = useState(isCanvasCardV2(conceptAtOpen));
-  // E (not F): 40px padding all round instead of 96px at the sides, with Koenig's + button
-  // (66px left of the text) left where it is and hanging out past the panel's left edge
-  // rather than being cropped.
+  // E (not F): 32px padding all round instead of 96px at the sides, with Koenig's + button and
+  // the TK reminders sitting out past the panel's edges, 24px clear of them, rather than
+  // being cropped.
   const [overhangsPlus] = useState(isCanvasCardV2(conceptAtOpen) && !isConceptF(conceptAtOpen));
   // E: opened from a card's TK marker, so the first TK is selected, as Koenig's own TK
   // indicator does — in the subject if it has one, otherwise in the body.
@@ -533,8 +536,30 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
 
   // E: the email card's Subject field, kept in the editor's fixed header on the Content tab so
   // it stays in view however far the body scrolls. Same value as the card's and Preview's.
+  // E: a TK in the subject gets the post editor's title badge beside the field — out past the
+  // panel's right edge with the body's TK reminders — and clicking it selects the TK.
+  const subjectTkNow = isCanvasCardV2Editor ? findSubjectTk(formState.subject) : null;
   const subjectField = (
-    <div>
+    <div className="relative">
+      {subjectTkNow && (
+        <button
+          className="absolute top-1/2 -translate-y-1/2 rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
+          style={{ left: `calc(100% + ${overhangsPlus ? 56 : 24}px)` }}
+          type="button"
+          onClick={(event) => {
+            const input = event.currentTarget.parentElement?.querySelector<HTMLInputElement>(
+              '[data-testid="email-editor-subject"]',
+            );
+            const tk = input && findSubjectTk(input.value);
+            if (input && tk) {
+              input.focus();
+              input.setSelectionRange(tk.start, tk.end);
+            }
+          }}
+        >
+          TK
+        </button>
+      )}
       <InputGroup>
         <InputGroupAddon>
           <InputGroupText>Subject</InputGroupText>
@@ -551,6 +576,27 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               lexical: formStateRef.current.lexical,
             });
             clearError('subject');
+          }}
+          onKeyDown={(event) => {
+            // Tab carries on into the email body, as from a post's title to its content; the
+            // header's buttons come before the subject, as they sit above it. Shift+Tab is left
+            // to go back up to them.
+            if (event.key !== 'Tab' || event.shiftKey) {
+              return;
+            }
+            const editable = editorColumn?.querySelector<HTMLElement>('[contenteditable="true"]');
+            if (!editable) {
+              return;
+            }
+            event.preventDefault();
+            editable.focus();
+            // Caret at the start of the body.
+            const range = document.createRange();
+            range.selectNodeContents(editable);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection?.removeAllRanges();
+            selection?.addRange(range);
           }}
         />
       </InputGroup>
@@ -664,9 +710,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           <EmailPreviewModalContent
             ref={expandFromCard.panelRef}
             bodyClassName={cn(
-              // E: the scrolling body reaches 72px out past the panel's left edge (padded back
-              // in, so nothing inside moves), far enough to hold the + without clipping it.
-              overhangsPlus && '-ml-[72px] pl-[72px]',
+              // E: the scrolling body reaches 72px out past both of the panel's sides (padded back
+              // in, so nothing inside moves), far enough to hold the + and TK without clipping
+              // them. Its scrollbar is hidden, as it would otherwise sit out on the canvas.
+              overhangsPlus &&
+                '-mx-[72px] [scrollbar-width:none] px-[72px] [&::-webkit-scrollbar]:hidden',
             )}
             centeredHeaderContent={
               isCanvasCardV2Editor ? undefined : (
@@ -710,9 +758,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               // E hugs its writing column: 600px of content plus 96px each side, which holds
               // Koenig's + button (28px, 66px left of the text) with 30px to spare.
               isCanvasCardV2Editor && 'max-w-[792px]',
-              // E: 600px plus 40px each side, and nothing clipped at its edges, so the + can
-              // hang out past the left one.
-              overhangsPlus && 'max-w-[680px] overflow-visible',
+              // E: 600px plus 32px each side, and nothing clipped at its edges, so the + and TK
+              // can sit out past them. min-h-0 keeps it to the dialog's height: without its
+              // clipping, the grid would otherwise grow it to fit the whole email, and the body
+              // would never need to scroll.
+              overhangsPlus && 'min-h-0 max-w-[664px] overflow-visible',
             )}
             headerActions={
               appliesEditsLive ? (
@@ -794,8 +844,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               // E: 96px at the sides, so the header sits on the body's 600px column; 40px above
               // and below, and no rule under it, so it reads as part of the card.
               isCanvasCardV2Editor && 'border-b-0 px-24 py-10',
-              // E: 40px all round, as the body; rounded, now the panel no longer clips its corners.
-              overhangsPlus && 'rounded-t-xl p-10',
+              // E: 32px all round, as the body; rounded, now the panel no longer clips its corners.
+              overhangsPlus && 'rounded-t-xl p-8',
             )}
             isEditMode={mode === 'edit'}
             title={
@@ -812,9 +862,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                   <span className="truncate">Edit email</span>
                   {overhangsPlus &&
                     isEmailModified && (
-                      // E: the cards' Unsaved changes dot, after the title as on the card (8px out:
-                      // the row's 12px gap, less 4px).
-                      <EditedLabel className="-ml-1 h-auto shrink-0" />
+                      // E: the cards' yellow dot after the title, as on the card (8px out: the row's
+                      // 12px gap less the dot's own 4px hover padding).
+                      <EditedLabel className="-ml-2 h-auto shrink-0" hint={unsavedHint} />
                     )}
                 </span>
               ) : appliesEditsLive ? (
@@ -843,7 +893,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 isCanvasCardV2Editor && mode === 'edit' && 'px-24 pt-0',
                 // E, preview: 48px on top rather than 24px, so the email sits further under the header.
                 isCanvasCardV2Editor && mode === 'preview' && 'pt-12',
-                overhangsPlus && mode === 'edit' && 'px-10 pb-10',
+                overhangsPlus && mode === 'edit' && 'px-8 pb-8',
               )}
             >
               {mode === 'preview' && (
@@ -948,6 +998,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     isCanvasCardV2Editor && 'relative isolate py-0',
                     // E: the + hangs out over the canvas, so it gets the panel's own fill behind it.
                     overhangsPlus && '[&_[data-kg-plus-button]>button]:bg-surface-elevated',
+                    // E: and sits 24px out past the panel's left edge (the body's 32px padding, then
+                    // 24px more) — measured from its own right edge, so it holds at every size,
+                    // including the narrow breakpoint Koenig leaves unsolved.
+                    overhangsPlus &&
+                      '[&_[data-kg-plus-button]]:right-[calc(100%+56px)]! [&_[data-kg-plus-button]]:left-auto!',
                     mode === 'preview' && 'hidden',
                   )}
                   data-testid="email-editor"
@@ -957,16 +1012,20 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 >
                   <EmailEditor
                     key={editorKey}
-                    className="automation-email-editor"
+                    // E: room below the last line, as the post editor leaves, so a new line near
+                    // the bottom (and the + menu that opens from it) can scroll up into view.
+                    // Clicks in it still land in the editor, at the end.
+                    className={cn('automation-email-editor', overhangsPlus && 'pb-[30vh]')}
                     placeholder="Begin writing your email..."
                     value={formState.lexical}
                     onChange={handleEditorChange}
                   />
                   {isCanvasCardV2Editor && (
-                    // E's 40px leaves no room for Koenig's 56px, so its TK comes in to 36px.
+                    // E: TK sits 24px out past the panel's right edge (the body's 32px padding, then
+                    // 24px more), mirroring the + on the left.
                     <TkIndicators
                       container={editorColumn}
-                      marginRight={overhangsPlus ? -36 : -56}
+                      offsetFromText={overhangsPlus ? 56 : undefined}
                     />
                   )}
                 </div>
@@ -992,7 +1051,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 revertLabel={revertLabel}
                 style={{
                   top: panelGap + 40,
-                  left: `calc(50% + ${overhangsPlus ? 340 : 396}px + 24px)`,
+                  left: `calc(50% + ${overhangsPlus ? 332 : 396}px + 24px)`,
                 }}
                 showText
                 // F only: E's marker is information, with no Revert.

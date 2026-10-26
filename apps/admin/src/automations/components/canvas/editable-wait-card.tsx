@@ -25,6 +25,8 @@ export type EditableWaitData = {
   // NY-1715 concept E: what the next save does to this wait, named beside it.
   changeKind?: StepChangeKind;
   revertLabel?: string;
+  // NY-1715 concept E: what the yellow dot means, on hovering it.
+  unsavedHint?: string;
 };
 
 export const EditableWaitCard: React.FC<
@@ -82,12 +84,14 @@ export const EditableWaitCard: React.FC<
         <AutomationCardHeader
           actions={
             shrinksDeleted ? (
-              wait.onRevert && (
-                <AutomationCardMenu
-                  label="Wait actions"
-                  menuItems={restoreMenuItems(wait.onRevert)}
-                />
-              )
+              <Inline gap="xs">
+                {wait.onRevert && (
+                  <AutomationCardMenu
+                    label="Wait actions"
+                    menuItems={restoreMenuItems(wait.onRevert)}
+                  />
+                )}
+              </Inline>
             ) : (
               <Inline gap="xs">
                 <AutomationCardWarning message={warning} />
@@ -99,9 +103,14 @@ export const EditableWaitCard: React.FC<
           iconClassName={cn('p-2.5', shrinksDeleted ? 'text-muted-foreground' : 'text-foreground')}
           title={shrinksDeleted ? 'Wait deleted' : 'Wait'}
           titleAddon={
-            // E: the Unsaved changes dot follows the title, in line with it.
+            // E: the yellow dot follows the title; hovering it says what it means.
             modified &&
-            showsDotInTitle && <ModifiedDot className="ml-2 inline-flex h-auto align-middle" />
+            showsDotInTitle && (
+              <ModifiedDot
+                className="ml-1 inline-flex h-auto align-middle"
+                hint={wait.unsavedHint}
+              />
+            )
           }
           titleClassName={
             // E: a deleted step's icon and title go muted, as it's on its way out.

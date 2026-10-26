@@ -46,6 +46,8 @@ export type EditableEmailData = {
   // NY-1715 concept E: what the next save does to this email, named beside it.
   changeKind?: StepChangeKind;
   revertLabel?: string;
+  // NY-1715 concept E: what the yellow dot means, on hovering it.
+  unsavedHint?: string;
 };
 
 // EMAIL_CARD_EASE's duration plus a frame or two.
@@ -161,38 +163,11 @@ export const EditableEmailCard: React.FC<
     () => combinesSubject && emailHasTk(email.subject, email.lexical),
     [combinesSubject, email.subject, email.lexical],
   );
-  // E: where the message preview's top sits in the card, so TK can sit level with it.
-  // Offsets rather than screen positions, which the canvas zoom would scale.
-  const cardRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLButtonElement>(null);
-  const [previewTop, setPreviewTop] = useState<number>();
-  useLayoutEffect(() => {
-    const card = cardRef.current;
-    const preview = previewRef.current;
-    if (!hasTk || !card || !preview) {
-      return;
-    }
-    const measure = () => {
-      let top = 0;
-      let element: HTMLElement | null = preview;
-      while (element && element !== card) {
-        top += element.offsetTop;
-        element = element.offsetParent instanceof HTMLElement ? element.offsetParent : null;
-      }
-      setPreviewTop(top);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(preview);
-    return () => observer.disconnect();
-    // Re-measured when a shrunk deleted card (E) grows its preview back.
-  }, [hasTk, shrinksDeleted]);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
   return (
     <AutomationCard
-      ref={cardRef}
       aria-label={`${email.subject ? `Send email: ${email.subject}` : 'Send email'}${deleted ? ', deleted' : modified ? ', modified' : ''}`}
       className={cn(
         'group/card nodrag nopan relative w-[400px] text-left',
@@ -221,32 +196,30 @@ export const EditableEmailCard: React.FC<
             onRevert={email.onRevert}
           />
         )}
-      {hasTk &&
-        !deleted &&
-        previewTop !== undefined && (
-          // E: level with the top of the message preview beside it; TK's own 4px padding puts the
-          // letters just below that edge, as Koenig's sit 4px below their paragraph.
-          <span className="absolute left-full ml-6 flex items-center" style={{ top: previewTop }}>
-            <TkMarker
-              onClick={() => {
-                requestTkFocus();
-                email.onEditContent();
-              }}
-            />
-          </span>
-        )}
       <div ref={inertWhen(fadesDeleted)} className={cn(fadesDeleted && 'opacity-50')}>
         <AutomationCardHeader
           actions={
             shrinksDeleted ? (
-              email.onRevert && (
-                <AutomationCardMenu
-                  label="Email actions"
-                  menuItems={restoreMenuItems(email.onRevert)}
-                />
-              )
+              <Inline gap="xs">
+                {email.onRevert && (
+                  <AutomationCardMenu
+                    label="Email actions"
+                    menuItems={restoreMenuItems(email.onRevert)}
+                  />
+                )}
+              </Inline>
             ) : (
               <Inline gap="xs">
+                {hasTk &&
+                  !deleted && (
+                    // E: first in the header's actions; opens the email at its first TK.
+                    <TkMarker
+                      onClick={() => {
+                        requestTkFocus();
+                        email.onEditContent();
+                      }}
+                    />
+                  )}
                 <AutomationCardWarning message={warning} />
                 {analytics && (
                   // Pressed matches a ghost button with its menu open, like the ⋯ beside it.
@@ -270,9 +243,14 @@ export const EditableEmailCard: React.FC<
           iconClassName={cn('p-2.5', shrinksDeleted ? 'text-muted-foreground' : 'text-foreground')}
           title={shrinksDeleted ? 'Email deleted' : 'Send email'}
           titleAddon={
-            // E: the Unsaved changes dot follows the title, in line with it.
+            // E: the yellow dot follows the title; hovering it says what it means.
             modified &&
-            showsDotInTitle && <ModifiedDot className="ml-2 inline-flex h-auto align-middle" />
+            showsDotInTitle && (
+              <ModifiedDot
+                className="ml-1 inline-flex h-auto align-middle"
+                hint={email.unsavedHint}
+              />
+            )
           }
           titleClassName={
             // E: a deleted step's icon and title go muted, as it's on its way out.
@@ -304,7 +282,6 @@ export const EditableEmailCard: React.FC<
                 )}
                 <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
                   <button
-                    ref={previewRef}
                     aria-describedby={previewError ? previewErrorId : undefined}
                     aria-label="Edit email content"
                     className={cn(

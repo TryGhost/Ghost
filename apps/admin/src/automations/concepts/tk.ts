@@ -1,7 +1,8 @@
 // NY-1715 exploration only — never merge. NY-1736 owns real TK support in the email editor.
 
-// Ghost's rule for titles (and so subjects): TK as its own word.
-const SUBJECT_TK_REGEX = /(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u;
+// Subjects: TK as its own word, in any casing. Ghost's post titles only catch an uppercase TK,
+// which engineering flagged as a bug; automations don't copy it.
+const SUBJECT_TK_REGEX = /(^|.)([^\p{L}\p{N}\s]*(tk)+[^\p{L}\p{N}\s]*)(.)?/iu;
 // Koenig's TKPlugin pattern for the body: TK, Tk or tk as its own word.
 const BODY_TK_REGEX = /(^|.)([^\p{L}\p{N}\s]*(TK|Tk|tk)+[^\p{L}\p{N}\s]*)(.)?/u;
 const WORD_CHAR_REGEX = /\p{L}|\p{N}/u;

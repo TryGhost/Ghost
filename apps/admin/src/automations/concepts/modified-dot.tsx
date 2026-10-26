@@ -5,6 +5,10 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -17,9 +21,10 @@ import type { StepChangeKind } from './pending-changes';
 const ModifiedDot: React.FC<{
   className?: string;
   changeKind?: StepChangeKind;
+  hint?: string;
   onRevert?: () => void;
   revertLabel?: string;
-}> = ({ className, changeKind, onRevert, revertLabel }) => {
+}> = ({ className, changeKind, hint, onRevert, revertLabel }) => {
   const concept = useConcept();
   if (isCanvasCardV2(concept)) {
     return (
@@ -27,6 +32,7 @@ const ModifiedDot: React.FC<{
         // F names the change (Added, Updated, Deleted); E keeps the plain Unsaved changes dot.
         changeKind={isConceptF(concept) ? changeKind : undefined}
         className={className}
+        hint={hint}
         revertLabel={revertLabel}
         // F only: E's marker is information, with no Revert.
         onRevert={isConceptF(concept) ? onRevert : undefined}
@@ -79,9 +85,26 @@ const changeKindIcons: Record<StepChangeKind, { icon: React.ElementType; classNa
   deleted: { icon: LucideIcon.CircleMinus, className: 'text-destructive' },
 };
 
+// A tooltip on the dot when there's a hint; otherwise the dot as it is.
+const DotHint: React.FC<{ hint?: string; children: React.ReactElement }> = ({ hint, children }) =>
+  hint ? (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex p-1">{children}</span>
+        </TooltipTrigger>
+        <TooltipContent>{hint}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ) : (
+    children
+  );
+
 export const EditedLabel: React.FC<{
   changeKind?: StepChangeKind;
   className?: string;
+  // E: what the dot means, shown on hovering it ("Unpublished changes").
+  hint?: string;
   onRevert?: () => void;
   revertLabel?: string;
   showText?: boolean;
@@ -89,6 +112,7 @@ export const EditedLabel: React.FC<{
 }> = ({
   changeKind,
   className,
+  hint,
   onRevert,
   revertLabel = 'Revert to saved',
   showText = false,
@@ -114,8 +138,10 @@ export const EditedLabel: React.FC<{
             strokeWidth: 2,
           })
         ) : (
-          // E: Shade's yellow (warning) dot, pulsing.
-          <Indicator size="sm" state="active" variant="warning" />
+          // E: Shade's yellow (warning) dot, pulsing, with its meaning on hover.
+          <DotHint hint={hint}>
+            <Indicator size="sm" state="active" variant="warning" />
+          </DotHint>
         )}
         {/* The mark always shows. F's word joins it on hover or focus; E's cards show the dot
             alone, as the header's "Unsaved changes" explains it. */}
@@ -148,13 +174,13 @@ export const EditedLabel: React.FC<{
 };
 
 // NY-1715 concept E: the email still has a TK reminder. Styled like Koenig's TK indicator
-// beside a line in the editor (12px medium, grey-600, 4px padding); clicking it opens the
-// email, as clicking the editor's jumps to the reminder. Its padding sits outside the lane's
-// 24px gap, so the letters start where the dot would.
+// beside a line in the editor (12px medium, grey-600); clicking it opens the email, as
+// clicking the editor's jumps to the reminder. As tall as the header's icon buttons, so it
+// lines up with them.
 export const TkMarker: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     aria-label="Open email with TK reminders"
-    className="-mx-1 cursor-pointer p-1 text-sm font-medium text-gray-600"
+    className="flex h-9 cursor-pointer items-center px-1.5 text-sm font-medium text-gray-600"
     type="button"
     onClick={onClick}
   >
