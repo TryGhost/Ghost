@@ -405,15 +405,16 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select(
-      'posts.id',
-      'posts.status',
-    );
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
     const deleteIds = postRows.map((row) => row.id);
-    const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
 
-    // The posts' relations are deleted before the posts, so lock them first
-    await this.models.Post.lockForUpdate(deleteIds, { transacting: options.transacting });
+    // The posts' relations are deleted before the posts, so lock them first.
+    // Statuses come from the locked rows, as a post can be published before the lock
+    const lockedRows = await this.models.Post.lockForUpdate(deleteIds, {
+      transacting: options.transacting,
+      columns: ['id', 'status'],
+    });
+    const allDraft = lockedRows.length > 0 && lockedRows.every((row) => row.status === 'draft');
 
     const postTablesToDelete = [
       'posts_authors',
@@ -487,6 +488,11 @@ class PostsService {
       delete data.tiers;
     }
 
+    // Before the update, which locks the posts in chunks of request order
+    if (tiers) {
+      await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
+    }
+
     const result = await this.models.Post.bulkEdit(editIds, 'posts', {
       ...options,
       data,
@@ -495,8 +501,6 @@ class PostsService {
 
     // Update tiers
     if (tiers) {
-      await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
-
       // First delete all
       await this.models.Post.bulkDestroy(editIds, 'posts_products', {
         column: 'post_id',

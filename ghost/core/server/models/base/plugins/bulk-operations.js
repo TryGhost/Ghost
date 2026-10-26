@@ -101,18 +101,25 @@ module.exports = function (Bookshelf) {
        * @param {string[]} ids
        * @param {object} options
        * @param {import('knex').Knex.Transaction} options.transacting
+       * @param {string[]} [options.columns] - Columns to return from the locked rows
+       * @returns {Promise<object[]>} The locked rows that still exist
        */
-      lockForUpdate: async function lockForUpdate(ids, { transacting }) {
+      lockForUpdate: async function lockForUpdate(ids, { transacting, columns = ['id'] }) {
         const sortedIds = _.uniq(ids).sort();
+        const rows = [];
 
         for (const chunk of _.chunk(sortedIds, CHUNK_SIZE)) {
-          await Bookshelf.knex(this.prototype.tableName)
-            .transacting(transacting)
-            .whereIn('id', chunk)
-            .orderBy('id')
-            .select('id')
-            .forUpdate();
+          rows.push(
+            ...(await Bookshelf.knex(this.prototype.tableName)
+              .transacting(transacting)
+              .whereIn('id', chunk)
+              .orderBy('id')
+              .select(columns)
+              .forUpdate()),
+          );
         }
+
+        return rows;
       },
 
       /**
