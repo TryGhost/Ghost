@@ -14,6 +14,8 @@ import { FeatureFlagsProvider, routes as activityPubRoutes } from '@tryghost/act
 // Stats (aka analytics)
 import { AnalyticsProvider, analyticsRouteChildren } from './analytics/api';
 import MyProfileRedirect from './my-profile-redirect';
+// SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
+import { PatternsSwap } from './shaping/patterns/patterns-swap';
 
 import { BillingRoute, ForceUpgradeGuard } from './billing/api';
 import HomeRedirect from './home-redirect';
@@ -151,7 +153,8 @@ const appRoutes: RouteObject[] = [
     element: (
       <OnboardingRedirect>
         <AnalyticsProvider>
-          <Outlet />
+          {/* SHAPING PROTOTYPE ONLY: was <Outlet />; swaps in the patterns page */}
+          <PatternsSwap />
         </AnalyticsProvider>
       </OnboardingRedirect>
     ),
