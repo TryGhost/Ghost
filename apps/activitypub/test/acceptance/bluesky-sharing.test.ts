@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 import { mockApi } from '@tryghost/admin-x-framework/test/acceptance';
 import { mockInitialApiRequests } from '../utils/initial-api-requests';
 
+const DEFAULT_HANDLE = 'index.site.com.ap.brid.gy';
+
 const account = {
   id: 'index',
   handle: '@index@site.com',
@@ -23,212 +25,288 @@ function getMyAccount(blueskyDetails: object) {
   } as const;
 }
 
-function blueskyResponse(handle: string, domainHandle: object | null) {
+function domainHandle(status: string, automatic: boolean, reason: string | null = null) {
+  return { domain: 'site.com', status, reason, automatic };
+}
+
+function blueskyResponse(handle: string, details: object | null) {
   return {
     enabled: true,
     handleConfirmed: true,
     handle,
-    domainHandle,
+    domainHandle: details,
   };
 }
+
+const BETTER_HANDLE = 'A better handle is available';
 
 test.describe('Bluesky sharing', async () => {
   test.beforeEach(async ({ page }) => {
     await mockInitialApiRequests(page);
   });
 
-  test('My domain is set up as my Bluesky handle when I open Bluesky sharing', async ({ page }) => {
-    const { lastApiRequests } = await mockApi({
-      page,
-      requests: {
-        getMyAccount: getMyAccount({
-          blueskyHandle: 'index.site.com.ap.brid.gy',
-          blueskyDomainHandle: null,
-        }),
-        confirmBlueskyHandle: {
-          method: 'POST',
-          path: '/v2/actions/bluesky/confirm-handle',
-          response: blueskyResponse('index.site.com.ap.brid.gy', {
-            domain: 'site.com',
-            status: 'claiming',
-            reason: null,
+  test.describe('Enabling', async () => {
+    test('I can enable Bluesky sharing without choosing a handle', async ({ page }) => {
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyEnabled: false,
+            blueskyHandleConfirmed: false,
+            blueskyHandle: null,
+            blueskyDomainHandle: null,
           }),
         },
-      },
-      options: { useActivityPub: true },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByRole('button', { name: 'Enable Bluesky sharing' })).toBeVisible();
+      await expect(page.getByText('Your Bluesky handle will be')).toHaveCount(0);
+      await expect(page.getByText("You can't change your Bluesky username")).toHaveCount(0);
     });
 
-    await page.goto('#/preferences/bluesky-sharing');
+    test('Enabling is one step while my domain is set up as my handle', async ({ page }) => {
+      await page.clock.install();
 
-    await expect.poll(() => lastApiRequests.confirmBlueskyHandle).toBeTruthy();
-    await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
-  });
-
-  test('I see that my domain will be my Bluesky handle before enabling', async ({ page }) => {
-    await mockApi({
-      page,
-      requests: {
-        getMyAccount: getMyAccount({
-          blueskyEnabled: false,
-          blueskyHandleConfirmed: false,
-          blueskyHandle: null,
-          blueskyDomainHandle: null,
-        }),
-      },
-      options: { useActivityPub: true },
-    });
-
-    await page.goto('#/preferences/bluesky-sharing');
-
-    await expect(page.getByText('Your Bluesky handle will be @site.com')).toBeVisible();
-    await expect(page.getByText("You can't change your Bluesky username")).toHaveCount(0);
-  });
-
-  test('I see the current Bluesky handle behaviour with an older ActivityPub service', async ({
-    page,
-  }) => {
-    // Older services leave blueskyDomainHandle out of the account
-    await mockApi({
-      page,
-      requests: {
-        getMyAccount: getMyAccount({
-          blueskyEnabled: false,
-          blueskyHandleConfirmed: false,
-          blueskyHandle: null,
-        }),
-      },
-      options: { useActivityPub: true },
-    });
-
-    await page.goto('#/preferences/bluesky-sharing');
-
-    await expect(page.getByText("You can't change your Bluesky username")).toBeVisible();
-    await expect(page.getByText('Your Bluesky handle will be')).toHaveCount(0);
-  });
-
-  test('My Bluesky handle is not checked again with an older ActivityPub service', async ({
-    page,
-  }) => {
-    const { lastApiRequests } = await mockApi({
-      page,
-      requests: {
-        getMyAccount: getMyAccount({ blueskyHandle: 'index.site.com.ap.brid.gy' }),
-        confirmBlueskyHandle: {
-          method: 'POST',
-          path: '/v2/actions/bluesky/confirm-handle',
-          response: { enabled: true, handleConfirmed: true, handle: 'index.site.com.ap.brid.gy' },
+      const { lastApiRequests } = await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: DEFAULT_HANDLE,
+            blueskyDomainHandle: domainHandle('claiming', true),
+          }),
+          confirmBlueskyHandle: {
+            method: 'POST',
+            path: '/v2/actions/bluesky/confirm-handle',
+            response: blueskyResponse(DEFAULT_HANDLE, domainHandle('claiming', true)),
+          },
         },
-      },
-      options: { useActivityPub: true },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText('Enabling Bluesky sharing...')).toBeVisible();
+      await expect(page.getByText(DEFAULT_HANDLE)).toHaveCount(0);
+      await expect.poll(() => lastApiRequests.confirmBlueskyHandle).toBeTruthy();
+
+      // Bluesky can be slow: after about two minutes of checks, sharing shows
+      // as enabled on the handle it has so far
+      await page.clock.runFor(5000 * 30);
+
+      await expect(page.getByText(DEFAULT_HANDLE)).toBeVisible();
+      await expect(page.getByText(BETTER_HANDLE)).toHaveCount(0);
     });
 
-    await page.goto('#/preferences/bluesky-sharing');
-
-    await expect(page.getByText('index.site.com.ap.brid.gy')).toBeVisible();
-    await page.waitForTimeout(1000);
-
-    expect(lastApiRequests.confirmBlueskyHandle).toBeUndefined();
-    await expect(page.getByText('Switching your Bluesky handle')).toHaveCount(0);
-  });
-
-  test('I can check again when Bluesky takes a while to switch my handle', async ({ page }) => {
-    await page.clock.install();
-
-    const claiming = { domain: 'site.com', status: 'claiming', reason: null };
-
-    await mockApi({
-      page,
-      requests: {
-        getMyAccount: getMyAccount({
-          blueskyHandle: 'index.site.com.ap.brid.gy',
-          blueskyDomainHandle: claiming,
-        }),
-        confirmBlueskyHandle: {
-          method: 'POST',
-          path: '/v2/actions/bluesky/confirm-handle',
-          response: blueskyResponse('index.site.com.ap.brid.gy', claiming),
-        },
-      },
-      options: { useActivityPub: true },
-    });
-
-    await page.goto('#/preferences/bluesky-sharing');
-    await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
-
-    // The screen checks every 5 seconds for about two minutes
-    await page.clock.runFor(5000 * 30);
-
-    await expect(
-      page.getByText("Bluesky hasn't switched your handle to @site.com yet."),
-    ).toBeVisible();
-
-    await page.getByRole('button', { name: 'Check again' }).click();
-
-    await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
-  });
-
-  test('I can switch back to the default Bluesky handle', async ({ page }) => {
-    const { lastApiRequests } = await mockApi({
-      page,
-      requests: {
-        getMyAccount: getMyAccount({
-          blueskyHandle: 'site.com',
-          blueskyDomainHandle: { domain: 'site.com', status: 'active', reason: null },
-        }),
-        resetBlueskyHandle: {
-          method: 'DELETE',
-          path: '/v2/actions/bluesky/domain-handle',
-          response: blueskyResponse('site.com', {
-            domain: 'site.com',
-            status: 'opted_out',
-            reason: null,
+    test('I see my domain as my Bluesky handle', async ({ page }) => {
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: 'site.com',
+            blueskyDomainHandle: domainHandle('active', true),
           }),
         },
-      },
-      options: { useActivityPub: true },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText('site.com', { exact: true })).toBeVisible();
+      await expect(page.getByText(BETTER_HANDLE)).toHaveCount(0);
+      await expect(page.getByText(/default handle/i)).toHaveCount(0);
     });
 
-    await page.goto('#/preferences/bluesky-sharing');
-
-    await expect(page.getByText("Your site's domain is your Bluesky handle.")).toBeVisible();
-
-    await page.getByRole('button', { name: 'Use the default handle instead' }).click();
-    await page.getByRole('button', { name: 'Use default handle' }).click();
-
-    await expect.poll(() => lastApiRequests.resetBlueskyHandle).toBeTruthy();
-    await expect(page.getByRole('button', { name: 'Use @site.com as your handle' })).toBeVisible();
-  });
-
-  test('I can see why my domain is not my Bluesky handle and try again', async ({ page }) => {
-    const { lastApiRequests } = await mockApi({
+    test('I can see how to use my domain when another Bluesky account uses it', async ({
       page,
-      requests: {
-        getMyAccount: getMyAccount({
-          blueskyHandle: 'index.site.com.ap.brid.gy',
-          blueskyDomainHandle: { domain: 'site.com', status: 'unavailable', reason: 'taken' },
-        }),
-        claimBlueskyDomainHandle: {
-          method: 'POST',
-          path: '/v2/actions/bluesky/domain-handle',
-          response: blueskyResponse('index.site.com.ap.brid.gy', {
-            domain: 'site.com',
-            status: 'claiming',
-            reason: null,
+    }) => {
+      const { lastApiRequests } = await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: DEFAULT_HANDLE,
+            blueskyDomainHandle: domainHandle('unavailable', true, 'taken'),
+          }),
+          claimBlueskyDomainHandle: {
+            method: 'POST',
+            path: '/v2/actions/bluesky/domain-handle',
+            response: blueskyResponse(DEFAULT_HANDLE, domainHandle('claiming', false)),
+          },
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText(BETTER_HANDLE)).toBeVisible();
+      await expect(
+        page.getByText(
+          '@site.com is used by another Bluesky account. Remove it there, then try again.',
+        ),
+      ).toBeVisible();
+
+      await page.getByRole('button', { name: 'Try again' }).click();
+
+      await expect.poll(() => lastApiRequests.claimBlueskyDomainHandle).toBeTruthy();
+      await expect(page.getByText('Switching...')).toBeVisible();
+    });
+
+    test("I'm not told about a domain handle I can't do anything about", async ({ page }) => {
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: DEFAULT_HANDLE,
+            blueskyDomainHandle: domainHandle('unavailable', true, 'not_reachable'),
           }),
         },
-      },
-      options: { useActivityPub: true },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText(DEFAULT_HANDLE)).toBeVisible();
+      await expect(page.getByText(BETTER_HANDLE)).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+    });
+  });
+
+  test.describe('Already enabled before domain handles', async () => {
+    test('Nothing changes when I open Bluesky sharing, and I can use my domain', async ({
+      page,
+    }) => {
+      const { lastApiRequests } = await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: DEFAULT_HANDLE,
+            blueskyDomainHandle: null,
+          }),
+          // Answers checks once the publisher has asked for the domain
+          confirmBlueskyHandle: {
+            method: 'POST',
+            path: '/v2/actions/bluesky/confirm-handle',
+            response: blueskyResponse(DEFAULT_HANDLE, domainHandle('claiming', false)),
+          },
+          claimBlueskyDomainHandle: {
+            method: 'POST',
+            path: '/v2/actions/bluesky/domain-handle',
+            response: blueskyResponse(DEFAULT_HANDLE, domainHandle('claiming', false)),
+          },
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText(BETTER_HANDLE)).toBeVisible();
+      await expect(
+        page.getByText("Use your site's domain, @site.com, as your Bluesky handle."),
+      ).toBeVisible();
+      await page.waitForTimeout(1000);
+      expect(lastApiRequests.confirmBlueskyHandle).toBeUndefined();
+      expect(lastApiRequests.claimBlueskyDomainHandle).toBeUndefined();
+
+      await page.getByRole('button', { name: 'Use domain handle' }).click();
+
+      await expect.poll(() => lastApiRequests.claimBlueskyDomainHandle).toBeTruthy();
+      await expect(page.getByText('Switching...')).toBeVisible();
     });
 
-    await page.goto('#/preferences/bluesky-sharing');
+    test('I can check again when Bluesky takes a while to switch my handle', async ({ page }) => {
+      await page.clock.install();
 
-    await expect(
-      page.getByText('@site.com is already used by another Bluesky account', { exact: false }),
-    ).toBeVisible();
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: DEFAULT_HANDLE,
+            blueskyDomainHandle: domainHandle('claiming', false),
+          }),
+          confirmBlueskyHandle: {
+            method: 'POST',
+            path: '/v2/actions/bluesky/confirm-handle',
+            response: blueskyResponse(DEFAULT_HANDLE, domainHandle('claiming', false)),
+          },
+        },
+        options: { useActivityPub: true },
+      });
 
-    await page.getByRole('button', { name: 'Try again' }).click();
+      await page.goto('#/preferences/bluesky-sharing');
+      await expect(page.getByText('Switching...')).toBeVisible();
 
-    await expect.poll(() => lastApiRequests.claimBlueskyDomainHandle).toBeTruthy();
-    await expect(page.getByText('Switching your Bluesky handle to @site.com...')).toBeVisible();
+      // The screen checks every 5 seconds for about two minutes
+      await page.clock.runFor(5000 * 30);
+
+      await expect(page.getByText('Switching to @site.com can take a few minutes.')).toBeVisible();
+
+      await page.getByRole('button', { name: 'Check again' }).click();
+
+      await expect(page.getByText('Switching...')).toBeVisible();
+    });
+
+    test('The callout goes away once my domain is my handle', async ({ page }) => {
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyHandle: 'site.com',
+            blueskyDomainHandle: domainHandle('active', false),
+          }),
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText('site.com', { exact: true })).toBeVisible();
+      await expect(page.getByText(BETTER_HANDLE)).toHaveCount(0);
+    });
+  });
+
+  test.describe('Older ActivityPub services', async () => {
+    test('I see the current Bluesky handle behaviour', async ({ page }) => {
+      // Older services leave blueskyDomainHandle out of the account
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({
+            blueskyEnabled: false,
+            blueskyHandleConfirmed: false,
+            blueskyHandle: null,
+          }),
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText("You can't change your Bluesky username")).toBeVisible();
+    });
+
+    test('I am not offered a domain handle', async ({ page }) => {
+      const { lastApiRequests } = await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({ blueskyHandle: DEFAULT_HANDLE }),
+          confirmBlueskyHandle: {
+            method: 'POST',
+            path: '/v2/actions/bluesky/confirm-handle',
+            response: { enabled: true, handleConfirmed: true, handle: DEFAULT_HANDLE },
+          },
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText(DEFAULT_HANDLE)).toBeVisible();
+      await page.waitForTimeout(1000);
+
+      expect(lastApiRequests.confirmBlueskyHandle).toBeUndefined();
+      await expect(page.getByText(BETTER_HANDLE)).toHaveCount(0);
+    });
   });
 });

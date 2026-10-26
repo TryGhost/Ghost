@@ -3064,24 +3064,3 @@ export function useClaimBlueskyDomainHandleMutationForUser(handle: string) {
     },
   });
 }
-
-export function useResetBlueskyHandleMutationForUser(handle: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    async mutationFn() {
-      const siteUrl = await getSiteUrl();
-      const api = createActivityPubAPI(handle, siteUrl);
-
-      return api.resetBlueskyHandle();
-    },
-    onSuccess(details: BlueskyHandleDetails) {
-      updateConfirmedBlueskyCache(queryClient, details);
-    },
-    onError(error: { message: string; statusCode: number }) {
-      if (error.statusCode === 429) {
-        renderRateLimitError();
-      }
-    },
-  });
-}

@@ -2297,7 +2297,12 @@ describe('ActivityPubAPI', function () {
         [`https://activitypub.api/.ghost/activitypub/v1/account/me`]: {
           response: JSONResponse({
             handle: '@index@example.com',
-            blueskyDomainHandle: { domain: 'example.com', status: 'pending_review', reason: null },
+            blueskyDomainHandle: {
+              domain: 'example.com',
+              status: 'pending_review',
+              reason: null,
+              automatic: false,
+            },
           }),
         },
       });
@@ -2328,7 +2333,12 @@ describe('ActivityPubAPI', function () {
         [`https://activitypub.api/.ghost/activitypub/v1/account/me`]: {
           response: JSONResponse({
             handle: '@index@example.com',
-            blueskyDomainHandle: { domain: 'example.com', status: 'active', reason: null },
+            blueskyDomainHandle: {
+              domain: 'example.com',
+              status: 'active',
+              reason: null,
+              automatic: false,
+            },
           }),
         },
       });
@@ -2346,6 +2356,7 @@ describe('ActivityPubAPI', function () {
         domain: 'example.com',
         status: 'active',
         reason: null,
+        automatic: false,
       });
     });
 
@@ -2584,6 +2595,7 @@ describe('ActivityPubAPI', function () {
               domain: 'example.com',
               status: 'unavailable',
               reason: 'taken',
+              automatic: false,
             },
           }),
         },
@@ -2604,6 +2616,7 @@ describe('ActivityPubAPI', function () {
           domain: 'example.com',
           status: 'unavailable',
           reason: 'taken',
+          automatic: false,
         },
       });
     });
@@ -2659,7 +2672,12 @@ describe('ActivityPubAPI', function () {
         [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
           response: JSONResponse({
             handle: 'index.example.com.ap.brid.gy',
-            domainHandle: { domain: 'example.com', status: 'pending_review', reason: null },
+            domainHandle: {
+              domain: 'example.com',
+              status: 'pending_review',
+              reason: null,
+              automatic: false,
+            },
           }),
         },
       });
@@ -2676,6 +2694,37 @@ describe('ActivityPubAPI', function () {
       expect(result).toEqual({ handle: 'index.example.com.ap.brid.gy', domainHandle: null });
     });
 
+    test('It treats a domain handle without the automatic flag as not automatic', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
+          response: JSONResponse({
+            handle: 'example.com',
+            domainHandle: { domain: 'example.com', status: 'active', reason: null },
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      const result = await api.confirmBlueskyHandle();
+
+      expect(result.domainHandle?.automatic).toBe(false);
+    });
+
     test('It ignores a domain handle reason it does not know', async function () {
       const fakeFetch = Fetch({
         'https://auth.api/': {
@@ -2690,7 +2739,12 @@ describe('ActivityPubAPI', function () {
         [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
           response: JSONResponse({
             handle: 'index.example.com.ap.brid.gy',
-            domainHandle: { domain: 'example.com', status: 'unavailable', reason: 'blocked' },
+            domainHandle: {
+              domain: 'example.com',
+              status: 'unavailable',
+              reason: 'blocked',
+              automatic: false,
+            },
           }),
         },
       });
@@ -2708,6 +2762,7 @@ describe('ActivityPubAPI', function () {
         domain: 'example.com',
         status: 'unavailable',
         reason: null,
+        automatic: false,
       });
     });
   });
@@ -2730,7 +2785,12 @@ describe('ActivityPubAPI', function () {
           },
           response: JSONResponse({
             handle: 'index.example.com.ap.brid.gy',
-            domainHandle: { domain: 'example.com', status: 'claiming', reason: null },
+            domainHandle: {
+              domain: 'example.com',
+              status: 'claiming',
+              reason: null,
+              automatic: false,
+            },
           }),
         },
       });
@@ -2746,46 +2806,7 @@ describe('ActivityPubAPI', function () {
 
       expect(result).toEqual({
         handle: 'index.example.com.ap.brid.gy',
-        domainHandle: { domain: 'example.com', status: 'claiming', reason: null },
-      });
-    });
-  });
-
-  describe('resetBlueskyHandle', function () {
-    test('It switches back to the default handle', async function () {
-      const fakeFetch = Fetch({
-        'https://auth.api/': {
-          response: JSONResponse({
-            identities: [
-              {
-                token: 'fake-token',
-              },
-            ],
-          }),
-        },
-        [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/domain-handle`]: {
-          async assert(_resource, init) {
-            expect(init?.method).toEqual('DELETE');
-          },
-          response: JSONResponse({
-            handle: 'example.com',
-            domainHandle: { domain: 'example.com', status: 'opted_out', reason: null },
-          }),
-        },
-      });
-
-      const api = new ActivityPubAPI(
-        new URL('https://activitypub.api'),
-        new URL('https://auth.api'),
-        'index',
-        fakeFetch,
-      );
-
-      const result = await api.resetBlueskyHandle();
-
-      expect(result).toEqual({
-        handle: 'example.com',
-        domainHandle: { domain: 'example.com', status: 'opted_out', reason: null },
+        domainHandle: { domain: 'example.com', status: 'claiming', reason: null, automatic: false },
       });
     });
   });
@@ -2796,7 +2817,12 @@ describe('supportsBlueskyDomainHandles', function () {
     expect(supportsBlueskyDomainHandles({ blueskyDomainHandle: null })).toBe(true);
     expect(
       supportsBlueskyDomainHandles({
-        blueskyDomainHandle: { domain: 'example.com', status: 'active', reason: null },
+        blueskyDomainHandle: {
+          domain: 'example.com',
+          status: 'active',
+          reason: null,
+          automatic: false,
+        },
       }),
     ).toBe(true);
   });

@@ -38,8 +38,10 @@ export interface Account {
  */
 const blueskyDomainHandleSchema = z.object({
   domain: z.string(),
-  status: z.enum(['claiming', 'active', 'unavailable', 'opted_out', 'released']),
+  status: z.enum(['claiming', 'active', 'unavailable', 'released']),
   reason: z.enum(['taken', 'not_reachable', 'dns_error', 'rejected']).nullable().catch(null),
+  // Whether the domain is being set up as part of enabling Bluesky sharing
+  automatic: z.boolean().catch(false),
 });
 
 export type BlueskyDomainHandle = z.infer<typeof blueskyDomainHandleSchema>;
@@ -1022,12 +1024,6 @@ export class ActivityPubAPI {
     const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
 
     return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'POST'));
-  }
-
-  async resetBlueskyHandle(): Promise<BlueskyHandleDetails> {
-    const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
-
-    return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'DELETE'));
   }
 
   private parseBlueskyHandleDetails(json: object | null): BlueskyHandleDetails {
