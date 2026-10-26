@@ -727,6 +727,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -739,7 +740,7 @@ services:
         the current partial publication before controller construction.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/audience-feedback/index.js
+        - core/server/services/audience-feedback/index.ts
         - core/server/services/audience-feedback/audience-feedback-service.js
         - core/server/services/email-service/email-service-wrapper.js
         - core/server/web/members/app.js
@@ -760,30 +761,33 @@ services:
             its controller.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/web/members/app.js
     entryPoints:
-      - audience-feedback/index.js
+      - audience-feedback/index.ts
     notes: >-
       Preserve the repository, service and controller surfaces, captured fallback URL and
       retained email-renderer dependency. Keep feedback rules and persistence outside HTTP;
-      the existing controller also contains an Express redirect adapter.
+      the existing controller also contains an Express redirect adapter. Initializer wiring was
+      rechecked against 2196fa4e4cf4ef4ecf41df16cfe9f460270cadf5; the original contract audit and
+      migration-assessment revisions above remain historical evidence. Permissions is now
+      root-injected. The earlier proposal to inject toPlain is superseded by direct use of the
+      stateless shared helper under an exact-file library allowance.
     contracts:
       exports:
         summary: >-
-          CommonJS exports an eager wrapper with receiver-dependent async init(); repository,
-          service and controller are absent until initialization publishes them. Deep modules
-          export constructible classes. Service link methods are synchronous: buildLink and
-          buildFallbackLink return URL objects, while buildEmailLink returns a string. Controller
-          and repository operations are async and use their instance receivers. There is no
-          reset, shutdown, readiness getter or public wrapper constructor. Class tests exercise
-          link output but do not pin the root export shape or receiver behavior. Root units pin
-          that repeated init retains the published repository, service and controller.
+          Root default-exports defineService; CommonJS callers read .default. Its guarded .service
+          contains the repository, link service and controller, published together only after their
+          construction completes. Deep modules still export constructible classes. Link methods are
+          synchronous: buildLink and buildFallbackLink return URL objects, while buildEmailLink returns
+          a string. Controller and repository operations remain async and receiver-dependent. There
+          are no extras, reset or service-owned shutdown hooks. Root units pin that repeated init
+          retains all three composition members; the guarded getter follows the shared kernel contract.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -793,17 +797,16 @@ services:
           - test/unit/server/services/audience-feedback/index.test.ts
       construction:
         summary: >-
-          Import loads shared URL utilities, URL service and permissions dependencies. Boot is
-          the only production init caller found. init constructs a model-backed repository,
-          a link service with a new home URL, then a controller retaining both. The constructors
-          store dependencies without querying. A truthy service guards repeat calls. Repository
-          publication precedes URL/service construction, and service publication precedes
-          controller construction; there is no rollback of partial initialization. No other
-          production construction of these private classes was found. Root units pin no URL read
-          on import, one home-URL read and no model or URL-service query across repeated init,
-          and a successful later init after the home-URL lookup throws.
+          Import loads shared URL utilities, URL service and the permissions facade without building
+          the composition or reading the home URL. Boot is the only production init caller found. The
+          factory resolves shared models and constructs a model-backed repository, a link service with
+          a captured home URL, then a controller retaining both plus permissions. Constructors only
+          store references; the complete graph is returned for publication. No other production
+          construction of these private classes was found. Root units pin no URL read on import, one
+          home-URL read and no model or URL-service queries across repeated init, and successful retry
+          after home-URL lookup throws.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -813,17 +816,17 @@ services:
           - test/unit/server/services/audience-feedback/index.test.ts
       consumers:
         summary: >-
-          Email initialization passes service itself to EmailRenderer, which retains it and
-          builds both links on each render even when newsletter feedback buttons are disabled.
-          Members GET redirects and Members POST/Admin GET endpoint queries retain the wrapper
-          and read controller per call. POST authenticates by session or signed member UUID;
+          Email initialization passes the ready composition's link service to EmailRenderer, which
+          retains it and builds both links on each render even when feedback buttons are disabled.
+          Members GET redirects and Members POST/Admin GET endpoint queries retain the initializer
+          and read .service.controller per call. POST authenticates by session or signed member UUID;
           GET redirect only forwards UUID/key. Admin browse requires post-browse permission and
           conditionally includes member details. No external repository consumer was found;
-          getMemberByUuid has no caller. HTTP tests exercise submission and two redirect paths.
-          Renderer units inject a fake link service and pin button inclusion/exclusion and
-          preservation through link tracking. An HTTP case renders feedback links through the
-          booted EmailRenderer and follows both through Members redirects; root units drive the
-          retained controller's redirect through its repository and live URL routing.
+          getMemberByUuid has no caller. HTTP tests exercise submission and redirects. Renderer units
+          inject a fake link service and pin button inclusion/exclusion and link tracking. An HTTP
+          case obtains feedback links from the booted EmailRenderer's template data and follows both
+          through Members redirects; root units drive the retained controller through its real
+          repository and live URL routing.
         sources:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
@@ -840,17 +843,16 @@ services:
           - test/unit/server/services/audience-feedback/index.test.ts
       startup:
         summary: >-
-          Boot initializes models, settings and routing before awaiting the service group and
-          making the full app ready. In that Promise.all argument list, audienceFeedback.init()
-          precedes emailService.init(). Feedback init has no await, so publication finishes
-          synchronously before email captures service despite its async signature. Introducing
-          asynchronous work would require preserving that dependency explicitly. Members routes
-          can be composed before init because their handlers defer controller lookup. There is
-          no pre-use guard. HTTP tests exercise a booted root, not startup order, repeated init,
-          pre-init access or partial-construction failure.
+          Boot initializes models, settings and routing first, then explicitly awaits this initializer
+          before starting the service group that includes Email. This preserves Email's captured
+          collaborator when the kernel publishes its synchronously constructed graph after awaiting
+          the factory. It no longer relies on Promise.all argument evaluation completing publication
+          synchronously. Members routes can be composed early because request handlers defer the
+          guarded .service.controller lookup. The HTTP characterization exercises a booted Email
+          renderer and both redirect paths, not deliberate startup-failure injection.
         sources:
           - core/boot.js
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/web/members/app.js
           - core/server/api/endpoints/feedback-members.js
@@ -858,17 +860,16 @@ services:
           - test/e2e-api/members/feedback.test.js
       lifetime:
         summary: >-
-          Module caching and the service guard retain the same graph across requests and
-          same-process boots. Replacing wrapper properties would not update EmailRenderer or
-          the controller's private references. Feedback is persisted in members_feedback;
-          each submission rereads the post and existing member/post row, with no local cache.
-          A changed score mutates the fetched Feedback and writes it; the same score returns
-          without a write. HTTP assertions pin stable feedback ID, changed score and updated_at
-          advancing once then remaining unchanged on a sequential repeat. They do not establish
-          simultaneous-write behavior. There is no transaction, lock or deduplication around
+          Module caching and the kernel retain the same complete graph across requests and same-process
+          boots. EmailRenderer and the controller keep their original collaborator references. Feedback
+          is persisted in members_feedback; each submission rereads the post and existing member/post
+          row, with no local cache. A changed score mutates the fetched Feedback and writes it; the same
+          score returns without a write. HTTP assertions pin stable feedback ID, changed score and
+          updated_at advancing once then remaining unchanged on a sequential repeat. They do not
+          establish simultaneous-write behavior. There is no transaction, lock or deduplication around
           read-then-add, and the declared schema has no unique member/post pair constraint.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/feedback-repository.js
           - core/server/services/email-service/email-renderer.js
@@ -889,7 +890,7 @@ services:
           requested order is not forwarded. Root units pin init-time capture: changing the home
           URL after init and re-init leaves email and fallback links on the captured base.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -915,7 +916,7 @@ services:
           Model tests pin missing-field validation and disabled destroy, not cleanup, cascades,
           transaction behavior or pending-query ownership.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/feedback-repository.js
           - core/server/services/url/index.js
           - core/server/models/member-feedback.js
@@ -928,20 +929,20 @@ services:
           - test/unit/server/models/member-feedback.test.ts
       failures:
         summary: >-
-          init rejects without clearing published properties; a failure after service publication
-          makes later init skip controller repair. Link building propagates serialization/URL
-          failures. Redirect catches errors and passes them to next; a unit pins repository
-          rejection identity and no redirect. Add rejects invalid numeric score, absent member
-          context or missing post, otherwise propagating repository/ID-conversion failures;
-          there is no retry or compensation. Browse swallows any permission-check failure and
-          continues without member data, but propagates query failures. Units pin allowed/denied
-          browse delegation. HTTP tests pin invalid-score 422, missing-post 404 and authentication
-          401; the malformed/unknown UUID cases omit the key and fail before member lookup.
-          Root units pin that a home-URL failure before service publication propagates and a later
-          init succeeds. Failure after service publication, write/read failures and concurrent
-          submissions lack direct coverage.
+          Factory failure rejects init without publishing a partial composition; the kernel leaves
+          .service unavailable and permits a later explicit retry. Locally constructed repositories
+          only borrow models and acquire no resources requiring rollback. Root units pin propagation
+          of a home-URL lookup failure and successful later init; later constructor failure is not
+          fault-injected. Link building still propagates serialization/URL failures. Redirect catches
+          errors and passes them to next; a unit pins repository rejection identity and no redirect.
+          Add rejects invalid numeric score, absent member context or missing post, otherwise propagating
+          repository/ID-conversion failures; there is no retry or compensation. Browse swallows any
+          permission-check failure and continues without member data, but propagates query failures.
+          Units pin allowed/denied browse delegation. HTTP tests pin invalid-score 422, missing-post 404
+          and authentication 401; malformed/unknown UUID cases omit the key and fail before member
+          lookup. Write/read failures and concurrent submissions lack direct coverage.
         sources:
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/audience-feedback/audience-feedback-controller.js
           - core/server/services/audience-feedback/audience-feedback-service.js
           - core/server/services/audience-feedback/feedback-repository.js
@@ -954,10 +955,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Root units now pin repeated-init retention, init-time URL capture and retry after a
-        home-URL failure. Still pin receiver requirements and pre-init behavior, and preserve
-        publication before email initialization. A failure after service publication remains
-        untested; the service guard can conceal an unfinished controller.
+        Root units pin repeated-init retention, init-time URL capture and retry after a
+        home-URL failure. The shared kernel owns guarded access and publication; service-specific
+        receiver requirements, pre-init access and later-constructor failure lack direct tests.
+        The booted Email renderer HTTP case covers successful dependency readiness only.
       - >-
         Characterize simultaneous submissions and failing writes. Read-then-add has no uniqueness
         or transaction protection, so sequential ID/timestamp assertions do not rule out duplicate
@@ -2045,6 +2046,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -2058,7 +2060,7 @@ services:
         behavioral gaps.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/custom-theme-settings/index.js
+        - core/server/services/custom-theme-settings/index.ts
         - core/server/services/custom-theme-settings/custom-theme-settings-service.js
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/storage.js
@@ -2075,41 +2077,55 @@ services:
             constructor; keep theme activation separate from construction.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/server/services/themes/activation-bridge.js
     entryPoints:
-      - custom-theme-settings/index.js
+      - custom-theme-settings/index.ts
     notes: >-
-      Preserve boot-before-theme activation, API replacement and the shared render cache.
-      Activation concurrency, partial writes and initial visibility handling need contracts.
+      Initializer adoption was rechecked against 2196fa4e4cf4ef4ecf41df16cfe9f460270cadf5;
+      auditedAt and the migration assessments retain their historical provenance. The prior
+      wrapper is recorded at https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/custom-theme-settings.js.
+      Boot now
+      awaits one retained implementation before separate theme activation on every boot.
+      The root injects the model and shared render cache. The earlier dependency proposal to
+      inject utility operations is superseded: lodash/isEmpty, the NQL public entry and
+      namespaced debug tracing remain direct library imports under boundary allowances.
+      Root/implementation/cache/model/middleware units and real custom-settings/theme API
+      checks provide migration validation; concurrency, partial writes and initial visibility
+      remain separate behavioral gaps.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper with synchronous init returning undefined. Its public
-          api appears only after init and exposes activateTheme, listSettings, updateSettings
-          and copySettingsBetweenThemes plus mutable working state. There is no reset, stop
-          or drain export. The implementation and BREAD classes are deep exports under
-          services/custom-theme-settings; the shared value-cache class remains under
+          The TypeScript root default-exports defineService with async init and a guarded
+          service getter exposing activateTheme, listSettings, updateSettings and
+          copySettingsBetweenThemes plus mutable working state. CommonJS consumers use
+          default at the boundary and read service at operation time. There are no extras,
+          reset, stop or drain exports. The implementation and BREAD classes remain deep
+          exports under services/custom-theme-settings; the shared value-cache class remains under
           shared/custom-theme-settings-cache.
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
-        tests: []
+          - core/kernel/define-service.ts
+        tests:
+          - test/unit/server/services/custom-theme-settings/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
-          Import loads the model registry and shared cache and constructs an empty wrapper.
-          Every init replaces api with a new implementation and BREAD repository using the
-          shared CustomThemeSetting model/cache; construction performs no setting query or
-          activation. No alternate runtime implementation construction was found. Unit tests
-          inject a fake model and separate cache; API tests explicitly re-init and activate.
+          Import declares the initializer and loads its implementation and namespaced debug tracing
+          function. Its factory resolves the shared model registry/cache, then constructs one
+          implementation and BREAD repository. Successful init retains that implementation;
+          construction performs no setting query or activation and acquires no resources.
+          No alternate runtime implementation construction was found. Unit tests inject a fake
+          model/cache; API tests explicitly init and activate.
           Root units pin that init performs no setting query, frontend activation or shared
           cache change, and that the real endpoint then lists no settings.
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/index.js
         tests:
@@ -2117,9 +2133,10 @@ services:
           - test/unit/server/services/custom-theme-settings/index.test.ts
       consumers:
         summary: >-
-          Boot initializes the wrapper. Theme activation for boot/API/override awaits api.activateTheme
-          before the frontend bridge; theme upload copies settings through api. The custom
-          settings endpoint lists/updates through the current wrapper property. The data
+          Boot awaits the initializer. Theme activation for boot/API/override awaits
+          service.activateTheme before the frontend bridge; theme upload copies settings through
+          service. The custom settings endpoint lists/updates through the retained initializer's
+          service getter without capturing the implementation at import. The data
           importer indirectly triggers activation without awaiting it. Global template options
           and local preview keys independently read the shared cache. No other runtime root
           or deep-constructor caller was found. HTTP cases cover edits and successful theme-copy
@@ -2142,18 +2159,21 @@ services:
           - test/unit/server/services/custom-theme-settings/index.test.ts
       startup:
         summary: >-
-          Boot initializes api after database/settings setup and before awaited themes.init,
-          including backend-only boots. Theme activation populates both caches; init alone
-          leaves listSettings empty and the shared cache unchanged. Pre-init api use has no
-          guard. Boot theme loading catches/logs activation failure and continues, so readiness
+          Boot awaits init after database/settings setup and before awaited themes.init;
+          initServicesForFrontend also runs on backend-only boots. Theme activation populates
+          both caches; initial construction leaves listSettings empty and the shared cache
+          unchanged. Reading service before init throws through defineService. Boot theme
+          loading catches/logs activation failure and continues, so readiness
           alone does not establish successful custom-setting activation. API tests manually
           activate a fixture definition. A boot-harness unit runs initServicesForFrontend with
           the real root, themes service and bridge: init precedes the settings read, frontend
           activation and offers, a second boot initializes and activates again, and a failed
           settings lookup is logged while startup continues without activation or cache changes.
+          Holding root initialization pending blocks theme startup, offers and frontend-phase
+          completion; an initializer rejection propagates unchanged without starting themes.
         sources:
           - core/boot.js
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/themes/index.js
           - core/server/services/themes/activate.js
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2163,22 +2183,27 @@ services:
           - test/unit/server/services/custom-theme-settings/index.test.ts
       lifetime:
         summary: >-
-          Re-init discards api state but reuses the shared value cache; retained old instances
-          and pending operations remain usable. Activation tracks one promise, skips matching
-          concurrent name/settings and waits for a prior activation, but multiple differing
+          Successful init retains one implementation and the borrowed shared value cache;
+          repeated init leaves active settings and pending operations on that same instance.
+          This replaces the historical wrapper's api replacement behavior. Activation tracks
+          one promise, skips matching concurrent name/settings and waits for a prior activation,
+          but multiple differing
           waiters can then start together. Updates are not serialized with activation or one
           another. listSettings returns shallow copies; nested definition objects remain
           shared. Cache getAll is also shallow, and no stop clears or drains this state. Root
-          units hold one activation across re-init; it completes on the retained old api, and
-          later activation through the bridge uses the new api.
+          units hold one activation across repeated init; it completes on the retained
+          implementation, and later activation through the bridge remains usable. Retained
+          identity itself is covered by the kernel's shared initializer tests rather than a
+          new feature-specific assertion.
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
         tests:
           - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/shared/custom-theme-settings-cache/cache.test.ts
           - test/unit/server/services/custom-theme-settings/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       configuration:
         summary: >-
           Activation reconciles current theme definitions with stored values: remove missing
@@ -2186,7 +2211,7 @@ services:
           copied for editing; updates accept only keys/values and validate select, boolean and
           six-digit color values. Public-cache visibility is evaluated on updates, but initial
           activation passes DB rows without visibility metadata. Model reads/writes normalize
-          booleans and image URLs. The wrapper reads no config; theme choice is supplied by
+          booleans and image URLs. The root reads no config; theme choice is supplied by
           callers and model URL conversion uses shared URL utilities.
         sources:
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2203,7 +2228,7 @@ services:
           borrowing the process cache and model/database. It creates no timer, subscription,
           worker or dedicated connection. Copy uses a model transaction for the destination
           check and inserts, with source rows read beforehand. Activation/update writes have
-          no encompassing transaction, and neither boot nor wrapper registers cancellation
+          no encompassing transaction, and neither boot nor initializer registers cancellation
           or pending-operation cleanup.
         sources:
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2239,15 +2264,16 @@ services:
     unverified: []
     blockers:
       - >-
-        Root units now pin init without queries or cache changes, boot ordering across repeated
-        boots, failed boot activation and one activation pending across re-init. Wrapper export
-        shape and replacing api during other pending work, such as updates or copies, remain
-        uncharacterized.
+        Root units pin initial composition without queries or cache changes, boot ordering
+        across repeated boots, failed boot activation and one activation pending across repeated
+        init. Pending updates or copies across repeated init remain uncharacterized; adoption
+        retains their implementation instead of replacing the historical api.
       - >-
         Characterize differing concurrent activations, multiple waiters, rejected activation,
         updates during activation and detached import-triggered activation. The current guard
         is not a queue, and updates reread activeThemeName per row; existing concurrency coverage
-        only checks two identical activations. Define pending-work ownership before migration.
+        only checks two identical activations. One retained implementation does not resolve
+        these operation-level concurrency and pending-work ownership gaps.
       - >-
         Fix or explicitly separate initial visibility behavior: activation computes the public
         cache from DB rows lacking visibility, while update uses merged definitions. The only
@@ -3146,10 +3172,11 @@ services:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-
-          Boot initializes email-address first, invokes members/attribution/feedback before
-          email-service in the required-service array, then registers handlers and starts jobs
-          after that group settles. This relies on sibling publication timing; the array does
-          not await each initializer before invoking the next. Background recovery runs after
+          Boot initializes email-address and awaits member-attribution and audience-feedback before
+          entering the required-service array. It invokes members before email-service in that
+          array, then registers handlers and starts jobs after the group settles. Members still
+          relies on sibling publication timing; the array does not await each initializer before
+          invoking the next. Background recovery runs after
           readiness, is skipped for test-prefixed environments and catches/logs its failure
           before continuing. scheduleEmail awaits dispatch, not completion of a send; emailJob
           refetches and transactionally claims pending/failed email status. VM boot tests hold
@@ -5137,17 +5164,19 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Keep this business service. Its endpoint currently constructs one instance that only
-        retains model dependencies. Move that composition to a boot-owned factory and update
-        the endpoint to use the ready instance; editing and key-rotation behavior can stay
-        in the implementation without a lifecycle extension.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root constructs one instance with the shared Integration
+        and ApiKey models. initCore awaits initialization before the endpoint reads that
+        ready instance during edit requests. Existing editing and key-rotation behavior stays
+        in the unchanged implementation; no extras or lifecycle extension is needed.
+      reviewedAt: 8de2cd47ce1614f877695695a48b41e69f26e650
       sources:
+        - core/server/services/integrations/index.ts
         - core/server/services/integrations/integrations-service.js
         - core/server/api/endpoints/integrations.js
         - core/boot.js
@@ -5169,36 +5198,42 @@ services:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
     entryPoints:
-      - integrations/integrations-service.js
+      - integrations/index.ts
     notes: >-
-      Keep integration editing and key-rotation business rules outside HTTP. The endpoint
-      currently constructs and retains this service; boot composition must preserve its
-      model calls, mutation/error contracts and dependent persistence behavior. Characterization
-      prepared against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36 covers the unchanged factory,
-      retained real endpoint, model receivers, option handling and awaited edit/rotation results.
-      The original auditedAt remains historical; this preparation does not adopt an initializer
-      or establish same-process reboot, transaction, association or action-write guarantees.
+      Migration inspected 8de2cd47ce1614f877695695a48b41e69f26e650 after the characterization
+      prerequisite merged. Boot now owns the instance; the endpoint retains the root, reads
+      its service inside the edit query, and the implementation stays unchanged.
+      Characterization originally prepared against
+      e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36 protects model receivers, option handling and
+      awaited edit/rotation results. auditedAt and the dependency assessment retain historical
+      provenance. Initialization owns no resources; same-process reboot, transaction,
+      association and action-write guarantees remain outside this bounded change.
     contracts:
       exports:
         summary: >-
-          CommonJS exports a receiver-independent factory returning a new IntegrationsService
-          each time; the class itself is private. Instances expose async edit(data, options)
-          and mutable IntegrationModel/ApiKeyModel fields. edit requires its receiver and an
-          options object. There is no singleton, init, reset, shutdown or readiness export.
+          The TypeScript root default-exports defineService with init and guarded service;
+          it exposes no extras. service is the retained IntegrationsService with async
+          edit(data, options) and borrowed IntegrationModel/ApiKeyModel fields. edit still
+          requires its receiver and an options object. The private CommonJS implementation
+          retains its receiver-independent factory for construction and implementation tests;
+          normal runtime callers use the ready root. No reset or shutdown is exposed.
         sources:
+          - core/server/services/integrations/index.ts
           - core/server/services/integrations/integrations-service.js
         tests:
           - test/unit/server/services/integrations/integrations-service.test.ts
       construction:
         summary: >-
-          The integrations endpoint is the only production factory caller found. Module
-          evaluation constructs once with shared Integration and ApiKey models and retains
-          the result in a private constant. The constructor only stores references; it makes
-          no query or subscription. The factory could create independent instances, but no
-          other runtime constructor was found. Preparation units exercise the real factory and
-          retained endpoint with stubbed model methods, proving idle composition and receiver
-          identity without claiming persisted database behavior.
+          The boot-owned root is the only production factory caller. Its init factory supplies
+          the shared Integration and ApiKey models and returns the existing implementation.
+          Construction only stores model references; it makes no query or subscription. The
+          endpoint retains the root and reads the ready instance inside its edit query, not at
+          module evaluation. Root units import the real endpoint before init and assert the
+          factory has not run, then initialize the root before exercising edits. They prove idle
+          composition and retained receiver identity with stubbed models, not persisted behavior.
         sources:
+          - core/boot.js
+          - core/server/services/integrations/index.ts
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
         tests:
@@ -5225,15 +5260,19 @@ services:
           - test/unit/server/services/integrations/index.test.ts
       startup:
         summary: >-
-          Admin router construction accesses the lazy endpoint getter. Normal backend/API mounts
-          defer this router construction until an Admin API request, so boot does not explicitly
-          construct the service before readiness. Direct factory construction can occur earlier
-          because dependencies are merely stored. There is no pre-use guard. Existing HTTP
-          tests exercise completed request composition, not construction timing, concurrent
-          first-request behavior or dependency failure during lazy router creation. Preparation
-          units establish idle endpoint-time composition and retained identity without booting
-          the HTTP router or introducing a pre-init contract that does not yet exist.
+          initCore awaits Integrations initialization after Invites and before Support Requests,
+          frontend initialization and API request serving. The root defers model acquisition and
+          construction until init, and its guarded getter rejects pre-init access according to
+          the kernel contract. Admin router construction still uses the lazy endpoint getter, and
+          loading the endpoint reads no service, so router construction does not depend on
+          initialization; each edit request reads the published instance. Existing HTTP cases
+          exercise real boot and request composition; adapted preparation fixtures explicitly
+          await root initialization. initCore orchestration units hold the root's init promise
+          pending and reject it, proving awaited readiness and unchanged error propagation
+          before Support Requests starts. These units stub the root; real factory failure and
+          same-process restart behavior remain untested.
         sources:
+          - core/server/services/integrations/index.ts
           - core/boot.js
           - core/server/api/endpoints/index.js
           - core/shared/express.js
@@ -5244,17 +5283,23 @@ services:
           - core/server/api/endpoints/integrations.js
           - core/server/services/integrations/integrations-service.js
         tests:
+          - test/unit/boot/init-core.test.ts
           - test/e2e-api/admin/integrations.test.js
           - test/unit/server/services/integrations/index.test.ts
       lifetime:
         summary: >-
-          Module caching retains the endpoint's instance and model references across requests
-          and same-process boots. Each edit queries current rows and keeps no per-integration
-          cache. Ordinary edit mutates the caller's options with require true; key rotation
-          instead clones options for refresh and uses fresh relation options for the reread.
-          Replacing a module export would not update the endpoint's private reference. There
-          is no serialization, deduplication or concurrency guard around edits/rotations.
+          The root retains one instance after successful init; repeated init does not replace
+          it under the kernel contract. The endpoint reads that same instance through the root on
+          each edit request, sharing its model references. Each edit queries current rows and
+          keeps no per-integration cache. Ordinary edit mutates the caller's options with require
+          true; rotation instead clones options for refresh and uses fresh relation options for
+          reread. Replacing the root's module export would not update the endpoint's private root
+          reference. Retained-endpoint
+          units cover repeated edits; no same-process reboot, serialization, deduplication or
+          concurrency guard around edits/rotations is established.
         sources:
+          - core/boot.js
+          - core/server/services/integrations/index.ts
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
         tests:
@@ -5262,7 +5307,8 @@ services:
           - test/unit/server/services/integrations/index.test.ts
       configuration:
         summary: >-
-          The factory retains model dependencies and reads no application configuration itself.
+          Root initialization and the implementation read no application configuration; the
+          ready instance retains the model dependencies supplied at boot.
           Truthy options.keyid selects rotation and ignores edit data: it reads the key by
           keyid alone, refreshes that key and then reads the integration named by options.id
           with api_keys/webhooks. The service does not compare the key's integration_id with
@@ -7077,7 +7123,7 @@ services:
         tests:
           - test/unit/server/services/machine-payments/service.test.js
           - test/unit/server/services/machine-payments/adapters.test.js
-          - test/unit/server/services/machine-payments/content-loader.test.js
+          - test/unit/server/services/machine-payments/content-loader.test.ts
           - test/integration/services/machine-payments/orchestration.test.js
     unverified: []
     blockers:
@@ -7305,6 +7351,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -7317,7 +7364,7 @@ services:
         not require a lifecycle extension.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/member-attribution/index.js
+        - core/server/services/member-attribution/index.ts
         - core/server/services/staff/index.js
         - core/server/services/email-service/email-service-wrapper.js
         - core/boot.js
@@ -7339,7 +7386,7 @@ services:
             and Email capture its service, builder or tagger.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/url-translator.js
@@ -7347,28 +7394,32 @@ services:
           - core/server/services/members/api.js
           - core/boot.js
     entryPoints:
-      - member-attribution/index.js
+      - member-attribution/index.ts
     notes: >-
       Preserve the three exposed collaborators, retained consumers and different configuration
       timing. Attribution computes and reads data; its consumers own event persistence, mail,
       subscriptions and HTTP handling. Tests-only root and retained-consumer coverage was
       refreshed against e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the historical audit and
-      migration assessment revisions remain above.
+      migration assessment revisions remain above. Initializer adoption was inspected against
+      8de2cd47ce1614f877695695a48b41e69f26e650. The historical helper-injection preparation
+      above is superseded by source-reviewed exact direct-library allowances included
+      with this migration.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper with receiver-dependent synchronous init returning
-          undefined. First init exposes attributionBuilder, outboundLinkTagger and service.
+          The TypeScript root default-exports defineService with awaited init and a guarded
+          service getter. Its ready MemberAttributionService instance exposes the existing
+          attributionBuilder and the constructor-wired outboundLinkTagger alongside normal methods.
+          CommonJS consumers read the default export. No transitional extras are exposed.
           Deep modules export constructible service/builder/translator/tagger/history classes;
           Attribution itself is produced by builder.build/getAttribution. Service methods mix
           synchronous URL/event mapping with async history/context/resource queries. Returned
           Attribution objects expose fields, getResource and async fetchResource. Tagging returns
-          copied URLs or async HTML. There is no readiness getter, reset or shutdown. Deep-class
-          tests cover behavior. Root characterization pins import-before-init absence, synchronous
-          publication and retained collaborator identity; detached receiver requirements remain
-          source-only.
+          copied URLs or async HTML. There is no reset or shutdown hook. Existing root tests
+          mechanically adopt guarded pre-init access and awaited initialization while retaining
+          collaborator identity and operation assertions. Deep-class behavior tests are unchanged.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/attribution-builder.js
           - core/server/services/member-attribution/outbound-link-tagger.js
@@ -7384,12 +7435,12 @@ services:
           production init caller found. init creates URL and referrer translators, builder,
           tagger and service with borrowed model classes and callbacks. ReferrerTranslator
           constructs its own parser with site/admin URLs. Constructors perform no database
-          query or subscription. Builder and tagger are published before service; a constructor
-          failure can leave partial properties, but the service guard is assigned last so retry
-          attempts reconstruction. Root tests pin retry after URL configuration and late event-model
-          acquisition failures; constructor-failure rollback remains source-only.
+          query or subscription. The factory returns the complete service graph for atomic
+          publication; a failed attempt exposes no partial collaborators. Root tests preserve
+          retry after URL configuration and late event-model acquisition failures. Allocated
+          helpers own no external resource requiring failure cleanup.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/url-translator.js
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/attribution-builder.js
@@ -7405,7 +7456,7 @@ services:
           use context attribution, member reads enrich creation/subscription events, and activity
           feeds map loaded event relations. Staff retains service for notification attribution;
           EmailRenderer retains service and tagger for links. Content API post/page HTML mapping
-          retains the wrapper and reads outboundLinkTagger per call. HTTP tests pin token data,
+          retains the root and reads service.outboundLinkTagger per call. HTTP tests pin token data,
           checkout metadata, member read/feed attribution and subscription persistence; staff
           and renderer units use injected fakes. Booted tests additionally pin Staff/Members
           retained identity and EmailRenderer's real attribution/tagger use across a setting
@@ -7432,18 +7483,14 @@ services:
           - test/unit/server/services/email-service/email-renderer.test.js
       startup:
         summary: >-
-          Boot loads core models/settings and routing before the service group, and evaluates
-          synchronous memberAttribution.init before staff, members and email init in its
-          Promise.all argument list. Those consumers capture collaborators during construction;
-          making attribution initialization asynchronous would require explicit dependency
-          sequencing. Full-app readiness follows the group. There is no pre-init access guard;
-          methods/properties are missing until publication. Root tests pin the pre-init absence;
-          booted consumer tests pin ready collaborators after actual boot, rather than holding a
-          fabricated asynchronous legacy init. Explicit async sequencing and partial-startup cleanup
-          remain source-only.
+          Boot loads core models/settings and routing, then awaits memberAttribution.init
+          before entering the service group in which Staff, Members and Email capture the ready
+          collaborators. Full-app readiness follows that group. Root tests mechanically adopt
+          the guarded getter and awaited initializer; existing booted consumer tests keep proving
+          ready collaborators after actual boot. Initialization acquires no external resources.
         sources:
           - core/boot.js
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/staff/index.js
           - core/server/services/members/api.js
           - core/server/services/email-service/email-service-wrapper.js
@@ -7453,9 +7500,9 @@ services:
           - test/e2e-api/members/send-magic-link.test.js
       lifetime:
         summary: >-
-          A truthy service keeps the whole graph across repeat init and same-process boots.
-          Replacing wrapper properties does not retarget retained consumers or Attribution
-          objects, which retain their URL translator. There is no root history/result cache;
+          defineService retains the whole ready graph across repeated init and same-process boots.
+          Staff, Members and Email retain that instance; Attribution objects retain their URL
+          translator. There is no root history/result cache;
           histories and attributions are created per operation. Event reads query current rows
           ordered created_at then id descending and fetch current resources; missing resources
           degrade to saved URL/null attribution. Booted tests pin deleted resources and current
@@ -7463,7 +7510,7 @@ services:
           the deterministic ordering or concurrent event-write/read behavior. Root and booted
           consumer tests pin retained identity across repeated initialization.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/attribution-builder.js
           - core/server/services/member-attribution/url-history.js
@@ -7487,7 +7534,7 @@ services:
           policy and tagger URL reads, plus init-only parser URL reads and captured Admin referrer
           matching; they do not establish production hot reload.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/url-history.js
@@ -7513,7 +7560,7 @@ services:
           service's three event-reading methods rebuild only attribution/referrer fields, omitting
           stored UTM. Tests for UTM persistence do not prove its return on those reader surfaces.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/url-translator.js
@@ -7526,7 +7573,8 @@ services:
           - test/e2e-api/members/webhooks.test.js
       failures:
         summary: >-
-          Root init throws synchronously without rollback. Invalid history normally becomes
+          Root init rejects with the factory error, leaves the guarded service unavailable and
+          permits a later explicit retry. Invalid history normally becomes
           empty; path-resolution rejection degrades to URL attribution, while explicit resource
           lookup, event queries, callbacks and parser failures otherwise propagate. Integration
           lookup exceptions are swallowed; a null integration instead yields Integration: undefined.
@@ -7535,10 +7583,11 @@ services:
           Staff catches failures in fallback event reads and still sends, but provided-attribution
           enrichment failure reaches the subscriber catch and skips that notification. Units pin
           missing-resource fallbacks and HTML preservation; most injected fault/consumer boundaries
-          remain untested. Root characterization pins original synchronous errors and successful
-          retry after URL configuration or late model acquisition failure.
+          remain untested. Root characterization mechanically adopts rejected init promises,
+          preserving original error identity and successful retry after URL configuration or late
+          model acquisition failure.
         sources:
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/member-attribution/member-attribution-service.js
           - core/server/services/member-attribution/url-translator.js
           - core/server/services/member-attribution/outbound-link-tagger.js
@@ -7553,10 +7602,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Root and booted tests now pin pre-init absence, synchronous publication, repeated init,
-        retained Staff/Members references and EmailRenderer attribution/tagging. Keep explicit
-        async startup sequencing in the initializer change; constructor/parser failure cleanup
-        and restart/replacement semantics are not established by these tests.
+        Root and booted tests now pin guarded pre-init access, awaited publication, repeated init,
+        retained Staff/Members references and EmailRenderer attribution/tagging. Broader parser
+        fault coverage and a restart/replacement contract are not established by these tests;
+        no external initialization resource requires cleanup.
       - >-
         Same-graph root tests now cover valid history/context tracking changes, live outbound
         tagging policy/source URL, captured parser URLs, integration lookup suppression and two
@@ -8041,7 +8090,8 @@ services:
         summary: >-
           Source-checked: settings, signing keys, i18n, metafields and the Stripe Checkout config,
           whose checkout service the members API reads when it is built, precede members; boot
-          awaits Stripe and initializes email-address/gifts before the parallel service group.
+          awaits Stripe and member-attribution and initializes email-address/gifts before the
+          parallel service group.
           Members publishes its graph synchronously before awaiting historical migrations, so
           later group expressions already read api.members. Tiers is initialized afterward in
           that group; member and router controllers retain its wrapper and read its API during
@@ -13232,15 +13282,15 @@ services:
       startup:
         summary: >-
           Foreground boot invokes staff init before mounting the app and notifying readiness.
-          Email-address initialization runs earlier; the synchronous member-attribution init
-          appears before staff in the Promise.all argument list, making its service available
-          before staff captures it. Stripe and gifts are composed earlier but defer reading
+          Email-address initialization runs earlier; boot awaits member-attribution init before
+          entering the Promise.all group in which staff captures its ready service.
+          Stripe and gifts are composed earlier but defer reading
           api.emails. Staff init registers listeners and prepares rendering/transport objects;
           it does not send or verify delivery. Direct use before init has no readiness guard.
         sources:
           - core/boot.js
           - core/server/services/staff/index.js
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
         tests: []
@@ -13321,8 +13371,8 @@ services:
     blockers:
       - >-
         Add exact root/consumer export and identity contracts, repeat-init subscription counts,
-        use-before-init behavior and real boot dependency ordering. Making member-attribution
-        init asynchronous could leave staff retaining an unavailable dependency.
+        use-before-init behavior and real boot dependency ordering. Preserve boot's explicit
+        await of member-attribution init before staff captures its service.
       - >-
         Decide and test startup failure recovery. Mailer creation can precede a renderer failure
         without disposal; api assignment precedes subscription completion, so partial listener
@@ -15794,13 +15844,13 @@ services:
           - core/frontend/helpers/tags.js
           - core/frontend/meta/url.js
           - core/frontend/meta/author-url.js
-          - core/server/services/audience-feedback/index.js
+          - core/server/services/audience-feedback/index.ts
           - core/server/services/comments/index.js
           - core/server/services/content-import/index.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/machine-payments/index.js
-          - core/server/services/member-attribution/index.js
+          - core/server/services/member-attribution/index.ts
           - core/server/services/members/api.js
           - core/server/services/mentions/service.js
           - core/server/services/slack-ping/index.ts

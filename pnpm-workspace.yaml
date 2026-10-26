@@ -227,7 +227,7 @@ catalog:
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
   typescript-eslint: 8.71.1
-  undici: 8.11.0
+  undici: 8.12.3
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 5.2.0
@@ -301,7 +301,7 @@ overrides:
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mppx pins ox exactly; use viem's copy so Ghost ships one ox
-  'mppx>ox': 0.14.33
+  'mppx>ox': 0.14.57
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and

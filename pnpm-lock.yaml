@@ -768,8 +768,8 @@ catalogs:
       specifier: 8.71.1
       version: 8.71.1
     undici:
-      specifier: 8.11.0
-      version: 8.11.0
+      specifier: 8.12.3
+      version: 8.12.3
     unidecode:
       specifier: 1.1.0
       version: 1.1.0
@@ -826,7 +826,7 @@ overrides:
   moment-timezone: 0.6.5
   '@types/bookshelf>knex': 2.4.2
   juice>cheerio: 1.2.0
-  mppx>ox: 0.14.33
+  mppx>ox: 0.14.57
   '@tryghost/kg-default-cards': workspace:*
   '@babel/runtime@<7.26.10': ^7.26.10
   braces@<3.0.3: ^3.0.3
@@ -1153,8 +1153,8 @@ importers:
         specifier: 7.14.0
         version: 7.14.0
       jszip:
-        specifier: 3.10.1
-        version: 3.10.1
+        specifier: 3.10.2
+        version: 3.10.2
       lucide-react:
         specifier: 'catalog:'
         version: 1.23.0(@types/react@18.3.31)(react@18.3.1)
@@ -2585,7 +2585,7 @@ importers:
         version: 1.0.41
       undici:
         specifier: 'catalog:'
-        version: 8.11.0
+        version: 8.12.3
       unidecode:
         specifier: 'catalog:'
         version: 1.1.0
@@ -12714,8 +12714,8 @@ packages:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
 
-  jszip@3.10.1:
-    resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
+  jszip@3.10.2:
+    resolution: {integrity: sha512-3l+rb15IOWtUhU0H5MFqES/T6Kh7abYwjosBey/vD6hDt8zoEffkSC5Ws5SGtgVw3gBx2NEbhTeSW1+kWkpyTQ==}
 
   juice@11.1.1:
     resolution: {integrity: sha512-4SBfZqKcc6DrIS+5b/WiGoWaZsdUPBH+e6SbRlNjJpaIRtfoBhYReAtobIEW6mcLeFFDXLBJMuZwkJLkBJjs2w==}
@@ -14064,6 +14064,9 @@ packages:
 
   ox@0.14.33:
     resolution: {integrity: sha512-rooA/4o7bBof4Ge2VH/eovfNPb/AEEYyrNj03wggc55g5HZD8Pjs/OeWhttgjic3dDcqn0r29bDuvQEdTiUemQ==}
+
+  ox@0.14.57:
+    resolution: {integrity: sha512-CPF6aEFyAuqgL0x7VaFM0vI2/CUd5Qk8+BIL6OnViPw+gF07O/VAhqEPOPw5GYnYPwomIk8mD91gTcQ1RAtupA==}
 
   oxc-parser@0.127.0:
     resolution: {integrity: sha512-bkgD4qHlN7WxLdX8bLXdaU54TtQtAIg/ZBAfm0aje/mo3MRDo3P0hZSgr4U7O3xfX+fQmR5AP04JS/TGcZLcFA==}
@@ -16235,8 +16238,8 @@ packages:
     resolution: {integrity: sha512-RYONW2MeafgYlkVOKYKkA/Ag7BmXqgIWCa8t1m0JcxrQg9pI9lEqRhAOruOBCbAohOa/gkCF+iPi9hrgvTzu6Q==}
     engines: {node: '>=20.18.1'}
 
-  undici@8.11.0:
-    resolution: {integrity: sha512-AdzuGcAkzhbha3GgCSoUBx2P0quwym6qdFNCQz/fDGZc8w9XJ741wHUbt2kTmfPz+ZIOMkySFkiY7RXmiDDC8w==}
+  undici@8.12.3:
+    resolution: {integrity: sha512-+fdndUTwBP86cVjihTp21hZHo7d6oj1c/47XPA3lL8mM0XHs+C4EkcjmgRsFnFk2f/UONGDy9ItBItmXsLOQHw==}
     engines: {node: '>=22.19.0'}
 
   unherit@1.1.3:
@@ -25417,7 +25420,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.2
-      undici: 8.11.0
+      undici: 8.12.3
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -25495,7 +25498,7 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
-  jszip@3.10.1:
+  jszip@3.10.2:
     dependencies:
       lie: 3.3.0
       pako: 1.0.11
@@ -26593,7 +26596,7 @@ snapshots:
   mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.13)(viem@2.55.11):
     dependencies:
       incur: 0.4.26
-      ox: 0.14.33
+      ox: 0.14.57
       viem: 2.55.11
       zod: 4.6.5
     optionalDependencies:
@@ -27064,6 +27067,17 @@ snapshots:
       safe-push-apply: 1.0.0
 
   ox@0.14.33:
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.1
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.2.3
+      eventemitter3: 5.0.1
+
+  ox@0.14.57:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
@@ -29704,7 +29718,7 @@ snapshots:
 
   undici@7.29.1: {}
 
-  undici@8.11.0: {}
+  undici@8.12.3: {}
 
   unherit@1.1.3:
     dependencies:

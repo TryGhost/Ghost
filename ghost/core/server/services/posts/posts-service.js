@@ -342,12 +342,17 @@ class PostsService {
       tagIds.length && postIds.length
         ? await options
             .transacting('posts_tags')
-            .whereIn('tag_id', tagIds)
             .whereIn('post_id', postIds)
-            .select('post_id', 'tag_id')
+            .select('post_id', 'tag_id', 'sort_order')
             .forUpdate()
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
+
+    const nextSortOrders = new Map();
+    for (const row of existingRows) {
+      const next = Math.max(nextSortOrders.get(row.post_id) ?? 0, row.sort_order + 1);
+      nextSortOrders.set(row.post_id, next);
+    }
 
     const postTags = [];
     for (const tagId of tagIds) {
@@ -356,11 +361,14 @@ class PostsService {
           continue;
         }
 
+        const sortOrder = nextSortOrders.get(postId) ?? 0;
+        nextSortOrders.set(postId, sortOrder + 1);
+
         postTags.push({
           id: new ObjectId().toHexString(),
           post_id: postId,
           tag_id: tagId,
-          sort_order: 0,
+          sort_order: sortOrder,
         });
       }
     }

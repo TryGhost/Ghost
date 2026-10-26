@@ -1986,6 +1986,8 @@ module.exports = class MemberRepository {
         // Note: we add the product here
         // We don't override the products because in an edge case a member can have multiple subscriptions
         // We'll need to keep all the products related to those subscriptions to avoid creating other issues
+        // Replace any existing entry for this tier so a comp or gift expiry_at doesn't carry over
+        memberProducts = memberProducts.filter((product) => product.id !== ghostProduct.id);
         memberProducts.push(ghostProduct.toJSON());
       }
     } else {

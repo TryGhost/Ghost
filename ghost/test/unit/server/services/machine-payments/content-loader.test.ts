@@ -1,11 +1,13 @@
-const assert = require('node:assert/strict');
-const {
-  ContentLoader,
-} = require('../../../../../core/server/services/machine-payments/content-loader');
+import assert from 'node:assert/strict';
+import { ContentLoader } from '../../../../../core/server/services/machine-payments/content-loader';
+
+type FakePostModel = {
+  findOne: () => Promise<{ toJSON: () => Record<string, unknown> }>;
+};
 
 describe('Unit: server/services/machine-payments/content-loader', function () {
   it('returns null for non-purchasable entries', async function () {
-    const postModel = {
+    const postModel: FakePostModel = {
       findOne: async () => ({
         toJSON: () => ({ id: '1', visibility: 'members', tiers: [] }),
       }),
@@ -21,7 +23,7 @@ describe('Unit: server/services/machine-payments/content-loader', function () {
   });
 
   it('returns full entry for paid visibility', async function () {
-    const postModel = {
+    const postModel: FakePostModel = {
       findOne: async () => ({
         toJSON: () => ({
           id: '1',
@@ -39,13 +41,14 @@ describe('Unit: server/services/machine-payments/content-loader', function () {
     });
 
     const entry = await loader.loadFullEntry('posts', '1');
+    assert.ok(entry);
     assert.equal(entry.visibility, 'paid');
     assert.equal(entry.url, 'http://example.com/post/');
     assert.equal(entry.type, 'post');
   });
 
   it('treats mixed free+paid tiers as not purchasable on the raw model', async function () {
-    const postModel = {
+    const postModel: FakePostModel = {
       findOne: async () => ({
         toJSON: () => ({
           id: '1',
@@ -61,7 +64,7 @@ describe('Unit: server/services/machine-payments/content-loader', function () {
   });
 
   it('treats published paid posts without a deliverable URL as not purchasable', async function () {
-    const postModel = {
+    const postModel: FakePostModel = {
       findOne: async () => ({
         toJSON: () => ({
           id: '1',

@@ -25,6 +25,6 @@ export const retryButton = 'Retry';
 export const resetPasswordHeading = 'Reset your password.';
 export const updatePasswordHeading = 'Update your password.';
 export const twoFactorHeading = '2FA confirmation';
-export const newDeviceHeading = "Verify it's really you";
+export const newDeviceHeading = 'Verify it’s really you';
 export const createAccountHeading = 'Create your account.';
 export const welcomeHeading = 'Welcome to Ghost.';

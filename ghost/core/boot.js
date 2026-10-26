@@ -189,6 +189,11 @@ async function initCore({ ghostServer, config }) {
   await invites.init();
   debug('End: Invites Service');
 
+  debug('Begin: Integrations Service');
+  const integrations = require('./server/services/integrations').default;
+  await integrations.init();
+  debug('End: Integrations Service');
+
   debug('Begin: Support Requests Service');
   const supportRequests = require('./server/services/support-requests').default;
   await supportRequests.init();
@@ -239,9 +244,9 @@ async function initServicesForFrontend({ bootLogger }) {
   debug('End: Link Redirects');
 
   debug('Begin: Themes');
-  // customThemeSettingsService.api must be initialized before any theme activation occurs
-  const customThemeSettingsService = require('./server/services/custom-theme-settings');
-  customThemeSettingsService.init();
+  // Custom theme settings must be initialized before any theme activation occurs
+  const customThemeSettingsService = require('./server/services/custom-theme-settings').default;
+  await customThemeSettingsService.init();
 
   const themeService = require('./server/services/themes');
   const themeServiceStart = Date.now();
@@ -382,10 +387,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const postScheduling = require('./server/services/post-scheduling').default;
   const comments = require('./server/services/comments');
   const staffService = require('./server/services/staff');
-  const memberAttribution = require('./server/services/member-attribution');
+  const memberAttribution = require('./server/services/member-attribution').default;
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback');
+  const audienceFeedback = require('./server/services/audience-feedback').default;
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
@@ -437,9 +442,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
+  await memberAttribution.init();
+  // Email captures Audience Feedback's ready link service during initialization.
+  await audienceFeedback.init();
+
   await Promise.all([
     identityTokens.init(),
-    memberAttribution.init(),
     mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
@@ -451,7 +459,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     upgrades.init(),
     slack.init(),
-    audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,

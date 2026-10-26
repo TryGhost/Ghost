@@ -39,18 +39,18 @@ describe('Audience feedback service root', function () {
   });
 
   it('captures the home URL at initialization and retains the complete composition on repeated init', async function () {
-    const audienceFeedback = require(rootPath);
+    const audienceFeedback = require(rootPath).default;
     sinon.assert.notCalled(homeUrl);
     homeUrl.returns('https://initialized.example/blog/');
 
     await audienceFeedback.init();
-    const { service, controller, repository } = audienceFeedback;
+    const { service, controller, repository } = audienceFeedback.service;
     homeUrl.returns('https://changed.example/');
     await audienceFeedback.init();
 
-    assert.equal(audienceFeedback.service, service);
-    assert.equal(audienceFeedback.controller, controller);
-    assert.equal(audienceFeedback.repository, repository);
+    assert.equal(audienceFeedback.service.service, service);
+    assert.equal(audienceFeedback.service.controller, controller);
+    assert.equal(audienceFeedback.service.repository, repository);
     assert.equal(
       service.buildEmailLink({ id: postId }, 1),
       `https://initialized.example/blog/members/feedback/${postId}/1/?uuid=%%{uuid}%%&key=%%{key}%%`,
@@ -67,10 +67,10 @@ describe('Audience feedback service root', function () {
   });
 
   it('keeps the retained controller connected to its repository and live URL routing', async function () {
-    const audienceFeedback = require(rootPath);
+    const audienceFeedback = require(rootPath).default;
     homeUrl.returns('https://site.example/');
     await audienceFeedback.init();
-    const controller = audienceFeedback.controller;
+    const controller = audienceFeedback.service.controller;
     const post = { id: postId, status: 'published', tags: [], authors: [] };
     const req = {
       params: { postId, score: '1' },
@@ -98,7 +98,7 @@ describe('Audience feedback service root', function () {
   });
 
   it('propagates home URL construction failure and permits a later initialization attempt', async function () {
-    const audienceFeedback = require(rootPath);
+    const audienceFeedback = require(rootPath).default;
     const failure = new Error('Home URL is unavailable');
     homeUrl.throws(failure);
 
@@ -108,10 +108,10 @@ describe('Audience feedback service root', function () {
     await audienceFeedback.init();
 
     assert.equal(
-      audienceFeedback.service.buildEmailLink({ id: postId }, 0),
+      audienceFeedback.service.service.buildEmailLink({ id: postId }, 0),
       `https://recovered.example/members/feedback/${postId}/0/?uuid=%%{uuid}%%&key=%%{key}%%`,
     );
-    assert.equal(typeof audienceFeedback.controller.redirectToPost, 'function');
+    assert.equal(typeof audienceFeedback.service.controller.redirectToPost, 'function');
     sinon.assert.calledTwice(homeUrl);
   });
 });
