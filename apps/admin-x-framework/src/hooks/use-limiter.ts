@@ -45,7 +45,7 @@ function countEmailRecipients(emails: EmailsResponseType['emails']): number {
 export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions = {}): Limiter => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
-  const wantsStaff = !wanted || wanted.includes('staff');
+  const wantsStaff = !wanted || wanted.includes('staff') || wanted.includes('limitTrialStaff');
   const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers({
     enabled: wantsStaff,
   });
@@ -106,6 +106,10 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     // limit that throws, so without one they're skipped to keep the rest working
     const limits = Object.fromEntries(
       Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
+        // Invitation email usage is authoritative on the server, not the pending-invite list.
+        if (name === 'limitTrialStaffInvites') {
+          return false;
+        }
         if (wanted && !wanted.includes(name)) {
           return false;
         }
@@ -175,6 +179,11 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
 
         return countEmailRecipients(emails);
       };
+    }
+
+    if (limits.limitTrialStaff) {
+      limits.limitTrialStaff.currentCountQuery = () =>
+        Promise.resolve(users.length + invites.length);
     }
 
     limiter.loadLimits({
