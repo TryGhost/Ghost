@@ -5,6 +5,8 @@ export * as LucideIcon from 'lucide-react';
 export { default as useGlobalDirtyState } from './hooks/use-global-dirty-state';
 export { useSimplePagination } from './hooks/use-simple-pagination';
 export { useIsMobile } from './hooks/use-mobile';
+// ANALYTICS PROTOTYPE: milestone switch read from a root attribute
+export { useRootFlag } from './hooks/use-root-flag';
 
 export {
   cn,

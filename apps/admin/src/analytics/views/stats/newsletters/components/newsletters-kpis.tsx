@@ -26,6 +26,7 @@ import {
   formatDisplayDate,
   formatNumber,
   formatPercentage,
+  useRootFlag,
 } from '@tryghost/shade/utils';
 import {
   getEffectiveChartRange,
@@ -116,6 +117,8 @@ const NewsletterKPIs: React.FC<{
   initialTab = 'total-subscribers',
 }) => {
   const [currentTab, setCurrentTab] = useState(initialTab);
+  // ANALYTICS PROTOTYPE: Admin 7 analytics style draws flat bars
+  const admin7Analytics = useRootFlag('admin7-analytics');
   const [isHoveringClickable, setIsHoveringClickable] = useState(false);
   const { range } = useAnalytics();
   const navigate = useNavigate();
@@ -430,7 +433,20 @@ const NewsletterKPIs: React.FC<{
                       setIsHoveringClickable(!!activePostId);
                     }}
                   >
-                    {/* ANALYTICS PROTOTYPE: flat bars (was a gradient) */}
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor={tabConfig[currentTab].color}
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor={tabConfig[currentTab].color}
+                          stopOpacity={0.6}
+                        />
+                      </linearGradient>
+                    </defs>
                     <Recharts.CartesianGrid
                       horizontal={true}
                       stroke="var(--border)"
@@ -478,8 +494,8 @@ const NewsletterKPIs: React.FC<{
                     <Recharts.Bar
                       activeBar={{ fillOpacity: 1 }}
                       dataKey={tabConfig[currentTab].datakey}
-                      fill={tabConfig[currentTab].color}
-                      fillOpacity={0.5}
+                      fill={admin7Analytics ? tabConfig[currentTab].color : 'url(#barGradient)'}
+                      fillOpacity={admin7Analytics ? 0.5 : 0.6}
                       isAnimationActive={false}
                       maxBarSize={32}
                       minPointSize={3}

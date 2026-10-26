@@ -19,6 +19,7 @@ import { Stack, Text } from '@tryghost/shade/primitives';
 import { ShadeApp } from '@tryghost/shade/app';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { SCENARIOS, type ScenarioId, setScenario, useScenario } from './data/scenario';
+import { setAnalyticsStyle, useAnalyticsStyle } from './analytics-style';
 import { setPatternsView, usePatternsView } from './patterns-view';
 
 // The prototype menu, carried over from the automations build-proto. A 64px
@@ -43,6 +44,7 @@ export const ShapingMenu: React.FC = () => {
   const dark = useSyncExternalStore(subscribeToTheme, isDark);
   const patternsView = usePatternsView();
   const scenario = useScenario();
+  const analyticsStyle = useAnalyticsStyle();
 
   // Close on a press anywhere else, in the capture phase so a screen that
   // stops pointer events can't keep it open. Presses inside the panel or its
@@ -96,6 +98,19 @@ export const ShapingMenu: React.FC = () => {
                   checked={patternsView}
                   id="shaping-patterns-view"
                   onCheckedChange={setPatternsView}
+                />
+              </Field>
+              <Field className="justify-between" orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="shaping-analytics-style">Admin 7 analytics</FieldLabel>
+                  <FieldDescription>
+                    The new analytics style. Off shows today’s, for comparison.
+                  </FieldDescription>
+                </FieldContent>
+                <Switch
+                  checked={analyticsStyle}
+                  id="shaping-analytics-style"
+                  onCheckedChange={setAnalyticsStyle}
                 />
               </Field>
               <Field>

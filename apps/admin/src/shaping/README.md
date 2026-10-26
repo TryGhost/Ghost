@@ -31,6 +31,28 @@ The one swap point is the `analytics` route in `routes.tsx`, which renders
 `PatternsSwap` (`patterns/patterns-swap.tsx`) where it used to render
 `<Outlet />`.
 
+## Admin 7 analytics switch
+
+The menu's **Admin 7 analytics** switch stands in for the milestone's Labs
+flag (`analytics-style.ts`). It sets `data-admin7-analytics` on `<html>`,
+live and remembered in this browser; on by default. Off shows today's
+analytics, for comparison.
+
+Restyled pieces read that one attribute, so each change is built the way its
+PR will be:
+
+- Shared Shade components read it with `useRootFlag('admin7-analytics')`
+  (`apps/shade/src/hooks/use-root-flag.ts`), and scoped CSS can select it.
+- Style-only changes switch values (fill, curve, gridlines), never structure.
+  Structural changes get a whole new component beside the old one, switched
+  in one place.
+- Lines marked `ANALYTICS PROTOTYPE` are the ones a PR carries over, with
+  Admin setting the attribute from `useFeatureFlag('admin7Analytics')`.
+
+Open question for the PR: Admin 7 milestones normally reach Shade through
+ShadeApp's `isAdmin7`, but that now stays on for the shipped pill controls,
+so it can't gate this milestone.
+
 ## Data scenarios
 
 The menu's **Data** picker chooses which publisher the analytics numbers

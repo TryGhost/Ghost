@@ -9,6 +9,7 @@ import React from 'react';
 import { AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { TrendingDown, TrendingUp } from 'lucide-react';
+import { useRootFlag } from '@/hooks/use-root-flag';
 
 // A Ghost specific charts for analytics re-using ShadCN/UI and Recharts components
 
@@ -114,7 +115,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
   range,
   yAxisRange,
   color = 'var(--chart-blue)',
-  // `id` named the gradient; unused while the fill is flat
+  id,
   className,
   syncId,
   allowDataOverflow = false,
@@ -124,6 +125,11 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
   showHours = false,
   tooltipContent,
 }) => {
+  // ANALYTICS PROTOTYPE: the Admin 7 analytics chart style. No gridlines, a
+  // smooth line over a flat fill, dates in capitals. Off is today's chart.
+  const admin7Analytics = useRootFlag('admin7-analytics');
+  const gridLines = showHorizontalLines && !admin7Analytics;
+
   const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
   const chartConfig = {
     value: {
@@ -149,11 +155,11 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
         margin={{
           left: 4,
           right: 4,
-          top: showHorizontalLines ? 24 : 4,
+          top: gridLines ? 24 : 4,
         }}
         syncId={syncId}
       >
-        <CartesianGrid horizontal={showHorizontalLines} stroke="var(--border)" vertical={false} />
+        <CartesianGrid horizontal={gridLines} stroke="var(--border)" vertical={false} />
         <XAxis
           axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
           dataKey="date"
@@ -161,9 +167,15 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
           tick={(props) => (
             <AlignedAxisTick
               {...props}
-              formatter={(value) =>
-                formatDisplayDateWithRange(String(value), range, showHours, xTickHoursOnly)
-              }
+              formatter={(value) => {
+                const label = formatDisplayDateWithRange(
+                  String(value),
+                  range,
+                  showHours,
+                  xTickHoursOnly,
+                );
+                return admin7Analytics ? label.toUpperCase() : label;
+              }}
               textAnchor={xTicks.length === 1 ? 'middle' : undefined}
             />
           )}
@@ -194,16 +206,23 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
           isAnimationActive={false}
           position={{ y: 10 }}
         />
-        {/* ANALYTICS PROTOTYPE: flat fill (was a fading gradient) */}
+        {!admin7Analytics && (
+          <defs>
+            <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+              <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+            </linearGradient>
+          </defs>
+        )}
         <Area
           baseValue={baseValue}
           dataKey="value"
-          fill={color}
-          fillOpacity={0.1}
+          fill={admin7Analytics ? color : `url(#fillChart-${id})`}
+          fillOpacity={admin7Analytics ? 0.1 : 0.2}
           isAnimationActive={false}
           stroke={color}
           strokeWidth={1.5}
-          type="linear"
+          type={admin7Analytics ? 'monotone' : 'linear'}
         />
       </AreaChart>
     </ChartContainer>

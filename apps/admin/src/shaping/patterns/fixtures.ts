@@ -159,19 +159,26 @@ export const buildFixtures = (scenario: FakeScenarioId, range: number) => {
   };
   const latestSend = sends[0];
   const sentRadial: NewsletterRadialChartData[] = [
-    { datatype: 'Sent', value: latestSend ? 1 : 0, fill: '', color: 'var(--chart-purple)' },
+    {
+      datatype: 'Sent',
+      value: latestSend ? 1 : 0,
+      fill: 'url(#gradientPurple)',
+      color: 'var(--chart-purple)',
+    },
   ];
+  // Gradient fills as the real screens pass them; the Admin 7 analytics
+  // style draws each ring in `color` instead
   const openedRadial: NewsletterRadialChartData[] = [
     {
       datatype: 'Average',
       value: newsletterTotals.avgOpenRate,
-      fill: '',
+      fill: 'url(#gradientGray)',
       color: 'var(--chart-gray)',
     },
     {
       datatype: 'This newsletter',
       value: latestSend?.openRate ?? 0,
-      fill: '',
+      fill: 'url(#gradientBlue)',
       color: 'var(--chart-blue)',
     },
   ];
@@ -179,13 +186,13 @@ export const buildFixtures = (scenario: FakeScenarioId, range: number) => {
     {
       datatype: 'Average',
       value: newsletterTotals.avgClickRate,
-      fill: '',
+      fill: 'url(#gradientGray)',
       color: 'var(--chart-gray)',
     },
     {
       datatype: 'This newsletter',
       value: latestSend?.clickRate ?? 0,
-      fill: '',
+      fill: 'url(#gradientTeal)',
       color: 'var(--chart-teal)',
     },
   ];

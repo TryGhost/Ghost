@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { LucideIcon, Recharts, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, Recharts, formatNumber, useRootFlag } from '@tryghost/shade/utils';
 import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useSubscriptionStats } from '@tryghost/admin-x-framework/api/stats';
@@ -66,6 +66,8 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
   const { data: subscriptionStatsResponse } = useSubscriptionStats();
   const { data: { tiers: tierObjects = [] } = {} } = useBrowseTiers();
   const [breakdownType, setBreakdownType] = useState<BreakdownType>('billing-period');
+  // ANALYTICS PROTOTYPE: Admin 7 analytics style draws flat slices
+  const admin7Analytics = useRootFlag('admin7-analytics');
 
   // Calculate date range for filtering
   const { startDate, endDate } = useMemo(() => getRangeDates(range), [range]);
@@ -113,13 +115,16 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
     const chartData = Object.entries(cadenceTotals).map(([cadence, count], index) => {
       // Map cadence values to display labels and colors
       let label = cadence;
+      let fillGradient = 'url(#gradientPurple)';
       let solidColor = 'var(--chart-purple)';
 
       if (cadence === 'month') {
         label = 'Monthly';
+        fillGradient = 'url(#gradientPurple)';
         solidColor = 'var(--chart-purple)';
       } else if (cadence === 'year') {
         label = 'Annual';
+        fillGradient = 'url(#gradientTeal)';
         solidColor = 'var(--chart-teal)';
       }
 
@@ -127,7 +132,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
         id: `cadence-${index}`,
         name: label,
         count,
-        fill: solidColor,
+        fill: fillGradient,
         color: solidColor,
       };
     });
@@ -195,7 +200,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
       const colorIndex = index % tierColors.length;
       return {
         ...tier,
-        fill: tierColors[colorIndex].solid,
+        fill: tierColors[colorIndex].gradient,
         color: tierColors[colorIndex].solid,
       };
     });
@@ -285,15 +290,59 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
               config={chartConfig}
             >
               <Recharts.PieChart>
-                {/* ANALYTICS PROTOTYPE: flat slices (were gradients); fill is
-                    each slice's solid colour, softened on the Pie below */}
+                <defs>
+                  <linearGradient id="gradientPurple" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-purple)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-purple)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientTeal" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-teal)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-teal)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientRose" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-rose)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-rose)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientBlue" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-blue)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-blue)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientOrange" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-orange)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-orange)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientGreen" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-green)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-green)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientAmber" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-amber)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-amber)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientYellow" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-yellow)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-yellow)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientDarkblue" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-darkblue)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-darkblue)" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="gradientGray" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-darkgray)" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="var(--chart-darkgray)" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
                 <ChartTooltip content={<CustomTooltip />} cursor={false} />
                 <Recharts.Pie
                   animationBegin={0}
                   animationDuration={1000}
-                  data={chartData}
+                  data={
+                    admin7Analytics
+                      ? chartData.map((slice) => ({ ...slice, fill: slice.color }))
+                      : chartData
+                  }
                   dataKey="count"
-                  fillOpacity={0.7}
+                  fillOpacity={admin7Analytics ? 0.7 : undefined}
                   innerRadius={70}
                   nameKey="name"
                   stroke="var(--card)"
