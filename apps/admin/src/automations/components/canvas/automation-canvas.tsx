@@ -47,6 +47,20 @@ import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-fra
 import type { EmailModalMode } from '@/automations/components/types';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
+import {
+  isCanvasCard,
+  isCanvasCardV2,
+  isConceptA,
+  isConceptF,
+  useConcept,
+  useShowEditMarkers,
+} from '@/automations/concepts/concept';
+import {
+  hasEmailChanged,
+  hasStepChanged,
+  type PendingChangesKind,
+  type StepChangeKind,
+} from '@/automations/concepts/pending-changes';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -80,6 +94,8 @@ const buildNodeContextMenuItems = ({
   onDelete,
   onEditEmailBody,
   onPreviewEmail,
+  compact = false,
+  onUndoChanges,
   stepId,
 }: {
   canDelete?: boolean;
@@ -87,11 +103,15 @@ const buildNodeContextMenuItems = ({
   onDelete?: (deleteStepId: string) => void;
   onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
   onPreviewEmail?: (previewEmailStepId: string) => void;
+  // NY-1715 concept E: the card itself opens and previews the email, so the menu skips those
+  // (and the rule above Delete), and gains "Discard changes" while the step has some.
+  compact?: boolean;
+  onUndoChanges?: () => void;
   stepId: string;
 }): NodeContextMenuEntry[] => {
   const items: NodeContextMenuEntry[] = [];
 
-  if (canEditEmailBody && onEditEmailBody) {
+  if (canEditEmailBody && onEditEmailBody && !compact) {
     items.push({
       icon: LucideIcon.Pencil,
       label: 'Edit email body',
@@ -99,7 +119,7 @@ const buildNodeContextMenuItems = ({
     });
   }
 
-  if (canEditEmailBody && onPreviewEmail) {
+  if (canEditEmailBody && onPreviewEmail && !compact) {
     items.push({
       icon: LucideIcon.Eye,
       label: 'Preview',
@@ -107,8 +127,13 @@ const buildNodeContextMenuItems = ({
     });
   }
 
+  if (onUndoChanges) {
+    // The header's "Discard all changes", for one step.
+    items.push({ icon: LucideIcon.Undo2, label: 'Discard changes', onSelect: onUndoChanges });
+  }
+
   if (canDelete && onDelete) {
-    if (canEditEmailBody) {
+    if (canEditEmailBody && !compact) {
       items.push({ id: 'before-delete', type: 'separator' });
     }
     items.push({
@@ -171,6 +196,8 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  // NY-1715 concepts: set to mark steps that differ from the last save.
+  savedActionsForMarks: readonly AutomationAction[] | undefined;
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -185,6 +212,12 @@ type BuildGraphParams = {
   onPreviewEmail: (stepId: string) => void;
   onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
   newStepId: string | null;
+  // NY-1715 concept E: set to offer a revert beside steps with unsaved changes.
+  onRevertStep?: (stepId: string) => void;
+  // NY-1715 concept F: saved steps deleted since the last save, shown until it.
+  pendingDeleteIds?: ReadonlySet<string>;
+  // NY-1715 concept E: steps offer "Discard changes" in their ⋯ menu.
+  offersRevertInMenu?: boolean;
 };
 
 const buildGraph = ({
@@ -192,6 +225,7 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
+  savedActionsForMarks,
   tierQuery,
   onChange,
   nodeSizes,
@@ -206,6 +240,9 @@ const buildGraph = ({
   onPick,
   onPreviewEmail,
   newStepId,
+  onRevertStep,
+  pendingDeleteIds,
+  offersRevertInMenu = false,
 }: BuildGraphParams): {
   nodes: AutomationFlowNode[];
   edges: Edge[];
@@ -255,10 +292,24 @@ const buildGraph = ({
   cursorY +=
     (nodeSizes[TRIGGER_CANVAS_ID]?.height ?? FIXED_TRIGGER_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
 
+  // E: the marker's revert, for a changed step the last save has (a new one has nothing to
+  // go back to; its menu deletes it).
+  const revertLabel = automation.status === 'active' ? 'Revert to published' : 'Revert to saved';
+  // E: what the yellow dot means, on hovering it.
+  const unsavedHint = automation.status === 'active' ? 'Unpublished changes' : 'Unsaved changes';
   ordered.forEach((action) => {
     const editableEmail = action.type === 'send_email';
     const editableWait = action.type === 'wait';
     const errorMessage = actionErrors[action.id];
+    const deleted = pendingDeleteIds?.has(action.id) ?? false;
+    const modified =
+      deleted || (savedActionsForMarks ? hasStepChanged(action, savedActionsForMarks) : false);
+    const isSaved = savedActionsForMarks?.some((saved) => saved.id === action.id) ?? false;
+    const changeKind: StepChangeKind = deleted ? 'deleted' : isSaved ? 'updated' : 'added';
+    const revert =
+      onRevertStep && modified && isSaved
+        ? { onRevert: () => onRevertStep(action.id), revertLabel }
+        : {};
 
     nodes.push({
       id: action.id,
@@ -278,6 +329,10 @@ const buildGraph = ({
                 onInteract: () => onInteract(action.id),
                 onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),
+                deleted,
+                changeKind,
+                unsavedHint,
+                ...revert,
               },
             }
           : {}),
@@ -288,6 +343,10 @@ const buildGraph = ({
                 onInteract: () => onInteract(action.id),
                 onValidityChange: (valid: boolean) => onWaitValidityChange(action.id, valid),
                 onUpdate: (hours: number) => onUpdateWait(action.id, hours),
+                deleted,
+                changeKind,
+                unsavedHint,
+                ...revert,
               },
             }
           : {}),
@@ -297,10 +356,17 @@ const buildGraph = ({
           onDelete,
           onEditEmailBody,
           onPreviewEmail: automation.id ? onPreviewEmail : undefined,
+          compact: offersRevertInMenu,
+          // E: only while the step differs from its last save (and has one to go back to).
+          onUndoChanges:
+            offersRevertInMenu && onRevertStep && modified && isSaved
+              ? () => onRevertStep(action.id)
+              : undefined,
           stepId: action.id,
         }),
         errorMessage,
         isNew: newStepId === action.id,
+        modified,
       },
       ...nodeProps(action.id),
     });
@@ -404,6 +470,20 @@ type AutomationCanvasProps = {
   onSelectRun: (id: string | null) => void;
   onDiscardBlockedEmailNavigation?: (closeEmailModal: () => void) => void;
   onEmailDirtyChange?: (isDirty: boolean) => void;
+  // NY-1715 concepts: the automation's unsaved/unpublished state, shown in the email editor.
+  emailEditorPendingChanges?: PendingChangesKind | null;
+  // NY-1715 concept C: the changes bar, shown below the email editor while it's open.
+  emailEditorFooter?: React.ReactNode;
+  // NY-1715 concepts D and E: changes when Discard (or its Undo) swaps the automation.
+  emailEditorResetKey?: number;
+  // NY-1715 concept E: reverts one step to the last save.
+  onRevertStep?: (stepId: string) => void;
+  // NY-1715 concept F: deleting a saved step marks it (pendingDeleteIds) until the next save.
+  onDeleteSavedStep?: (stepId: string) => void;
+  pendingDeleteIds?: ReadonlySet<string>;
+  // NY-1715 concepts: the last-saved steps, so the email editor's indicator covers its own
+  // email only.
+  savedActions?: readonly AutomationAction[];
   onKeepEditingAfterBlockedEmailNavigation?: () => void;
 };
 
@@ -433,9 +513,18 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   onSelectRun,
   onDiscardBlockedEmailNavigation,
   onEmailDirtyChange,
+  emailEditorPendingChanges = null,
+  emailEditorFooter,
+  emailEditorResetKey,
+  onRevertStep,
+  onDeleteSavedStep,
+  pendingDeleteIds,
+  savedActions,
   onKeepEditingAfterBlockedEmailNavigation,
 }) => {
   const layoutRef = useRef<HTMLElement>(null);
+  const concept = useConcept();
+  const showEditMarkers = useShowEditMarkers();
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
   const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
     setNodeSizes((previous) => {
@@ -561,6 +650,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       if (!automation) {
         return;
       }
+      // F: a saved step is only marked, so it can come back until the next save; no confirm.
+      if (onDeleteSavedStep && savedActions?.some((saved) => saved.id === actionId)) {
+        onDeleteSavedStep(actionId);
+        return;
+      }
 
       const action = automation.actions.find((item) => item.id === actionId);
       if (action?.type === 'send_email' && !isEmptyEmailLexical(action.data.email_lexical)) {
@@ -570,7 +664,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
       handleDelete(actionId);
     },
-    [automation, handleDelete],
+    [automation, handleDelete, onDeleteSavedStep, savedActions],
   );
 
   const handleUpdateWait = useCallback(
@@ -720,6 +814,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
+      savedActionsForMarks: isConceptA(concept) && showEditMarkers ? savedActions : undefined,
       tierQuery,
       onChange,
       nodeSizes,
@@ -728,17 +823,24 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       onWaitValidityChange,
       onUpdateSubject: handleUpdateSubject,
       onUpdateWait: handleUpdateWait,
-      disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
+      // F: steps waiting to be deleted don't count towards the limit.
+      disabled: automation.actions.length - (pendingDeleteIds?.size ?? 0) >= MAX_AUTOMATION_ACTIONS,
       onDelete: handleRequestDelete,
       onEditEmailBody: handleEditEmail,
       onPick: handlePick,
       onPreviewEmail: handlePreviewEmail,
       newStepId,
+      onRevertStep,
+      pendingDeleteIds,
+      offersRevertInMenu: isCanvasCardV2(concept) && !isConceptF(concept),
     });
   }, [
     actionErrors,
     connecting,
     savedTriggerTierIds,
+    concept,
+    savedActions,
+    showEditMarkers,
     tierQuery,
     onChange,
     automation,
@@ -753,6 +855,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     handlePick,
     handleRequestDelete,
     newStepId,
+    onRevertStep,
+    pendingDeleteIds,
   ]);
 
   const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
@@ -773,6 +877,34 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [deleteConfirmationAction, emailModalAction, sidebar.open, setAutomationSidebarOpen]);
+
+  // NY-1715 concept A3: the email editor clears the canvas, so an open sidebar slides away
+  // as the editor opens and comes back as it closes, both in step with the editor. Nothing
+  // the publisher opened stays closed.
+  const clearsCanvas = isCanvasCard(concept);
+  const sidebarOpenBeforeEmailRef = useRef<boolean | null>(null);
+  const isEmailModalOpen = Boolean(emailModalAction);
+  useEffect(() => {
+    if (isEmailModalOpen && clearsCanvas && sidebarOpenBeforeEmailRef.current === null) {
+      sidebarOpenBeforeEmailRef.current = sidebar.open;
+      if (sidebar.open) {
+        setAutomationSidebarOpen(false);
+      }
+    } else if (!isEmailModalOpen && sidebarOpenBeforeEmailRef.current !== null) {
+      if (sidebarOpenBeforeEmailRef.current) {
+        setAutomationSidebarOpen(true);
+      }
+      sidebarOpenBeforeEmailRef.current = null;
+    }
+  }, [clearsCanvas, isEmailModalOpen, sidebar.open, setAutomationSidebarOpen]);
+  // As the editor starts to shrink back into the card. `false` rather than null keeps the
+  // effect above from closing the sidebar again while the editor finishes closing.
+  const handleEmailEditorCloseStart = useCallback(() => {
+    if (sidebarOpenBeforeEmailRef.current) {
+      setAutomationSidebarOpen(true);
+      sidebarOpenBeforeEmailRef.current = false;
+    }
+  }, [setAutomationSidebarOpen]);
 
   const closeEmailModal = () => {
     setEmailModalMode('edit');
@@ -938,16 +1070,39 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       {emailModalAction && automation && (
         <EmailContentModal
           automationId={automation.id}
+          emailChangeKind={
+            savedActions?.some((saved) => saved.id === emailModalAction.id) ? 'updated' : 'added'
+          }
+          footer={emailEditorFooter}
           initialLexical={emailModalAction.data.email_lexical}
           initialMode={emailModalMode}
           initialSubject={emailModalAction.data.email_subject}
           isDiscardNavigationBlocked={isEmailNavigationBlocked}
+          isEmailModified={
+            showEditMarkers && !!savedActions && hasEmailChanged(emailModalAction, savedActions)
+          }
+          originStepId={emailModalAction.id}
+          pendingChanges={
+            emailEditorPendingChanges &&
+            (!savedActions || hasEmailChanged(emailModalAction, savedActions))
+              ? emailEditorPendingChanges
+              : null
+          }
+          resetKey={emailEditorResetKey}
+          revertLabel={automation.status === 'active' ? 'Revert to published' : 'Revert to saved'}
+          unsavedHint={automation.status === 'active' ? 'Unpublished changes' : 'Unsaved changes'}
           onClose={closeEmailModal}
+          onCloseStart={handleEmailEditorCloseStart}
           onDirtyChange={onEmailDirtyChange}
           onDiscardBlockedNavigation={() =>
             onDiscardBlockedEmailNavigation?.(closeEmailModalWithoutHistoryNavigation)
           }
           onKeepEditingAfterBlockedNavigation={onKeepEditingAfterBlockedEmailNavigation}
+          onRevert={
+            onRevertStep && savedActions?.some((saved) => saved.id === emailModalAction.id)
+              ? () => onRevertStep(emailModalAction.id)
+              : undefined
+          }
           onSave={({ subject, lexical }) => {
             onChange(
               updateSendEmailAction({

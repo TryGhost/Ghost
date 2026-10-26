@@ -22,7 +22,11 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
-import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import {
+  removeAction,
+  useAddAutomation,
+  useEditAutomation,
+} from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -36,6 +40,16 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import ChangesBar from './concepts/changes-bar';
+import ConceptSwitcher from './concepts/concept-switcher';
+import { countChanges, pendingChangesKind, withChangeCount } from './concepts/pending-changes';
+import {
+  isCanvasCard,
+  isCanvasCardV2,
+  isConceptA,
+  isConceptF,
+  useConcept,
+} from './concepts/concept';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
@@ -144,6 +158,24 @@ const AutomationEditorContent: React.FC<{
     setSavedAutomation((currentAutomation) => currentAutomation ?? automation);
     setDraft((currentDraft) => currentDraft ?? automation);
   }, [automation]);
+  // NY-1715 concept F: saved steps deleted on the canvas stay in the draft, marked, until the
+  // next save or publish removes them — so deleting is reversible until then, and the card
+  // stays where it was. `committedDraft` is the automation as saving would send it.
+  const [pendingDeleteIds, setPendingDeleteIds] = React.useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const committedDraft = React.useMemo(
+    () =>
+      draft &&
+      [...pendingDeleteIds].reduce(
+        (detail, actionId) =>
+          detail.actions.some((action) => action.id === actionId)
+            ? removeAction({ detail, actionId })
+            : detail,
+        draft,
+      ),
+    [draft, pendingDeleteIds],
+  );
   const isEditorLoading = !draft && !isReadError;
   const isEditorError = !draft && isReadError;
 
@@ -153,7 +185,23 @@ const AutomationEditorContent: React.FC<{
   const hasUnsavedChanges =
     isNew ||
     invalidWaitIds.size > 0 ||
-    (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
+    (!!committedDraft &&
+      !!savedAutomation &&
+      !dequal(editableSlice(committedDraft), editableSlice(savedAutomation)));
+  const concept = useConcept();
+  // C settles changes from a floating bar instead (see ChangesBar), so it skips the indicator.
+  const hasChangesBar = concept === 'a2';
+  // C puts the count of changes in its Publish changes button (live automations, where
+  // publishing reaches members) instead of a separate "Unpublished changes" line.
+  const countsChanges = isCanvasCard(concept);
+  const changeCount =
+    countsChanges && committedDraft && savedAutomation
+      ? countChanges(savedAutomation, committedDraft)
+      : 0;
+  const headerPendingChanges =
+    isConceptA(concept) && !hasChangesBar && !countsChanges && hasUnsavedChanges && draft
+      ? pendingChangesKind(draft.status)
+      : null;
 
   const onDraftChange = (next: AutomationDetail) => {
     setValidationFeedback(null);
@@ -176,6 +224,105 @@ const AutomationEditorContent: React.FC<{
     });
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
   };
+
+  // NY-1715 concepts D, E and F: Discard goes straight back to the last save, with a plain
+  // toast — no Undo, a pattern Ghost doesn't use elsewhere. Each swap restarts an open email
+  // editor from the automation's content, as Koenig keeps its own copy once mounted.
+  const [emailEditorResetKey, setEmailEditorResetKey] = React.useState(0);
+  const isConceptE = isCanvasCardV2(concept) && !isConceptF(concept);
+  const discardChanges = () => {
+    if (!draft || !savedAutomation) {
+      return;
+    }
+    onDraftChange(savedAutomation);
+    setPendingDeleteIds(new Set());
+    setEmailEditorResetKey((key) => key + 1);
+    // E is trying "undo" wording for discards; the other concepts keep "discard".
+    toast('Changes discarded');
+  };
+  // With no Undo, Discard all asks first, in the same dialog as the email editor's discard.
+  const [isConfirmDiscardAllOpen, setIsConfirmDiscardAllOpen] = React.useState(false);
+  const requestDiscardChanges = () => setIsConfirmDiscardAllOpen(true);
+
+  // NY-1715 concepts E and F: one step back to the last save — E from its menu's Discard
+  // changes, F from its marker's Revert. Only that step's settings change; the rest of the
+  // automation stays as it is.
+  const setStepData = (stepId: string, from: AutomationDetail) => {
+    const source = from.actions.find((action) => action.id === stepId);
+    if (!draft || !source) {
+      return;
+    }
+    onDraftChange({
+      ...draft,
+      actions: draft.actions.map((action) =>
+        action.id === stepId ? ({ ...action, data: source.data } as typeof action) : action,
+      ),
+    });
+    setEmailEditorResetKey((key) => key + 1);
+  };
+  const setStepDeleted = (stepId: string, deleted: boolean) => {
+    setPendingDeleteIds((current) => {
+      const next = new Set(current);
+      if (deleted) {
+        next.add(stepId);
+      } else {
+        next.delete(stepId);
+      }
+      return next;
+    });
+    if (deleted) {
+      // A deleted step no longer blocks saving: drop its errors and any invalid wait text.
+      setValidationFeedback(null);
+      setInvalidWaitIds((current) => {
+        if (!current.has(stepId)) {
+          return current;
+        }
+        const next = new Set(current);
+        next.delete(stepId);
+        return next;
+      });
+      setActionErrors(({ [stepId]: _removed, ...rest }) => rest);
+    }
+  };
+  const revertStep = (stepId: string) => {
+    if (!draft || !savedAutomation) {
+      return;
+    }
+    const isEmail = draft.actions.find((action) => action.id === stepId)?.type === 'send_email';
+    // Reverting a deleted step brings it back, edits and all; a second Revert undoes those.
+    // No toast: the card coming back says it.
+    if (pendingDeleteIds.has(stepId)) {
+      setStepDeleted(stepId, false);
+      return;
+    }
+    setStepData(stepId, savedAutomation);
+    // E's menu says "Discard changes", so its toast matches Discard all; F keeps its Revert words.
+    const revertedMessage = isConceptF(concept)
+      ? isEmail
+        ? 'Email reverted'
+        : 'Wait reverted'
+      : 'Changes discarded';
+    toast(revertedMessage);
+  };
+
+  // NY-1715 concepts: switching concepts starts each one fresh for demos — unsaved edits,
+  // errors and pending dialogs are dropped (anything already saved stays saved), and the
+  // canvas remounts below (keyed on the concept).
+  const conceptRef = React.useRef(concept);
+  React.useEffect(() => {
+    if (conceptRef.current === concept) {
+      return;
+    }
+    conceptRef.current = concept;
+    if (savedAutomation) {
+      setDraft(savedAutomation);
+    }
+    setPendingDeleteIds(new Set());
+    setInvalidWaitIds(new Set());
+    setActionErrors({});
+    setValidationFeedback(null);
+    setEditState({ phase: 'idle' });
+  }, [concept, savedAutomation]);
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -239,7 +386,7 @@ const AutomationEditorContent: React.FC<{
       }
     }
 
-    if (!validateForAction(draft, validationAction)) {
+    if (!committedDraft || !validateForAction(committedDraft, validationAction)) {
       return;
     }
 
@@ -272,12 +419,13 @@ const AutomationEditorContent: React.FC<{
 
     const mutation = isNew ? addMutation : editMutation;
     mutation.mutate(
-      { ...draft, status: newStatus },
+      { ...committedDraft, status: newStatus },
       {
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
           setSavedAutomation(savedDraft);
           setDraft(savedDraft);
+          setPendingDeleteIds(new Set());
           setActionErrors({});
           setEditState({ phase: 'idle' });
           if (isNew) {
@@ -298,14 +446,20 @@ const AutomationEditorContent: React.FC<{
   const isEditRequestActive = editState.phase === 'submitting';
   let isSaveButtonEnabled = !!draft && !isAutomationStatusActive(draft.status) && hasUnsavedChanges;
   let saveButtonVariant: ButtonProps['variant'] = 'outline';
-  let saveButtonChildren: React.ReactNode = 'Save';
+  // NY-1715 concepts E and F: Save names its count too, like Publish changes on a live automation.
+  let saveButtonChildren: React.ReactNode =
+    (isCanvasCardV2(concept) && withChangeCount('Save', changeCount)) || 'Save';
   let isPublishButtonEnabled =
-    !!draft &&
-    draft.actions.length > 0 &&
-    (!isAutomationStatusActive(draft.status) || hasUnsavedChanges);
+    !!committedDraft &&
+    committedDraft.actions.length > 0 &&
+    (!isAutomationStatusActive(committedDraft.status) || hasUnsavedChanges);
   const publishButtonVariant: ButtonProps['variant'] = 'default';
   const publishButtonChildren: React.ReactNode =
-    draft?.status === 'active' ? (hasUnsavedChanges ? 'Publish changes' : 'Published') : 'Publish';
+    draft?.status === 'active'
+      ? hasUnsavedChanges
+        ? (withChangeCount('Publish', changeCount) ?? 'Publish changes')
+        : 'Published'
+      : 'Publish';
   let isTurnOffButtonEnabled = true;
   let isRepublishButtonEnabled = true;
   let republishButtonVariant: ButtonProps['variant'] = 'default';
@@ -433,7 +587,7 @@ const AutomationEditorContent: React.FC<{
       throw new Error('Cannot publish an automation that has not loaded.');
     }
 
-    if (!validateForAction(draft, 'publish')) {
+    if (!committedDraft || !validateForAction(committedDraft, 'publish')) {
       return;
     }
 
@@ -484,6 +638,22 @@ const AutomationEditorContent: React.FC<{
     setIsEmailModalDirty(dirty);
   }, []);
 
+  // NY-1715 concept C: shown on the canvas, and below the email editor while it's open.
+  const changesBar =
+    hasChangesBar && hasUnsavedChanges && draft && !selectedRunId ? (
+      <ChangesBar
+        commitLabel={
+          isAutomationStatusActive(draft.status) ? 'Publish changes' : saveButtonChildren
+        }
+        isCommitEnabled={
+          isAutomationStatusActive(draft.status) ? isPublishButtonEnabled : isSaveButtonEnabled
+        }
+        kind={pendingChangesKind(draft.status)}
+        onCommit={isAutomationStatusActive(draft.status) ? onPublish : () => void save()}
+        onDiscard={savedAutomation ? requestDiscardChanges : undefined}
+      />
+    ) : null;
+
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col bg-background"
@@ -496,10 +666,25 @@ const AutomationEditorContent: React.FC<{
         isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
         isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
         isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
+        pendingChanges={headerPendingChanges}
         publishButtonChildren={publishButtonChildren}
         publishButtonVariant={publishButtonVariant}
+        publishOnly={hasChangesBar}
+        // E and F: a live automation's Publish changes carries Discard; E's Save does too.
+        {...(isCanvasCardV2(concept) &&
+        hasUnsavedChanges &&
+        savedAutomation &&
+        (draft?.status === 'active' || !isConceptF(concept))
+          ? {
+              onDiscard: requestDiscardChanges,
+            }
+          : {})}
+        discardInOverflow={isConceptE}
+        neutralDiscard={isCanvasCardV2(concept) && !isConceptF(concept)}
+        plainStatus={isConceptE}
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
+        saveSplit={isCanvasCardV2(concept) && !isConceptF(concept)}
         validationFeedback={selectedRunId ? null : validationFeedback}
         onDismissValidationFeedback={() => setValidationFeedback(null)}
         onNameChange={
@@ -508,7 +693,7 @@ const AutomationEditorContent: React.FC<{
         onPublish={onPublish}
         onSave={() => void save()}
         onTurnOff={() => {
-          if (draft && !validateForAction(draft, 'unpublish')) {
+          if (committedDraft && !validateForAction(committedDraft, 'unpublish')) {
             return;
           }
           setValidationFeedback(null);
@@ -517,8 +702,12 @@ const AutomationEditorContent: React.FC<{
       />
 
       <AutomationCanvas
+        key={concept}
         actionErrors={actionErrors}
         automation={draft}
+        emailEditorFooter={changesBar}
+        emailEditorPendingChanges={headerPendingChanges}
+        emailEditorResetKey={emailEditorResetKey}
         initialSidebar={
           creation
             ? 'closed'
@@ -532,9 +721,16 @@ const AutomationEditorContent: React.FC<{
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        pendingDeleteIds={pendingDeleteIds}
+        savedActions={savedAutomation?.actions}
         savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
         selectedRunId={selectedRunId}
         onChange={onDraftChange}
+        onDeleteSavedStep={
+          isCanvasCardV2(concept) && savedAutomation
+            ? (stepId) => setStepDeleted(stepId, true)
+            : undefined
+        }
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
           if (isBlockedEmailNavigationLeavingEditorRef.current) {
@@ -552,12 +748,15 @@ const AutomationEditorContent: React.FC<{
           isBlockedEmailNavigationLeavingEditorRef.current = false;
           interceptedNavigation.reset();
         }}
+        onRevertStep={isCanvasCardV2(concept) && savedAutomation ? revertStep : undefined}
         onSelectRun={setSelectedRunId}
         onWaitValidityChange={onWaitValidityChange}
       />
 
       <DirtyConfirmDialog {...discardDialogProps} />
       <DirtyConfirmDialog {...upgradeDialogProps} />
+      {changesBar}
+      <ConceptSwitcher />
 
       {limitError && (
         <LimitModalContent
@@ -585,6 +784,31 @@ const AutomationEditorContent: React.FC<{
           isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange
         }
       />
+
+      <AlertDialog open={isConfirmDiscardAllOpen} onOpenChange={setIsConfirmDiscardAllOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {draft?.status === 'active'
+                ? 'Your changes to this automation haven’t been published.'
+                : 'Your changes to this automation haven’t been saved.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setIsConfirmDiscardAllOpen(false);
+                discardChanges();
+              }}
+            >
+              Discard
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={isConfirmRepublishAlertOpen} onOpenChange={onConfirmRepublishOpenChange}>
         <AlertDialogContent>
