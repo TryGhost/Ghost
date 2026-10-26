@@ -50,6 +50,7 @@ async function listWorkspacePackages(rootDirectory) {
   const { stdout } = await execFileAsync('pnpm', ['m', 'ls', '--depth', '-1', '--json'], {
     cwd: rootDirectory,
     maxBuffer: 10 * 1024 * 1024,
+    shell: true,
   });
 
   return JSON.parse(stdout);

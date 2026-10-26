@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 
 const args = process.argv.slice(2);
 const oxfmt = (extraArgs, stdio) =>
-  spawnSync('pnpm', ['exec', 'oxfmt', ...extraArgs, ...args], { stdio }).status ?? 1;
+  spawnSync('pnpm', ['exec', 'oxfmt', ...extraArgs, ...args], { stdio, shell: true }).status ?? 1;
 
 let status = oxfmt([], 'inherit');
 if (status === 0 && oxfmt(['--check'], 'ignore') !== 0) {
