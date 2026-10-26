@@ -2045,6 +2045,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -2058,7 +2059,7 @@ services:
         behavioral gaps.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/custom-theme-settings/index.js
+        - core/server/services/custom-theme-settings/index.ts
         - core/server/services/custom-theme-settings/custom-theme-settings-service.js
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/storage.js
@@ -2075,41 +2076,55 @@ services:
             constructor; keep theme activation separate from construction.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/server/services/themes/activation-bridge.js
     entryPoints:
-      - custom-theme-settings/index.js
+      - custom-theme-settings/index.ts
     notes: >-
-      Preserve boot-before-theme activation, API replacement and the shared render cache.
-      Activation concurrency, partial writes and initial visibility handling need contracts.
+      Initializer adoption was rechecked against 2196fa4e4cf4ef4ecf41df16cfe9f460270cadf5;
+      auditedAt and the migration assessments retain their historical provenance. The prior
+      wrapper is recorded at https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/custom-theme-settings.js.
+      Boot now
+      awaits one retained implementation before separate theme activation on every boot.
+      The root injects the model and shared render cache. The earlier dependency proposal to
+      inject utility operations is superseded: lodash/isEmpty, the NQL public entry and
+      namespaced debug tracing remain direct library imports under boundary allowances.
+      Root/implementation/cache/model/middleware units and real custom-settings/theme API
+      checks provide migration validation; concurrency, partial writes and initial visibility
+      remain separate behavioral gaps.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper with synchronous init returning undefined. Its public
-          api appears only after init and exposes activateTheme, listSettings, updateSettings
-          and copySettingsBetweenThemes plus mutable working state. There is no reset, stop
-          or drain export. The implementation and BREAD classes are deep exports under
-          services/custom-theme-settings; the shared value-cache class remains under
+          The TypeScript root default-exports defineService with async init and a guarded
+          service getter exposing activateTheme, listSettings, updateSettings and
+          copySettingsBetweenThemes plus mutable working state. CommonJS consumers use
+          default at the boundary and read service at operation time. There are no extras,
+          reset, stop or drain exports. The implementation and BREAD classes remain deep
+          exports under services/custom-theme-settings; the shared value-cache class remains under
           shared/custom-theme-settings-cache.
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
-        tests: []
+          - core/kernel/define-service.ts
+        tests:
+          - test/unit/server/services/custom-theme-settings/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
-          Import loads the model registry and shared cache and constructs an empty wrapper.
-          Every init replaces api with a new implementation and BREAD repository using the
-          shared CustomThemeSetting model/cache; construction performs no setting query or
-          activation. No alternate runtime implementation construction was found. Unit tests
-          inject a fake model and separate cache; API tests explicitly re-init and activate.
+          Import declares the initializer and loads its implementation and namespaced debug tracing
+          function. Its factory resolves the shared model registry/cache, then constructs one
+          implementation and BREAD repository. Successful init retains that implementation;
+          construction performs no setting query or activation and acquires no resources.
+          No alternate runtime implementation construction was found. Unit tests inject a fake
+          model/cache; API tests explicitly init and activate.
           Root units pin that init performs no setting query, frontend activation or shared
           cache change, and that the real endpoint then lists no settings.
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/index.js
         tests:
@@ -2117,9 +2132,10 @@ services:
           - test/unit/server/services/custom-theme-settings/index.test.ts
       consumers:
         summary: >-
-          Boot initializes the wrapper. Theme activation for boot/API/override awaits api.activateTheme
-          before the frontend bridge; theme upload copies settings through api. The custom
-          settings endpoint lists/updates through the current wrapper property. The data
+          Boot awaits the initializer. Theme activation for boot/API/override awaits
+          service.activateTheme before the frontend bridge; theme upload copies settings through
+          service. The custom settings endpoint lists/updates through the retained initializer's
+          service getter without capturing the implementation at import. The data
           importer indirectly triggers activation without awaiting it. Global template options
           and local preview keys independently read the shared cache. No other runtime root
           or deep-constructor caller was found. HTTP cases cover edits and successful theme-copy
@@ -2142,18 +2158,21 @@ services:
           - test/unit/server/services/custom-theme-settings/index.test.ts
       startup:
         summary: >-
-          Boot initializes api after database/settings setup and before awaited themes.init,
-          including backend-only boots. Theme activation populates both caches; init alone
-          leaves listSettings empty and the shared cache unchanged. Pre-init api use has no
-          guard. Boot theme loading catches/logs activation failure and continues, so readiness
+          Boot awaits init after database/settings setup and before awaited themes.init;
+          initServicesForFrontend also runs on backend-only boots. Theme activation populates
+          both caches; initial construction leaves listSettings empty and the shared cache
+          unchanged. Reading service before init throws through defineService. Boot theme
+          loading catches/logs activation failure and continues, so readiness
           alone does not establish successful custom-setting activation. API tests manually
           activate a fixture definition. A boot-harness unit runs initServicesForFrontend with
           the real root, themes service and bridge: init precedes the settings read, frontend
           activation and offers, a second boot initializes and activates again, and a failed
           settings lookup is logged while startup continues without activation or cache changes.
+          Holding root initialization pending blocks theme startup, offers and frontend-phase
+          completion; an initializer rejection propagates unchanged without starting themes.
         sources:
           - core/boot.js
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/themes/index.js
           - core/server/services/themes/activate.js
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2163,22 +2182,27 @@ services:
           - test/unit/server/services/custom-theme-settings/index.test.ts
       lifetime:
         summary: >-
-          Re-init discards api state but reuses the shared value cache; retained old instances
-          and pending operations remain usable. Activation tracks one promise, skips matching
-          concurrent name/settings and waits for a prior activation, but multiple differing
+          Successful init retains one implementation and the borrowed shared value cache;
+          repeated init leaves active settings and pending operations on that same instance.
+          This replaces the historical wrapper's api replacement behavior. Activation tracks
+          one promise, skips matching concurrent name/settings and waits for a prior activation,
+          but multiple differing
           waiters can then start together. Updates are not serialized with activation or one
           another. listSettings returns shallow copies; nested definition objects remain
           shared. Cache getAll is also shallow, and no stop clears or drains this state. Root
-          units hold one activation across re-init; it completes on the retained old api, and
-          later activation through the bridge uses the new api.
+          units hold one activation across repeated init; it completes on the retained
+          implementation, and later activation through the bridge remains usable. Retained
+          identity itself is covered by the kernel's shared initializer tests rather than a
+          new feature-specific assertion.
         sources:
-          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/index.ts
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
         tests:
           - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/shared/custom-theme-settings-cache/cache.test.ts
           - test/unit/server/services/custom-theme-settings/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       configuration:
         summary: >-
           Activation reconciles current theme definitions with stored values: remove missing
@@ -2186,7 +2210,7 @@ services:
           copied for editing; updates accept only keys/values and validate select, boolean and
           six-digit color values. Public-cache visibility is evaluated on updates, but initial
           activation passes DB rows without visibility metadata. Model reads/writes normalize
-          booleans and image URLs. The wrapper reads no config; theme choice is supplied by
+          booleans and image URLs. The root reads no config; theme choice is supplied by
           callers and model URL conversion uses shared URL utilities.
         sources:
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2203,7 +2227,7 @@ services:
           borrowing the process cache and model/database. It creates no timer, subscription,
           worker or dedicated connection. Copy uses a model transaction for the destination
           check and inserts, with source rows read beforehand. Activation/update writes have
-          no encompassing transaction, and neither boot nor wrapper registers cancellation
+          no encompassing transaction, and neither boot nor initializer registers cancellation
           or pending-operation cleanup.
         sources:
           - core/server/services/custom-theme-settings/custom-theme-settings-service.js
@@ -2239,15 +2263,16 @@ services:
     unverified: []
     blockers:
       - >-
-        Root units now pin init without queries or cache changes, boot ordering across repeated
-        boots, failed boot activation and one activation pending across re-init. Wrapper export
-        shape and replacing api during other pending work, such as updates or copies, remain
-        uncharacterized.
+        Root units pin initial composition without queries or cache changes, boot ordering
+        across repeated boots, failed boot activation and one activation pending across repeated
+        init. Pending updates or copies across repeated init remain uncharacterized; adoption
+        retains their implementation instead of replacing the historical api.
       - >-
         Characterize differing concurrent activations, multiple waiters, rejected activation,
         updates during activation and detached import-triggered activation. The current guard
         is not a queue, and updates reread activeThemeName per row; existing concurrency coverage
-        only checks two identical activations. Define pending-work ownership before migration.
+        only checks two identical activations. One retained implementation does not resolve
+        these operation-level concurrency and pending-work ownership gaps.
       - >-
         Fix or explicitly separate initial visibility behavior: activation computes the public
         cache from DB rows lacking visibility, while update uses merged definitions. The only

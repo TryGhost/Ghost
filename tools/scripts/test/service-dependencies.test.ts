@@ -179,6 +179,43 @@ it('allows same-service code, explicit types, approved libraries and root wiring
   assert.equal(f.run('err').status, 0);
 });
 
+it('allows the exact libraries required by Custom Theme Settings without allowing siblings', (t) => {
+  const approved = [
+    'lodash/isEmpty',
+    'lodash/isEmpty.js',
+    '@tryghost/nql',
+    '@tryghost/nql/index.js',
+  ];
+  const rejected = ['lodash', 'lodash/isEqual', '@tryghost/nql/other', '@tryghost/nql-extra'];
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
+  });
+  for (const name of ['lodash', '@tryghost/nql', '@tryghost/nql-extra']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+    f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/lodash/isEmpty.js', 'module.exports = () => false;');
+  f.write('node_modules/lodash/isEqual.js', 'module.exports = () => false;');
+  const graph = f.graph();
+  assert.equal(
+    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
+    approved.length,
+  );
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/lodash/index.js',
+      'node_modules/lodash/isEqual.js',
+      'node_modules/@tryghost/nql/other.js',
+      'node_modules/@tryghost/nql-extra/index.js',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
 it('allows the exact libraries required by Member Attribution without allowing siblings', (t) => {
   const approved = [
     '@tryghost/string',
