@@ -1160,10 +1160,11 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         # The runner image already has Firefox's other libraries; `playwright install-deps`
-        # also pulls ~50MB of fonts and encoders the video-card tests don't use.
+        # also pulls ~20MB of fonts the video-card tests don't use.
+        # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
         run: |
           for i in 1 2 3; do
-            if sudo timeout -k 5 120 apt-get update -yq \
+            if sudo timeout -k 5 60 apt-get update -yq \
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
                sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 libavcodec60; then
