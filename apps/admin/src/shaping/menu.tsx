@@ -2,7 +2,6 @@ import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import {
   Button,
   Field,
-  FieldContent,
   FieldDescription,
   FieldLabel,
   Popover,
@@ -13,14 +12,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Switch,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { ShadeApp } from '@tryghost/shade/app';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { SCENARIOS, type ScenarioId, setScenario, useScenario } from './data/scenario';
-import { setAnalyticsStyle, useAnalyticsStyle } from './analytics-style';
-import { setPatternsView, usePatternsView } from './patterns-view';
+import { VIEWS, setView, useView } from './view';
 
 // The prototype menu, carried over from the automations build-proto. A 64px
 // square in the bottom-right corner is the hover target; the beaker inside it
@@ -42,9 +41,8 @@ const isDark = () => document.documentElement.classList.contains('dark');
 export const ShapingMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
   const dark = useSyncExternalStore(subscribeToTheme, isDark);
-  const patternsView = usePatternsView();
   const scenario = useScenario();
-  const analyticsStyle = useAnalyticsStyle();
+  const view = useView();
 
   // Close on a press anywhere else, in the capture phase so a screen that
   // stops pointer events can't keep it open. Presses inside the panel or its
@@ -72,7 +70,8 @@ export const ShapingMenu: React.FC = () => {
               aria-label="Prototype"
               className={cn(
                 'text-muted-foreground opacity-0 transition-opacity group-hover/proto:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none',
-                (open || patternsView) && 'opacity-100',
+                // Stays visible away from Planned, as a reminder
+                (open || view !== 'planned') && 'opacity-100',
                 open && 'bg-muted',
               )}
               size="icon"
@@ -87,43 +86,14 @@ export const ShapingMenu: React.FC = () => {
               <Text size="md" weight="semibold">
                 Prototype
               </Text>
-              <Field className="justify-between" orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="shaping-patterns-view">View patterns</FieldLabel>
-                  <FieldDescription>
-                    Swap Analytics for every building block, with sample data.
-                  </FieldDescription>
-                </FieldContent>
-                <Switch
-                  checked={patternsView}
-                  id="shaping-patterns-view"
-                  onCheckedChange={setPatternsView}
-                />
-              </Field>
-              <Field className="justify-between" orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="shaping-analytics-style">Admin 7 analytics</FieldLabel>
-                  <FieldDescription>
-                    The new analytics style. Off shows today’s, for comparison.
-                  </FieldDescription>
-                </FieldContent>
-                <Switch
-                  checked={analyticsStyle}
-                  id="shaping-analytics-style"
-                  onCheckedChange={setAnalyticsStyle}
-                />
-              </Field>
               <Field>
-                <FieldLabel htmlFor="shaping-scenario">Data</FieldLabel>
-                <Select
-                  value={scenario}
-                  onValueChange={(value) => setScenario(value as ScenarioId)}
-                >
-                  <SelectTrigger id="shaping-scenario">
+                <FieldLabel htmlFor="shaping-view">View</FieldLabel>
+                <Select value={view} onValueChange={setView}>
+                  <SelectTrigger id="shaping-view">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {SCENARIOS.map((option) => (
+                    {VIEWS.map((option) => (
                       <SelectItem key={option.id} value={option.id}>
                         {option.label}
                       </SelectItem>
@@ -131,8 +101,25 @@ export const ShapingMenu: React.FC = () => {
                   </SelectContent>
                 </Select>
                 <FieldDescription>
-                  Fakes Analytics’ numbers on every screen. Changing it reloads the page.
+                  {VIEWS.find((option) => option.id === view)?.description}
                 </FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel id="shaping-scenario">Data size</FieldLabel>
+                {/* Unpicking the chip turns the fakes off (site data) */}
+                <ToggleGroup
+                  aria-labelledby="shaping-scenario"
+                  className="w-full"
+                  type="single"
+                  value={scenario === 'site' ? '' : scenario}
+                  onValueChange={(value) => setScenario((value || 'site') as ScenarioId)}
+                >
+                  {SCENARIOS.filter((option) => option.id !== 'site').map((option) => (
+                    <ToggleGroupItem key={option.id} className="flex-1" value={option.id}>
+                      {option.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               </Field>
             </Stack>
           </PopoverContent>

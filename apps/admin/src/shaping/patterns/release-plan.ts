@@ -33,7 +33,7 @@ export const SLICES: ReleaseSlice[] = [
     reach: 'Nothing visible on its own; every slice below reads it.',
     notes: [
       'Shade reads it with useRootFlag and the admin7-analytics: style variant.',
-      'Prototype: the menu’s Admin 7 analytics switch stands in for the Labs flag.',
+      'Prototype: the menu’s View list stands in for the Labs flag (off in Today, on in every other view).',
       'PR: register the Labs flag; agree useRootFlag with Zimo, since isAdmin7 now stays on for the shipped pill controls.',
     ],
     commits: ['98af0d1c1f', 'fd5a516ff6'],
@@ -89,6 +89,7 @@ export const SLICES: ReleaseSlice[] = [
 // Not sequenced yet: changes to weigh up, decisions to make, and work the
 // PRs need. Move an item into SLICES once it's decided.
 export const TO_CONSIDER: string[] = [
+  'Web traffic layout: exploring in the prototype (Exploration 1, no outlined cards).',
   'Coloured dots before labels on the metric tabs and post cards; the designs have none.',
   'Trend badges on the stat cards: keep or remove (Zimo).',
   'Big numbers in sans (today) or mono (the Ghost-wide rule)?',

@@ -1,0 +1,23 @@
+/* EXPLORATION ONLY (shaping/explorations): Exploration 1, Web traffic.
+   Strips the outlined cards so each section sits in the open, with a rule
+   under its heading, like the Overview stat cards. Scrappy on purpose: a
+   release-shaped version would use Card's `plain` variant instead. */
+
+.web-open-layout .rounded-xl.border {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.web-open-layout .rounded-xl.border > * {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.web-open-layout .rounded-xl.border > :first-child {
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+  padding-top: 0;
+  padding-bottom: 1.6rem;
+}

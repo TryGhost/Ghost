@@ -3,16 +3,17 @@ import { useSyncExternalStore } from 'react';
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
 //
 // Which publisher the fake analytics data describes, picked in the prototype
-// menu and remembered in this browser. "Site data" turns the fakes off, so
-// the real screens show this site's own numbers. A change reloads the page,
+// menu's Data size chips and remembered in this browser. No chip picked
+// ("site") turns the fakes off, so the real screens show this site's own
+// numbers. A change reloads the page,
 // because the fake backend is installed before Admin starts.
 
 export const SCENARIOS = [
-  { id: 'site', label: 'Site data (no fakes)' },
-  { id: 'empty', label: 'No data yet' },
-  { id: 'small', label: 'Small publisher' },
-  { id: 'medium', label: 'Mid-sized publisher' },
-  { id: 'large', label: 'Large publisher' },
+  { id: 'site', label: 'Site data' },
+  { id: 'empty', label: 'Empty' },
+  { id: 'small', label: 'Small' },
+  { id: 'medium', label: 'Mid' },
+  { id: 'large', label: 'Large' },
 ] as const;
 
 export type ScenarioId = (typeof SCENARIOS)[number]['id'];
