@@ -121,8 +121,11 @@ function buildEmbedScript() {
             return;
         }
 
-        const el = script.parentElement.querySelector('iframe[data-src]');
-        if (!el) {
+        // The card's figure wrapper is not part of the published HTML, so
+        // several cards can share a parent. Each script only owns the iframe
+        // rendered directly before it.
+        const el = script.previousElementSibling;
+        if (!el || !el.matches('iframe[data-src]')) {
             return;
         }
 
