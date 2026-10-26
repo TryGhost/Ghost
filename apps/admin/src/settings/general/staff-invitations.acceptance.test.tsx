@@ -159,7 +159,14 @@ describe('Staff invitations', () => {
     const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [replacement] });
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15 },
+      limits: {
+        limitTrialStaff: {
+          max: 10,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+        },
+        limitTrialStaffInvites: { max: 15 },
+      },
     };
     await renderAdminApp('/settings/staff?tab=invited', {
       boot: {
@@ -185,7 +192,14 @@ describe('Staff invitations', () => {
     const config = configResponse();
     config.config.hostSettings = {
       billing: { enabled: true },
-      staffInvites: { maxStaff: 10, maxInvites: 15 },
+      limits: {
+        limitTrialStaff: {
+          max: 10,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+        },
+        limitTrialStaffInvites: { max: 15 },
+      },
     };
     fakeAdminEndpoint(
       'POST',
@@ -232,7 +246,14 @@ describe('Staff invitations', () => {
     );
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15 },
+      limits: {
+        limitTrialStaff: {
+          max: 10,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+        },
+        limitTrialStaffInvites: { max: 15 },
+      },
     };
     await renderAdminApp('/settings/staff?tab=invited', {
       boot: {
@@ -315,8 +336,15 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, editor] });
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15 },
-      limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
+      limits: {
+        limitTrialStaff: {
+          max: 10,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+        },
+        limitTrialStaffInvites: { max: 15 },
+        staff: { max: 2, error: 'Your plan does not support more staff' },
+      },
     };
     await renderAdminApp('/settings/staff', {
       boot: { ...boot, browseConfig: { response: config } },
@@ -337,8 +365,15 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, ...contributors] });
     const config = configResponse();
     config.config.hostSettings = {
-      limits: { staff: { max: 2, error: 'Your plan does not support more staff' } },
-      staffInvites: { maxStaff: 10, maxInvites: 15 },
+      limits: {
+        limitTrialStaff: {
+          max: 10,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+        },
+        limitTrialStaffInvites: { max: 15 },
+        staff: { max: 2, error: 'Your plan does not support more staff' },
+      },
       billing: { enabled: true, url: 'https://billing.example.com' },
     };
     await renderAdminApp('/settings/staff', {
@@ -354,8 +389,15 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld();
     const config = configResponse();
     config.config.hostSettings = {
-      staffInvites: { maxStaff: 10, maxInvites: 15 },
       billing: { enabled: true, upgradeUrl: '#/pro/custom-upgrade' },
+      limits: {
+        limitTrialStaff: {
+          max: 10,
+          error:
+            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+        },
+        limitTrialStaffInvites: { max: 15 },
+      },
     };
     fakeAdminEndpoint(
       'POST',

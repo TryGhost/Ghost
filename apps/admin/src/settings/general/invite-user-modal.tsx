@@ -53,7 +53,9 @@ function InviteUserModal() {
   const limiter = useLimiter();
   const upgradeRoute = useUpgradeRoute();
   const { config } = useGlobalData();
-  const trialInvites = config?.hostSettings?.staffInvites;
+  const trialInvites =
+    config?.hostSettings?.limits?.limitTrialStaff ||
+    config?.hostSettings?.limits?.limitTrialStaffInvites;
 
   const { updateRoute } = useSettingsNavigation();
   const editorBeta = useFeatureFlag('superEditors');
@@ -82,8 +84,8 @@ function InviteUserModal() {
   useEffect(() => {
     const checkLimits = async () => {
       try {
-        if (limiter?.isLimited('trialStaff')) {
-          await limiter.errorIfWouldGoOverLimit('trialStaff');
+        if (limiter?.isLimited('limitTrialStaff')) {
+          await limiter.errorIfWouldGoOverLimit('limitTrialStaff');
         }
         if (role !== 'contributor' && limiter?.isLimited('staff')) {
           await limiter.errorIfWouldGoOverLimit('staff');
