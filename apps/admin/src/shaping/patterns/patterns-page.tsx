@@ -14,6 +14,7 @@ import TopPosts from '@/analytics/views/stats/overview/components/top-posts';
 import WebKPIs from '@/analytics/views/stats/web/components/web-kpis';
 import WebOverview from '@/posts/analytics/overview/components/web-overview';
 import {
+  Badge,
   Card,
   CardContent,
   HoverCard,
@@ -21,7 +22,7 @@ import {
   HoverCardTrigger,
   NavbarActions,
 } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { HelpCard } from '@/analytics/views/stats/overview/overview';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { NewsletterRadialChart } from '@/posts/analytics/newsletter/components/newsletter-radial-chart';
@@ -29,7 +30,7 @@ import {
   PostAnalyticsContext,
   type PostAnalyticsContextType,
 } from '@/posts/analytics/providers/post-analytics-context';
-import { CHANGES } from './changes';
+import { SLICES, type SliceStatus, TO_CONSIDER } from './release-plan';
 import { CURRENCY, buildFixtures, radialConfig } from './fixtures';
 import { patternsScenario, useScenario } from '@/shaping/data/scenario';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
@@ -52,6 +53,12 @@ const postContextFor = (range: number): PostAnalyticsContextType => ({
   range,
   setRange: () => {},
 });
+
+const STATUS: Record<SliceStatus, { label: string; variant: 'success' | 'warning' | 'outline' }> = {
+  built: { label: 'Built in prototype', variant: 'success' },
+  'on-hold': { label: 'On hold', variant: 'warning' },
+  'to-do': { label: 'To do', variant: 'outline' },
+};
 
 interface PatternProps {
   title: string;
@@ -360,30 +367,59 @@ const PatternsPage: React.FC = () => {
         </Pattern>
 
         <Pattern
-          source="shaping/patterns/changes.ts"
-          title="Changes"
-          usedOn="this prototype branch, newest first"
+          source="shaping/patterns/release-plan.ts"
+          title="Release plan"
+          usedOn="the Admin 7 analytics update, in shipping order"
         >
-          <Stack gap="xl">
-            {CHANGES.map((change) => (
-              <Stack key={`${change.date}-${change.title}`} gap="sm">
-                <Stack gap="none">
-                  <Text className="font-mono" size="xs" tone="tertiary">
-                    {change.date}
+          <Stack className="max-w-3xl" gap="xl">
+            {SLICES.map((slice, index) => (
+              <Stack key={slice.title} gap="sm">
+                <Inline align="center" gap="sm">
+                  <Text className="font-mono" size="sm" tone="tertiary">
+                    {String(index + 1).padStart(2, '0')}
                   </Text>
                   <Text size="md" weight="semibold">
-                    {change.title}
+                    {slice.title}
                   </Text>
-                </Stack>
-                <Stack className="max-w-3xl" gap="xs">
-                  {change.points.map((point) => (
-                    <Text key={point} size="sm" tone="secondary">
-                      · {point}
+                  <Badge size="sm" variant={STATUS[slice.status].variant}>
+                    {STATUS[slice.status].label}
+                  </Badge>
+                </Inline>
+                <Text size="sm">{slice.summary}</Text>
+                <Stack gap="xs">
+                  <Text size="sm" tone="secondary">
+                    Reach: {slice.reach}
+                  </Text>
+                  {slice.dependsOn && (
+                    <Text size="sm" tone="secondary">
+                      Depends on: {slice.dependsOn.join(', ')}
+                    </Text>
+                  )}
+                  {slice.notes?.map((note) => (
+                    <Text key={note} size="sm" tone="secondary">
+                      · {note}
                     </Text>
                   ))}
+                  {slice.commits && (
+                    <Text className="font-mono" size="xs" tone="tertiary">
+                      {slice.commits.join(' · ')}
+                    </Text>
+                  )}
                 </Stack>
               </Stack>
             ))}
+            <Stack gap="sm">
+              <Text size="md" weight="semibold">
+                Still to consider
+              </Text>
+              <Stack gap="xs">
+                {TO_CONSIDER.map((item) => (
+                  <Text key={item} size="sm" tone="secondary">
+                    · {item}
+                  </Text>
+                ))}
+              </Stack>
+            </Stack>
           </Stack>
         </Pattern>
       </StatsView>

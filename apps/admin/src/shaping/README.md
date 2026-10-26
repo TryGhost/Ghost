@@ -78,11 +78,13 @@ member sources, email open and click tracking) read as on, and are stripped
 from settings saves so they never reach the database. So Settings shows them
 as on, and toggling them there won't stick until **Site data** is picked.
 
-## Changes log
+## Release plan
 
-The patterns page ends with a **Changes** section: a high-level log of the
-design changes made on this branch, newest first. Add an entry to
-`patterns/changes.ts` with each change worth reviewing.
+The patterns page ends with the **Release plan**: the slices of the update in
+shipping order, each with its status, reach, what it depends on and its
+prototype commits, then a running **Still to consider** list. It lives in
+`patterns/release-plan.ts`; update a slice's status as it moves, and move an
+item from Still to consider into the slices once it's decided.
 
 ## Adding a pattern
 
