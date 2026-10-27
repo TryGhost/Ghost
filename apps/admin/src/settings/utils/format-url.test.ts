@@ -32,4 +32,57 @@ describe('formatUrl', function () {
       });
     });
   });
+
+  describe('subdirectory homepage', function () {
+    const baseUrl = 'https://example.com/blog/';
+
+    it('keeps the homepage when a query or fragment follows its missing slash', function () {
+      const cases = [
+        {
+          input: 'https://example.com/blog?ref=menu',
+          save: '/?ref=menu',
+          display: 'https://example.com/blog/?ref=menu',
+        },
+        {
+          input: 'https://example.com/blog#section',
+          save: '/#section',
+          display: 'https://example.com/blog/#section',
+        },
+        {
+          input: 'https://example.com/blog?ref=menu#section',
+          save: '/?ref=menu#section',
+          display: 'https://example.com/blog/?ref=menu#section',
+        },
+        {
+          input: '/blog?ref=menu',
+          save: '/?ref=menu',
+          display: 'https://example.com/blog/?ref=menu',
+        },
+      ];
+
+      for (const fixture of cases) {
+        assert.deepEqual(
+          formatUrl(fixture.input, baseUrl),
+          {
+            save: fixture.save,
+            display: fixture.display,
+          },
+          fixture.input,
+        );
+      }
+    });
+
+    it('saves the bare subdirectory as the homepage', function () {
+      for (const input of ['https://example.com/blog', '/blog']) {
+        assert.deepEqual(
+          formatUrl(input, baseUrl),
+          {
+            save: '/',
+            display: 'https://example.com/blog/',
+          },
+          input,
+        );
+      }
+    });
+  });
 });
