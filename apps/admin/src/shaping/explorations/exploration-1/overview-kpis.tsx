@@ -9,10 +9,6 @@ import {
   CardTitle,
   EmptyCard,
   EmptyIndicator,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from '@tryghost/shade/components';
 import {
   GhAreaChart,
@@ -108,65 +104,6 @@ const useDiffTooltip = ({
   }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
 };
 
-// EXPLORATION: the trend under the number, with the value it's measured from
-// beside it: "▲ 3%  from 20,800". The caret and colours match Exploration 1's
-// trends elsewhere (exploration.css restyles Shade's TrendBadge, which isn't
-// exported, so it's drawn here). The tooltip still explains it on hover. A
-// card with no trend (Unique visitors) keeps the row's height, so the
-// numbers and charts line up across the row.
-const TrendRow: React.FC<{
-  diffDirection?: OverviewKPICardProps['diffDirection'];
-  diffValue?: string;
-  trendingFromValue?: string;
-  diffTooltip: React.ReactNode;
-}> = ({ diffDirection, diffValue, trendingFromValue, diffTooltip }) => {
-  if (!diffDirection || diffDirection === 'empty' || !diffValue) {
-    return <div aria-hidden="true" className="h-[22px]" />;
-  }
-
-  const row = (
-    <div className="flex h-[22px] cursor-default items-center gap-2 self-start text-sm">
-      <span
-        className={cn(
-          'flex items-center gap-1 font-medium',
-          diffDirection === 'up' && 'text-green-600',
-          diffDirection === 'down' && 'text-state-danger',
-          diffDirection === 'same' && 'text-muted-foreground',
-        )}
-      >
-        {diffDirection !== 'same' && (
-          <span
-            aria-hidden="true"
-            className={cn(
-              'h-[5px] w-2 bg-current',
-              diffDirection === 'up'
-                ? '[clip-path:polygon(50%_0,100%_100%,0_100%)]'
-                : '[clip-path:polygon(0_0,100%_0,50%_100%)]',
-            )}
-          />
-        )}
-        {diffValue}
-      </span>
-      {trendingFromValue && <span className="text-muted-foreground">from {trendingFromValue}</span>}
-    </div>
-  );
-
-  if (!diffTooltip) {
-    return row;
-  }
-
-  return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>{row}</TooltipTrigger>
-        <TooltipContent className="max-w-[240px] bg-background text-sm text-pretty text-foreground shadow-md dark:bg-popover">
-          {diffTooltip}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
-
 // EXPLORATION: Planned's Admin 7 stat card (open columns, with no rule between
 // the number and the chart), with "View more" replaced by Top posts' hover
 // arrow: hovering the card raises a right arrow after the label, through a
@@ -220,18 +157,17 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
               </span>
             )}
           </div>
-          <KpiCardHeaderValue diffDirection="hidden" value={formattedValue} />
-          {range !== STATS_RANGES.allTime.value && (
-            <TrendRow
-              diffDirection={diffDirection}
-              diffTooltip={diffTooltip}
-              diffValue={diffValue}
-              trendingFromValue={trendingFromValue}
-            />
-          )}
+          <KpiCardHeaderValue
+            diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : diffDirection}
+            diffTooltip={diffTooltip}
+            diffValue={diffValue}
+            value={formattedValue}
+          />
         </div>
       </div>
-      <div>{children}</div>
+      {/* Pinned to the card's bottom: when a card in the row is taller, the
+          extra space goes above the chart, not under it */}
+      <div className="mt-auto">{children}</div>
     </div>
   );
 };

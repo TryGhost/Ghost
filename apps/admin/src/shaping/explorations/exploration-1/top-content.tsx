@@ -9,6 +9,7 @@ import {
   DataListHead,
   DataListHeader,
   DataListItemContent,
+  DataListItemValue,
   DataListItemValueAbs,
   DataListItemValuePerc,
   DataListRow,
@@ -23,7 +24,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
   SkeletonTable,
 } from '@tryghost/shade/components';
 import {
@@ -40,7 +40,7 @@ import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { useTopContent } from '@tryghost/admin-x-framework/api/stats';
-import { ViewAllLink, VisitorsHeader } from './visitors-header';
+import { ViewAllButton, VisitorsHeader } from './visitors-header';
 
 // EXPLORATION ONLY — never merge (see src/shaping/README.md).
 //
@@ -69,12 +69,16 @@ interface TopContentTableProps {
   range: number;
   contentType: ContentType;
   tableHeader: boolean;
+  // EXPLORATION: titles wrap to two lines before cutting off (long post
+  // titles), instead of one
+  wrapTitles?: boolean;
 }
 
 const TopContentTable: React.FC<TopContentTableProps> = ({
   tableHeader = false,
   data,
   contentType,
+  wrapTitles = false,
 }) => {
   const navigate = useNavigate();
   const { site } = useAnalyticsData();
@@ -112,7 +116,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({
               className={`group/row ${isClickable && 'hover:cursor-pointer'}`}
               onClick={clickHandler}
             >
-              <DataListItemContent className="max-w-[calc(100%-140px)]">
+              <DataListItemContent className="group-hover/datalist:max-w-[calc(100%-140px)]">
                 <div className="flex items-center space-x-2 overflow-hidden">
                   {/* EXPLORATION: each row's type, with the left nav's icons
                       (Posts: PenLine, Pages: File), and a house for the
@@ -137,21 +141,20 @@ const TopContentTable: React.FC<TopContentTableProps> = ({
                     <span className="size-4 shrink-0" />
                   )}
                   <div
-                    className={`truncate font-medium ${isClickable ? 'group-hover/row:underline' : ''}`}
+                    className={`${wrapTitles ? 'line-clamp-2' : 'truncate'} font-medium ${isClickable ? 'group-hover/row:underline' : ''}`}
                   >
                     {row.title}
                   </div>
                 </div>
               </DataListItemContent>
-              {/* EXPLORATION: no bar behind the row, and the percentage always
-                  shown after the number (not slid in on hover), in a fixed
-                  width so the numbers line up */}
-              <div className="z-10 flex items-center">
+              {/* EXPLORATION: no bar behind the row; the percentage slides in
+                  on hover, as today */}
+              <DataListItemValue>
                 <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                <DataListItemValuePerc className="w-12 pr-0 text-right">
+                <DataListItemValuePerc>
                   {formatPercentage(row.percentage || 0)}
                 </DataListItemValuePerc>
-              </div>
+              </DataListItemValue>
             </DataListRow>
           );
         })}
@@ -165,6 +168,14 @@ interface TopContentProps {
   totalVisitors: number;
   audience: number;
   filterParams?: Record<string, string>;
+  // EXPLORATION: one fixed content type with its own title (Posts, Pages),
+  // in place of the picker
+  contentType?: ContentType;
+  title?: string;
+  // EXPLORATION: rows shown before "View all" (6 by default), and titles
+  // wrapping to two lines
+  limit?: number;
+  wrapTitles?: boolean;
 }
 
 const TopContent: React.FC<TopContentProps> = ({
@@ -172,11 +183,16 @@ const TopContent: React.FC<TopContentProps> = ({
   totalVisitors,
   audience,
   filterParams = {},
+  contentType,
+  title,
+  limit = 6,
+  wrapTitles = false,
 }) => {
   const { startDate, endDate, timezone } = getRangeDates(range);
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>(
+  const [pickedContentType, setSelectedContentType] = useState<ContentType>(
     CONTENT_TYPES.POSTS_AND_PAGES,
   );
+  const selectedContentType = contentType ?? pickedContentType;
 
   // Prepare query parameters based on selected content type
   const queryParams = useMemo(() => {
@@ -226,7 +242,8 @@ const TopContent: React.FC<TopContentProps> = ({
     }));
   }, [topContentData, totalVisitors]);
 
-  const topContent = transformedData?.slice(0, 6) || [];
+  const topContent = transformedData?.slice(0, limit) || [];
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
     <Card className="group/datalist" data-testid="top-content-card">
@@ -234,34 +251,47 @@ const TopContent: React.FC<TopContentProps> = ({
         <CardHeader className="p-0">
           {/* EXPLORATION: the content filter is a chevron after the title,
               and the title follows it (Top content, Top posts, Top pages) */}
-          <div className="flex items-center gap-1">
-            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  aria-label="Choose content type"
-                  className="text-muted-foreground [&_svg]:size-4"
-                  size="icon-sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  <LucideIcon.ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuRadioGroup
-                  value={selectedContentType}
-                  onValueChange={(value) => setSelectedContentType(value as ContentType)}
-                >
-                  <DropdownMenuRadioItem value={CONTENT_TYPES.POSTS_AND_PAGES}>
-                    Posts & pages
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value={CONTENT_TYPES.POSTS}>Posts</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value={CONTENT_TYPES.PAGES}>Pages</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {contentType ? (
+            // EXPLORATION: "View all" is an arrow after the title
+            <div className="flex items-center gap-1">
+              <CardTitle>{title ?? getContentTitle(contentType)}</CardTitle>
+              {transformedData && transformedData.length > 0 && (
+                <ViewAllButton onClick={() => setSheetOpen(true)} />
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    aria-label="Choose content type"
+                    className="text-muted-foreground [&_svg]:size-4"
+                    size="icon-sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <LucideIcon.ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuRadioGroup
+                    value={selectedContentType}
+                    onValueChange={(value) => setSelectedContentType(value as ContentType)}
+                  >
+                    <DropdownMenuRadioItem value={CONTENT_TYPES.POSTS_AND_PAGES}>
+                      Posts & pages
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value={CONTENT_TYPES.POSTS}>Posts</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value={CONTENT_TYPES.PAGES}>Pages</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {transformedData && transformedData.length > 0 && (
+                <ViewAllButton onClick={() => setSheetOpen(true)} />
+              )}
+            </div>
+          )}
         </CardHeader>
         {/* EXPLORATION: "Visitors" in the title row */}
         <VisitorsHeader />
@@ -275,6 +305,7 @@ const TopContent: React.FC<TopContentProps> = ({
             data={topContent}
             range={range}
             tableHeader={false}
+            wrapTitles={wrapTitles}
           />
         ) : (
           <EmptyIndicator className="w-full py-20" title={`No visitors ${getPeriodText(range)}`}>
@@ -282,32 +313,26 @@ const TopContent: React.FC<TopContentProps> = ({
           </EmptyIndicator>
         )}
       </CardContent>
-      {/* EXPLORATION: "View all" as a text link at the bottom left */}
-      {transformedData && transformedData.length > 6 && (
-        <div className="pt-3">
-          <Sheet>
-            <SheetTrigger asChild>
-              <ViewAllLink />
-            </SheetTrigger>
-            <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
-              <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
-                <SheetTitle>{getContentTitle(selectedContentType)}</SheetTitle>
-                <SheetDescription>
-                  {getContentDescription(selectedContentType, range, getPeriodText)}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="group/datalist">
-                <TopContentTable
-                  contentType={selectedContentType}
-                  data={transformedData}
-                  range={range}
-                  tableHeader={true}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      )}
+      {/* The full list, opened by the arrow after the title */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
+          <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
+            <SheetTitle>{title ?? getContentTitle(selectedContentType)}</SheetTitle>
+            <SheetDescription>
+              {getContentDescription(selectedContentType, range, getPeriodText)}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="group/datalist">
+            <TopContentTable
+              contentType={selectedContentType}
+              data={transformedData}
+              range={range}
+              tableHeader={true}
+              wrapTitles={wrapTitles}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </Card>
   );
 };

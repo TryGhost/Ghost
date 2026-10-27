@@ -23,8 +23,9 @@ import {
 // column labels (Visitors, Members) over their numbers, no header row, then
 // a row per post with its thumbnail, title, byline and the two numbers, with
 // a rule above the first row (none between rows). Rows sit on the content edge
-// with no hover fill; the byline turns default colour on hover. Shade tokens
-// throughout.
+// and keep it there on hover: the row's hover fill (Shade's muted, as
+// DataList rows use) reaches 12px past each side, so it marks the whole row
+// as the target without moving its contents. Shade tokens throughout.
 //
 // The data is today's Top posts (most visitors in the date range), so it's
 // titled "Top posts", not the Vision's "Recent posts": which one Overview
@@ -63,7 +64,7 @@ const PostsTable: React.FC<PostsTableProps> = ({ topPostsData, isLoading, classN
     <section className={cn('flex flex-col', className)} data-testid="top-posts-card">
       {/* The title row carries the column labels, over their numbers */}
       <div className="flex min-h-(--control-height) items-center gap-4 pb-[9px]">
-        <h3 className="flex-1 text-2xl font-medium tracking-[-0.02em]">Top posts</h3>
+        <h3 className="flex-1 text-3xl font-medium tracking-[-0.02em]">Top posts</h3>
         {webAnalytics && <span className={cn(HEADER, NUMBER_COL)}>Visitors</span>}
         <span className={cn(HEADER, NUMBER_COL)}>Members</span>
       </div>
@@ -78,25 +79,26 @@ const PostsTable: React.FC<PostsTableProps> = ({ topPostsData, isLoading, classN
         posts.map((post) => (
           <button
             key={post.post_id}
-            className="group/post flex cursor-pointer items-center gap-4 border-border py-4 text-left first-of-type:border-t"
+            className="group/post relative isolate flex cursor-pointer items-center gap-4 border-border py-1.5 text-left outline-none before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 before:rounded-sm before:bg-muted/60 before:opacity-0 before:transition-opacity first-of-type:border-t hover:before:opacity-100 focus-visible:before:opacity-100"
             type="button"
             onClick={() => openPost(post)}
           >
             {post.feature_image ? (
               <div
-                className="h-[60px] w-[96px] shrink-0 rounded-[2px] bg-cover bg-center"
+                className="h-[80px] w-[128px] shrink-0 rounded-[2px] bg-cover bg-center"
                 style={{ backgroundImage: `url(${post.feature_image})` }}
               />
             ) : (
-              <FeatureImagePlaceholder className="h-[60px] w-[96px] shrink-0" />
+              // One shade darker than the placeholder's grey 100, so it stands out
+              // from the row's hover fill
+              <FeatureImagePlaceholder className="h-[80px] w-[128px] shrink-0 bg-gray-200" />
             )}
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               {/* 17px (Shade text-xl), the same as the latest post's title */}
               <span className="truncate text-xl font-medium tracking-tight">{post.title}</span>
-              {/* The byline turns default colour with the row's hover */}
               {/* "Aron Lemke · 26 Oct", no author link: the whole row is the
                   post's button, and this data has names only, no slugs */}
-              <span className="text-md text-muted-foreground transition-colors group-hover/post:text-foreground group-focus-visible/post:text-foreground">
+              <span className="text-md text-muted-foreground">
                 {post.authors && <>{post.authors} &middot; </>}
                 {formatDisplayDate(post.published_at, siteTimezone)}
               </span>

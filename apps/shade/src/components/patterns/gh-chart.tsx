@@ -147,9 +147,16 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
 
   const xTickHoursOnly = showHours && range === 1;
   const xTicks = data.length > 0 ? [...new Set([data[0].date, data[data.length - 1].date])] : [];
+  const yAxisWidth = showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0;
 
   return (
-    <ChartContainer className={cn('w-full', className)} config={chartConfig}>
+    <ChartContainer
+      className={cn('w-full', className)}
+      config={chartConfig}
+      // SHAPING PROTOTYPE ONLY: where the plot starts (the 4px left margin plus
+      // the y-axis), for explorations' CSS to line the plot up with the page
+      style={{ '--plot-start': `${4 + yAxisWidth}px` } as React.CSSProperties}
+    >
       <AreaChart
         data={data}
         margin={{
@@ -194,7 +201,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
           }}
           tickLine={false}
           ticks={yTicks}
-          width={showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0}
+          width={yAxisWidth}
         />
         <ChartTooltip
           content={

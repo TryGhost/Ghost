@@ -13,6 +13,7 @@ import type { KpiDataItem } from '@/analytics/views/stats/web/components/web-kpi
 import { NavbarActions } from '@tryghost/shade/components';
 import { useTinybirdQuery } from '@tryghost/admin-x-framework';
 import { STATS_DEFAULT_SOURCE_ICON_URL } from '@/shared/analytics/constants';
+import { CONTENT_TYPES } from '@/analytics/utils/content-helpers';
 import { createFilter } from '@tryghost/shade/patterns';
 import { getScrollParent } from '@tryghost/shade/utils';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
@@ -149,30 +150,68 @@ const WebOpenLayout: React.FC = () => {
       <StatsView isLoading={isConfigLoading} loadingComponent={<></>}>
         <div className="web-open-layout flex flex-col gap-15">
           <WebKPIs data={kpiData as KpiDataItem[] | null} isLoading={kpiLoading} range={range} />
-          <div className="flex grid-cols-2 flex-col gap-x-12 gap-y-15 lg:grid">
-            <TopContent
-              audience={audience}
-              filterParams={filterParams}
-              range={range}
-              totalVisitors={totalVisitors}
-            />
-            <SourcesCard
-              data={sourcesData}
-              defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
-              isLoading={isSourcesLoading}
-              range={range}
-              siteIcon={site.icon}
-              siteUrl={site.url}
-              totalVisitors={totalVisitors}
-              onSourceClick={(source) => handleFilterClick('source', source)}
-            />
-          </div>
-          <LocationsCard
-            data={locationsData}
-            isLoading={isLocationsLoading}
-            range={range}
-            onLocationClick={(location) => handleFilterClick('location', location)}
-          />
+          {/* EXPLORATION: one section, Breakdown, holding the four lists
+              as subsections, on thirds: Posts two thirds wide, down the
+              height of the other two, with room for its long titles (two
+              lines each, and more rows); Pages and Sources stacked in the
+              last third, their labels short. Then Locations on its own row
+              (its list and map side by side).
+
+              Hairlines between the three, as Exploration 3's Recent posts: a
+              vertical one between Posts and the right column, 40px either
+              side, and a horizontal one between Pages and Sources (and
+              between all three when they stack, below lg). */}
+          <section className="flex flex-col gap-6" data-breakdown>
+            <h2 className="text-3xl font-medium tracking-[-0.02em]">Breakdown</h2>
+            <div className="flex grid-cols-3 flex-col lg:grid">
+              <div className="pb-8 lg:col-span-2 lg:border-r lg:border-border lg:pr-10 lg:pb-0">
+                <TopContent
+                  audience={audience}
+                  contentType={CONTENT_TYPES.POSTS}
+                  filterParams={filterParams}
+                  limit={9}
+                  range={range}
+                  title="Posts"
+                  totalVisitors={totalVisitors}
+                  wrapTitles
+                />
+              </div>
+              <div className="flex flex-col border-t border-border pt-8 lg:border-t-0 lg:pt-0 lg:pl-10">
+                <div className="pb-8">
+                  <TopContent
+                    audience={audience}
+                    contentType={CONTENT_TYPES.PAGES}
+                    filterParams={filterParams}
+                    limit={3}
+                    range={range}
+                    title="Pages"
+                    totalVisitors={totalVisitors}
+                  />
+                </div>
+                <div className="border-t border-border pt-8">
+                  <SourcesCard
+                    data={sourcesData}
+                    defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
+                    isLoading={isSourcesLoading}
+                    limit={3}
+                    range={range}
+                    siteIcon={site.icon}
+                    siteUrl={site.url}
+                    totalVisitors={totalVisitors}
+                    onSourceClick={(source) => handleFilterClick('source', source)}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="pt-9">
+              <LocationsCard
+                data={locationsData}
+                isLoading={isLocationsLoading}
+                range={range}
+                onLocationClick={(location) => handleFilterClick('location', location)}
+              />
+            </div>
+          </section>
         </div>
       </StatsView>
     </StatsLayout>

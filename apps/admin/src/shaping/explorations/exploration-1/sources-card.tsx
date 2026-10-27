@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SourceIcon from '@/shared/analytics/source-icon';
 import {
   type BaseSourceData,
@@ -16,6 +16,7 @@ import {
   DataListHead,
   DataListHeader,
   DataListItemContent,
+  DataListItemValue,
   DataListItemValueAbs,
   DataListItemValuePerc,
   DataListRow,
@@ -25,12 +26,11 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
   SkeletonTable,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
-import { ViewAllLink, VisitorsHeader } from './visitors-header';
+import { ViewAllButton, VisitorsHeader } from './visitors-header';
 
 // EXPLORATION ONLY — never merge (see src/shaping/README.md).
 //
@@ -84,7 +84,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
               data-testid={`source-row-${row.isDirectTraffic ? 'direct' : row.source}`}
               onClick={onSourceClick ? () => handleRowClick(row) : undefined}
             >
-              <DataListItemContent className="max-w-[calc(100%-140px)]">
+              <DataListItemContent className="group-hover/datalist:max-w-[calc(100%-140px)]">
                 <div className="flex items-center space-x-4 overflow-hidden">
                   <div className="truncate font-medium">
                     {row.linkUrl && !onSourceClick ? (
@@ -115,15 +115,14 @@ const SourcesTable: React.FC<SourcesTableProps> = ({
                   </div>
                 </div>
               </DataListItemContent>
-              {/* EXPLORATION: no bar behind the row, and the percentage always
-                  shown after the number (not slid in on hover), in a fixed
-                  width so the numbers line up */}
-              <div className="z-10 flex items-center">
+              {/* EXPLORATION: no bar behind the row; the percentage slides in
+                  on hover, as today */}
+              <DataListItemValue>
                 <DataListItemValueAbs>{formatNumber(row.visits)}</DataListItemValueAbs>
-                <DataListItemValuePerc className="w-12 pr-0 text-right">
+                <DataListItemValuePerc>
                   {formatPercentage(row.percentage || 0)}
                 </DataListItemValuePerc>
-              </div>
+              </DataListItemValue>
             </DataListRow>
           );
         })}
@@ -141,6 +140,8 @@ interface SourcesCardProps {
   defaultSourceIconUrl?: string;
   isLoading: boolean;
   onSourceClick?: (source: string) => void;
+  // EXPLORATION: rows shown in the list (6 by default); the sheet has them all
+  limit?: number;
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
@@ -152,6 +153,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
   defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
   isLoading,
   onSourceClick,
+  limit = 6,
 }) => {
   // Process and group sources data with pre-computed icons and display values
   const processedData = React.useMemo(() => {
@@ -173,17 +175,23 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     });
   }, [processedData, totalVisitors]);
 
-  const topSources = extendedData.slice(0, 6);
+  const topSources = extendedData.slice(0, limit);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Generate description based on mode and range
-  const title = 'Top sources';
+  // EXPLORATION: a subtitle under Web traffic's Breakdown
+  const title = 'Sources';
   const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
   return (
     <Card className="group/datalist" data-testid="top-sources-card">
       <div className="flex items-center justify-between gap-6 px-6 pt-6 pb-5">
         <CardHeader className="p-0">
-          <CardTitle>{title}</CardTitle>
+          {/* EXPLORATION: "View all" is an arrow after the title */}
+          <div className="flex items-center gap-1">
+            <CardTitle>{title}</CardTitle>
+            {extendedData.length > 0 && <ViewAllButton onClick={() => setSheetOpen(true)} />}
+          </div>
         </CardHeader>
         {/* EXPLORATION: "Visitors" in the title row */}
         <VisitorsHeader />
@@ -205,31 +213,24 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
           </EmptyIndicator>
         )}
       </CardContent>
-      {/* EXPLORATION: "View all" as a text link at the bottom left */}
-      {extendedData.length > 6 && (
-        <div className="pt-3">
-          <Sheet>
-            <SheetTrigger asChild>
-              <ViewAllLink />
-            </SheetTrigger>
-            <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
-              <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
-                <SheetTitle>{title}</SheetTitle>
-                <SheetDescription>{description}</SheetDescription>
-              </SheetHeader>
-              <div className="group/datalist">
-                <SourcesTable
-                  data={extendedData}
-                  defaultSourceIconUrl={defaultSourceIconUrl}
-                  range={range}
-                  tableHeader={true}
-                  onSourceClick={onSourceClick}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      )}
+      {/* The full list, opened by the arrow after the title */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
+          <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
+            <SheetTitle>{title}</SheetTitle>
+            <SheetDescription>{description}</SheetDescription>
+          </SheetHeader>
+          <div className="group/datalist">
+            <SourcesTable
+              data={extendedData}
+              defaultSourceIconUrl={defaultSourceIconUrl}
+              range={range}
+              tableHeader={true}
+              onSourceClick={onSourceClick}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </Card>
   );
 };

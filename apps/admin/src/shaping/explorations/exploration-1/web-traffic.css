@@ -45,12 +45,16 @@
   display: none;
 }
 
-/* Top locations: the list first, the map to its right. The list fills its
-   half edge to edge, so its names start on the content edge and its numbers
-   end at the halfway line, under the title row's "Visitors"; the map keeps
-   its own padding as the gap. */
+/* Top locations: the list first, a third wide, the map to its right in the
+   other two thirds. The list fills its third edge to edge, so its names
+   start on the content edge and its numbers end at the third, under the
+   title row's "Visitors"; the map keeps its own padding as the gap. */
 .web-open-layout .svg-map-container {
   order: 2;
+  /* No space above or below the map (the shared card gives it 48px each):
+     it starts level with the list */
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .web-open-layout [data-testid='visitors-card'] {
@@ -62,12 +66,17 @@
   margin-left: 0;
 }
 
-/* From lg, where the two sit side by side, "Visitors" ends at the halfway
-   line too, over the list's numbers */
+/* From lg, where the two sit side by side: the list a third, the map two
+   thirds (the shared card splits them in half), and "Visitors" ending at
+   the third too, over the list's numbers */
 @media (min-width: 1024px) {
+  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) .lg\:grid-cols-2 {
+    grid-template-columns: 1fr 2fr;
+  }
+
   .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
   }
 
   .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child > *,
@@ -127,12 +136,31 @@
   padding-bottom: 0;
 }
 
-/* Section titles a clear step below the page title: 22px (Shade text-2xl),
-   medium weight like the page title, rather than body-size semibold */
+/* Each list's title, a subtitle under the Breakdown section title
+   (22px): 17px (Shade text-xl), medium weight like the page title, rather
+   than body-size semibold */
 .web-open-layout .rounded-xl.border > :first-child .font-semibold.leading-none {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   font-weight: 500;
   letter-spacing: -0.02em;
+}
+
+/* Top locations under Breakdown: titled "Locations" like the other
+   subsections (its title is fixed in the shared card, so the text is
+   swapped here) */
+[data-breakdown]
+  .rounded-xl.border:has([data-testid='visitors-card'])
+  > :first-child
+  .font-semibold.leading-none {
+  font-size: 0;
+}
+
+[data-breakdown]
+  .rounded-xl.border:has([data-testid='visitors-card'])
+  > :first-child
+  .font-semibold.leading-none::before {
+  content: 'Locations';
+  font-size: var(--text-xl);
 }
 
 /* The Web traffic tabs (web-kpis.tsx). The first tab starts on the content
@@ -151,6 +179,12 @@
    is the visible gap (KPI tabs carry 20px of their own, py-5) */
 .web-open-kpis [role='tab'] {
   padding-top: 0;
+}
+
+/* The chart starts right under the tabs (no my-4 above it); the room is
+   inside its grey ground instead (exploration.css) */
+.web-open-chart {
+  margin-top: 0;
 }
 
 /* Labels stay muted when the tab is active; the underline alone marks the
@@ -216,6 +250,16 @@
   display: none;
 }
 
+/* No dates under the chart, as on Overview: the date filter names the range
+   and the popover each day. Their strip is pulled out too. */
+.web-open-chart .recharts-xAxis .recharts-cartesian-axis-tick {
+  display: none;
+}
+
+.web-open-chart [data-chart] {
+  margin-bottom: -3rem;
+}
+
 /* So the numbers can sit above the top line without being clipped */
 .web-open-chart .recharts-surface {
   overflow: visible;
@@ -223,8 +267,8 @@
 
 /* The y-axis numbers sit over the plot, on the content edge, each just above
    its value. Recharts draws them 8px left of the plot (a 6px tick, a 2px
-   gap), anchored at their end. */
+   gap), anchored at their end; 16px right puts them 8px in from the edge. */
 .web-open-chart .recharts-yAxis .recharts-cartesian-axis-tick-value {
   text-anchor: start;
-  transform: translate(8px, -0.8rem);
+  transform: translate(16px, -0.8rem);
 }

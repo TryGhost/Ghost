@@ -1,26 +1,27 @@
 /* EXPLORATION ONLY (shaping/explorations): Exploration 1, on every Analytics
-   tab. Applies only while the menu's View is Exploration 1.
+   tab. Applies while the menu's View is Exploration 1 or one built on it
+   (data-shaping-family, set in view.ts).
 
    Vertical rhythm: 60px between sections (up from 48px, the rough average of the Vision
    prototype's spacing), and between rows of the side-by-side grids. Column
    gaps stay as they are. */
 
-[data-shaping-view='exploration-1'] [data-stats-content],
-[data-shaping-view='exploration-1'] [data-stats-content] > .gap-6 {
+[data-shaping-family~='exploration-1'] [data-stats-content],
+[data-shaping-family~='exploration-1'] [data-stats-content] > .gap-6 {
   row-gap: 6rem;
 }
 
 /* And 60px from the header's tabs down to the first section. The header
    ends 16px under its tabs (the Navbar's pb-4), so the content adds 44px.
    Sections start flush at their top edge, so this is the visible gap. */
-[data-shaping-view='exploration-1'] [data-stats-content] {
+[data-shaping-family~='exploration-1'] [data-stats-content] {
   padding-top: 4.4rem;
 }
 
 /* One caps label style everywhere (type.ts): the metric labels Planned sets
    in 12px mono (Shade's admin7AnalyticsLabel, on metric cards and KPI tabs)
    are 14px sans regular here instead */
-[data-shaping-view='exploration-1'] .admin7-analytics\:font-mono {
+[data-shaping-family~='exploration-1'] .admin7-analytics\:font-mono {
   font-family: var(--font-sans);
   font-size: var(--text-md);
   font-weight: 400;
@@ -31,7 +32,7 @@
 /* Every image in Analytics and post analytics has 2px corners: feature
    images, post thumbnails (often background images), their placeholders,
    source favicons and flags */
-[data-shaping-view='exploration-1']
+[data-shaping-family~='exploration-1']
   :is([data-stats-content], [data-post-analytics])
   :is(img, [style*='background-image'], .bg-muted.rounded-sm) {
   border-radius: 2px;
@@ -42,14 +43,14 @@
    text-4xl). Planned sets the 28px with !important, so this sits in the
    same layer, where the more specific selector wins. */
 @layer utilities {
-  [data-shaping-view='exploration-1'] .admin7-analytics\:text-3xl\! {
+  [data-shaping-family~='exploration-1'] .admin7-analytics\:text-3xl\! {
     font-size: var(--text-4xl) !important;
   }
 }
 
 /* Chart colour indicators are squares, not dots: the dot before each KPI
    tab's label (Growth, Newsletters, post analytics) */
-[data-shaping-view='exploration-1'] [role='tab'] [data-type='value'] > .rounded-full {
+[data-shaping-family~='exploration-1'] [role='tab'] [data-type='value'] > .rounded-full {
   border-radius: 0;
 }
 
@@ -57,7 +58,7 @@
    4px inside each side of its box (its left/right margin), which put 48px
    between the charts against the 40px between the columns (and between the
    latest post and Top posts below). Widened by those 4px each side. */
-[data-shaping-view='exploration-1'] [data-overview-kpis] [data-chart] {
+[data-shaping-family~='exploration-1'] [data-overview-kpis] [data-chart] {
   width: calc(100% + 0.8rem);
   margin-left: -0.4rem;
 }
@@ -66,20 +67,41 @@
    range, which the date filter above already names, and the hover popover
    gives each day's date. Their 30px strip below the plot is pulled out too,
    so the gap to the next section starts at the fill's bottom edge. */
-[data-shaping-view='exploration-1'] [data-overview-kpis] [data-chart] {
+[data-shaping-family~='exploration-1'] [data-overview-kpis] [data-chart] {
   margin-bottom: -3rem;
 }
 
-[data-shaping-view='exploration-1']
+[data-shaping-family~='exploration-1']
   [data-overview-kpis]
   .recharts-xAxis
   .recharts-cartesian-axis-tick {
   display: none;
 }
 
+/* The trend sits on the number's baseline, not at its top (where they sit
+   side by side, from lg): on the Overview stat cards and every tab's top
+   chart tabs (Growth, Newsletters, post analytics) */
+@media (min-width: 1024px) {
+  [data-shaping-family~='exploration-1']
+    :is([data-overview-kpis], [role='tab'])
+    div:has(> [data-slot='metric-value-number']) {
+    align-items: baseline;
+  }
+
+  /* Nudged 2px up off the baseline, to sit optically level (the tabs' own
+     2px top margin dropped, so it doesn't shift the baseline) */
+  [data-shaping-family~='exploration-1']
+    :is([data-overview-kpis], [role='tab'])
+    .group\/trend-badge {
+    position: relative;
+    top: -0.2rem;
+    margin-top: 0;
+  }
+}
+
 /* Overview stat card charts: no baseline under the chart, as on Web
    traffic; the fill's edge already marks it */
-[data-shaping-view='exploration-1']
+[data-shaping-family~='exploration-1']
   [data-overview-kpis]
   .recharts-xAxis
   .recharts-cartesian-axis-line {
@@ -91,22 +113,22 @@
    TrendBadge, on the Overview stat cards and every KPI tab. Up is green 600
    (the success colour, green 500, is too light as text alone), down red,
    the same muted grey when flat (and no caret). */
-[data-shaping-view='exploration-1'] .group\/trend-badge {
+[data-shaping-family~='exploration-1'] .group\/trend-badge {
   gap: 0.4rem;
   padding: 0;
   background: transparent;
   font-size: var(--text-sm);
 }
 
-[data-shaping-view='exploration-1'] .group\/trend-badge.bg-state-success\/10 {
+[data-shaping-family~='exploration-1'] .group\/trend-badge.bg-state-success\/10 {
   color: var(--color-green-600);
 }
 
-[data-shaping-view='exploration-1'] .group\/trend-badge > svg {
+[data-shaping-family~='exploration-1'] .group\/trend-badge > svg {
   display: none;
 }
 
-[data-shaping-view='exploration-1']
+[data-shaping-family~='exploration-1']
   .group\/trend-badge:is(.bg-state-success\/10, .bg-state-danger\/10)::before {
   content: '';
   order: -1;
@@ -116,10 +138,143 @@
   background: currentColor;
 }
 
-[data-shaping-view='exploration-1'] .group\/trend-badge.bg-state-success\/10::before {
+[data-shaping-family~='exploration-1'] .group\/trend-badge.bg-state-success\/10::before {
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
-[data-shaping-view='exploration-1'] .group\/trend-badge.bg-state-danger\/10::before {
+[data-shaping-family~='exploration-1'] .group\/trend-badge.bg-state-danger\/10::before {
   clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* Growth and Newsletters' top chart, as Web traffic's (web-traffic.css,
+   web-kpis.tsx): out of its outlined card and onto the content edge. The
+   tabs start on the edge with no hover fill, labels stay muted (default
+   colour on hover) with their square after the label, and the plot starts
+   on the edge too, with the y-axis numbers over it. The plot's start comes
+   from the chart (--plot-start, set by GhAreaChart and Newsletters' bar
+   chart). */
+[data-shaping-family~='exploration-1']
+  :is([data-testid='total-members-card'], [data-testid='newsletters-card']) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+
+  & > * {
+    padding: 0;
+  }
+
+  /* The tab row no longer bleeds past the edge (-mx-6) */
+  & [role='tablist'] {
+    margin-inline: 0;
+  }
+
+  /* The chart starts right under the tabs (no my-4 above it); the room is
+     inside its grey ground instead */
+  & div:has(> [data-chart]) {
+    margin-top: 0;
+  }
+
+  & [role='tab'] {
+    background: transparent !important;
+    padding-top: 0;
+  }
+
+  & [role='tab']:first-child {
+    padding-left: 0;
+  }
+
+  & [role='tab'] [data-type='value'] {
+    color: var(--color-muted-foreground) !important;
+    transition: color 150ms ease-out;
+  }
+
+  & [role='tab']:is(:hover, :focus-visible) [data-type='value'] {
+    color: var(--color-foreground) !important;
+  }
+
+  /* The square follows the label */
+  & [role='tab'] [data-type='value'] > .rounded-full {
+    order: 2;
+  }
+
+  /* The plot on the content edge: pulled left past the y-axis, and out past
+     the chart's right margin */
+  & [data-chart] {
+    width: calc(100% + var(--plot-start, 0px) + 0.4rem);
+    margin-left: calc(var(--plot-start, 0px) * -1);
+  }
+
+  & .recharts-surface {
+    overflow: visible;
+  }
+
+  & .recharts-xAxis .recharts-cartesian-axis-line {
+    display: none;
+  }
+
+  /* No dates under the chart, as on Overview: the date filter names the
+     range and the popover each day. Their strip is pulled out too. */
+  & .recharts-xAxis .recharts-cartesian-axis-tick {
+    display: none;
+  }
+
+  & [data-chart] {
+    margin-bottom: -3rem;
+  }
+
+  & .recharts-yAxis .recharts-cartesian-axis-tick-value {
+    text-anchor: start;
+    transform: translate(16px, -0.8rem);
+  }
+
+  /* The hover popover in one text style, the date semibold, no colour dot */
+  & .recharts-tooltip-wrapper .rounded-full {
+    display: none;
+  }
+
+  & .recharts-tooltip-wrapper > div,
+  & .recharts-tooltip-wrapper > div * {
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  & .recharts-tooltip-wrapper > div > :first-child {
+    font-weight: 600;
+  }
+
+  & .recharts-tooltip-wrapper .text-muted-foreground {
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+}
+
+/* The top charts (Web traffic, Growth, Newsletters): no gridlines
+   (Newsletters' bar charts draw them), just the line, fill or bars and the
+   y-axis values over the plot. */
+[data-shaping-family~='exploration-1']
+  :is(.web-open-chart, [data-testid='total-members-card'], [data-testid='newsletters-card'])
+  [data-chart] {
+  & .recharts-cartesian-grid-horizontal {
+    display: none;
+  }
+
+  /* The bottom value ("0", the first tick) sits 8px higher than the others,
+     clear of the bottom edge */
+  & .recharts-yAxis .recharts-cartesian-axis-tick:first-child .recharts-cartesian-axis-tick-value {
+    transform: translate(16px, -1.6rem);
+  }
+
+  /* 32px of room at the top of the plot, inside the grey ground */
+  padding-top: 3.2rem;
+
+  /* A grey 50 ground behind the plot only, content edge to content edge:
+     the chart's box runs past it (left over the y-axis it's pulled back
+     across, right over its 4px margin, below over its hidden date strip) */
+  background-image: linear-gradient(var(--color-gray-50), var(--color-gray-50));
+  background-repeat: no-repeat;
+  background-position: var(--plot-start, 0px) 0;
+  background-size: calc(100% - var(--plot-start, 0px) - 0.4rem) calc(100% - 3rem);
 }

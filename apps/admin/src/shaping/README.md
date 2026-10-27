@@ -74,10 +74,22 @@ sets `data-shaping-view` on `<html>`, so CSS scoped to
 `[data-shaping-view='exploration-<n>']` applies only in that view.
 `StatsContent` carries a `data-stats-content` hook for this.
 
+An exploration can build on another (`extends` in its entry): it reuses that
+one's screens, and `data-shaping-family` on `<html>` lists both, so the
+base's CSS (scoped to `[data-shaping-family~='exploration-<n>']`) applies to
+it too. The variant only adds what's different.
+
 To add one: a folder `explorations/exploration-<n>/` and an entry in
 `explorations/index.ts` (plus its screen-wide CSS, if any, imported there).
 
-Running: **Exploration 1**, Web traffic without outlined cards.
+Running:
+
+- **Exploration 1**: open layouts on Overview and Web traffic.
+- **Exploration 2**: Exploration 1 on white cards over a warm grey page,
+  with a white left nav.
+- **Exploration 3**: Exploration 1 with Recent posts on Overview, an
+  editorial 50/50 (the latest post as the lead, the next three beside it),
+  in place of the latest post and Top posts.
 
 ## Data scenarios
 

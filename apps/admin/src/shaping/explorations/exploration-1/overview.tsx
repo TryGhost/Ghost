@@ -52,7 +52,41 @@ type GrowthChartDataItem = {
   label?: string;
 };
 
-const OverviewExploration: React.FC = () => {
+// EXPLORATION: the latest post and the posts beside it, a third and two
+// thirds, as in the Vision prototype; stacked below lg. Same columns and 40px
+// gap as the stat cards above (overview-kpis.tsx, admin7-analytics:gap-10),
+// so the latest post lines up under Unique visitors and the posts under
+// Members and MRR.
+const LatestAndTopPosts: React.FC = () => {
+  const { range } = useAnalytics();
+  const { startDate, endDate, timezone } = getRangeDates(range);
+  const { data: latestPostStats, isLoading: isLatestPostLoading } = useLatestPostStats();
+  const { data: topPostsData, isLoading: isTopPostsLoading } = useTopPostsViews({
+    searchParams: {
+      date_from: formatQueryDate(startDate),
+      date_to: formatQueryDate(endDate),
+      limit: '5',
+      timezone,
+    },
+  });
+
+  return (
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
+      <LatestPostBox isLoading={isLatestPostLoading} latestPostStats={latestPostStats} />
+      <PostsTable
+        className="lg:col-span-2"
+        isLoading={isTopPostsLoading}
+        topPostsData={topPostsData}
+      />
+    </div>
+  );
+};
+
+// The screen, with the section between the stat cards and the help links
+// swappable: Exploration 3 passes its Recent posts instead
+export const OverviewExploration: React.FC<{ postsSection?: React.ReactNode }> = ({
+  postsSection = <LatestAndTopPosts />,
+}) => {
   const paidMembersEnabled = usePaidMembersEnabled();
   const { range } = useAnalytics();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
@@ -63,15 +97,6 @@ const OverviewExploration: React.FC = () => {
     totals: growthTotals,
     currencySymbol,
   } = useGrowthStats(range);
-  const { data: latestPostStats, isLoading: isLatestPostLoading } = useLatestPostStats();
-  const { data: topPostsData, isLoading: isTopPostsLoading } = useTopPostsViews({
-    searchParams: {
-      date_from: formatQueryDate(startDate),
-      date_to: formatQueryDate(endDate),
-      limit: '5',
-      timezone,
-    },
-  });
 
   /* Get visitors
     /* ---------------------------------------------------------------------- */
@@ -233,19 +258,7 @@ const OverviewExploration: React.FC = () => {
           visitorsChartRange={visitorsChartRange}
           visitorsYRange={visitorsYRange}
         />
-        {/* EXPLORATION: the latest post and the posts beside it, a third and
-            two thirds, as in the Vision prototype; stacked below lg. Same
-            columns and 40px gap as the stat cards above (overview-kpis.tsx,
-            admin7-analytics:gap-10), so the latest post lines up under
-            Unique visitors and the posts under Members and MRR. */}
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-          <LatestPostBox isLoading={isLatestPostLoading} latestPostStats={latestPostStats} />
-          <PostsTable
-            className="lg:col-span-2"
-            isLoading={isTopPostsLoading}
-            topPostsData={topPostsData}
-          />
-        </div>
+        {postsSection}
         {/* EXPLORATION: the help links as a banner and a card, on the same
             thirds (help-banners.tsx). No "Grow your audience" title for now. */}
         <HelpBanners />

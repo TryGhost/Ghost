@@ -218,7 +218,9 @@ const createWorld = (scenario: FakeScenarioId) => {
       title: post.title,
       slug: post.slug,
       url: `${window.location.origin}/${post.slug}/`,
-      excerpt: 'A short excerpt for the prototype.',
+      // A realistic dek: two sentences, as a custom excerpt usually runs
+      excerpt:
+        'The decision passed without public comment, and the details only surfaced weeks later in a budget amendment. We spent a month asking who signed off, and why nobody else was told.',
       feature_image: post.featureImage,
       published_at: timestamp(post.publishedOffset),
       created_at: timestamp(post.publishedOffset),
@@ -413,12 +415,81 @@ const subscriptions = async (world: World) => {
   });
 };
 
+/* Newsletters
+ * ------------------------------------------------------------------------ */
+
+// Two made-up newsletters beside the site's own, so Newsletters' picker shows
+// (it hides with one). Members can take several, so each one's subscribers
+// are a share of everyone subscribed; most sends go to the site's own.
+const EXTRA_NEWSLETTERS = [
+  { id: 'proto-newsletter-briefing', name: 'Morning Briefing', share: 0.41 },
+  { id: 'proto-newsletter-investigations', name: 'Investigations', share: 0.17 },
+];
+
+// The newsletter a send went to: one of the extras, or the site's own (null)
+const newsletterOfSend = (world: World, send: FakeSend) => {
+  const index = world.sends.indexOf(send);
+  return index % 5 === 4
+    ? EXTRA_NEWSLETTERS[1].id
+    : index % 3 === 2
+      ? EXTRA_NEWSLETTERS[0].id
+      : null;
+};
+
+// A picked newsletter's share of subscribers (the site's own: 86%), or all
+// of them with none picked
+const newsletterShare = (params: URLSearchParams) => {
+  const id = params.get('newsletter_id');
+  if (!id) {
+    return 1;
+  }
+  return EXTRA_NEWSLETTERS.find((newsletter) => newsletter.id === id)?.share ?? 0.86;
+};
+
+// The site's newsletters plus the extras, copied from its first so every
+// field is there for anything else that lists them
+const withExtraNewsletters = async (world: World, response: Response) => {
+  const body = (await response.json()) as {
+    newsletters?: Array<Record<string, unknown> & { status?: string }>;
+    meta?: unknown;
+  };
+  const real = body.newsletters ?? [];
+  const template = real[0];
+  if (!template || real.filter((newsletter) => newsletter.status === 'active').length > 1) {
+    return json(body);
+  }
+  const everyone = subscribersOn(world.profile, 0);
+  // The site's own takes its share of the made-up subscribers too
+  const own = {
+    ...template,
+    count: {
+      ...(template.count as Record<string, unknown> | undefined),
+      active_members: Math.round(everyone * 0.86),
+    },
+  };
+  const extras = EXTRA_NEWSLETTERS.map((newsletter, index) => ({
+    ...template,
+    id: newsletter.id,
+    uuid: `${newsletter.id}-uuid`,
+    name: newsletter.name,
+    slug: newsletter.id.replace('proto-newsletter-', ''),
+    status: 'active',
+    sort_order: real.length + index,
+    count: { active_members: Math.round(everyone * newsletter.share), posts: 0 },
+  }));
+  return json({ ...body, newsletters: [own, ...real.slice(1), ...extras] });
+};
+
 const newsletterRows = (world: World, params: URLSearchParams) => {
   const hasRange = params.has('date_from') || params.has('date_to');
   const offsets = offsetsBetween(params.get('date_from'), params.get('date_to'), 90);
   const oldest = hasRange ? offsets[0] : 90;
   const newest = hasRange ? offsets[offsets.length - 1] : 0;
+  // A picked newsletter: only its own sends
+  const picked = params.get('newsletter_id');
+  const isExtra = EXTRA_NEWSLETTERS.some((newsletter) => newsletter.id === picked);
   const rows = world.sends
+    .filter((send) => !picked || newsletterOfSend(world, send) === (isExtra ? picked : null))
     .filter((send) => send.offset <= oldest && send.offset >= newest)
     .map((send) => ({
       post_id: send.post.id,
@@ -612,13 +683,15 @@ const ghostStats = async (world: World, path: string, params: URLSearchParams) =
   }
 
   if (path === 'stats/subscriber-count') {
+    // A picked newsletter's own share of subscribers
+    const share = newsletterShare(params);
     return json({
       stats: [
         {
-          total: subscribersOn(profile, 0),
+          total: Math.round(subscribersOn(profile, 0) * share),
           values: offsets.map((offset) => ({
             date: isoDay(offset),
-            value: subscribersOn(profile, offset),
+            value: Math.round(subscribersOn(profile, offset) * share),
           })),
         },
       ],
@@ -710,14 +783,11 @@ const ghostStats = async (world: World, path: string, params: URLSearchParams) =
 
 const posts = (world: World, params: URLSearchParams) => {
   const filter = params.get('filter') ?? '';
-  // Overview's latest post
-  if (
-    filter === 'status:[published,sent]' &&
-    params.get('limit') === '1' &&
-    (params.get('include') ?? '').includes('email')
-  ) {
-    const latest = world.posts[0];
-    return json({ posts: latest ? [world.toPost(latest)] : [], meta: pagination(latest ? 1 : 0) });
+  // Overview's latest post (limit 1), or its most recent few (Exploration 3's
+  // Recent posts), newest first
+  if (filter === 'status:[published,sent]' && (params.get('include') ?? '').includes('email')) {
+    const recent = world.posts.slice(0, Number(params.get('limit')) || 1);
+    return json({ posts: recent.map(world.toPost), meta: pagination(recent.length) });
   }
   // A made-up post opened from a list (post analytics)
   const idMatch = filter.match(/^id:'?(proto-post-\d+)'?$/);
@@ -794,6 +864,10 @@ export const fakeResponseFor = (scenario: FakeScenarioId) => {
 
     if (path === 'posts') {
       return posts(world, params);
+    }
+
+    if (path === 'newsletters' && request.method === 'GET') {
+      return withExtraNewsletters(world, await fetchReal(request));
     }
 
     const linksMatch = path === 'links' && (params.get('filter') ?? '').match(/proto-post-\d+/);

@@ -1,0 +1,79 @@
+/* EXPLORATION ONLY (shaping/explorations): Exploration 2, Exploration 1 on
+   white surfaces. It reuses Exploration 1's screens and CSS (extends, in
+   explorations/index.ts) and only adds this: a white left nav, a warm grey
+   page, and white cards for each section, so surfaces rather than rules do
+   the separating.
+
+   The grey is Shapeshifter's page colour (neutral 100, #f8f8f5), which
+   Shade doesn't have, so it's named here. Light mode only for now: dark
+   mode keeps Exploration 1's surfaces. */
+
+/* The page: Admin's background token, so everything drawn in it (the
+   content area, the sticky Analytics header) turns grey together. Only on
+   Analytics and post analytics screens. */
+html[data-shaping-view='exploration-2']:not(.dark):has(
+    :is([data-stats-content], [data-post-analytics])
+  ) {
+  --exploration-2-page: #f8f8f5;
+  --background: var(--exploration-2-page);
+  /* The left nav, white: the floating capsule draws itself in Shade's
+     frosted glass (a faint translucent grey, a highlight wash and a blur),
+     so that turns solid white with no wash; the docked sidebar uses the
+     sidebar colour */
+  --surface-glass: var(--color-white);
+  --surface-glass-highlight: none;
+  --sidebar-background: var(--color-white);
+}
+
+/* The cards: white, 4px corners (Shade rounded-sm), 24px in */
+html[data-shaping-view='exploration-2']:not(.dark) {
+  /* Overview stat cards: the label and number 24px in, the chart full bleed
+     along the bottom (the card clips it to its corners) */
+  & [data-overview-kpis] > .group\/kpi {
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+  }
+
+  & [data-overview-kpis] > .group\/kpi > :first-child {
+    padding: 2.4rem 2.4rem 1.6rem;
+  }
+
+  /* The chart overshoots the card by a hair on every side but the top, and
+     the card clips it, so the fill always meets the card's edges: 1px more
+     each side than Exploration 1's widening (a fractional card width can
+     otherwise leave a white sliver), and 5px more below its hidden date
+     strip (the chart library's own bottom margin) */
+  & [data-overview-kpis] > .group\/kpi [data-chart] {
+    width: calc(100% + 1rem);
+    margin-left: -0.5rem;
+    margin-bottom: -3.5rem;
+  }
+
+  /* Latest post (grey 50 in Exploration 1) and Top posts */
+  & [data-testid='latest-post'] {
+    background: var(--color-white);
+  }
+
+  & [data-testid='top-posts-card'] {
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    padding: 2.4rem;
+  }
+
+  /* Web traffic: the tabbed chart and each list (Exploration 1 strips their
+     outlined cards; here they come back as white ones, borderless) */
+  & .web-open-layout .rounded-xl.border,
+  & .web-open-kpis,
+  & :is([data-testid='total-members-card'], [data-testid='newsletters-card']) {
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    padding: 2.4rem;
+  }
+
+  /* The top charts (Web traffic, Growth, Newsletters) */
+  & .web-open-kpis,
+  & :is([data-testid='total-members-card'], [data-testid='newsletters-card']) {
+    overflow: hidden;
+  }
+}

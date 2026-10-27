@@ -35,6 +35,7 @@ const DEFAULT_VIEW = 'planned';
 const VIEW_KEY = 'shaping.analytics.view';
 const ATTRIBUTE = 'data-admin7-analytics';
 const VIEW_ATTRIBUTE = 'data-shaping-view';
+const FAMILY_ATTRIBUTE = 'data-shaping-family';
 const CHANGE_EVENT = 'shaping:view-change';
 
 const readView = (): string => {
@@ -50,6 +51,10 @@ const apply = (view: string) => {
   document.documentElement.toggleAttribute(ATTRIBUTE, view !== 'today');
   // Lets an exploration's CSS restyle any screen (see explorations/)
   document.documentElement.setAttribute(VIEW_ATTRIBUTE, view);
+  // The view and the exploration it builds on, if any, so the base's CSS
+  // applies to it too ([data-shaping-family~='exploration-1'])
+  const base = EXPLORATIONS.find((exploration) => exploration.id === view)?.extends;
+  document.documentElement.setAttribute(FAMILY_ATTRIBUTE, base ? `${view} ${base}` : view);
 };
 
 // Called from main.tsx before Admin renders

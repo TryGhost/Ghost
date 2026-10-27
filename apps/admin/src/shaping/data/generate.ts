@@ -125,26 +125,28 @@ export const totalVisits = (profile: Profile, offsets: number[]) =>
  * ------------------------------------------------------------------------ */
 
 const TITLES = [
-  'Sheet music for the algorithm era',
-  'On working slowly in a world that rewards speed',
-  'Half-finished thoughts on subscription pricing',
-  'A field guide to independent publishing',
-  'The case for writing less often',
-  'What we learned from a year of paid subscriptions',
-  'Notes from the road: Lisbon',
-  'Ask me anything, March edition',
-  'The slow web, revisited',
-  'Why the comments section is worth saving',
-  'Inside the numbers: our first thousand readers',
-  'A quiet defence of long reads',
-  'Everything I got wrong about SEO',
-  'The newsletter that almost wasn’t',
-  'Five tools I use every single day',
-  'How a small team ships every week',
-  'The best things we read this month',
-  'Letters from readers, answered',
-  'A beginner’s guide to the archive',
-  'Why we stopped chasing virality',
+  // Real-world lengths, a news site's: most run two or three lines in a
+  // narrow column
+  'City Council Quietly Approves Plan to Replace Every Streetlight With a Camera',
+  'We Spent a Year Tracking Where Local Ad Money Actually Goes. Here’s What We Found',
+  'Half-Finished Thoughts on Subscription Pricing, and Why We Changed Ours Twice',
+  'The Recycling Plant That Wasn’t: Inside a Startup’s Collapse',
+  'Readers Asked Why We Stopped Running Comments. This Is the Honest Answer',
+  'What a Year of Paid Subscriptions Taught a Three-Person Newsroom About Money',
+  'Notes From the Road: Lisbon’s Housing Fight Is Coming for Every Coastal City',
+  'Ask Me Anything, March Edition: Burnout, Pitching and the Archive',
+  'The School Board Meeting Nobody Covered, and the $4 Million Contract It Passed',
+  'Why the Comments Section Is Still Worth Saving, Even When It’s Exhausting',
+  'Inside the Numbers: How We Reached Our First Thousand Paying Readers',
+  'A Quiet Defence of Long Reads in an Era of Ten-Second Attention Spans',
+  'Everything I Got Wrong About SEO, and What Finally Worked Instead',
+  'The Newsletter That Almost Wasn’t',
+  'Five Tools a Small Team Uses Every Single Day to Publish on Time',
+  'How a Two-Person Desk Ships a Weekly Investigation Without Burning Out',
+  'The Best Things We Read This Month, From Water Rights to Wrestling',
+  'Letters From Readers, Answered: On Paywalls, Corrections and Trust',
+  'A Beginner’s Guide to Our Archive, Twelve Years and Counting',
+  'Why We Stopped Chasing Virality and Started Measuring Something Else',
 ];
 
 const AUTHORS = ['Aron Lemke', 'Maren Calzoni', 'Jamie Ortiz'];

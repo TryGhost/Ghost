@@ -409,6 +409,15 @@ const NewsletterKPIs: React.FC<{
                 <ChartContainer
                   className="aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]"
                   config={barChartConfig}
+                  // SHAPING PROTOTYPE ONLY: where the plot starts (the y-axis;
+                  // no left margin), for explorations' CSS, as GhAreaChart does
+                  style={
+                    {
+                      '--plot-start': `${calculateYAxisWidth(barTicks, (value: number) =>
+                        formatPercentage(value),
+                      )}px`,
+                    } as React.CSSProperties
+                  }
                 >
                   <Recharts.BarChart
                     className={isHoveringClickable ? 'cursor-pointer!' : ''}

@@ -2,6 +2,7 @@ import React, { lazy } from 'react';
 // Each exploration's screen-wide CSS, scoped to its view by
 // [data-shaping-view] on <html>, so it can restyle any screen
 import './exploration-1/exploration.css';
+import './exploration-2/exploration.css';
 
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
 //
@@ -20,16 +21,40 @@ export interface Exploration {
   // One line for the menu: what's different
   description: string;
   screens: Record<string, React.LazyExoticComponent<React.FC>>;
+  // The exploration this one builds on: it reuses that one's screens and its
+  // screen-wide CSS applies here too (data-shaping-family), so a variant
+  // only adds what's different
+  extends?: string;
 }
 
+const exploration1: Exploration = {
+  id: 'exploration-1',
+  label: 'Exploration 1',
+  description: 'Open layouts on Overview and Web traffic.',
+  screens: {
+    '/analytics': lazy(() => import('./exploration-1/overview')),
+    '/analytics/web': lazy(() => import('./exploration-1/web-traffic')),
+    '/analytics/newsletters': lazy(() => import('./exploration-1/newsletters')),
+  },
+};
+
 export const EXPLORATIONS: Exploration[] = [
+  exploration1,
   {
-    id: 'exploration-1',
-    label: 'Exploration 1',
-    description: 'Open layouts on Overview and Web traffic.',
+    id: 'exploration-2',
+    label: 'Exploration 2',
+    description: 'Exploration 1 on white surfaces over a warm grey page.',
+    screens: exploration1.screens,
+    extends: 'exploration-1',
+  },
+  {
+    id: 'exploration-3',
+    label: 'Exploration 3',
+    description: 'Exploration 1 with Recent posts as an editorial 50/50 on Overview.',
     screens: {
-      '/analytics': lazy(() => import('./exploration-1/overview')),
-      '/analytics/web': lazy(() => import('./exploration-1/web-traffic')),
+      ...exploration1.screens,
+      '/analytics': lazy(() => import('./exploration-3/overview')),
     },
+    extends: 'exploration-1',
   },
 ];

@@ -44,7 +44,7 @@ const LABEL = CAPS_LABEL;
 // (type.ts) a size down, 11px (Shade text-xs), in the default colour.
 const LATEST_BADGE = cn(
   CAPS_LABEL,
-  'border-transparent bg-background text-xs font-medium text-foreground',
+  'border-transparent bg-background text-xs font-medium tracking-wide text-foreground uppercase',
 );
 
 // The card's actions: round icon buttons with a soft fill, like a news app's
