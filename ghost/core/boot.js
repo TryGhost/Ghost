@@ -239,7 +239,7 @@ async function initServicesForFrontend({ bootLogger }) {
   debug('End: Redirects');
 
   debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection');
+  const linkRedirects = require('./server/services/link-redirection').default;
   await linkRedirects.init();
   debug('End: Link Redirects');
 

@@ -317,7 +317,7 @@ services:
           - core/server/services/stats/service.js
           - core/server/services/posts-public/index.ts
           - core/server/services/tags-public/index.ts
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/server/services/post-scheduling/index.ts
           - core/server/auth/session/index.js
           - core/server/services/route-settings/index.js
@@ -6491,64 +6491,79 @@ services:
   link-redirection:
     kind: directory
     disposition: retain
+    migrated: true
+    extras:
+      linkRedirectRepository:
+        purpose: Hand the ready repository to link tracking, which rebuilds post links from redirect rows, and to newsletter integration tests.
+        callers:
+          - core/server/services/link-tracking/index.js
+          - test/integration/services/email-service/batch-sending.test.js
+        timing: After init resolves; before that the accessor throws the same readiness error as the service getter.
+        dependencies:
+          - The repository constructed by the factory, including its optional cache adapter and site.changed listener.
+        failurePolicy: Throws IncorrectUsageError before initialization; after init it only returns the retained instance and never constructs.
+        destination: Retire by narrowing link tracking to the service API or moving post-link reconstruction behind a service method.
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        The guarded graph fits one factory after adapters/models and before link tracking.
-        Preserve the repository needed by link tracking and give its optional
-        cache-invalidation listener an identity and cleanup path before publishing. This is
-        bounded root/repository work; the borrowed cache and per-request redirect behavior
-        need no new kernel lifecycle.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned default root returns one ready LinkRedirectsService after adapters and
+        models and before link tracking. The repository link tracking borrows is published
+        through a guarded transitional extras accessor rather than a public field. The borrowed
+        cache, its site.changed listener and per-request redirect behavior are unchanged; no new
+        kernel lifecycle is needed.
+      reviewedAt: 9687efed5b3180f97e35078367822db16aa1c152
       sources:
-        - core/server/services/link-redirection/index.js
+        - core/server/services/link-redirection/index.ts
         - core/server/services/link-redirection/link-redirect-repository.js
         - core/server/services/link-tracking/index.js
         - core/boot.js
-        - test/unit/server/services/link-redirection/link-redirect-repository.test.js
+        - test/unit/server/services/link-redirection/index.test.js
       dependencies:
         complexity: straightforward
         reason: >-
-          The root already composes models, URLs, the optional cache and its event bus. Only the
-          implementation event dispatcher and repository debug logger need additional injection.
-          Link Tracking borrows the same repository, so preserve that public collaborator and
-          initialize redirection first; there is no reverse service dependency in this graph.
-        preparation:
-          - >-
-            Inject DomainEvents into the redirect implementation and the debug function into the
-            repository from index.ts.
-          - >-
-            Preserve the shared repository identity used by Link Tracking and the optional cache
-            policy when exposing the ready aggregate.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+          The root composes models, URL utilities, the optional cache, the shared event bus and
+          the domain event dispatcher in index.ts; the implementation receives the dispatcher
+          instead of requiring it. The repository keeps its allowlisted debug tracing. Link
+          tracking still borrows the repository through the transitional accessor and
+          deep-imports redirect-event; narrowing it to the service API is a separate change.
+        preparation: []
+        reviewedAt: 9687efed5b3180f97e35078367822db16aa1c152
         sources:
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirects-service.js
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/link-tracking/index.js
+          - core/server/services/link-tracking/link-click-tracking-service.js
           - core/boot.js
     entryPoints:
-      - link-redirection/index.js
+      - link-redirection/index.ts
     notes: >-
       Preserve frontend redirects, optional cache behavior and initialization before link
-      tracking. Cache ownership, partial construction and subdirectory round trips need
-      explicit contracts before changing this guarded wrapper.
+      tracking. The prior auditedAt records the pre-migration baseline. The bounded migration
+      was inspected on main 9687efed5b3180f97e35078367822db16aa1c152; root, repository, service and link
+      tracking units and the automation integration passed before production changes. The
+      default initializer replaces the wrapper, and the repository reach-through used by link
+      tracking is a transitional extras accessor with the same readiness guard. The cache
+      serialization round trip on subdirectory sites is unchanged and stays recorded below for a
+      separate fix.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one eager wrapper with receiver-dependent async init and initially
-          absent service/linkRedirectRepository. Successful init publishes both without returning
-          either. The deep service exposes async slug/create/filter/request operations and a
-          synchronous relativeRedirectPrefix; only handleRequest is bound. Deep LinkRedirect
-          objects retain mutable URL references and ObjectIDs, while RedirectEvent carries the
-          original request URL, link and timestamp. Units exercise deep methods and DTOs. Root
-          units pin the absent pre-init surface, retained identity across repeated init and the
-          published handleRequest and getSlugUrl paths; detached init remains source-only.
+          The TypeScript root default-exports a defineService initializer with init, a guarded
+          service getter and one extras accessor, linkRedirectRepository(), which throws the
+          same readiness error before init. The ready service exposes async slug/create/filter/
+          request operations and a synchronous relativeRedirectPrefix; only handleRequest is
+          bound. Deep LinkRedirect objects retain mutable URL references and ObjectIDs, while
+          RedirectEvent carries the original request URL, link and timestamp. Root units pin both
+          readiness guards, retained identity across repeated init and the published
+          handleRequest and getSlugUrl paths; generic shared initialization and retry belong to
+          kernel tests.
         sources:
-          - core/server/services/link-redirection/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirects-service.js
           - core/server/services/link-redirection/link-redirect.ts
           - core/server/services/link-redirection/redirect-event.js
@@ -6558,36 +6573,41 @@ services:
           - test/unit/server/services/link-redirection/index.test.js
       construction:
         summary: >-
-          The first init loads shared models, chooses an optional adapter, constructs/publishes
-          a repository, then constructs the service with the site URL. Its async body has no
-          await, so publication is synchronous; the service guard retains both on later calls.
-          Cache-enabled repository construction immediately adds a site.changed listener. A
-          later construction failure can leave that repository/listener published and retry
-          creates another. There is no pending promise, rollback or teardown. Root units pin
-          graph retention, disabled-cache construction without an adapter or listener, and
-          adapter-acquisition failure publishing nothing before an explicit retry succeeds.
-          Later partial repository/listener publication remains source-only.
+          Import declares the root without resolving runtime collaborators. The factory requires
+          config, URL utilities, the adapter manager, the shared event registry, the domain event
+          dispatcher, models and the implementation classes, constructs the repository with an
+          optional cache:linkRedirectsPublic adapter, then the service with the site URL, and
+          publishes the repository to the accessor only after both exist. Publication follows the
+          awaited factory, so consumers await init rather than relying on synchronous
+          publication. Cache-enabled repository construction immediately adds a site.changed
+          listener; a later site URL failure would leave that listener registered and retry adds
+          another. Root units pin graph retention, disabled-cache construction without an adapter
+          or listener, and adapter-acquisition failure leaving both guards closed before an
+          explicit retry succeeds.
         sources:
-          - core/server/services/link-redirection/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/adapter-manager/index.ts
         tests:
           - test/unit/server/services/link-redirection/index.test.js
       consumers:
         summary: >-
-          Frontend route mounting reads the /r/ prefix and captures the bound handleRequest.
-          Link tracking requires both published objects and retains them for newsletter and
-          automation link creation, click events, projections and updates. Its post repository
-          uses the retained redirect repository to reconstruct rows. Newsletter integration
-          proves generated links exist in the database and resolve through real frontend HTTP
-          to the stored destination; its nonempty click assertion does not pin the individual
-          relation because supplied member_id/link_id options are ignored. Wrapper tests inject
-          redirection dependencies; none prove retained consumers after root replacement. Root
-          units invoke the published handleRequest with request/response fakes and a stateful
-          cache fake: a database miss and a serialized cache hit assert the same destination,
-          header, no next call and the same link id, automation revision and destination in the
-          dispatched event. Models and URL helpers are controlled, so this is not a real HTTP
-          test.
+          Frontend route mounting reads the /r/ prefix and captures the bound handleRequest from
+          the ready service. Link tracking reads the service getter and the transitional
+          extras.linkRedirectRepository() accessor and retains both for newsletter and automation
+          link creation, click events, projections and updates. Its post repository uses the
+          borrowed repository to reconstruct rows, and its click service deep-imports
+          redirect-event. Newsletter integration reads the repository through the same accessor
+          after boot and proves generated links exist in the database and resolve through real
+          frontend HTTP to the stored destination; its nonempty click assertion does not pin the
+          individual relation because supplied member_id/link_id options are ignored. Link
+          tracking units stub the getter and accessor; none prove retained consumers after root
+          replacement. Root units invoke the published handleRequest with request/response fakes
+          and a stateful cache fake: a database miss and a serialized cache hit assert the same
+          destination, header, no next call and the same link id, automation revision and
+          destination in the dispatched event. Models and URL helpers are controlled, so this is
+          not a real HTTP test.
         sources:
           - core/frontend/web/routers/link-redirects.js
           - core/frontend/web/site.js
@@ -6605,14 +6625,15 @@ services:
         summary: >-
           Boot awaits this init after route/custom redirects and before themes, Express route
           mounting, the main services phase and readiness. Despite the frontend-phase name,
-          initialization also runs when frontend is disabled. Link tracking explicitly rejects
-          if service is absent. No redirect rows are loaded during initialization. Successful
-          newsletter composition exercises completed boot. Root units cover failed adapter
-          acquisition and retry; lifecycle tests do not cover this wrapper's ordering, later
-          repository construction failure or backend-only startup.
+          initialization also runs when frontend is disabled. Link tracking reads the guarded
+          getter and accessor, so an uninitialized root rejects its init with the readiness
+          error. No redirect rows are loaded during initialization. Successful newsletter
+          composition exercises completed boot. Root units cover failed adapter acquisition and
+          retry; lifecycle tests do not cover this root's ordering, later repository
+          construction failure or backend-only startup.
         sources:
           - core/boot.js
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/frontend/web/routers/link-redirects.js
           - core/server/services/link-tracking/index.js
         tests:
@@ -6621,7 +6642,7 @@ services:
           - test/unit/server/services/link-redirection/index.test.js
       lifetime:
         summary: >-
-          The wrapper keeps its first successful graph across init calls and has no reset.
+          The root keeps its first successful graph across init calls and has no reset.
           Persistence outlives the graph; optional adapter caching stores positive results only.
           Clearing shared events leaves the guarded repository without its invalidator. Slugs
           use four random bytes and repeat lookup until unused, without an attempt limit or a
@@ -6632,7 +6653,7 @@ services:
           Root units pin retained service/repository identity after repeated init and one owned
           invalidation listener.
         sources:
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirects-service.js
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/data/schema/schema.js
@@ -6656,7 +6677,7 @@ services:
           destination and identifiers on miss and hit and slug URLs under the site URL; the
           doubled from value is deliberately not pinned.
         sources:
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/link-redirection/link-redirects-service.js
           - core/server/models/redirect.js
@@ -6672,14 +6693,16 @@ services:
           The repository borrows models and an adapter-manager-owned cache, registering an
           anonymous site.changed listener when enabled; it owns no timer, pool or outbound
           request. Cache writes and resets are not awaited, and no listener disposal or pending
-          operation drain exists. RedirectEvent dispatch precedes destination substitution and
-          HTTP 302; shared DomainEvents logs ordinary async subscriber failures without making
-          them part of the response. Newsletter integration waits for test-only allSettled,
-          while production redirect completion does not await analytics. The reset unit checks
-          one invocation on an injected emitter, not resource ownership across restart. Root
-          units assert one owned site.changed listener on the shared registry and cache reset
-          through its callback; production disposal is still absent.
+          operation drain exists. RedirectEvent dispatch through the injected dispatcher precedes
+          destination substitution and HTTP 302; shared DomainEvents logs ordinary async
+          subscriber failures without making them part of the response. Newsletter integration
+          waits for test-only allSettled, while production redirect completion does not await
+          analytics. The reset unit checks one invocation on an injected emitter, not resource
+          ownership across restart. Root units assert one owned site.changed listener on the
+          shared registry and cache reset through its callback; production disposal is still
+          absent.
         sources:
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/link-redirection/link-redirects-service.js
           - core/server/lib/common/events.js
@@ -6705,7 +6728,7 @@ services:
           model lookup rejection unchanged to next without redirect or event dispatch; cache
           failure channels and full Express error responses remain gaps.
         sources:
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/link-redirection/link-redirects-service.js
           - core/frontend/web/routers/link-redirects.js
@@ -6717,11 +6740,11 @@ services:
     unverified: []
     blockers:
       - >-
-        Root units pin the absent pre-init surface, repeated-init identity and failed adapter
-        acquisition with retry. Pin synchronous publication timing, retained frontend/link
-        tracking consumers after root replacement and backend-only boot. Decide how to restore
-        invalidation after an event-bus reset and dispose partially constructed repositories
-        without changing identity.
+        Root units pin both readiness guards, repeated-init identity and failed adapter
+        acquisition with retry. Pin retained frontend/link tracking consumers after root
+        replacement and backend-only boot. Decide how to restore invalidation after an event-bus
+        reset and dispose partially constructed repositories without changing identity. Retire
+        the transitional repository accessor by narrowing link tracking to the service API.
       - >-
         Root units cover disabled caching, a stateful miss-then-hit round trip, destination and
         event identifiers, retained adapter choice and site.changed invalidation with controlled
@@ -6864,8 +6887,8 @@ services:
           - test/unit/server/services/members-events/last-seen-at-updater.test.js
       startup:
         summary: >-
-          Missing linkRedirection.service rejects with InternalServerError. Boot initializes
-          redirection in its frontend-services phase before awaiting link tracking in the main
+          Reading an uninitialized redirection root rejects with its readiness error. Boot
+          initializes redirection in its frontend-services phase before awaiting link tracking in the main
           service group and exposing the full app. Email composition earlier in that group
           retains the wrapper rather than reading its unpublished implementation. The welcome
           renderer also initializes on use, relying on the same prerequisite. Implementation
@@ -6876,7 +6899,7 @@ services:
           - core/boot.js
           - core/server/services/link-tracking/index.js
           - core/server/services/link-tracking/link-click-tracking-service.js
-          - core/server/services/link-redirection/index.js
+          - core/server/services/link-redirection/index.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
