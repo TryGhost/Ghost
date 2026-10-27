@@ -6946,7 +6946,7 @@ services:
           - core/server/services/machine-payments/service.ts
           - core/server/services/machine-payments/types.ts
         tests:
-          - test/unit/server/services/machine-payments/service.test.js
+          - test/unit/server/services/machine-payments/service.test.ts
           - test/unit/server/services/machine-payments/adapters.test.js
       construction:
         summary: >-
@@ -7058,7 +7058,7 @@ services:
           - core/server/data/schema/default-settings/default-settings.json
           - core/server/api/endpoints/utils/serializers/input/settings.js
         tests:
-          - test/unit/server/services/machine-payments/service.test.js
+          - test/unit/server/services/machine-payments/service.test.ts
           - test/unit/server/services/machine-payments/eligibility.test.ts
           - test/unit/server/services/machine-payments/adapters.test.js
           - test/unit/server/services/machine-payments/stripe-client-options.test.js
@@ -7121,7 +7121,7 @@ services:
           - core/server/services/machine-payments/stripe/deposit-address-store.ts
           - core/server/services/machine-payments/events/machine-payment-event-repository.ts
         tests:
-          - test/unit/server/services/machine-payments/service.test.js
+          - test/unit/server/services/machine-payments/service.test.ts
           - test/unit/server/services/machine-payments/adapters.test.js
           - test/unit/server/services/machine-payments/content-loader.test.ts
           - test/integration/services/machine-payments/orchestration.test.js

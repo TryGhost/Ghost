@@ -1,17 +1,25 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const {
-  MachinePaymentsService,
-} = require('../../../../../core/server/services/machine-payments/service');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import { ContentLoader } from '../../../../../core/server/services/machine-payments/content-loader';
+import { MachinePaymentsService } from '../../../../../core/server/services/machine-payments/service';
+
+type FakeAdapter = {
+  name: string;
+  canHandle: sinon.SinonStub;
+  challenge: sinon.SinonStub;
+  fulfill: sinon.SinonStub;
+};
+
+type ServiceDeps = NonNullable<ConstructorParameters<typeof MachinePaymentsService>[0]>;
 
 describe('Unit: server/services/machine-payments/service', function () {
-  let labsService;
-  let settings;
-  let mppAdapter;
-  let contentLoader;
-  let eventRepository;
-  let paymentRecorder;
+  let labsService: { isSet: sinon.SinonStub };
+  let settings: { get: sinon.SinonStub };
+  let mppAdapter: FakeAdapter;
+  let contentLoader: sinon.SinonStubbedInstance<ContentLoader>;
+  let eventRepository: { save: sinon.SinonStub };
+  let paymentRecorder: { record: sinon.SinonStub };
 
   beforeEach(function () {
     sinon.stub(logging, 'warn');
@@ -46,16 +54,15 @@ describe('Unit: server/services/machine-payments/service', function () {
       }),
     };
 
-    contentLoader = {
-      isPurchasable: sinon.stub().resolves(true),
-      loadFullEntry: sinon.stub().resolves({
-        id: 'post1',
-        title: 'Paid',
-        html: '<p>Secret</p>',
-        url: 'http://example.com/paid/',
-        visibility: 'paid',
-      }),
-    };
+    contentLoader = sinon.createStubInstance(ContentLoader);
+    contentLoader.isPurchasable.resolves(true);
+    contentLoader.loadFullEntry.resolves({
+      id: 'post1',
+      title: 'Paid',
+      html: '<p>Secret</p>',
+      url: 'http://example.com/paid/',
+      visibility: 'paid',
+    });
 
     eventRepository = { save: sinon.stub().resolves({ created: true, event: { id: 'evt1' } }) };
     paymentRecorder = { record: sinon.stub().resolves('pi_123') };
@@ -65,7 +72,7 @@ describe('Unit: server/services/machine-payments/service', function () {
     sinon.restore();
   });
 
-  function createService(overrides = {}) {
+  function createService(overrides: ServiceDeps = {}) {
     return new MachinePaymentsService({
       settingsCache: settings,
       labsService,
@@ -209,7 +216,7 @@ describe('Unit: server/services/machine-payments/service', function () {
   });
 
   it('appends multiple WWW-Authenticate challenges from adapters', async function () {
-    const secondaryAdapter = {
+    const secondaryAdapter: FakeAdapter = {
       name: 'secondary',
       canHandle: sinon.stub().returns(false),
       challenge: sinon.stub().resolves(
@@ -236,6 +243,7 @@ describe('Unit: server/services/machine-payments/service', function () {
     assert.equal(response.headers.get('PAYMENT-REQUIRED'), 'secondary-challenge');
     // Headers.get joins duplicate WWW-Authenticate values with ", "
     const wwwAuthenticate = response.headers.get('WWW-Authenticate');
+    assert.ok(wwwAuthenticate);
     assert.match(wwwAuthenticate, /Payment realm="mpp"/);
     assert.match(wwwAuthenticate, /Payment realm="secondary"/);
   });
