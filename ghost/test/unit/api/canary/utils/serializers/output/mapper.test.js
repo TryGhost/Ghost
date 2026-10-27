@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../../../utils/assertions');
 const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../../../../utils');
 const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
 const urlUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
@@ -66,7 +67,16 @@ describe('Unit: utils/serializers/output/mappers', function () {
   });
 
   describe('Posts Mapper', function () {
+    const commentsService = require('../../../../../../../core/server/services/comments').default;
+    let commentsServiceStub;
+
     beforeEach(function () {
+      // The Content API reads the comments setting through the initialized
+      // root; the unit harness never boots it.
+      commentsServiceStub = sinon
+        .stub(commentsService, 'service')
+        .get(() => ({ api: { enabled: 'all' } }));
+
       sinon.stub(dateUtil, 'forPost').returns({});
 
       sinon.stub(urlUtil, 'forPost').returns({});
@@ -302,8 +312,6 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     describe('Content API comments flag', function () {
-      const commentsService = require('../../../../../../../core/server/services/comments');
-
       function contentFrame() {
         return { original: { context: {} }, options: { context: {} }, apiType: 'content' };
       }
@@ -313,7 +321,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
       }
 
       it('reports comments off when the comments service reports off', async function () {
-        sinon.define(commentsService, 'api', { enabled: 'off' });
+        commentsServiceStub.get(() => ({ api: { enabled: 'off' } }));
 
         const result = await mappers.posts(createPost(), contentFrame());
 
@@ -321,21 +329,23 @@ describe('Unit: utils/serializers/output/mappers', function () {
       });
 
       it('reports comments on when the comments service reports paid', async function () {
-        sinon.define(commentsService, 'api', { enabled: 'paid' });
+        commentsServiceStub.get(() => ({ api: { enabled: 'paid' } }));
 
         const result = await mappers.posts(createPost(), contentFrame());
 
         assert.equal(result.comments, true);
       });
 
-      it('reports comments on before the comments service has published its api', async function () {
-        // The unit harness never initialises the comments root, so this is the
-        // pre-init shape the mapper would see during boot.
-        assert.equal(Object.hasOwn(commentsService, 'api'), false);
+      it('rejects a Content API post before the comments service has initialized', async function () {
+        // The unit harness never initialises the comments root, so the real
+        // getter is the pre-init shape; the Content API only serves after boot.
+        commentsServiceStub.restore();
+        assert.throws(() => commentsService.service, errors.IncorrectUsageError);
 
-        const result = await mappers.posts(createPost(), contentFrame());
-
-        assert.equal(result.comments, true);
+        await assert.rejects(
+          () => mappers.posts(createPost(), contentFrame()),
+          errors.IncorrectUsageError,
+        );
       });
     });
   });

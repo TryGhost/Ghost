@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const DomainEvents = require('@tryghost/domain-events');
 const { MemberCommentEvent } = require('../../../../../core/shared/events');
 const { mockSystemTime } = require('../../../../utils/clock-utils');
 const CommentsService = require('../../../../../core/server/services/comments/comments-service');
@@ -167,6 +166,9 @@ describe('Comments Service: CommentsService', function () {
       },
     };
 
+    const domainEvents = { dispatch: sinon.stub() };
+    const byNQL = sinon.stub().returns('where-by-nql');
+
     const instance = new CommentsService({
       config: {},
       logging: {},
@@ -182,6 +184,12 @@ describe('Comments Service: CommentsService', function () {
         BLOCK_ACCESS: 'block',
         checkPostAccess: sinon.stub().returns('allow'),
       },
+      DomainEvents: domainEvents,
+      MemberCommentEvent,
+      byNQL,
+      t: (key) => key,
+      createUnsubscribeUrl: sinon.stub().returns('https://example.com/unsubscribe/'),
+      readTemplate: sinon.stub().resolves(''),
     });
     instance.emails.notifyReport = sinon.stub().resolves();
 
@@ -193,6 +201,8 @@ describe('Comments Service: CommentsService', function () {
       commentFetchModels,
       commentLikeQuery,
       commentLikeCollection,
+      domainEvents,
+      byNQL,
     };
   }
 
@@ -883,8 +893,7 @@ describe('Comments Service: CommentsService', function () {
     const options = { context: { member: { id: 'member-id' } } };
 
     it('rejects after saving the comment when author notification fails, without dispatching the member comment event', async function () {
-      const { instance, models } = createClassInstance();
-      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const { instance, models, domainEvents } = createClassInstance();
       const failure = new Error('Mail unavailable');
       instance.emails.notifyPostAuthors = sinon.stub().rejects(failure);
 
@@ -894,13 +903,13 @@ describe('Comments Service: CommentsService', function () {
       );
 
       sinon.assert.calledOnce(models.Comment.add);
-      sinon.assert.notCalled(dispatch);
+      sinon.assert.notCalled(domainEvents.dispatch);
       sinon.assert.notCalled(models.Comment.findOne);
     });
 
     it('notifies the post authors and dispatches the member comment event for a member comment', async function () {
-      const { instance, models } = createClassInstance();
-      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const { instance, models, domainEvents } = createClassInstance();
+      const { dispatch } = domainEvents;
       const savedComment = { id: 'comment-id' };
       models.Comment.findOne.resolves(savedComment);
       instance.emails.notifyPostAuthors = sinon.stub().resolves();
@@ -930,8 +939,8 @@ describe('Comments Service: CommentsService', function () {
     });
 
     it('skips notifications for an internal context and still dispatches the member comment event', async function () {
-      const { instance, models } = createClassInstance();
-      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const { instance, models, domainEvents } = createClassInstance();
+      const { dispatch } = domainEvents;
       instance.emails.notifyPostAuthors = sinon.stub().resolves();
 
       await instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', {
@@ -940,6 +949,7 @@ describe('Comments Service: CommentsService', function () {
 
       sinon.assert.notCalled(instance.emails.notifyPostAuthors);
       sinon.assert.calledOnce(dispatch);
+      assert.ok(dispatch.firstCall.args[0] instanceof MemberCommentEvent);
       assert.deepEqual(dispatch.firstCall.args[0].data, {
         memberId: 'member-id',
         postId: 'post-id',

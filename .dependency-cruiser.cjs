@@ -39,6 +39,9 @@ const serviceDependencyAllowlist = [
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
   '^lodash/isEmpty(?:\\.js)?$|(^|/)node_modules/lodash/isEmpty\\.js$', // Pure value/collection inspection; only the isEmpty helper.
   '^@tryghost/nql$|(^|/)node_modules/@tryghost/nql/index\\.js$', // Caller-local query parsing and JSON matching; no application instances or I/O.
+  '^@tryghost/mongo-utils$|(^|/)node_modules/@tryghost/mongo-utils/index\\.js$', // Pure helpers over a parsed NQL tree; no application instances or I/O.
+  '^@tryghost/html-to-plaintext$|(^|/)node_modules/@tryghost/html-to-plaintext/index\\.js$', // Stateless HTML to plain-text conversion of supplied markup.
+  '^handlebars$|(^|/)node_modules/handlebars/lib/index\\.js$', // Template compilation on a caller-created instance; no application instances.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.

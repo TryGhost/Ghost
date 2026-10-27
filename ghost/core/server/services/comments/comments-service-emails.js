@@ -1,9 +1,7 @@
-const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const emailService = require('../email-service');
+const { moment } = require('../../../kernel/clock');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
 const { toPlain } = require('../../lib/common/to-plain');
-const { t } = require('../../../shared/i18n');
 
 class CommentsServiceEmails {
   constructor({
@@ -15,6 +13,9 @@ class CommentsServiceEmails {
     settingsHelpers,
     urlService,
     urlUtils,
+    t,
+    createUnsubscribeUrl,
+    readTemplate,
   }) {
     this.config = config;
     this.logging = logging;
@@ -24,7 +25,19 @@ class CommentsServiceEmails {
     this.settingsHelpers = settingsHelpers;
     this.urlService = urlService;
     this.urlUtils = urlUtils;
-    this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({ t });
+    this.t = t;
+    this.createUnsubscribeUrl = createUnsubscribeUrl;
+    this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({ t, readTemplate });
+  }
+
+  /**
+   * The calendar day a comment was created, in the site's timezone, for the
+   * notification templates.
+   * @param {Date} date
+   * @returns {string}
+   */
+  formatCommentDate(date) {
+    return moment(date).tz(this.settingsCache.get('timezone')).format('D MMM YYYY');
   }
 
   /**
@@ -78,9 +91,7 @@ class CommentsServiceEmails {
         postTitle: post.get('title'),
         postUrl: this.getPostUrl(post, comment.get('id')),
         commentHtml: comment.get('html'),
-        commentDate: moment(comment.get('created_at'))
-          .tz(this.settingsCache.get('timezone'))
-          .format('D MMM YYYY'),
+        commentDate: this.formatCommentDate(comment.get('created_at')),
         memberName: memberName,
         memberExpertise: member.get('expertise'),
         memberInitials: this.extractInitials(memberName),
@@ -136,7 +147,7 @@ class CommentsServiceEmails {
     const parentMemberEmail = parentMember.get('email');
     const subject =
       '↪️ ' +
-      t(`New reply to your comment on {siteTitle}`, {
+      this.t(`New reply to your comment on {siteTitle}`, {
         siteTitle: this.settingsCache.get('title'),
         interpolation: { escapeValue: false },
       });
@@ -156,16 +167,14 @@ class CommentsServiceEmails {
       postTitle: post.get('title'),
       postUrl: this.getPostUrl(post, reply.get('id')),
       replyHtml: reply.get('html'),
-      replyDate: moment(reply.get('created_at'))
-        .tz(this.settingsCache.get('timezone'))
-        .format('D MMM YYYY'),
+      replyDate: this.formatCommentDate(reply.get('created_at')),
       memberName: memberName,
       memberExpertise: member.get('expertise'),
       memberInitials: this.extractInitials(memberName),
       accentColor: this.settingsCache.get('accent_color'),
       fromEmail: this.notificationFromAddress,
       toEmail: parentMemberEmail,
-      profileUrl: emailService.renderer.createUnsubscribeUrl(parentMember.get('uuid'), {
+      profileUrl: this.createUnsubscribeUrl(parentMember.get('uuid'), {
         comments: true,
       }),
     };
@@ -214,9 +223,7 @@ class CommentsServiceEmails {
       postUrl: this.getPostUrl(post, comment.get('id')),
       commentHtml: comment.get('html'),
       commentText: htmlToPlaintext.comment(comment.get('html')),
-      commentDate: moment(comment.get('created_at'))
-        .tz(this.settingsCache.get('timezone'))
-        .format('D MMM YYYY'),
+      commentDate: this.formatCommentDate(comment.get('created_at')),
 
       reporterName: reporter.name,
       reporterEmail: reporter.email,

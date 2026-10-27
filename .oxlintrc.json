@@ -201,6 +201,7 @@
       "files": [
         "ghost/core/server/services/app-installations/index.ts",
         "ghost/core/server/services/audience-feedback/index.ts",
+        "ghost/core/server/services/comments/index.ts",
         "ghost/core/server/services/custom-theme-settings/index.ts",
         "ghost/core/server/services/donations/index.ts",
         "ghost/core/server/services/explore-ping/index.ts",
