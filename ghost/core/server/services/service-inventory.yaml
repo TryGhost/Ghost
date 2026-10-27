@@ -6070,34 +6070,29 @@ services:
           - core/server/models/integration.js
           - core/server/models/user.js
           - core/server/models/invite.js
-          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/services/members-metafields/index.ts
           - core/boot.js
     entryPoints:
       - limits.ts
     notes: >-
       Planned split and relocation: Ghost-wide entitlement/quota policy belongs in
-      core/shared/limits; requireFeature belongs with web/API middleware. The reusable limit
-      engine stays in @tryghost/limit-service. Boot injects configuration and database
-      dependencies so Shared does not import server code. No source has moved. Boot loads host
-      policy into an eagerly exported, widely retained instance. Preserve per-consumer enforcement
-      and existing configuration quirks; the route guard is HTTP support alongside this
-      application-owned instance, not a reason to move policy into API.
+      core/shared/limits. The reusable limit engine stays in @tryghost/limit-service. Boot
+      injects configuration and database dependencies so Shared does not import server code. No
+      source has moved. Boot loads host policy into an eagerly exported, widely retained
+      instance. Preserve per-consumer enforcement and existing configuration quirks.
     contracts:
       exports:
         summary: >-
-          Named TypeScript exports are limitService, synchronous receiver-independent init
-          returning undefined, and requireFeature, which returns async Express middleware.
-          Callers use the instance's synchronous isLimited/isDisabled, async throwing and
-          boolean checks, and public limits map; the theme installer reads an allowlist
-          directly. Package instance methods depend on their receiver. Middleware awaits a
-          check then calls next(), or passes its error to next(err). HTTP tests exercise that
-          guard, but no test pins the root's exact export or receiver surface.
+          Named TypeScript exports are limitService and synchronous receiver-independent init
+          returning undefined. Callers use the instance's synchronous isLimited/isDisabled, async
+          throwing and boolean checks, and public limits map; the theme installer reads an
+          allowlist directly. Package instance methods depend on their receiver. No test pins
+          the root's exact export or receiver surface.
         sources:
           - core/server/services/limits.ts
           - core/server/services/themes/installer.js
-          - core/server/web/api/endpoints/admin/routes.js
         tests:
-          - test/e2e-api/admin/member-custom-fields.test.ts
+          - test/e2e-api/admin/host-limits.test.ts
       construction:
         summary: >-
           Import constructs one empty LimitService from the workspace package. Every init
@@ -6119,8 +6114,8 @@ services:
           integrations. Retained dependencies in newsletters, email, settings and settings
           helpers govern active newsletters, send/retry checks, Stripe connection, private-site
           settings and social/analytics availability. Theme endpoints/installer and file/media
-          validators enforce values/sizes. Only member-metafield mutation routes use
-          requireFeature; reads remain open.
+          validators enforce values/sizes. Custom fields' namespace policy asks isDisabled on
+          every member metafield read and errorIfWouldGoOverLimit on every change to a field.
           HTTP assertions cover integration creation/authentication, newsletter add/reactivation,
           member-limit publishing, staff invitations, theme/file limits and member-field guards.
           Privacy, social/analytics, importer demotion and several user-model paths remain source-only.
@@ -6146,7 +6141,8 @@ services:
           - core/server/api/endpoints/themes.js
           - core/server/api/endpoints/utils/validators/input/files.js
           - core/server/api/endpoints/utils/validators/input/media.js
-          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/services/members-metafields/index.ts
+          - core/server/services/members-metafields/custom-fields.ts
         tests:
           - test/e2e-api/admin/host-limits.test.ts
           - test/e2e-api/admin/member-custom-fields.test.ts
@@ -6278,9 +6274,8 @@ services:
         concurrent check-then-write behavior. Initialization must keep borrowing database/transaction
         ownership without adding untested cancellation or cleanup behavior.
       - >-
-        Keep host-policy business logic outside HTTP while deciding ownership of requireFeature
-        alongside the new service pattern; moving the root wholesale into API would conflict
-        with the placement rules. Recorded facets do not establish migration readiness.
+        Keep host-policy business logic outside HTTP; moving the root wholesale into API would
+        conflict with the placement rules. Recorded facets do not establish migration readiness.
   link-redirection:
     kind: directory
     disposition: retain
@@ -8411,8 +8406,9 @@ services:
             case-keys, independently of migration; without them introduce explicit helper factories
             rather than hidden global dependency initialization.
           - >-
-            Supply logging, database column metadata, key/query helpers and configured/default limit
-            resolution from index.ts, preserving the live limit getter.
+            Supply logging, database column metadata, key/query helpers, configured/default limit
+            resolution and the host limit service from index.ts, preserving the live limit getter
+            and the field source asking which namespaces are unavailable on each use.
           - >-
             Keep importable access/filter/schema contracts separate from ready instances and adapt
             the model, API, Members and checkout consumers without forcing them to initialize this
@@ -8440,7 +8436,8 @@ services:
         summary: >-
           Named runtime exports are synchronous init, mutable namespaces/fields/definitions/values/bindings,
           audience/access constants, canWrite, actingContext and adminWriteOrigin. fields is the
-          field source every read of a field goes through. Service
+          field source every read of a field goes through, reading a field in an unavailable
+          namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
           resolves a namespace's policy (owner and limits) and refuses what it doesn't allow. Definitions
           exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
@@ -8462,7 +8459,8 @@ services:
         summary: >-
           Init obtains the shared Knex getter, models and config, then publishes namespaces,
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
-          Namespaces is built from custom fields' policy, which holds a ceiling callback.
+          Namespaces is built from custom fields' policy, which holds the host limit service and a
+          ceiling callback, both asked on each use.
           Definitions receives an action-recording closure over models.Action and the namespaces;
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
@@ -8520,7 +8518,8 @@ services:
           Boot calls init during initCore after database/settings/signing-key/i18n setup and
           before members/tiers composition. Initialization has no feature gate, database-ready
           validation or rollback. API callers assume exported instances exist. Definition reads
-          remain available when direct definition writes are blocked by Labs/host limits.
+          remain available when direct definition writes are blocked by Labs or a namespace's
+          limits.
           HTTP tests assert those direct route responses, not dependency ordering, pre-init
           calls or startup faults. Shipped ceiling validation runs at import.
         sources:

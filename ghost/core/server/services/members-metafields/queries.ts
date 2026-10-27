@@ -1,10 +1,28 @@
 import type { Knex } from 'knex';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
 import { readableLevels, type Audience } from './access';
-import { FIELD_STATUS } from './schema';
+import type { Namespaces } from './namespaces';
+import { FIELD_STATUS, type MetafieldRow } from './schema';
 
 /** The fields table's name, which is also the name a `FieldSource` reads it under by default. */
 export const FIELDS_TABLE = 'members_metafields';
+
+/**
+ * The columns a field is read with, besides its status, which reads as its namespace allows.
+ * Every column of the row is named, so a column added to it doesn't compile until it is added
+ * here too.
+ */
+const COLUMNS_BESIDE_STATUS = Object.keys({
+  id: true,
+  namespace: true,
+  key: true,
+  name: true,
+  type: true,
+  member_access: true,
+  sort_order: true,
+  created_at: true,
+  updated_at: true,
+} satisfies Record<Exclude<keyof MetafieldRow, 'status'>, true>);
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to our
 // raw-knex queries: nql parses a `filter` string to a Mongo query, mongo-knex turns that
@@ -38,11 +56,10 @@ export type StatusScope = typeof ACTIVE_ONLY | typeof ANY_STATUS;
 
 declare const scoped: unique symbol;
 
-// Unannotated so the builder keeps the row type knex derives from the table
-// registration; naming a type here would both lose that and make the alias below
-// refer to itself.
+// Typed with the row itself rather than the table registration: a read goes on to read from
+// the fields as the source reads them, a subquery the registration doesn't describe.
 function metafieldsTable(db: Knex) {
-  return db(FIELDS_TABLE);
+  return db<MetafieldRow>(FIELDS_TABLE);
 }
 
 /**
@@ -76,7 +93,7 @@ export interface DefinitionScope {
  * the reads a change to the field list is compared with, name the table itself.
  */
 export interface FieldSource {
-  /** The table under `alias`, for a read that joins it. */
+  /** The fields under `alias`, for a read that joins them. */
   table(db: Knex, alias?: string): Knex.TableDescriptor;
   /** The fields `scope` names, in no particular order. */
   definitions(db: Knex, scope: DefinitionScope): DefinitionQuery;
@@ -87,19 +104,45 @@ export interface FieldSource {
   locked(trx: Knex.Transaction, namespace: Namespace, keys: readonly Key[]): Knex.QueryBuilder;
 }
 
-/** The fields as a site reads them: the table as stored. */
-export function fieldSource(): FieldSource {
-  return {
-    table(_db, alias = FIELDS_TABLE) {
-      return alias === FIELDS_TABLE ? FIELDS_TABLE : `${FIELDS_TABLE} as ${alias}`;
+/**
+ * The fields as a site reads them: as stored, except that a field in a namespace that isn't
+ * available reads as archived. Which namespaces aren't is asked on every read, as it can change
+ * while Ghost runs.
+ */
+export function fieldSource(namespaces: Pick<Namespaces, 'unavailable'>): FieldSource {
+  const asRead = (db: Knex, rows: Knex.QueryBuilder) => {
+    const unavailable = namespaces.unavailable();
+    return rows.select(
+      ...COLUMNS_BESIDE_STATUS,
+      // An empty list makes no valid `IN`, and with nothing unavailable every status reads as
+      // stored anyway.
+      unavailable.length === 0
+        ? 'status'
+        : db.raw('CASE WHEN ?? IN (?) THEN ? ELSE ?? END AS ??', [
+            'namespace',
+            unavailable,
+            FIELD_STATUS.archived,
+            'status',
+            'status',
+          ]),
+    );
+  };
+
+  const source: FieldSource = {
+    table(db, alias = FIELDS_TABLE) {
+      return asRead(db, db(FIELDS_TABLE)).as(alias);
     },
 
     definitions(db, scope) {
       let query = metafieldsTable(db);
 
+      // Applied while the query still reads the table by its name, then pointed at the fields as
+      // the source reads them, under the same name: the NQL bridge qualifies every column with
+      // whatever the query reads from, and a subquery is no name to qualify one with.
       if (scope.filter) {
         query = knexify(query, scope.filter, { tableName: FIELDS_TABLE });
       }
+      query = query.from<MetafieldRow>(source.table(db));
       if (scope.namespace !== undefined) {
         query = query.where(`${FIELDS_TABLE}.namespace`, scope.namespace);
       }
@@ -119,9 +162,13 @@ export function fieldSource(): FieldSource {
     },
 
     locked(trx, namespace, keys) {
-      return trx(FIELDS_TABLE).where('namespace', namespace).whereIn('key', keys).forShare();
+      // Locked inside, as MySQL takes no lock on the rows behind a derived table for a lock asked
+      // of the query around it.
+      const rows = trx(FIELDS_TABLE).where('namespace', namespace).whereIn('key', keys).forShare();
+      return trx.from(asRead(trx, rows).as(FIELDS_TABLE));
     },
   };
+  return source;
 }
 
 /** A whole field's identity, which is what anything outside the fields table points at. */

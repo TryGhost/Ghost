@@ -2775,8 +2775,8 @@ describe('Member Custom Fields Admin API', function () {
   // what the first test pins: nothing changes for a site nobody has limited. When it is
   // set, changing definitions answers 403 with the host's copy, distinct from the 404 the
   // flag gives, because "your plan does not include this" is a different thing to tell a
-  // caller than "this does not exist here". Reading stays open either way, so a site whose
-  // plan drops can still see and export the fields it already has.
+  // caller than "this does not exist here". Every field the site has reads as archived
+  // meanwhile, without being stored as archived, so it all comes back as it was.
   describe('Host limit', function () {
     afterEach(async function () {
       await hostLimits.restoreHostLimits();
@@ -2808,8 +2808,8 @@ describe('Member Custom Fields Admin API', function () {
       let existingKey: string;
 
       beforeEach(async function () {
-        // Created before the limit goes on, standing in for a site that had the feature
-        // and then dropped below the plan that includes it.
+        // Created before the limit goes on, standing in for a site whose host switched the
+        // feature off after it was set up.
         existingKey = (await createField({ name: 'Bought earlier' })).key;
         await hostLimits.setHostLimits({
           limitCustomFields: {
@@ -2819,16 +2819,101 @@ describe('Member Custom Fields Admin API', function () {
         });
       });
 
-      it('still lists the fields the site already has', async function () {
-        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
-        assert.equal(
-          body.members_metafields.some((field: { key: string }) => field.key === existingKey),
-          true,
+      it('reads every field the site has as archived', async function () {
+        const { body: active } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.deepEqual(active.members_metafields, []);
+
+        const { body: all } = await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200);
+        assert.deepEqual(
+          all.members_metafields.map((field: { key: string; status: string }) => [
+            field.key,
+            field.status,
+          ]),
+          [[existingKey, 'archived']],
+        );
+
+        const { body: one } = await agent
+          .get(`members/metafields/custom/${existingKey}/`)
+          .expectStatus(200);
+        assert.equal(one.members_metafields[0].status, 'archived');
+      });
+
+      it('hides what members hold and refuses new values, keeping what is stored', async function () {
+        const memberId = await createMember();
+        await hostLimits.restoreHostLimits();
+        await setValues(memberId, { [existingKey]: 'Ghost' });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        assert.deepEqual(await readValues(memberId), {});
+        const refused = await setValues(memberId, { [existingKey]: 'Acme' }, 422);
+        assert.equal(refused.errors[0].property, `metafields.custom.${existingKey}`);
+
+        await hostLimits.restoreHostLimits();
+        assert.deepEqual(await readValues(memberId), { [existingKey]: 'Ghost' });
+      });
+
+      it('brings every field back as it was once the host lifts the limit', async function () {
+        await hostLimits.restoreHostLimits();
+        const memberId = await createMember();
+        await setValues(memberId, { [existingKey]: 'Ghost' });
+        const retired = await createField({ name: 'Retired earlier' });
+        await setStatus(retired.key, 'archived');
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        // What the site can still do meanwhile: edit the member, and be refused a value.
+        await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ name: 'Renamed meanwhile' }] })
+          .expectStatus(200);
+        await setValues(memberId, { [existingKey]: 'Acme' }, 422);
+
+        await hostLimits.restoreHostLimits();
+
+        assert.deepEqual(await readValues(memberId), { [existingKey]: 'Ghost' });
+        const { body } = await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200);
+        assert.deepEqual(
+          body.members_metafields.map((field: { key: string; status: string }) => [
+            field.key,
+            field.status,
+          ]),
+          [
+            [existingKey, 'active'],
+            [retired.key, 'archived'],
+          ],
         );
       });
 
-      it('still reads a single field', async function () {
-        await agent.get(`members/metafields/custom/${existingKey}/`).expectStatus(200);
+      // The host's limit is custom fields' alone, so it says nothing about the fields an app
+      // defines in its own namespace. Written straight to the table, as an app's would be.
+      it('says nothing about fields in another namespace', async function () {
+        await models.Base.knex('members_metafields').insert({
+          id: '6600000000000000000000e1',
+          namespace: 'shop',
+          key: 'company',
+          name: 'Company',
+          type: 'short_text',
+          created_at: new Date(),
+        });
+
+        const memberId = await createMember();
+        await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ metafields: { shop: { company: 'Acme' } } }] })
+          .expectStatus(200);
+        const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+        assert.deepEqual(body.members[0].metafields, { shop: { company: 'Acme' } });
+
+        // Refused because nobody can define fields there through this API, not because of a
+        // limit that doesn't apply to them.
+        const { body: refused } = await agent
+          .post('members/metafields/shop/')
+          .body({ members_metafields: [{ name: 'Industry', type: 'short_text' }] })
+          .expectStatus(422);
+        assert.equal(refused.errors[0].property, 'namespace');
       });
 
       it('403s the create endpoint, with the host copy', async function () {
@@ -2837,16 +2922,41 @@ describe('Member Custom Fields Admin API', function () {
           .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
           .expectStatus(403);
 
-        // The guard is middleware, so the refusal reaches the caller as the limit service
-        // raised it. Endpoints that catch a host limit and re-word it put their own sentence
-        // in `message` and move the host's to `context`; this route has nowhere doing that,
-        // so the publisher reads what their host wrote and `context` stays empty.
+        // Refused inside the API, as every host limit is, so the host's words reach the caller
+        // in `context`, under the API's own sentence, as the ceiling's do.
+        assert.equal(body.errors[0].type, 'HostLimitError');
         assert.equal(
-          body.errors[0].message,
+          body.errors[0].context,
           'Custom fields are available on the Publisher plan and above.',
         );
-        assert.equal(body.errors[0].context, null);
         assert.equal(body.errors[0].details.name, 'limitCustomFields');
+      });
+
+      // Upgrading wouldn't help someone who can't manage the fields, so who may is answered
+      // first.
+      it('answers for the caller before the host limit', async function () {
+        await agent.loginAsEditor();
+        try {
+          const { body } = await agent
+            .post('members/metafields/custom/')
+            .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+            .expectStatus(403);
+          assert.equal(body.errors[0].type, 'NoPermissionError');
+        } finally {
+          await agent.loginAsOwner();
+        }
+      });
+
+      // The limit applies to the namespace the route acts on, however the route encodes it.
+      it('403s the publisher’s namespace however the route encodes it', async function () {
+        await agent
+          .post('members/metafields/%63ustom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+        await agent
+          .put(`members/metafields/cust%6Fm/${existingKey}/`)
+          .body({ members_metafields: [{ name: 'Employer' }] })
+          .expectStatus(403);
       });
 
       it('403s the reorder endpoint', async function () {
@@ -2878,7 +2988,7 @@ describe('Member Custom Fields Admin API', function () {
         // The wording the limit service builds when a host supplies none, from the limit's
         // own name.
         assert.equal(
-          body.errors[0].message,
+          body.errors[0].context,
           'Your plan does not support custom fields. Please upgrade to enable custom fields.',
         );
       });

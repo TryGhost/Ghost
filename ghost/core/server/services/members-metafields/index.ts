@@ -1,3 +1,4 @@
+import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './bindings-service';
@@ -67,8 +68,8 @@ export function init(): void {
 
   // Custom fields are the one application of metafields so far, and the only namespace
   // anyone can define fields in.
-  namespaces = createNamespaces([customFields({ getMaxDefinitions })]);
-  fields = fieldSource();
+  namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })]);
+  fields = fieldSource(namespaces);
 
   definitions = new MetafieldDefinitionsService({ knex, fields, recordAction, namespaces });
   // The values service reads the field definitions itself, so it needs knex, the fields and
