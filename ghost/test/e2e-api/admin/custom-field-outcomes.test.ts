@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import type { Knex } from 'knex';
 import type { SpanDocument } from '../../../core/server/lib/tracing/create-tracer';
 
 // Required rather than imported, so the test shares the module instances Ghost boots with.
@@ -10,6 +11,7 @@ const {
   hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const metafields: typeof import('../../../core/server/services/members-metafields') = require('../../../core/server/services/members-metafields');
 
 interface Agent {
   get: (_url: string) => any;
@@ -20,6 +22,11 @@ interface Agent {
 
 interface AdminAgent extends Agent {
   loginAsOwner: () => Promise<void>;
+  useZapierAdminAPIKey: () => Promise<void>;
+}
+
+interface MembersAgent extends Agent {
+  loginAs: (_email: string) => Promise<void>;
 }
 
 interface MockedMetrics {
@@ -28,6 +35,7 @@ interface MockedMetrics {
 
 describe('Custom field outcomes', function () {
   let adminAgent: AdminAgent;
+  let membersAgent: MembersAgent;
   let metrics: MockedMetrics;
 
   async function defineField(
@@ -53,6 +61,7 @@ describe('Custom field outcomes', function () {
   beforeAll(async function () {
     const agents = await agentProvider.getAgentsForMembers();
     adminAgent = agents.adminAgent;
+    membersAgent = agents.membersAgent;
     await fixtureManager.init('members');
     await adminAgent.loginAsOwner();
   });
@@ -198,6 +207,141 @@ describe('Custom field outcomes', function () {
           labels: { field_types: ['short_text'] },
         }),
       ]);
+    });
+  });
+
+  describe('Writing values', function () {
+    const writes = () => metrics.tracked('members.metafields.values');
+
+    async function memberId(email: string): Promise<string> {
+      const { body } = await adminAgent
+        .get(`members/?filter=${encodeURIComponent(`email:'${email}'`)}`)
+        .expectStatus(200);
+      return body.members[0].id;
+    }
+
+    function setValues(id: string, custom: Record<string, unknown>, status = 200) {
+      return adminAgent
+        .put(`members/${id}/`)
+        .body({ members: [{ metafields: { custom } }] })
+        .expectStatus(status);
+    }
+
+    it('records values a publisher saves in Admin, with the types they write', async function () {
+      const nickname = await defineField('Nickname');
+      const address = await defineField('Address', 'address');
+      await setValues(await memberId('member1@test.com'), {
+        [nickname]: 'Bex',
+        [address]: { line1: '1 High Street', city: 'Leeds' },
+      });
+
+      expect(writes()).toMatchObject([
+        {
+          event: { outcome: 'success' },
+          labels: { source: 'admin', field_types: ['address', 'short_text'] },
+        },
+      ]);
+    });
+
+    it('records values given to a member as they are added', async function () {
+      const nickname = await defineField('Nickname');
+      await adminAgent
+        .post('members/')
+        .body({
+          members: [
+            { email: 'outcome-new@example.com', metafields: { custom: { [nickname]: 'Bex' } } },
+          ],
+        })
+        .expectStatus(201);
+
+      expect(writes()).toMatchObject([
+        { event: { outcome: 'success' }, labels: { source: 'admin', field_types: ['short_text'] } },
+      ]);
+    });
+
+    it('records values an integration writes through the Admin API', async function () {
+      const nickname = await defineField('Nickname');
+      const id = await memberId('member1@test.com');
+      await adminAgent.useZapierAdminAPIKey();
+      try {
+        await setValues(id, { [nickname]: 'Bex' });
+      } finally {
+        await adminAgent.loginAsOwner();
+      }
+
+      expect(writes()).toMatchObject([
+        {
+          event: { outcome: 'success' },
+          labels: { source: 'admin_api', field_types: ['short_text'] },
+        },
+      ]);
+    });
+
+    it('records values a member saves in Portal', async function () {
+      const nickname = await defineField('Nickname', 'short_text', 201, 'write');
+      await membersAgent.loginAs('member1@test.com');
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [nickname]: 'Bex' } } })
+        .expectStatus(200);
+
+      expect(writes()).toMatchObject([
+        {
+          event: { outcome: 'success' },
+          labels: { source: 'portal', field_types: ['short_text'] },
+        },
+      ]);
+    });
+
+    it('records nothing when the member save fails before its values are stored', async function () {
+      const nickname = await defineField('Nickname');
+      await adminAgent
+        .put(`members/${await memberId('member1@test.com')}/`)
+        .body({
+          members: [{ email: 'member2@test.com', metafields: { custom: { [nickname]: 'Bex' } } }],
+        })
+        .expectStatus(422);
+
+      assert.deepEqual(writes(), []);
+    });
+
+    // Nothing a request can do makes Ghost fail after it has stored the values but before the
+    // member save commits, so this joins a transaction that fails instead.
+    it('records values as failed when the save they joined is rolled back', async function () {
+      const nickname = await defineField('Nickname');
+      const id = await memberId('member1@test.com');
+      const { values } = metafields;
+      assert(values);
+      const planned = await values.planWrite(
+        values.unwrapWire({ custom: { [nickname]: 'Bex' } }),
+        metafields.ADMIN,
+      );
+
+      await assert.rejects(
+        models.Base.knex.transaction(async (transacting: Knex.Transaction) => {
+          await values.applyWrite(id, planned, {
+            writtenBy: { type: 'user', id: '1' },
+            source: 'admin',
+            executor: transacting,
+          });
+          throw new Error('The member save failed');
+        }),
+        /The member save failed/,
+      );
+
+      expect(writes()).toMatchObject([
+        { event: { outcome: 'failure' }, error: { type: 'Error' }, labels: { source: 'admin' } },
+      ]);
+    });
+
+    it('records nothing for a save that carries no values', async function () {
+      await defineField('Nickname');
+      await adminAgent
+        .put(`members/${await memberId('member1@test.com')}/`)
+        .body({ members: [{ name: 'Renamed' }] })
+        .expectStatus(200);
+
+      assert.deepEqual(writes(), []);
     });
   });
 });

@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import type { MemberAccess } from './access';
-import type { WriteOrigin } from './schema';
+import type { SingleWriteOrigin } from './schema';
 
 export interface Actor {
   id: string;
@@ -42,7 +42,7 @@ export function actingContext(context: unknown): RequestContext {
  * `actingContext`, so the values a request writes and the history it records name the
  * same writer. Null when nobody is acting, which no Admin API write should be.
  */
-export function adminWriteOrigin(context: unknown): WriteOrigin | null {
+export function adminWriteOrigin(context: unknown): SingleWriteOrigin | null {
   const { actor } = actingContext(context);
   if (!actor) {
     return null;
