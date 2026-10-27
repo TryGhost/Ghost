@@ -12,7 +12,12 @@ import { helpCenterIndexQuery } from './use-help-center-index';
  * the last one's results, there are no follow-ups, and the user searches
  * again from the same field. A search asks DocsBot's semantic search
  * (help-docsbot-search.ts) and turns the pages it finds into articles from
- * the help center's list, which open in the panel.
+ * the help center's list.
+ *
+ * The best article opens straight away: a picked FAQ question is an article,
+ * so it opens before its search has even run, and a typed search opens its
+ * first result when it lands. The other results wait under the article as
+ * "More from the help center", and behind it as the results list.
  */
 
 export interface HelpSearch {
@@ -56,6 +61,9 @@ export function useHelpSearch() {
   const timers = useRef<number[]>([]);
   // The search on its way, stopped by the next one
   const request = useRef<AbortController | null>(null);
+  // Where the user is when a search lands, so a result only opens over the search itself
+  const viewRef = useRef(view);
+  viewRef.current = view;
 
   const stopRequest = useCallback(() => {
     request.current?.abort();
@@ -70,9 +78,21 @@ export function useHelpSearch() {
     [stopRequest],
   );
 
-  /** Searches the help center for the query, replacing the last results. */
+  /** Reads an article in the panel, which counts as having read it for support. */
+  const readArticle = useCallback((article: HelpArticle) => {
+    setOpenedArticles((current) =>
+      current.some(({ id }) => id === article.id) ? current : [...current, article],
+    );
+    setReading(article);
+    setView('article');
+  }, []);
+
+  /**
+   * Searches the help center for the query, replacing the last results. With
+   * nothing open already, the first result opens as soon as it lands.
+   */
   const run = useCallback(
-    async (query: string) => {
+    async (query: string, opened: HelpArticle | null) => {
       stopRequest();
       const controller = new AbortController();
       request.current = controller;
@@ -86,7 +106,12 @@ export function useHelpSearch() {
         if (controller.signal.aborted) {
           return;
         }
-        setSearch({ query, status: 'done', results: toSearchResults(hits, articles) });
+        const results = toSearchResults(hits, articles);
+        setSearch({ query, status: 'done', results });
+        const [first] = results;
+        if (!opened && first && viewRef.current === 'search') {
+          readArticle(first);
+        }
       } catch {
         // DocsBot or the help center couldn't be reached
         if (!controller.signal.aborted) {
@@ -98,24 +123,31 @@ export function useHelpSearch() {
         }
       }
     },
-    [queryClient, stopRequest],
+    [queryClient, readArticle, stopRequest],
   );
 
+  /**
+   * Searches for the text. A picked FAQ question is an article already, so it
+   * opens at once while its search finds more.
+   */
   const searchFor = useCallback(
-    (text: string) => {
+    (text: string, picked: HelpArticle | null = null) => {
       const query = text.trim();
       if (!query) {
         return;
       }
       setSearches((current) => [...current, query]);
-      void run(query);
+      if (picked) {
+        readArticle(picked);
+      }
+      void run(query, picked);
     },
-    [run],
+    [readArticle, run],
   );
 
   const retry = useCallback(() => {
     if (search) {
-      void run(search.query);
+      void run(search.query, null);
     }
   }, [run, search]);
 
@@ -152,15 +184,6 @@ export function useHelpSearch() {
     }
     setView('search');
   }, [support]);
-
-  /** Reads an article in the panel, which counts as having read it for support. */
-  const readArticle = useCallback((article: HelpArticle) => {
-    setOpenedArticles((current) =>
-      current.some(({ id }) => id === article.id) ? current : [...current, article],
-    );
-    setReading(article);
-    setView('article');
-  }, []);
 
   const leaveArticle = useCallback(() => setView('search'), []);
 

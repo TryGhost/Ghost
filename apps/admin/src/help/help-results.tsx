@@ -19,7 +19,8 @@ interface HelpResultProps {
   onOpen: (article: HelpArticle) => void;
 }
 
-function HelpResult({ article, opened, step, onOpen }: HelpResultProps) {
+/** One result: the article's title, excerpt and topic, opening it in the panel. */
+export function HelpResult({ article, opened, step, onOpen }: HelpResultProps) {
   return (
     // Opens the article in the panel; it links out to the help center from there
     <button

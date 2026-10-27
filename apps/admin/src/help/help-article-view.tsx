@@ -16,15 +16,18 @@ import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { prepareArticleHtml } from './help-article-html';
 import { fetchHelpArticleContent, type HelpArticle } from './help-center';
 import { HelpPanelSizeButton } from './help-panel-size';
+import { HelpResult } from './help-results';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
 import type { HelpSession } from './use-help-search';
 import { useHelpCenterIndex } from './use-help-center-index';
 
 /*
  * An article read in the panel, so the user doesn't leave Admin for the
- * answer. It takes over the panel like the message to support, with the
- * search kept behind it, and ends by asking whether it answered their
- * question: "No" goes straight to the support team.
+ * answer. It's where a search lands: its first result, or the FAQ question
+ * picked. It takes over the panel like the message to support, with the
+ * search kept behind it, lists the search's other results under "More from
+ * the help center", and ends by asking whether it answered their question:
+ * "No" goes straight to the support team.
  *
  * The article's HTML comes from the help center, made safe and readable by
  * help-article-html.ts. Its links to other help articles open in the panel
@@ -104,6 +107,9 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
   );
   const topic = article.tags[0]?.name;
   const readingTime = content.data?.readingTime;
+  // The search's other results, to read next
+  const more = (session.search?.results ?? []).filter(({ id }) => id !== article.id);
+  const findingMore = session.searching;
 
   // Focus moves into the article, so keyboard and screen reader users land in it
   useEffect(() => {
@@ -220,11 +226,35 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
               onClick={onContentClick}
             />
 
+            {(more.length > 0 || findingMore) && (
+              <Stack
+                className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
+                gap="sm"
+                style={revealAt(2)}
+              >
+                <Text size="sm" tone="tertiary">
+                  More from the help center
+                </Text>
+                {findingMore && !more.length && (
+                  <Skeleton className="h-3.5 w-1/2" containerClassName="flex" />
+                )}
+                {more.map((result, position) => (
+                  <HelpResult
+                    key={result.id}
+                    article={result}
+                    opened={session.openedArticles.some(({ id }) => id === result.id)}
+                    step={position + 1}
+                    onOpen={session.readArticle}
+                  />
+                ))}
+              </Stack>
+            )}
+
             {/* The point of reading it here: did it answer their question? */}
             <Stack
               className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
               gap="sm"
-              style={revealAt(2)}
+              style={revealAt(3)}
             >
               {answered ? (
                 <Text leading="snug" tone="secondary">

@@ -4,9 +4,9 @@ The Help panel tries to answer questions from the
 [help center](https://ghost.org/help/) before they turn into support tickets.
 It docks beside the page, greets the user with a search field and three FAQ
 questions for the page they're on, completes what they type with more FAQ
-questions, searches the help center through DocsBot, shows up to three
-articles to read inside Admin, and hands off to a support form when none of
-that did it.
+questions, searches the help center through DocsBot, opens the best article
+inside Admin with up to two more beneath it, and hands off to a support form
+when none of that did it.
 
 This is the **search** prototype. It's one of two built to compare:
 
@@ -279,7 +279,9 @@ To see where a suggestion came from, inspect its row: `data-help-source` is
 `alert`, `tagged`, `default`, `general`, `featured` or `faq`.
 
 The keys 1, 2 and 3 pick the suggestions, as their number badges say, while
-nothing is typed. Picking one searches for it.
+nothing is typed. A suggestion is an FAQ article, so picking one opens it at
+once, while a search for it runs to fill "More from the help center" under
+it.
 
 ## Completions as the user types
 
@@ -290,8 +292,9 @@ the last one usually half-typed, and questions that start the way the user
 did come first. Focus stays in the field, which is a combobox for screen
 readers: the arrow keys move through the questions, Enter picks the
 highlighted one, and Escape hides them until the text changes. Picking a
-completion puts it in the field and searches for it at once; Enter with
-nothing highlighted searches for what's typed. A question already in the
+completion puts it in the field and, like a suggestion, opens its article at
+once while a search for it runs; Enter with nothing highlighted searches for
+what's typed. A question already in the
 field whole isn't offered as its own completion.
 
 ## How a search works
@@ -313,7 +316,12 @@ reads as a fragment. Asking for 10 chunks (`TOP_K`) usually leaves three
 articles after collapsing.
 
 While it runs, placeholder rows stand in under a "Searching the help center"
-status. No results, or DocsBot out of reach, offers the Ghost(Pro) support
+status. When it lands, the first result opens in the panel straight away (the
+user asked a question, so the likeliest answer is the thing to show), with
+the other results under it as "More from the help center" and behind it as
+the results list, which Back returns to. A result only opens over the search
+itself: a user who has gone to the support form in the meantime isn't pulled
+back. No results, or DocsBot out of reach, offers the Ghost(Pro) support
 team; the error state also offers a retry. Searching again replaces the
 results, and "Start over" in the header clears everything.
 
@@ -325,9 +333,11 @@ which questions are suggested.
 Articles open in the panel (`help-article-view.tsx`), not a new tab, so the
 user stays in Admin. The header links out to the help center, and the maximize
 button widens the panel over the page area right of Admin's sidebar, for long
-articles. The article ends with "Did this answer your question?", whose "No"
-goes to the support form. Opened articles are marked "Read" in the results and
-listed in what the support form sends.
+articles. Under the article, "More from the help center" lists the search's
+other results (a placeholder while a picked question's search is still
+running), and the article ends with "Did this answer your question?", whose
+"No" goes to the support form. Opened articles are marked "Read" in the
+results and listed in what the support form sends.
 
 `help-article-html.ts` prepares the HTML:
 
@@ -364,6 +374,10 @@ searches and articles read unless the user turns that off.
   agent also returns sources, but only after generating an answer (10 to 20
   seconds) and under a conversation. The search endpoint returns the pages in
   a second or two with no state, which is what a search needs.
+- **The best article opens itself.** A search that ends in a list makes the
+  user pick; opening the first result reads as an answer, and the rest are
+  one scroll away. A picked FAQ question skips even that wait, as it is the
+  article.
 - **Results come from the article list, not the chunks.** The chunks are
   fragments with page furniture in them; the list has the title and excerpt
   the docs team wrote. The cost is that pages missing from the list (anything

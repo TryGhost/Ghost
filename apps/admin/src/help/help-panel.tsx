@@ -36,9 +36,9 @@ import { useHelpTypeahead } from './use-help-typeahead';
  * places it after the page, which narrows to make room) and a sheet on
  * mobile. It shows one of three views (use-help-search.ts): the search (a
  * greeting and the search field, then the FAQ questions to pick from, the
- * completions of what's being typed, or the results), an article, or the
- * message to support. The search stays mounted behind the other two, so Back
- * returns to the same place.
+ * completions of what's being typed, or the results), an article (where a
+ * search lands first), or the message to support. The search stays mounted
+ * behind the other two, so Back returns to the same place.
  *
  * The session and signals live in HelpPanel, so they survive closing the
  * panel and moving between pages. README.md explains how it all fits together.
@@ -57,14 +57,15 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
   const inSearch = session.view === 'search';
   const idle = session.search === null;
   const suggestions = useHelpSuggestions(signals, true, open);
+  // A picked question is an FAQ article: it opens at once, and its search
+  // finds more to read under it
   const typeahead = useHelpTypeahead({
     enabled: open,
-    onPick: (question) => session.searchFor(question.title),
+    onPick: (question) => session.searchFor(question.title, question),
   });
-
   const pick = (article: HelpArticle) => {
     typeahead.setDraft(article.title);
-    session.searchFor(article.title);
+    session.searchFor(article.title, article);
   };
 
   // 1, 2 and 3 search for the suggestions, as their number badges say, while
