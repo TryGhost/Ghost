@@ -4,9 +4,9 @@ The Help panel tries to answer questions from the
 [help center](https://ghost.org/help/) before they turn into support tickets.
 It docks beside the page, greets the user with a search field and three FAQ
 questions for the page they're on, completes what they type with more FAQ
-questions, searches the help center through DocsBot, opens the best article
-inside Admin with up to two more beneath it, and hands off to a support form
-when none of that did it.
+questions, searches the help center through DocsBot, previews the best
+article with up to two more beneath it, opens articles inside Admin, and
+hands off to a support form when none of that did it.
 
 This is the **search** prototype. It's one of two built to compare:
 
@@ -183,16 +183,16 @@ around them are thin.
 
 **Views**
 
-| File                    | What it shows                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the three views (search, article, support)               |
-| `help-welcome.tsx`      | The greeting, and the FAQ questions to pick from (or an error with a link to the help center)                 |
-| `help-search-field.tsx` | The search field at the top, and the completions under it                                                     |
-| `help-results.tsx`      | A search's results: up to three articles with title, excerpt and topic; the searching, empty and error states |
-| `help-article-view.tsx` | An article read in the panel, ending with "Did this answer your question?"                                    |
-| `help-support.tsx`      | The message to support, which takes over the panel                                                            |
-| `help-panel-size.tsx`   | The maximize button                                                                                           |
-| `help-reveal.ts`        | The staggered entrance blocks use                                                                             |
+| File                    | What it shows                                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the three views (search, article, support)                                   |
+| `help-welcome.tsx`      | The greeting, and the FAQ questions to pick from (or an error with a link to the help center)                                     |
+| `help-search-field.tsx` | The search field at the top, and the completions under it                                                                         |
+| `help-results.tsx`      | A search's results: the first as a preview of the article, the rest with title and excerpt; the searching, empty and error states |
+| `help-article-view.tsx` | An article read in the panel, ending with "Did this answer your question?"                                                        |
+| `help-support.tsx`      | The message to support, which takes over the panel                                                                                |
+| `help-panel-size.tsx`   | The maximize button                                                                                                               |
+| `help-reveal.ts`        | The staggered entrance blocks use                                                                                                 |
 
 ## Where the content comes from
 
@@ -324,14 +324,16 @@ reads as a fragment. Asking for 10 chunks (`TOP_K`) usually leaves three
 articles after collapsing.
 
 While it runs, placeholder rows stand in under a "Searching the help center"
-status. When it lands, the first result opens in the panel straight away (the
-user asked a question, so the likeliest answer is the thing to show), with
-the other results under it as "More from the help center" and behind it as
-the results list, which Back returns to. A result only opens over the search
-itself: a user who has gone to the support form in the meantime isn't pulled
-back. No results, or DocsBot out of reach, offers the Ghost(Pro) support
-team; the error state also offers a retry. Searching again replaces the
-results, and "Start over" in the header clears everything.
+status. When it lands, the first result is shown as a preview
+(`HelpResultPreview`): its title and topic, then the opening of the article
+itself, clamped and faded out, with "Read the full article" to open it. The
+nearest page isn't always the answer, and an earlier version that opened it
+in full was frustrating when it wasn't; the preview lets the user judge it
+in a glance. The other results follow under "More from the help center". The
+preview loads the article through the same query the article view uses, so
+opening it is instant. No results, or DocsBot out of reach, offers the
+Ghost(Pro) support team; the error state also offers a retry. Searching again
+replaces the results, and "Start over" in the header clears everything.
 
 Nothing about the user or page goes with the query. The page only decides
 which questions are suggested.
@@ -339,7 +341,8 @@ which questions are suggested.
 ## Reading articles in the panel
 
 Articles open in the panel (`help-article-view.tsx`), not a new tab, so the
-user stays in Admin. The header links out to the help center, and the maximize
+user stays in Admin: a picked FAQ question straight away, a result from its
+preview or card. The header links out to the help center, and the maximize
 button widens the panel over the page area right of Admin's sidebar, for long
 articles. Under the article, "More from the help center" lists the search's
 other results (a placeholder while a picked question's search is still
@@ -382,10 +385,10 @@ searches and articles read unless the user turns that off.
   agent also returns sources, but only after generating an answer (10 to 20
   seconds) and under a conversation. The search endpoint returns the pages in
   a second or two with no state, which is what a search needs.
-- **The best article opens itself.** A search that ends in a list makes the
-  user pick; opening the first result reads as an answer, and the rest are
-  one scroll away. A picked FAQ question skips even that wait, as it is the
-  article.
+- **A picked question opens; a typed one previews.** A picked FAQ question is
+  an exact match, so it opens in full at once. A typed search's first result
+  is only the nearest page, so it's previewed, not opened: enough to judge,
+  not enough to mislead.
 - **Results come from the article list, not the chunks.** The chunks are
   fragments with page furniture in them; the list has the title and excerpt
   the docs team wrote. The cost is that pages missing from the list (anything

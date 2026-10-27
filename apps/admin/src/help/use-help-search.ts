@@ -14,10 +14,10 @@ import { helpCenterIndexQuery } from './use-help-center-index';
  * (help-docsbot-search.ts) and turns the pages it finds into articles from
  * the help center's list.
  *
- * The best article opens straight away: a picked FAQ question is an article,
- * so it opens before its search has even run, and a typed search opens its
- * first result when it lands. The other results wait under the article as
- * "More from the help center", and behind it as the results list.
+ * A picked FAQ question is an article, and an exact match, so it opens before
+ * its search has even run; the search fills "More from the help center" under
+ * it. A typed search stays on the results, with the first one shown as a
+ * preview: the nearest page isn't always the answer, so the user decides.
  */
 
 export interface HelpSearch {
@@ -61,9 +61,6 @@ export function useHelpSearch() {
   const timers = useRef<number[]>([]);
   // The search on its way, stopped by the next one
   const request = useRef<AbortController | null>(null);
-  // Where the user is when a search lands, so a result only opens over the search itself
-  const viewRef = useRef(view);
-  viewRef.current = view;
 
   const stopRequest = useCallback(() => {
     request.current?.abort();
@@ -87,12 +84,9 @@ export function useHelpSearch() {
     setView('article');
   }, []);
 
-  /**
-   * Searches the help center for the query, replacing the last results. With
-   * nothing open already, the first result opens as soon as it lands.
-   */
+  /** Searches the help center for the query, replacing the last results. */
   const run = useCallback(
-    async (query: string, opened: HelpArticle | null) => {
+    async (query: string) => {
       stopRequest();
       const controller = new AbortController();
       request.current = controller;
@@ -106,12 +100,7 @@ export function useHelpSearch() {
         if (controller.signal.aborted) {
           return;
         }
-        const results = toSearchResults(hits, articles);
-        setSearch({ query, status: 'done', results });
-        const [first] = results;
-        if (!opened && first && viewRef.current === 'search') {
-          readArticle(first);
-        }
+        setSearch({ query, status: 'done', results: toSearchResults(hits, articles) });
       } catch {
         // DocsBot or the help center couldn't be reached
         if (!controller.signal.aborted) {
@@ -123,7 +112,7 @@ export function useHelpSearch() {
         }
       }
     },
-    [queryClient, readArticle, stopRequest],
+    [queryClient, stopRequest],
   );
 
   /**
@@ -140,14 +129,14 @@ export function useHelpSearch() {
       if (picked) {
         readArticle(picked);
       }
-      void run(query, picked);
+      void run(query);
     },
     [readArticle, run],
   );
 
   const retry = useCallback(() => {
     if (search) {
-      void run(search.query, null);
+      void run(search.query);
     }
   }, [run, search]);
 
