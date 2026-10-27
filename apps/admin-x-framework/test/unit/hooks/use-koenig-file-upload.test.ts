@@ -26,11 +26,32 @@ vi.mock('../../../src/utils/api/fetch-api', async (importOriginal) => {
   };
 });
 
+vi.mock('../../../src/hooks/use-host-limits', () => ({ useHostLimits: vi.fn() }));
+
+import { useHostLimits } from '../../../src/hooks/use-host-limits';
 import { useKoenigFileUpload } from '../../../src/hooks/use-koenig-file-upload';
 
 function makeFile(name: string, type = 'image/jpeg'): File {
   return new File(['content'], name, { type });
 }
+
+// A File reports the size of its contents, so stub it rather than allocate it
+function makeFileOfSize(name: string, bytes: number, type?: string): File {
+  const file = makeFile(name, type);
+  Object.defineProperty(file, 'size', { value: bytes });
+  return file;
+}
+
+const MB = 1000000;
+
+const UPLOADS_LIMIT = {
+  max: 5 * MB,
+  error: 'Your plan supports uploads up to {{max}}. Please upgrade to upload larger files.',
+};
+
+const withUploadsLimit = (uploads: unknown) => {
+  vi.mocked(useHostLimits).mockReturnValue({ uploads } as ReturnType<typeof useHostLimits>);
+};
 
 interface UploadResponse {
   body: Record<string, unknown>;
@@ -82,6 +103,7 @@ describe('useKoenigFileUpload', () => {
     uploadResponse = successfulUploadResponse;
     requestLog = [];
     fetchApiCalls.length = 0;
+    vi.mocked(useHostLimits).mockReturnValue(undefined);
 
     server = http.createServer((req, res) => {
       requestLog.push({ method: req.method, url: req.url });
@@ -358,5 +380,107 @@ describe('useKoenigFileUpload', () => {
       // Each valid extension should produce a successful upload result
       expect(uploadResult).not.toBeNull();
     }
+  });
+
+  describe('uploads limit', () => {
+    const posted = () => requestLog.some((request) => request.method === 'POST');
+
+    it.each([
+      ['file', 'archive.zip'],
+      ['video', 'clip.mp4'],
+      ['audio', 'song.mp3'],
+      ['mediaThumbnail', 'poster.jpg'],
+    ] as const)('rejects an oversized %s before sending it', async (type, name) => {
+      withUploadsLimit(UPLOADS_LIMIT);
+      const { result } = renderHook(() => useKoenigFileUpload(type));
+
+      const uploadResult = await act(
+        async () => await result.current.upload([makeFileOfSize(name, 5 * MB + 1)]),
+      );
+
+      expect(uploadResult).toBeNull();
+      expect(posted()).toBe(false);
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.errors).toEqual([
+        {
+          fileName: name,
+          message: 'Your plan supports uploads up to 5MB. Please upgrade to upload larger files.',
+        },
+      ]);
+    });
+
+    it('uploads a file exactly at the limit', async () => {
+      withUploadsLimit(UPLOADS_LIMIT);
+      const { result } = renderHook(() => useKoenigFileUpload('file'));
+
+      const uploadResult = await act(
+        async () => await result.current.upload([makeFileOfSize('archive.zip', 5 * MB)]),
+      );
+
+      expect(uploadResult).not.toBeNull();
+      expect(posted()).toBe(true);
+      expect(result.current.errors).toHaveLength(0);
+    });
+
+    it('leaves images to the server, which does not apply the limit to them', async () => {
+      withUploadsLimit(UPLOADS_LIMIT);
+      const { result } = renderHook(() => useKoenigFileUpload('image'));
+
+      const uploadResult = await act(
+        async () => await result.current.upload([makeFileOfSize('photo.jpg', 50 * MB)]),
+      );
+
+      expect(uploadResult).not.toBeNull();
+      expect(posted()).toBe(true);
+    });
+
+    it('does not check sizes when the host sets no uploads limit', async () => {
+      const { result } = renderHook(() => useKoenigFileUpload('video'));
+
+      const uploadResult = await act(
+        async () => await result.current.upload([makeFileOfSize('clip.mp4', 1000 * MB)]),
+      );
+
+      expect(uploadResult).not.toBeNull();
+      expect(posted()).toBe(true);
+    });
+
+    it('falls back to the default message when the limit sets none', async () => {
+      withUploadsLimit({ max: 5 * MB });
+      const { result } = renderHook(() => useKoenigFileUpload('file'));
+
+      await act(async () => {
+        await result.current.upload([makeFileOfSize('archive.zip', 6 * MB)]);
+      });
+
+      expect(posted()).toBe(false);
+      expect(result.current.errors[0]?.message).toBe(
+        'This action would exceed the uploads limit on your current plan.',
+      );
+    });
+
+    it('falls back to the default message when the configured one is malformed', async () => {
+      withUploadsLimit({ max: 5 * MB, error: 'Uploads are capped at {{ max) }}' });
+      const { result } = renderHook(() => useKoenigFileUpload('file'));
+
+      const uploadResult = await act(
+        async () => await result.current.upload([makeFileOfSize('archive.zip', 6 * MB)]),
+      );
+
+      expect(uploadResult).toBeNull();
+      expect(posted()).toBe(false);
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.errors[0]?.message).toBe(
+        'This action would exceed the uploads limit on your current plan.',
+      );
+    });
+
+    it('reads the limit on the session-expiry policy the caller asked for', () => {
+      renderHook(() => useKoenigFileUpload('file', { sessionExpiryRedirect: false }));
+
+      expect(useHostLimits).toHaveBeenCalledWith({
+        requestOptions: { sessionExpiryRedirect: false },
+      });
+    });
   });
 });

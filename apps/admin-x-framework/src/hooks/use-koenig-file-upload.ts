@@ -1,6 +1,10 @@
 import { useRef, useState } from 'react';
+import { LimitService } from '@tryghost/limit-service';
 import { getGhostPaths } from '../utils/helpers';
 import { useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
+import { HostLimitError } from '../utils/errors';
+import { LIMIT_SERVICE_ERRORS } from '../utils/limit-service-errors';
+import { type HostLimits, useHostLimits } from './use-host-limits';
 
 export const koenigFileUploadTypes = {
   image: {
@@ -90,6 +94,24 @@ const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null |
   return typeof current === 'string' ? current : null;
 };
 
+/** The message the server would reject this file with, or null when it fits the limit. */
+const getUploadsLimitError = async (
+  limit: NonNullable<HostLimits['uploads']>,
+  file: File,
+): Promise<null | string> => {
+  try {
+    const limitService = new LimitService();
+    limitService.loadLimits({ limits: { uploads: limit }, errors: LIMIT_SERVICE_ERRORS });
+    await limitService.errorIfIsOverLimit('uploads', { currentCount: file.size });
+  } catch (error) {
+    // Anything but the limit's own rejection is left for the server to decide
+    if (error instanceof HostLimitError) {
+      return error.message;
+    }
+  }
+  return null;
+};
+
 /** The session-expiry policy applies to every upload this hook makes. */
 export const useKoenigFileUpload = (
   type: KoenigFileUploadType = 'image',
@@ -103,6 +125,9 @@ export const useKoenigFileUpload = (
   const progressTracker = useRef(new Map());
 
   const fetchApi = useFetchApi();
+  const hostLimits = useHostLimits({ requestOptions });
+  // The server applies the uploads limit to files and media, not to images
+  const uploadsLimit = type === 'image' ? undefined : hostLimits?.uploads;
 
   function updateProgress() {
     if (progressTracker.current.size === 0) {
@@ -230,6 +255,15 @@ export const useKoenigFileUpload = (
     setErrors([]);
 
     const validationResult = validate(files);
+
+    if (!validationResult.length && uploadsLimit?.max !== undefined) {
+      for (let i = 0; i < files.length; i += 1) {
+        const message = await getUploadsLimitError(uploadsLimit, files[i]);
+        if (message) {
+          validationResult.push({ fileName: files[i].name, message });
+        }
+      }
+    }
 
     if (validationResult.length) {
       setErrors(validationResult);
