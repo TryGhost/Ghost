@@ -19,6 +19,7 @@
     "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host:public",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 nx run ghost-monorepo:dev:host",
     "dev:analytics:local": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} nx run ghost-monorepo:dev:host",
+    "dev:jobs-redis": "DEV_COMPOSE_FILES='-f compose.dev.jobs-redis.yaml' nx run ghost-monorepo:dev:host",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:dev:host",
     "dev:stripe": "./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host",
     "dev:up": "node tools/gx/dev-up.ts",
