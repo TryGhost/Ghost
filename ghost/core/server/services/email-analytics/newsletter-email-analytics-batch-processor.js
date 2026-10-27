@@ -115,7 +115,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
   }
 
   /**
-   * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
+   * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; bot?: string | null; error: {code: number; message: string; enhandedCode: string|number} | null}} event
    * @param {Map<string, any>} [recipientCache] Optional cache for batched processing
    * @returns {Promise<EventProcessingResult>}
    */
@@ -140,6 +140,10 @@ class NewsletterEmailAnalyticsBatchProcessor {
     }
 
     if (event.type === 'opened') {
+      // Mailgun flags scanner opens as 'generic'; 'apple' and 'gmail' are proxied real opens
+      if (event.bot === 'generic') {
+        return new EventProcessingResult({ unprocessable: 1 });
+      }
       const recipient = await this.#emailEventProcessor.handleOpened(
         { emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail },
         event.timestamp,

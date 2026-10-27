@@ -184,6 +184,90 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             });
           });
 
+          it('ignores opened events from generic bots', async function () {
+            const processor = new NewsletterEmailAnalyticsBatchProcessor({
+              config: createMockConfig(),
+              emailEventProcessor,
+            });
+            const result = new EventProcessingResult();
+            const fetchData = {};
+
+            await processor.processBatch(
+              [
+                {
+                  type: 'opened',
+                  emailId: 1,
+                  timestamp: new Date(1),
+                  bot: 'generic',
+                },
+              ],
+              result,
+              fetchData,
+            );
+
+            sinon.assert.notCalled(emailEventProcessor.handleOpened);
+
+            assert.deepEqual(
+              result,
+              new EventProcessingResult({
+                delivered: 0,
+                opened: 0,
+                unprocessable: 1,
+                emailIds: [],
+                memberIds: [],
+              }),
+            );
+
+            assert.deepEqual(fetchData, {
+              lastEventTimestamp: new Date(1),
+            });
+          });
+
+          it('counts opened events from apple and gmail bots', async function () {
+            const processor = new NewsletterEmailAnalyticsBatchProcessor({
+              config: createMockConfig(),
+              emailEventProcessor,
+            });
+            const result = new EventProcessingResult();
+            const fetchData = {};
+
+            await processor.processBatch(
+              [
+                {
+                  type: 'opened',
+                  emailId: 1,
+                  timestamp: new Date(1),
+                  bot: 'apple',
+                },
+                {
+                  type: 'opened',
+                  emailId: 2,
+                  timestamp: new Date(2),
+                  bot: 'gmail',
+                },
+              ],
+              result,
+              fetchData,
+            );
+
+            sinon.assert.calledTwice(emailEventProcessor.handleOpened);
+
+            assert.deepEqual(
+              result,
+              new EventProcessingResult({
+                delivered: 0,
+                opened: 2,
+                unprocessable: 0,
+                emailIds: [1, 2],
+                memberIds: [1],
+              }),
+            );
+
+            assert.deepEqual(fetchData, {
+              lastEventTimestamp: new Date(2),
+            });
+          });
+
           it('handles delivered', async function () {
             const processor = new NewsletterEmailAnalyticsBatchProcessor({
               config: createMockConfig(),
