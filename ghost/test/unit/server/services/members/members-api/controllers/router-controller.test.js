@@ -2099,6 +2099,7 @@ describe('RouterController', function () {
         tokenService: { decodeToken: sinon.stub().resolves({ sub: 'member@example.com' }) },
         memberRepository: { get: sinon.stub().resolves({ related }) },
         settingsCache: { get: sinon.stub().returns(null) },
+        checkouts: { read: async () => null },
         urlUtils,
       });
     }
