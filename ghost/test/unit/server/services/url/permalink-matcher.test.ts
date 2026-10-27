@@ -1,10 +1,10 @@
-const assert = require('node:assert/strict');
-const {
+import assert from 'node:assert/strict';
+import {
   matchPermalink,
   toLookupParams,
-} = require('../../../../../core/server/services/url/permalink-matcher');
+} from '../../../../../core/server/services/url/permalink-matcher';
 
-function captured(template, urlPath) {
+function captured(template: string, urlPath: string) {
   const result = matchPermalink(template, urlPath);
   return result === null ? null : { ...result };
 }
