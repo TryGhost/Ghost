@@ -4654,14 +4654,17 @@ services:
           is exposed. init synchronously returns undefined. The other arrow functions
           assert initialization, forward all arguments to the current private instance and
           return its result without depending on their receiver. changeLanguage returns
-          the library promise; t and dir return their synchronous library results. Consumer
-          tests assert translated nickname text, not the facade export shape, init return,
-          receiver independence or dir behavior.
+          the library promise; t and dir return their synchronous library results. Focused
+          root tests assert the pre-init guards, receiver-independent retained delegates,
+          forwarded translation options and direction arguments, and the translator that
+          changeLanguage returns; the exact export shape and undefined init return remain
+          source evidence.
         sources:
           - core/server/services/i18n/index.js
           - package.json
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
+          - test/unit/server/services/i18n/index.test.ts
       construction:
         summary: >-
           Import creates only the facade and debug helper. Every init lazily loads the
@@ -4669,7 +4672,9 @@ services:
           namespace translator, publishes it, then adds an anonymous locale listener.
           Boot is the only production init caller found. Email-service, member welcome
           emails and theme translation construct independent package instances; they do
-          not initialize or share this facade's private translator.
+          not initialize or share this facade's private translator. Focused root tests
+          assert that import adds no locale listener and that init publishes a translator
+          and exactly one listener.
         sources:
           - core/server/services/i18n/index.js
           - core/boot.js
@@ -4677,7 +4682,8 @@ services:
           - core/server/services/member-welcome-emails/service.js
           - core/frontend/services/theme-engine/i18next/theme-i18n.js
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/i18n/index.test.ts
       consumers:
         summary: >-
           Members mail callbacks, donation payment nicknames, comment email subjects and
@@ -4713,6 +4719,9 @@ services:
           or retaining t before init is safe; invoking it is not. init itself has no settings
           readiness guard and falls back to English if the cache is uninitialized. Existing
           unit consumers manually init; signup HTTP tests exercise booted English output.
+          Boot tests hold init pending to prove initCore awaits it before Gift Links and
+          propagates its rejection; focused root tests cold-load the facade and retain
+          delegates before init.
         sources:
           - core/boot.js
           - core/server/services/i18n/index.js
@@ -4722,6 +4731,8 @@ services:
           - test/unit/server/services/stripe/stripe-api.test.js
           - test/unit/server/web/gift-preview/controller.test.js
           - test/e2e-api/members/send-magic-link.test.js
+          - test/unit/boot/init-core.test.ts
+          - test/unit/server/services/i18n/index.test.ts
       lifetime:
         summary: >-
           Exports remain stable across init while the private translator is replaced. Each
@@ -4730,12 +4741,16 @@ services:
           No guard, listener removal or GhostServer cleanup exists. Language changes retain
           loaded locale bundles in the current translator. A library t returned through
           changeLanguage is bound to that instance, unlike the exported delegating t.
+          Focused root tests pin that retained delegates follow the translator replaced by
+          a repeated init and that each init adds another listener; same-process
+          stop/reboot listener counts remain source-only.
         sources:
           - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/ghost-server.ts
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/i18n/index.test.ts
       configuration:
         summary: >-
           init captures settings locale or en and fixes the ghost namespace. Later model locale
@@ -4746,7 +4761,10 @@ services:
           disable escaping. Independent email/theme translators have their own locale listeners;
           manually changing this facade does not change them. Core tests pin French donation
           nicknames, unescaped titles and English gift labels; Stripe's translated-label case
-          stubs t. Locale loading/fallback and listener behavior here are source-only.
+          stubs t. Focused root tests cover the English fallback, the configured French
+          locale, forwarded options and direction arguments, a French-to-Arabic change and
+          the registered locale callback; they invoke that callback directly rather than
+          persisting a settings edit.
         sources:
           - core/server/services/i18n/index.js
           - core/server/data/schema/default-settings/default-settings.json
@@ -4759,6 +4777,7 @@ services:
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
           - test/unit/server/services/stripe/stripe-api.test.js
+          - test/unit/server/services/i18n/index.test.ts
       resources:
         summary: >-
           The root owns its translator reference and locale subscriptions on the borrowed
@@ -4785,35 +4804,44 @@ services:
           The locale callback neither catches errors nor returns/awaits changeLanguage;
           synchronous exceptions escape raw event delivery and can interrupt later listeners.
           The current local-resource path changes language synchronously despite returning
-          a promise. The facade adds no retry, rollback or error translation.
+          a promise. The facade adds no retry, rollback or error translation. Focused tests
+          assert the pre-init errors, a failed first init that publishes no translator or
+          listener, a successful retry, and boot propagating an init rejection. Factory or
+          registration failure after publication, malformed locale events and callback
+          failures remain source-only.
         sources:
           - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/boot.js
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/i18n/index.test.ts
+          - test/unit/boot/init-core.test.ts
     unverified: []
     blockers:
       - >-
-        Pin exact exports/returns, pre-init assertions, importing before init, retained t
-        across re-init, and real boot ordering. Existing manually initialized consumers
-        and English signup output do not characterize replacement or failure boundaries.
+        Pin the exact export shape and init return before changing initialization. Pre-init
+        guards, importing before init, retained delegates across re-init and boot awaiting
+        init before Gift Links now have focused tests.
       - >-
-        Characterize repeated init and same-process stop/reboot listener counts, callback
-        multiplicity and cleanup without affecting independent email/theme subscribers.
-        Preserve the distinction between a retained delegating t and an instance-bound
-        translator returned by changeLanguage; there is no production cleanup today.
+        Characterize same-process stop/reboot listener counts, callback multiplicity and
+        cleanup without affecting independent email/theme subscribers; repeated init's
+        replacement and extra listener are pinned as current behaviour. Preserve the
+        distinction between a retained delegating t and an instance-bound translator returned
+        by changeLanguage; there is no production cleanup today.
       - >-
         Exercise real settings edits and transaction commit/rollback through retained mail,
-        gift and payment consumers, including fallback locales, direction and escaping.
-        Direct French changeLanguage coverage does not test the settings listener; package
-        translation tests and separate renderer instances do not prove this root's wiring.
+        gift and payment consumers, including fallback locales and escaping. Focused root
+        tests exercise the registered locale callback and direction but do not prove
+        persisted settings-event delivery; package translation tests and separate renderer
+        instances do not prove this root's wiring.
       - >-
-        Cover failed first/repeated init, registration failure after publication, malformed
-        locale events and callback failures. Decide the contract before introducing any
-        asynchronous resource loader: boot and raw event delivery currently rely on local
-        synchronous initialization and do not own pending language-change work.
+        Cover factory or registration failure after publication, malformed locale events and
+        callback failures; failed first init and its retry are covered. Decide the contract
+        before introducing any asynchronous resource loader: boot and raw event delivery
+        currently rely on local synchronous initialization and do not own pending
+        language-change work.
   identity-tokens:
     kind: directory
     disposition: relocate
