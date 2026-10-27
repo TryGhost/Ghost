@@ -332,7 +332,10 @@ in full was frustrating when it wasn't; the preview lets the user judge it
 in a glance. The other results follow under "More from the help center". The
 preview loads the article through the same query the article view uses, so
 opening it is instant. No results, or DocsBot out of reach, offers the
-Ghost(Pro) support team; the error state also offers a retry. Searching again
+Ghost(Pro) support team; the error state also offers a retry. The results
+show only while the field still holds the query they came from: typing
+something else, or clearing the field, puts the page's questions back under
+it, so a stale preview never sits under a new question. Searching again
 replaces the results, and "Start over" in the header clears everything.
 
 Nothing about the user or page goes with the query. The page only decides

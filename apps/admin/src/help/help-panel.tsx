@@ -198,10 +198,12 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
               onSearch={session.searchFor}
             />
             {/* Under the field, one of: the completions of what's being
-                typed, the questions to pick from, or the results */}
+                typed, the results (only while the field still holds the
+                query they came from; typing something else, or clearing it,
+                shows the questions to pick from instead), or those questions */}
             {typeahead.showMatches ? (
               <HelpCompletions typeahead={typeahead} />
-            ) : session.search ? (
+            ) : session.search && typeahead.draft.trim() === session.search.query ? (
               <HelpResults
                 openedArticles={session.openedArticles}
                 search={session.search}
