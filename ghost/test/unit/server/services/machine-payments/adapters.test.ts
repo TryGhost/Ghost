@@ -1,25 +1,67 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const {
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import {
   BoundedRouteCache,
   X402Adapter,
   formatPrice,
   parseX402Config,
   settlementReference,
-} = require('../../../../../core/server/services/machine-payments/adapters/x402-adapter');
-const {
+} from '../../../../../core/server/services/machine-payments/adapters/x402-adapter';
+import {
   MppAdapter,
   TEMPO_USDC,
   TEMPO_DECIMALS,
   parseReceipt,
-} = require('../../../../../core/server/services/machine-payments/adapters/mpp-adapter');
+} from '../../../../../core/server/services/machine-payments/adapters/mpp-adapter';
+import type { PaymentTerms } from '../../../../../core/server/services/machine-payments/types';
 
-function encodeReceipt(receipt) {
+type X402AdapterDeps = ConstructorParameters<typeof X402Adapter>[0];
+type X402Runtime = ReturnType<NonNullable<X402AdapterDeps['runtimeFactory']>>;
+type MppAdapterDeps = ConstructorParameters<typeof MppAdapter>[0];
+type MppxModule = ReturnType<NonNullable<MppAdapterDeps['mppxFactory']>>;
+type MppxCreateOptions = Parameters<MppxModule['Mppx']['create']>[0];
+
+type FakePayment = {
+  status: number;
+  challenge?: Response;
+  withReceipt?: (response: Response) => Response;
+};
+
+type ChargeCall = {
+  rail: string;
+  options: Record<string, unknown>;
+};
+
+type CapturedMppx = {
+  tempoChargeConfig?: Record<string, unknown>;
+  stripeChargeConfig?: Record<string, unknown>;
+  createCalls: MppxCreateOptions[];
+  chargeCalls: ChargeCall[];
+  composeEntries?: unknown[];
+};
+
+type MppxFactoryOptions = {
+  tempoChargeConfig?: Record<string, unknown>;
+  stripeChargeConfig?: Record<string, unknown>;
+  createCalls?: MppxCreateOptions[];
+  chargeCalls?: ChargeCall[];
+  payment?: FakePayment;
+};
+
+class FakeFacilitatorClient {
+  [key: string]: unknown;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function encodeReceipt(receipt: Record<string, unknown>) {
   return Buffer.from(JSON.stringify(receipt)).toString('base64url');
 }
 
-function createX402Adapter(overrides = {}) {
+function createX402Adapter(overrides: Partial<X402AdapterDeps> = {}) {
   return new X402Adapter({
     depositAddressStore: {
       getOrCreateAddress: async () => '0xrecipient',
@@ -35,22 +77,24 @@ function createX402Adapter(overrides = {}) {
   });
 }
 
-async function initX402Adapter(overrides = {}) {
+async function initX402Adapter(overrides: Partial<X402AdapterDeps> = {}) {
   const adapter = createX402Adapter(overrides);
   await adapter.init();
   return adapter;
 }
 
-function createX402RuntimeFactory({ onHonoCreate } = {}) {
+function createX402RuntimeFactory({
+  onHonoCreate,
+}: { onHonoCreate?: (count: number) => void } = {}) {
   let honoCreateCount = 0;
 
   return {
     get honoCreateCount() {
       return honoCreateCount;
     },
-    factory: () => ({
+    factory: (): X402Runtime => ({
       paymentMiddlewareFromConfig: () => () => {},
-      HTTPFacilitatorClient: class {},
+      HTTPFacilitatorClient: FakeFacilitatorClient,
       ExactEvmScheme: class {},
       Hono: class {
         constructor() {
@@ -78,15 +122,15 @@ function createMppxFactory({
   createCalls,
   chargeCalls,
   payment,
-} = {}) {
-  const captured = {
+}: MppxFactoryOptions = {}) {
+  const captured: CapturedMppx = {
     tempoChargeConfig,
     stripeChargeConfig,
     createCalls: createCalls || [],
     chargeCalls: chargeCalls || [],
   };
 
-  const paymentResult = payment || {
+  const paymentResult: FakePayment = payment || {
     status: 402,
     challenge: new Response('', {
       status: 402,
@@ -94,42 +138,46 @@ function createMppxFactory({
     }),
   };
 
-  const tempoHandler = (options) => {
+  const tempoHandler = (options: unknown) => {
+    assert.ok(isRecord(options));
     captured.chargeCalls.push({ rail: 'tempo', options });
     return async () => paymentResult;
   };
-  const stripeHandler = (options) => {
+  const stripeHandler = (options: unknown) => {
+    assert.ok(isRecord(options));
     captured.chargeCalls.push({ rail: 'stripe', options });
     return async () => paymentResult;
   };
 
   return {
     captured,
-    factory: () => ({
+    factory: (): MppxModule => ({
       Store: {
         memory: () => ({
           tryClaim: async () => true,
         }),
       },
       tempo: {
-        charge(config) {
+        charge(config: unknown) {
+          assert.ok(isRecord(config));
           captured.tempoChargeConfig = config;
           return config;
         },
       },
       stripe: {
-        charge(config) {
+        charge(config: unknown) {
+          assert.ok(isRecord(config));
           captured.stripeChargeConfig = config;
           return config;
         },
       },
       Mppx: {
-        create(options) {
+        create(options: MppxCreateOptions) {
           captured.createCalls.push(options);
           return {
             tempo: { charge: tempoHandler },
             stripe: { charge: stripeHandler },
-            compose: (...entries) => {
+            compose: (...entries: unknown[]) => {
               captured.composeEntries = entries;
               return async () => paymentResult;
             },
@@ -225,7 +273,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
   });
 
   it('rejects unsupported x402 network and mainnet x402.org facilitator pairings', function () {
-    sinon.stub(logging, 'warn');
+    const warn = sinon.stub(logging, 'warn');
 
     assert.equal(
       parseX402Config({
@@ -245,12 +293,12 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       null,
     );
 
-    assert.match(String(logging.warn.firstCall.args[0]), /must be eip155:8453 or eip155:84532/);
-    assert.match(String(logging.warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
+    assert.match(String(warn.firstCall.args[0]), /must be eip155:8453 or eip155:84532/);
+    assert.match(String(warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
   });
 
   it('rejects HTTP facilitator URLs and normalized mainnet x402.org variants', function () {
-    sinon.stub(logging, 'warn');
+    const warn = sinon.stub(logging, 'warn');
 
     assert.equal(
       parseX402Config({
@@ -260,7 +308,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       }),
       null,
     );
-    assert.match(String(logging.warn.firstCall.args[0]), /must use HTTPS/);
+    assert.match(String(warn.firstCall.args[0]), /must use HTTPS/);
 
     for (const facilitatorUrl of [
       'https://X402.ORG/facilitator',
@@ -278,7 +326,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       );
     }
 
-    assert.match(String(logging.warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
+    assert.match(String(warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
   });
 
   it('accepts normalized x402.org facilitator URLs on Base Sepolia', function () {
@@ -306,7 +354,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
   });
 
   it('evicts the oldest cached route when the bounded cache is full', function () {
-    const cache = new BoundedRouteCache(2);
+    const cache = new BoundedRouteCache<number>(2);
 
     cache.set('a', 1);
     cache.set('b', 2);
@@ -322,7 +370,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
   });
 
   describe('X402Adapter', function () {
-    const terms = {
+    const terms: PaymentTerms = {
       amount: 100,
       currency: 'USD',
       description: 'Paid post',
@@ -442,11 +490,11 @@ describe('Unit: server/services/machine-payments/adapters', function () {
     });
 
     it('logs and returns null when the x402 middleware does not produce a 402', async function () {
-      sinon.stub(logging, 'warn');
+      const warn = sinon.stub(logging, 'warn');
       const adapter = await initX402Adapter({
         runtimeFactory: () => ({
           paymentMiddlewareFromConfig: () => () => {},
-          HTTPFacilitatorClient: class {},
+          HTTPFacilitatorClient: FakeFacilitatorClient,
           ExactEvmScheme: class {},
           Hono: class {
             use() {}
@@ -465,7 +513,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       const challenge = await adapter.challenge(new Request('http://example.com/paid.md'), terms);
 
       assert.equal(challenge, null);
-      assert.match(String(logging.warn.firstCall.args[0]), /x402 challenge unavailable/);
+      assert.match(String(warn.firstCall.args[0]), /x402 challenge unavailable/);
     });
 
     it('fulfills with a validated settlement reference header', async function () {
@@ -478,7 +526,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       const adapter = await initX402Adapter({
         runtimeFactory: () => ({
           paymentMiddlewareFromConfig: () => () => {},
-          HTTPFacilitatorClient: class {},
+          HTTPFacilitatorClient: FakeFacilitatorClient,
           ExactEvmScheme: class {},
           Hono: class {
             use() {}
@@ -509,7 +557,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       assert.equal(fulfillment.protocol, 'x402');
       assert.equal(fulfillment.method, 'base');
       assert.equal(fulfillment.reference, '0xfulfilled');
-      assert.equal(fulfillment.receiptHeaders['payment-response'], paymentResponse);
+      assert.equal(fulfillment.receiptHeaders?.['payment-response'], paymentResponse);
     });
 
     it('accepts any successful 2xx fulfill response', async function () {
@@ -522,7 +570,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       const adapter = await initX402Adapter({
         runtimeFactory: () => ({
           paymentMiddlewareFromConfig: () => () => {},
-          HTTPFacilitatorClient: class {},
+          HTTPFacilitatorClient: FakeFacilitatorClient,
           ExactEvmScheme: class {},
           Hono: class {
             use() {}
@@ -557,7 +605,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       const adapter = await initX402Adapter({
         runtimeFactory: () => ({
           paymentMiddlewareFromConfig: () => () => {},
-          HTTPFacilitatorClient: class {},
+          HTTPFacilitatorClient: FakeFacilitatorClient,
           ExactEvmScheme: class {},
           Hono: class {
             use() {}
@@ -592,7 +640,14 @@ describe('Unit: server/services/machine-payments/adapters', function () {
   });
 
   describe('MppAdapter', function () {
-    const terms = { amount: 100, currency: 'USD' };
+    const terms: PaymentTerms = {
+      amount: 100,
+      currency: 'USD',
+      description: 'Paid post',
+      method: 'GET',
+      mimeType: 'text/markdown',
+      url: 'http://example.com/paid-post.md',
+    };
     const request = new Request('http://example.com/paid-post.md', {
       headers: { authorization: 'Payment abc' },
     });
@@ -624,6 +679,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       assert.equal(fulfillment.protocol, 'mpp');
       assert.equal(fulfillment.method, 'tempo');
       assert.equal(fulfillment.reference, '0xtxhash');
+      assert.ok(captured.tempoChargeConfig);
       assert.equal(captured.tempoChargeConfig.decimals, 6);
       assert.equal(captured.chargeCalls[0].options.scope, '/paid-post.md');
       assert.ok(captured.tempoChargeConfig.store);
@@ -662,7 +718,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
           getOrCreateAddress: async () => '0xrecipient',
         },
         settingsCache: {
-          get(key) {
+          get(key: string) {
             if (key === 'machine_payments_stripe_profile_id') {
               return 'profile_123';
             }
@@ -700,7 +756,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
           },
         },
         settingsCache: {
-          get(key) {
+          get(key: string) {
             if (key === 'machine_payments_stripe_profile_id') {
               return 'profile_123';
             }
@@ -715,8 +771,10 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       });
 
       const challenge = await adapter.challenge(new Request('http://example.com/paid.md'), terms);
+      assert.ok(challenge);
       assert.equal(challenge.status, 402);
       assert.equal(captured.tempoChargeConfig, undefined);
+      assert.ok(captured.stripeChargeConfig);
       assert.equal(captured.stripeChargeConfig.decimals, 2);
       assert.equal(captured.createCalls[0].methods.length, 1);
     });
