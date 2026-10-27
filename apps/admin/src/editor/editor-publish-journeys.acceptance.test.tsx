@@ -227,6 +227,8 @@ describe('Editor publish journeys', () => {
 
   it('sends an editor who emails a post to the posts list, not post analytics', async () => {
     publishChrome([WEEKLY]);
+    const published = post({ id: POST_ID, title: 'Hello from React', status: 'published' });
+    fakePosts(({ filter }) => (filter === `id:${POST_ID}` ? [published] : []));
     fakeTiers([]);
     fakeLabels([]);
     const saveApi = fakeSavableDraft();
@@ -244,7 +246,7 @@ describe('Editor publish journeys', () => {
     await publishScreen.confirmButton().click();
 
     await expect.poll(currentRoute).toBe('/posts');
-    await expect.element(postsListScreen.celebrationModal()).toBeVisible();
+    await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('Hello from React');
     const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
     expect(params.get('newsletter')).toBe('weekly');
   });
