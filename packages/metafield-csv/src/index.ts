@@ -95,7 +95,11 @@ function cellFor(
   field: CsvField,
   part: string | null,
 ): string | undefined {
-  const cell = row[columnOf(field, part)];
+  return cellAt(row, columnOf(field, part));
+}
+
+function cellAt(row: Record<string, unknown>, column: string): string | undefined {
+  const cell = row[column];
   return typeof cell === 'string' ? cell : undefined;
 }
 
@@ -121,6 +125,21 @@ export function csvCellsForFields(
   }
 
   return cells;
+}
+
+/**
+ * Whether any of `rows` has a column for one of `fields`, filled in or not. A row read from a
+ * CSV can leave out the columns it is too short to reach, so rows are asked until one has.
+ */
+export function hasFieldColumns(
+  fields: readonly CsvField[],
+  rows: readonly Record<string, unknown>[],
+): boolean {
+  const columns = fields.flatMap((field) => csvColumnsForField(field).map(({ column }) => column));
+  if (columns.length === 0) {
+    return false;
+  }
+  return rows.some((row) => columns.some((column) => cellAt(row, column) !== undefined));
 }
 
 /**

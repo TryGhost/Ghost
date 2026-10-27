@@ -15,6 +15,8 @@ import MembersCSVImporter, {
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
 import type MembersImportJob from '../jobs/members-import-job';
+import { tracer } from '../../../lib/tracing';
+import { importExportTracking } from './tracking';
 import MembersCSVExporter, { type ExportOptions } from './export/exporter';
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
@@ -159,6 +161,7 @@ export function makeImporter(deps: ImporterServices) {
     dispatchJob: deps.dispatchJob,
     getTimezone: deps.getTimezone,
     getInlineThreshold: deps.getInlineThreshold,
+    tracking: importExportTracking(tracer),
   });
 }
 
