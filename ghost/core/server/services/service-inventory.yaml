@@ -14216,12 +14216,15 @@ services:
           public methods through API getters; query implementation belongs to TagPublic/model
           and API serializers. Binding units assert enabled/disabled browse and uncached read.
           Isolated HTTP proves a repeated browse avoids another model call despite a raw DB
-          edit, changed fields misses, and explicit site.changed refreshes. Frontend tests use
-          API fakes; this cohort does not establish their real cache composition or ordinary
-          Admin mutation-to-invalidation wiring.
+          edit, changed fields misses, and explicit site.changed refreshes. It also warms tag
+          browse, changes a tag through the authenticated Admin endpoint, and proves the next
+          Content browse queries fresh data and the following read is served from cache, with
+          no manual invalidation in that mutation path. Frontend tests use API fakes; this
+          cohort does not establish their real cache composition.
         sources:
           - core/boot.js
           - core/server/api/endpoints/index.js
+          - core/server/api/endpoints/tags.js
           - core/server/api/endpoints/tags-public.js
           - core/server/models/tag-public.js
           - core/server/web/api/endpoints/content/routes.js
@@ -14341,8 +14344,9 @@ services:
     blockers:
       - >-
         Protect browse binding and shared pipeline identity together while keeping read uncached.
-        Extend cold-boot MemoryCache evidence to ordinary Admin invalidation and relevant frontend
-        composition; early endpoint import and cached permission/context behavior remain untested.
+        Cold-boot MemoryCache HTTP now covers ordinary Admin tag-edit invalidation and the
+        subsequent cached response; relevant frontend composition, early endpoint import and
+        cached permission/context behavior remain untested.
       - >-
         Define same-process restart and rollback ownership: disabled init also sets the guard,
         manager reset leaves retained references, and listeners/cache resources have no disposer.
