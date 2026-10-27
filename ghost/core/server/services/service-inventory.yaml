@@ -9368,8 +9368,9 @@ services:
           Constructor mail configuration/transport failure can reject the import. There is
           no init hook or lazy factory. Members init requires its API factory, whose
           module requires this root; the Admin endpoint can also require it through the
-          lazy API getter. This timing/identity graph is source-only: class units construct
-          injected instances and the root test merely checks property presence.
+          lazy API getter. Class units construct injected instances; root units drive the
+          actual eager instance, MagicLink and token provider with stubbed model and mail I/O.
+          Import ordering, constructor failure and retained graph identity remain source-only.
         sources:
           - core/server/services/newsletters/index.js
           - core/server/services/newsletters/newsletters-service.js
@@ -9378,7 +9379,8 @@ services:
           - core/server/services/members/api.js
           - core/server/api/endpoints/index.js
           - core/server/api/endpoints/newsletters.js
-        tests: []
+        tests:
+          - test/unit/server/services/newsletters/index.test.ts
       startup:
         summary: >-
           Boot initializes email-address before the group containing members.init. The
@@ -9406,7 +9408,9 @@ services:
           relation counts, duplicate names, limit errors, address policy and intercepted
           verification messages; the default-member HTTP case pins subscribed IDs and
           resulting events. Router unit assertions use a getAll fake, not real query/root
-          composition. Verification completion and retained-consumer lifetime remain gaps.
+          composition. Root units issue a link through the mailer and apply its token through
+          verifyPropertyUpdate to the named newsletter property; real HTTP completion and
+          retained-consumer lifetime remain gaps.
         sources:
           - core/server/api/endpoints/newsletters.js
           - core/server/api/endpoints/newsletters-public.js
@@ -9419,6 +9423,7 @@ services:
           - test/e2e-api/admin/newsletters.test.js
           - test/e2e-api/admin/members.test.js
           - test/unit/server/services/members/members-api/controllers/router-controller.test.js
+          - test/unit/server/services/newsletters/index.test.ts
       lifetime:
         summary: >-
           CommonJS caching retains the same graph with no reset/replacement/disposal API.
@@ -9449,8 +9454,9 @@ services:
           fields; special newsletter/support reply-to values bypass address validation.
           Verification applies token data without rerunning current address policy.
           HTTP tests pin managed/custom-domain/self-hosted edit policies and messages
-          using test config replacement, not production hot reload. Token units use a
-          one-hour after-use limit, so they do not pin this root's ten-minute wiring.
+          using test config replacement, not production hot reload. Root units pin the undefined
+          sender passed to the mailer and, with a fake clock and token model, the configured
+          24-hour lifetime, ten-minute after-use limit and seventh/eighth-use boundary.
         sources:
           - core/server/services/newsletters/index.js
           - core/server/services/newsletters/newsletters-service.js
@@ -9463,6 +9469,7 @@ services:
         tests:
           - test/e2e-api/admin/newsletters.test.js
           - test/unit/server/services/members/single-use-token-provider.test.js
+          - test/unit/server/services/newsletters/index.test.ts
       resources:
         summary: >-
           The root owns a GhostMailer transport and MagicLink/token-provider objects, but
@@ -9472,8 +9479,10 @@ services:
           owns neither cleanup scheduling nor deletion. Token creation writes independently of
           newsletter transactions. Validation opens its own transaction and locks/updates
           token usage before returning data; the later newsletter update is separate.
-          Injected token tests assert lock/save options and usage/expiry calculations,
-          not real locking, root-specific limits or cleanup. HTTP mail is intercepted.
+          Injected token tests assert lock/save options and usage/expiry calculations; root
+          units assert lock options and root-specific limits through the actual provider.
+          Stubbed model transactions do not establish real locking or cleanup. HTTP mail is
+          intercepted.
         sources:
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/members/single-use-token-provider.js
@@ -9484,6 +9493,7 @@ services:
           - core/server/services/members/jobs/clean-tokens-task.ts
         tests:
           - test/unit/server/services/members/single-use-token-provider.test.js
+          - test/unit/server/services/newsletters/index.test.ts
       failures:
         summary: >-
           Read maps a missing model to NotFound; limit and ordinary model errors propagate;
@@ -9494,8 +9504,10 @@ services:
           usage before property validation or model update. Creating a custom reply-to
           requiring verification dereferences an absent newsletter in the preparation
           method. Units pin selected propagation/allowlist behavior with fakes, and HTTP
-          pins duplicate/limit/address errors. They do not cover these partial failures.
-          The edit missing-data unit actually calls add, and the HTTP active-edit-at-limit
+          pins duplicate/limit/address errors. Root units assert that a failed token write sends
+          no mail, mail rejection propagates and a property-update rejection follows recorded
+          token usage; other partial failures remain uncovered. The edit missing-data unit now
+          calls edit with valid options and asserts no model edit; the HTTP active-edit-at-limit
           case selects a non-active row. API serialization separately masks invalid old
           sender addresses; that presentation does not establish a stored correction.
         sources:
@@ -9506,6 +9518,7 @@ services:
         tests:
           - test/unit/server/services/newsletters/service.test.js
           - test/e2e-api/admin/newsletters.test.js
+          - test/unit/server/services/newsletters/index.test.ts
     unverified: []
     blockers:
       - >-
@@ -9513,18 +9526,19 @@ services:
         retained Admin/member consumers through stop/reboot and dependency failure before
         replacing eager composition. Define ownership/drain of the mail transport.
       - >-
-        Cover real token issuance-to-HTTP-verification, root-specific expiry/reuse limits,
-        wrong-flow consumption, failed property persistence, the mailer default-sender fallback
-        and policy changes between
-        issuance and use; fake token parsing and sent-mail snapshots do not establish this.
+        Root units now cover issuance through the mailer to token verification, the configured
+        expiry/reuse limits and property-update rejection after token usage. Still cover the
+        real HTTP issuance-to-verification chain, wrong-flow consumption, actual persistence
+        and locking failure, the mailer default-sender fallback and policy changes between
+        issuance and use; stubbed models do not establish those contracts.
       - >-
         Protect opt-in rollback and ordinary add/edit persistence when reread, token writes
         or first/later mail sends fail. Establish concurrent limit/sort-order/opt-in behavior
         and the shared MagicLink transporter boundary; do not infer atomicity from success.
       - >-
-        Characterize new-newsletter custom reply-to verification, missing edit input and
-        genuine active editing at the host limit. Existing tests omit or misname these
-        cases; keep legacy failures explicit rather than changing them during migration.
+        Characterize new-newsletter custom reply-to verification and genuine active editing at
+        the host limit. Missing edit input is now tested through edit with valid options; keep
+        other legacy failures explicit rather than changing them during migration.
   notifications:
     kind: directory
     disposition: retain
