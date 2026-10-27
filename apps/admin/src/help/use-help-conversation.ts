@@ -111,15 +111,13 @@ const EMPTY_DRAFT: HelpSupportDraft = {
   status: 'draft',
 };
 
-// What each site card adds to the answer's steps. PROTOTYPE: the scheduled
-// posts, domain and newsletter cards show sample data (help-signals.ts), and
-// say so.
+// What each site card adds to the answer's steps
 const SITE_CARD_STEPS: Record<HelpSiteCardKind, string> = {
-  schedule: 'Showed your scheduled posts (sample data)',
-  domain: 'Showed your site’s domain (sample data)',
+  schedule: 'Pointed you to your scheduled posts',
+  domain: 'Pointed you to your domain settings',
   subscription: 'Checked your Ghost(Pro) subscription',
   payment: 'Checked your Ghost(Pro) payments',
-  newsletter: 'Showed your newsletter (sample data)',
+  newsletter: 'Pointed you to your newsletter settings',
 };
 
 // PROTOTYPE: nothing is sent; this only stands in for the request

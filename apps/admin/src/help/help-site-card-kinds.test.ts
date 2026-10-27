@@ -8,6 +8,11 @@ describe('getSiteCardKind', () => {
     expect(getSiteCardKind('publishing-content', { canManage: false })).toBe('schedule');
   });
 
+  it('only offers the domain to those who can manage it, as billing owns it', () => {
+    expect(getSiteCardKind('using-custom-domains', { canManage: true })).toBe('domain');
+    expect(getSiteCardKind('using-custom-domains', { canManage: false })).toBeNull();
+  });
+
   it('shows nothing for articles without a card', () => {
     expect(getSiteCardKind('posts', { canManage: true })).toBeNull();
   });

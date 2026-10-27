@@ -18,23 +18,9 @@ import { getPageKey, PAGE_LABELS, type HelpPageKey } from './help-pages';
  * - Their Ghost(Pro) subscription, as the billing app reports it to Admin
  *   (trial, status, a failed payment), as Admin's upgrade banner and dunning
  *   warnings use it. Empty until the billing app reports.
- * - PROTOTYPE: the site's own state behind some site cards is mocked
- *   (PROTOTYPE_ACCOUNT).
  *
  * Search runs in the browser, so none of this leaves it with a question.
  */
-
-// PROTOTYPE: the site's own state, behind the scheduled posts, domain and
-// newsletter site cards, isn't read yet. Admin's APIs have it (posts,
-// newsletters, the site's URL); hide those cards or read it before users see it.
-const PROTOTYPE_ACCOUNT = {
-  customDomain: null as string | null,
-  newsletter: { name: 'Weekly', subscribers: 1284, lastSentAt: null as string | null },
-  nextScheduledPost: { title: 'The spring issue', publishAt: 'Tomorrow, 09:00' },
-  publishedPosts: 12,
-};
-
-export type HelpAccount = typeof PROTOTYPE_ACCOUNT;
 
 type HelpDunning = NonNullable<ReturnType<typeof useDunningState>>;
 
@@ -88,7 +74,6 @@ export interface HelpSignals {
   siteHost: string;
   timezone: string;
   billing: HelpBilling;
-  account: HelpAccount;
 }
 
 function getHost(url: string | undefined) {
@@ -124,7 +109,6 @@ export function useHelpSignals(): HelpSignals {
       siteHost: getHost(siteUrl),
       timezone,
       billing,
-      account: PROTOTYPE_ACCOUNT,
     }),
     [pageKey, currentUser, siteUrl, timezone, billing],
   );

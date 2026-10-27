@@ -98,10 +98,6 @@ who can manage billing (the Owner), using `useCanAccessBilling`.
       `use-help-conversation.ts` sends nothing, and the form promises a reply
       from the Ghost(Pro) support team within 24 hours on working days, which
       support should confirm.
-- [ ] **Remove the mocks users would see.** The scheduled posts, domain and
-      newsletter site cards show sample data (`PROTOTYPE_ACCOUNT` in
-      `help-signals.ts`, and the cards say so). Hide them or read the real
-      data, which Admin's APIs already have.
 - [ ] **Own the DocsBot bot.** `help-docsbot.ts` hardcodes a test team and bot
       (`DOCSBOT_TEAM_ID`, `DOCSBOT_BOT_ID`), asked without a key straight from
       the browser. Move them into Ghost config, decide whether questions should
@@ -211,7 +207,7 @@ around them are thin.
 | `help-messages.tsx`     | The thread: the question (and its context), the answer, its steps and sources                                                 |
 | `help-composer.tsx`     | The question box, with the chip for the page the question is asked from                                                       |
 | `help-article-view.tsx` | An article read in the panel, ending with "Did this answer your question?"                                                    |
-| `help-site-card.tsx`    | The look at the user's own site beside some answers, with a button to act on it                                               |
+| `help-site-card.tsx`    | Beside some answers: the user's Ghost(Pro) billing, or a button to the relevant page in Admin                                 |
 | `help-support.tsx`      | The message to support, which takes over the panel: starts from the first question, with the conversation attached by default |
 | `help-panel-size.tsx`   | The maximize button                                                                                                           |
 | `help-reveal.ts`        | The staggered entrance blocks use                                                                                             |
@@ -456,23 +452,26 @@ sends.
 
 ## Site cards
 
-Some answers show a card with the user's own site beside them, with a button
-to where they can act on it. Cards are tied to the slug of the best answer
-(`SITE_CARDS` in `help-site-card-kinds.ts`).
+Some answers show something about the user's own site beside them, tied to
+the slug of the best answer (`SITE_CARDS` in `help-site-card-kinds.ts`).
+Billing answers get a card with live data from the billing app; the others
+get only a button to the part of Admin the answer is about. Admin has that
+data too (posts, newsletters, the site's URL), but a button is enough to take
+them there, and shows nothing made up.
 
-| Card            | Articles                                          | Data                  | Button                 |
-| --------------- | ------------------------------------------------- | --------------------- | ---------------------- |
-| Subscription    | `manage-your-subscription`, `turn-off-auto-renew` | Billing app           | Manage plan            |
-| Payment failed  | `troubleshooting-payment-issues`                  | Billing app (dunning) | Pay now                |
-| Scheduled posts | `publishing-content`                              | Sample data           | View scheduled posts   |
-| Domain          | `using-custom-domains`                            | Sample data           | Set up a custom domain |
-| Newsletter      | `setup-email-newsletters`, `delivering-emails`    | Sample data           | Newsletter settings    |
+| Card            | Articles                                          | Shows                                     |
+| --------------- | ------------------------------------------------- | ----------------------------------------- |
+| Subscription    | `manage-your-subscription`, `turn-off-auto-renew` | Billing app data, and "Manage plan"       |
+| Payment failed  | `troubleshooting-payment-issues`                  | Billing app (dunning) data, and "Pay now" |
+| Scheduled posts | `publishing-content`                              | "View scheduled posts"                    |
+| Domain          | `using-custom-domains`                            | "Set up a custom domain"                  |
+| Newsletter      | `setup-email-newsletters`, `delivering-emails`    | "Newsletter settings"                     |
 
-Billing cards only show to those who can manage billing. The payment card
-shows the subscription card instead while no payment has failed. Until the
-billing app reports (locally, without a matching Ghost(Pro) account), billing
-cards still offer their button. Cards with sample data say "Sample data in this
-prototype".
+Billing cards and the domain button only show to those who can manage
+Ghost(Pro) billing, where the domain is managed too. The payment card shows
+the subscription card instead while no payment has failed. Until the billing
+app reports (locally, without a matching Ghost(Pro) account), billing cards
+still offer their button.
 
 ## Decisions and trade-offs
 
@@ -522,9 +521,6 @@ prototype".
 Search the code for `PROTOTYPE:`. In short:
 
 - Sending to support: nothing is sent. Attached files keep only their names.
-- The site state behind the scheduled posts, domain and newsletter cards
-  (`PROTOTYPE_ACCOUNT` in `help-signals.ts`), and the SSL line on the domain
-  card.
 - Answer and article feedback, kept in component state only.
 - The help center's API URL, hardcoded in `help-center.ts`, and its key,
   empty there until added locally.

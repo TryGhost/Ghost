@@ -2,19 +2,20 @@ import React from 'react';
 import { Link } from '@tryghost/admin-x-framework';
 import { Badge, Button, Card } from '@tryghost/shade/components';
 import { Box, Inline, Text } from '@tryghost/shade/primitives';
-import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { PayNowButton } from '@/dunning';
 import { plural } from './help-format';
 import type { HelpBilling, HelpSignals } from './help-signals';
 import type { HelpSiteCardKind } from './help-site-card-kinds';
 
 /*
- * The live look at the user's own site beside some answers, with a button to
- * where they can act on it. Which answers get which card is SITE_CARDS in
- * help-site-card-kinds.ts. Billing comes from the billing app.
+ * What some answers show beside them about the user's own site, with a way to
+ * act on it. Which answers get which is SITE_CARDS in help-site-card-kinds.ts.
  *
- * PROTOTYPE: the scheduled posts, domain and newsletter cards show sample
- * data (PROTOTYPE_ACCOUNT in help-signals.ts) and say so on the card.
+ * Billing answers get a card with the Ghost(Pro) subscription as the billing
+ * app reports it. Other answers get only a button to the part of Admin the
+ * answer is about (scheduled posts, the domain, newsletter settings): Admin
+ * has that data, but a button is enough to take them there.
  */
 
 type SiteCardAction =
@@ -22,13 +23,19 @@ type SiteCardAction =
   | { type: 'pay'; state: NonNullable<HelpBilling['paymentFailed']> };
 
 interface SiteCardContent {
+  type: 'card';
   Icon: typeof LucideIcon.Globe;
   title: string;
   status: { label: string; variant: 'success' | 'warning' | 'destructive' | 'secondary' } | null;
   rows: Array<[label: string, value: string]>;
   action: SiteCardAction | null;
-  /** PROTOTYPE: its data is made up, which the card says */
-  sample?: boolean;
+}
+
+/** Just the way to the relevant page in Admin. */
+interface SiteButtonContent {
+  type: 'button';
+  label: string;
+  to: string;
 }
 
 function formatDate(date: Date) {
@@ -54,6 +61,7 @@ function getSubscriptionCard(billing: HelpBilling): SiteCardContent {
   }
 
   return {
+    type: 'card',
     Icon: LucideIcon.CreditCard,
     title: 'Ghost(Pro) subscription',
     status,
@@ -62,42 +70,20 @@ function getSubscriptionCard(billing: HelpBilling): SiteCardContent {
   };
 }
 
-function getSiteCard(kind: HelpSiteCardKind, signals: HelpSignals): SiteCardContent | null {
-  const { account, billing } = signals;
+function getSiteCard(
+  kind: HelpSiteCardKind,
+  signals: HelpSignals,
+): SiteCardContent | SiteButtonContent {
+  const { billing } = signals;
 
   switch (kind) {
     case 'schedule':
-      return {
-        Icon: LucideIcon.CalendarClock,
-        title: account.nextScheduledPost.title,
-        status: { label: 'Scheduled', variant: 'secondary' },
-        rows: [
-          ['Publishes', account.nextScheduledPost.publishAt],
-          ['Site timezone', signals.timezone],
-          ['Published posts', formatNumber(account.publishedPosts)],
-        ],
-        action: { type: 'link', label: 'View scheduled posts', to: '/posts?type=scheduled' },
-        sample: true,
-      };
+      return { type: 'button', label: 'View scheduled posts', to: '/posts?type=scheduled' };
     case 'domain':
-      return {
-        Icon: LucideIcon.Globe,
-        title: signals.siteHost,
-        status: account.customDomain
-          ? { label: 'Connected', variant: 'success' }
-          : { label: 'No custom domain', variant: 'secondary' },
-        rows: [
-          ['Address', signals.siteHost],
-          ['Custom domain', account.customDomain ?? 'Not connected'],
-          // PROTOTYPE: made up, like the rest of this card
-          ['SSL', 'Active'],
-        ],
-        // Domains are managed in Ghost(Pro) billing
-        action: billing.canManage
-          ? { type: 'link', label: 'Set up a custom domain', to: '/pro/domain' }
-          : null,
-        sample: true,
-      };
+      // Domains are managed in Ghost(Pro) billing
+      return { type: 'button', label: 'Set up a custom domain', to: '/pro/domain' };
+    case 'newsletter':
+      return { type: 'button', label: 'Newsletter settings', to: '/settings/newsletters' };
     case 'subscription':
       return getSubscriptionCard(billing);
     case 'payment':
@@ -106,6 +92,7 @@ function getSiteCard(kind: HelpSiteCardKind, signals: HelpSignals): SiteCardCont
         return getSubscriptionCard(billing);
       }
       return {
+        type: 'card',
         Icon: LucideIcon.CreditCard,
         title: 'Your last payment failed',
         status: { label: 'Payment failed', variant: 'destructive' },
@@ -115,20 +102,6 @@ function getSiteCard(kind: HelpSiteCardKind, signals: HelpSignals): SiteCardCont
         ],
         action: { type: 'pay', state: billing.paymentFailed },
       };
-    case 'newsletter':
-      return {
-        Icon: LucideIcon.Mail,
-        title: account.newsletter.name,
-        status: account.newsletter.lastSentAt
-          ? { label: 'Sending', variant: 'success' }
-          : { label: 'Never sent', variant: 'secondary' },
-        rows: [
-          ['Subscribers', formatNumber(account.newsletter.subscribers)],
-          ['Last sent', account.newsletter.lastSentAt ?? 'Never'],
-        ],
-        action: { type: 'link', label: 'Newsletter settings', to: '/settings/newsletters' },
-        sample: true,
-      };
   }
 }
 
@@ -137,13 +110,24 @@ interface HelpSiteCardProps extends React.ComponentProps<'div'> {
   signals: HelpSignals;
 }
 
-/** The part of the user's own site the answer is about, as it is right now. */
+/** The part of the user's own site the answer is about: live billing, or the way to it. */
 export function HelpSiteCard({ kind, signals, ...props }: HelpSiteCardProps) {
   const card = getSiteCard(kind, signals);
-  if (!card) {
-    return null;
+
+  if (card.type === 'button') {
+    return (
+      // The panel stays open beside the page it goes to
+      <div {...props}>
+        <Button size="sm" variant="outline" asChild>
+          <Link to={card.to}>
+            {card.label}
+            <LucideIcon.ArrowRight />
+          </Link>
+        </Button>
+      </div>
+    );
   }
-  const { Icon, title, status, rows, action, sample } = card;
+  const { Icon, title, status, rows, action } = card;
 
   return (
     <Card {...props}>
@@ -170,11 +154,6 @@ export function HelpSiteCard({ kind, signals, ...props }: HelpSiteCardProps) {
               </React.Fragment>
             ))}
           </dl>
-        )}
-        {sample && (
-          <Text className="mt-3" size="xs" tone="tertiary">
-            Sample data in this prototype
-          </Text>
         )}
         {/* The panel stays open beside the page it goes to */}
         {action?.type === 'link' && (
