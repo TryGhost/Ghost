@@ -36,6 +36,24 @@ Object {
 }
 `;
 
+exports[`Authentication API generateResetToken Returns the mail error when the reset email cannot be sent 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Please see https://docs.ghost.org/config/#mail for instructions on configuring email.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Failed to send email. Reason: connect ECONNREFUSED 127.0.0.1:587.",
+      "property": null,
+      "type": "EmailError",
+    },
+  ],
+}
+`;
+
 exports[`Authentication API resetPassword creates a verified session after password reset 1: [body] 1`] = `
 Object {
   "password_reset": Array [

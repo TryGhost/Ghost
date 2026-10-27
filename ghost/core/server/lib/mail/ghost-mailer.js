@@ -16,10 +16,15 @@ const messages = {
   incompleteMessageDataError: 'Incomplete message data.',
   reason: ' Reason: {reason}.',
   messageSent: 'Message sent. Double check inbox and spam folder!',
+  sendTimedOut: 'Timed out waiting for the mail server',
 };
 const { formatAddressForDelivery } = require('./format-address-for-delivery');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 const MAX_MAILGUN_TAGS = 10;
+// nodemailer's default (2 minutes) outlasts typical reverse proxy timeouts
+const DEFAULT_SMTP_CONNECTION_TIMEOUT_MS = 10000;
+// connectionTimeout applies per resolved address, so cap the whole send under a 60s proxy timeout
+const SMTP_SEND_DEADLINE_MS = 45000;
 
 function getDomain() {
   const domain = urlUtils
@@ -124,9 +129,18 @@ module.exports = class GhostMailer {
     // nodemailer mutates the options passed to createTransport
     const options = (config.get('mail') && _.clone(config.get('mail').options)) || {};
 
+    if (
+      transport === 'smtp' &&
+      _.isPlainObject(options) &&
+      !Object.hasOwn(options, 'connectionTimeout')
+    ) {
+      options.connectionTimeout = DEFAULT_SMTP_CONNECTION_TIMEOUT_MS;
+    }
+
     this.state = {
       usingDirect: transport === 'direct',
       usingMailgun: transport === 'mailgun',
+      usingSmtp: transport === 'smtp',
     };
     this.transport = nodemailer(transport, options);
   }
@@ -194,8 +208,20 @@ module.exports = class GhostMailer {
 
   async sendMail(message) {
     const startTime = Date.now();
+    let deadline;
     try {
-      const response = await this.transport.sendMail(message);
+      const sending = this.transport.sendMail(message);
+      const response = this.state.usingSmtp
+        ? await Promise.race([
+            sending,
+            new Promise((resolve, reject) => {
+              deadline = setTimeout(
+                () => reject(new errors.EmailError({ message: tpl(messages.sendTimedOut) })),
+                SMTP_SEND_DEADLINE_MS,
+              );
+            }),
+          ])
+        : await sending;
       if (this.state.usingMailgun) {
         metrics.metric('mailgun-send-transactional-mail', {
           value: Date.now() - startTime,
@@ -215,6 +241,8 @@ module.exports = class GhostMailer {
         message: tpl(messages.reason, { reason: err.message || err }),
         err,
       });
+    } finally {
+      clearTimeout(deadline);
     }
   }
 
