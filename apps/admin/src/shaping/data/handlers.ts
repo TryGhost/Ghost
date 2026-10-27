@@ -518,15 +518,25 @@ const ghostStats = async (world: World, path: string, params: URLSearchParams) =
       url_exists: true,
       visits: Math.round(views * factor),
     }));
+    // Pages get shares that land among the top posts, so Top content shows
+    // posts and pages mixed together, as on a typical site
+    const page = (
+      pathname: string,
+      title: string,
+      share: number,
+    ): { pathname: string; title: string; post_type?: string; visits: number } => ({
+      pathname,
+      title,
+      post_type: 'page',
+      visits: Math.round(visits * share),
+    });
     const pageRows = [
       { pathname: '/', title: 'Homepage', visits: Math.round(visits * 0.18) },
-      { pathname: '/about/', title: 'About', post_type: 'page', visits: Math.round(visits * 0.03) },
-      {
-        pathname: '/start/',
-        title: 'Start here',
-        post_type: 'page',
-        visits: Math.round(visits * 0.02),
-      },
+      page('/about/', 'About', 0.04),
+      page('/start/', 'Start here', 0.032),
+      page('/newsletter/', 'Newsletter', 0.027),
+      page('/membership/', 'Membership', 0.02),
+      page('/contact/', 'Contact', 0.01),
     ].map((row) => ({ url_exists: true, ...row }));
     const stats = [
       ...(type === 'page' ? [] : postRows),

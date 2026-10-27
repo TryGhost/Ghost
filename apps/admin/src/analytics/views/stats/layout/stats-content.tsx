@@ -9,6 +9,8 @@ const StatsContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   return (
     <section
       className={cn('flex w-full grow flex-col items-stretch gap-6 pb-8', className)}
+      // SHAPING PROTOTYPE ONLY: a hook for explorations' CSS
+      data-stats-content
       {...props}
     >
       {children}

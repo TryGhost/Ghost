@@ -1,6 +1,6 @@
 /* EXPLORATION ONLY (shaping/explorations): Exploration 1, Web traffic.
-   Strips the outlined cards so each section sits in the open, with a rule
-   under its heading, like the Overview stat cards. Scrappy on purpose: a
+   Strips the outlined cards so each section sits in the open: a title row,
+   then its content, with no rules between. Scrappy on purpose: a
    release-shaped version would use Card's `plain` variant instead. */
 
 .web-open-layout .rounded-xl.border {
@@ -15,9 +15,216 @@
   padding-left: 0;
 }
 
+/* Each section's title row, with no rule under it (overrides Top locations'
+   own border-b too). 15px down to the first row: 9px here plus the list's
+   own 6px top padding. */
 .web-open-layout .rounded-xl.border > :first-child {
-  margin-bottom: 0.8rem;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  border-bottom: 0;
   padding-top: 0;
-  padding-bottom: 1.6rem;
+  padding-bottom: 0.9rem;
+}
+
+/* Section headings: the title alone. The descriptions only restated it with
+   the date range, which the filter above already shows. (Not the
+   "Visitors" label, which shares their size and colour.) */
+.web-open-layout .rounded-xl.border > :first-child .text-sm.text-muted-foreground:not(.capitalize) {
+  display: none;
+}
+
+/* Title rows are one control tall, so a section with a filter in its title
+   row (Top content) lines up with one without (Top sources) */
+.web-open-layout .rounded-xl.border > :first-child.flex {
+  min-height: calc(var(--control-height) + 0.9rem);
+}
+
+/* No column header row under Top locations' title: the title says what the
+   rows are, and "Visitors" moves up into the title row (below). Top content
+   and Top sources do this in their own markup (visitors-header.tsx). */
+.web-open-layout [data-testid='visitors-card'] .uppercase {
+  display: none;
+}
+
+/* Top locations: the list first, the map to its right. The list fills its
+   half edge to edge, so its names start on the content edge and its numbers
+   end at the halfway line, under the title row's "Visitors"; the map keeps
+   its own padding as the gap. */
+.web-open-layout .svg-map-container {
+  order: 2;
+}
+
+.web-open-layout [data-testid='visitors-card'] {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.web-open-layout [data-testid='visitors-card'] > :first-child {
+  margin-left: 0;
+}
+
+/* From lg, where the two sit side by side, "Visitors" ends at the halfway
+   line too, over the list's numbers */
+@media (min-width: 1024px) {
+  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child > *,
+  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child::after {
+    grid-area: 1 / 1;
+  }
+
+  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child::after {
+    justify-self: end;
+  }
+}
+
+/* Top locations' title is a column; lay it out as a row like the others */
+.web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child::after {
+  /* Exploration 1's label style (type.ts) */
+  content: 'Visitors';
+  color: var(--color-muted-foreground);
+  font-size: var(--text-md);
+  font-weight: 400;
+  text-transform: capitalize;
+}
+
+/* List rows in regular weight, not medium (DataListItemContent and the
+   rows' own truncating names set font-medium) */
+.web-open-layout .group\/row,
+.web-open-layout .group\/row * {
+  font-weight: 400;
+}
+
+/* Row names at 13px (Shade text-base), up from 12px; the numbers stay 12px
+   mono */
+.web-open-layout .group\/row > .z-10.p-2 {
+  font-size: var(--text-base);
+}
+
+/* Numbers sit right against their percentage (Top content and Top sources)
+   or end on the right edge (Top locations), under "Visitors" */
+.web-open-layout [data-type='value-abs'] {
+  padding-right: 0;
+}
+
+/* Table numbers and percentages at 14px (Shade text-md), up from 12px,
+   regular weight (above), in their own font */
+.web-open-layout :is([data-type='value-abs'], [data-type='value-perc']) {
+  font-size: var(--text-md);
+}
+
+/* No padding below the list: the grey box's own 32px is the only space at
+   the bottom */
+.web-open-layout .rounded-xl.border > * {
+  padding-bottom: 0;
+}
+
+/* Section titles a clear step below the page title: 22px (Shade text-2xl),
+   medium weight like the page title, rather than body-size semibold */
+.web-open-layout .rounded-xl.border > :first-child .font-semibold.leading-none {
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* The Web traffic tabs (web-kpis.tsx). The first tab starts on the content
+   edge, so its label, number, the row's rule and the active underline all
+   line up with the page title. No hover fill: in the open it reads as a
+   floating box. */
+.web-open-kpis [role='tab'] {
+  background: transparent !important;
+}
+
+.web-open-kpis [role='tab']:first-child {
+  padding-left: 0;
+}
+
+/* The tabs start flush at the section's top, so the page's 60px above it
+   is the visible gap (KPI tabs carry 20px of their own, py-5) */
+.web-open-kpis [role='tab'] {
+  padding-top: 0;
+}
+
+/* Labels stay muted when the tab is active; the underline alone marks the
+   active tab. On hover (or keyboard focus) a label turns default colour. */
+.web-open-kpis [role='tab'] [data-type='value'] {
+  color: var(--color-muted-foreground) !important;
+  transition: color 150ms ease-out;
+}
+
+.web-open-kpis [role='tab']:is(:hover, :focus-visible) [data-type='value'] {
+  color: var(--color-foreground) !important;
+}
+
+/* Each tab's colour indicator, after its label: a square */
+.web-open-kpis [role='tab'] [data-type='value']::after {
+  content: '';
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+  background: var(--dot);
+  opacity: 0.5;
+}
+
+/* The chart's plot starts on the content edge, under the metrics: the chart
+   is pulled left past its y-axis (--plot-start, set in web-kpis.tsx) */
+.web-open-chart {
+  margin-left: calc(var(--plot-start) * -1);
+  /* And out past GhAreaChart's 4px right margin, so the plot ends on the
+     right edge too, with the lists below */
+  margin-right: -0.4rem;
+}
+
+/* The hover popover drops its colour dot: the chart only ever shows one
+   metric, so the dot has nothing to tell apart */
+.web-open-chart .recharts-tooltip-wrapper .rounded-full {
+  display: none;
+}
+
+/* One text style in the popover, taken from the metric label: 12px sans,
+   regular weight, in the default text colour. The date alone is semibold. */
+.web-open-chart .recharts-tooltip-wrapper > div,
+.web-open-chart .recharts-tooltip-wrapper > div * {
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.web-open-chart .recharts-tooltip-wrapper > div > :first-child {
+  font-weight: 600;
+}
+
+/* The metric's name ("Visitors") in Exploration 1's label style
+   (type.ts), in the default text colour */
+.web-open-chart .recharts-tooltip-wrapper .text-muted-foreground {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* No baseline under the chart: the fill's edge already marks it */
+.web-open-chart .recharts-xAxis .recharts-cartesian-axis-line {
+  display: none;
+}
+
+/* So the numbers can sit above the top line without being clipped */
+.web-open-chart .recharts-surface {
+  overflow: visible;
+}
+
+/* The y-axis numbers sit over the plot, on the content edge, each just above
+   its value. Recharts draws them 8px left of the plot (a 6px tick, a 2px
+   gap), anchored at their end. */
+.web-open-chart .recharts-yAxis .recharts-cartesian-axis-tick-value {
+  text-anchor: start;
+  transform: translate(8px, -0.8rem);
 }

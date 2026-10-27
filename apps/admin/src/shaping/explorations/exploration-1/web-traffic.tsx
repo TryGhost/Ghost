@@ -2,13 +2,14 @@ import './web-traffic.css';
 import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
 import LocationsCard from '@/analytics/views/stats/locations/components/locations-card';
 import React, { useCallback, useMemo, useRef } from 'react';
-import SourcesCard from '@/analytics/views/stats/web/components/sources-card';
+import SourcesCard from './sources-card';
 import StatsFilter from '@/shared/analytics/stats-filter';
 import StatsHeader from '@/analytics/views/stats/layout/stats-header';
 import StatsLayout from '@/analytics/views/stats/layout/stats-layout';
 import StatsView from '@/analytics/views/stats/layout/stats-view';
-import TopContent from '@/analytics/views/stats/web/components/top-content';
-import WebKPIs, { type KpiDataItem } from '@/analytics/views/stats/web/components/web-kpis';
+import TopContent from './top-content';
+import WebKPIs from './web-kpis';
+import type { KpiDataItem } from '@/analytics/views/stats/web/components/web-kpis';
 import { NavbarActions } from '@tryghost/shade/components';
 import { useTinybirdQuery } from '@tryghost/admin-x-framework';
 import { STATS_DEFAULT_SOURCE_ICON_URL } from '@/shared/analytics/constants';
@@ -146,9 +147,9 @@ const WebOpenLayout: React.FC = () => {
         </NavbarActions>
       </StatsHeader>
       <StatsView isLoading={isConfigLoading} loadingComponent={<></>}>
-        <div className="web-open-layout flex flex-col gap-16">
+        <div className="web-open-layout flex flex-col gap-15">
           <WebKPIs data={kpiData as KpiDataItem[] | null} isLoading={kpiLoading} range={range} />
-          <div className="flex grid-cols-2 flex-col gap-16 lg:grid lg:gap-12">
+          <div className="flex grid-cols-2 flex-col gap-x-12 gap-y-15 lg:grid">
             <TopContent
               audience={audience}
               filterParams={filterParams}

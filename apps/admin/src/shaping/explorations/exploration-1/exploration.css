@@ -1,0 +1,125 @@
+/* EXPLORATION ONLY (shaping/explorations): Exploration 1, on every Analytics
+   tab. Applies only while the menu's View is Exploration 1.
+
+   Vertical rhythm: 60px between sections (up from 48px, the rough average of the Vision
+   prototype's spacing), and between rows of the side-by-side grids. Column
+   gaps stay as they are. */
+
+[data-shaping-view='exploration-1'] [data-stats-content],
+[data-shaping-view='exploration-1'] [data-stats-content] > .gap-6 {
+  row-gap: 6rem;
+}
+
+/* And 60px from the header's tabs down to the first section. The header
+   ends 16px under its tabs (the Navbar's pb-4), so the content adds 44px.
+   Sections start flush at their top edge, so this is the visible gap. */
+[data-shaping-view='exploration-1'] [data-stats-content] {
+  padding-top: 4.4rem;
+}
+
+/* One caps label style everywhere (type.ts): the metric labels Planned sets
+   in 12px mono (Shade's admin7AnalyticsLabel, on metric cards and KPI tabs)
+   are 14px sans regular here instead */
+[data-shaping-view='exploration-1'] .admin7-analytics\:font-mono {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: capitalize;
+}
+
+/* Every image in Analytics and post analytics has 2px corners: feature
+   images, post thumbnails (often background images), their placeholders,
+   source favicons and flags */
+[data-shaping-view='exploration-1']
+  :is([data-stats-content], [data-post-analytics])
+  :is(img, [style*='background-image'], .bg-muted.rounded-sm) {
+  border-radius: 2px;
+}
+
+/* One number size on every tab: the metric tabs' numbers (MetricValue lg,
+   28px in Planned) match the Overview stat cards' (md, 32px, Shade
+   text-4xl). Planned sets the 28px with !important, so this sits in the
+   same layer, where the more specific selector wins. */
+@layer utilities {
+  [data-shaping-view='exploration-1'] .admin7-analytics\:text-3xl\! {
+    font-size: var(--text-4xl) !important;
+  }
+}
+
+/* Chart colour indicators are squares, not dots: the dot before each KPI
+   tab's label (Growth, Newsletters, post analytics) */
+[data-shaping-view='exploration-1'] [role='tab'] [data-type='value'] > .rounded-full {
+  border-radius: 0;
+}
+
+/* Overview stat card charts run to their column's edges. GhAreaChart keeps
+   4px inside each side of its box (its left/right margin), which put 48px
+   between the charts against the 40px between the columns (and between the
+   latest post and Top posts below). Widened by those 4px each side. */
+[data-shaping-view='exploration-1'] [data-overview-kpis] [data-chart] {
+  width: calc(100% + 0.8rem);
+  margin-left: -0.4rem;
+}
+
+/* No dates on the Overview stat card charts: every card shows the same
+   range, which the date filter above already names, and the hover popover
+   gives each day's date. Their 30px strip below the plot is pulled out too,
+   so the gap to the next section starts at the fill's bottom edge. */
+[data-shaping-view='exploration-1'] [data-overview-kpis] [data-chart] {
+  margin-bottom: -3rem;
+}
+
+[data-shaping-view='exploration-1']
+  [data-overview-kpis]
+  .recharts-xAxis
+  .recharts-cartesian-axis-tick {
+  display: none;
+}
+
+/* Overview stat card charts: no baseline under the chart, as on Web
+   traffic; the fill's edge already marks it */
+[data-shaping-view='exploration-1']
+  [data-overview-kpis]
+  .recharts-xAxis
+  .recharts-cartesian-axis-line {
+  display: none;
+}
+
+/* Trends are a caret and the number, with no badge: no fill, no padding, the
+   caret before the number in place of the trend-line icon after it. Shade's
+   TrendBadge, on the Overview stat cards and every KPI tab. Up is green 600
+   (the success colour, green 500, is too light as text alone), down red,
+   the same muted grey when flat (and no caret). */
+[data-shaping-view='exploration-1'] .group\/trend-badge {
+  gap: 0.4rem;
+  padding: 0;
+  background: transparent;
+  font-size: var(--text-sm);
+}
+
+[data-shaping-view='exploration-1'] .group\/trend-badge.bg-state-success\/10 {
+  color: var(--color-green-600);
+}
+
+[data-shaping-view='exploration-1'] .group\/trend-badge > svg {
+  display: none;
+}
+
+[data-shaping-view='exploration-1']
+  .group\/trend-badge:is(.bg-state-success\/10, .bg-state-danger\/10)::before {
+  content: '';
+  order: -1;
+  width: 0.8rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+[data-shaping-view='exploration-1'] .group\/trend-badge.bg-state-success\/10::before {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+[data-shaping-view='exploration-1'] .group\/trend-badge.bg-state-danger\/10::before {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}

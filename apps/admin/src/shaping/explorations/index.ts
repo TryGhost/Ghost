@@ -1,4 +1,7 @@
 import React, { lazy } from 'react';
+// Each exploration's screen-wide CSS, scoped to its view by
+// [data-shaping-view] on <html>, so it can restyle any screen
+import './exploration-1/exploration.css';
 
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
 //
@@ -23,8 +26,9 @@ export const EXPLORATIONS: Exploration[] = [
   {
     id: 'exploration-1',
     label: 'Exploration 1',
-    description: 'Web traffic without outlined cards.',
+    description: 'Open layouts on Overview and Web traffic.',
     screens: {
+      '/analytics': lazy(() => import('./exploration-1/overview')),
       '/analytics/web': lazy(() => import('./exploration-1/web-traffic')),
     },
   },

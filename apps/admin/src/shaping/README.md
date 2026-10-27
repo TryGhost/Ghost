@@ -69,8 +69,13 @@ override styles with their own CSS file. Their commits say "exploration".
 When a direction gets the go-ahead, its ideas are rebuilt in release shape
 (Planned), it gets slices in the release plan, and its folder is deleted.
 
+An exploration can also restyle any screen without swapping it: the View
+sets `data-shaping-view` on `<html>`, so CSS scoped to
+`[data-shaping-view='exploration-<n>']` applies only in that view.
+`StatsContent` carries a `data-stats-content` hook for this.
+
 To add one: a folder `explorations/exploration-<n>/` and an entry in
-`explorations/index.ts`.
+`explorations/index.ts` (plus its screen-wide CSS, if any, imported there).
 
 Running: **Exploration 1**, Web traffic without outlined cards.
 

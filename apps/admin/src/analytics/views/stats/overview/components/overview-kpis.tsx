@@ -291,7 +291,8 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   const containerClass = `flex flex-col lg:grid ${cols} gap-6 admin7-analytics:gap-10`;
 
   return (
-    <div className={containerClass}>
+    // SHAPING PROTOTYPE ONLY: data-overview-kpis is a hook for explorations' CSS
+    <div className={containerClass} data-overview-kpis>
       {showWebAnalytics && !showUpgradeCTA && (
         <OverviewKPICard
           description="Number of individual people who visited your website"

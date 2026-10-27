@@ -34,6 +34,7 @@ export const VIEWS: ViewOption[] = [
 const DEFAULT_VIEW = 'planned';
 const VIEW_KEY = 'shaping.analytics.view';
 const ATTRIBUTE = 'data-admin7-analytics';
+const VIEW_ATTRIBUTE = 'data-shaping-view';
 const CHANGE_EVENT = 'shaping:view-change';
 
 const readView = (): string => {
@@ -47,6 +48,8 @@ const readView = (): string => {
 
 const apply = (view: string) => {
   document.documentElement.toggleAttribute(ATTRIBUTE, view !== 'today');
+  // Lets an exploration's CSS restyle any screen (see explorations/)
+  document.documentElement.setAttribute(VIEW_ATTRIBUTE, view);
 };
 
 // Called from main.tsx before Admin renders

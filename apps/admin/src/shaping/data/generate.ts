@@ -150,7 +150,7 @@ const TITLES = [
 const AUTHORS = ['Aron Lemke', 'Maren Calzoni', 'Jamie Ortiz'];
 
 const IMAGES = [
-  'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800',
+  'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800',
   'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800',
   null,
