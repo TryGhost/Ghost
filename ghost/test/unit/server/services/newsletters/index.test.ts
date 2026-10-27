@@ -37,9 +37,9 @@ describe('Newsletters Service', function () {
       sandbox.useFakeTimers({ now, toFake: ['Date'] });
       sandbox.stub(sentry, 'captureMessage');
       sandbox.stub(logging, 'warn');
-      sandbox.stub(emailAddress, 'service').value({
-        defaultFromEmail: { address: 'sender@publication.example', name: 'Publication' },
-      });
+      // The service reads defaultFromAddress, which the real policy does not define, so the
+      // sender is undefined. This only needs the policy object to exist.
+      sandbox.stub(emailAddress, 'service').value({});
       sandbox
         .stub(urlUtils, 'urlFor')
         .withArgs('admin', true)
@@ -82,6 +82,8 @@ describe('Newsletters Service', function () {
       const link =
         'https://publication.example/blog/ghost/#/settings/newsletters/?verifyEmail=newsletter-verification-token';
       assert.equal(message.to, 'owner@example.com');
+      // No sender is passed, so the mailer falls back to its configured default.
+      assert.equal(message.from, undefined);
       assert.equal(message.subject, 'Verify email address');
       assert.equal(message.forceTextContent, true);
       assert.ok(message.text.includes(link));
