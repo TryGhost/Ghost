@@ -100,6 +100,12 @@ export const DbMetafieldBinding = z.object({
 
 type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 
+/** A port joined to the status of the field it writes into, which says whether it can take a value. */
+export const DbPortStatus = z.object({
+  port: z.string(),
+  status: FieldStatusSchema,
+});
+
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
   binding_id: z.string(),
@@ -203,9 +209,13 @@ declare module 'knex/types/tables' {
     members_metafield_bindings: Knex.CompositeTableType<
       MetafieldBindingRow,
       // `updated_at` is set on insert as well as update: a binding is a setting, and
-      // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbMetafieldBinding>,
-      Partial<MetafieldBindingRow>
+      // "when was this last stated" is the same question whichever way it got there. Both are
+      // written in the string form, as SQLite would store a `Date` as a number.
+      Omit<z.input<typeof DbMetafieldBinding>, 'created_at' | 'updated_at'> & {
+        created_at: string;
+        updated_at: string;
+      },
+      Partial<Omit<MetafieldBindingRow, 'created_at' | 'updated_at'>> & { updated_at?: string }
     >;
   }
 }

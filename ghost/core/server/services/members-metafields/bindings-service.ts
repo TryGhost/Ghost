@@ -4,9 +4,16 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
+import { toDatabaseDate } from '../../lib/db-types/date';
 import { INTERNAL } from './access';
 import { fieldReference, onField, type FieldIdentity } from './queries';
-import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
+import {
+  DbBoundField,
+  DbPortStatus,
+  FIELD_STATUS,
+  type FieldStatus,
+  type WriteOrigin,
+} from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -49,9 +56,10 @@ export class MetafieldBindingsService {
   }
 
   async bind(db: Knex, port: string, field: FieldIdentity, now: Date): Promise<string> {
+    const at = toDatabaseDate(now);
     const existing = await db(BINDINGS_TABLE).where({ port }).first();
     if (existing?.metafield_namespace === field.namespace && existing.metafield_key === field.key) {
-      await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
+      await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: at });
       return existing.id;
     }
     if (existing) {
@@ -63,10 +71,44 @@ export class MetafieldBindingsService {
       id: bindingId,
       port,
       ...fieldReference(field),
-      created_at: now,
-      updated_at: now,
+      created_at: at,
+      updated_at: at,
     });
     return bindingId;
+  }
+
+  /**
+   * The status of the field each of these ports writes into, archived or not, leaving out ports
+   * bound nowhere.
+   */
+  async statusesFor(db: Knex, ports: readonly string[]): Promise<Map<string, FieldStatus>> {
+    const statuses = new Map<string, FieldStatus>();
+    if (!ports.length) {
+      return statuses;
+    }
+    const rows = await db(BINDINGS_TABLE)
+      .join(FIELDS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
+      .whereIn(`${BINDINGS_TABLE}.port`, ports)
+      .select(`${BINDINGS_TABLE}.port`, `${FIELDS_TABLE}.status`);
+
+    for (const row of rows) {
+      // Unreadable is skipped like an unbound port, as in `resolve`.
+      const bound = DbPortStatus.safeParse(row);
+      if (!bound.success) {
+        logging.warn(
+          { event: { name: 'members.metafields.binding_unreadable' }, err: bound.error },
+          'A binding could not be read',
+        );
+        continue;
+      }
+      statuses.set(bound.data.port, bound.data.status);
+    }
+    return statuses;
+  }
+
+  /** Whether any port writes into this field. */
+  async isBound(field: FieldIdentity): Promise<boolean> {
+    return (await this.knex(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
   }
 
   /** Stops the writing. Whatever hangs off the binding cascades with it. */

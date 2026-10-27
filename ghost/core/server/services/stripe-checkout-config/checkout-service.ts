@@ -1,6 +1,7 @@
 import type { GhostLogger } from '@tryghost/logging';
 import {
-  COLLECTION_FLAG,
+  DESIGN_FLAG,
+  isCollecting,
   type AskedPart,
   type AskedParts,
   type Asking,
@@ -10,9 +11,6 @@ import {
   type StripeCheckoutDesign,
 } from './models';
 import type { RequestedParts, StripeCheckoutConfigService } from './service';
-
-/** The private flag the config is behind. The collected parts are behind their own flag too. */
-const DESIGN_FLAG = 'stripeCheckoutDesign';
 
 /** Every collected part asking for nothing. */
 export const NOTHING_COLLECTED = Object.freeze({
@@ -117,7 +115,7 @@ export class CheckoutService {
   }
 
   private collecting(): boolean {
-    return this.deps.labs.isSet(COLLECTION_FLAG);
+    return isCollecting(this.deps.labs);
   }
 
   /**

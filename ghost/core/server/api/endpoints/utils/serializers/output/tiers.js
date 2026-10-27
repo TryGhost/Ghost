@@ -70,6 +70,14 @@ function serializeTier(tier, options) {
     serialized.benefits = null;
   }
 
+  // Only when read with the tier: other readers of tiers don't ask for them.
+  if (Array.isArray(json.requirements)) {
+    serialized.requirements = json.requirements.map(({ port, parts }) => ({
+      port,
+      parts: parts.map((part) => ({ port: part.port, type: part.type })),
+    }));
+  }
+
   if (serialized.type === 'free') {
     delete serialized.currency;
     delete serialized.monthly_price;
@@ -107,6 +115,16 @@ function createSerializer(debugString, serialize) {
  * @prop {Date} created_at
  * @prop {Date} updated_at
  * @prop {string[]} [benefits]
+ * @prop {SerializedRequirement[]} [requirements]
+ */
+
+/**
+ * What a tier's members must give: the port a checkout collects it under, and the parts it's
+ * asked in, each by the port its answer is collected under.
+ *
+ * @typedef {Object} SerializedRequirement
+ * @prop {string} port
+ * @prop {Array<{port: string, type: string}>} parts
  */
 
 /**

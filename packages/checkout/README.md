@@ -12,8 +12,10 @@ collects nothing.
 
 - `STRIPE_ALLOWED_COUNTRIES` / `isStripeAllowedCountry` — the countries Stripe
   Checkout accepts in `shipping_address_collection`.
-- `STRIPE_PORTS` / `STRIPE_PORT` / `isStripePort` — the names Stripe returns
-  collected values under.
+- `CHECKOUT_PORTS` / `CHECKOUT_PORT` / `isCheckoutPort` — the fixed names a checkout
+  collects values under, such as `checkout.shipping.address`, whichever page asks.
+- `PORT_PARTS` / `isRequiredPort` / `isAskable` — the ports a tier can require its
+  members to give, the parts each is given in, and when a port can be asked for.
 - `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
 - `STRIPE_CHECKOUT_BORDER_STYLES` / `STRIPE_CHECKOUT_FONTS` — what Checkout's
   `branding_settings` accepts for the parts of the page a publisher can style.

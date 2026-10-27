@@ -11,7 +11,7 @@ import {
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutService } from './checkout-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
-import { StripeCheckoutConfigService } from './service';
+import { StripeCheckoutConfigService, type TierRequirements } from './service';
 
 export type { RequestContext } from './actions';
 export type { CheckoutBrandingService } from './branding-service';
@@ -55,6 +55,22 @@ export default defineService(
         message: 'The custom fields services must be set up before the Stripe Checkout config.',
       });
     }
+    // Looked up on each use: tiers are set up later in boot.
+    const tiers = (): TierRequirements => {
+      const { requirements } = require('../tiers');
+      if (!requirements) {
+        throw new errors.IncorrectUsageError({
+          message:
+            'Tiers must be set up before the Stripe Checkout config reads their requirements.',
+        });
+      }
+      return requirements;
+    };
+    const tierRequirements: TierRequirements = {
+      read: (ports, options) => tiers().read(ports, options),
+      require: (port, tierIds, now, options) => tiers().require(port, tierIds, now, options),
+      release: (port, options) => tiers().release(port, options),
+    };
     const recordAction: RecordCheckoutConfigAction = (input) =>
       recordCheckoutConfigAction({ Action: models.Action, logging, ...input });
 
@@ -62,6 +78,7 @@ export default defineService(
       knex,
       recordAction,
       bindings: metafields.bindings,
+      requirements: tierRequirements,
       logging,
     });
     const checkouts = new CheckoutService({ config, labs, logging });

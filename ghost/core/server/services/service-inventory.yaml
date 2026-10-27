@@ -14739,8 +14739,10 @@ services:
       exports:
         summary: >-
           Source establishes that CommonJS index and service export the same mutable wrapper
-          instance, with receiver-dependent async init and no shutdown/reset. repository and api
-          are absent before initialization and become public properties. The API exposes async
+          instance, with receiver-dependent async init and no shutdown/reset. repository, api and
+          requirements are absent before initialization and become public properties; requirements
+          reads and writes tier requirements, which the Stripe Checkout config looks up on each use,
+          and the repository reads them for a tier on each read that asks for them. The API exposes async
           browse/read/readDefaultTier/add/edit; browse returns one-page metadata, read returns
           null for a missing valid ID and readDefaultTier can return undefined. API units use
           the separate in-memory repository: they assert edited name, archived status, browse
