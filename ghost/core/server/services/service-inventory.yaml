@@ -3673,12 +3673,14 @@ services:
           The TypeScript root exposes named createService and async init exports, consumed by
           CommonJS boot. Neither exposes a retained service instance or a stop/reset method.
           The implementation class and dependency type are deep exports; only tests construct
-          that class directly outside the factory in the searched repository.
+          that class directly outside the factory in the searched repository. Root units pin
+          init resolving undefined on every call and the ping starting on the factory's instance.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
       construction:
         summary: >-
           Every createService call constructs ExplorePingService and a fresh posts service,
@@ -3686,6 +3688,9 @@ services:
           emailService.service, though this consumer only uses stats. Other dependencies are
           shared module objects. Every eligible init calls the factory, even when ping is disabled or
           its URL is absent. The environment guard does not prevent module-scope imports.
+          Root units pin that test and staging environments construct neither the Posts graph
+          nor an instance, that each eligible init constructs a fresh instance with its own Posts
+          service, and that a synchronous Posts construction error rejects init unchanged.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/posts/posts-service-instance.js
@@ -3693,48 +3698,64 @@ services:
           - core/server/services/posts/posts-exporter.js
           - core/server/services/posts/post-email-handler.js
           - core/server/services/posts/stats/post-stats.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
       consumers:
         summary: >-
           Boot is the only production root caller found; no request, job or CLI consumer or
           second composition path was found. Payload collection consumes posts.stats,
           members.stats and statsService.api.mrr. Missing MRR availability silently produces
-          an empty array. Implementation tests inject these shapes and do not verify the real
-          roots remain compatible.
+          an empty array. Implementation tests inject these shapes. Root units wire the shared
+          Members statistics object and Stats facade and pin the exact request body, reading MRR
+          from a facade that becomes available during payload collection. The isolated boot case
+          collects the payload through the real Posts, Members and Stats roots against the
+          default database, including the real Stats API's zero-MRR currency entry.
         sources:
           - core/boot.js
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/server/services/members/service.js
           - core/server/services/stats/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
+          - test/e2e-server/boot-explore-ping.isolated.test.ts
       startup:
         summary: >-
           Foreground boot calls init after database/settings setup, before app mounting and
           readiness. Only production/development proceed. Member stats already exists at import;
           stats init appears earlier in the same Promise.all list and currently sets api without
           awaiting. Explore init launches ping and resolves without awaiting payload collection
-          or HTTP completion; direct factory use has no environment or readiness guard.
+          or HTTP completion; direct factory use has no environment or readiness guard. Root
+          units apply the real configuration policy per environment, including development, and
+          show init resolving while post statistics and the request are held pending. The
+          isolated boot case opens the gate for this initializer only during a real boot:
+          readiness is notified once and the Admin API answers while the Explore response is
+          held. Boot's Promise.all propagation is covered generically, not per service.
         sources:
           - core/boot.js
           - core/shared/config/helpers.ts
           - core/server/services/explore-ping/index.ts
           - core/server/services/members/service.js
           - core/server/services/stats/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
+          - test/e2e-server/boot-explore-ping.isolated.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           No instance, completion promise, success state or deduplication guard is retained by
           the root. Repeated eligible init creates independent pings that can overlap; there is
           no implemented schedule or retry at this layer. An instance retains dependency
           references but reads their mutable properties during each ping. Server stop neither
-          drains these pings nor prevents later calls.
+          drains these pings nor prevents later calls. Root units pin that repeated eligible init
+          constructs separate instances and Posts services.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
       configuration:
         summary: >-
           Ping reads URL then enabled state once; payload reads version/site metadata before
@@ -3775,24 +3796,31 @@ services:
           Missing URL warns, disabled ping skips. Any post-query/date failure nulls all post
           fields; member or MRR failure nulls both growth fields. Request rejection warns and
           fulfills, while payload setup or serialization errors can reject ping outside these
-          catches and reach boot's unhandled-rejection logger. Tests assert null fallback for
-          post/member failure and request-error logging, but not MRR failure or detached rejection.
+          catches and reach boot's unhandled-rejection logger. Implementation tests assert null
+          fallback for post/member failure and request-error logging. Root units pin a request
+          rejection warning while the detached ping fulfills, and a synchronous payload error
+          rejecting the detached ping while init resolves. MRR failure and boot's handling of
+          the detached rejection remain untested.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
         tests:
           - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/index.test.ts
     unverified: []
     blockers:
       - >-
-        Add root export/factory and boot contracts for environment gating, repeated init,
-        construction failure and nonblocking completion. Current tests instantiate only the
-        implementation; the shared config helper's tests do not prove the root uses its gate.
+        Root units now pin environment gating through the real configuration policy, fresh
+        construction per eligible init, construction failure rejecting init and init resolving
+        before payload and request completion; the isolated boot case runs the real boot.
+        Adoption must decide how one retained initializer instance replaces fresh construction
+        per init.
       - >-
-        Exercise payload collection with the real service roots and database. Changing stats'
-        facade can silently replace MRR with an empty array while injected-shape tests pass.
-        Preserve member stats availability and stats initialization ordering explicitly.
+        The isolated boot case now collects the payload through the real Posts, Members and
+        Stats roots and database, including the Stats API's zero-MRR entry, and root units read
+        the Stats facade when it becomes available during collection. Stats initialization
+        ordering relative to this init remains source evidence.
       - >-
         Decide ownership of overlapping pings, unfinished queries/requests, cancellation and
         shutdown. No service drain exists, and the request has no configured timeout; current
@@ -3802,9 +3830,10 @@ services:
         growth permission and Stripe mode later. Setting changes do not cancel a launched ping.
         Cover real post/member count semantics and unavailable versus failed MRR distinctly.
       - >-
-        Characterize detached payload/serialization failures, MRR rejection, post-date errors
-        and sibling queries continuing after Promise.all rejects. Existing fallback assertions
-        do not prove warning details for statistics failures or boot's error handling.
+        Root units now pin a detached payload error rejecting ping while init resolves.
+        Serialization failures, MRR rejection, post-date errors, sibling queries continuing
+        after Promise.all rejects, warning details for statistics failures and boot's handling
+        of the detached rejection remain uncharacterized.
   export-requests:
     kind: directory
     disposition: retain
@@ -9356,8 +9385,9 @@ services:
           Constructor mail configuration/transport failure can reject the import. There is
           no init hook or lazy factory. Members init requires its API factory, whose
           module requires this root; the Admin endpoint can also require it through the
-          lazy API getter. This timing/identity graph is source-only: class units construct
-          injected instances and the root test merely checks property presence.
+          lazy API getter. Class units construct injected instances; root units drive the
+          actual eager instance, MagicLink and token provider with stubbed model and mail I/O.
+          Import ordering, constructor failure and retained graph identity remain source-only.
         sources:
           - core/server/services/newsletters/index.js
           - core/server/services/newsletters/newsletters-service.js
@@ -9366,7 +9396,8 @@ services:
           - core/server/services/members/api.js
           - core/server/api/endpoints/index.js
           - core/server/api/endpoints/newsletters.js
-        tests: []
+        tests:
+          - test/unit/server/services/newsletters/index.test.ts
       startup:
         summary: >-
           Boot initializes email-address before the group containing members.init. The
@@ -9394,7 +9425,9 @@ services:
           relation counts, duplicate names, limit errors, address policy and intercepted
           verification messages; the default-member HTTP case pins subscribed IDs and
           resulting events. Router unit assertions use a getAll fake, not real query/root
-          composition. Verification completion and retained-consumer lifetime remain gaps.
+          composition. Root units issue a link through the mailer and apply its token through
+          verifyPropertyUpdate to the named newsletter property; real HTTP completion and
+          retained-consumer lifetime remain gaps.
         sources:
           - core/server/api/endpoints/newsletters.js
           - core/server/api/endpoints/newsletters-public.js
@@ -9407,6 +9440,7 @@ services:
           - test/e2e-api/admin/newsletters.test.js
           - test/e2e-api/admin/members.test.js
           - test/unit/server/services/members/members-api/controllers/router-controller.test.js
+          - test/unit/server/services/newsletters/index.test.ts
       lifetime:
         summary: >-
           CommonJS caching retains the same graph with no reset/replacement/disposal API.
@@ -9437,8 +9471,9 @@ services:
           fields; special newsletter/support reply-to values bypass address validation.
           Verification applies token data without rerunning current address policy.
           HTTP tests pin managed/custom-domain/self-hosted edit policies and messages
-          using test config replacement, not production hot reload. Token units use a
-          one-hour after-use limit, so they do not pin this root's ten-minute wiring.
+          using test config replacement, not production hot reload. Root units pin the undefined
+          sender passed to the mailer and, with a fake clock and token model, the configured
+          24-hour lifetime, ten-minute after-use limit and seventh/eighth-use boundary.
         sources:
           - core/server/services/newsletters/index.js
           - core/server/services/newsletters/newsletters-service.js
@@ -9451,6 +9486,7 @@ services:
         tests:
           - test/e2e-api/admin/newsletters.test.js
           - test/unit/server/services/members/single-use-token-provider.test.js
+          - test/unit/server/services/newsletters/index.test.ts
       resources:
         summary: >-
           The root owns a GhostMailer transport and MagicLink/token-provider objects, but
@@ -9460,8 +9496,10 @@ services:
           owns neither cleanup scheduling nor deletion. Token creation writes independently of
           newsletter transactions. Validation opens its own transaction and locks/updates
           token usage before returning data; the later newsletter update is separate.
-          Injected token tests assert lock/save options and usage/expiry calculations,
-          not real locking, root-specific limits or cleanup. HTTP mail is intercepted.
+          Injected token tests assert lock/save options and usage/expiry calculations; root
+          units assert lock options and root-specific limits through the actual provider.
+          Stubbed model transactions do not establish real locking or cleanup. HTTP mail is
+          intercepted.
         sources:
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/members/single-use-token-provider.js
@@ -9472,6 +9510,7 @@ services:
           - core/server/services/members/jobs/clean-tokens-task.ts
         tests:
           - test/unit/server/services/members/single-use-token-provider.test.js
+          - test/unit/server/services/newsletters/index.test.ts
       failures:
         summary: >-
           Read maps a missing model to NotFound; limit and ordinary model errors propagate;
@@ -9482,8 +9521,10 @@ services:
           usage before property validation or model update. Creating a custom reply-to
           requiring verification dereferences an absent newsletter in the preparation
           method. Units pin selected propagation/allowlist behavior with fakes, and HTTP
-          pins duplicate/limit/address errors. They do not cover these partial failures.
-          The edit missing-data unit actually calls add, and the HTTP active-edit-at-limit
+          pins duplicate/limit/address errors. Root units assert that a failed token write sends
+          no mail, mail rejection propagates and a property-update rejection follows recorded
+          token usage; other partial failures remain uncovered. The edit missing-data unit now
+          calls edit with valid options and asserts no model edit; the HTTP active-edit-at-limit
           case selects a non-active row. API serialization separately masks invalid old
           sender addresses; that presentation does not establish a stored correction.
         sources:
@@ -9494,6 +9535,7 @@ services:
         tests:
           - test/unit/server/services/newsletters/service.test.js
           - test/e2e-api/admin/newsletters.test.js
+          - test/unit/server/services/newsletters/index.test.ts
     unverified: []
     blockers:
       - >-
@@ -9501,18 +9543,19 @@ services:
         retained Admin/member consumers through stop/reboot and dependency failure before
         replacing eager composition. Define ownership/drain of the mail transport.
       - >-
-        Cover real token issuance-to-HTTP-verification, root-specific expiry/reuse limits,
-        wrong-flow consumption, failed property persistence, the mailer default-sender fallback
-        and policy changes between
-        issuance and use; fake token parsing and sent-mail snapshots do not establish this.
+        Root units now cover issuance through the mailer to token verification, the configured
+        expiry/reuse limits and property-update rejection after token usage. Still cover the
+        real HTTP issuance-to-verification chain, wrong-flow consumption, actual persistence
+        and locking failure, the mailer default-sender fallback and policy changes between
+        issuance and use; stubbed models do not establish those contracts.
       - >-
         Protect opt-in rollback and ordinary add/edit persistence when reread, token writes
         or first/later mail sends fail. Establish concurrent limit/sort-order/opt-in behavior
         and the shared MagicLink transporter boundary; do not infer atomicity from success.
       - >-
-        Characterize new-newsletter custom reply-to verification, missing edit input and
-        genuine active editing at the host limit. Existing tests omit or misname these
-        cases; keep legacy failures explicit rather than changing them during migration.
+        Characterize new-newsletter custom reply-to verification and genuine active editing at
+        the host limit. Missing edit input is now tested through edit with valid options; keep
+        other legacy failures explicit rather than changing them during migration.
   notifications:
     kind: directory
     disposition: retain
@@ -14233,12 +14276,15 @@ services:
           public methods through API getters; query implementation belongs to TagPublic/model
           and API serializers. Binding units assert enabled/disabled browse and uncached read.
           Isolated HTTP proves a repeated browse avoids another model call despite a raw DB
-          edit, changed fields misses, and explicit site.changed refreshes. Frontend tests use
-          API fakes; this cohort does not establish their real cache composition or ordinary
-          Admin mutation-to-invalidation wiring.
+          edit, changed fields misses, and explicit site.changed refreshes. It also warms tag
+          browse, changes a tag through the authenticated Admin endpoint, and proves the next
+          Content browse queries fresh data and the following read is served from cache, with
+          no manual invalidation in that mutation path. Frontend tests use API fakes; this
+          cohort does not establish their real cache composition.
         sources:
           - core/boot.js
           - core/server/api/endpoints/index.js
+          - core/server/api/endpoints/tags.js
           - core/server/api/endpoints/tags-public.js
           - core/server/models/tag-public.js
           - core/server/web/api/endpoints/content/routes.js
@@ -14358,8 +14404,9 @@ services:
     blockers:
       - >-
         Protect browse binding and shared pipeline identity together while keeping read uncached.
-        Extend cold-boot MemoryCache evidence to ordinary Admin invalidation and relevant frontend
-        composition; early endpoint import and cached permission/context behavior remain untested.
+        Cold-boot MemoryCache HTTP now covers ordinary Admin tag-edit invalidation and the
+        subsequent cached response; relevant frontend composition, early endpoint import and
+        cached permission/context behavior remain untested.
       - >-
         Define same-process restart and rollback ownership: disabled init also sets the guard,
         manager reset leaves retained references, and listeners/cache resources have no disposer.
