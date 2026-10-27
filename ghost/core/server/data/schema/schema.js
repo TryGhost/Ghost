@@ -2173,20 +2173,8 @@ module.exports = {
       validations: { isIn: [['active', 'inactive', 'archived']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false },
-    trigger_type: {
-      type: 'string',
-      maxlength: 50,
-      nullable: false,
-      validations: { isIn: [['membership_started']] },
-    },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
-    trigger_tier_scope: {
-      type: 'string',
-      maxlength: 50,
-      nullable: true,
-      validations: { isIn: [['free', 'all_paid', 'selected_paid']] },
-    },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
@@ -2220,22 +2208,6 @@ module.exports = {
     },
     created_at: { type: 'dateTime', nullable: false },
     // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
-    '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
-  },
-  automation_trigger_tiers: {
-    automation_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'automations.id',
-      cascadeDelete: true,
-    },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'products.id',
-    },
     '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
   },
   automation_actions: {

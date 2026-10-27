@@ -102,7 +102,7 @@ const messages = {
 
 const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
-type AutomationSummaryRow = {
+type AutomationRow = {
   id: string;
   slug: null | string;
   name: string;
@@ -110,10 +110,6 @@ type AutomationSummaryRow = {
   status: AutomationStatus;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
-};
-
-type AutomationRow = AutomationSummaryRow & {
-  trigger_type: 'membership_started';
 };
 
 const runHistoryRowSchema = z.object({
@@ -402,7 +398,6 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
-          trigger_type: 'membership_started',
           created_at: toDatabaseDate(now),
           updated_at: toDatabaseDate(now),
         };
@@ -964,7 +959,6 @@ async function ensureAutomation(
       name: defaults.name,
       description: defaults.description,
       slug: defaults.slug,
-      trigger_type: 'membership_started',
       created_at: toDatabaseDate(now),
       updated_at: toDatabaseDate(now),
     })
@@ -1459,22 +1453,13 @@ async function loadAutomation(
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select(
-      'id',
-      'slug',
-      'name',
-      'description',
-      'status',
-      'trigger_type',
-      'created_at',
-      'updated_at',
-    )
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('id', automationId)
     .first();
   return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummaryRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
   return await trx('automations')
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .orderBy('created_at', 'desc')
@@ -1902,7 +1887,7 @@ async function buildAutomation(
   };
 }
 
-function buildAutomationSummary(automation: AutomationSummaryRow): AutomationSummary {
+function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
   return {
     id: automation.id,
     slug: automation.slug,

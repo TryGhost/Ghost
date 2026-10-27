@@ -81,7 +81,6 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('name').notNullable();
     table.text('description').notNullable();
     table.text('status').notNullable();
-    table.text('trigger_type').notNullable();
   });
 
   await database.schema.createTable('products', (table) => {
@@ -249,7 +248,6 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
       description: 'Welcome new free members after they sign up.',
-      trigger_type: 'membership_started',
       status: 'active',
     },
     {
@@ -259,7 +257,6 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
       description: 'Welcome new paid members after they start their subscription.',
-      trigger_type: 'membership_started',
       status: 'active',
     },
   ]);
@@ -596,7 +593,6 @@ describe('automations repository', function () {
       name: slug ?? 'Automation with no slug',
       description: slug ?? 'Automation with no slug',
       status,
-      trigger_type: 'membership_started',
     });
     const rules = buildTriggerRuleRows({
       automationId,
@@ -792,7 +788,6 @@ describe('automations repository', function () {
       assert.deepEqual(automation.edges, data.edges);
       assert.deepEqual(await repo.getById(automation.id), automation);
       const row = await knex('automations').where({ id: automation.id }).first();
-      assert.equal(row.trigger_type, 'membership_started');
       assert.equal(row.created_at, row.updated_at);
       assert.deepEqual(
         await knex('automation_trigger_rules')
@@ -1029,7 +1024,6 @@ describe('automations repository', function () {
           name: 'Alpha flow',
           description: '',
           status: 'inactive',
-          trigger_type: 'membership_started',
         },
         {
           id: '000000000000000000000002',
@@ -1039,7 +1033,6 @@ describe('automations repository', function () {
           name: 'Zulu flow',
           description: '',
           status: 'inactive',
-          trigger_type: 'membership_started',
         },
       ]);
 
@@ -1075,29 +1068,26 @@ describe('automations repository', function () {
       await repo.browse();
 
       const automations = await knex('automations')
-        .select('id', 'name', 'slug', 'status', 'trigger_type')
+        .select('id', 'name', 'slug', 'status')
         .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status, trigger_type }) => ({
+        automations.map(({ name, slug, status }) => ({
           name,
           slug,
           status,
-          trigger_type,
         })),
         [
           {
             name: 'Free member welcome flow',
             slug: 'member-welcome-email-free',
             status: 'inactive',
-            trigger_type: 'membership_started',
           },
           {
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid',
             status: 'inactive',
-            trigger_type: 'membership_started',
           },
         ],
       );

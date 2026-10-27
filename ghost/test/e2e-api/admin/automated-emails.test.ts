@@ -252,7 +252,6 @@ describe('Automated Emails API', function () {
         name: 'Some other automation',
         slug: 'some-other-automation',
         status: 'active',
-        trigger_type: 'membership_started',
         created_at: new Date(),
         updated_at: new Date(),
       });
