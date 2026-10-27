@@ -405,6 +405,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const machinePaymentsService = require('./server/services/machine-payments');
   const recommendationsService = require('./server/services/recommendations');
   const emailAddressService = require('./server/services/email-address');
+  const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats');
   const explorePingService = require('./server/services/explore-ping');
   const domainEvents = require('@tryghost/domain-events');
@@ -445,6 +446,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await memberAttribution.init();
   // Email captures Audience Feedback's ready link service during initialization.
   await audienceFeedback.init();
+  // Members captures the ready Newsletters instance during initialization.
+  await newsletters.init();
 
   await Promise.all([
     identityTokens.init(),

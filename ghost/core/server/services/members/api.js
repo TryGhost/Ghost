@@ -16,7 +16,7 @@ const urlService = require('../url');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
 const tiersService = require('../tiers');
-const newslettersService = require('../newsletters');
+const newsletters = require('../newsletters').default;
 const memberAttributionService = require('../member-attribution').default;
 const emailSuppressionList = require('../email-suppression-list');
 const commentsService = require('../comments');
@@ -264,7 +264,7 @@ function createApiInstance(config) {
     tiersService: tiersService,
     offersAPI: offersService.api,
     labsService: labsService,
-    newslettersService: newslettersService,
+    newslettersService: newsletters.service,
     memberAttributionService: memberAttributionService.service,
     emailSuppressionList,
     settingsCache,
