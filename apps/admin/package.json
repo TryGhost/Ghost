@@ -303,20 +303,7 @@
       },
       "lint": {
         "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/admin-x-framework",
-              "@tryghost/app-contracts",
-              "@tryghost/app-sdk",
-              "@tryghost/checkout",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
-              "@tryghost/kg-unsplash-selector",
-              "@tryghost/metafield-types",
-              "@tryghost/shade"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "assemble:assets": {
