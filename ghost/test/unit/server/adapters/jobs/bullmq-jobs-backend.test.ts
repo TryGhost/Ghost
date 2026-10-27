@@ -51,7 +51,12 @@ describe('BullMQJobsBackend', function () {
     assert.equal(backend._connection.connectionName, '666');
   });
 
-  for (const config of [{ concurency: 10 }, { connection: { sentinel: [] } }]) {
+  for (const config of [
+    { concurency: 10 },
+    { backoff: { delayy: 10 } },
+    { retention: { maxCountt: 10 } },
+    { connection: { sentinel: [] } },
+  ]) {
     it(`rejects the unknown key in ${JSON.stringify(config)}`, function () {
       const key = Object.keys(Object.values(config)[0] as object)[0] ?? Object.keys(config)[0];
       assert.throws(
@@ -81,6 +86,20 @@ describe('BullMQJobsBackend', function () {
     ['maxStalledCount', null],
     ['maxStalledCount', -1],
     ['timezone', 'Not/AZone'],
+    ['attempts', 0],
+    ['attempts', null],
+    ['backoff', null],
+    ['backoff', { type: null }],
+    ['backoff', { delay: null }],
+    ['backoff', { type: 'linear', delay: 10 }],
+    ['backoff', { type: 'fixed', delay: -1 }],
+    ['retention', { completedAgeSeconds: 0 }],
+    ['retention', null],
+    ['retention', { completedAgeSeconds: null }],
+    ['retention', { failedAgeSeconds: null }],
+    ['retention', { maxCount: null }],
+    ['retention', { failedAgeSeconds: 1.5 }],
+    ['retention', { maxCount: -1 }],
     ['timezone', 42],
     ['connection', { port: 0 }],
     ['connection', null],
@@ -94,6 +113,9 @@ describe('BullMQJobsBackend', function () {
     ['connection', { connectionName: '' }],
     ['connection', { connectionName: null }],
     ['connection', { tls: 'yes' }],
+    ['enqueueTimeoutMs', 0],
+    ['enqueueTimeoutMs', null],
+    ['enqueueTimeoutMs', '2000'],
     ['connection', { sentinel: [{ host: 'a', port: 1 }] }],
     ['connection', { sentinels: [] }],
     ['connection', { sentinels: null }],

@@ -2,7 +2,7 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import { z } from 'zod';
 import { Queue, UnrecoverableError, Worker } from 'bullmq';
-import type { Job as BullJob, RedisOptions } from 'bullmq';
+import type { Job as BullJob, JobsOptions, RedisOptions } from 'bullmq';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import type { RedisConnection } from 'bullmq';
 import type {
@@ -24,6 +24,9 @@ const logging = require('@tryghost/logging');
 // - `prefix` namespaces every key and has no default. Sites that share one Redis
 //   must set distinct prefixes, or they will consume each other's jobs.
 // - `concurrency` is per container, per lane. There is no global concurrency.
+// - `enqueueTimeoutMs` bounds enqueue and recurring registration. A producer
+//   waits for its first connection, which never comes when Redis is down, so
+//   both give up after this long instead of hanging their caller.
 
 const messages = {
   invalidConfig: 'Invalid jobs backend config at "{path}": {issue}.',
@@ -43,10 +46,6 @@ const messages = {
 const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10000;
 // Closing still gets this long when draining used up the whole shutdown budget.
 const MIN_CLOSE_GRACE_MS = 1000;
-// A producer waits for its first connection, which never comes when Redis is
-// down, so enqueue and recurring registration give up after this long instead
-// of hanging their caller.
-const ENQUEUE_TIMEOUT_MS = 2000;
 // Envelopes with no routing share this lane; routing to "default" by name is
 // the same lane, not a collision.
 const DEFAULT_QUEUE = 'default';
@@ -185,6 +184,21 @@ const schema = z.strictObject({
     .refine(isKnownTimezone, 'Expected an IANA timezone name')
     .nullish()
     .transform((zone) => zone ?? Intl.DateTimeFormat().resolvedOptions().timeZone),
+  attempts: z.number().int().positive().default(6),
+  backoff: z
+    .strictObject({
+      type: z.enum(['exponential', 'fixed']).default('exponential'),
+      delay: z.number().int().nonnegative().default(20000),
+    })
+    .prefault({}),
+  retention: z
+    .strictObject({
+      completedAgeSeconds: z.number().int().positive().default(86400),
+      failedAgeSeconds: z.number().int().positive().default(604800),
+      maxCount: z.number().int().positive().default(10000),
+    })
+    .prefault({}),
+  enqueueTimeoutMs: z.number().int().positive().default(2000),
 });
 
 type ResolvedConfig = z.output<typeof schema>;
@@ -204,6 +218,17 @@ function parseConfig(config: unknown): ResolvedConfig {
       message: tpl(messages.invalidConfig, { path: path.join('.'), issue: issue!.message }),
     });
   }
+}
+
+// Retention, not remove-on-complete: dedupe on the dispatch id only holds while
+// the job key exists, and the outbox relay may resubmit a job it already sent.
+function jobOptions({ attempts, backoff, retention }: ResolvedConfig): JobsOptions {
+  return {
+    attempts,
+    backoff,
+    removeOnComplete: { age: retention.completedAgeSeconds, count: retention.maxCount },
+    removeOnFail: { age: retention.failedAgeSeconds, count: retention.maxCount },
+  };
 }
 
 interface Lane {
@@ -246,6 +271,8 @@ export default class BullMQJobsBackend extends JobsBackendBase {
   private _stalledInterval: number;
   private _maxStalledCount: number;
   private _timezone: string;
+  private _jobOptions: JobsOptions;
+  private _enqueueTimeoutMs: number;
   private _lanes: Map<string, Lane>;
   // Deliveries running now. Shutdown waits on them, within its time budget.
   private _inflight: Set<Promise<void>>;
@@ -262,6 +289,8 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     this._stalledInterval = resolved.stalledInterval;
     this._maxStalledCount = resolved.maxStalledCount;
     this._timezone = resolved.timezone;
+    this._jobOptions = jobOptions(resolved);
+    this._enqueueTimeoutMs = resolved.enqueueTimeoutMs;
     this._lanes = new Map();
     this._inflight = new Set();
   }
@@ -286,6 +315,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     const queue = new Queue(name, {
       connection: this._producerConnection(),
       prefix: this._prefix,
+      defaultJobOptions: this._jobOptions,
     });
     const worker = new Worker(name, (bullJob) => this._deliver(bullJob), {
       connection: this._workerConnection(),
@@ -380,11 +410,11 @@ export default class BullMQJobsBackend extends JobsBackendBase {
             reject(
               new errors.InternalServerError({
                 message,
-                context: tpl(messages.redisTimeoutContext, { timeoutMs: ENQUEUE_TIMEOUT_MS }),
+                context: tpl(messages.redisTimeoutContext, { timeoutMs: this._enqueueTimeoutMs }),
                 help: tpl(messages.redisTimeoutHelp),
               }),
             );
-          }, ENQUEUE_TIMEOUT_MS);
+          }, this._enqueueTimeoutMs);
         }),
       ]);
     } finally {
