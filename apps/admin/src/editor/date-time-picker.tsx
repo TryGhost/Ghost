@@ -60,8 +60,8 @@ export interface DateTimePickerProps {
 }
 
 /**
- * A date field, a time field and the site's timezone abbreviation. The writer
- * edits in the site's timezone; the caller is handed a real instant. The date
+ * A date field and a time field led by the site's timezone abbreviation. The
+ * writer edits in the site's timezone; the caller is handed a real instant. The date
  * is typed as YYYY-MM-DD or picked from a calendar, which the field's button
  * opens with focus inside it and a click on the field opens beside the caret.
  */
@@ -306,7 +306,7 @@ export function DateTimePicker({
           aria-label={timeLabel}
           data-testid={timeTestId}
           disabled={disabled}
-          suffix={current.format('z')}
+          prefix={current.format('z')}
           value={timeDraft ?? current.format(TIME_FORMAT)}
           onBlur={(event) => commitTime(event.target.value)}
           onChange={(event) => setTimeDraft(event.target.value)}

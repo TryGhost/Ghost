@@ -22,12 +22,16 @@ export const appDetails = 'app-details';
 export const appPage = 'app-page';
 export const appFrame = 'app-frame';
 export const appNotResponding = 'app-not-responding';
+export const appUnavailable = 'app-unavailable';
 export const appNotInstalled = 'app-not-installed';
 export const appNotFramed = 'app-not-framed';
 export const appNeedsApproval = 'app-needs-approval';
 export const appHistoryEntry = 'app-history-entry';
 export const appUninstallDialog = 'app-uninstall-dialog';
 export const appUninstallIntegrationKeyNote = 'app-uninstall-integration-key-note';
+export const navApps = 'nav-apps';
+export const navApp = 'nav-app';
+export const navAppNeedsApproval = 'nav-app-needs-approval';
 
 // accessible names
 export const installButton = 'Install';

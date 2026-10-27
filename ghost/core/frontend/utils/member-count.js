@@ -1,4 +1,3 @@
-const humanNumber = require('human-number');
 const { api } = require('../services/proxy');
 
 /**
@@ -18,6 +17,11 @@ async function getMemberStats(memberStats) {
   const total = free + paid + comped + gift;
   return { free, paid, comped, gift, total };
 }
+
+const compactNumber = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
 
 /**
  * @param {number} n
@@ -62,11 +66,11 @@ const memberCountRounding = (memberCount) => {
   }
 
   if (memberCount > 100000 && memberCount <= 1000000) {
-    return `${humanNumber(rounding(memberCount, 10000)).toLowerCase()}+`;
+    return `${compactNumber.format(rounding(memberCount, 10000)).toLowerCase()}+`;
   }
 
   if (memberCount > 1000000) {
-    return `${humanNumber(rounding(memberCount, 100000)).toLowerCase()}+`;
+    return `${compactNumber.format(rounding(memberCount, 100000)).toLowerCase()}+`;
   }
 };
 

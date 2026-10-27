@@ -109,23 +109,23 @@ export class MembersListPage extends AdminPage {
     field,
     value,
     values,
-    subfield,
+    part,
     operator,
   }: {
     field: string;
     value?: string;
     // For a part picked from a list (a country): the names to pick, any of.
     values?: string[];
-    subfield?: string;
+    part?: string;
     operator?: string;
   }): Promise<void> {
     await this.filterButton.click();
     await this.page.getByRole('option', { name: field, exact: true }).click();
 
-    if (subfield) {
+    if (part) {
       // The cascade segments are dropdown menus, so their choices are menuitems.
-      await this.page.getByTestId('custom-field-filter-subfield').click();
-      await this.page.getByRole('menuitem', { name: subfield, exact: true }).click();
+      await this.page.getByTestId('custom-field-filter-part').click();
+      await this.page.getByRole('menuitem', { name: part, exact: true }).click();
     }
 
     if (operator) {

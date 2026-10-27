@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
     "test:types": "tsc -b",
     "typecheck": "tsc -b",
-    "assemble:assets": "node ../../tools/scripts/assemble-admin-assets.ts"
+    "assemble:assets": "node ../../tools/scripts/build/assemble-admin-assets.ts"
   },
   "dependencies": {
     "@codemirror/lang-css": "catalog:",
@@ -29,6 +29,8 @@
     "@dnd-kit/core": "catalog:",
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
+    "@floating-ui/react-dom": "catalog:",
+    "@quilted/threads": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
@@ -60,7 +62,7 @@
     "dompurify": "catalog:",
     "flexsearch": "catalog:",
     "i18n-iso-countries": "7.14.0",
-    "jszip": "3.10.1",
+    "jszip": "3.10.2",
     "lucide-react": "catalog:",
     "luxon": "catalog:",
     "mingo": "catalog:",
@@ -86,6 +88,7 @@
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
+    "@tryghost/app-sdk": "workspace:*",
     "@tryghost/test-data": "workspace:*",
     "@types/node": "catalog:",
     "@types/papaparse": "5.5.2",
@@ -119,9 +122,9 @@
       "reactTests": [
         "default",
         "cardAssets",
-        "{workspaceRoot}/tools/scripts/hash-vite-env.ts",
+        "{workspaceRoot}/tools/scripts/build/hash-vite-env.ts",
         {
-          "runtime": "node tools/scripts/hash-vite-env.ts --directory=apps/admin"
+          "runtime": "node tools/scripts/build/hash-vite-env.ts --directory=apps/admin"
         },
         {
           "runtime": "node -v"
@@ -222,6 +225,7 @@
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -284,8 +288,8 @@
           },
           "default",
           "cardAssets",
-          "{workspaceRoot}/tools/scripts/assemble-admin-assets.ts",
-          "{workspaceRoot}/tools/scripts/lib/admin-assets.ts",
+          "{workspaceRoot}/tools/scripts/build/assemble-admin-assets.ts",
+          "{workspaceRoot}/tools/scripts/build/admin-assets.ts",
           "^default"
         ],
         "outputs": [
@@ -303,6 +307,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/kg-converters",
               "@tryghost/metafield-types",

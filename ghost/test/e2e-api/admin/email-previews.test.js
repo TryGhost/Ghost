@@ -1,6 +1,5 @@
 const {
   agentProvider,
-  configUtils,
   fixtureManager,
   matchers,
   mockManager,
@@ -372,6 +371,40 @@ describe('Email Preview API', function () {
     });
   });
 
+  describe('Transistor card', function () {
+    it('links to the example member Transistor page', async function () {
+      const lexical = JSON.stringify({
+        root: {
+          children: [{ type: 'transistor', version: 1 }],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          type: 'root',
+          version: 1,
+        },
+      });
+
+      const { body: draftBody } = await agent
+        .post('posts/')
+        .body({
+          posts: [{ title: 'Transistor email preview post', status: 'draft', lexical }],
+        })
+        .expectStatus(201);
+      const [draft] = draftBody.posts;
+
+      await agent
+        .get(`email_previews/posts/${draft.id}/`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          const { html } = body.email_previews[0];
+          assert.ok(
+            html.includes('href="https://partner.transistor.fm/ghost/example-uuid"'),
+            'Transistor card should link to the example member page',
+          );
+        });
+    });
+  });
+
   describe('Tier-restricted posts', function () {
     let post;
     let paidTierSlug;
@@ -593,41 +626,31 @@ describe('Email Preview API', function () {
         .expectEmptyBody();
     });
 
-    describe('with per-recipient Message-Ids enabled', function () {
-      beforeEach(function () {
-        configUtils.set('bulkEmail:perRecipientMessageId', true);
+    it('gives each test email a fresh random per-recipient Message-Id', async function () {
+      const sendTestEmail = () =>
+        agent
+          .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
+          .body({
+            emails: ['test@ghost.org'],
+          })
+          .expectStatus(204);
+
+      await sendTestEmail();
+      await sendTestEmail();
+
+      const mailgunCreateMessageStub = mockManager.getMailgunCreateMessageStub();
+      sinon.assert.calledTwice(mailgunCreateMessageStub);
+      const messageIds = mailgunCreateMessageStub.getCalls().map((call) => {
+        const [, messageData] = call.args;
+        assert.equal(messageData['h:Message-Id'], '<%recipient.message_id%>');
+        return JSON.parse(messageData['recipient-variables'])['test@ghost.org'].message_id;
       });
 
-      afterEach(async function () {
-        await configUtils.restore();
-      });
-
-      it('gives each test email a fresh random per-recipient Message-Id', async function () {
-        const sendTestEmail = () =>
-          agent
-            .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
-            .body({
-              emails: ['test@ghost.org'],
-            })
-            .expectStatus(204);
-
-        await sendTestEmail();
-        await sendTestEmail();
-
-        const mailgunCreateMessageStub = mockManager.getMailgunCreateMessageStub();
-        sinon.assert.calledTwice(mailgunCreateMessageStub);
-        const messageIds = mailgunCreateMessageStub.getCalls().map((call) => {
-          const [, messageData] = call.args;
-          assert.equal(messageData['h:Message-Id'], '<%recipient.message_id%>');
-          return JSON.parse(messageData['recipient-variables'])['test@ghost.org'].message_id;
-        });
-
-        // test emails have no email id, so each send gets a fresh random prefix
-        for (const messageId of messageIds) {
-          assert.match(messageId, /^[0-9a-f-]{36}\.[a-f0-9]{32}@example\.com$/);
-        }
-        assert.notEqual(messageIds[0], messageIds[1]);
-      });
+      // test emails have no email id, so each send gets a fresh random prefix
+      for (const messageId of messageIds) {
+        assert.match(messageId, /^[0-9a-f-]{36}\.[a-f0-9]{32}@example\.com$/);
+      }
+      assert.notEqual(messageIds[0], messageIds[1]);
     });
   });
 

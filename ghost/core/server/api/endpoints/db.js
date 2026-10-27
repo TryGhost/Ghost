@@ -63,7 +63,7 @@ const controller = {
       cacheInvalidate: false,
     },
     permissions: true,
-    // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
+    // oxlint-disable-next-line ghost/ghost-custom/max-api-complexity
     async query(frame) {
       if (frame.options.filename) {
         const backup = await dbBackup.readBackup(frame.options.filename);

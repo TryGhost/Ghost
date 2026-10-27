@@ -7,7 +7,8 @@ const MagicLink = require('../../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
 const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
-const emailAddressParser = require('../email-address/email-address-parser');
+const { parseMailbox } = require('@tryghost/parse-email-address/mailbox');
+const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
 const mail = require('../../lib/mail');
 const MailgunClient = require('../../lib/mailgun/mailgun-client');
 const config = require('../../../shared/config');
@@ -152,7 +153,7 @@ class MemberWelcomeEmailService {
       },
     });
 
-    const from = emailAddressParser.stringify(fromAddresses.from);
+    const from = formatAddressForDelivery(fromAddresses.from);
     const replyToSetting = newsletter.get('sender_reply_to');
     let replyTo = null;
 
@@ -173,7 +174,7 @@ class MemberWelcomeEmailService {
       });
 
       if (addresses.replyTo) {
-        replyTo = emailAddressParser.stringify(addresses.replyTo);
+        replyTo = formatAddressForDelivery(addresses.replyTo);
       }
     }
 
@@ -199,10 +200,9 @@ class MemberWelcomeEmailService {
   async #getEffectiveSenderOptions(automatedSender = {}) {
     const defaultOptions = await this.#getSenderOptions();
     const defaultFrom =
-      emailAddressParser.parse(defaultOptions.from || '') ||
-      emailAddressService.service.defaultFromEmail;
+      parseMailbox(defaultOptions.from || '') || emailAddressService.service.defaultFromEmail;
     const defaultReplyTo = defaultOptions.replyTo
-      ? emailAddressParser.parse(defaultOptions.replyTo)
+      ? parseMailbox(defaultOptions.replyTo)
       : undefined;
 
     const senderName = trimValue(automatedSender.senderName) || defaultFrom?.name || undefined;
@@ -218,10 +218,10 @@ class MemberWelcomeEmailService {
     });
 
     return {
-      from: emailAddressParser.stringify(addresses.from),
+      from: formatAddressForDelivery(addresses.from),
       ...(addresses.replyTo
         ? {
-            replyTo: emailAddressParser.stringify(addresses.replyTo),
+            replyTo: formatAddressForDelivery(addresses.replyTo),
           }
         : {}),
     };

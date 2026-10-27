@@ -537,6 +537,33 @@ describe('useEditUserPreferences', () => {
       },
     );
 
+    editTest(
+      'works out an update from the preferences as they are when it runs',
+      async ({ setup }) => {
+        const { query, mutation } = await setup();
+        let seen: unknown;
+
+        await act(async () => {
+          // Not awaited in between: the second edit is queued behind the first
+          await Promise.all([
+            mutation.current.mutateAsync({ navigation: { expanded: { posts: false } } }),
+            mutation.current.mutateAsync((current) => {
+              seen = current.navigation.expanded.posts;
+              return { navigation: { expanded: { members: false } } };
+            }),
+          ]);
+        });
+
+        expect(seen).toBe(false);
+        await waitFor(() => {
+          expect(query.current.data?.navigation.expanded).toEqual({
+            posts: false,
+            members: false,
+          });
+        });
+      },
+    );
+
     editTest('throws error when user is not loaded', async ({ server, wrapper }) => {
       server.use(
         http.get(USERS_API_URL, () => {

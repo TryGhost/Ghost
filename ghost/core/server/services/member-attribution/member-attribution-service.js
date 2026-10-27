@@ -5,14 +5,16 @@ class MemberAttributionService {
    *
    * @param {Object} deps
    * @param {Object} deps.attributionBuilder
+   * @param {import('./outbound-link-tagger')} [deps.outboundLinkTagger]
    * @param {Object} deps.models
    * @param {Object} deps.models.MemberCreatedEvent
    * @param {Object} deps.models.SubscriptionCreatedEvent
    * @param {() => boolean} deps.getTrackingEnabled
    */
-  constructor({ attributionBuilder, models, getTrackingEnabled }) {
+  constructor({ attributionBuilder, outboundLinkTagger, models, getTrackingEnabled }) {
     this.models = models;
     this.attributionBuilder = attributionBuilder;
+    this.outboundLinkTagger = outboundLinkTagger;
     this._getTrackingEnabled = getTrackingEnabled;
   }
 

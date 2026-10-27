@@ -2,11 +2,12 @@ import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest
 import { z } from 'zod';
 import type { AppInstallationEvent } from './actions';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
+import type { AppInstallationManifestSource } from './schema';
 
 export interface HistoryManifest {
   id: string;
   manifest_url: string;
-  source: 'install' | 'approval' | 'update';
+  source: z.infer<typeof AppInstallationManifestSource>;
   requires_approval: boolean;
   created_at: Date;
 }
@@ -46,7 +47,7 @@ export function buildHistory(
   const urls = new Map(manifests.map((manifest) => [manifest.id, manifest.manifest_url]));
   return newestFirst([
     ...installOf(manifests, actions),
-    ...updatesAndSuspensionsOf(manifests),
+    ...updatesSuspensionsAndResumesOf(manifests),
     ...approvals.map((approval) => approvalEntry(approval, urls, manifestContents)),
     ...uninstallsIn(actions),
   ]);
@@ -74,15 +75,21 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * A newer version Ghost picked up by itself.
- * Ghost either applied it (`updated`) or held it for approval (`suspended`).
+ * Entries for changes the re-check made, one per manifest row: applied a newer manifest
+ * (`updated`), suspended the app for approval (`suspended`), or lifted a suspension
+ * (`resumed`).
  */
-function updatesAndSuspensionsOf(manifests: HistoryManifest[]): Entry[] {
+function updatesSuspensionsAndResumesOf(manifests: HistoryManifest[]): Entry[] {
   return manifests
-    .filter(({ source }) => source === 'update')
+    .filter(({ source }) => source === 'update' || source === 'resume')
     .map((manifest) => ({
       id: manifest.id,
-      event: manifest.requires_approval ? 'suspended' : 'updated',
+      event:
+        manifest.source === 'resume'
+          ? 'resumed'
+          : manifest.requires_approval
+            ? 'suspended'
+            : 'updated',
       actor: null,
       created_at: manifest.created_at,
     }));
@@ -133,7 +140,7 @@ function approvalsIn(actions: HistoryAction[]): Approval[] {
 
 /**
  * Timestamps only go down to the second, so ties are broken by id.
- * ObjectIds count up as Ghost creates them, so a higher id is newer.
+ * ObjectIds increase over time, so a higher id is newer.
  */
 function newestFirst(entries: Entry[]): Entry[] {
   return entries.sort(

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/image-transform",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Resizes and converts images with sharp, an optional dependency",
   "license": "MIT",

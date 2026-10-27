@@ -20,7 +20,6 @@ import {
   editorFeatureImage,
   editorFeatureImageCaption,
   editorHeaderActions,
-  editorHelpLink,
   editorFontPickerLabel,
   editorFontToggle,
   settingsEditorHelpRow,
@@ -152,10 +151,9 @@ export const editorScreen = {
   /** The footer's clipping flag, and the details hovering it reveals. */
   emailSizeWarning: () => page.getByTestId(editorEmailSizeWarning),
   emailSizeDetails: () => page.getByTestId(editorEmailSizeDetails),
-  helpLink: () => page.getByRole('link', { name: editorHelpLink }),
-  /** The footer's [Aa] button (admin7EditorImprovements). */
+  /** The settings panel's Editor font row. */
   fontToggle: () => page.getByTestId(editorFontToggle),
-  /** One of the open font picker's choices; `aria-checked` says whether it is the one in use. */
+  /** One of the expanded Editor font row's choices; `aria-checked` says whether it is the one in use. */
   fontOption: (label: 'Serif' | 'Sans' | 'Mono') =>
     page
       .getByRole('radiogroup', { name: editorFontPickerLabel })
@@ -372,10 +370,13 @@ export const editorScreen = {
   settingsSubviewRow: (label: string) =>
     page.getByTestId(postSettingsSidebar).getByRole('button', { name: label, exact: true }),
   settingsSubviewPane: () => page.getByTestId(settingsSubviewPane),
-  /** The settings panel's link to Ghost's guide to the editor (admin7EditorImprovements). */
+  /** The settings panel's link to Ghost's guide to the editor. */
   settingsEditorHelp: () =>
     page.getByTestId(postSettingsSidebar).getByRole('link', { name: settingsEditorHelpRow }),
   settingsSubviewBack: (label: string) => page.getByRole('button', { name: label, exact: true }),
+  /** One of the Meta data pane's tabs. */
+  settingsMetaDataTab: (name: 'Search' | 'X card' | 'Facebook card') =>
+    page.getByTestId(postSettingsSidebar).getByRole('tab', { name, exact: true }),
   settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
   settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
   settingsCanonicalUrl: () => page.getByTestId(settingsCanonicalUrlInput),

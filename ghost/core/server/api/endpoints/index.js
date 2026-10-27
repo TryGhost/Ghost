@@ -176,6 +176,10 @@ module.exports = {
     return apiFramework.pipeline(require('./tags'), localUtils);
   },
 
+  get upgrades() {
+    return apiFramework.pipeline(require('./upgrades'), localUtils);
+  },
+
   get users() {
     return apiFramework.pipeline(require('./users'), localUtils);
   },
@@ -352,12 +356,20 @@ module.exports = {
     return apiFramework.pipeline(require('./app-installation-previews'), localUtils);
   },
 
+  get appSessions() {
+    return apiFramework.pipeline(require('./app-sessions'), localUtils);
+  },
+
   get giftLinks() {
     return apiFramework.pipeline(require('./gift-links'), localUtils);
   },
 
   get gifts() {
     return apiFramework.pipeline(require('./gifts'), localUtils);
+  },
+
+  get supportRequests() {
+    return apiFramework.pipeline(require('./support-requests'), localUtils);
   },
 
   get recommendationsPublic() {

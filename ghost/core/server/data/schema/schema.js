@@ -1067,8 +1067,15 @@ module.exports = {
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    key: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Who the field belongs to: `custom` for the fields a publisher defines, and whatever
+    // declared it otherwise. Keys and names are unique within a namespace rather than
+    // across them, so two owners can each have a `company` field without colliding.
+    //
+    // Both follow the segment rule in @tryghost/metafield-types, which this static schema
+    // can't import, so an identity such as `custom.company` splits only one way.
+    namespace: { type: 'string', maxlength: 191, nullable: false, pattern: '^[a-z0-9_]+$' },
+    key: { type: 'string', maxlength: 191, nullable: false, pattern: '^[a-z0-9_]+$' },
+    name: { type: 'string', maxlength: 191, nullable: false },
     type: {
       type: 'string',
       maxlength: 50,
@@ -1107,6 +1114,10 @@ module.exports = {
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+    '@@UNIQUE_CONSTRAINTS@@': [
+      ['namespace', 'key'],
+      ['namespace', 'name'],
+    ],
   },
   // Where a source sends what it collected. The port is the source's own name for the
   // thing, and the destination is the publisher's field, which they can repoint without the
@@ -1120,31 +1131,36 @@ module.exports = {
   members_metafield_bindings: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     port: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    // Indexed rather than unique: several ports landing in one field is allowed.
-    metafield_key: {
-      type: 'string',
-      maxlength: 191,
-      nullable: false,
-      references: 'members_metafields.key',
-      cascadeDelete: true,
-    },
+    // The field, by the namespace and key that name it. Not unique: several ports landing
+    // in one field is allowed.
+    metafield_namespace: { type: 'string', maxlength: 191, nullable: false },
+    metafield_key: { type: 'string', maxlength: 191, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['metafield_key']],
+    // Deleting a field finds its bindings through this. Named, because knex's name for it
+    // would overrun MySQL's 64-character limit.
+    '@@INDEXES@@': [
+      {
+        columns: ['metafield_namespace', 'metafield_key'],
+        indexName: 'members_metafield_bindings_metafield_index',
+      },
+    ],
+    '@@FOREIGN_KEYS@@': [
+      {
+        columns: ['metafield_namespace', 'metafield_key'],
+        references: { table: 'members_metafields', columns: ['namespace', 'key'] },
+        constraintName: 'members_metafield_bindings_metafield_foreign',
+        cascadeDelete: true,
+      },
+    ],
   },
   members_metafield_values: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    // The field's stable key, not its id: a value is addressed by key everywhere it
-    // matters (the write names it, a filter names it, the key is immutable), so the row
-    // carries it directly and the read and filter paths skip an id-to-key join. Matches
-    // the referenced column's 191, as a foreign key must.
-    metafield_key: {
-      type: 'string',
-      maxlength: 191,
-      nullable: false,
-      references: 'members_metafields.key',
-      cascadeDelete: true,
-    },
+    // The field, by its namespace and key rather than its id: a value is addressed that
+    // way everywhere it matters (a write names it, a filter names it, and neither part
+    // can change), so the row carries them directly and filters never look the field up.
+    // Matches the referenced columns' 191, as a foreign key must.
+    metafield_namespace: { type: 'string', maxlength: 191, nullable: false },
+    metafield_key: { type: 'string', maxlength: 191, nullable: false },
     member_id: {
       type: 'string',
       maxlength: 24,
@@ -1153,17 +1169,12 @@ module.exports = {
       cascadeDelete: true,
     },
     // Which part of the field's value this row carries. A scalar has one part and
-    // stores it under the empty path; a composite stores one row per sub-field it
-    // fills, under that sub-field's key. Not nullable, because MySQL counts NULLs
-    // as distinct in a unique index and the constraint below would stop holding.
+    // stores it under the empty path; a composite stores one row per part it
+    // fills, under that part's key. Empty rather than null, because it is part of
+    // the primary key.
     path: { type: 'string', maxlength: 191, nullable: false, defaultTo: '' },
-    // One row, one value: a part a member has not filled in has no row at all. The
-    // column stays nullable even so, because making it NOT NULL is only reachable
-    // through knex's dropNullable, which rewrites the column on MySQL and widens
-    // TEXT to MEDIUMTEXT — a migrated site would then accept sixteen megabytes in a
-    // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
-    // exactly is worth more than the schema restating what the write path enforces.
-    value_text: { type: 'text', maxlength: 65535, nullable: true },
+    // One row, one value: a part a member has not filled in has no row at all.
+    value_text: { type: 'text', maxlength: 65535, nullable: false },
     // Who wrote the value that is here now.
     //
     // Shaped like `actions`: a type and an id, no foreign key. A type because not every
@@ -1183,22 +1194,22 @@ module.exports = {
     written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    // Named rather than derived. The name knex builds from the table and all three
-    // columns used to overrun MySQL's 64-character identifier limit; the shorter table
-    // name now fits, but the index is named in a migration either way, so pinning it
-    // here keeps the two statements of it identical.
-    '@@UNIQUE_CONSTRAINTS@@': [
+    // A row is the value one member holds in one part of one field, so the field, part and
+    // member are its key and a surrogate id would only add an index. Field first, because a segment filter
+    // asks for every member holding a value in one part of one field, newsletter audiences on
+    // every send among them, and this order keeps those rows together. A member's own values
+    // are read through the index on member_id instead. The value is not in the key: it is
+    // TEXT, which MySQL can only index by a prefix.
+    '@@PRIMARY_KEY@@': ['metafield_namespace', 'metafield_key', 'path', 'member_id'],
+    '@@INDEXES@@': [['member_id']],
+    '@@FOREIGN_KEYS@@': [
       {
-        columns: ['member_id', 'metafield_key', 'path'],
-        indexName: 'members_metafield_values_leaf_unique',
+        columns: ['metafield_namespace', 'metafield_key'],
+        references: { table: 'members_metafields', columns: ['namespace', 'key'] },
+        constraintName: 'members_metafield_values_metafield_foreign',
+        cascadeDelete: true,
       },
     ],
-    // What a segment filter looks up: every member holding a given value for a
-    // given part of a given field. The value itself is not in the index — it is
-    // TEXT, so MySQL would need a prefix length, and the schema's index builder
-    // applies one length to every column in a composite index rather than to a
-    // single chosen one.
-    '@@INDEXES@@': [['metafield_key', 'path']],
   },
   members_stripe_customers: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -1560,6 +1571,8 @@ module.exports = {
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
     shipping: { type: 'text', maxlength: 65535, nullable: true },
+    phone: { type: 'text', maxlength: 65535, nullable: true },
+    tax_number: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
@@ -1572,7 +1585,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['shipping']] },
+      validations: { isIn: [['shipping', 'phone', 'tax_number']] },
     },
     product_id: {
       type: 'string',
@@ -1595,6 +1608,7 @@ module.exports = {
     // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
     context: { type: 'text', maxlength: 1000000000, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
+    '@@INDEXES@@': [['resource_type', 'resource_id']],
   },
   emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2158,7 +2172,13 @@ module.exports = {
       defaultTo: 'inactive',
       validations: { isIn: [['active', 'inactive', 'archived']] },
     },
-    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    name: { type: 'string', maxlength: 191, nullable: false },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['membership_started']] },
+    },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
     trigger_tier_scope: {
@@ -2629,14 +2649,11 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // One site's approval of one app. Still in development: see ./in-development.ts.
+  // One site's approval of one app.
   //
   // A row is never deleted and never revived. Uninstalling ends it, and installing the same
   // app again adds a new row, so every past install stays on record. Who installed or
   // uninstalled an app, and when, is in `actions`.
-  //
-  // TODO: before these tables leave development, add an index on `actions` for
-  // `resource_type` and `resource_id`. An app's history reads `actions` by those columns.
   app_installations: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The ID from the app's manifest. Kept on every row, installed or not.
@@ -2662,8 +2679,7 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // Every manifest an installation has run or been asked to approve. Still in development:
-  // see ./in-development.ts.
+  // Every manifest an installation has run or been asked to approve.
   //
   // Append-only: a row is added when a manifest becomes an installation's approved or
   // pending one, and never changed, so the site can always tell exactly what was approved.
@@ -2679,18 +2695,30 @@ module.exports = {
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
     // The validated manifest, with its URLs resolved, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
+    // SHA-256 of `manifest_url` and `manifest` together, in hex: what a publisher confirms,
+    // and what tells two versions apart without parsing them. Defined by
+    // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
-    // How the row was added: when the app was installed, when an Administrator approved
-    // changes, or when Ghost picked up a newer version by itself.
+    // How the row was added: the app was installed, an Administrator approved changes, the
+    // re-check applied a newer manifest or stored one for approval (`update`), or the
+    // re-check lifted a suspension because the app reverted the pending changes (`resume`).
     source: {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['install', 'approval', 'update']] },
+      validations: { isIn: [['install', 'approval', 'update', 'resume']] },
     },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
+  },
+  // Committed dispatches waiting for the relay to hand them to the jobs backend. Still in
+  // development: see ./in-development.ts.
+  jobs_outbox: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    envelope: { type: 'text', maxlength: 65535, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    available_at: { type: 'dateTime', nullable: false },
+    '@@INDEXES@@': [['available_at']],
   },
 };

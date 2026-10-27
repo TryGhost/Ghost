@@ -2,7 +2,10 @@ import { manifestSchema, type AppManifest } from './schema.ts';
 import { checkResolvedUrl } from './url.ts';
 
 export interface ParseManifestOptions {
-  /** The URL the manifest was fetched from. Relative URLs in it resolve against this. */
+  /**
+   * Where the manifest was fetched from, after any redirects. Relative URLs in it resolve
+   * against this, as they would in a browser.
+   */
   manifestUrl: string;
   /**
    * The URLs Ghost itself is served from: the site and Admin. Nothing Ghost loads from a
@@ -22,16 +25,19 @@ export interface ManifestError {
 }
 
 export type ParseManifestResult =
+  | { success: true; manifest: AppManifest }
+  | { success: false; errors: ManifestError[] };
+
+export type ParseManifestUrlResult =
   | {
       success: true;
-      manifest: AppManifest;
       /**
-       * The manifest's URL as it was checked, which is the one to keep: the URL parser
-       * trims and normalises what it is given, so the string handed in may differ.
+       * The address to keep, as the URL parser reads it and without a fragment. The URL
+       * parser trims and normalises what it is given, so the string handed in may differ.
        */
       manifestUrl: string;
     }
-  | { success: false; errors: ManifestError[] };
+  | { success: false; error: string };
 
 function formatPath(path: PropertyKey[]): string {
   return path.reduce<string>((result, part) => {
@@ -43,19 +49,32 @@ function formatPath(path: PropertyKey[]): string {
 }
 
 /**
- * Checks the address a manifest is read from, by the same rules as the URLs inside it.
- * Returns what is wrong with it, or null. Run it before fetching, so Ghost never requests
- * an address it would refuse anyway (plain HTTP, or one carrying credentials).
+ * Reads the address a manifest is to be read from, by the same rules as the URLs inside
+ * it. Run it before fetching, so the first request never goes to an address Ghost would
+ * refuse (plain HTTP, or one carrying credentials). It cannot judge where that address
+ * redirects: `parseManifest` checks the address the manifest was finally read from.
+ *
+ * A fragment never reaches the server, so it is no part of the address and is left out
+ * before the check, its length included. That goes for the address a redirect ends at
+ * too, which can carry a fragment of any length; URLs in the manifest resolve against it
+ * the same either way.
+ *
+ * The address it hands back, without a fragment, is the one to store and compare with a
+ * later one. The URL parser settles most differences in spelling, but not a trailing dot
+ * on the host or the case of a percent-encoding: an address spelled that way reads as a
+ * change of manifest URL, which needs the publisher's approval, the safe way to be wrong.
  */
-export function checkManifestUrl(manifestUrl: string, allowLocalhost = false): string | null {
-  let url: URL;
-  try {
-    url = new URL(manifestUrl);
-  } catch {
-    return 'Expected the manifest at a URL';
+export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
+  const url = URL.parse(input);
+  if (!url) {
+    return { success: false, error: 'Expected the manifest at a URL' };
   }
+  url.hash = '';
   const problem = checkResolvedUrl(url, allowLocalhost);
-  return problem ? `${problem} for the manifest itself` : null;
+  if (problem) {
+    return { success: false, error: `${problem} for the manifest itself` };
+  }
+  return { success: true, manifestUrl: url.href };
 }
 
 /**
@@ -75,15 +94,15 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     };
   }
 
-  const baseProblem = checkManifestUrl(options.manifestUrl, allowLocalhost);
-  if (baseProblem) {
-    return { success: false, errors: [{ path: '', message: baseProblem }] };
+  const address = parseManifestUrl(options.manifestUrl, allowLocalhost);
+  if (!address.success) {
+    return { success: false, errors: [{ path: '', message: address.error }] };
   }
-  const base = new URL(options.manifestUrl);
+  const base = new URL(address.manifestUrl);
 
   const result = manifestSchema({ base, ghostUrls, allowLocalhost }).safeParse(input);
   if (result.success) {
-    return { success: true, manifest: result.data, manifestUrl: base.href };
+    return { success: true, manifest: result.data };
   }
   return {
     success: false,

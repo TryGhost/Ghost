@@ -23,6 +23,7 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useShade } from '@tryghost/shade/app';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
+import { memberCustomFieldIdentity } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   useEmailPostValueSource,
@@ -149,7 +150,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     [catalogCustomFields],
   );
   const referencedCustomFieldIdentities = useReferencedKeys(filters, METAFIELDS_FIELD_PREFIX);
-  const referencedCustomFieldKeys = useMemo(
+  const referencedIdentities = useMemo(
     () => new Set(referencedCustomFieldIdentities),
     [referencedCustomFieldIdentities],
   );
@@ -159,7 +160,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         .filter(
           (field) =>
             field.status === 'archived' &&
-            referencedCustomFieldKeys.has(`${field.namespace}.${field.key}`),
+            referencedIdentities.has(memberCustomFieldIdentity(field)),
         )
         .map((field) => ({
           namespace: field.namespace,
@@ -167,7 +168,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
           name: field.name,
           type: field.type,
         })),
-    [catalogCustomFields, referencedCustomFieldKeys],
+    [catalogCustomFields, referencedIdentities],
   );
 
   const filterFields = useMemberFilterFields({

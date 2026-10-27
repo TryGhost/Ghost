@@ -139,16 +139,14 @@ describe('Automations controller', function () {
       assert.equal(automationsController.add.statusCode, 201);
     });
 
-    for (const flag of ['automations', 'automationsPerTier']) {
-      it(`returns 404 when ${flag} labs flag is disabled`, async function () {
-        labsIsSetStub.withArgs(flag).returns(false);
+    it('returns 404 when automations labs flag is disabled', async function () {
+      labsIsSetStub.withArgs('automations').returns(false);
 
-        await assert.rejects(automationsController.add.query(frame), {
-          errorType: 'NotFoundError',
-          statusCode: 404,
-        });
+      await assert.rejects(automationsController.add.query(frame), {
+        errorType: 'NotFoundError',
+        statusCode: 404,
       });
-    }
+    });
 
     for (const count of [0, 49]) {
       it(`creates with ${count} automations`, async function () {

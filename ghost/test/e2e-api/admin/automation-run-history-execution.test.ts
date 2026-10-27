@@ -9,6 +9,8 @@ import logging from '@tryghost/logging';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../core/server/models';
 import { createDatabaseAutomationsRepository } from '../../../core/server/services/automations/database-automations-repository';
+import { createDatabaseAutomationsRepository2 } from '../../../core/server/services/automations/database-automations-repository-2';
+import { createAutomationsApi2 } from '../../../core/server/services/automations/automations-api-2';
 import { poll } from '../../../core/server/services/automations/poll';
 import { MAX_ATTEMPTS } from '../../../core/server/services/automations/constants';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../core/server/services/member-welcome-emails/constants';
@@ -67,6 +69,12 @@ describe('Automation run history from the execution', function () {
     };
     await db('members').insert(member);
     repository = createDatabaseAutomationsRepository({ knex: db, fakeWaitHoursMultiplier: null });
+    const automationsApi2 = createAutomationsApi2({
+      repository: createDatabaseAutomationsRepository2({ knex: db }),
+      fakeWaitHoursMultiplier: null,
+      labs: { isSet: () => true },
+      domainEvents: { dispatch: () => {} },
+    });
     pollOptions = {
       automationsApi: repository,
       enqueueAnotherPollAt: sinon.stub(),
@@ -76,7 +84,8 @@ describe('Automation run history from the execution', function () {
         api: { sendAutomationEmail: sinon.stub().resolves({ id: '<history@example.com>' }) },
       },
     };
-    await repository.trigger({
+    await automationsApi2.trigger({
+      event: 'membership_started',
       memberId: member.id,
       memberEmail: member.email,
       memberStatus: 'free',

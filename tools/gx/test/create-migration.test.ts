@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { isValidSlug, getTargetMigrationFolder, createMigration } from '../create-migration.js';
+import { isValidSlug, getTargetMigrationFolder, createMigration } from '../create-migration.ts';
 
 describe('gx/create-migration', function () {
   describe('isValidSlug', function () {
@@ -248,7 +248,7 @@ test('gx migration uses stable tags and writes into its checkout from another di
   try {
     const gxDir = path.join(root, 'tools/gx');
     fs.mkdirSync(gxDir, { recursive: true });
-    for (const file of ['cli.ts', 'create-migration.js']) {
+    for (const file of ['cli.ts', 'run-ghost-command.ts', 'create-migration.ts']) {
       fs.copyFileSync(new URL(`../${file}`, import.meta.url), path.join(gxDir, file));
     }
     fs.symlinkSync(

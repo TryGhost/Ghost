@@ -7,20 +7,9 @@ export default class ProcessWebmentionJob extends Job {
 
   readonly target: string;
 
-  readonly payload: Record<string, unknown>;
-
-  constructor({
-    source,
-    target,
-    payload,
-  }: {
-    source: string;
-    target: string;
-    payload: Record<string, unknown>;
-  }) {
+  constructor({ source, target }: { source: string; target: string }) {
     super();
     this.source = source;
     this.target = target;
-    this.payload = payload;
   }
 }

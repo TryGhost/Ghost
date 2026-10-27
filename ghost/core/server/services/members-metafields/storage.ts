@@ -1,26 +1,30 @@
 import errors from '@tryghost/errors';
+import { type Part, SEPARATOR } from '@tryghost/metafield-types/identity';
 
-// A value is a tree; the database stores one row per leaf, under the path addressing it.
-// A value with no parts is a single leaf at the root, a part is a leaf under its key, and
-// a nested part is addressed with a dotted path.
+// A value is a tree; the database stores one row for each part it holds, under the path
+// its parts make. A value with no parts is a single row at the root, a part is a row under
+// its own name, and a part of a part is a row under both.
 //
 // Nothing here may consult a field type. Values arrive already parsed against their own,
 // and rows are rebuilt as what they were written as rather than as what the type says
 // today, so a type that changes shape does not rewrite what members already have.
 
-/** Also the notation a segment filter addresses a part by, so the two cannot drift. */
-const SEPARATOR = '.';
-
-/** Empty rather than null: a unique index does not constrain nulls, which would let the same leaf be stored twice. */
+/** Empty rather than null, because the path is part of a value row's primary key. */
 export const ROOT_PATH = '';
 
-export interface Leaf {
+/** The path the value of these parts is stored under, written the way an identity writes them. */
+export function pathOf(parts: readonly Part[]): string {
+  return parts.join(SEPARATOR);
+}
+
+export interface ValueRow {
   path: string;
   value_text: string;
 }
 
-export interface StoredLeaf extends Leaf {
+export interface StoredValueRow extends ValueRow {
   member_id: string;
+  namespace: string;
   key: string;
 }
 
@@ -38,8 +42,8 @@ function isSafeSegment(segment: string): boolean {
   return !(segment in Object.prototype);
 }
 
-/** Every leaf a value names, at any depth, including the ones it names as empty. */
-export function leavesFor(value: unknown, path: string = ROOT_PATH): Leaf[] {
+/** A row for every part a value names, at any depth, including the ones it names as empty. */
+export function valueRowsOf(value: unknown, path: string = ROOT_PATH): ValueRow[] {
   if (typeof value === 'string') {
     return [{ path, value_text: value }];
   }
@@ -57,30 +61,30 @@ export function leavesFor(value: unknown, path: string = ROOT_PATH): Leaf[] {
   return Object.entries(value)
     .filter(([, part]) => part !== undefined)
     .flatMap(([key, part]) =>
-      leavesFor(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`),
+      valueRowsOf(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`),
     );
 }
 
-/** A value split into the leaves it sets and the paths it clears. */
-export function leavesToWrite(value: unknown): { set: Leaf[]; cleared: string[] } {
-  const named = leavesFor(value);
+/** A value split into the rows it sets and the paths it clears. */
+export function valueRowsToWrite(value: unknown): { set: ValueRow[]; cleared: string[] } {
+  const named = valueRowsOf(value);
 
   return {
-    set: named.filter((leaf) => leaf.value_text !== ''),
-    cleared: named.filter((leaf) => leaf.value_text === '').map((leaf) => leaf.path),
+    set: named.filter((row) => row.value_text !== ''),
+    cleared: named.filter((row) => row.value_text === '').map((row) => row.path),
   };
 }
 
-/** The value a set of leaves adds up to, rebuilt to whatever depth their paths describe. */
-export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
-  const root = leaves.find((leaf) => leaf.path === ROOT_PATH);
+/** The value a set of rows adds up to, rebuilt to whatever depth their paths describe. */
+export function valueFromRows(rows: readonly ValueRow[]): unknown {
+  const root = rows.find((row) => row.path === ROOT_PATH);
   if (root) {
     return root.value_text;
   }
 
   const value: Record<string, unknown> = {};
-  for (const leaf of leaves) {
-    const segments = leaf.path.split(SEPARATOR);
+  for (const row of rows) {
+    const segments = row.path.split(SEPARATOR);
     if (!segments.every(isSafeSegment)) {
       continue;
     }
@@ -95,33 +99,40 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
       }
       return target[segment] as Record<string, unknown>;
     }, value);
-    parent[last] = leaf.value_text;
+    parent[last] = row.value_text;
   }
 
   return value;
 }
 
-/** Every member's values, keyed by member and then field key; a member with no rows is absent. */
-export function valuesFromLeaves(
-  leaves: readonly StoredLeaf[],
-): Map<string, Record<string, unknown>> {
-  const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
+/**
+ * Every member's values, keyed by member, then namespace, then field key. A member with no
+ * rows is absent, and so is a namespace they hold nothing in.
+ */
+export function valuesFromRows(
+  rows: readonly StoredValueRow[],
+): Map<string, Record<string, Record<string, unknown>>> {
+  const byMember = new Map<string, Map<string, Map<string, ValueRow[]>>>();
 
-  for (const { member_id: memberId, key, path, value_text: valueText } of leaves) {
-    const fields = byMemberAndField.get(memberId) ?? new Map<string, Leaf[]>();
+  for (const { member_id: memberId, namespace, key, path, value_text: valueText } of rows) {
+    const namespaces = byMember.get(memberId) ?? new Map<string, Map<string, ValueRow[]>>();
+    const fields = namespaces.get(namespace) ?? new Map<string, ValueRow[]>();
     const forField = fields.get(key) ?? [];
     forField.push({ path, value_text: valueText });
     fields.set(key, forField);
-    byMemberAndField.set(memberId, fields);
+    namespaces.set(namespace, fields);
+    byMember.set(memberId, namespaces);
   }
 
-  const byMember = new Map<string, Record<string, unknown>>();
-  for (const [memberId, fields] of byMemberAndField) {
-    byMember.set(
+  return new Map(
+    [...byMember].map(([memberId, namespaces]) => [
       memberId,
-      Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromLeaves(forField)])),
-    );
-  }
-
-  return byMember;
+      Object.fromEntries(
+        [...namespaces].map(([namespace, fields]) => [
+          namespace,
+          Object.fromEntries([...fields].map(([key, forField]) => [key, valueFromRows(forField)])),
+        ]),
+      ),
+    ]),
+  );
 }

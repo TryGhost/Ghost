@@ -33,7 +33,6 @@ export function TagsSection({ session }: { session: EditorSettingsPort }) {
     <SettingsSection>
       <Label htmlFor={inputId}>Tags</Label>
       <TagPicker
-        chipClassName="text-(length:--text-control)"
         defaultErrorHandler={false}
         inputId={inputId}
         inputLabel="Tags"

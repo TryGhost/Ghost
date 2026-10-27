@@ -110,8 +110,10 @@ export function createRemoteValueSource<Item, T = string>(
       }, [browse.data]);
 
       const hydratedOptions = useMemo(() => {
-        return (hydrated?.data || []).map(config.toOption);
-      }, [hydrated?.data]);
+        return (hydrated?.data || [])
+          .map(config.toOption)
+          .filter((option) => selectedValues.includes(option.value));
+      }, [hydrated?.data, selectedValues]);
 
       const mergedOptions = useMemo(() => {
         return mergeFilterOptions(hydratedOptions, visibleOptions);

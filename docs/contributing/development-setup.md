@@ -9,7 +9,7 @@ Mailpit run in Docker.
 Install:
 
 - [Git](https://git-scm.com/)
-- Node.js `22.23.3` (the version in [`.nvmrc`](../../.nvmrc) and
+- Node.js `22.23.4` (the version in [`.nvmrc`](../../.nvmrc) and
   [`.node-version`](../../.node-version))
 - [Docker](https://docs.docker.com/get-docker/) with Docker Compose v2
 - [Corepack](https://nodejs.org/api/corepack.html), included with supported
@@ -105,8 +105,22 @@ credentials.
 
 As a quick health check, confirm that the site and Admin load.
 
-To use the [ActivityPub](https://github.com/TryGhost/ActivityPub) project's
-local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
+Admin's development server proxies `/.ghost/activitypub/*` and
+`/.well-known/webfinger|nodeinfo` to the
+[ActivityPub](https://github.com/TryGhost/ActivityPub) project's local service
+at `127.0.0.1:8080` by default. Override the target with
+`ACTIVITYPUB_PROXY_TARGET` if needed. When nothing is listening, those routes
+still return 404 so Ghost treats the site as having no ActivityPub service.
+
+Federation and the reader need a public site URL. `pnpm dev` sets `url` itself,
+so a `url` in `ghost/config.local.json` has no effect. Expose Admin's development
+port (2368 in the main checkout, or `GHOST_DEV_PORT` from `.ghost-dev.env` in a
+worktree) and restart with the forwarding URL:
+
+```bash
+tailscale funnel --bg 2368
+url=https://<your-tailnet-url>/ pnpm dev
+```
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops
@@ -144,6 +158,11 @@ pnpm dev:up      # start; returns once Ghost answers and prints its URL
 pnpm dev:status  # this checkout and any other running one; --all lists every checkout
 pnpm dev:down    # stop this checkout's Ghost, however it was started; --all stops everything
 ```
+
+These shortcuts run the same commands as `pnpm gx dev up`, `pnpm gx dev status`
+and `pnpm gx dev down`; `pnpm dev:gc` also remains a shortcut for `pnpm gx dev gc`.
+If dependencies are missing or stale, use `node tools/gx/dev-down.ts` directly
+to stop Ghost without installing them.
 
 `pnpm dev:up` writes its output to `.ghost-dev.log` and refuses to start while
 the checkout's ports are in use. Pass a variant's script name, such as
@@ -239,6 +258,7 @@ Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 | `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)                    |
 | `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                                     |
 | `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
+| `pnpm dev:fake-upgrades`   | Ghost updates in Settings → About against a fake host; see [testing Ghost updates](testing-ghost-updates.md)    |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an

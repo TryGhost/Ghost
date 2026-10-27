@@ -36,11 +36,6 @@ describe('Inline card insertion', () => {
         await renderAdminApp('/automations/first', {
           labs: flags.labs,
         });
-        // Starting with performance open checks that insertion dismisses it.
-        await page.getByRole('button', { name: 'View email analytics' }).click();
-        await expect
-          .element(page.getByRole('complementary', { name: 'Email performance' }))
-          .toBeVisible();
         await page
           .getByRole('button', {
             name: position === 'append' ? 'Add step' : 'Insert step here',
@@ -54,9 +49,6 @@ describe('Inline card insertion', () => {
           .click();
         await expect
           .element(page.getByRole('complementary', { name: 'Step details' }))
-          .not.toBeInTheDocument();
-        await expect
-          .element(page.getByRole('complementary', { name: 'Email performance' }))
           .not.toBeInTheDocument();
         const cards = editingCanvas().getByRole('article', {
           name: type === 'Email' ? /^Send email/ : /^Wait:/,

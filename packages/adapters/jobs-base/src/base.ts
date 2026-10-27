@@ -11,6 +11,16 @@ export interface JobRouting {
   queue?: string;
 }
 
+export interface DispatchPayload {
+  job: JobEnvelope;
+  routing?: JobRouting;
+}
+
+export interface DispatchEnvelope {
+  version: 1;
+  payload: DispatchPayload;
+}
+
 // A queue declared in code (via handler registration) is desired state: the
 // backend enforces its concurrency as strictly as it can - per process for an
 // in-memory backend, globally where a durable backend supports it. Weaker
@@ -49,12 +59,12 @@ export abstract class JobsBackendBase {
 
   abstract start(options: JobsStartOptions): void | Promise<void>;
 
-  abstract enqueue(envelope: JobEnvelope, routing?: JobRouting): void | Promise<void>;
+  // `id` is identical on every outbox retry, so a durable backend can dedupe on it.
+  abstract enqueue(id: string, envelope: DispatchEnvelope): void | Promise<void>;
 
   abstract scheduleRecurring(
-    envelope: JobEnvelope,
+    envelope: DispatchEnvelope,
     schedule: RecurringSchedule,
-    routing?: JobRouting,
   ): void | Promise<void>;
 
   abstract shutdown(options?: JobsShutdownOptions): void | Promise<void>;

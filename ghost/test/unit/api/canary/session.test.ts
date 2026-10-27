@@ -7,7 +7,7 @@ import models = require('../../../../core/server/models');
 // @ts-expect-error This module lacks type definitions.
 import sessionController from '../../../../core/server/api/endpoints/session';
 // @ts-expect-error This module lacks type definitions.
-import sessionServiceMiddleware = require('../../../../core/server/services/auth/session');
+import sessionServiceMiddleware = require('../../../../core/server/auth/session');
 
 type TestRequest = {
   brute: {

@@ -2,9 +2,9 @@
   "extends": "@internal/cfg-typescript/esm.json",
   "compilerOptions": {
     "noEmit": true,
-    "erasableSyntaxOnly": true,
-    // Shared automation helpers remain JavaScript; infer their existing interfaces.
-    "allowJs": true
+    // Core's development-table helper uses Array.prototype.toReversed.
+    "lib": ["es2023"],
+    "erasableSyntaxOnly": true
   },
-  "include": ["*.ts", "test/**/*.ts"]
+  "include": ["*.ts", "lib/**/*.ts", "test/**/*.ts"]
 }

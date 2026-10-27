@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { ArrowUpDown, Ellipsis, Plus, Save, Search } from 'lucide-react';
+import { ArrowUpDown, Ellipsis, Eye, Plus, Save, Search } from 'lucide-react';
 import { PageHeader } from '@/components/patterns/page-header';
 import { Filters, type Filter } from '@/components/patterns/filters';
 import {
@@ -312,6 +312,36 @@ export const DetailPage: Story = {
     </PageHeader>
   ),
 };
+export const ShortcutTooltips: Story = {
+  name: 'Shortcut tooltips',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A labelled action with a shortcut shows only its keys, since its text already names it. An icon-only action names itself before its keys.',
+      },
+    },
+  },
+  render: () => (
+    <PageHeader>
+      <PageHeader.Left>
+        <PageHeader.Title>Editor</PageHeader.Title>
+      </PageHeader.Left>
+      <PageHeader.Actions>
+        <PageHeader.ActionGroup>
+          <PageHeader.Action label="Search" shortcut="/" iconOnly>
+            <Search />
+          </PageHeader.Action>
+          <PageHeader.Action label="Preview" shortcut="⌘P">
+            <Eye />
+            Preview
+          </PageHeader.Action>
+        </PageHeader.ActionGroup>
+      </PageHeader.Actions>
+    </PageHeader>
+  ),
+};
+
 export const DisabledActions: Story = {
   parameters: {
     docs: {

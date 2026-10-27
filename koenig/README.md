@@ -121,7 +121,7 @@ own publishing workflow. Release commits consume pending changesets and commit
 the resulting package versions before the tag is created.
 
 The workflow runs
-[`tools/scripts/publish-packages.js`](../tools/scripts/publish-packages.js), which:
+[`tools/scripts/release/publish-packages.ts`](../tools/scripts/release/publish-packages.ts), which:
 
 1. Selects every publishable workspace package, including the public Koenig
    packages.

@@ -24,6 +24,13 @@ export const appsScreen = {
 
   sidebarLink: () =>
     page.getByTestId('admin-sidebar').getByRole('link', { name: 'Apps', exact: true }),
+  sidebarApps: () => page.getByTestId(sel.navApps),
+  sidebarAppItems: () => page.getByTestId(sel.navApps).getByTestId(sel.navApp),
+  sidebarApp: (name: string) =>
+    page.getByTestId(sel.navApps).getByRole('link', { name, exact: true }),
+  sidebarNeedsApproval: () => page.getByTestId(sel.navApps).getByTestId(sel.navAppNeedsApproval),
+  pinToggle: (label: string) => page.getByTestId(sel.navApps).getByRole('button', { name: label }),
+  eyebrow: (name: string) => page.getByTestId('admin-sidebar').getByText(name, { exact: true }),
   rowActions: (name: string) => page.getByRole('button', { name: `More actions for ${name}` }),
   menuItem: (name: string) => page.getByRole('menuitem', { name }),
   detailsMenuItem: () => page.getByRole('menuitem', { name: sel.detailsMenuItem }),
@@ -31,6 +38,7 @@ export const appsScreen = {
   appPage: () => page.getByTestId(sel.appPage),
   frame: () => page.getByTestId(sel.appFrame),
   notResponding: () => page.getByTestId(sel.appNotResponding),
+  unavailable: () => page.getByTestId(sel.appUnavailable),
   notInstalled: () => page.getByTestId(sel.appNotInstalled),
   notFramed: () => page.getByTestId(sel.appNotFramed),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),

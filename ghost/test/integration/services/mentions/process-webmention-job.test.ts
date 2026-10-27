@@ -50,7 +50,6 @@ describe('Job: Process webmention', function () {
       new ProcessWebmentionJob({
         source: sourceUrl.href,
         target: targetUrl.href,
-        payload: { withExtension: true },
       }),
     );
 
@@ -64,6 +63,6 @@ describe('Job: Process webmention', function () {
     assert.equal(mention.get('source_title'), 'Test Page');
     assert.equal(mention.get('source_excerpt'), 'Test description');
     assert.equal(mention.get('source_author'), 'John Doe');
-    assert.equal(mention.get('payload'), JSON.stringify({ withExtension: true }));
+    assert.equal(mention.get('payload'), JSON.stringify({}));
   });
 });

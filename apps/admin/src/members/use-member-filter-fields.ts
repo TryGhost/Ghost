@@ -10,6 +10,7 @@ import {
 import type { FieldIcon } from '@/shared/filters';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { metafieldFieldId } from './custom-fields/addressing';
+import type { CustomFieldDefinition } from './custom-fields/filter-fields';
 import { keyIsUnder } from '@/shared/filters';
 import type { StaticMemberFieldKey } from '@/members/member-fields';
 import {
@@ -24,7 +25,6 @@ import { LabelFilterRenderer } from '@/members/label-picker';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD } from './multiple-active-subscriptions';
 import { buildMemberFields } from './member-filter-catalog';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Offer } from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -42,22 +42,12 @@ interface UseMemberFilterFieldsOptions {
   membersTrackSources?: boolean;
   emailTrackOpens?: boolean;
   emailTrackClicks?: boolean;
-  customFields?: Array<{
-    namespace: string;
-    key: string;
-    name: string;
-    type: MemberCustomField['type'];
-  }>;
+  customFields?: CustomFieldDefinition[];
   // Archived fields still referenced by the current filter. Rendered as disabled,
   // removable-only pills so a saved segment stays visible and undoable even though
   // the field is no longer offered in the picker. The type still decides how the
   // pill reads: a country picked from a list is not text.
-  archivedCustomFields?: Array<{
-    namespace: string;
-    key: string;
-    name: string;
-    type: MemberCustomField['type'];
-  }>;
+  archivedCustomFields?: CustomFieldDefinition[];
   siteTimezone?: string;
 }
 

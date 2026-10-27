@@ -19,8 +19,14 @@ describe('Script: export-query-parameter-policy', function () {
         cwd: GHOST_ROOT,
       });
 
+      const firstExport = await readFile(outputPath);
+      await execFileAsync('pnpm', ['query-parameter-policy:export', '--output', outputPath], {
+        cwd: GHOST_ROOT,
+      });
+      assert.deepEqual(await readFile(outputPath), firstExport);
+
       assert.deepEqual(
-        JSON.parse(await readFile(outputPath, 'utf8')),
+        JSON.parse(firstExport.toString('utf8')),
         JSON.parse(await readFile(MANIFEST_PATH, 'utf8')),
       );
     } finally {

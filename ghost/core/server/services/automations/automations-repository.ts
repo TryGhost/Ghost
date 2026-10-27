@@ -1,6 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
-import type { AddAutomationData } from './automations-api';
+import type { AddAutomationData, AutomationTriggerTierScope } from './automations-repository-2';
 
 export type Pagination = {
   page: number;
@@ -134,8 +134,6 @@ export type RecordEmailSentOptions = Readonly<{
   trackOpens: boolean;
 }>;
 
-export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
-
 type AutomationStepBase = {
   id: string;
   locked_by: string;
@@ -215,17 +213,8 @@ export type AutomationRunMember = {
   email: string;
 };
 
-export type BrowseOptions = Readonly<{
-  /**
-   * Should stats be included?
-   *
-   * In the future, we plan to remove this option and never return stats from the database repository.
-   */
-  includeStats: boolean;
-}>;
-
 export type AutomationsRepository = {
-  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  browse(): Promise<Page<AutomationSummary>>;
   getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
@@ -243,14 +232,6 @@ export type AutomationsRepository = {
   ): Promise<AutomationActionLink[] | null>;
   add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-  trigger(
-    options: ReadonlyDeep<{
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-      memberTierIds: string[];
-    }>,
-  ): Promise<void>;
   /**
    * Select the steps we want to run and return the next time any remaining
    * pending step should be polled, if any.

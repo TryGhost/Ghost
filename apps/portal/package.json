@@ -26,7 +26,7 @@
     "lint:types": "tsc --noEmit",
     "lint": "pnpm run '/^lint:/'",
     "preship": "pnpm lint",
-    "ship": "node ../../tools/scripts/release-apps.js",
+    "ship": "node ../../tools/scripts/release/release-apps.ts",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {

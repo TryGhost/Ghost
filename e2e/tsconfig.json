@@ -33,14 +33,16 @@
       "@/portal-pages": ["./helpers/pages/portal/index"],
       "@/helpers/*": ["./helpers/*"],
       "@/data-factory": ["./data-factory/index.ts"],
-      "@/data-factory/*": ["./data-factory/*"]
+      "@/data-factory/*": ["./data-factory/*"],
+      // Source, as the "source" export condition gives Ghost; Playwright can't take conditions.
+      "@tryghost/adapter-base-upgrade": ["../packages/adapters/upgrade-base/src/index.ts"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     "types": [] /* Specify type package names to be included without being referenced in a source file. */,
     // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */
     // "moduleSuffixes": [],                             /* List of file name suffixes to search when resolving a module. */
-    // "allowImportingTsExtensions": true,               /* Allow imports to include TypeScript file extensions. Requires '--moduleResolution bundler' and either '--noEmit' or '--emitDeclarationOnly' to be set. */
+    "allowImportingTsExtensions": true /* The upgrade contract is typechecked from source, with .ts imports; every tsc run here is --noEmit. */,
     // "resolvePackageJsonExports": true,                /* Use the package.json 'exports' field when resolving package imports. */
     // "resolvePackageJsonImports": true,                /* Use the package.json 'imports' field when resolving imports. */
     // "customConditions": [],                           /* Conditions to set in addition to the resolver-specific defaults when resolving imports. */
@@ -61,6 +63,7 @@
     // "inlineSourceMap": true,                          /* Include sourcemap files inside the emitted JavaScript. */
     // "outFile": "./",                                  /* Specify a file that bundles all outputs into one JavaScript file. If 'declaration' is true, also designates a file that bundles all .d.ts output. */
     "outDir": "build" /* Specify an output folder for all emitted files. */,
+    "rootDir": ".." /* Includes the upgrade contract's source, mapped in paths. */,
     // "removeComments": true,                           /* Disable emitting comments. */
     // "noEmit": true,                                   /* Disable emitting files from a compilation. */
     // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */

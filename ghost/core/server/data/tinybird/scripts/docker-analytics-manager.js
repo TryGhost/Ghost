@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-/* eslint-disable ghost/ghost-custom/no-native-error */
+/* oxlint-disable ghost/ghost-custom/no-native-error */
 /**
  * Docker Analytics Manager
  *

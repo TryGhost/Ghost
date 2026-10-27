@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-framework",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-framework",
@@ -103,6 +103,7 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/limit-service": "workspace:*",

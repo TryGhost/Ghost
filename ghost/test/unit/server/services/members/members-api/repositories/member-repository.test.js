@@ -1985,7 +1985,7 @@ describe('MemberRepository', function () {
       const repo = buildRepo();
       await repo.triggerMemberSignupAutomation(member, 'paid', {});
       sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
@@ -2000,7 +2000,7 @@ describe('MemberRepository', function () {
       await repo.create({ email: 'test@example.com', name: 'Test Member' }, {});
 
       sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'free',
@@ -2049,7 +2049,7 @@ describe('MemberRepository', function () {
         await repo.create({ email: 'test@example.com', name: 'Test Member' }, {});
 
         sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-          event: 'member_sign_up',
+          event: 'membership_started',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'free',
@@ -2367,7 +2367,7 @@ describe('MemberRepository', function () {
       );
 
       sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
@@ -2466,7 +2466,7 @@ describe('MemberRepository', function () {
         );
 
         sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-          event: 'member_sign_up',
+          event: 'membership_started',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'paid',

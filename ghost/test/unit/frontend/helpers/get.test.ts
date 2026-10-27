@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import type { SinonSpy, SinonStub } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import loggingLib from '@tryghost/logging';
 
@@ -15,6 +14,10 @@ const { querySimplePath } = get;
 import { endpoints as api } from '../../../../core/server/api';
 
 describe('{{#get}} helper', function () {
+  beforeAll(async function () {
+    await require('../../../../core/server/services/posts-public').default.init();
+  });
+
   let fn: SinonSpy;
   let inverse: SinonSpy;
   let locals: {

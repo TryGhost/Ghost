@@ -17,11 +17,12 @@ const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
 const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
-const memberAttributionService = require('../member-attribution');
+const memberAttributionService = require('../member-attribution').default;
 const emailSuppressionList = require('../email-suppression-list');
 const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
+const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
 const { t } = require('../i18n');
@@ -278,6 +279,9 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
+    // Read here for the same reason: the Stripe Checkout config is also initialised in
+    // initCore, so its guarded service is ready when the members API is built.
+    checkouts: stripeCheckoutConfig.service.checkouts,
   });
 
   return membersApiInstance;

@@ -2,7 +2,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.23.3
+ARG NODE_VERSION=22.23.4
 
 FROM node:$NODE_VERSION-bookworm-slim
 
@@ -56,7 +56,7 @@ COPY --parents \
 # this layer (and the install below) whenever any unrelated script changes. Its
 # package.json comes along so the workspace member pnpm-workspace.yaml declares
 # actually exists; the filtered install below never builds it.
-COPY tools/scripts/package.json tools/scripts/enforce-package-manager.js tools/scripts/
+COPY tools/scripts/package.json tools/scripts/enforce-package-manager.ts tools/scripts/
 COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm

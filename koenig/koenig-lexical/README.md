@@ -78,6 +78,8 @@ so a host that sets none sees no change.
 | `--kg-font-heading`                 | Headings, and the heading and subheading text of header, signup, product and toggle cards | Inter         |
 | `--kg-font-heading-scale`           | Multiplies the H1–H6 font sizes                                                   | `1`                     |
 | `--kg-font-heading-tracking-scale`  | Multiplies the H1–H6 letter spacing                                               | `1`                     |
+| `--kg-font-code-size`               | Inline code's font size, relative to the text around it                           | `.8em`                  |
+| `--kg-font-code-vertical-align`     | Inline code's vertical alignment; `baseline` suits code set at the body's size    | `middle`                |
 
 In Tailwind, `font-body`, `font-heading` and `text-body` read the same variables.
 Captions, buttons, link previews and the editor's own controls are not content

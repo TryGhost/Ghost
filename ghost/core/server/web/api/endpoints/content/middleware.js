@@ -1,5 +1,5 @@
 const cors = require('cors');
-const auth = require('../../../../services/auth');
+const auth = require('../../../../auth');
 const shared = require('../../../shared');
 
 /**

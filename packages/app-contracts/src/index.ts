@@ -1,8 +1,9 @@
 /**
  * The contracts between Ghost and apps.
  *
- * Each contract is its own entry point (`@tryghost/app-contracts/manifest`, and later the
- * bridge, cards and live frames), so a consumer only loads the one it uses.
+ * Each contract is its own entry point (`@tryghost/app-contracts/manifest`,
+ * `@tryghost/app-contracts/bridge`, and later cards and live frames), so a consumer only
+ * loads the one it uses.
  *
  * This root entry point holds what every consumer can afford: types, and the rules that
  * depend on nothing. It must stay free of zod, because some consumers ship to browsers
@@ -13,6 +14,7 @@ export { isGhostOrigin } from './manifest/ghost-origin.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './manifest/id.ts';
 export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
+export { isPlainText, toPlainText } from './plain-text.ts';
 export {
   appPageUrl,
   isDevelopmentApp,
@@ -29,4 +31,47 @@ export type {
   ManifestError,
   ParseManifestOptions,
   ParseManifestResult,
+  ParseManifestUrlResult,
 } from './manifest/index.ts';
+export {
+  APP_ERROR_CODES,
+  ARGUMENT_MESSAGES,
+  BRIDGE_ERROR_CODES,
+  CONNECT_MESSAGE_TYPE,
+  FETCH_METHODS,
+  FETCH_RESPONSE_STATUS_MAX,
+  FETCH_RESPONSE_STATUS_MIN,
+  HELLO_MESSAGE_TYPE,
+  HOST_ERROR_CODES,
+  START_TIMEOUT_MS,
+  TITLE_MAX_LENGTH,
+  decodeBridgeError,
+  encodeBridgeError,
+  isConnectMessage,
+  isContainedPath,
+  isFetchResponse,
+  isRecord,
+  isReservedRequestHeader,
+  isStartContext,
+  isTheme,
+  methodAllowsBody,
+  normaliseAppPath,
+} from './bridge/rules.ts';
+export type {
+  AdminApiScope,
+  AppErrorCode,
+  AppExports,
+  AppPath,
+  BridgeErrorCode,
+  ConnectMessage,
+  FetchMethod,
+  FetchRequest,
+  FetchResponse,
+  HelloMessage,
+  HostErrorCode,
+  HostExports,
+  PathMove,
+  Place,
+  StartContext,
+  Theme,
+} from './bridge/index.ts';

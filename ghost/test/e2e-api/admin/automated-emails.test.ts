@@ -7,6 +7,7 @@ import {
   dbUtils,
   fixtureManager,
   matchers,
+  mockManager,
 } from '../../utils/e2e-framework';
 
 import logging from '@tryghost/logging';
@@ -43,7 +44,7 @@ type ApiResponse = {
   body: {
     automated_emails: AutomatedEmail[];
     errors: ApiError[];
-    meta: { email_verified: string };
+    meta: { email_verified: string; sent_email_verification?: string[] };
     newsletters: Array<{ id: string }>;
   };
 };
@@ -251,6 +252,7 @@ describe('Automated Emails API', function () {
         name: 'Some other automation',
         slug: 'some-other-automation',
         status: 'active',
+        trigger_type: 'membership_started',
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -361,11 +363,12 @@ describe('Automated Emails API', function () {
 
       const automation = await models.Base.knex('automations')
         .where('slug', 'member-welcome-email-free')
-        .first('trigger_tier_scope');
+        .first('trigger_tier_scope', 'description');
       assert.equal(automation.trigger_tier_scope, 'free');
+      assert.equal(automation.description, 'Welcome new free members after they sign up.');
     });
 
-    it('Sets all paid tier scope for paid welcome email', async function () {
+    it('Sets default description and all paid tier scope for paid welcome email', async function () {
       const automatedEmail = await createAutomatedEmail({
         name: 'Paid member welcome flow',
         slug: 'member-welcome-email-paid',
@@ -373,8 +376,12 @@ describe('Automated Emails API', function () {
 
       const automation = await models.Base.knex('automations')
         .where('id', automatedEmail.id)
-        .first('trigger_tier_scope');
+        .first('trigger_tier_scope', 'description');
       assert.equal(automation.trigger_tier_scope, 'all_paid');
+      assert.equal(
+        automation.description,
+        'Welcome new paid members after they start their subscription.',
+      );
     });
 
     it('Writes sender settings to email design settings on add', async function () {
@@ -1160,6 +1167,10 @@ describe('Automated Emails API', function () {
       });
     });
 
+    afterEach(function () {
+      mockManager.restore();
+    });
+
     it('Can edit sender settings for free and paid welcome emails', async function () {
       await agent
         .put('automated_emails/senders/')
@@ -1288,6 +1299,61 @@ describe('Automated Emails API', function () {
             assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
           }
         });
+    });
+
+    it('Verifies a managed reply-to change before applying it to shared sender settings', async function () {
+      configUtils.set('hostSettings:managedEmail:enabled', true);
+      configUtils.set('mail:from', '"Verification Sender" <default@example.com>');
+      const emailMockReceiver = mockManager.mockMail();
+      await models.Base.knex('email_design_settings')
+        .where('slug', 'default-automated-email')
+        .update({ sender_reply_to: 'previous@example.com' });
+
+      await agent
+        .put('automated_emails/senders/')
+        .body({ sender_reply_to: 'new-reply@example.com' })
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.deepEqual(body.meta.sent_email_verification, ['sender_reply_to']);
+          assert.equal(body.automated_emails.length, 2);
+          for (const automatedEmail of body.automated_emails) {
+            assert.equal(automatedEmail.sender_reply_to, 'previous@example.com');
+          }
+        });
+
+      const pendingSettings = await models.Base.knex('email_design_settings')
+        .where('slug', 'default-automated-email')
+        .first('sender_reply_to');
+      assert.equal(pendingSettings.sender_reply_to, 'previous@example.com');
+
+      emailMockReceiver.assertSentEmailCount(1);
+      const verificationEmail = mockManager.assert.sentEmail({
+        subject: 'Verify email address',
+        to: 'new-reply@example.com',
+        from: '"Verification Sender" <default@example.com>',
+        replyTo: null,
+      });
+      assert.equal(verificationEmail.headers.Sender, '"Verification Sender" <default@example.com>');
+      const token = /[?&]verifyEmail=([^\s&]+)/.exec(verificationEmail.text)?.[1];
+      assert.ok(token, 'The verification email should contain a confirmation token');
+
+      await agent
+        .put('automated_emails/verifications/')
+        .body({ token: decodeURIComponent(token) })
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.meta.email_verified, 'sender_reply_to');
+          assert.equal(body.automated_emails.length, 2);
+          for (const automatedEmail of body.automated_emails) {
+            assert.equal(automatedEmail.sender_reply_to, 'new-reply@example.com');
+          }
+        });
+
+      const verifiedSettings = await models.Base.knex('email_design_settings')
+        .where('slug', 'default-automated-email')
+        .first('sender_reply_to');
+      assert.equal(verifiedSettings.sender_reply_to, 'new-reply@example.com');
+      emailMockReceiver.assertSentEmailCount(1);
     });
 
     it('Can verify pending sender update with token', async function () {

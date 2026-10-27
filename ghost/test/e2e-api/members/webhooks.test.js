@@ -1,3 +1,4 @@
+/* global vi */
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
 const { assertArrayContainsDeep, assertObjectMatches } = require('../../utils/assertions');
@@ -9,9 +10,14 @@ const {
   mockManager,
   fixtureManager,
   matchers,
+  hostLimits,
 } = require('../../utils/e2e-framework');
+const moment = require('moment');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const modelEvents = require('../../../core/server/lib/common/events');
+const cleanExpiredComped =
+  require('../../../core/server/services/members/jobs/clean-expired-comped-task').default;
 const createWebhookSerializer = require('../../../core/server/services/webhooks/serialize');
 // No routing relations to load, and a member with no custom fields.
 const serializeWebhook = createWebhookSerializer({
@@ -2115,6 +2121,196 @@ describe('Members API', function () {
         'canceled',
         'The subscription should be canceled',
       );
+    });
+
+    describe('when the comped member has a complimentary end date', function () {
+      // The complimentary access ends in 10 days; the cleanup runs as of 12 days from now
+      const compExpiry = () => moment.utc().add(10, 'days').startOf('second').toISOString();
+      const cleanupDate = () => moment.utc().add(12, 'days').toDate();
+
+      async function createTierWithStripePrice(slug) {
+        const tier = await Product.add({
+          name: `Tier ${slug}`,
+          slug,
+          type: 'paid',
+          active: true,
+          currency: 'usd',
+          monthly_price: 500,
+          yearly_price: 5000,
+        });
+        const stripeProductId = createStripeID('prod');
+        const stripePriceId = createStripeID('price');
+
+        await models.StripeProduct.add({ product_id: tier.id, stripe_product_id: stripeProductId });
+        await models.StripePrice.add({
+          stripe_price_id: stripePriceId,
+          stripe_product_id: stripeProductId,
+          active: true,
+          nickname: 'Monthly',
+          currency: 'usd',
+          amount: 500,
+          type: 'recurring',
+          interval: 'month',
+        });
+
+        return {
+          id: tier.id,
+          price: {
+            id: stripePriceId,
+            product: stripeProductId,
+            active: true,
+            nickname: 'Monthly',
+            currency: 'usd',
+            recurring: { interval: 'month' },
+            unit_amount: 500,
+            type: 'recurring',
+          },
+        };
+      }
+
+      async function createCompedMember(email, tierId) {
+        const { body: createBody } = await adminAgent
+          .post('/members/')
+          .body({ members: [{ name: email, email, subscribed: true }] })
+          .expectStatus(201);
+        const memberId = createBody.members[0].id;
+
+        const { body: compBody } = await adminAgent
+          .put(`/members/${memberId}/`)
+          .body({ members: [{ id: memberId, tiers: [{ id: tierId, expiry_at: compExpiry() }] }] })
+          .expectStatus(200);
+        assert.equal(compBody.members[0].status, 'comped');
+
+        return memberId;
+      }
+
+      async function completePaidCheckout(email, price) {
+        const customerId = createStripeID('cust');
+        const subscriptionId = createStripeID('sub');
+        const paidSubscription = {
+          id: subscriptionId,
+          customer: customerId,
+          status: 'active',
+          items: { type: 'list', data: [{ id: createStripeID('si'), price }] },
+          start_date: beforeNow / 1000,
+          current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
+          cancel_at_period_end: false,
+        };
+
+        set(subscription, paidSubscription);
+        set(customer, {
+          id: customerId,
+          name: email,
+          email,
+          subscriptions: { type: 'list', data: [paidSubscription] },
+        });
+
+        const webhookPayload = JSON.stringify({
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              mode: 'subscription',
+              customer: customerId,
+              subscription: subscriptionId,
+              metadata: {},
+            },
+          },
+        });
+        const webhookSignature = stripe.webhooks.generateTestHeaderString({
+          payload: webhookPayload,
+          secret: process.env.WEBHOOK_SECRET,
+        });
+
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(webhookPayload)
+          .header('content-type', 'application/json')
+          .header('stripe-signature', webhookSignature)
+          .expectStatus(200);
+
+        await DomainEvents.allSettled();
+      }
+
+      async function getMemberTiers(memberId) {
+        return db
+          .knex('members_products')
+          .where({ member_id: memberId })
+          .select('product_id', 'expiry_at');
+      }
+
+      async function getMemberStatus(memberId) {
+        const member = await db.knex('members').where({ id: memberId }).first('status');
+        return member.status;
+      }
+
+      async function runExpiredCompCleanupAfterCompEnds() {
+        const clock = sinon.useFakeTimers({ now: cleanupDate(), toFake: ['Date'] });
+
+        try {
+          await cleanExpiredComped({
+            db,
+            models,
+            events: modelEvents,
+            logging: { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() },
+            sentry: { captureException: sinon.stub() },
+          });
+        } finally {
+          clock.restore();
+        }
+      }
+
+      it('Keeps the tier after the end date passes when the member buys the same tier', async function () {
+        const tier = await createTierWithStripePrice('comp-end-date-same-tier');
+        const email = 'comp-end-date-same-tier@email.com';
+        const memberId = await createCompedMember(email, tier.id);
+
+        const [compTier] = await getMemberTiers(memberId);
+        assert.equal(compTier.product_id, tier.id);
+        assert.ok(compTier.expiry_at, 'The complimentary tier has an end date');
+
+        await completePaidCheckout(email, tier.price);
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          await getMemberTiers(memberId),
+          [{ product_id: tier.id, expiry_at: null }],
+          'The paid tier replaces the complimentary one and has no end date',
+        );
+
+        await runExpiredCompCleanupAfterCompEnds();
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          (await getMemberTiers(memberId)).map((row) => row.product_id),
+          [tier.id],
+          'The paid tier is kept after the complimentary end date passes',
+        );
+      });
+
+      it('Keeps the paid tier after the end date passes when the member buys a different tier', async function () {
+        const compTier = await createTierWithStripePrice('comp-end-date-comp-tier');
+        const paidTier = await createTierWithStripePrice('comp-end-date-paid-tier');
+        const email = 'comp-end-date-other-tier@email.com';
+        const memberId = await createCompedMember(email, compTier.id);
+
+        await completePaidCheckout(email, paidTier.price);
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          await getMemberTiers(memberId),
+          [{ product_id: paidTier.id, expiry_at: null }],
+          'The complimentary tier is removed and the paid tier has no end date',
+        );
+
+        await runExpiredCompCleanupAfterCompEnds();
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          (await getMemberTiers(memberId)).map((row) => row.product_id),
+          [paidTier.id],
+          'The paid tier is kept after the complimentary end date passes',
+        );
+      });
     });
   });
 
@@ -4271,7 +4467,7 @@ describe('Members API', function () {
     });
   });
 
-  describe('checkout.session.completed with a shipping address', function () {
+  describe('checkout.session.completed with what the checkout collected', function () {
     const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
     const address = {
       line1: '1 High Street',
@@ -4287,7 +4483,7 @@ describe('Members API', function () {
       membersAgent = agents.membersAgent;
       adminAgent = agents.adminAgent;
 
-      await fixtureManager.init('members');
+      await fixtureManager.init('members', 'integrations');
       await adminAgent.loginAsOwner();
 
       set(subscription, {
@@ -4325,6 +4521,7 @@ describe('Members API', function () {
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
+        { name: 'Contact phone', type: 'short_text' },
       ]) {
         await adminAgent
           .post('/members/metafields/custom/')
@@ -4341,6 +4538,7 @@ describe('Members API', function () {
                 address: { custom_field_key: 'delivery_address' },
                 name: { custom_field_key: 'recipient_name' },
               },
+              phone: { collect: true, custom_field_key: 'contact_phone' },
             },
           ],
         })
@@ -4349,6 +4547,7 @@ describe('Members API', function () {
 
     afterEach(async function () {
       mockManager.restore();
+      await models.Base.knex('webhooks').del();
       await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
@@ -4356,9 +4555,10 @@ describe('Members API', function () {
       await models.Base.knex('members_metafields').del();
     });
 
+    // What the checkout asked for, as Stripe reports it on the completed session.
     async function completeCheckout(
       email,
-      { asked = true, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
+      { asked = { shipping: true }, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
     ) {
       set(customer, {
         id: 'cus_shipping',
@@ -4375,8 +4575,10 @@ describe('Members API', function () {
             customer: customer.id,
             subscription: subscription.id,
             metadata,
-            shipping_address_collection: asked ? { allowed_countries: ['GB'] } : null,
+            shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
             shipping: { name: 'Jamie Doe', address },
+            phone_number_collection: { enabled: Boolean(asked.phone) },
+            customer_details: { email, phone: '+442079460000' },
           },
         },
       });
@@ -4425,12 +4627,75 @@ describe('Members API', function () {
       assert.equal(saved.recipient_name, undefined);
     });
 
-    it('saves nothing from a checkout that did not ask for an address', async function () {
-      // Stripe can return an address it wasn't asked for, such as one saved with Link.
+    // A checkout that asked before the host switched custom fields off. Every field then
+    // reads as archived, so what it collected lands in none of them.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('saves nothing into any field', async function () {
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+        await completeCheckout('shipping-switched-off@example.com', {
+          asked: { shipping: true, phone: true },
+        });
+
+        await hostLimits.restoreHostLimits();
+        const {
+          body: { members },
+        } = await adminAgent.get('/members/?search=shipping-switched-off%40example.com');
+        const { body } = await adminAgent.get(`/members/${members[0].id}/`);
+        assert.equal(body.members[0].metafields, undefined);
+      });
+    });
+
+    it('saves nothing from a checkout that did not ask for it', async function () {
+      // Stripe can return what it wasn't asked for, such as an address saved with Link.
+      assert.deepEqual(await completeCheckout('shipping-unasked@example.com', { asked: {} }), {});
+    });
+
+    it('saves the phone number onto the member the checkout creates', async function () {
       assert.deepEqual(
-        await completeCheckout('shipping-unasked@example.com', { asked: false }),
-        {},
+        await completeCheckout('phone-new@example.com', { asked: { phone: true } }),
+        {
+          contact_phone: '+442079460000',
+        },
       );
+    });
+
+    it('saves the phone number beside the address when the checkout asked for both', async function () {
+      const saved = await completeCheckout('phone-and-address@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, 'Jamie Doe');
+    });
+
+    it('tells member webhooks about the phone number', async function () {
+      // Every delivery is kept, as the checkout's other edits to the member are sent too.
+      const delivered = [];
+      nock('https://test-webhook-receiver.com')
+        .persist()
+        .post('/checkout-member-edited/')
+        .reply(200, (uri, body) => {
+          delivered.push(typeof body === 'string' ? JSON.parse(body) : body);
+          return {};
+        });
+      await fixtureManager.insertWebhook({
+        event: 'member.edited',
+        url: 'https://test-webhook-receiver.com/checkout-member-edited/',
+      });
+
+      await completeCheckout('phone-webhook@example.com', { asked: { phone: true } });
+
+      const withPhone = await vi.waitUntil(
+        () => delivered.find(({ member }) => member.current.metafields?.custom?.contact_phone),
+        { timeout: 5000 },
+      );
+      assert.equal(withPhone.member.current.email, 'phone-webhook@example.com');
+      assert.equal(withPhone.member.current.metafields.custom.contact_phone, '+442079460000');
     });
 
     it('saves onto a member that signing in after paying created before this arrived', async function () {

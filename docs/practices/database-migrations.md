@@ -7,7 +7,6 @@ For example, a migration may:
 
 - Add a table.
 - Add a column to a table.
-- Add user permissions.
 - Manipulate existing data.
 
 > Migrations are dangerous and need to be treated with a great deal of care.
@@ -44,7 +43,7 @@ Always use this command rather than creating or naming the file manually. It
 compares the current package version with the latest published Ghost tag to
 avoid placing a migration in a version that has already shipped. CI repeats
 these version and placement checks with
-[`tools/scripts/check-migration-integrity.cjs`](../../tools/scripts/check-migration-integrity.cjs).
+[`tools/scripts/ci/check-migration-integrity.ts`](../../tools/scripts/ci/check-migration-integrity.ts).
 
 ### Writing the migration
 
@@ -54,7 +53,6 @@ these version and placement checks with
 3. Run the migration with `pnpm knex-migrator migrate` from the repository
    root while following the iteration guidance below.
 4. For schema changes, update `core/server/data/schema/schema.js` to match.
-5. Update the schema integrity tests and any other affected tests.
 
 #### Types of migration
 
@@ -62,8 +60,7 @@ Migration pull requests generally contain one of two types of change:
 
 - **DDL (data definition language)** migrations change the database schema.
   They require a migration for existing databases and a matching update to
-  `schema.js`. New tables must also be added to the export list, and the schema
-  integrity hash must be updated.
+  `schema.js`. New tables must also be added to the export list.
 - **DML (data manipulation language)** migrations change data already stored in
   the tables. They generally require only the migration itself and focused
   tests.
@@ -99,8 +96,7 @@ To apply a changed definition to your local database, rebuild the listed
 tables. This drops them and discards their data:
 
 ```bash
-cd ghost
-pnpm migrate:rebuild-in-development-tables
+pnpm gx db rebuild-development-tables
 ```
 
 Code that reads or writes the table must stay dormant wherever the table is not
@@ -108,8 +104,8 @@ created, for example behind a [feature flag](feature-flags.md).
 The table still needs a classification in the exporter table lists.
 
 When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,
-add the versioned migration that creates it, and update the schema integrity
-hash. Create the table with
+add the versioned migration that creates it.
+Create the table with
 `addTable(name, tableSpec, {replaceDevelopmentCopy: true})`: development and
 testing databases already have a copy built from an earlier definition, and the
 option replaces it with the final one. This discards its data and drops the
@@ -122,13 +118,20 @@ The database-backed migration suites run against MySQL, Ghost's supported
 production database. Changes to retained SQLite compatibility paths should add
 focused unit coverage for that dialect.
 
-Run the schema integrity test after changing `schema.js`, fixtures, default
-settings, or default routes. Update only the expected hash for the change you
-made:
+Run the schema-sync test after changing `schema.js` or schema migrations. It
+compares the migrated MySQL database structure with `schema.js`:
 
 ```bash
 cd ghost
-pnpm test:single test/unit/server/data/schema/integrity.test.js
+pnpm test:single test/integration/migrations/schema-sync.test.ts
+```
+
+Run the database integrity test after changing fixtures, default settings, or
+default routes. Update only the expected hash for the change you made:
+
+```bash
+cd ghost
+pnpm test:single test/unit/server/data/schema/integrity.test.ts
 ```
 
 Run the migration integration test to exercise initialization, rollback,

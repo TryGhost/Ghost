@@ -1,175 +1,169 @@
-# scripts
+# Repository automation
 
-`@internal/scripts` — repo automation invoked from CI workflows and local `pnpm`
-aliases. A private workspace member, so it is linted and tested like any other
-package: `pnpm nx run-many -t lint test` covers it, and Nx's affected graph runs
-those targets whenever anything here changes.
+`@internal/scripts` is the private workspace for repository setup, validation,
+builds, CI reports and releases. pnpm/Nx tasks, hooks and workflows invoke these
+files directly. [Tooling ownership](../README.md) explains the boundary with gx,
+shared configuration and Ghost's build/installed tools.
 
-New automation belongs here by default, whether it runs locally, in CI, or both.
-The old `.github/scripts` split tracked nothing real — `release-apps` is run by
-devs via `pnpm ship`, while `release.js` is run by a workflow.
+Contributor commands belong in [gx](../gx/README.md). Shared environment and
+bootstrap helpers listed below remain repository automation.
+Release automation stays here even when a maintainer runs it through `pnpm ship`.
 
-## Adding a script
+## Automation groups
 
-Write new scripts in TypeScript (`.ts`, ESM) and parse arguments with
-`node:util`'s `parseArgs`. Declare any dependency in `tools/scripts/package.json`;
-`semver` is already there. Keep it cheap: everything here lands in every dev's
-`pnpm install`, so prefer `node:` built-ins.
+Use three responsibility groups: `ci/`, `build/` and `release/`. Bootstrap,
+shared development setup, repair and formatting remain at the root. The tables
+below list the current entrypoints. Existing pnpm aliases and Nx targets retain
+their commands and behavior.
 
-Put logic shared by several scripts in `lib/`. A script that is its own
-entrypoint can just export the parts worth testing and guard the CLI path with
-`import.meta.main` — see `build-public-apps-matrix.js`. Either way, cover it in
-`test/`: tests use `node --test` with explicit JS/TS globs. TypeScript runs directly on
-the pinned Node version; `test:types` checks source, renderer and tests with the
-shared strict configuration. Note this
-package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
-covers Vitest-based projects.
+Keep private implementation with its group and genuinely shared support in
+`lib/`. Retain the central `test/` directory. These existing support directories
+are not additional automation categories. Workspace metadata and lint/type
+configuration remain at the root.
+All groups stay within the same `@internal/scripts` workspace.
 
-Tests that inspect Admin's Nx configuration and CI path filters read files
-outside this workspace. The `adminTestContracts` input includes the Admin
-manifest and CI workflow in both `test` and `test:unit`. Changes to these
-files invalidate the tests' caches and select this workspace as affected,
-without introducing an Admin build prerequisite.
+### CI and validation — ci/
 
-## Admin asset assembly
+Checks, affected/shard selection and report generation. Classify by purpose:
+`release/build-publish-matrix.ts` belongs to release, although CI calls it; TypeScript
+inventory is a reporting tool, although contributors can run it locally.
 
-`assemble-admin-assets.ts` copies the built Admin into Core and the Koenig embed
-renderer next to it. Admin’s build invokes it after Vite; its separate
-`assemble:assets` task can rerun assembly from existing build outputs. Assembly
-keeps the embed renderer outside Admin’s assets and normalizes Admin output
-permissions for Nx caches.
+| Current file                                                            | Purpose                                                                 | Caller                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| [assert-boot-skips-modules.ts](./ci/assert-boot-skips-modules.ts)       | Fail boot smoke checks if deferred native modules load eagerly          | CI Node --import preload                                  |
+| [change-check.ts](./ci/change-check.ts)                                 | Require changesets for changed publishable workspace packages           | CI and pre-commit hook                                    |
+| [check-agent-guidance.ts](./ci/check-agent-guidance.ts)                 | Check tracked AGENTS.md line limits                                     | pnpm lint:agent-guidance                                  |
+| [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)           | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
+| [check-app-version-bump.ts](./ci/check-app-version-bump.ts)             | Check CDN app version lines against Core defaults                       | PR CI                                                     |
+| [check-internal-packages.ts](./ci/check-internal-packages.ts)           | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
+| [check-migration-integrity.ts](./ci/check-migration-integrity.ts)       | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
+| [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)           | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
+| [compare-image-report.ts](./ci/compare-image-report.ts)                 | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
+| [e2e-shards.ts](./ci/e2e-shards.ts)                                     | Plan browser-test shards and update recorded execution timings          | Browser-test CI: plan / record; sparse checkout supported |
+| [nx-set-shas.ts](./ci/nx-set-shas.ts)                                   | Select affected CI commit ranges from successful workflow history       | CI job setup                                              |
+| [service-dependency-resolver.mjs](./ci/service-dependency-resolver.mjs) | Resolve authored Core source for Dependency Cruiser                     | Boundary lint and gx service dependency reports           |
+| [summarize-admin-acceptance.ts](./ci/summarize-admin-acceptance.ts)     | Render Admin acceptance-test results into a CI summary                  | Acceptance CI after test shards                           |
+| [typescript-inventory.ts](./ci/typescript-inventory.ts)                 | Measure tracked JS/TS adoption, dependencies and historical counts      | pnpm inventory:typescript; TypeScript inventory workflow  |
 
-## The `.cjs` files
+### Build support — build/
 
-`.cjs` marks a script that predates the ESM default and hasn't been converted.
-Nothing is wrong with them; they just haven't been touched. Migrating one is a
-self-contained change: rename `foo.cjs` → `foo.js`, swap `require` for `import`,
-and update its call sites (workflows, root `package.json`, or an app's `ship`
-script). No config change is needed — `tools/scripts/eslint.config.mjs` keys off the
-extension. When the last one is gone, that config drops to a single block.
+Cross-workspace asset assembly, build-cache inputs and post-build artifacts.
+Build steps for the `ghost/` server workspace's own browser assets stay in
+[ghost/scripts](../../ghost/scripts/README.md).
 
-Don't add new `.cjs` files.
+| Current file                                                       | Purpose                                                      | Caller                                        |
+| ------------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
+| [assemble-admin-assets.ts](./build/assemble-admin-assets.ts)       | Assemble Admin and isolated editor-renderer assets for Ghost | Admin build / app-local pnpm assemble:assets  |
+| [hash-vite-env.ts](./build/hash-vite-env.ts)                       | Hash Vite environment files into the build cache input       | Admin Nx runtime input --directory=apps/admin |
+| [upload-sentry-sourcemaps.ts](./build/upload-sentry-sourcemaps.ts) | Upload tagged bundle source maps after the build             | Post-build CI upload with release identifier  |
 
-## Two things that don't live by these rules
+#### Admin asset assembly
 
-**`enforce-package-manager.js`** is the root `preinstall` hook, so it runs
-_before_ `node_modules` exists. It can never import anything — not even from
-`lib/` — and must stay runnable by plain `node` on a literal path. The
-ghost-dev image copies it (and only it) out of this directory for the same
-reason; see `docker/ghost-dev/Dockerfile`.
+`build/assemble-admin-assets.ts` copies the built Admin into Core and the isolated
+Koenig embed renderer beside it. Admin's build invokes it after Vite;
+`pnpm assemble:assets` in the Admin workspace can rerun assembly from existing
+outputs. The renderer stays outside Admin's assets, with normalized permissions
+for Nx caches.
 
-**`.github/scripts/i18n-review`** is intentionally _not_ a workspace member and
-stays where it is. It carries its own lockfile, eslint config and CI workflow so
-its `pull_request_target` job can install from a sparse checkout of `main`
-without the root lockfile, and so its CI-only deps never reach a dev's install.
-See that directory's README before changing anything about how it's wired.
+### Versioning and publishing — release/
+
+Publishing policy, version selection and release preparation. The publishing
+manifest is release-owned data, shared with validation through `lib/publish-manifest.ts`.
+
+| Current file                                                 | Purpose                                                                | Caller                                                                         |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [build-publish-matrix.ts](./release/build-publish-matrix.ts) | Select affected continuous-publishing packages and CDN purge paths     | CI setup: `node tools/scripts/release/build-publish-matrix.ts <affected-json>` |
+| [compare-published.ts](./release/compare-published.ts)       | Compare locally packed output with the live registry version           | Continuous-publishing CI gate                                                  |
+| [generate-changeset.ts](./release/generate-changeset.ts)     | Create changesets for automated dependency updates                     | Renovate post-upgrade task                                                     |
+| [next-version.ts](./release/next-version.ts)                 | Compute the next continuous-publishing version from registry state     | Publishing CI; --latest prints the comparison version                          |
+| [publish-packages.ts](./release/publish-packages.ts)         | Publish eligible workspace packages in dependency order                | Tagged-release / manual publishing workflow                                    |
+| [release-apps.ts](./release/release-apps.ts)                 | Prepare intentional CDN-app minor/major releases and matching defaults | App-local pnpm ship                                                            |
+| [release-notes.ts](./release/release-notes.ts)               | Generate release notes from tagged commit ranges                       | Release CI                                                                     |
+| [release.ts](./release/release.ts)                           | Prepare Ghost and package release versions, commits and tags           | pnpm release; release workflow                                                 |
+
+### Root setup and maintenance
+
+Stable setup and repair entrypoints, including commands used before dependencies
+exist. Shared development environment machinery also serves Nx, database aliases
+and gx; it is not another contributor command family.
+
+| Current file                                             | Purpose                                                                         | Caller                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [clean.ts](clean.ts)                                     | Repair a broken checkout by clearing dependencies, Nx state and build artifacts | pnpm fix; plain Node entrypoint before reinstall               |
+| [dev-infra-up.ts](dev-infra-up.ts)                       | Start shared Compose services and provision the checkout database               | Nx development-infrastructure prerequisite                     |
+| [enforce-package-manager.ts](enforce-package-manager.ts) | Require pnpm without needing installed dependencies                             | Root preinstall; selectively copied by development Dockerfiles |
+| [format.ts](format.ts)                                   | Run the repository formatter and stabilize its output                           | pnpm format; pre-commit hook                                   |
+| [ghost-dev-env.ts](ghost-dev-env.ts)                     | Prepare checkout configuration, theme submodules and development assets         | Nx setup prerequisite; Stripe wrapper                          |
+| [init-submodules.sh](init-submodules.sh)                 | Initialize theme submodules, reusing local repositories in worktrees            | pnpm bootstrap; direct Bash helper                             |
+| [with-ghost-dev-env.ts](with-ghost-dev-env.ts)           | Run commands with shared checkout and Compose environment settings              | Nx dev tasks, database aliases, analytics tasks and gx         |
+
+## Shared support and tests
+
+`lib/` contains repository paths, Git/workspace queries, JSON/process helpers,
+publishing policy, package-template tokens and shared Compose/environment setup.
+Keep helpers shared by CI, releases or gx here; do not force gx to duplicate them.
+Tests and temporary-workspace helpers live in `test/`. Some tests verify
+cross-workspace build, lint, packaging and CI contracts; they are repository
+validation, even when the implementation they exercise lives elsewhere.
+
+Private helpers such as Admin asset assembly, boot-module checks, PR-base
+resolution, release base-tag resolution and inventory types live with their owning
+group. Direct entrypoint paths are caller contracts; check their workflows and
+package aliases before changing them.
+
+## Language and adding a script
+
+New executable automation uses TypeScript ESM and `node:util`'s `parseArgs`.
+Declare dependencies in this workspace and prefer Node built-ins. Keep source
+runnable with the repository's pinned Node version and check types separately.
+
+The current exceptions are deliberate: `eslint.config.mjs` is JavaScript
+configuration; `ci/service-dependency-resolver.mjs` is a JavaScript loader hook
+for Dependency Cruiser; `init-submodules.sh` is a Bash bootstrap helper. Do not
+add another JavaScript command by copying those exceptions.
+
+Export testable logic and guard executable-only work where appropriate; see
+`release/build-publish-matrix.ts`. Its `import.meta.main` guard uses the Node version
+pinned by the repository. This workspace's tests use `node --test`, not the root
+Vitest watcher.
+
+```sh
+pnpm --filter @internal/scripts lint
+pnpm --filter @internal/scripts test
+```
+
+Tests that inspect other workspaces' configuration need matching Nx inputs in
+`package.json`. Keep those contracts updated when changing CI filters, Admin
+inputs, lint policy or shared configuration.
+
+## Bootstrap and checkout contracts
+
+`enforce-package-manager.ts` runs as `preinstall` before `node_modules` exists.
+It must stay dependency-free and runnable by plain Node on a literal path. The
+development Dockerfiles copy it independently. `clean.ts` repairs missing or
+corrupted dependencies and must not acquire installed dependencies either.
+
+`with-ghost-dev-env.ts` is shared by Nx development tasks, database aliases,
+analytics and gx. Keep that environment setup independent of the CLI framework.
+
+The isolated `.github/scripts/i18n-review` workflow intentionally keeps its own
+package, lockfile and sparse-checkout install. Its location is a CI trust/install
+boundary; see [its README](../../.github/scripts/i18n-review/README.md).
+
+## Service dependency audit
+
+Contributor reports live in [gx](../gx/README.md#service-migration-reports):
+`pnpm gx services audit` provides Dependency Cruiser's native reports and
+`pnpm gx services dependencies` summarises disallowed dependencies. Rules and
+the allowlist remain in `.dependency-cruiser.cjs`; the resolver adapter in
+`ci/` supports both reporting and boundary lint. The
+[services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
+defines the policy.
 
 ## TypeScript inventory
 
-Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to
-write `/tmp/ghost-typescript.json`. Ghost-Benchmarks renders this JSON as the
-interactive dashboard. Use `--scope ghost` (or another repository-relative
-directory) to focus the data. Resolution and dependent counts still consider
-the whole repository.
-
-The inventory reads tracked working-tree JS/JSX/TS/TSX files, including `.mjs`,
-`.cjs`, `.mts`, and `.cts`. It includes maintained fixture modules and test
-helpers. It excludes submodules, untracked files, snapshot directories, vendor
-directories, build/dist/coverage output, minified
-JavaScript, the package template, and SimpleMDE's generated debug bundles.
-Explicit test-input exclusions cover Core's assets-minification fixture directory,
-the bundled Casper/Source theme assets under test fixtures, and
-`sloppy-config-writer.js`, which deliberately exercises non-strict JavaScript.
-Other files are not excluded merely because their directory is named `fixtures`.
-
-`measurementVersion: 2` identifies these counting rules separately from the JSON
-schema. Reports without this field used the earlier fixture exclusion and are
-not directly comparable. Ghost-Benchmarks recounts historical revisions with the current rules instead
-of combining different counting baselines.
-
-Declaration files are counted separately. Exclusion paths and declaration totals
-are repository-wide, even in scoped reports. Percentages compare implementation
-files and physical lines (including comments and blanks); they do not measure
-type safety or enforce conversion of intentional JavaScript tooling.
-
-Files are grouped by their nearest package manifest. Tests and tooling use path
-and filename conventions; these categories are approximate. Production is split
-into frontend (`apps/`, Koenig's three editor UI packages, and Core's
-`core/frontend/public/` browser scripts) and backend (remaining server code and
-library packages, including libraries shared with the frontend). Core's
-`core/frontend/` routing and rendering code executes on the server and therefore
-belongs to backend. Tests and tooling take precedence over this split.
-
-Tooling uses recognised tool config filenames (including dotfiles), explicit build
-helpers, the shared `tools/configs/` packages, scripts and CI configuration. Runtime
-configuration is not tooling merely because its name contains `config`. Runner
-configs such as `e2e/playwright.config.mjs` are tooling; actual tests remain tests.
-
-Test support includes
-`test-utils`, `__fixtures__` and `packages/testing/`; backend
-schema fixtures remain backend code. JSON
-schema version 2 replaces the old `production` category with these two values.
-
-Static imports, re-exports, literal dynamic imports, and `require()` calls are
-parsed with the TypeScript compiler API. Dependency resolution uses the nearest tracked
-`tsconfig.json`, including inherited options, or NodeNext defaults when absent.
-Resolution runs with `allowJs` to identify JavaScript dependencies. The report
-shows the configuration and resolved path for each dependency. Node built-ins
-are marked typed only when Node declarations resolve from the importing file.
-
-Difficulty is a transparent triage heuristic:
-
-- Each dependency resolving to JavaScript adds 3 points.
-- Each unresolved dependency or built-in without available Node types adds 5.
-- Each computed import or require adds 5.
-- Each 100 physical lines and each 5 functions adds 1 (rounded up).
-- CommonJS adds 2; each parse error adds 10.
-- Scores up to 5 are easier, up to 15 moderate, and above 15 harder.
-
-Repeated imports are deduplicated by specifier and import/require mode. Direct
-callers are listed separately to show conversion impact. This is a static module
-graph: runtime loading and shadowed `require` calls are not resolved semantically.
-Cycles, ambient module declarations, JSDoc quality, bundler-specific resolution,
-and business complexity are not assessed. Missing builds or dependencies can
-produce unresolved imports; available declarations can still contain `any`.
-Inspect the evidence before choosing a conversion. The report neither executes
-source modules nor queries package registries.
-
-The implementation follows TypeScript's
-[module resolution reference](https://www.typescriptlang.org/docs/handbook/modules/reference)
-and [compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API).
-Run its tests with
-`pnpm --filter @internal/scripts exec node --test test/typescript-inventory.test.ts`.
-
-### Published reports
-
-The `TypeScript inventory` workflow runs independently on every push to `main`.
-It installs locked dependencies and builds workspace declarations before scanning,
-then retains the JSON as a `typescript-inventory` artifact for 30 days.
-Runs do not cancel each other. Each push measures its head commit; commits batched
-into a single push do not each get a separate measurement.
-
-After a successful run, a separate workflow dispatches its run ID to
-Ghost-Benchmarks using the existing cross-repository publishing credential.
-The receiver verifies the source run before publishing the latest report at
-[TypeScript inventory](https://tryghost.github.io/Ghost-Benchmarks/typescript/).
-It retains compact per-commit counts in `typescript/history.json`. Older runs
-can add history without replacing a newer report. Failed scans leave the last
-published report intact; rerun the failed workflow to retry. Publishing requires
-the receiver workflow to be installed on Ghost-Benchmarks main first.
-
-### Historical counts and PR comparisons
-
-`pnpm inventory:typescript --root /path/to/Ghost --revision <ref> --output /tmp/counts`
-reads committed Git blobs with the current collector and produces a counts-only
-JSON report (`mode: "counts-only"`). It does not check out or execute historical
-source, install dependencies, resolve imports or assign conversion difficulty.
-The output includes the full source SHA, commit timestamp, summary, package and
-kind totals. Submodules and symlinks are not traversed. The ordinary command
-continues to scan tracked working-tree source with dependency analysis.
-
-For a PR, collect its merge base and head with the same version of this command
-and subtract counts. This does not depend on a previously published report.
-Ghost-Benchmarks owns the HTML renderer, graph, history and local backfill command;
-see its `docs/dashboard.md`. Deploy its JSON-capable publisher before removing
-HTML output from Ghost. No PR comment job is introduced by this split.
+`pnpm inventory:typescript --output /tmp/ghost-typescript` writes an adoption and
+dependency report. See the [inventory reference](../../docs/reference/typescript-inventory.md)
+for counting rules, schema, difficulty heuristics, CI publication and historical
+comparisons. Keep its implementation in automation; a contributor CLI wrapper
+is optional.
