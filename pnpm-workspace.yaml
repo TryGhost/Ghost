@@ -170,7 +170,7 @@ catalog:
   html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
-  jose: 6.2.12
+  jose: 6.2.13
   js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
