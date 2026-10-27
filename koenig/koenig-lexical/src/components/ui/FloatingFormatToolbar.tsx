@@ -1,15 +1,16 @@
 import FloatingToolbar from '../../components/ui/FloatingToolbar';
 import FormatToolbar from './FormatToolbar';
-import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
 import debounce from 'lodash/debounce';
 import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND} from 'lexical';
 import {$getSelectionRangeRect} from '../../utils/$getSelectionRangeRect';
-import {LinkActionToolbar} from './LinkActionToolbar.jsx';
-import {LinkActionToolbarWithSearch} from './LinkActionToolbarWithSearch.jsx';
+import {LinkActionToolbar} from './LinkActionToolbar';
+import {LinkActionToolbarWithSearch} from './LinkActionToolbarWithSearch';
 import {SnippetActionToolbar} from './SnippetActionToolbar';
 import {mergeRegister} from '@lexical/utils';
 import {setFloatingElemPosition} from '../../utils/setFloatingElemPosition';
+import type {LexicalEditor} from 'lexical';
 
 // don't show the toolbar until the mouse has moved a certain distance,
 // avoids accidental toolbar display when clicking buttons that select content
@@ -21,6 +22,16 @@ export const toolbarItemTypes = {
     text: 'text'
 };
 
+interface FloatingFormatToolbarProps {
+    editor: LexicalEditor;
+    anchorElem?: HTMLElement;
+    href?: string;
+    isSnippetsEnabled?: boolean;
+    toolbarItemType?: string | null;
+    setToolbarItemType: (type: string | null) => void;
+    hiddenFormats?: string[];
+}
+
 export function FloatingFormatToolbar({
     editor,
     anchorElem,
@@ -29,11 +40,11 @@ export function FloatingFormatToolbar({
     toolbarItemType,
     setToolbarItemType,
     hiddenFormats = []
-}) {
+}: FloatingFormatToolbarProps) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const isLinkSearchEnabled = typeof cardConfig?.searchLinks === 'function' || false;
 
-    const toolbarRef = React.useRef(null);
+    const toolbarRef = React.useRef<HTMLDivElement>(null);
 
     const isLinkSearchToolbarVisible = toolbarItemType === toolbarItemTypes.link && isLinkSearchEnabled;
 
@@ -45,19 +56,20 @@ export function FloatingFormatToolbar({
         const toolbarElement = toolbarRef.current;
         if (toolbarItemType && toolbarElement?.style.opacity === '0') {
             const rangeRect = $getSelectionRangeRect({editor, selection: $getSelection()});
-            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem);
+            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem!);
             toolbarElement.style.opacity = '1';
         }
     }, [anchorElem, editor, toolbarItemType]);
 
     React.useEffect(() => {
-        const toggle = (e) => {
+        const toggle = (e: MouseEvent | TouchEvent) => {
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
-                if ($isRangeSelection(selection)) {
+                const target = e.target;
+                if ($isRangeSelection(selection) && target instanceof Node) {
                     const selectedNodeMatchesTarget = selection.getNodes().find((node) => {
                         const element = editor.getElementByKey(node.getKey());
-                        return element && (element.contains(e.target) || e.target.contains(element));
+                        return element && (element.contains(target) || target.contains(element));
                     });
 
                     if (selectedNodeMatchesTarget) {
@@ -91,9 +103,9 @@ export function FloatingFormatToolbar({
     }, [editor, setToolbarItemType]);
 
     React.useEffect(() => {
-        let initialPosition = null;
+        let initialPosition: {x: number; y: number} | null = null;
 
-        const onMouseMove = (e) => {
+        const onMouseMove = (e: MouseEvent) => {
             // ignore drag events
             if (e?.buttons > 0) {
                 return;
@@ -154,12 +166,10 @@ export function FloatingFormatToolbar({
         <>
             <FloatingToolbar
                 anchorElem={anchorElem}
-                // toolbar opacity is 0 by default
-                // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
                 controlOpacity={!isTextToolbar}
                 editor={editor}
                 isVisible={!!toolbarItemType}
-                shouldReposition={toolbarItemType !== toolbarItemTypes.text} // format toolbar shouldn't reposition when applying formats
+                shouldReposition={toolbarItemType !== toolbarItemTypes.text}
                 toolbarRef={toolbarRef}
             >
                 {isSnippetToolbar && (

@@ -5,7 +5,38 @@ import debounce from 'lodash/debounce';
 const DEBOUNCE_MS = 100;
 const URL_QUERY_REGEX = /^http|^#|^\/|^mailto:|^tel:/;
 
-function urlQueryOptions(query) {
+interface ListItem {
+    label: string;
+    value: string | null;
+    Icon?: React.ComponentType;
+    metaText?: string;
+    MetaIcon?: React.ComponentType;
+    metaIconTitle?: string;
+    highlight?: boolean;
+    type: string;
+    [key: string]: unknown;
+}
+
+interface ListOption {
+    label: string;
+    items: ListItem[];
+}
+
+interface SearchResultItem {
+    title: string;
+    url: string;
+    Icon?: React.ComponentType;
+    metaText?: string;
+    MetaIcon?: React.ComponentType;
+    metaIconTitle?: string;
+}
+
+interface SearchResult {
+    label: string;
+    items: SearchResultItem[];
+}
+
+function urlQueryOptions(query: string): ListOption[] {
     return [{
         label: 'Link to web page',
         items: [{
@@ -18,7 +49,7 @@ function urlQueryOptions(query) {
     }];
 }
 
-function defaultNoResultOptions(query) {
+function defaultNoResultOptions(): ListOption[] {
     return [{
         label: 'Link to web page',
         items: [{
@@ -31,7 +62,7 @@ function defaultNoResultOptions(query) {
     }];
 }
 
-function convertSearchResultsToListOptions(results, {noResultOptions, type} = {}) {
+function convertSearchResultsToListOptions(results: SearchResult[] | undefined, {noResultOptions, type}: {noResultOptions?: () => ListOption[]; type?: string} = {}): ListOption[] {
     if (!results || !results.length) {
         return (noResultOptions || defaultNoResultOptions)();
     }
@@ -53,20 +84,20 @@ function convertSearchResultsToListOptions(results, {noResultOptions, type} = {}
     });
 }
 
-export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
-    const [defaultListOptions, setDefaultListOptions] = React.useState([]);
-    const [listOptions, setListOptions] = React.useState([]);
+export const useSearchLinks = (query: string, searchLinks: (term?: string) => Promise<unknown>, {noResultOptions}: {noResultOptions?: () => ListOption[]} = {}) => {
+    const [defaultListOptions, setDefaultListOptions] = React.useState<ListOption[]>([]);
+    const [listOptions, setListOptions] = React.useState<ListOption[]>([]);
     const [isSearching, setIsSearching] = React.useState(false);
 
     const search = React.useMemo(() => {
-        return async function _search(term) {
+        return async function _search(term: string) {
             if (URL_QUERY_REGEX.test(term)) {
                 setListOptions(urlQueryOptions(term));
                 return;
             }
 
             setIsSearching(true);
-            const results = await searchLinks(term);
+            const results = await searchLinks(term) as SearchResult[] | undefined;
 
             // can return undefined if the search was cancelled, avoid updating
             // in that scenario because we can end up in a race condition where
@@ -91,10 +122,14 @@ export const useSearchLinks = (query, searchLinks, {noResultOptions} = {}) => {
             // if we have a query we don't want to show the searching state but
             // we still want to load the default options in the background so
             // they're available when the query is cleared
-            !query && setIsSearching(true);
-            const results = await searchLinks();
+            if (!query) {
+                setIsSearching(true);
+            }
+            const results = await searchLinks() as SearchResult[] | undefined;
             setDefaultListOptions(convertSearchResultsToListOptions(results, {type: 'default'}));
-            !query && setIsSearching(false);
+            if (!query) {
+                setIsSearching(false);
+            }
         };
 
         fetchDefaultOptions().catch(console.error);

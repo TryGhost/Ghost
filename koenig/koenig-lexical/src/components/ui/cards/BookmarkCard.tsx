@@ -1,8 +1,31 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {UrlInput} from '../UrlInput';
 import {UrlSearchInput} from '../UrlSearchInput';
+import type {LexicalEditor} from 'lexical';
+
+interface BookmarkCardProps {
+    author?: string;
+    handleClose?: () => void;
+    handlePasteAsLink?: (value?: string) => void;
+    handleRetry?: () => void;
+    handleUrlChange?: ((e: React.ChangeEvent<HTMLInputElement>) => void) | ((value: string) => void);
+    handleUrlSubmit?: ((e: KeyboardEvent | React.KeyboardEvent) => void) | ((url: string, type?: string) => void);
+    url?: string;
+    urlInputValue?: string;
+    urlPlaceholder?: string;
+    thumbnail?: string;
+    title?: string;
+    description?: string;
+    icon?: string;
+    publisher?: string;
+    captionEditor?: LexicalEditor;
+    captionEditorInitialState?: string;
+    isSelected?: boolean;
+    isLoading?: boolean;
+    urlError?: boolean;
+    searchLinks?: (term?: string) => Promise<unknown>;
+}
 
 export function BookmarkCard({
     author,
@@ -25,7 +48,7 @@ export function BookmarkCard({
     isLoading,
     urlError,
     searchLinks
-}) {
+}: BookmarkCardProps) {
     // State to manage thumbnail visibility
     const [thumbnailVisible, setThumbnailVisible] = React.useState(true);
 
@@ -53,13 +76,15 @@ export function BookmarkCard({
                     }
                     <div className="absolute inset-0 z-50 mt-0"></div>
                 </div>
-                <CardCaptionEditor
-                    captionEditor={captionEditor}
-                    captionEditorInitialState={captionEditorInitialState}
-                    captionPlaceholder="Type caption for bookmark (optional)"
-                    dataTestId="bookmark-caption"
-                    isSelected={isSelected}
-                />
+                {captionEditor && (
+                    <CardCaptionEditor
+                        captionEditor={captionEditor}
+                        captionEditorInitialState={captionEditorInitialState}
+                        captionPlaceholder="Type caption for bookmark (optional)"
+                        dataTestId="bookmark-caption"
+                        isSelected={isSelected}
+                    />
+                )}
             </div>
         );
     }
@@ -71,8 +96,8 @@ export function BookmarkCard({
                 handleClose={handleClose}
                 handlePasteAsLink={handlePasteAsLink}
                 handleRetry={handleRetry}
-                handleUrlChange={handleUrlChange}
-                handleUrlSubmit={handleUrlSubmit}
+                handleUrlChange={handleUrlChange as (value: string) => void}
+                handleUrlSubmit={handleUrlSubmit as (url: string, type?: string) => void}
                 hasError={urlError}
                 isLoading={isLoading}
                 placeholder={urlPlaceholder}
@@ -87,8 +112,8 @@ export function BookmarkCard({
                 handleClose={handleClose}
                 handlePasteAsLink={handlePasteAsLink}
                 handleRetry={handleRetry}
-                handleUrlChange={handleUrlChange}
-                handleUrlSubmit={handleUrlSubmit}
+                handleUrlChange={handleUrlChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
+                handleUrlSubmit={handleUrlSubmit as (e: KeyboardEvent | React.KeyboardEvent) => void}
                 hasError={urlError}
                 isLoading={isLoading}
                 placeholder={urlPlaceholder}
@@ -98,35 +123,12 @@ export function BookmarkCard({
     }
 }
 
-export function BookmarkIcon({src}) {
+interface BookmarkIconProps {
+    src: string;
+}
+
+export function BookmarkIcon({src}: BookmarkIconProps) {
     return (
         <img alt="" className="mr-2 size-5 shrink-0" data-testid="bookmark-icon" src={src}/>
     );
 }
-
-BookmarkCard.propTypes = {
-    author: PropTypes.string,
-    handleClose: PropTypes.func,
-    handlePasteAsLink: PropTypes.func,
-    handleRetry: PropTypes.func,
-    handleUrlChange: PropTypes.func,
-    handleUrlSubmit: PropTypes.func,
-    url: PropTypes.string,
-    urlInputValue: PropTypes.string,
-    urlPlaceholder: PropTypes.string,
-    thumbnail: PropTypes.string,
-    title: PropTypes.string,
-    description: PropTypes.string,
-    icon: PropTypes.string,
-    publisher: PropTypes.string,
-    captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.object,
-    isSelected: PropTypes.bool,
-    isLoading: PropTypes.bool,
-    urlError: PropTypes.bool,
-    searchLinks: PropTypes.func
-};
-
-BookmarkIcon.propTypes = {
-    src: PropTypes.string
-};

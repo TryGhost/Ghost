@@ -6,7 +6,7 @@ import {vi} from 'vitest';
 describe.each([
     {
         name: 'ungrouped',
-        renderSelection: (onSelect: ReturnType<typeof vi.fn>) => (
+        renderSelection: (onSelect: (item: unknown) => void) => (
             <KeyboardSelection
                 getItem={() => null}
                 items={[]}
@@ -16,7 +16,7 @@ describe.each([
     },
     {
         name: 'grouped',
-        renderSelection: (onSelect: ReturnType<typeof vi.fn>) => (
+        renderSelection: (onSelect: (item: unknown) => void) => (
             <KeyboardSelectionWithGroups
                 getGroup={() => null}
                 getItem={() => null}
@@ -28,7 +28,7 @@ describe.each([
 ])('KeyboardSelection ($name)', ({renderSelection}) => {
     it('lets Enter fall through when there is no selectable item', () => {
         const onKeyDown = vi.fn();
-        const onSelect = vi.fn();
+        const onSelect = vi.fn<(item: unknown) => void>();
 
         render(
             <div onKeyDown={onKeyDown}>

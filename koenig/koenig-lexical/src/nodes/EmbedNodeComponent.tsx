@@ -1,18 +1,31 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext, {type EmbedResponse} from '../context/KoenigComposerContext';
 import React from 'react';
 import {$createBookmarkNode} from './BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {EmbedCard} from '../components/ui/cards/EmbedCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu';
 import {getEmbedRendererUrl} from '../utils/embed-renderer';
 import {useCallback} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {EmbedNode} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
 
-export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, metadata, captionEditor, captionEditorInitialState}) {
+interface EmbedNodeComponentProps {
+    nodeKey: string;
+    url: string;
+    html: string;
+    createdWithUrl: unknown;
+    embedType: string;
+    metadata: unknown;
+    captionEditor: LexicalEditor;
+    captionEditorInitialState: unknown;
+}
+
+export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType: _embedType, metadata: _metadata, captionEditor, captionEditorInitialState}: EmbedNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
@@ -30,13 +43,13 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         return getEmbedRendererUrl(cardConfig.embedPreviewUrl, window.location.origin)?.href ?? null;
     }, [cardConfig.embedPreviewUrl]);
 
-    const handleUrlChange = (event) => {
+    const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setUrlInputValue(event.target.value);
     };
 
-    const handleUrlSubmit = async (event) => {
+    const handleUrlSubmit = async (event: KeyboardEvent | React.KeyboardEvent) => {
         if (event.key === 'Enter') {
-            fetchMetadata(event.target.value);
+            fetchMetadata((event.target as HTMLInputElement).value);
         }
     };
 
@@ -44,12 +57,11 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         setUrlError(false);
     };
 
-    const handlePasteAsLink = useCallback((href) => {
+    const handlePasteAsLink = useCallback((href?: string) => {
+        if (!href) {return;}
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            if (!node) {
-                return;
-            }
+            if (!node) {return;}
             const paragraph = $createParagraphNode()
                 .append($createLinkNode(href)
                     .append($createTextNode(href)));
@@ -65,6 +77,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
     const handleClose = useCallback(() => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!node) {return;}
             const nextSibling = node.getNextSibling();
             if (nextSibling && $isParagraphNode(nextSibling) && nextSibling.getTextContentSize() === 0) {
                 node.remove();
@@ -77,9 +90,10 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         });
     }, [editor, nodeKey]);
 
-    const fetchMetadata = async (href) => {
+    const fetchMetadata = async (href: string) => {
+        if (!cardConfig.fetchEmbed) {return;}
         setLoading(true);
-        let response;
+        let response: EmbedResponse;
         try {
             // set the test data return values in fetchEmbed.js
             response = await cardConfig.fetchEmbed(href, {});
@@ -87,12 +101,13 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
             if (response.type === 'bookmark') {
                 editor.update(() => {
                     const node = $getNodeByKey(nodeKey);
+                    if (!node) {return;}
                     const bookmarkNode = $createBookmarkNode({url: response.url, metadata: response.metadata});
                     node.replace(bookmarkNode);
                 });
                 return;
             }
-        } catch (e) {
+        } catch {
             if (createdWithUrl) {
                 setLoading(false);
                 handlePasteAsLink(href);
@@ -104,11 +119,12 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
             return;
         }
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as EmbedNode | null;
+            if (!node) {return;}
             node.url = href;
             node.metadata = response;
-            node.embedType = response.type;
-            node.html = response.html;
+            node.embedType = response.type ?? "";
+            node.html = response.html ?? "";
 
             // select next node if card was pasted from link
             if (createdWithUrl) {
@@ -138,7 +154,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         <>
             <EmbedCard
                 captionEditor={captionEditor}
-                captionEditorInitialState={captionEditorInitialState}
+                captionEditorInitialState={captionEditorInitialState as string | undefined}
                 handleClose={handleClose}
                 handlePasteAsLink={handlePasteAsLink}
                 handleRetry={handleRetry}
@@ -147,7 +163,6 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
                 html={html}
                 isLoading={loading}
                 isSelected={isSelected}
-                metadata={metadata}
                 rendererUrl={rendererUrl}
                 url={url}
                 urlError={urlError}
@@ -163,7 +178,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
 
             <ActionToolbar
                 data-kg-card-toolbar="embed"
-                isVisible={html && isSelected && !showSnippetToolbar && cardConfig.createSnippet}
+                isVisible={!!html && isSelected && !showSnippetToolbar && !!cardConfig.createSnippet}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem

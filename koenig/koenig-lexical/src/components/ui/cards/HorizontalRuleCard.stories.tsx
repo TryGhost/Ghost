@@ -1,19 +1,22 @@
 import {CardWrapper} from './../CardWrapper';
 import {HorizontalRuleCard} from './HorizontalRuleCard';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
     Selected: {isSelected: true, isEditing: false}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof HorizontalRuleCard> & {display: keyof typeof displayOptions};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Divider card',
     component: HorizontalRuleCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -32,17 +35,17 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
+const Template: StoryFn<StoryArgs> = ({display, ...args}) => (
     <div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} {...args}>
-                <HorizontalRuleCard {...display} {...args} />
+            <CardWrapper {...displayOptions[display]} {...args}>
+                <HorizontalRuleCard />
             </CardWrapper>
         </div>
     </div>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn<StoryArgs> = Template.bind({});
 Default.args = {
     display: 'Selected'
 };

@@ -1,5 +1,26 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import type {DragDropHandler} from '../utils/draggable/DragDropHandler';
+import type {DraggableInfo, DraggableInfoSeed} from '../utils/draggable/ScrollHandler';
+import type {IndicatorPosition} from '../utils/draggable/DragDropContainer';
+
+interface UseCardDragAndDropOptions {
+    enabled?: boolean;
+    canDrop: (draggableInfo: DraggableInfo) => boolean;
+    onDrop?: (draggableInfo: DraggableInfo) => boolean | void;
+    onDropEnd?: (draggableInfo: DraggableInfo, success: boolean) => void;
+    getDraggableInfo?: (draggableElement: HTMLElement) => DraggableInfoSeed | Record<string, never>;
+    getIndicatorPosition?: (draggableInfo: DraggableInfo) => IndicatorPosition | false;
+    draggableSelector: string;
+    droppableSelector: string;
+}
+
+interface DragDropContainerRef {
+    enableDrag: () => void;
+    disableDrag: () => void;
+    refresh: () => void;
+    destroy: () => void;
+}
 
 export default function useCardDragAndDrop({
     enabled = true,
@@ -10,18 +31,18 @@ export default function useCardDragAndDrop({
     getIndicatorPosition,
     draggableSelector,
     droppableSelector
-}) {
+}: UseCardDragAndDropOptions) {
     const koenig = React.useContext(KoenigComposerContext);
 
-    const [containerRef, setContainerRef] = React.useState(null);
+    const [containerRef, setContainerRef] = React.useState<HTMLElement | null>(null);
     const [isDraggedOver, setIsDraggedOver] = React.useState(false);
-    const dragDropContainer = React.useRef(null);
+    const dragDropContainer = React.useRef<DragDropContainerRef | null>(null);
 
-    const onDragStart = React.useCallback((draggableInfo) => {
+    const onDragStart = React.useCallback((draggableInfo: DraggableInfo) => {
         if (canDrop(draggableInfo)) {
-            dragDropContainer.current.enableDrag();
+            dragDropContainer.current?.enableDrag();
         } else {
-            dragDropContainer.current.disableDrag();
+            dragDropContainer.current?.disableDrag();
         }
     }, [canDrop]);
 
@@ -29,7 +50,7 @@ export default function useCardDragAndDrop({
         setIsDraggedOver(false);
     }, [setIsDraggedOver]);
 
-    const onDragEnterContainer = React.useCallback((draggableInfo) => {
+    const onDragEnterContainer = React.useCallback((draggableInfo: DraggableInfo) => {
         setIsDraggedOver(canDrop(draggableInfo));
     }, [setIsDraggedOver, canDrop]);
 
@@ -37,26 +58,19 @@ export default function useCardDragAndDrop({
         setIsDraggedOver(false);
     }, [setIsDraggedOver]);
 
-    const _onDrop = React.useCallback((draggableInfo) => {
+    const _onDrop = React.useCallback((draggableInfo: DraggableInfo) => {
         return onDrop?.(draggableInfo) || false;
     }, [onDrop]);
 
-    const _onDropEnd = React.useCallback((draggableInfo, success) => {
+    const _onDropEnd = React.useCallback((draggableInfo: DraggableInfo, success: boolean) => {
         onDropEnd?.(draggableInfo, success);
     }, [onDropEnd]);
 
-    // returns {
-    //   direction: 'horizontal' TODO: use a constant?
-    //   position: 'left'/'right' TODO: use constants?
-    //   beforeElems: array of elems to left of indicator
-    //   afterElems: array of elems to right of indicator
-    //   droppableIndex:
-    // }
-    const _getIndicatorPosition = React.useCallback((draggableInfo) => {
+    const _getIndicatorPosition = React.useCallback((draggableInfo: DraggableInfo) => {
         return getIndicatorPosition?.(draggableInfo) || false;
     }, [getIndicatorPosition]);
 
-    const _getDraggableInfo = React.useCallback((draggableElement) => {
+    const _getDraggableInfo = React.useCallback((draggableElement: HTMLElement) => {
         return getDraggableInfo?.(draggableElement) || {};
     }, [getDraggableInfo]);
 
@@ -73,7 +87,7 @@ export default function useCardDragAndDrop({
             return;
         }
 
-        dragDropContainer.current = koenig.dragDropHandler.registerContainer(
+        dragDropContainer.current = (koenig.dragDropHandler as DragDropHandler).registerContainer(
             containerRef,
             {
                 draggableSelector,

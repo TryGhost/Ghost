@@ -1,12 +1,21 @@
-import PropTypes from 'prop-types';
 import ReactSlider from 'react-slider';
 
-export function Slider({dataTestId, max, min, value, onChange}) {
+export interface SliderProps {
+    dataTestId?: string;
+    max?: number;
+    min?: number;
+    value?: number;
+    defaultValue?: number;
+    onChange?: (value: number) => void;
+}
+
+export function Slider({dataTestId, max, min, value, defaultValue, onChange}: SliderProps) {
     return (
         // docs at https://zillow.github.io/react-slider/
         <ReactSlider
             className='classname h-3 w-full rounded-full py-[5px]'
             data-testid={dataTestId}
+            defaultValue={defaultValue}
             markClassName='mark-class-name'
             max={max}
             min={min}
@@ -17,10 +26,3 @@ export function Slider({dataTestId, max, min, value, onChange}) {
             onChange={onChange} />
     );
 }
-
-Slider.propTypes = {
-    max: PropTypes.number,
-    min: PropTypes.number,
-    value: PropTypes.number,
-    onChange: PropTypes.func
-};

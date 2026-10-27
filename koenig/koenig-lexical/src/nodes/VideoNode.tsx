@@ -1,20 +1,28 @@
 import VideoCardIcon from '../assets/icons/kg-card-type-video.svg?react';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {VideoNode as BaseVideoNode, normalizeCardWidth} from '@tryghost/kg-default-nodes';
-import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {VideoNode as BaseVideoNode, normalizeCardWidth, type VideoData} from '@tryghost/kg-default-nodes';
+import {KoenigCardWrapper, MINIMAL_NODES} from '../index';
 import {VideoNodeComponent} from './VideoNodeComponent';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_VIDEO_COMMAND = createCommand();
+export type VideoNodeData = VideoData & {
+    captionEditor?: LexicalEditor;
+    captionEditorInitialState?: unknown;
+    initialFile?: File | null;
+    triggerFileDialog?: boolean;
+};
+
+export const INSERT_VIDEO_COMMAND = createCommand<VideoNodeData>();
 
 export class VideoNode extends BaseVideoNode {
     // transient properties used to control node behaviour
-    __triggerFileDialog = false;
-    __initialFile = null;
-    __captionEditor;
-    __captionEditorInitialState;
+    __triggerFileDialog: boolean = false;
+    __initialFile: File | null = null;
+    __captionEditor!: LexicalEditor;
+    __captionEditorInitialState: unknown;
 
     static kgMenu = [{
         label: 'Video',
@@ -35,13 +43,13 @@ export class VideoNode extends BaseVideoNode {
         return VideoCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: VideoNodeData = {}, key?: string) {
         super(dataset, key);
 
         const {triggerFileDialog, initialFile} = dataset;
 
         // don't trigger the file dialog when rendering if we've already been given a url
-        this.__triggerFileDialog = !dataset.src && triggerFileDialog;
+        this.__triggerFileDialog = !dataset.src && !!triggerFileDialog;
 
         this.__initialFile = initialFile || null;
 
@@ -52,7 +60,7 @@ export class VideoNode extends BaseVideoNode {
         }
     }
 
-    set triggerFileDialog(shouldTrigger) {
+    set triggerFileDialog(shouldTrigger: boolean) {
         const writable = this.getWritable();
         writable.__triggerFileDialog = shouldTrigger;
     }
@@ -77,7 +85,7 @@ export class VideoNode extends BaseVideoNode {
             this.__captionEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__captionEditor, null);
                 const cleanedHtml = cleanBasicHtml(html);
-                json.caption = cleanedHtml;
+                json.caption = cleanedHtml ?? "";
             });
         }
 
@@ -91,7 +99,7 @@ export class VideoNode extends BaseVideoNode {
             <KoenigCardWrapper nodeKey={this.getKey()} width={cardWidth}>
                 <VideoNodeComponent
                     captionEditor={this.__captionEditor}
-                    captionEditorInitialState={this.__captionEditorInitialState}
+                    captionEditorInitialState={this.__captionEditorInitialState as string | undefined}
                     cardWidth={cardWidth}
                     customThumbnail={this.customThumbnailSrc}
                     initialFile={this.__initialFile}
@@ -106,10 +114,10 @@ export class VideoNode extends BaseVideoNode {
     }
 }
 
-export const $createVideoNode = (dataset) => {
+export const $createVideoNode = (dataset: VideoNodeData = {}) => {
     return new VideoNode(dataset);
 };
 
-export function $isVideoNode(node) {
+export function $isVideoNode(node: unknown): node is VideoNode {
     return node instanceof VideoNode;
 }

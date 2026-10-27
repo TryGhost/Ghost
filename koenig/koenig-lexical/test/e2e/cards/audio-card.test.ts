@@ -2,11 +2,12 @@ import path from 'path';
 import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Audio card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -364,7 +365,7 @@ test.describe('Audio card', async () => {
     });
 });
 
-async function uploadAudio(page, fileName = 'audio-sample.mp3') {
+async function uploadAudio(page: Page, fileName = 'audio-sample.mp3') {
     const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${fileName}`);
 
     const fileChooserPromise = page.waitForEvent('filechooser');

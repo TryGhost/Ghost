@@ -6,13 +6,20 @@ import {$isLinkNode} from '@lexical/link';
 import {LinkToolbar} from './LinkToolbar';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LinkNode} from '@lexical/link';
 
-export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
+interface FloatingLinkToolbarProps {
+    anchorElem?: HTMLElement;
+    onEditLink: (opts: {href: string}) => void;
+    disabled?: boolean;
+}
+
+export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}: FloatingLinkToolbarProps) {
     const [editor] = useLexicalComposerContext();
-    const [linkNode, setLinkNode] = React.useState(null);
+    const [linkNode, setLinkNode] = React.useState<LinkNode | null>(null);
     const [href, setHref] = React.useState('');
-    const toolbarRef = React.useRef(null);
-    const [targetElem, setTargetElem] = React.useState(null);
+    const toolbarRef = React.useRef<HTMLDivElement>(null);
+    const [targetElem, setTargetElem] = React.useState<HTMLElement | null>(null);
 
     React.useEffect(() => {
         if (disabled) {
@@ -23,14 +30,14 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
             return;
         }
 
-        const onMouseEnter = (event) => {
-            if (toolbarRef.current?.contains(event.target)) {
+        const onMouseEnter = (event: MouseEvent) => {
+            if (toolbarRef.current?.contains(event.target as Node)) {
                 return;
             }
 
             editor.update(() => {
-                const node = $getNearestNodeFromDOMNode(event.target);
-                setTargetElem(event.target);
+                const node = $getNearestNodeFromDOMNode(event.target as Node);
+                setTargetElem(event.target as HTMLElement);
                 const isLink = $isLinkNode(node) || $isLinkNode(node?.getParent());
 
                 if (!isLink) {
@@ -40,7 +47,7 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
 
                     return;
                 }
-                let link = $isLinkNode(node) ? node : node.getParent();
+                const link = ($isLinkNode(node) ? node : node?.getParent()) as LinkNode;
 
                 setLinkNode(link);
                 setHref(link.getURL());
@@ -59,14 +66,20 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
 
     const onEdit = () => {
         editor.update(() => {
+            if (!linkNode) {
+                return;
+            }
             const selection = $createRangeSelection();
-            // select all children because createRectsFromDOMRange method from lexical is not working properly for link node
-            selection.setTextNodeRange(
-                linkNode.getFirstChild(),
-                0,
-                linkNode.getLastChild(),
-                linkNode.getLastChild().getTextContentSize()
-            );
+            const firstChild = linkNode.getFirstChild();
+            const lastChild = linkNode.getLastChild();
+            if (firstChild && lastChild) {
+                selection.setTextNodeRange(
+                    firstChild,
+                    0,
+                    lastChild,
+                    lastChild.getTextContentSize()
+                );
+            }
             $setSelection(selection);
             onEditLink({href});
         });
@@ -74,6 +87,9 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
 
     const onRemove = () => {
         editor.update(() => {
+            if (!linkNode) {
+                return;
+            }
             linkNode.select();
             editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
             setLinkNode(null);

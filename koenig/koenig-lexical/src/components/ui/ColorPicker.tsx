@@ -8,11 +8,19 @@ import {Tooltip} from './Tooltip';
 import {getAccentColor} from '../../utils/getAccentColor';
 import {useClickOutside} from '../../hooks/useClickOutside';
 
-export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, children}) {
-    // HexColorInput doesn't support adding a ref on the input itself
-    const inputWrapperRef = useRef(null);
+export interface ColorPickerProps {
+    value?: string;
+    eyedropper?: boolean;
+    hasTransparentOption?: boolean;
+    onChange: (color: string) => void;
+    children?: React.ReactNode;
+}
 
-    const stopPropagation = useCallback((e) => {
+export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, children}: ColorPickerProps) {
+    // HexColorInput doesn't support adding a ref on the input itself
+    const inputWrapperRef = useRef<HTMLDivElement>(null);
+
+    const stopPropagation = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         e.stopPropagation();
 
         const inputElement = inputWrapperRef.current?.querySelector('input');
@@ -46,15 +54,15 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
         document.addEventListener('touchend', stopUsingColorPicker);
     }, [stopUsingColorPicker]);
 
-    const openColorPicker = useCallback((e) => {
+    const openColorPicker = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
 
         isUsingColorPicker.current = true;
         document.body.style.setProperty('pointer-events', 'none');
 
-        const eyeDropper = new window.EyeDropper();
+        const eyeDropper = new (window as unknown as {EyeDropper: new () => {open: () => Promise<{sRGBHex: string}>}}).EyeDropper();
         eyeDropper.open()
-            .then(result => onChange(result.sRGBHex))
+            .then((result: {sRGBHex: string}) => onChange(result.sRGBHex))
             .finally(() => {
                 isUsingColorPicker.current = false;
                 document.body.style.removeProperty('pointer-events');
@@ -73,7 +81,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
         hexValue = '';
     }
 
-    const focusHexInputOnClick = useCallback((e) => {
+    const focusHexInputOnClick = useCallback(() => {
         inputWrapperRef.current?.querySelector('input')?.focus();
     }, []);
 
@@ -84,7 +92,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
                 <div ref={inputWrapperRef} className={`relative flex w-full items-center rounded-lg border border-grey-100 bg-grey-100 px-3 py-1.5 font-sans text-sm font-normal text-grey-900 transition-colors placeholder:text-grey-500 focus-within:border-green focus-within:bg-white focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-within:outline-none dark:border-transparent dark:bg-grey-900 dark:text-white dark:selection:bg-grey-800 dark:placeholder:text-grey-700 dark:focus-within:border-green dark:hover:bg-grey-925 dark:focus:bg-grey-925`} onClick={focusHexInputOnClick}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
                     <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onChange={onChange} />
-                    {eyedropper && !!window.EyeDropper && (
+                    {eyedropper && !!(window as unknown as {EyeDropper?: unknown}).EyeDropper && (
                         <button
                             className="absolute inset-y-0 right-3 z-50 my-auto size-4 p-[1px]"
                             type="button"
@@ -102,12 +110,21 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
     );
 }
 
-function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
+interface ColorSwatchProps {
+    hex?: string;
+    accent?: boolean;
+    transparent?: boolean;
+    title: string;
+    isSelected?: boolean;
+    onSelect: (value: string) => void;
+}
+
+function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}: ColorSwatchProps) {
     const backgroundColor = accent ? getAccentColor() : hex;
 
-    const ref = useRef(null);
+    const ref = useRef<HTMLButtonElement>(null);
 
-    const onSelectHandler = (e) => {
+    const onSelectHandler = (e: React.MouseEvent) => {
         e.preventDefault();
 
         if (accent) {
@@ -115,7 +132,7 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
         } else if (transparent) {
             onSelect('transparent');
         } else {
-            onSelect(hex);
+            onSelect(hex || '');
         }
     };
 
@@ -137,14 +154,35 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
     );
 }
 
-export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker, onChange, isExpanded, eyedropper, hasTransparentOption, children}) {
+interface Swatch {
+    hex?: string;
+    accent?: boolean;
+    transparent?: boolean;
+    image?: boolean;
+    title: string;
+    customContent?: React.ReactNode;
+}
+
+interface ColorIndicatorProps {
+    value?: string;
+    swatches: Swatch[];
+    onSwatchChange: (value: string) => void;
+    onTogglePicker: (expanded: boolean) => void;
+    onChange: (value: string) => void;
+    isExpanded?: boolean;
+    eyedropper?: boolean;
+    hasTransparentOption?: boolean;
+    children?: React.ReactNode;
+}
+
+export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker, onChange, isExpanded, eyedropper, hasTransparentOption, children}: ColorIndicatorProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showChildren, setShowChildren] = useState(false);
-    const popoverRef = useRef(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
 
     useClickOutside(isOpen, popoverRef, () => setIsOpen(false));
 
-    const stopPropagation = useCallback((e) => {
+    const stopPropagation = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         e.stopPropagation();
         e.preventDefault();
     }, []);
@@ -164,10 +202,10 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker,
     }
 
     if (isExpanded) {
-        selectedSwatch = null;
+        selectedSwatch = undefined;
     }
 
-    const handleColorPickerChange = (newValue) => {
+    const handleColorPickerChange = (newValue: string) => {
         onChange(newValue);
         // Don't close the popover when using the color picker
     };

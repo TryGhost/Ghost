@@ -1,4 +1,6 @@
-export async function selectNamedColor(page, colorName, testId) {
+import type {Page} from '@playwright/test';
+
+export async function selectNamedColor(page: Page, colorName: string, testId?: string) {
     if (testId) {
         const color = page.locator(`[data-testid="${testId}"]`);
         await color.click();
@@ -7,7 +9,7 @@ export async function selectNamedColor(page, colorName, testId) {
     await colorPicker.click();
 }
 
-export async function selectCustomColor(page, color, pickerTestId) {
+export async function selectCustomColor(page: Page, color: string, pickerTestId?: string) {
     if (pickerTestId) {
         const customColor = page.locator(`[data-testid="${pickerTestId}"]`);
         await customColor.click();
@@ -16,7 +18,7 @@ export async function selectCustomColor(page, color, pickerTestId) {
     await customColorInput.fill(color);
 }
 
-export async function selectTitledColor(page, colorName, testId) {
+export async function selectTitledColor(page: Page, colorName: string, testId?: string) {
     if (testId) {
         const color = page.locator(`[data-testid="${testId}"]`);
         await color.click();

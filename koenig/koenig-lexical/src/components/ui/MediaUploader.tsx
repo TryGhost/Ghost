@@ -1,13 +1,40 @@
 import DeleteIcon from '../../assets/icons/kg-trash.svg?react';
 import ImageUploadForm from './ImageUploadForm';
-import PropTypes from 'prop-types';
+import React from 'react';
 import WandIcon from '../../assets/icons/kg-wand.svg?react';
 import clsx from 'clsx';
 import {IconButton} from './IconButton';
 import {MediaPlaceholder} from './MediaPlaceholder';
 import {ProgressBar} from './ProgressBar';
+import {createFileInputChangeEventFromBlob} from '../../utils/createFileInputChangeEvent';
 import {openFileSelection} from '../../utils/openFileSelection';
 import {useRef} from 'react';
+import type {OpenImageEditor} from '../../hooks/usePinturaEditor';
+
+interface MediaUploaderProps {
+    className?: string;
+    imgClassName?: string;
+    src?: string;
+    alt?: string;
+    desc?: string;
+    icon?: string;
+    size?: string;
+    type?: 'image' | 'button';
+    borderStyle?: 'squared' | 'rounded';
+    backgroundSize?: 'cover' | 'contain';
+    mimeTypes?: string[];
+    onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    dragHandler?: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    isEditing?: boolean;
+    isLoading?: boolean;
+    isPinturaEnabled?: boolean;
+    openImageEditor?: OpenImageEditor;
+    progress?: number;
+    errors?: {message: string}[];
+    onRemoveMedia?: () => void;
+    additionalActions?: React.ReactNode;
+    setFileInputRef?: (el: HTMLInputElement | null) => void;
+}
 
 export function MediaUploader({
     className,
@@ -32,19 +59,19 @@ export function MediaUploader({
     onRemoveMedia = () => {},
     additionalActions,
     setFileInputRef
-}) {
-    const fileInputRef = useRef(null);
+}: MediaUploaderProps) {
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFileInputRef = (element) => {
+    const onFileInputRef = (element: HTMLInputElement | null) => {
         fileInputRef.current = element;
         setFileInputRef?.(element);
     };
 
     const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
+        width: `${(progress ?? 0).toFixed(0)}%`
     };
 
-    const onRemove = (e) => {
+    const onRemove = (e: React.MouseEvent) => {
         e.stopPropagation(); // prevents card from losing selected state
         onRemoveMedia();
     };
@@ -61,15 +88,14 @@ export function MediaUploader({
                     errorDataTestId="media-upload-errors"
                     errors={errors}
                     filePicker={() => openFileSelection({fileInputRef})}
-                    icon={icon}
+                    icon={icon as 'image' | 'gallery' | 'video' | 'audio' | 'file' | 'product'}
                     isDraggedOver={dragHandler?.isDraggedOver}
                     placeholderRef={dragHandler?.setRef}
-                    size={size}
+                    size={size as 'xsmall' | 'small' | 'medium' | 'large'}
                     type={type}
                 />
                 <ImageUploadForm
                     fileInputRef={onFileInputRef}
-                    filePicker={() => openFileSelection({fileInputRef})}
                     mimeTypes={mimeTypes}
                     onFileChange={onFileChange}
                 />
@@ -79,9 +105,9 @@ export function MediaUploader({
 
     return (
         <div className={clsx(
-            'group/image relative flex items-center justify-center', 
+            'group/image relative flex items-center justify-center',
             isLoading ? 'min-w-[6.8rem]' : 'min-w-[5.2rem]',
-            borderStyle === 'rounded' && 'rounded', 
+            borderStyle === 'rounded' && 'rounded',
             className
         )} data-testid="media-upload-filled">
             {src && (
@@ -94,14 +120,10 @@ export function MediaUploader({
             {!isLoading && (
                 <div className="absolute right-1 top-1 flex space-x-1 opacity-0 transition-all group-hover/image:opacity-100">
                     {additionalActions}
-                    { isPinturaEnabled && <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
-                        image: src,
-                        handleSave: (editedImage) => {
-                            onFileChange({
-                                target: {
-                                    files: [editedImage]
-                                }
-                            });
+                    { isPinturaEnabled && <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor?.({
+                        image: src || '',
+                        handleSave: (editedImage: Blob) => {
+                            onFileChange(createFileInputChangeEventFromBlob(editedImage));
                         }
                     })} /> }
                     <IconButton dataTestId="media-upload-remove" Icon={DeleteIcon} label="Delete" onClick={onRemove} />
@@ -119,28 +141,3 @@ export function MediaUploader({
         </div>
     );
 }
-
-MediaUploader.propTypes = {
-    additionalActions: PropTypes.node,
-    alt: PropTypes.string,
-    backgroundSize: PropTypes.oneOf(['cover', 'contain']),
-    borderStyle: PropTypes.oneOf(['squared', 'rounded']),
-    className: PropTypes.string,
-    desc: PropTypes.string,
-    dragHandler: PropTypes.shape({isDraggedOver: PropTypes.bool, setRef: PropTypes.func}),
-    errors: PropTypes.arrayOf(PropTypes.shape({message: PropTypes.string})),
-    icon: PropTypes.string,
-    imgClassName: PropTypes.string,
-    isEditing: PropTypes.bool,
-    isLoading: PropTypes.bool,
-    isPinturaEnabled: PropTypes.bool,
-    mimeTypes: PropTypes.arrayOf(PropTypes.string),
-    onFileChange: PropTypes.func,
-    onRemoveMedia: PropTypes.func,
-    openImageEditor: PropTypes.func,
-    progress: PropTypes.number,
-    setFileInputRef: PropTypes.func,
-    size: PropTypes.string,
-    src: PropTypes.string,
-    type: PropTypes.oneOf(['image', 'button'])
-};

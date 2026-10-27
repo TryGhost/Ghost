@@ -5,6 +5,8 @@ import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {INSERT_MEDIA_COMMAND} from './DragDropPastePlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {ProcessedMedia} from './DragDropPastePlugin';
+import type {VideoNodeData} from '../nodes/VideoNode';
 
 export const VideoPlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -17,7 +19,7 @@ export const VideoPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_VIDEO_COMMAND,
-                async (dataset) => {
+                (dataset: VideoNodeData) => {
                     const cardNode = $createVideoNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
@@ -27,7 +29,7 @@ export const VideoPlugin = () => {
             ),
             editor.registerCommand(
                 INSERT_MEDIA_COMMAND,
-                async (dataset) => {
+                (dataset: ProcessedMedia) => {
                     if (dataset.type === 'video') {
                         editor.dispatchCommand(INSERT_VIDEO_COMMAND, {initialFile: dataset.file});
                         return true;

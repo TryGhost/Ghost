@@ -2,8 +2,9 @@ import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
 import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
 import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
 import {ButtonGroup, ButtonGroupIconButton} from './ButtonGroup';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof ButtonGroup> = {
     title: 'Generic/Button group (beta)',
     component: ButtonGroup,
     subcomponents: {ButtonGroupIconButton},
@@ -18,13 +19,13 @@ const story = {
 };
 export default story;
 
-const Template = (args) => {
+const Template: StoryFn<typeof ButtonGroup> = (args) => {
     return (
         <ButtonGroup {...args} />
     );
 };
 
-export const CardWidth = Template.bind({});
+export const CardWidth: StoryFn<typeof ButtonGroup> = Template.bind({});
 CardWidth.args = {
     selectedName: 'regular',
     buttons: [

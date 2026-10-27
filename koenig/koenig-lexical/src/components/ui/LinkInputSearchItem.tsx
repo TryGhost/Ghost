@@ -1,7 +1,27 @@
 import {HighlightedString} from './HighlightedString';
 import {InputListItem} from './InputList';
 
-export function LinkInputSearchItem({dataTestId, item, highlightString, selected, onMouseOver, scrollIntoView, onClick}) {
+interface LinkInputSearchItemProps {
+    dataTestId?: string;
+    item: {
+        value?: string | null;
+        type?: string;
+        Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+        label: string;
+        highlight?: boolean;
+        metaText?: string;
+        MetaIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+        metaIconTitle?: string;
+        [key: string]: unknown;
+    };
+    highlightString?: string;
+    selected?: boolean;
+    onMouseOver?: () => void;
+    scrollIntoView?: boolean;
+    onClick?: (item: {value?: string | null; type?: string}) => void;
+}
+
+export function LinkInputSearchItem({dataTestId, item, highlightString, selected, onMouseOver, scrollIntoView, onClick}: LinkInputSearchItemProps) {
     return (
         <InputListItem
             className='my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white'

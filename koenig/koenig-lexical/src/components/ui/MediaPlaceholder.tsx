@@ -3,11 +3,11 @@ import FilePlaceholderIcon from '../../assets/icons/kg-file-placeholder.svg?reac
 import GalleryPlaceholderIcon from '../../assets/icons/kg-gallery-placeholder.svg?react';
 import ImgPlaceholderIcon from '../../assets/icons/kg-img-placeholder.svg?react';
 import ProductPlaceholderIcon from '../../assets/icons/kg-product-placeholder.svg?react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import VideoPlaceholderIcon from '../../assets/icons/kg-video-placeholder.svg?react';
 import clsx from 'clsx';
 
-export const PLACEHOLDER_ICONS = {
+export const PLACEHOLDER_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
     image: ImgPlaceholderIcon,
     gallery: GalleryPlaceholderIcon,
     video: VideoPlaceholderIcon,
@@ -16,7 +16,7 @@ export const PLACEHOLDER_ICONS = {
     product: ProductPlaceholderIcon
 };
 
-export const CardText = ({text, type}) => (
+export const CardText = ({text, type}: {text: string; type?: string}) => (
     <span
         className={clsx(
             'text-center font-sans text-sm font-semibold text-grey-800 transition-all group-hover:text-grey-800',
@@ -28,26 +28,26 @@ export const CardText = ({text, type}) => (
     </span>
 );
 
-const ButtonContents = ({desc, hasErrors}) => {
+const ButtonContents = ({desc, hasErrors}: {desc?: string; hasErrors: boolean}) => {
     if (hasErrors) {
         return null;
     }
     return <p className="!font-sans !text-[1.3rem] !font-medium text-grey-900">{desc}</p>;
 };
 
-const StandardContents = ({desc, hasErrors, icon, size}) => {
+const StandardContents = ({desc, hasErrors, icon, size}: {desc?: string; hasErrors: boolean; icon?: string; size?: string}) => {
     if (size === 'xsmall' && hasErrors) {
         return null;
     }
 
-    const Icon = PLACEHOLDER_ICONS[icon];
+    const Icon = icon ? PLACEHOLDER_ICONS[icon] : null;
 
     const iconClasses = clsx(
         'shrink-0 opacity-80 transition-all ease-linear hover:scale-105 group-hover:opacity-100',
         size === 'large' && 'size-20 text-grey',
         size === 'small' && 'size-14 text-grey',
         size === 'xsmall' && 'size-5 text-grey-700',
-        !['large', 'small', 'xsmall'].includes(size) && 'size-16 text-grey',
+        !['large', 'small', 'xsmall'].includes(size || '') && 'size-16 text-grey',
         (size === 'xsmall' && desc) && 'mr-3'
     );
 
@@ -58,10 +58,26 @@ const StandardContents = ({desc, hasErrors, icon, size}) => {
     );
 
     return <>
-        <Icon className={iconClasses} />
+        {Icon && <Icon className={iconClasses} />}
         <p className={descriptionClasses}>{desc}</p>
     </>;
 };
+
+export interface MediaPlaceholderProps {
+    desc?: string;
+    icon?: 'image' | 'gallery' | 'video' | 'audio' | 'file' | 'product';
+    filePicker?: () => void;
+    size?: 'xsmall' | 'small' | 'medium' | 'large';
+    type?: 'image' | 'button';
+    borderStyle?: 'squared' | 'rounded';
+    isDraggedOver?: boolean;
+    errors?: {message: string}[];
+    placeholderRef?: React.Ref<HTMLDivElement>;
+    dataTestId?: string;
+    errorDataTestId?: string;
+    multiple?: boolean;
+    [key: string]: unknown;
+}
 
 export function MediaPlaceholder({
     desc,
@@ -77,7 +93,7 @@ export function MediaPlaceholder({
     errorDataTestId = 'media-placeholder-errors',
     multiple = false,
     ...props
-}) {
+}: MediaPlaceholderProps) {
     const containerClasses = clsx(
         'relative flex h-full items-center justify-center',
         type === 'button' ? 'rounded-lg bg-grey-100' : 'border bg-grey-50',
@@ -137,11 +153,3 @@ export function MediaPlaceholder({
         </div>
     );
 }
-
-MediaPlaceholder.propTypes = {
-    icon: PropTypes.oneOf(['image', 'gallery', 'video', 'audio', 'file', 'product']),
-    desc: PropTypes.string,
-    size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large']),
-    type: PropTypes.oneOf(['image', 'button']),
-    borderStyle: PropTypes.oneOf(['squared', 'rounded'])
-};

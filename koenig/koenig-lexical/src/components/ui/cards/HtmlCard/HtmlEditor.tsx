@@ -14,9 +14,15 @@ const htmlExtras = [
 const lightExtensions = [...lightBaseExtensions, ...htmlExtras];
 const darkExtensions = [...darkBaseExtensions, ...htmlExtras];
 
-export default function HtmlEditor({darkMode, html, updateHtml}) {
-    const onChange = React.useCallback((value) => {
-        updateHtml(value);
+interface HtmlEditorProps {
+    darkMode?: boolean;
+    html?: string;
+    updateHtml?: (value: string) => void;
+}
+
+export default function HtmlEditor({darkMode, html, updateHtml}: HtmlEditorProps) {
+    const onChange = React.useCallback((value: string) => {
+        updateHtml?.(value);
     }, [updateHtml]);
 
     const extensions = darkMode ? darkExtensions : lightExtensions;

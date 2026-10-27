@@ -4,6 +4,7 @@ import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {CallToActionNodeData} from '../nodes/CallToActionNode';
 
 export const CallToActionPlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -16,7 +17,7 @@ export const CallToActionPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_CALL_TO_ACTION_COMMAND,
-                async (dataset) => {
+                (dataset: CallToActionNodeData) => {
                     const cardNode = $createCallToActionNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

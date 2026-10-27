@@ -1,8 +1,9 @@
 import {assertHTML, assertSelection, ctrlOrCmd, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Selection behaviour', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -26,7 +27,7 @@ test.describe('Selection behaviour', async () => {
         const firstPBoundingBox = await page.locator('p').nth(0).boundingBox();
         const secondPBoundingBox = await page.locator('p').nth(1).boundingBox();
 
-        await dragMouse(page, firstPBoundingBox, secondPBoundingBox, 'start', 'end');
+        await dragMouse(page, firstPBoundingBox!, secondPBoundingBox!, 'start', 'end');
 
         // make sure we're waiting for any card behaviours to finish
         await page.waitForTimeout(100);
@@ -49,7 +50,7 @@ test.describe('Selection behaviour', async () => {
         const firstPBoundingBox = await page.locator('p').nth(0).boundingBox();
         const secondPBoundingBox = await page.locator('p').nth(1).boundingBox();
 
-        await dragMouse(page, firstPBoundingBox, secondPBoundingBox, 'start', 'end');
+        await dragMouse(page, firstPBoundingBox!, secondPBoundingBox!, 'start', 'end');
 
         await assertHTML(page, html`
             <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>

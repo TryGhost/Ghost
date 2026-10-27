@@ -7,7 +7,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // used to register a minimal API for controlling the editor from the consuming app
 // designed to allow typical behaviours without the consuming app needing to bundle the lexical library
-export const ExternalControlPlugin = ({registerAPI}) => {
+export const ExternalControlPlugin = ({registerAPI}: {registerAPI?: (api: unknown) => void}) => {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
@@ -25,14 +25,14 @@ export const ExternalControlPlugin = ({registerAPI}) => {
             editorIsEmpty() {
                 let isEmpty;
                 editor.update(() => {
-                    isEmpty = $canShowPlaceholder(false, true);
+                    isEmpty = $canShowPlaceholder(false);
                 });
                 return isEmpty;
             },
             focusEditor({position = 'bottom'} = {}) {
-                const editorFocusOptions = {
-                    defaultSelection: position === 'top' ? 'rootStart' : null
-                };
+                const editorFocusOptions = position === 'top'
+                    ? {defaultSelection: 'rootStart' as const}
+                    : {};
 
                 editor.focus(() => {}, editorFocusOptions);
 
@@ -47,7 +47,7 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                             // selecting a decorator node does not change the
                             // window selection (there's no caret) so we need
                             // to manually move focus to the editor element
-                            editor.getRootElement().focus();
+                            editor.getRootElement()?.focus();
                         }
                     });
                 }
@@ -62,9 +62,9 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                             // selecting a decorator node does not change the
                             // window selection (there's no caret) so we need
                             // to manually move focus to the editor element
-                            editor.getRootElement().focus();
+                            editor.getRootElement()?.focus();
                         } else {
-                            lastChild.select();
+                            (lastChild as import('lexical').ElementNode).select();
                         }
                     });
                 }
@@ -93,7 +93,7 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                     }
                 });
             },
-            insertFiles(files) {
+            insertFiles(files: File[]) {
                 editor.dispatchCommand(DRAG_DROP_PASTE, files);
             },
             lastNodeIsDecorator() {
@@ -114,6 +114,8 @@ export const ExternalControlPlugin = ({registerAPI}) => {
             registerAPI?.(null);
         };
     }, [editor, registerAPI]);
+
+    return null;
 };
 
 export default ExternalControlPlugin;

@@ -3,11 +3,12 @@ import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 import {selectCustomColor, selectTitledColor} from '../../utils/color-select-helper';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Signup card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -214,7 +215,7 @@ test.describe('Signup card', async () => {
 
         await page.click('[data-testid="signup-button-color"] [data-testid="color-selector-button"]');
 
-        await selectCustomColor(page, '#f7f7f7', null);
+        await selectCustomColor(page, '#f7f7f7', undefined);
         await page.click('[data-testid="settings-panel"]');
 
         await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
@@ -236,7 +237,7 @@ test.describe('Signup card', async () => {
         await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
 
         await page.click('[data-testid="signup-background-color"] [data-testid="color-selector-button"]');
-        await selectCustomColor(page, '#f7f7f7', null);
+        await selectCustomColor(page, '#f7f7f7', undefined);
         await page.click('[data-testid="settings-panel"]');
         await expect(container).toHaveCSS('background-color', 'rgb(247, 247, 247)');
         await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
