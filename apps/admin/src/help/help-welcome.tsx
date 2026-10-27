@@ -1,4 +1,4 @@
-import { Kbd, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import { Kbd, Skeleton } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { type HelpArticle, HELP_CENTER_URL } from './help-center';
@@ -7,7 +7,8 @@ import type { HelpSuggestion } from './use-help-suggestions';
 
 /*
  * What the panel shows before the user asks anything: a greeting and up to
- * three numbered suggestions for the page they're on (use-help-suggestions.ts).
+ * three numbered questions from the help center's FAQ for the page they're on
+ * (use-help-suggestions.ts).
  * The keys 1 to 3 pick them (handled in help-panel.tsx). While they load, rows
  * of the same size stand in, and when they change (a new page) they cascade in
  * afresh.
@@ -38,10 +39,6 @@ export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }:
         <Text leading="heading" size="xl" weight="semibold">
           {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
         </Text>
-        <Text leading="snug" size="sm" tone="secondary">
-          Answers come from the Ghost help center. A person on the support team is a click away if
-          you need one.
-        </Text>
       </Stack>
       {failed && (
         <Text leading="snug" size="sm" tone="secondary">
@@ -54,7 +51,7 @@ export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }:
           >
             Open it in a new tab
           </a>
-          , or ask the support team.
+          .
         </Text>
       )}
       {/* Keyed by what it shows, so each change (loading, or a new page's
@@ -62,7 +59,7 @@ export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }:
       <ol
         key={loading ? 'loading' : suggestions.map(({ article }) => article.id).join()}
         aria-busy={loading}
-        aria-label="Suggested articles"
+        aria-label="Questions to ask"
         className="-mx-2 flex flex-col"
       >
         {(loading ? SUGGESTION_SLOTS : SUGGESTION_SLOTS.slice(0, suggestions.length)).map(
@@ -72,31 +69,28 @@ export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }:
             return (
               <li key={key} className={REVEAL_CLASS_NAME} style={revealAt(index + 1)}>
                 {suggestion ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        aria-keyshortcuts={String(index + 1)}
-                        className={cn(
-                          SUGGESTION_ROW_CLASS_NAME,
-                          'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring',
-                        )}
-                        data-help-source={suggestion.source}
-                        type="button"
-                        onClick={() => onPick(suggestion.article)}
-                      >
-                        <Kbd>{index + 1}</Kbd>
-                        <Text
-                          as="span"
-                          className="transition-colors group-hover:text-text-primary"
-                          leading="snug"
-                          tone="secondary"
-                        >
-                          {suggestion.article.title}
-                        </Text>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">{suggestion.reason}</TooltipContent>
-                  </Tooltip>
+                  // Where it came from is on the row (data-help-source) for
+                  // checking tagging, not shown to the user
+                  <button
+                    aria-keyshortcuts={String(index + 1)}
+                    className={cn(
+                      SUGGESTION_ROW_CLASS_NAME,
+                      'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring',
+                    )}
+                    data-help-source={suggestion.source}
+                    type="button"
+                    onClick={() => onPick(suggestion.article)}
+                  >
+                    <Kbd>{index + 1}</Kbd>
+                    <Text
+                      as="span"
+                      className="transition-colors group-hover:text-text-primary"
+                      leading="snug"
+                      tone="secondary"
+                    >
+                      {suggestion.article.title}
+                    </Text>
+                  </button>
                 ) : (
                   <div className={SUGGESTION_ROW_CLASS_NAME} aria-hidden>
                     <Kbd>{index + 1}</Kbd>

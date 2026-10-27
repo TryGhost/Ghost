@@ -136,6 +136,32 @@ body {
   }
 }
 
+/* The help panel's answer while it streams in: a caret after the last word. */
+@utility help-streaming {
+  & > :last-child::after {
+    content: '';
+    display: inline-block;
+    width: 0.5em;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: currentColor;
+    animation: help-streaming-caret 1s steps(2, start) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    & > :last-child::after {
+      animation: none;
+    }
+  }
+}
+
+@keyframes help-streaming-caret {
+  to {
+    visibility: hidden;
+  }
+}
+
 /* Admin overlays mount beside #root, so mirror typography into Shade portals
    and the alerts host.
    Do not set body fonts or change component weights, sizes, or line heights. */

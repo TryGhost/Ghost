@@ -1,16 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { getHelpArticleSlug } from './help-article-html';
 import type { HelpArticle } from './help-center';
+import { askDocsBot, type DocsBotSource, newConversationId } from './help-docsbot';
 import { plural } from './help-format';
-import {
-  getPageContext,
-  getSearchTerms,
-  isAboutAccount,
-  MAX_RESULTS,
-  rankHelpArticles,
-  type HelpFollowUp,
-  type HelpPageContext,
-} from './help-search';
+import { extractHelpLinks, trimOpenLink } from './help-markdown';
+import { wantsSupport } from './help-questions';
+import { MAX_RESULTS } from './help-search';
 import { getQuestionContext, type HelpBilling, type HelpSignals } from './help-signals';
 import { getSiteCardKind, isBillingCard, type HelpSiteCardKind } from './help-site-card-kinds';
 import { helpCenterIndexQuery } from './use-help-center-index';
@@ -19,15 +15,16 @@ import { helpCenterIndexQuery } from './use-help-center-index';
  * The conversation: questions, answers, follow-ups, reading articles and the
  * message to support, and which of them the panel shows (its view).
  *
- * There's no LLM. An answer is a search of the help center's article list
- * (help-search.ts), narrated step by step while it runs, then shown as the
- * best match's excerpt with up to three articles, and a site card where one
- * applies (help-site-card-kinds.ts).
+ * Answers come from DocsBot (help-docsbot.ts), an agent trained on the help
+ * center. Its answer streams into the thread as it's written, narrated by the
+ * searches it runs, and the help center pages it drew on are matched back to
+ * the article list (help-center.ts) so they open in the panel and pick a site
+ * card where one applies (help-site-card-kinds.ts).
  *
- * Each question quietly carries the one before it that found something
- * (getFollowUp), so "how do I customise it" after "how to connect Stripe"
- * stays on Stripe. It's listed in the question's context and the answer's
- * steps, not in the question itself.
+ * DocsBot keeps the thread by conversation id, so a follow-up ("how do I
+ * customise it" after "how to connect Stripe") needs nothing from Admin; a new
+ * conversation gets a new id. A question that asks for a person (wantsSupport)
+ * skips DocsBot and offers the support form instead.
  */
 
 export interface HelpQuestion {
@@ -40,38 +37,51 @@ export interface HelpQuestion {
   context: string[];
 }
 
-interface HelpSearchRequest {
+interface HelpAskRequest {
   query: string;
   /** The page it was asked from, unless the user left it out */
-  page: HelpPageContext | null;
-  /** An article picked from the suggestions, which leads the answer */
+  pageLabel: string | null;
+  /** An article picked from the suggestions, which leads the answer's sources */
   picked: HelpArticle | null;
-  /** The question before, which this one may follow up on */
-  followUp: HelpFollowUp | null;
   /** Their Ghost(Pro) billing, for which site card the answer gets */
   billing: Pick<HelpBilling, 'canManage' | 'status'>;
 }
 
-export interface HelpSearchResult {
-  terms: string[];
+/** A page DocsBot drew on that isn't in the help center's article list, so it links out. */
+export interface HelpAnswerSource {
+  title: string;
+  url: string;
+}
+
+export interface HelpAnswerResult {
+  /** The help center articles the answer drew on, to read in the panel */
   articles: HelpArticle[];
-  /** Whether the question was about the user's own Ghost(Pro) account */
-  aboutAccount: boolean;
+  /** Pages it drew on beyond those */
+  sources: HelpAnswerSource[];
+  /** Whether DocsBot found an answer in the help center */
+  couldAnswer: boolean;
+  /** DocsBot's id for the answer, for rating it through its API later */
+  docsbotId: string | null;
+  /** The user asked for a person, so there's no answer, only the way to one */
+  supportRequested: boolean;
 }
 
 export interface HelpAnswer {
   type: 'answer';
   id: string;
-  status: 'working' | 'done' | 'error';
+  /** Working: nothing to show yet. Streaming: the text is still arriving. */
+  status: 'working' | 'streaming' | 'done' | 'error';
   /** What it's doing while it works */
   verb: string;
   /** What it did, once each step is over */
   steps: string[];
   seconds: number;
-  request: HelpSearchRequest;
-  result: HelpSearchResult | null;
-  // PROTOTYPE: kept in this component state only; record it (trackEvent) to
-  // learn which answers work
+  /** The answer, as Markdown, growing while it streams */
+  text: string;
+  request: HelpAskRequest;
+  result: HelpAnswerResult | null;
+  // PROTOTYPE: kept in this component state only; record it (trackEvent, or
+  // DocsBot's rating API with result.docsbotId) to learn which answers work
   feedback: 'up' | 'down' | null;
 }
 
@@ -79,7 +89,6 @@ export interface HelpAnswer {
 export interface HelpReceipt {
   type: 'receipt';
   id: string;
-  ticket: string;
 }
 
 export type HelpMessage = HelpQuestion | HelpAnswer | HelpReceipt;
@@ -89,16 +98,17 @@ export interface HelpSupportDraft {
   body: string;
   // PROTOTYPE: only file names are kept; a real send needs the files uploaded
   files: string[];
+  /** Whether the conversation (questions, answers, articles read) goes with the message */
+  attachConversation: boolean;
   status: 'draft' | 'sending' | 'sent';
-  ticket: string | null;
 }
 
 const EMPTY_DRAFT: HelpSupportDraft = {
   subject: '',
   body: '',
   files: [],
+  attachConversation: true,
   status: 'draft',
-  ticket: null,
 };
 
 // What each site card adds to the answer's steps. PROTOTYPE: the scheduled
@@ -112,46 +122,54 @@ const SITE_CARD_STEPS: Record<HelpSiteCardKind, string> = {
   newsletter: 'Showed your newsletter (sample data)',
 };
 
-// PROTOTYPE, a product decision: each step is held at least this long so it
-// reads as work being done; the search itself takes a few milliseconds. Keep,
-// shorten or drop it.
-const MIN_STEP_DURATION = 700;
 // PROTOTYPE: nothing is sent; this only stands in for the request
 const SEND_DURATION = 1200;
 
-/** The question before, for a follow-up to lean on: the last one that found something. */
-export function getFollowUp(messages: HelpMessage[]): HelpFollowUp | null {
-  const previous = [...messages]
-    .reverse()
-    .find(
-      (message): message is HelpAnswer =>
-        message.type === 'answer' && !!message.result?.articles.length,
-    );
-  const top = previous?.result?.articles[0];
-  if (!previous || !top) {
-    return null;
+/**
+ * The pages an answer drew on, matched back to the help center's article list
+ * where they are help articles, so they open in the panel: the articles the
+ * answer itself linked to first (they're taken out of its text, to show once),
+ * then DocsBot's sources. A picked suggestion leads.
+ */
+export function matchSources(
+  linked: string[],
+  sources: DocsBotSource[],
+  articles: HelpArticle[],
+  picked: HelpArticle | null,
+): Pick<HelpAnswerResult, 'articles' | 'sources'> {
+  const matched: HelpArticle[] = picked ? [picked] : [];
+  const unmatched: HelpAnswerSource[] = [];
+  // The pages the answer actually used first; DocsBot often lists a page twice
+  const ordered = [
+    ...linked.map((url) => ({ title: url, url, used: true })),
+    ...[...sources].sort((a, b) => Number(b.used) - Number(a.used)),
+  ];
+  for (const source of ordered) {
+    if (!source.url) {
+      continue;
+    }
+    const slug = getHelpArticleSlug(source.url);
+    const article = slug ? articles.find((candidate) => candidate.slug === slug) : undefined;
+    if (article) {
+      if (!matched.some(({ id }) => id === article.id)) {
+        matched.push(article);
+      }
+    } else if (!unmatched.some(({ url }) => url === source.url)) {
+      unmatched.push({ title: source.title, url: source.url });
+    }
   }
-  return {
-    query: previous.request.query,
-    terms: getSearchTerms(previous.request.query),
-    topic: top.tags[0]?.slug ?? null,
-  };
+  return { articles: matched.slice(0, MAX_RESULTS), sources: unmatched.slice(0, MAX_RESULTS) };
 }
 
-/** Answers a question from the help center's article list. */
-function searchHelpCenter(
-  { query, page, picked, followUp }: HelpSearchRequest,
-  articles: HelpArticle[],
-): HelpSearchResult {
-  const terms = getSearchTerms(query);
-  const ranked = rankHelpArticles(articles, terms, page, followUp);
-  const aboutAccount = isAboutAccount(terms);
-
-  if (!picked) {
-    return { terms, articles: ranked, aboutAccount };
+// PROTOTYPE: DocsBot has no field for context, so the page goes in the
+// question itself, as a hint it's asked not to repeat; it isn't shown in the
+// thread. A picked FAQ question is complete as it is, so it goes alone. Decide
+// whether the role and Ghost(Pro) state should go too.
+function withPageContext(query: string, pageLabel: string | null, picked: HelpArticle | null) {
+  if (!pageLabel || picked) {
+    return query;
   }
-  const related = ranked.filter(({ id }) => id !== picked.id);
-  return { terms, articles: [picked, ...related].slice(0, MAX_RESULTS), aboutAccount };
+  return `${query}\n\n(Context only, don't mention it: asked from the ${pageLabel} page of Ghost Admin.)`;
 }
 
 export function useHelpConversation(signals: HelpSignals) {
@@ -164,8 +182,10 @@ export function useHelpConversation(signals: HelpSignals) {
   // The article being read in the panel, while the view is 'article'
   const [reading, setReading] = useState<HelpArticle | null>(null);
   const timers = useRef<number[]>([]);
-  // Bumped by a new conversation, so searches from the old one stop
-  const generation = useRef(0);
+  // The thread DocsBot keeps; a new conversation starts a new one
+  const conversationId = useRef(newConversationId());
+  // The answers on their way, stopped by a new conversation
+  const requests = useRef(new Set<AbortController>());
   const nextId = useRef(0);
 
   const clearTimers = useCallback(() => {
@@ -173,7 +193,18 @@ export function useHelpConversation(signals: HelpSignals) {
     timers.current = [];
   }, []);
 
-  useEffect(() => clearTimers, [clearTimers]);
+  const stopRequests = useCallback(() => {
+    requests.current.forEach((controller) => controller.abort());
+    requests.current.clear();
+  }, []);
+
+  useEffect(
+    () => () => {
+      clearTimers();
+      stopRequests();
+    },
+    [clearTimers, stopRequests],
+  );
 
   const later = useCallback((delay: number, run: () => void) => {
     timers.current.push(window.setTimeout(run, delay));
@@ -190,95 +221,120 @@ export function useHelpConversation(signals: HelpSignals) {
     return `help-${nextId.current}`;
   };
 
-  /** Searches for an answer, and narrates each step as it goes. */
+  /** Asks DocsBot, and narrates each step as the answer streams in. */
   const run = useCallback(
-    async (answerId: string, request: HelpSearchRequest) => {
-      const runGeneration = generation.current;
-      const current = () => generation.current === runGeneration;
+    async (answerId: string, request: HelpAskRequest) => {
+      const controller = new AbortController();
+      requests.current.add(controller);
+      const current = () => !controller.signal.aborted;
       const started = Date.now();
-      // Never resolves once a new conversation clears the timers, which stops
-      // a search from the old one where it is
-      const pause = () =>
-        new Promise<void>((resolve) => {
-          later(MIN_STEP_DURATION, resolve);
-        });
       const steps: string[] = [];
+      // As it arrives; what's shown has the help article links taken out
+      let raw = '';
+      let text: string | undefined;
 
       update<HelpAnswer>(answerId, {
         status: 'working',
-        verb: 'Searching the help center',
+        verb: 'Thinking',
         steps: [],
+        text: '',
         result: null,
       });
 
       try {
-        // The article list is loaded once, and the first search waits for it
-        const [articles] = await Promise.all([
-          queryClient.fetchQuery(helpCenterIndexQuery),
-          pause(),
-        ]);
+        // The article list, to match the answer's sources to; without it they link out
+        const articles = queryClient
+          .fetchQuery(helpCenterIndexQuery)
+          .catch((): HelpArticle[] => []);
+        let result: HelpAnswerResult | null = null;
+
+        for await (const event of askDocsBot(
+          {
+            conversationId: conversationId.current,
+            question: withPageContext(request.query, request.pageLabel, request.picked),
+            referrer: `ghost-admin/${request.pageLabel ?? 'general'}`,
+          },
+          controller.signal,
+        )) {
+          if (!current()) {
+            return;
+          }
+          if (event.type === 'searching') {
+            const queries = event.queries.map((query) => `“${query}”`).join(', ');
+            steps.push(`Searched the help center${queries ? ` for ${queries}` : ''}`);
+            update<HelpAnswer>(answerId, { verb: 'Searching the help center', steps: [...steps] });
+          } else if (event.type === 'token') {
+            raw += event.text;
+            update<HelpAnswer>(answerId, {
+              status: 'streaming',
+              verb: 'Answering',
+              text: extractHelpLinks(trimOpenLink(raw)).markdown,
+            });
+          } else {
+            // The whole answer is authoritative over the tokens
+            const { markdown, urls } = extractHelpLinks(event.answer || raw);
+            text = markdown;
+            const matched = matchSources(urls, event.sources, await articles, request.picked);
+            result = {
+              ...matched,
+              couldAnswer: event.couldAnswer,
+              docsbotId: event.id,
+              supportRequested: false,
+            };
+            const found = matched.articles.length + matched.sources.length;
+            steps.push(
+              found ? `Read ${plural(found, 'help center page')}` : 'Found no help center pages',
+            );
+            if (!event.couldAnswer) {
+              steps.push('Couldn’t find an answer in the help center');
+            }
+          }
+        }
         if (!current()) {
           return;
         }
-        const result = searchHelpCenter(request, articles);
-        const terms = result.terms.length ? ` for “${result.terms.join(' ')}”` : '';
-        steps.push(`Searched the help center${terms}`);
-        if (result.aboutAccount) {
-          steps.push('Looked through Ghost(Pro) account articles, as it sounds like yours');
-        }
-        if (request.followUp) {
-          steps.push(`Kept your last question in mind: “${request.followUp.query}”`);
-        }
-
-        const found = result.articles.length;
-        if (found) {
-          update<HelpAnswer>(answerId, {
-            verb: `Reading ${plural(found, 'article')}`,
-            steps: [...steps],
-          });
-          await pause();
-          steps.push(`Read ${plural(found, 'matching article')}`);
-        } else {
-          steps.push('Found no matching articles');
+        if (!result || text === undefined) {
+          // The stream ended without DocsBot's final answer
+          throw new Error('DocsBot sent no answer');
         }
 
         const [top] = result.articles;
         const siteCard = top && getSiteCardKind(top.slug, request.billing);
         // Billing is only checked once the billing app has reported it
         if (siteCard && (!isBillingCard(siteCard) || request.billing.status)) {
-          update<HelpAnswer>(answerId, { verb: 'Checking your site', steps: [...steps] });
-          await pause();
           steps.push(SITE_CARD_STEPS[siteCard]);
         }
 
         update<HelpAnswer>(answerId, {
           status: 'done',
           steps,
+          text,
           result,
           seconds: Math.max(1, Math.round((Date.now() - started) / 1000)),
         });
       } catch {
-        // The article list couldn't be loaded (help-center.ts gives up after a timeout)
+        // DocsBot couldn't be reached, or answered with an error
         if (current()) {
-          update<HelpAnswer>(answerId, { status: 'error', steps: [] });
+          update<HelpAnswer>(answerId, { status: 'error', steps: [], text: '' });
         }
+      } finally {
+        requests.current.delete(controller);
       }
     },
-    [later, queryClient, update],
+    [queryClient, update],
   );
-
-  const followUp = useMemo(() => getFollowUp(messages), [messages]);
 
   const ask = useCallback(
     (text: string, withPage: boolean, picked: HelpArticle | null = null) => {
-      const request = {
+      const request: HelpAskRequest = {
         query: text,
-        page: withPage ? getPageContext(signals.pageKey) : null,
+        pageLabel: withPage ? signals.pageLabel : null,
         picked,
-        followUp,
         billing: { canManage: signals.billing.canManage, status: signals.billing.status },
       };
       const answerId = createId();
+      // Asking for a person gets the way to one, not an answer from DocsBot
+      const forSupport = wantsSupport(text);
 
       setMessages((current) => [
         ...current,
@@ -287,26 +343,34 @@ export function useHelpConversation(signals: HelpSignals) {
           id: createId(),
           text,
           pageLabel: withPage ? signals.pageLabel : null,
-          context: [
-            ...getQuestionContext(signals, withPage),
-            ...(followUp ? [`Following up on: “${followUp.query}”`] : []),
-          ],
+          context: getQuestionContext(signals, withPage),
         },
         {
           type: 'answer',
           id: answerId,
-          status: 'working',
-          verb: 'Searching the help center',
+          status: forSupport ? 'done' : 'working',
+          verb: 'Thinking',
           steps: [],
           seconds: 0,
+          text: '',
           request,
-          result: null,
+          result: forSupport
+            ? {
+                articles: [],
+                sources: [],
+                couldAnswer: false,
+                docsbotId: null,
+                supportRequested: true,
+              }
+            : null,
           feedback: null,
         },
       ]);
-      void run(answerId, request);
+      if (!forSupport) {
+        void run(answerId, request);
+      }
     },
-    [followUp, run, signals],
+    [run, signals],
   );
 
   const retry = useCallback(
@@ -329,41 +393,37 @@ export function useHelpConversation(signals: HelpSignals) {
   const lastQuestion = [...messages]
     .reverse()
     .find((message): message is HelpQuestion => message.type === 'question');
+  const firstQuestion = messages.find(
+    (message): message is HelpQuestion => message.type === 'question',
+  );
 
-  /** Opens the message to support, its subject the last question if it has none yet. */
+  /** Opens the message to support, started from the first question if nothing's written yet. */
   const contactSupport = useCallback(() => {
     setSupport((current) =>
-      current.subject ? current : { ...current, subject: lastQuestion?.text ?? '' },
+      current.body ? current : { ...current, body: firstQuestion?.text ?? '' },
     );
     setView('support');
-  }, [lastQuestion]);
+  }, [firstQuestion]);
 
   const editSupport = useCallback(
-    (patch: Partial<Pick<HelpSupportDraft, 'subject' | 'body' | 'files'>>) =>
+    (patch: Partial<Pick<HelpSupportDraft, 'subject' | 'body' | 'files' | 'attachConversation'>>) =>
       setSupport((current) => ({ ...current, ...patch })),
     [],
   );
 
-  // PROTOTYPE: nothing is sent and the reference is made up. Ghost(Pro)
-  // support is email today: the quickest real version opens a
-  // mailto:support@ghost.org draft with the subject, message and context
+  // PROTOTYPE: nothing is sent. Ghost(Pro) support is email today: the
+  // quickest real version opens a mailto:support@ghost.org draft with the
+  // message and, when attached, the conversation and context
   // (getSupportContext in help-signals.ts).
   const sendToSupport = useCallback(() => {
     setSupport((current) => ({ ...current, status: 'sending' }));
-    later(SEND_DURATION, () =>
-      setSupport((current) => ({
-        ...current,
-        status: 'sent',
-        ticket: `#${48000 + Math.floor(Math.random() * 1000)}`,
-      })),
-    );
+    later(SEND_DURATION, () => setSupport((current) => ({ ...current, status: 'sent' })));
   }, [later]);
 
   /** Back to the conversation; once sent, the message leaves a receipt there. */
   const leaveSupport = useCallback(() => {
-    const { status, ticket } = support;
-    if (status === 'sent' && ticket) {
-      setMessages((current) => [...current, { type: 'receipt', id: createId(), ticket }]);
+    if (support.status === 'sent') {
+      setMessages((current) => [...current, { type: 'receipt', id: createId() }]);
       setSupport(EMPTY_DRAFT);
     }
     setView('conversation');
@@ -381,17 +441,19 @@ export function useHelpConversation(signals: HelpSignals) {
   const leaveArticle = useCallback(() => setView('conversation'), []);
 
   const reset = useCallback(() => {
-    generation.current += 1;
+    stopRequests();
     clearTimers();
+    conversationId.current = newConversationId();
     setMessages([]);
     setOpenedArticles([]);
     setSupport(EMPTY_DRAFT);
     setReading(null);
     setView('conversation');
-  }, [clearTimers]);
+  }, [clearTimers, stopRequests]);
 
   const working = messages.some(
-    (message) => message.type === 'answer' && message.status === 'working',
+    (message) =>
+      message.type === 'answer' && (message.status === 'working' || message.status === 'streaming'),
   );
 
   return {
@@ -402,8 +464,6 @@ export function useHelpConversation(signals: HelpSignals) {
     reading,
     support,
     lastQuestion,
-    /** The question a new one would follow up on, for matches as the user types too */
-    followUp,
     questionCount: messages.filter((message) => message.type === 'question').length,
     ask,
     retry,

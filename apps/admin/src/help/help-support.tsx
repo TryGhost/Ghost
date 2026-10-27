@@ -1,4 +1,4 @@
-import React, { useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import {
   Avatar,
   Badge,
@@ -7,6 +7,7 @@ import {
   FieldLabel,
   Input,
   LoadingIndicator,
+  Switch,
   Textarea,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -14,14 +15,15 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { getInitials } from './help-format';
 import { HelpPanelSizeButton } from './help-panel-size';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
-import { getSupportContext, type HelpSignals } from './help-signals';
+import type { HelpSignals } from './help-signals';
 import type { HelpConversation } from './use-help-conversation';
 
 /*
  * The message to the support team, which takes over the panel. Its draft
- * lives in the conversation, so going back or closing the panel keeps it, and
- * it lists the context sent along with it (getSupportContext in
- * help-signals.ts), so the user knows what support sees.
+ * lives in the conversation, so going back or closing the panel keeps it. The
+ * message starts as the first question asked, and the conversation goes with
+ * it unless the user turns that off (what it carries: getSupportContext in
+ * help-signals.ts).
  *
  * PROTOTYPE: nothing is sent (sendToSupport in use-help-conversation.ts).
  */
@@ -46,14 +48,7 @@ export function HelpSupportView({
   const { user } = signals;
   const sending = support.status === 'sending';
   const sent = support.status === 'sent';
-  const canSend = !!support.subject.trim() && !!support.body.trim() && !sending;
-
-  const context = getSupportContext({
-    signals,
-    questionPage: conversation.lastQuestion ? conversation.lastQuestion.pageLabel : undefined,
-    questionCount,
-    openedArticles: conversation.openedArticles,
-  });
+  const canSend = !!support.body.trim() && !sending;
 
   return (
     <div className="flex h-full min-h-0 flex-col motion-safe:animate-in motion-safe:duration-300 motion-safe:fade-in motion-safe:slide-in-from-right-4">
@@ -88,7 +83,7 @@ export function HelpSupportView({
             <LucideIcon.Check className="size-6" />
           </div>
           <Text className={REVEAL_CLASS_NAME} size="lg" style={revealAt(1)} weight="semibold">
-            Sent to the support team
+            Sent to the Ghost(Pro) support team
           </Text>
           <Text
             className={REVEAL_CLASS_NAME}
@@ -97,7 +92,7 @@ export function HelpSupportView({
             style={revealAt(2)}
             tone="secondary"
           >
-            We’ll reply to {user.email}. Your reference is {support.ticket}.
+            We’ll reply to {user.email} within 24h during working days.
           </Text>
           <Button
             className={REVEAL_CLASS_NAME}
@@ -121,8 +116,8 @@ export function HelpSupportView({
         >
           <Stack className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-6" gap="xl">
             <Text leading="snug" size="sm" tone="secondary">
-              A person on the support team will reply by email. They’ll see your question, the page
-              you’re on and what you’ve already read, so you won’t have to explain it twice.
+              A person on the Ghost(Pro) support team will reply within 24 hours during working
+              days.
             </Text>
 
             <Inline align="center" className="rounded-xl bg-muted px-3 py-2.5" gap="sm">
@@ -206,19 +201,22 @@ export function HelpSupportView({
               </Stack>
             </Stack>
 
-            <Stack gap="sm">
-              <Text size="xs" tone="tertiary" weight="medium">
-                Sent along with your message
-              </Text>
-              <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-1.5 text-sm">
-                {context.map(([label, value]) => (
-                  <React.Fragment key={label}>
-                    <dt className="text-text-tertiary">{label}</dt>
-                    <dd className="truncate text-text-primary">{value}</dd>
-                  </React.Fragment>
-                ))}
-              </dl>
-            </Stack>
+            {questionCount > 0 && (
+              <Inline align="center" gap="sm" justify="between">
+                <Stack gap="none">
+                  <FieldLabel htmlFor={`${id}-attach`}>Attach this conversation</FieldLabel>
+                  <Text size="xs" tone="tertiary">
+                    Your questions, the answers and the articles you read
+                  </Text>
+                </Stack>
+                <Switch
+                  checked={support.attachConversation}
+                  disabled={sending}
+                  id={`${id}-attach`}
+                  onCheckedChange={(checked) => editSupport({ attachConversation: checked })}
+                />
+              </Inline>
+            )}
           </Stack>
 
           <div className="shrink-0 border-t border-border-default p-4">
@@ -232,9 +230,6 @@ export function HelpSupportView({
                 'Send to support'
               )}
             </Button>
-            <Text className="mt-2 text-center" size="xs" tone="tertiary">
-              Prototype: nothing is sent yet
-            </Text>
           </div>
         </form>
       )}

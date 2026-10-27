@@ -3,38 +3,49 @@ import { article, billingWith, PAYMENT_FAILED } from './help-fixtures';
 import { getAccountAlert, getSuggestedArticles } from './help-suggestions';
 
 describe('getSuggestedArticles', () => {
-  const comments = article('commenting', 'Comments', '', ['Memberships']);
-  const portal = article('customize-portal', 'Customize Portal', '', ['Memberships'], [], {
+  const faq = (slug: string, title: string, extra = {}) =>
+    article(slug, title, '', ['FAQ'], [], extra);
+  const signIn = faq('members-sign-in', 'How do members sign in to my site?');
+  const disable = faq('can-i-disable-memberships', 'Can I disable memberships?');
+  const javascript = faq('disabling-javascript', 'Is it possible to get around the login system?');
+  const fees = faq('are-there-really-no-transaction-fees', 'Are there any transaction fees?', {
     featured: true,
   });
-  const members = article('member-management', 'Member management', '', ['Memberships'], [], {
+  const cookies = faq('cookie-notice', 'Do I need to add a cookie notice to my site?', {
+    featured: true,
     updatedAt: '2026-06-01',
   });
-  const taggedOne = article('tagged', 'Tagged for comments', '', ['FAQ'], ['comments']);
+  const robots = faq('modifying-robots-txt', 'Modifying robots.txt');
+  const guide = article('commenting', 'Comments', '', ['Memberships'], [], { featured: true });
+  const taggedOne = article(
+    'tagged',
+    'How do I moderate comments?',
+    '',
+    ['Memberships'],
+    ['comments'],
+  );
   const subscription = article('manage-your-subscription', 'Manage your subscription', '', [
     'Ghost(Pro)',
   ]);
-  const featured = article('setup', 'Setting up your site', '', ['Getting started'], [], {
-    featured: true,
-  });
-  const all = [comments, portal, members, taggedOne, subscription, featured];
+  const all = [signIn, disable, javascript, fees, cookies, robots, guide, taggedOne, subscription];
   const titles = (suggestions: ReturnType<typeof getSuggestedArticles>) =>
     suggestions.map(({ article: { title }, source }) => `${title} (${source})`);
 
-  it('shows the page’s defaults while nothing is tagged, then its topic, featured first', () => {
+  it('shows the page’s FAQ questions while nothing is tagged', () => {
     const untagged = all.filter((a) => a !== taggedOne);
     expect(titles(getSuggestedArticles(untagged, 'comments', null))).toEqual([
-      'Comments (default)',
-      'Customize Portal (topic)',
-      'Member management (topic)',
+      'How do members sign in to my site? (default)',
+      'Can I disable memberships? (default)',
+      'Is it possible to get around the login system? (default)',
     ]);
   });
 
-  it('lets tagged articles replace the defaults', () => {
-    expect(titles(getSuggestedArticles(all, 'comments', null))[0]).toBe(
-      'Tagged for comments (tagged)',
-    );
-    expect(titles(getSuggestedArticles(all, 'comments', null))).not.toContain('Comments (default)');
+  it('lets a tagged question lead, then fills with featured FAQ questions', () => {
+    expect(titles(getSuggestedArticles(all, 'comments', null))).toEqual([
+      'How do I moderate comments? (tagged)',
+      'Do I need to add a cookie notice to my site? (featured)',
+      'Are there any transaction fees? (featured)',
+    ]);
   });
 
   it('leads with an urgent account alert', () => {
@@ -48,25 +59,27 @@ describe('getSuggestedArticles', () => {
     );
   });
 
-  it('leads with articles tagged #admin-general without a page', () => {
+  it('leads with questions tagged #admin-general without a page', () => {
     const general = article(
       'turn-off-auto-renew',
-      'Turn off auto-renew',
+      'How do I turn off auto-renew?',
       '',
       ['Ghost(Pro)'],
       ['general'],
     );
     expect(titles(getSuggestedArticles([...all, general], null, null))).toEqual([
-      'Turn off auto-renew (general)',
-      'Customize Portal (featured)',
-      'Setting up your site (featured)',
+      'How do I turn off auto-renew? (general)',
+      'Do I need to add a cookie notice to my site? (featured)',
+      'Are there any transaction fees? (featured)',
     ]);
   });
 
-  it('falls back on featured articles without a page', () => {
-    expect(titles(getSuggestedArticles(all, null, null))).toEqual([
-      'Customize Portal (featured)',
-      'Setting up your site (featured)',
+  it('only ever suggests questions, never guides or topic-like FAQ titles', () => {
+    const suggested = getSuggestedArticles(all, null, null).map(({ article: { slug } }) => slug);
+    expect(suggested).not.toContain('commenting');
+    expect(suggested).not.toContain('modifying-robots-txt');
+    expect(titles(getSuggestedArticles([fees, robots, guide], null, null))).toEqual([
+      'Are there any transaction fees? (featured)',
     ]);
   });
 });

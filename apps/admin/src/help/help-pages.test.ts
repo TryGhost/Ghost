@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getPageKey, PAGE_ARTICLES, PAGE_LABELS, PAGE_TOPICS } from './help-pages';
+import { getPageKey, PAGE_ARTICLES, PAGE_LABELS, PAGE_QUESTIONS, PAGE_TOPICS } from './help-pages';
 
 describe('getPageKey', () => {
   it.each([
@@ -19,8 +19,9 @@ describe('getPageKey', () => {
 });
 
 describe('pages', () => {
-  it('each have a label, topics and fallback articles', () => {
+  it('each have a label, topics, fallback articles and fallback questions', () => {
     expect(Object.keys(PAGE_TOPICS).sort()).toEqual(Object.keys(PAGE_LABELS).sort());
     expect(Object.keys(PAGE_ARTICLES).sort()).toEqual(Object.keys(PAGE_LABELS).sort());
+    expect(Object.keys(PAGE_QUESTIONS).sort()).toEqual(Object.keys(PAGE_LABELS).sort());
   });
 });

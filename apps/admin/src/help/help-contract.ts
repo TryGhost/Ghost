@@ -3,9 +3,11 @@ import {
   GENERAL_KEY,
   PAGE_ARTICLES,
   PAGE_LABELS,
+  PAGE_QUESTIONS,
   PAGE_TOPICS,
   type HelpPageKey,
 } from './help-pages';
+import { FAQ_TOPIC } from './help-questions';
 import { SITE_CARDS } from './help-site-card-kinds';
 import { ACCOUNT_ALERTS } from './help-suggestions';
 
@@ -37,6 +39,7 @@ export function getReferencedSlugs(): string[] {
   return [
     ...new Set([
       ...Object.values(PAGE_ARTICLES).flat(),
+      ...Object.values(PAGE_QUESTIONS).flat(),
       ...Object.values(ACCOUNT_ALERTS).map(({ fallbackSlug }) => fallbackSlug),
       ...Object.keys(SITE_CARDS),
     ]),
@@ -45,5 +48,5 @@ export function getReferencedSlugs(): string[] {
 
 /** Every help center topic (tag slug) the panel refers to. */
 export function getReferencedTopics(): string[] {
-  return [...new Set([...Object.values(PAGE_TOPICS).flat(), ACCOUNT_TOPIC])].sort();
+  return [...new Set([...Object.values(PAGE_TOPICS).flat(), ACCOUNT_TOPIC, FAQ_TOPIC])].sort();
 }

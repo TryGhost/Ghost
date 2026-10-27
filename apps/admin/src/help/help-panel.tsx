@@ -38,8 +38,8 @@ import { useHelpTypeahead } from './use-help-typeahead';
  * The Help panel's shell. Docked beside the page on desktop (AdminLayout
  * places it after the page, which narrows to make room) and a sheet on
  * mobile. It shows one of three views (use-help-conversation.ts): the
- * conversation (welcome and suggestions, or the thread; matches as the user
- * types; the composer; the footer), an article, or the message to support.
+ * conversation (welcome and suggestions, or the thread; completions as the
+ * user types; the composer; the footer), an article, or the message to support.
  * The conversation stays mounted behind the other two, so Back returns to the
  * same place.
  *
@@ -77,17 +77,10 @@ function HelpPanelContent({
   const [pageLeftOutOf, setPageLeftOutOf] = useState<HelpPageKey | null>(null);
   const withPage = pageLeftOutOf !== signals.pageKey;
   const suggestions = useHelpSuggestions(signals, withPage, open);
-  const typeahead = useHelpTypeahead({
-    enabled: open,
-    pageKey: withPage ? signals.pageKey : null,
-    followUp: conversation.followUp,
-    busy: conversation.working,
-    onOpen: conversation.readArticle,
-  });
+  const typeahead = useHelpTypeahead({ enabled: open, busy: conversation.working });
 
-  // A suggestion leads its own answer, with related articles beneath it, as a
-  // question: unlike a match as the user types, which opens straight away, the
-  // user hasn't asked anything yet
+  // A suggestion is a question from the FAQ: picking one asks it, with its
+  // article leading the answer's sources
   const pick = (article: HelpArticle) => conversation.ask(article.title, withPage, article);
 
   // 1, 2 and 3 pick the welcome suggestions, as their number badges say, while
@@ -239,10 +232,10 @@ function HelpPanelContent({
                     />
                   )}
                   {message.type === 'receipt' && (
-                    // PROTOTYPE: nothing was sent, and the reference is made up
+                    // PROTOTYPE: nothing was sent
                     <Text className={REVEAL_CLASS_NAME} leading="relaxed" tone="secondary">
-                      Sent to the support team, reference {message.ticket}. We’ll reply to{' '}
-                      {signals.user.email}.
+                      Sent to the Ghost(Pro) support team. We’ll reply to {signals.user.email}{' '}
+                      within 24h during working days.
                     </Text>
                   )}
                 </div>
@@ -252,7 +245,7 @@ function HelpPanelContent({
             <HelpWelcome
               failed={suggestions.isError}
               firstName={signals.user.name.split(' ')[0] ?? ''}
-              // The matches as the user types take their place for now
+              // The completions as the user types take their place for now
               loading={!typeahead.showMatches && suggestions.isLoading}
               suggestions={typeahead.showMatches ? [] : suggestions.suggestions}
               onPick={pick}
@@ -267,7 +260,7 @@ function HelpPanelContent({
             matches={typeahead.matches}
             optionId={typeahead.optionId}
             onHighlight={typeahead.setHighlighted}
-            onOpen={typeahead.open}
+            onPick={typeahead.pick}
           />
         )}
         <HelpComposer
@@ -284,7 +277,10 @@ function HelpPanelContent({
           onValueChange={typeahead.setDraft}
         />
 
-        <footer className="flex h-11 shrink-0 items-center justify-between border-t border-border-default pr-2 pl-4">
+        {/* Support isn't offered up front: it's where an answer or article
+            didn't do it (help-messages.tsx, help-article-view.tsx), or when
+            the user asks for a person (use-help-conversation.ts) */}
+        <footer className="flex h-11 shrink-0 items-center border-t border-border-default pr-2 pl-4">
           <a
             className="inline-flex items-center gap-1 rounded-sm text-sm text-text-secondary outline-hidden transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-focus-ring"
             href={HELP_CENTER_URL}
@@ -294,10 +290,6 @@ function HelpPanelContent({
             Help center
             <LucideIcon.ArrowUpRight className="size-3.5" />
           </a>
-          <Button size="sm" variant="ghost" onClick={conversation.contactSupport}>
-            <LucideIcon.MessageCircle />
-            Contact support
-          </Button>
         </footer>
       </div>
     </div>

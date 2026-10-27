@@ -68,6 +68,15 @@ const ARTICLE_CONTENT_CLASS_NAME = cn(
   '[&_.kg-bookmark-icon]:size-4 [&_.kg-bookmark-icon]:cursor-auto [&_.kg-bookmark-icon]:rounded-none [&_.kg-bookmark-icon]:border-0 [&_.kg-bookmark-thumbnail]:hidden',
 );
 
+// The lines standing in for an article while it loads: two share a width
+const SKELETON_LINES = [
+  ['first', 'w-full'],
+  ['second', 'w-11/12'],
+  ['third', 'w-4/5'],
+  ['fourth', 'w-full'],
+  ['fifth', 'w-2/3'],
+] as const;
+
 interface HelpArticleViewProps {
   article: HelpArticle;
   conversation: HelpConversation;
@@ -183,8 +192,8 @@ export function HelpArticleView({
 
         {content.isLoading && (
           <Stack aria-label="Loading the article" className="mt-6" gap="sm">
-            {['w-full', 'w-11/12', 'w-4/5', 'w-full', 'w-2/3'].map((width) => (
-              <Skeleton key={width} className={cn('h-3.5', width)} containerClassName="flex" />
+            {SKELETON_LINES.map(([line, width]) => (
+              <Skeleton key={line} className={cn('h-3.5', width)} containerClassName="flex" />
             ))}
           </Stack>
         )}

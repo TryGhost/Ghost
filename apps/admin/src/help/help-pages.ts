@@ -152,3 +152,51 @@ export const PAGE_ARTICLES: Record<HelpPageKey, string[]> = {
     'turn-off-auto-renew',
   ],
 };
+
+/**
+ * The FAQ questions (slugs, from ghost.org/help/topic/faq/) each page suggests
+ * while none are tagged #admin-<page>. Suggestions are questions to ask, so
+ * they come from the FAQ rather than PAGE_ARTICLES; those remain the pages'
+ * reading list. Tagged questions replace them outright.
+ */
+export const PAGE_QUESTIONS: Record<HelpPageKey, string[]> = {
+  home: ['how-do-i-login-to-ghost-admin', 'are-there-really-no-transaction-fees', 'cookie-notice'],
+  analytics: [
+    'unconfirmed-member-emails',
+    'is-protected-content-indexed',
+    'why-does-my-email-go-to-the-promotions-tab',
+  ],
+  posts: ['what-are-tk-reminders', 'title-feature-image', 'can-i-use-embeds-in-email-newsletters'],
+  pages: ['build-a-custom-homepage', 'title-feature-image', 'is-protected-content-indexed'],
+  editor: ['what-are-tk-reminders', 'can-i-use-embeds-in-email-newsletters', 'title-feature-image'],
+  tags: ['build-a-custom-homepage', 'where-can-i-find-my-rss-feed', 'is-protected-content-indexed'],
+  members: ['members-sign-in', 'how-do-i-cancel-member-subscriptions', 'unconfirmed-member-emails'],
+  comments: ['members-sign-in', 'can-i-disable-memberships', 'disabling-javascript'],
+  automations: [
+    'send-a-welcome-email',
+    'how-do-i-send-receipts-to-my-paid-members',
+    'how-do-i-send-renewal-reminders-to-my-paid-members',
+  ],
+  network: ['where-can-i-find-my-rss-feed', 'is-protected-content-indexed', 'cookie-notice'],
+  newsletters: [
+    'email-delivery-tips',
+    'why-does-my-email-go-to-the-promotions-tab',
+    'can-i-use-embeds-in-email-newsletters',
+  ],
+  design: ['help-me-customize-my-theme', 'update-official-theme', 'title-feature-image'],
+  membership: [
+    'are-there-really-no-transaction-fees',
+    'what-happens-when-a-member-payment-fail',
+    'how-do-i-pause-member-subscriptions',
+  ],
+  settings: [
+    'does-ghost-use-2fa',
+    'managing-staff-user-profiles',
+    'can-i-use-multiple-custom-domains',
+  ],
+  'ghost-pro': [
+    'can-i-use-multiple-custom-domains',
+    'can-i-run-a-headless-site-with-ghost-pro',
+    'are-there-really-no-transaction-fees',
+  ],
+};

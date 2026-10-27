@@ -1,73 +1,59 @@
 import type React from 'react';
 import { useDeferredValue, useId, useMemo, useState } from 'react';
 import type { HelpArticle } from './help-center';
-import type { HelpPageKey } from './help-pages';
-import { getPageContext, getSearchTerms, rankHelpArticles, type HelpFollowUp } from './help-search';
+import { getFaqQuestions, matchQuestions } from './help-questions';
 import { useHelpCenterIndex } from './use-help-center-index';
 
 /*
- * Matches as the user types: the composer's text, and the help center
- * articles it matches so far (help-typeahead.tsx shows them), ranked like an
- * answer would be. Focus stays in the composer: the arrow keys move through
- * the matches and Enter opens one (the composer is a combobox for screen
- * readers), and Escape hides them until the text changes. Opening one clears
- * the text, which has done its job.
+ * Completions as the user types: the help center's FAQ questions
+ * (help-questions.ts) that continue what's in the composer so far
+ * (help-typeahead.tsx shows them). Picking one puts the whole question in the
+ * composer in place of what was typed; the user sends it from there. Focus
+ * stays in the composer: the arrow keys move through the questions, Enter or
+ * Tab picks one (the composer is a combobox for screen readers), and Escape
+ * hides them until the text changes.
  */
-
-// Shorter than this, a question matches too much to be useful
-const MIN_LENGTH = 3;
 
 interface HelpTypeaheadOptions {
   /** Loads the help center's articles while the panel is open */
   enabled: boolean;
-  /** The page questions are asked from, unless the user left it out */
-  pageKey: HelpPageKey | null;
-  followUp: HelpFollowUp | null;
-  /** Matches hide while an answer is on its way */
+  /** Completions hide while an answer is on its way */
   busy: boolean;
-  onOpen: (article: HelpArticle) => void;
 }
 
-export function useHelpTypeahead({
-  enabled,
-  pageKey,
-  followUp,
-  busy,
-  onOpen,
-}: HelpTypeaheadOptions) {
+export function useHelpTypeahead({ enabled, busy }: HelpTypeaheadOptions) {
   const index = useHelpCenterIndex(enabled);
   const listboxId = useId();
   const [draft, setDraftState] = useState('');
-  // Ranking ~140 articles takes a few milliseconds; deferring keeps typing smooth
+  // Matching a few dozen questions is quick; deferring still keeps typing smooth
   const deferredDraft = useDeferredValue(draft);
   const [highlighted, setHighlighted] = useState(-1);
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
 
+  const questions = useMemo(() => (index.data ? getFaqQuestions(index.data) : []), [index.data]);
   const matches = useMemo(
-    () =>
-      deferredDraft.trim().length >= MIN_LENGTH && index.data
-        ? rankHelpArticles(
-            index.data,
-            getSearchTerms(deferredDraft),
-            pageKey ? getPageContext(pageKey) : null,
-            followUp,
-          )
-        : [],
-    [deferredDraft, index.data, pageKey, followUp],
+    () => matchQuestions(questions, deferredDraft),
+    [questions, deferredDraft],
   );
-  const showMatches = matches.length > 0 && dismissedFor !== draft && !busy;
+  // A question already in the composer whole isn't a completion of itself
+  const showMatches =
+    matches.length > 0 &&
+    dismissedFor !== draft &&
+    !busy &&
+    !(matches.length === 1 && matches[0]?.title === draft.trim());
 
   const setDraft = (next: string) => {
     setDraftState(next);
     setHighlighted(-1);
   };
 
-  const open = (article: HelpArticle) => {
-    setDraft('');
-    onOpen(article);
+  /** Puts the question in the composer, in place of what was typed. */
+  const pick = (question: HelpArticle) => {
+    setDraft(question.title);
+    setDismissedFor(question.title);
   };
 
-  /** Handles the keys for the matches, from the composer; true when it did. */
+  /** Handles the keys for the completions, from the composer; true when it did. */
   const onKeyCommand = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (!showMatches) {
       return false;
@@ -86,11 +72,18 @@ export function useHelpTypeahead({
     const match = matches[highlighted];
     if (event.key === 'Enter' && !event.shiftKey && match) {
       event.preventDefault();
-      open(match);
+      pick(match);
+      return true;
+    }
+    // Tab takes the highlighted question, or the first
+    const tabbed = match ?? matches[0];
+    if (event.key === 'Tab' && !event.shiftKey && tabbed) {
+      event.preventDefault();
+      pick(tabbed);
       return true;
     }
     if (event.key === 'Escape') {
-      // Hides the matches, not the panel
+      // Hides the completions, not the panel
       event.preventDefault();
       event.stopPropagation();
       setDismissedFor(draft);
@@ -99,7 +92,7 @@ export function useHelpTypeahead({
     return false;
   };
 
-  const optionId = (article: HelpArticle) => `${listboxId}-${article.id}`;
+  const optionId = (question: HelpArticle) => `${listboxId}-${question.id}`;
   const highlightedMatch = showMatches ? matches[highlighted] : undefined;
 
   return {
@@ -109,11 +102,11 @@ export function useHelpTypeahead({
     showMatches,
     highlighted,
     setHighlighted,
-    open,
+    pick,
     onKeyCommand,
     listboxId,
     optionId,
-    /** For the composer, as the matches' combobox */
+    /** For the composer, as the completions' combobox */
     comboboxProps: {
       role: 'combobox',
       'aria-autocomplete': 'list',

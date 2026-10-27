@@ -1,21 +1,23 @@
 import type { HelpArticle } from './help-center';
 import { inDays } from './help-format';
-import { GENERAL_KEY, PAGE_ARTICLES, PAGE_TOPICS, type HelpPageKey } from './help-pages';
+import { GENERAL_KEY, PAGE_QUESTIONS, type HelpPageKey } from './help-pages';
+import { getFaqQuestions, isQuestion } from './help-questions';
 import type { HelpBilling } from './help-signals';
 
 /*
  * What the panel suggests before the user asks anything (pure functions,
  * covered by help-suggestions.test.ts; use-help-suggestions.ts runs them over
- * the help center's article list). In order, up to three:
+ * the help center's article list): questions to ask, from the help center's
+ * FAQ (help-questions.ts), so picking one reads as asking it. In order, up to
+ * three:
  *
  *   1. An account alert, if something about their Ghost(Pro) account is urgent.
- *   2. The page's articles: tagged #admin-<page> in the help center, or
- *      PAGE_ARTICLES (help-pages.ts) while none are tagged.
- *   3. Articles whose primary topic is the page's (PAGE_TOPICS).
- *   4. The help center's featured articles, for any slot left.
+ *   2. The page's questions: tagged #admin-<page> in the help center, or
+ *      PAGE_QUESTIONS (help-pages.ts) while none are tagged.
+ *   3. The FAQ's featured questions, then the rest of the FAQ, for any slot left.
  *
- * Without a page (the user took it out), articles tagged #admin-general stand
- * in for 2 and 3.
+ * Without a page (the user took it out), questions tagged #admin-general
+ * stand in for 2.
  */
 
 /**
@@ -73,13 +75,7 @@ export function getAccountAlert(billing: HelpBilling): HelpAccountAlert | null {
  * Where a suggestion came from, in the order above. It's on each suggestion's
  * row as data-help-source, to check what's driving a page while tagging.
  */
-export type HelpSuggestionSource =
-  | 'alert'
-  | 'tagged'
-  | 'default'
-  | 'topic'
-  | 'general'
-  | 'featured';
+export type HelpSuggestionSource = 'alert' | 'tagged' | 'default' | 'general' | 'featured' | 'faq';
 
 export interface HelpSuggestedArticle {
   article: HelpArticle;
@@ -94,7 +90,7 @@ function byPromotion(a: HelpArticle, b: HelpArticle) {
   return Number(b.featured) - Number(a.featured) || b.updatedAt.localeCompare(a.updatedAt);
 }
 
-/** Up to three articles to suggest, in the order described at the top. */
+/** Up to three questions to suggest, in the order described at the top. */
 export function getSuggestedArticles(
   articles: HelpArticle[],
   page: HelpPageKey | null,
@@ -109,35 +105,36 @@ export function getSuggestedArticles(
       }
     }
   };
+  // Tagging any question-titled article attaches it, FAQ or not
   const tagged = (key: string) =>
-    articles.filter(({ adminKeys }) => adminKeys.includes(key)).sort(byPromotion);
+    articles
+      .filter(({ adminKeys, title }) => adminKeys.includes(key) && isQuestion(title))
+      .sort(byPromotion);
   const bySlug = (slugs: readonly string[]) =>
     slugs.flatMap((slug) => articles.filter((article) => article.slug === slug));
+  const faq = getFaqQuestions(articles).sort(byPromotion);
 
   if (alert) {
-    const forAlert = tagged(alert.key);
+    const forAlert = articles.filter(({ adminKeys }) => adminKeys.includes(alert.key));
     add((forAlert.length ? forAlert : bySlug([alert.fallbackSlug])).slice(0, 1), 'alert');
   }
   if (page) {
-    // Tagged articles replace the defaults outright, so the help center's
+    // Tagged questions replace the defaults outright, so the help center's
     // choice is never mixed with Admin's
     const forPage = tagged(page);
     if (forPage.length) {
       add(forPage, 'tagged');
     } else {
-      add(bySlug(PAGE_ARTICLES[page]), 'default');
+      add(bySlug(PAGE_QUESTIONS[page]), 'default');
     }
-    // The article's main topic, not any it's also tagged with: a payments
-    // article tagged with analytics isn't one to lead with there
-    const topics = PAGE_TOPICS[page];
-    add(
-      articles.filter(({ tags }) => topics.includes(tags[0]?.slug ?? '')).sort(byPromotion),
-      'topic',
-    );
   } else {
     add(tagged(GENERAL_KEY), 'general');
   }
-  add(articles.filter(({ featured }) => featured).sort(byPromotion), 'featured');
+  add(
+    faq.filter(({ featured }) => featured),
+    'featured',
+  );
+  add(faq, 'faq');
 
   return suggestions;
 }
