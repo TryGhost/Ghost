@@ -61,6 +61,7 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
   // finds more to read under it
   const typeahead = useHelpTypeahead({
     enabled: open,
+    pageKey: signals.pageKey,
     onPick: (question) => session.searchFor(question.title, question),
   });
   const pick = (article: HelpArticle) => {

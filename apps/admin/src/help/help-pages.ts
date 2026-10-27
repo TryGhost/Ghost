@@ -200,3 +200,38 @@ export const PAGE_QUESTIONS: Record<HelpPageKey, string[]> = {
     'are-there-really-no-transaction-fees',
   ],
 };
+
+/**
+ * Words that mark an FAQ question as being about a page, for ranking the
+ * completions as the user types (help-questions.ts): a question whose title
+ * has one of them comes before one that doesn't, after the page's own
+ * questions. Matched at the start of a word, so "member" covers "members"
+ * and "membership". Like PAGE_QUESTIONS, a fallback for tagging.
+ */
+export const PAGE_WORDS: Record<HelpPageKey, string[]> = {
+  home: ['login', 'admin', 'site'],
+  analytics: ['analytics', 'indexed', 'search engine', 'unconfirmed'],
+  posts: ['post', 'publish', 'editor', 'tk', 'feature image', 'embed'],
+  pages: ['page', 'homepage', 'feature image'],
+  editor: ['editor', 'post', 'tk', 'embed', 'feature image', 'code'],
+  tags: ['tag', 'rss', 'homepage'],
+  members: ['member', 'subscription', 'sign in', 'signup', 'login', 'receipt', 'renewal'],
+  comments: ['comment', 'member', 'sign in', 'login'],
+  automations: ['welcome email', 'receipt', 'renewal', 'reminder'],
+  network: ['rss', 'indexed', 'social'],
+  newsletters: ['email', 'newsletter', 'promotions', 'deliver', 'embed', 'disabled'],
+  design: ['theme', 'customize', 'homepage', 'feature image', 'code'],
+  membership: [
+    'member',
+    'subscription',
+    'payment',
+    'transaction',
+    'fee',
+    'paypal',
+    'patreon',
+    'ecommerce',
+    'course',
+  ],
+  settings: ['staff', 'permission', 'domain', 'two-factor', '2fa', 'robots'],
+  'ghost-pro': ['domain', 'ghost(pro)', 'headless', 'transaction', 'fee', 'funding'],
+};

@@ -272,8 +272,9 @@ such as "Modifying robots.txt", and are left out). In order:
 
 The FAQ's articles carry no topic tag, only `faq`, so which questions suit
 which page can't come from topics: `PAGE_QUESTIONS` was picked by hand from
-the FAQ's 39 questions. Tagging an FAQ question `#admin-<page>` in the help
-center replaces it without a release.
+the FAQ's 39 questions, and `PAGE_WORDS` (used by the completions) names the
+words that mark a question as about a page. Tagging an FAQ question
+`#admin-<page>` in the help center replaces both without a release.
 
 To see where a suggestion came from, inspect its row: `data-help-source` is
 `alert`, `tagged`, `default`, `general`, `featured` or `faq`.
@@ -288,8 +289,15 @@ it.
 From 3 characters, the FAQ questions that continue what's typed show under
 the field in place of the suggestions or results (`matchQuestions` in
 `help-questions.ts`): every typed word has to start a word in the question,
-the last one usually half-typed, and questions that start the way the user
-did come first. Focus stays in the field, which is a combobox for screen
+the last one usually half-typed. Questions about the page the user is on come
+first (`getPageRelevance`): the page's own questions (tagged `#admin-<page>`,
+or its `PAGE_QUESTIONS` fallback), then questions whose title has one of the
+page's words (`PAGE_WORDS` in `help-pages.ts`: "member" and "subscription"
+on Members, "theme" on Design…), then the rest. Within each, questions that
+start the way the user did come first. So "how do i" on Members completes
+to the member questions before anything else, and on Posts to the publishing
+ones. With only 35 FAQ questions, a page can run out of its own: the rest
+fill in. Focus stays in the field, which is a combobox for screen
 readers: the arrow keys move through the questions, Enter picks the
 highlighted one, and Escape hides them until the text changes. Picking a
 completion puts it in the field and, like a suggestion, opens its article at

@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useDeferredValue, useId, useMemo, useState } from 'react';
 import type { HelpArticle } from './help-center';
+import type { HelpPageKey } from './help-pages';
 import { getFaqQuestions, matchQuestions } from './help-questions';
 import { useHelpCenterIndex } from './use-help-center-index';
 
@@ -8,7 +9,8 @@ import { useHelpCenterIndex } from './use-help-center-index';
  * Completions as the user types: the help center's FAQ questions
  * (help-questions.ts) that continue what's in the search field so far
  * (help-search-field.tsx shows them, in place of the suggestions or results
- * beneath the field). Picking one searches for it straight away. Focus stays
+ * beneath the field), questions about the current page first. Picking one
+ * opens it straight away. Focus stays
  * in the field: the arrow keys move through the questions, Enter picks the
  * highlighted one (the field is a combobox for screen readers), and Escape
  * hides them until the text changes.
@@ -17,10 +19,12 @@ import { useHelpCenterIndex } from './use-help-center-index';
 interface HelpTypeaheadOptions {
   /** Loads the help center's articles while the panel is open */
   enabled: boolean;
+  /** The page the user is on, whose questions come first */
+  pageKey: HelpPageKey | null;
   onPick: (question: HelpArticle) => void;
 }
 
-export function useHelpTypeahead({ enabled, onPick }: HelpTypeaheadOptions) {
+export function useHelpTypeahead({ enabled, pageKey, onPick }: HelpTypeaheadOptions) {
   const index = useHelpCenterIndex(enabled);
   const listboxId = useId();
   const [draft, setDraftState] = useState('');
@@ -30,8 +34,8 @@ export function useHelpTypeahead({ enabled, onPick }: HelpTypeaheadOptions) {
 
   const questions = useMemo(() => (index.data ? getFaqQuestions(index.data) : []), [index.data]);
   const matches = useMemo(
-    () => matchQuestions(questions, deferredDraft),
-    [questions, deferredDraft],
+    () => matchQuestions(questions, deferredDraft, pageKey),
+    [questions, deferredDraft, pageKey],
   );
   // A question already in the field whole isn't a completion of itself
   const showMatches =

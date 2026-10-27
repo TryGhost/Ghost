@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { article } from './help-fixtures';
-import { getFaqQuestions, isQuestion, matchQuestions } from './help-questions';
+import { getFaqQuestions, getPageRelevance, isQuestion, matchQuestions } from './help-questions';
 
 const faq = (slug: string, title: string) => article(slug, title, '', ['FAQ']);
 
@@ -45,5 +45,28 @@ describe('matchQuestions', () => {
   it('needs a few characters and every word to match', () => {
     expect(slugs('ho')).toEqual([]);
     expect(slugs('cancel stripe')).toEqual([]);
+  });
+
+  it('puts questions about the page first', () => {
+    // On Automations, the welcome email leads; on Members, the member ones do
+    const onPage = (draft: string, page: 'automations' | 'members') =>
+      matchQuestions(questions, draft, page).map(({ slug }) => slug);
+    expect(onPage('how do i', 'automations')).toEqual(['welcome', 'cancel', 'pause', 'sign-in']);
+    expect(onPage('how do i', 'members')[0]).toBe('cancel');
+    expect(onPage('how do i', 'members')).not.toContain('fees');
+  });
+});
+
+describe('getPageRelevance', () => {
+  it('rates the page’s own questions above ones that mention the page, above the rest', () => {
+    const own = faq('members-sign-in', 'How do members sign in to my site?');
+    const tagged = article('tagged', 'How do I moderate?', '', ['FAQ'], ['members']);
+    const mentions = faq('receipts', 'How do I send receipts to my paid members?');
+    const other = faq('fees', 'Are there any transaction fees?');
+    expect(getPageRelevance(own, 'members')).toBe(2);
+    expect(getPageRelevance(tagged, 'members')).toBe(2);
+    expect(getPageRelevance(mentions, 'members')).toBe(1);
+    expect(getPageRelevance(other, 'members')).toBe(0);
+    expect(getPageRelevance(own, null)).toBe(0);
   });
 });
