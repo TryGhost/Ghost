@@ -137,6 +137,8 @@ describe('automations API', function () {
         { ...valid, description: null },
         { ...valid, description: 'x'.repeat(2001) },
         { ...valid, trigger_tier_scope: 'paid' },
+        { ...valid, trigger_tier_scope: undefined },
+        { ...valid, trigger_tier_scope: null },
         { ...valid, trigger_tier_scope: 'selected_paid' },
         { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
         { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
@@ -413,7 +415,7 @@ describe('automations API', function () {
       assert.equal(repositoryEdit.mock.calls.length, 0);
     });
 
-    it.each([[null], ['free'], ['all_paid'], ['selected_paid']])(
+    it.each([['free'], ['all_paid'], ['selected_paid']])(
       'accepts %s trigger scope edits',
       async function (scope) {
         const data = {
@@ -432,6 +434,7 @@ describe('automations API', function () {
 
     it.each([
       ['invalid trigger tier scope', { trigger_tier_scope: 'invalid' }],
+      ['null trigger tier scope', { trigger_tier_scope: null }],
       ['unexpected trigger tiers for no scope', { trigger_tier_ids: [ObjectId().toHexString()] }],
       [
         'unexpected trigger tiers for null scope',

@@ -40,7 +40,7 @@ const automationShape = {
 };
 
 const defaultTriggerShape = {
-  trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
+  trigger_tier_scope: z.enum(['free', 'all_paid']),
   trigger_tier_ids: z.null().optional(),
 };
 const selectedPaidTriggerShape = {
@@ -69,7 +69,10 @@ export const editAutomationDataSchema = z
   })
   .and(
     z.discriminatedUnion('trigger_tier_scope', [
-      z.object(defaultTriggerShape),
+      z.object({
+        ...defaultTriggerShape,
+        trigger_tier_scope: defaultTriggerShape.trigger_tier_scope.optional(),
+      }),
       z.object(selectedPaidTriggerShape),
     ]),
   );
