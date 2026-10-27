@@ -1,7 +1,9 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
-import { CUSTOM_NAMESPACE, type Namespace } from '@tryghost/metafield-types/identity';
+import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { INTERNAL, type Audience } from '../../members-metafields';
+import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
+import type { MetafieldValuesService } from '../../members-metafields/values-service';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -13,10 +15,7 @@ import MembersCSVImporter, {
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
 import type MembersImportJob from '../jobs/members-import-job';
-import MembersCSVExporter, {
-  type ExportOptions,
-  type MetafieldDefinition,
-} from './export/exporter';
+import MembersCSVExporter, { type ExportOptions } from './export/exporter';
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
@@ -48,9 +47,7 @@ interface ImporterServices {
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: {
-      browse(options: { namespace: Namespace }, audience: Audience): Promise<CsvField[]>;
-    };
+    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
     values: {
       planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
       applyImportedWrite(
@@ -64,15 +61,8 @@ interface ImporterServices {
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: {
-    browse(options: { namespace: Namespace }, audience: Audience): Promise<MetafieldDefinition[]>;
-  };
-  values: {
-    getValuesForMembers(
-      memberIds: string[],
-      audience: Audience,
-    ): Promise<Map<string, Record<string, unknown>>>;
-  };
+  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+  values: Pick<MetafieldValuesService, 'getValuesForMembers'>;
 }
 
 // Build the members CSV importer. This is the composition root: today's models and
@@ -200,7 +190,7 @@ export function makeExporter({
       // Boot builds the definitions and values services before this one, so they
       // are always present -- no not-initialised state to guard.
       // The same fields the import reads back.
-      activeDefinitions: async (): Promise<MetafieldDefinition[]> =>
+      activeDefinitions: async (): Promise<CsvField[]> =>
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
     },
