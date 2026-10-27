@@ -467,6 +467,10 @@ patchedDependencies:
   # so a dialog's "unsaved changes" confirm can't be dismissed straight after
   # it opens. The patch moves those effects to layout effects so the stack
   # changes in the same commit as the screen. 1.2.1 still behaves the same.
+  # A modal Dialog acts on an outside press at the click that ends it, so the
+  # patch also judges that press by whether the layer took outside pointer
+  # events when it started: otherwise the click on a confirm's Stay, which
+  # closes the confirm, would now count as outside the dialog beneath it.
   '@radix-ui/react-dismissable-layer@1.1.14': patches/@radix-ui__react-dismissable-layer@1.1.14.patch
   # Radix modals call hideOthers from an effect; StrictMode's dev replay sets,
   # removes and re-sets aria-hidden on the whole page in one task, which stalls
