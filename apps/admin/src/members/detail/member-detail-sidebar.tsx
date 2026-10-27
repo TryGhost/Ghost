@@ -36,10 +36,8 @@ interface MemberDetailSidebarProps {
   showIdentity?: boolean;
 }
 
-// Matches Ember's `first-name` helper (`ghost/admin/app/helpers/first-name.js`):
-// splits on a single space, takes the first token. NO trim — a name that
-// somehow slipped through with a leading space should render the same empty
-// first-token Ember would, not a coincidentally-different truthy one.
+// Takes the first token split on a single space, without trimming: a name with a
+// leading space yields an empty first name.
 const getFirstName = (name: string) => name.split(' ')[0] || '';
 
 const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
@@ -157,11 +155,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
               data-testid="member-detail-engagement"
             >
               <h4 className="border-b border-border pb-2 text-base font-semibold">Engagement</h4>
-              {/* `?? 0` matches Ember Data's serializer, which
-                                defaults `emailCount` to `0`
-                                (`ghost/admin/app/models/member.js:20`). A
-                                strict `=== 0` would diverge from Ember on
-                                a payload where the field is `undefined`. */}
+              {/* A missing `email_count` counts as no newsletters received. */}
               {(member.email_count ?? 0) === 0 ? (
                 // Ember `gh-member-details.hbs:87-96`: same copy,
                 // same curly apostrophe. Falls back to a generic
@@ -181,9 +175,6 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <p className="text-muted-foreground">Emails opened</p>
-                    {/* Ember Data defaults this to `0`
-                                            too (`ghost/admin/app/models/member.js:21`),
-                                            so mirror that here for parity. */}
                     <p className="text-2xl font-semibold">
                       {formatNumber(member.email_opened_count ?? 0)}
                     </p>

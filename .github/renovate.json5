@@ -288,7 +288,7 @@
     // PR rather than lumped into one mega "Types packages (major)" PR (so one
     // breaking type can't block the rest). Ordering matters: this ungroup
     // default comes BEFORE the pairings so the pairings (later) win for paired
-    // packages, and the pairings come BEFORE the react17/eslint9/tailwind3
+    // packages, and the pairings come BEFORE the react17/tailwind3
     // catalog rules below so those version-lane groups still win for their own
     // depTypes (e.g. react@17 in the react17 catalog stays in its own PR).
     {
@@ -443,18 +443,18 @@
 
     // Group each pinned-version pnpm catalog into a single PR per catalog.
     //
-    // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
-    // tailwind3) each hold a version lane we deliberately keep separate
-    // from the main `catalog:` — e.g. eslint 9 lives in `eslint9` while the
-    // default catalog stays on eslint 8. Renovate tags every catalog dep
+    // The named catalogs in pnpm-workspace.yaml (react17, tailwind3) each
+    // hold a version lane we deliberately keep separate from the main
+    // `catalog:` — e.g. React 17 lives in `react17` while the default
+    // catalog moves on. Renovate tags every catalog dep
     // with a depType of `pnpm.catalog.<name>`, so matching the depType
     // groups the whole catalog without restating its package list and stays
     // correct as entries are added or removed in pnpm-workspace.yaml.
     //
     // These also override the shared preset's `group:monorepos` rules,
-    // which would otherwise group e.g. eslint + @eslint/js *by name* and
-    // mix the default-catalog (v8) and eslint9-catalog (v9) bumps into one
-    // PR. Matching by depType keeps each lane in its own reviewable PR.
+    // which would otherwise group e.g. react + react-dom *by name* and
+    // mix the default-catalog and react17-catalog bumps into one PR.
+    // Matching by depType keeps each lane in its own reviewable PR.
     //
     // The main `catalog:` is intentionally left ungrouped: its entries are
     // independent, so grouping them would only couple unrelated bumps and
@@ -462,10 +462,6 @@
     {
       groupName: 'react17 catalog',
       matchDepTypes: ['pnpm.catalog.react17'],
-    },
-    {
-      groupName: 'eslint9 catalog',
-      matchDepTypes: ['pnpm.catalog.eslint9'],
     },
     {
       groupName: 'tailwind3 catalog',
