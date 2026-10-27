@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
+import { cleanup } from 'vitest-browser-react';
 
 import {
   currentRoute,
@@ -65,6 +66,31 @@ describe('Customize from View site', () => {
     await expect.poll(currentRoute).toBe('/site?customize');
     await expect.element(designPanel()).toBeVisible();
     await expect.element(customizeLink()).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('restores the selected design tab from the URL', async () => {
+    await fakeSiteWorld();
+    fakeAdminEndpoint('GET', '/custom_theme_settings/', {
+      custom_theme_settings: [
+        {
+          id: 'title',
+          key: 'title',
+          type: 'text',
+          default: '',
+          value: '',
+        },
+      ],
+    });
+    await renderAdminApp('/site?customize', customizeFlags({ customize: true }));
+    await designPanel().getByRole('tab', { name: 'Theme' }).click();
+    await expect.poll(currentRoute).toBe('/site?customize=&tab=theme');
+
+    const route = currentRoute();
+    await cleanup();
+    await renderAdminApp(route, customizeFlags({ customize: true }));
+    await expect
+      .element(designPanel().getByRole('tab', { name: 'Theme' }))
+      .toHaveAttribute('aria-selected', 'true');
   });
 
   it('is left out, loading nothing, without admin7CustomizeFromViewSite', async () => {
