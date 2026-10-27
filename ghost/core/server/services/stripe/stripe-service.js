@@ -37,7 +37,7 @@ module.exports = class StripeService {
   /**
    * @param {object} deps
    * @param {*} deps.labs
-   * @param {import('../../lib/tracing/tracer').Tracer} deps.tracer
+   * @param {import('./tracking').StripeTracking} deps.tracking
    * @param {*} deps.membersService
    * @param {*} deps.donationService
    * @param {*} deps.giftService
@@ -54,7 +54,7 @@ module.exports = class StripeService {
    */
   constructor({
     labs,
-    tracer,
+    tracking,
     membersService,
     donationService,
     giftService,
@@ -63,7 +63,7 @@ module.exports = class StripeService {
     settingsCache,
     models,
   }) {
-    const api = new StripeAPI({ labs, tracer });
+    const api = new StripeAPI({ labs, tracking });
 
     const webhookManager = new WebhookManager({
       StripeWebhook,
