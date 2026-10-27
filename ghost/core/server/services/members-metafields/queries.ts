@@ -1,9 +1,10 @@
 import type { Knex } from 'knex';
-import type { Identity, Namespace } from '@tryghost/metafield-types/identity';
+import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
 import { readableLevels, type Audience } from './access';
 import { FIELD_STATUS } from './schema';
 
-const FIELDS_TABLE = 'members_metafields';
+/** The fields table's name, which is also the name a `FieldSource` reads it under by default. */
+export const FIELDS_TABLE = 'members_metafields';
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to our
 // raw-knex queries: nql parses a `filter` string to a Mongo query, mongo-knex turns that
@@ -45,7 +46,7 @@ function metafieldsTable(db: Knex) {
 }
 
 /**
- * A query built by `definitions()`, carrying both filters.
+ * A query built by a source's `definitions()`, carrying both filters.
  *
  * knex's builder methods return an unbranded type, so chaining anything onto one of
  * these drops the mark and it stops satisfying this type. Narrow by passing what you
@@ -53,41 +54,74 @@ function metafieldsTable(db: Knex) {
  */
 export type DefinitionQuery = ReturnType<typeof metafieldsTable> & { readonly [scoped]: true };
 
-export function definitions(
-  db: Knex,
-  scope: {
-    audience: Audience;
-    status: StatusScope;
-    /** One namespace's fields. Without it, every namespace's. */
-    namespace?: Namespace;
-    /** One field. A key alone names none: each namespace has its own. */
-    field?: FieldIdentity;
-    /** A publisher's NQL filter, applied under the two filters below rather than over them. */
-    filter?: (query: Knex.QueryBuilder) => Knex.QueryBuilder;
-    limit?: number;
-  },
-): DefinitionQuery {
-  let query = metafieldsTable(db);
+/** Which fields a definitions read is for. */
+export interface DefinitionScope {
+  audience: Audience;
+  status: StatusScope;
+  /** One namespace's fields. Without it, every namespace's. */
+  namespace?: Namespace;
+  /** One field. A key alone names none: each namespace has its own. */
+  field?: FieldIdentity;
+  /** A publisher's NQL filter, parsed, applied under the two filters below rather than over them. */
+  filter?: object;
+  limit?: number;
+}
 
-  if (scope.filter) {
-    query = scope.filter(query);
-  }
-  if (scope.namespace !== undefined) {
-    query = query.where(`${FIELDS_TABLE}.namespace`, scope.namespace);
-  }
-  if (scope.field !== undefined) {
-    query = query
-      .where(`${FIELDS_TABLE}.namespace`, scope.field.namespace)
-      .where(`${FIELDS_TABLE}.key`, scope.field.key);
-  }
-  if (scope.status === ACTIVE_ONLY) {
-    query = query.where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active);
-  }
-  if (scope.limit !== undefined) {
-    query = query.limit(scope.limit);
-  }
+/**
+ * The fields table as this site reads it, built once by the domain's wiring.
+ *
+ * Every read that asks what a field is, or whether it can take a value, goes through this
+ * rather than naming the table, here or in another domain, so a rule about how fields read
+ * holds for every one of them. That includes the check before writing a value. Writes, and
+ * the reads a change to the field list is compared with, name the table itself.
+ */
+export interface FieldSource {
+  /** The table under `alias`, for a read that joins it. */
+  table(db: Knex, alias?: string): Knex.TableDescriptor;
+  /** The fields `scope` names, in no particular order. */
+  definitions(db: Knex, scope: DefinitionScope): DefinitionQuery;
+  /**
+   * The fields `keys` name in `namespace`, held against change until `trx` ends. The lock is
+   * taken in the same statement as the read, on the rows as stored.
+   */
+  locked(trx: Knex.Transaction, namespace: Namespace, keys: readonly Key[]): Knex.QueryBuilder;
+}
 
-  return readableBy(query, scope.audience) as DefinitionQuery;
+/** The fields as a site reads them: the table as stored. */
+export function fieldSource(): FieldSource {
+  return {
+    table(_db, alias = FIELDS_TABLE) {
+      return alias === FIELDS_TABLE ? FIELDS_TABLE : `${FIELDS_TABLE} as ${alias}`;
+    },
+
+    definitions(db, scope) {
+      let query = metafieldsTable(db);
+
+      if (scope.filter) {
+        query = knexify(query, scope.filter, { tableName: FIELDS_TABLE });
+      }
+      if (scope.namespace !== undefined) {
+        query = query.where(`${FIELDS_TABLE}.namespace`, scope.namespace);
+      }
+      if (scope.field !== undefined) {
+        query = query
+          .where(`${FIELDS_TABLE}.namespace`, scope.field.namespace)
+          .where(`${FIELDS_TABLE}.key`, scope.field.key);
+      }
+      if (scope.status === ACTIVE_ONLY) {
+        query = query.where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active);
+      }
+      if (scope.limit !== undefined) {
+        query = query.limit(scope.limit);
+      }
+
+      return readableBy(query, scope.audience) as DefinitionQuery;
+    },
+
+    locked(trx, namespace, keys) {
+      return trx(FIELDS_TABLE).where('namespace', namespace).whereIn('key', keys).forShare();
+    },
+  };
 }
 
 /** A whole field's identity, which is what anything outside the fields table points at. */

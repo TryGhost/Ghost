@@ -31,17 +31,17 @@ import {
 import { toDatabaseDate } from '../../lib/db-types/date';
 import {
   ACTIVE_ONLY,
-  definitions,
+  FIELDS_TABLE,
   fieldReference,
   knexify,
   onField,
   readableBy,
   type FieldIdentity,
+  type FieldSource,
 } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
 import { valueRowsToWrite, valuesFromRows, type StoredValueRow } from './storage';
 
-const FIELDS_TABLE = 'members_metafields';
 const VALUES_TABLE = 'members_metafield_values';
 const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
 const MEMBERS_TABLE = 'members';
@@ -141,11 +141,21 @@ export interface MetafieldPlan {
  */
 export class MetafieldValuesService {
   private knex: Knex;
+  private fields: FieldSource;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
 
-  constructor({ knex, getMaxDefinitions }: { knex: Knex; getMaxDefinitions: () => number }) {
+  constructor({
+    knex,
+    fields,
+    getMaxDefinitions,
+  }: {
+    knex: Knex;
+    fields: FieldSource;
+    getMaxDefinitions: () => number;
+  }) {
     this.knex = knex;
+    this.fields = fields;
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
@@ -169,7 +179,8 @@ export class MetafieldValuesService {
     if (keysByNamespace.size === 0) {
       return new Map();
     }
-    const rows = await definitions(this.knex, { audience, status: ACTIVE_ONLY })
+    const rows = await this.fields
+      .definitions(this.knex, { audience, status: ACTIVE_ONLY })
       .where((query) => {
         for (const [namespace, keys] of keysByNamespace) {
           query.orWhere((inNamespace) =>
@@ -245,7 +256,7 @@ export class MetafieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await readableBy(
-      executor(VALUES_TABLE).join(FIELDS_TABLE, onField(FIELDS_TABLE, VALUES_TABLE)),
+      executor(VALUES_TABLE).join(this.fields.table(executor), onField(FIELDS_TABLE, VALUES_TABLE)),
       audience,
     )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)

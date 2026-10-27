@@ -50,7 +50,7 @@ export default defineService(
     const labs = require('../../../shared/labs');
 
     // Boot sets up the custom fields services first, as shipping saves into custom fields.
-    if (!metafields.bindings) {
+    if (!metafields.bindings || !metafields.fields) {
       throw new errors.IncorrectUsageError({
         message: 'The custom fields services must be set up before the Stripe Checkout config.',
       });
@@ -62,6 +62,7 @@ export default defineService(
       knex,
       recordAction,
       bindings: metafields.bindings,
+      fields: metafields.fields,
       logging,
     });
     const checkouts = new CheckoutService({ config, labs, logging });
