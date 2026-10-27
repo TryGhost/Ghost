@@ -41,5 +41,37 @@ export function importExportTracking(tracer: Tracer) {
         });
       });
     },
+
+    /**
+     * Each export, writing a column for each of `fields`, records one span once its rows have
+     * finished streaming.
+     */
+    export(fields: readonly CsvField[]) {
+      let written = 0;
+      return {
+        /** Rows written to the export's stream, as each batch of them is. */
+        wrote(rows: number): void {
+          written += rows;
+        },
+        /**
+         * Records the export once `streamed` settles, which is after the stream has been handed
+         * back, so an export that breaks off part way counts as failed although the publisher's
+         * download had already begun. Settles on its own: the export logs its own outcome.
+         */
+        ended(streamed: Promise<unknown>): void {
+          tracer
+            .track('members.export.run', async (span) => {
+              span.setAttribute('has_custom_fields', fields.length > 0);
+              try {
+                await streamed;
+              } finally {
+                // An export that broke off says how many rows it had written.
+                span.setAttribute('rows', written);
+              }
+            })
+            .catch(() => {});
+        },
+      };
+    },
   };
 }
