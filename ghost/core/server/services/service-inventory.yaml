@@ -1188,7 +1188,7 @@ services:
           - core/server/services/automations/poll.ts
           - core/server/services/automations/database-automations-repository.ts
           - core/server/services/member-welcome-emails/service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/lib/request-external.js
           - core/shared/url-utils.ts
         tests:
@@ -1217,7 +1217,7 @@ services:
           - core/server/services/automations/poll.ts
           - core/server/services/automations/welcome-email-automation-poll.ts
           - core/server/services/automations/automation-member-search.ts
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/lib/request-external.js
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/email-analytics/jobs/index.js
@@ -13457,14 +13457,14 @@ services:
         sources:
           - core/server/services/stats/service.js
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/automations/automations-api.ts
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/api/endpoints/tinybird.js
     entryPoints:
       - stats/index.js
-      - stats/utils/tinybird.js
+      - stats/utils/tinybird.ts
     notes: >-
       Boot publishes a composite statistics API before obtaining its optional cache. Preserve
       retained API/cache/query-client relationships and method-specific empty/error results.
@@ -13482,7 +13482,7 @@ services:
           - core/server/services/stats/index.js
           - core/server/services/stats/service.js
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/explore-ping/explore-ping-service.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
@@ -13563,7 +13563,7 @@ services:
         sources:
           - core/server/services/stats/service.js
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/api/endpoints/stats.js
           - core/kernel/adapter-manager/adapter-manager.ts
           - package.json
@@ -13583,7 +13583,7 @@ services:
         sources:
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/utils/date-utils.js
           - core/server/services/stats/mrr-stats-service.js
           - core/server/services/stats/members-stats-service.js
@@ -13612,7 +13612,7 @@ services:
           do not prove query cancellation, transport/cache release or consistent concurrent reads.
         sources:
           - core/server/services/stats/service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
           - core/server/services/stats/members-stats-service.js
@@ -13637,7 +13637,7 @@ services:
           recovery, real cache errors and many nested query failure channels lack assertions.
         sources:
           - core/server/services/stats/service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/mrr-stats-service.js
           - core/server/services/stats/members-stats-service.js
           - core/server/services/stats/subscription-stats-service.js
@@ -14971,7 +14971,7 @@ services:
         - core/server/services/tinybird/tinybird-service.js
         - core/server/services/stats/stats-service.js
         - core/server/api/endpoints/tinybird.js
-        - core/server/services/stats/utils/tinybird.js
+        - core/server/services/stats/utils/tinybird.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -15040,7 +15040,7 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
@@ -15061,7 +15061,7 @@ services:
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/utils/serializers/output/tinybird.js
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
           - core/server/services/automations/automations-api.ts
@@ -15111,7 +15111,7 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/api/endpoints/tinybird.js
           - core/server/services/automations/automations-api.ts
         tests:
@@ -15133,7 +15133,7 @@ services:
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/api/endpoints/tinybird.js
           - core/shared/config/loader.ts
         tests:
@@ -15159,7 +15159,7 @@ services:
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/automations/automations-api.ts
           - core/server/services/automations/automation-member-search.ts
           - core/server/lib/request-external.js
@@ -15183,7 +15183,7 @@ services:
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
-          - core/server/services/stats/utils/tinybird.js
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
           - core/server/services/automations/automations-api.ts
