@@ -2,4 +2,4 @@
 "@tryghost/koenig-lexical": patch
 ---
 
-Recognize GIF URLs with query strings, fragments, and uppercase extensions.
+Fixed the image card offering editing and width options for GIFs whose URL has a query string, fragment or uppercase extension
