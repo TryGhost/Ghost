@@ -81,6 +81,7 @@ Clearing the REPL restores those bindings; exiting closes the connection.
 
 Run `pnpm gx data shift-dates` to shift database dates up to the present day, or
 pass `--offset=<days>` to choose an offset. This modifies all dateTime columns.
+The default offset is the number of whole UTC days since the last member login.
 It asks for confirmation unless `--force` is supplied. Both commands retain
 their development/local environment restriction and use the same Core runner.
 
