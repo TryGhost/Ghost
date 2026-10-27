@@ -83,9 +83,9 @@ The agent skills in `skills/` help agents build screens with Shade. Apps install
 them all with the [`skills` CLI](https://github.com/vercel-labs/skills):
 
 ```sh
-npx skills add TryGhost/Ghost/apps/shade/skills --skill '*'
+npx skills@1.7.4 add TryGhost/Ghost/apps/shade/skills --skill '*'
 # or, from a local checkout:
-npx skills add <path-to-checkout>/apps/shade/skills --skill '*'
+npx skills@1.7.4 add <path-to-checkout>/apps/shade/skills --skill '*'
 ```
 
 `build-ghost-app-ui` is the front door for Ghost apps. The other six cover page
