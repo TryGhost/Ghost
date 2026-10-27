@@ -7,7 +7,6 @@ import {
   FieldLabel,
   Input,
   LoadingIndicator,
-  Switch,
   Textarea,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -21,9 +20,8 @@ import type { HelpSession } from './use-help-search';
 /*
  * The message to the support team, which takes over the panel. Its draft
  * lives in the session, so going back or closing the panel keeps it. The
- * message starts as the first search, and the searches and articles read go
- * with it unless the user turns that off (what it carries: getSupportContext
- * in help-signals.ts).
+ * message starts as the first search. Only what the user writes is sent; the
+ * context a real send might add is getSupportContext in help-signals.ts.
  *
  * PROTOTYPE: nothing is sent (sendToSupport in use-help-search.ts).
  */
@@ -39,7 +37,7 @@ interface HelpSupportViewProps {
 export function HelpSupportView({ session, signals, showClose, onClose }: HelpSupportViewProps) {
   const id = useId();
   const fileInput = useRef<HTMLInputElement>(null);
-  const { support, questionCount, editSupport, sendToSupport, leaveSupport } = session;
+  const { support, editSupport, sendToSupport, leaveSupport } = session;
   const { user } = signals;
   const sending = support.status === 'sending';
   const sent = support.status === 'sent';
@@ -195,23 +193,6 @@ export function HelpSupportView({ session, signals, showClose, onClose }: HelpSu
                 )}
               </Stack>
             </Stack>
-
-            {questionCount > 0 && (
-              <Inline align="center" gap="sm" justify="between">
-                <Stack gap="none">
-                  <FieldLabel htmlFor={`${id}-attach`}>Attach your searches</FieldLabel>
-                  <Text size="xs" tone="tertiary">
-                    What you searched for and the articles you read
-                  </Text>
-                </Stack>
-                <Switch
-                  checked={support.attachConversation}
-                  disabled={sending}
-                  id={`${id}-attach`}
-                  onCheckedChange={(checked) => editSupport({ attachConversation: checked })}
-                />
-              </Inline>
-            )}
           </Stack>
 
           <div className="shrink-0 border-t border-border-default p-4">

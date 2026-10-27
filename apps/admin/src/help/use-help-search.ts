@@ -31,8 +31,6 @@ export interface HelpSupportDraft {
   body: string;
   // PROTOTYPE: only file names are kept; a real send needs the files uploaded
   files: string[];
-  /** Whether the searches and articles read go with the message */
-  attachConversation: boolean;
   status: 'draft' | 'sending' | 'sent';
 }
 
@@ -40,7 +38,6 @@ const EMPTY_DRAFT: HelpSupportDraft = {
   subject: '',
   body: '',
   files: [],
-  attachConversation: true,
   status: 'draft',
 };
 
@@ -147,15 +144,15 @@ export function useHelpSearch() {
   }, [searches]);
 
   const editSupport = useCallback(
-    (patch: Partial<Pick<HelpSupportDraft, 'subject' | 'body' | 'files' | 'attachConversation'>>) =>
+    (patch: Partial<Pick<HelpSupportDraft, 'subject' | 'body' | 'files'>>) =>
       setSupport((current) => ({ ...current, ...patch })),
     [],
   );
 
   // PROTOTYPE: nothing is sent. Ghost(Pro) support is email today: the
   // quickest real version opens a mailto:support@ghost.org draft with the
-  // message and, when attached, the searches, articles read and context
-  // (getSupportContext in help-signals.ts).
+  // message (getSupportContext in help-signals.ts lists the context a send
+  // could add, should that be wanted).
   const sendToSupport = useCallback(() => {
     setSupport((current) => ({ ...current, status: 'sending' }));
     timers.current.push(

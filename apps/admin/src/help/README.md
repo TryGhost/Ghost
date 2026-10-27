@@ -90,9 +90,8 @@ Within Ghost(Pro), billing alerts only show to people who can manage billing
 - [ ] **Make "Contact support" real.** Ghost(Pro) support is email today (the
       billing app's Support tab shows support@ghost.org). The quickest real
       version keeps the form and opens a `mailto:support@ghost.org` draft with
-      the message and, when "Attach your searches" is on, the searches,
-      articles read and context (`getSupportContext`). A ticketing API can
-      replace it later. Until then, `sendToSupport` in `use-help-search.ts`
+      the subject and message (`getSupportContext` lists the context a send
+      could add, if ever wanted). A ticketing API can replace it later. Until then, `sendToSupport` in `use-help-search.ts`
       sends nothing, and the form promises a reply from the Ghost(Pro) support
       team within 24 hours on working days, which support should confirm.
 - [ ] **Own the DocsBot bot.** `help-docsbot-search.ts` hardcodes a test team
@@ -373,9 +372,9 @@ results and listed in what the support form sends.
 There's no "Contact support" button up front. The support team is offered
 where a search or an article didn't do it: no results, the error state, and
 "No" at the end of an article. The form (`help-support.tsx`) starts from the
-first search as the message (the subject is optional), promises a reply from
-the Ghost(Pro) support team within 24 hours on working days, and attaches the
-searches and articles read unless the user turns that off.
+first search as the message (the subject is optional) and promises a reply
+from the Ghost(Pro) support team within 24 hours on working days. Only what
+the user writes is sent.
 
 ## Decisions and trade-offs
 

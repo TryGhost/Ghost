@@ -138,10 +138,9 @@ interface SupportContextOptions {
 }
 
 /**
- * The context a message to support carries when the conversation is attached
- * (on by default on the support form), so the support team doesn't have to
- * ask. PROTOTYPE: it's what a real send should include, as nothing is sent
- * yet; the form itself no longer lists it.
+ * The context a message to support could carry, so the support team doesn't
+ * have to ask. Not used by the form today (only what the user writes goes);
+ * kept as the list of what a real send could add.
  */
 export function getSupportContext({
   signals,
