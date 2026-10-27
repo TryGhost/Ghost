@@ -1,16 +1,57 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
 
-const {
+import {
   RemoteFlagsService,
-} = require('../../../../../core/server/services/remote-flags/remote-flags-service');
+  type RemoteFlagsServiceDeps,
+} from '../../../../../core/server/services/remote-flags/remote-flags-service';
+
+type RequestFn = RemoteFlagsServiceDeps['request'];
+type RequestResponse = Awaited<ReturnType<RequestFn>>;
+type RequestStub = sinon.SinonStub<Parameters<RequestFn>, ReturnType<RequestFn>>;
+type ApplyOverridesStub = sinon.SinonStub<
+  Parameters<RemoteFlagsServiceDeps['applyOverrides']>,
+  void
+>;
+type LogStub = sinon.SinonStub<unknown[], void>;
+
+type ServiceOverrides = Partial<Omit<RemoteFlagsServiceDeps, 'request' | 'applyOverrides'>> & {
+  request?: RequestStub;
+  applyOverrides?: ApplyOverridesStub;
+};
 
 const SITE_UUID = '550e8400-e29b-41d4-a716-446655440000';
 
-function buildService(overrides = {}) {
-  const request = overrides.request || sinon.stub();
-  const applyOverrides = overrides.applyOverrides || sinon.stub();
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+// The `system` object of a structured log call, so tests can read `.event` / `.flags`.
+function logSystem(call: sinon.SinonSpyCall<unknown[]>): Record<string, unknown> | undefined {
+  const [payload] = call.args;
+  return isRecord(payload) && isRecord(payload.system) ? payload.system : undefined;
+}
+
+// The headers the service passed to the request client (`{}` when none).
+function headersOf(options: Record<string, unknown>): Record<string, unknown> {
+  return isRecord(options.headers) ? options.headers : {};
+}
+
+// `sinon.stub()` infers its argument tuple from the annotation on a plain
+// assignment but not through a chained `.resolves()`, so stubs that are
+// configured inline go through these typed factories.
+function requestStub(): RequestStub {
+  return sinon.stub();
+}
+
+function applyOverridesStub(): ApplyOverridesStub {
+  return sinon.stub();
+}
+
+function buildService(overrides: ServiceOverrides = {}) {
+  const request = overrides.request || requestStub();
+  const applyOverrides = overrides.applyOverrides || applyOverridesStub();
   const service = new RemoteFlagsService({
     url: new URL('https://assets.example.com/platform/flags.json'),
     siteUuid: SITE_UUID,
@@ -24,13 +65,13 @@ function buildService(overrides = {}) {
   return { service, request, applyOverrides };
 }
 
-function ok(body, headers = {}) {
+function ok(body: unknown, headers: Record<string, string> = {}): RequestResponse {
   return { statusCode: 200, body: JSON.stringify(body), headers };
 }
 
 describe('RemoteFlagsService', function () {
-  let logInfo;
-  let logWarn;
+  let logInfo: LogStub;
+  let logWarn: LogStub;
 
   beforeEach(function () {
     logInfo = sinon.stub(logging, 'info');
@@ -58,14 +99,14 @@ describe('RemoteFlagsService', function () {
 
       const appliedLog = logInfo
         .getCalls()
-        .find((c) => c.args[0]?.system?.event === 'remote_flags.applied');
+        .find((c) => logSystem(c)?.event === 'remote_flags.applied');
       assert.ok(appliedLog, 'expected a remote_flags.applied log');
-      assert.deepEqual(appliedLog.args[0].system.flags, { flagA: true, commentModeration: false });
+      assert.deepEqual(logSystem(appliedLog)?.flags, { flagA: true, commentModeration: false });
     });
 
     it('passes arbitrary flags through and resolves percentage ramps via the site UUID', async function () {
       const { service, applyOverrides } = buildService({
-        request: sinon.stub().resolves(
+        request: requestStub().resolves(
           ok({
             flagA: { value: true, percent: 100 }, // full -> on
             flagB: { value: true, percent: 0 }, // 0% -> off
@@ -87,8 +128,8 @@ describe('RemoteFlagsService', function () {
       await service.refresh();
       await service.refresh();
 
-      const firstHeaders = request.firstCall.args[1].headers || {};
-      const secondHeaders = request.secondCall.args[1].headers || {};
+      const firstHeaders = headersOf(request.firstCall.args[1]);
+      const secondHeaders = headersOf(request.secondCall.args[1]);
       assert.equal(firstHeaders['if-none-match'], undefined);
       assert.equal(secondHeaders['if-none-match'], '"v1"');
     });
@@ -103,7 +144,7 @@ describe('RemoteFlagsService', function () {
       await service.refresh();
       const appliedCountAfterFirst = logInfo
         .getCalls()
-        .filter((c) => c.args[0]?.system?.event === 'remote_flags.applied').length;
+        .filter((c) => logSystem(c)?.event === 'remote_flags.applied').length;
       applyOverrides.resetHistory();
 
       await service.refresh();
@@ -111,7 +152,7 @@ describe('RemoteFlagsService', function () {
       assert.equal(applyOverrides.called, false, 'should not re-apply on 304');
       const appliedCountAfterSecond = logInfo
         .getCalls()
-        .filter((c) => c.args[0]?.system?.event === 'remote_flags.applied').length;
+        .filter((c) => logSystem(c)?.event === 'remote_flags.applied').length;
       assert.equal(
         appliedCountAfterSecond,
         appliedCountAfterFirst,
@@ -123,7 +164,7 @@ describe('RemoteFlagsService', function () {
   describe('refresh - fail open', function () {
     it('applies an empty override map on 404 (no manifest)', async function () {
       const { service, applyOverrides } = buildService({
-        request: sinon.stub().resolves({ statusCode: 404, body: 'Not Found', headers: {} }),
+        request: requestStub().resolves({ statusCode: 404, body: 'Not Found', headers: {} }),
       });
 
       await service.refresh();
@@ -143,7 +184,7 @@ describe('RemoteFlagsService', function () {
 
       assert.equal(applyOverrides.called, false, 'must not change overrides on network error');
       assert.ok(
-        logWarn.getCalls().some((c) => c.args[0]?.system?.event === 'remote_flags.fetch_failed'),
+        logWarn.getCalls().some((c) => logSystem(c)?.event === 'remote_flags.fetch_failed'),
       );
     });
 
@@ -173,14 +214,14 @@ describe('RemoteFlagsService', function () {
 
       assert.equal(applyOverrides.called, false);
       assert.ok(
-        logWarn.getCalls().some((c) => c.args[0]?.system?.event === 'remote_flags.parse_failed'),
+        logWarn.getCalls().some((c) => logSystem(c)?.event === 'remote_flags.parse_failed'),
       );
     });
 
     it('never throws even if applyOverrides throws', async function () {
       const { service } = buildService({
-        request: sinon.stub().resolves(ok({ flagA: true })),
-        applyOverrides: sinon.stub().throws(new Error('boom')),
+        request: requestStub().resolves(ok({ flagA: true })),
+        applyOverrides: applyOverridesStub().throws(new Error('boom')),
       });
 
       await assert.doesNotReject(service.refresh());
@@ -200,7 +241,7 @@ describe('RemoteFlagsService', function () {
       assert.equal(applyOverrides.callCount, 2, 'applies on each successful fetch');
       const appliedLogs = logInfo
         .getCalls()
-        .filter((c) => c.args[0]?.system?.event === 'remote_flags.applied');
+        .filter((c) => logSystem(c)?.event === 'remote_flags.applied');
       assert.equal(appliedLogs.length, 1, 'logs applied only once when nothing changed');
     });
   });
@@ -220,7 +261,7 @@ describe('RemoteFlagsService', function () {
 
       const appliedLogs = logInfo
         .getCalls()
-        .filter((c) => c.args[0]?.system?.event === 'remote_flags.applied');
+        .filter((c) => logSystem(c)?.event === 'remote_flags.applied');
       assert.equal(appliedLogs.length, 1, 'reordered-but-identical manifest must not re-log');
     });
 
@@ -232,15 +273,15 @@ describe('RemoteFlagsService', function () {
       await service.refresh();
       await service.refresh();
 
-      assert.equal((request.secondCall.args[1].headers || {})['if-none-match'], undefined);
+      assert.equal(headersOf(request.secondCall.args[1])['if-none-match'], undefined);
       assert.equal(request.callCount, 2);
     });
 
     it('does not commit the ETag when applying fails, so the next poll retries instead of getting a 304', async function () {
-      const request = sinon.stub();
+      const request = requestStub();
       request.onFirstCall().resolves(ok({ flagA: true }, { etag: '"v1"' }));
       request.onSecondCall().resolves(ok({ flagA: true }, { etag: '"v2"' }));
-      const applyOverrides = sinon.stub();
+      const applyOverrides = applyOverridesStub();
       applyOverrides.onFirstCall().throws(new Error('boom'));
       const { service } = buildService({ request, applyOverrides });
 
@@ -248,13 +289,13 @@ describe('RemoteFlagsService', function () {
       await service.refresh(); // must re-fetch (no If-None-Match) and apply
 
       assert.equal(
-        (request.secondCall.args[1].headers || {})['if-none-match'],
+        headersOf(request.secondCall.args[1])['if-none-match'],
         undefined,
         'must not send a stale ETag for an unapplied manifest',
       );
       assert.equal(applyOverrides.callCount, 2);
       assert.ok(
-        logWarn.getCalls().some((c) => c.args[0]?.system?.event === 'remote_flags.apply_failed'),
+        logWarn.getCalls().some((c) => logSystem(c)?.event === 'remote_flags.apply_failed'),
       );
     });
 
@@ -271,9 +312,7 @@ describe('RemoteFlagsService', function () {
 
       assert.equal(applyOverrides.called, false);
       assert.ok(
-        logWarn
-          .getCalls()
-          .some((c) => c.args[0]?.system?.event === 'remote_flags.fetch_bad_status'),
+        logWarn.getCalls().some((c) => logSystem(c)?.event === 'remote_flags.fetch_bad_status'),
       );
     });
 
@@ -291,14 +330,14 @@ describe('RemoteFlagsService', function () {
 
       const appliedLogs = logInfo
         .getCalls()
-        .filter((c) => c.args[0]?.system?.event === 'remote_flags.applied');
+        .filter((c) => logSystem(c)?.event === 'remote_flags.applied');
       assert.equal(appliedLogs.length, 3);
     });
 
     it('coalesces overlapping refresh calls into a single fetch', async function () {
-      let resolveReq;
-      const request = sinon.stub().returns(
-        new Promise((res) => {
+      let resolveReq: ((response: RequestResponse) => void) | undefined;
+      const request = requestStub().returns(
+        new Promise<RequestResponse>((res) => {
           resolveReq = res;
         }),
       );
@@ -306,6 +345,7 @@ describe('RemoteFlagsService', function () {
 
       const p1 = service.refresh();
       const p2 = service.refresh(); // must early-return while p1 is in flight
+      assert.ok(resolveReq);
       resolveReq(ok({ flagA: true }));
       await Promise.all([p1, p2]);
 
@@ -317,7 +357,7 @@ describe('RemoteFlagsService', function () {
     it('refreshes immediately on start and reschedules, until stopped', async function () {
       const clock = sinon.useFakeTimers();
       try {
-        const request = sinon.stub().resolves(ok({ flagA: true }));
+        const request = requestStub().resolves(ok({ flagA: true }));
         const { service } = buildService({ request });
 
         await service.start();
@@ -337,7 +377,7 @@ describe('RemoteFlagsService', function () {
     it('is idempotent: calling start twice does not double-schedule', async function () {
       const clock = sinon.useFakeTimers();
       try {
-        const request = sinon.stub().resolves(ok({ flagA: true }));
+        const request = requestStub().resolves(ok({ flagA: true }));
         const { service } = buildService({ request });
 
         await service.start();

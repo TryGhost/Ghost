@@ -11671,7 +11671,7 @@ services:
           - core/server/services/remote-flags/resolve.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/resolve.test.js
+          - test/unit/server/services/remote-flags/resolve.test.ts
       construction:
         summary: >-
           Import starts with a null instance but loads the shared request helper and override
@@ -11720,7 +11720,7 @@ services:
           - core/server/services/remote-flags/resolve.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/resolve.test.js
+          - test/unit/server/services/remote-flags/resolve.test.ts
       lifetime:
         summary: >-
           One loaded root retains the instance until stop clears it; disabling config does
@@ -11735,7 +11735,7 @@ services:
           - core/shared/labs-flag-overrides.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/remote-flags-service.test.js
+          - test/unit/server/services/remote-flags/remote-flags-service.test.ts
           - test/unit/shared/labs-flag-overrides.test.ts
       configuration:
         summary: >-
@@ -11753,7 +11753,7 @@ services:
           - core/shared/config/defaults.json
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/resolve.test.js
+          - test/unit/server/services/remote-flags/resolve.test.ts
       resources:
         summary: >-
           Start refreshes immediately and schedules an unref'ed timeout after completion;
@@ -11770,7 +11770,7 @@ services:
           - core/server/ghost-server.ts
           - package.json
         tests:
-          - test/unit/server/services/remote-flags/remote-flags-service.test.js
+          - test/unit/server/services/remote-flags/remote-flags-service.test.ts
       failures:
         summary: >-
           Network failures, bad statuses and invalid JSON warn and retain prior overrides;
@@ -11788,7 +11788,7 @@ services:
           - core/boot.js
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/remote-flags-service.test.js
+          - test/unit/server/services/remote-flags/remote-flags-service.test.ts
     unverified: []
     blockers:
       - >-
