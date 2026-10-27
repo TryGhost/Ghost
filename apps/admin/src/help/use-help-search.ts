@@ -137,9 +137,9 @@ export function useHelpSearch() {
     }
   }, [run, search]);
 
-  /** Opens the message to support, started from the first search if nothing's written yet. */
+  /** Opens the message to support, started from the last search if nothing's written yet. */
   const contactSupport = useCallback(() => {
-    setSupport((current) => (current.body ? current : { ...current, body: searches[0] ?? '' }));
+    setSupport((current) => (current.body ? current : { ...current, body: searches.at(-1) ?? '' }));
     setView('support');
   }, [searches]);
 

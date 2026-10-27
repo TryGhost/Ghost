@@ -20,7 +20,7 @@ import type { HelpSession } from './use-help-search';
 /*
  * The message to the support team, which takes over the panel. Its draft
  * lives in the session, so going back or closing the panel keeps it. The
- * message starts as the first search. Only what the user writes is sent; the
+ * message starts as the last search. Only what the user writes is sent; the
  * context a real send might add is getSupportContext in help-signals.ts.
  *
  * PROTOTYPE: nothing is sent (sendToSupport in use-help-search.ts).
