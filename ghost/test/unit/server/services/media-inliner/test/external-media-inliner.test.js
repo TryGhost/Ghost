@@ -1082,6 +1082,61 @@ describe('ExternalMediaInliner', function () {
       assert.equal(fileData.extension, '.png');
     });
 
+    it('Handles URLs with percent-encoded spaces', async function () {
+      const imageURL = 'https://img.stockfresh.com/files/f/cover%20image.png';
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/cover%20image.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = new ExternalMediaInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with percent-encoded unicode characters', async function () {
+      const imageURL = 'https://img.stockfresh.com/files/f/caf%C3%A9.png';
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/caf%C3%A9.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = new ExternalMediaInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with a percent-encoded URL in the path', async function () {
+      const imageURL =
+        'https://substackcdn.com/image/fetch/w_1456,c_limit/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcover.png';
+      const requestMock = nock('https://substackcdn.com')
+        .get(
+          '/image/fetch/w_1456,c_limit/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcover.png',
+        )
+        .reply(200, ghostLogoPng);
+
+      const inliner = new ExternalMediaInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with spaces and a literal percent sign', async function () {
+      const imageURL = 'https://img.stockfresh.com/files/f/ghost logo 100%.png';
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/ghost%20logo%20100%25.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = new ExternalMediaInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
     it('Handles URLs with no scheme', async function () {
       const imageURL = '//img.stockfresh.com/files/f/ghost-logo.png';
       const requestMock = nock('http://img.stockfresh.com')
