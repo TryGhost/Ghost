@@ -38,3 +38,6 @@ Read the human documentation before changing Shade:
 - Update the Storybook docs when a shared rule for using Shade changes, and
   `CONTRIBUTING.md` when a rule for working on Shade changes; do not make this
   file the only source.
+- The npm package ships code only. Storybook serves the docs as Markdown at
+  `/docs/<page>.md` and `/llms.txt`, generated from the `.mdx` sources; see
+  [Docs for agents](./CONTRIBUTING.md#docs-for-agents).
