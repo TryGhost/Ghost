@@ -54,15 +54,65 @@ describe('createTracer', function () {
     await shipping();
     expect(shipped).toEqual(
       ['email_invalid', 'ValidationError', 'StripeConnectionError', '_OTHER'].map((type) => ({
-        metric: 'test-operation',
+        metric: 'ghost-spans',
         document: {
           '@timestamp': expect.any(Number),
           event: { name: 'test.operation', outcome: 'failure', duration: expect.any(Number) },
           error: { type },
           labels: { test_kind: 'plain' },
+          numeric_labels: {},
         },
       })),
     );
+  });
+
+  it('keeps numbers apart from the other attributes, as Elastic stores them, and drops empty lists', async function () {
+    const { tracer, shipped } = recording();
+
+    await tracer.track('test.operation', async (span) => {
+      span.setAttribute('mode', 'inline');
+      span.setAttribute('has_custom_fields', true);
+      span.setAttribute('field_types', ['address', 'short_text']);
+      span.setAttribute('rows', 3);
+      span.setAttribute('sizes', [1, 2]);
+      span.setAttribute('replaced', 'first');
+      span.setAttribute('replaced', 2);
+      span.setAttribute('emptied', ['a']);
+      span.setAttribute('emptied', []);
+    });
+
+    await shipping();
+    expect(shipped).toEqual([
+      {
+        metric: 'ghost-spans',
+        document: expect.objectContaining({
+          labels: {
+            mode: 'inline',
+            has_custom_fields: true,
+            field_types: ['address', 'short_text'],
+          },
+          numeric_labels: { rows: 3, sizes: [1, 2], replaced: 2 },
+        }),
+      },
+    ]);
+  });
+
+  it('ships a list as it was when set, however it changes afterwards', async function () {
+    const { tracer, shipped } = recording();
+    const types = ['short_text'];
+
+    await tracer.track('test.operation', async (span) => {
+      span.setAttribute('field_types', types);
+      types.push('address');
+    });
+
+    await shipping();
+    expect(shipped).toEqual([
+      {
+        metric: 'ghost-spans',
+        document: expect.objectContaining({ labels: { field_types: ['short_text'] } }),
+      },
+    ]);
   });
 
   it('leaves the result standing when shipping fails or never finishes, and logs a failure', async function () {
