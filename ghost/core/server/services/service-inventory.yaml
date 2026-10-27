@@ -5720,6 +5720,7 @@ services:
           - test/unit/server/services/invites/accept.test.ts
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/services/invites/index.test.ts
+          - test/integration/services/invites/acceptance-models.test.ts
       startup:
         summary: >-
           Boot awaits init in initCore after settings and database readiness, before API and
@@ -5757,8 +5758,9 @@ services:
           invitations but do not assert old-token invalidation or concurrent resend behavior.
           Acceptance keeps its transaction, invite and user variables invocation-local.
           Persisted invite deletion provides the successful-use boundary. It has no reset,
-          replay cache or retry. Existing acceptance cases do not assert concurrent acceptance,
-          token reuse or failed creation leaving the invite available.
+          replay cache or retry. Database tests exercise the retained root against real models
+          and assert concurrent acceptance, token reuse and failed creation leaving the invite
+          available.
         sources:
           - core/kernel/define-service.ts
           - core/server/services/invites/invites.ts
@@ -5768,6 +5770,7 @@ services:
           - test/unit/kernel/define-service.test.ts
           - test/e2e-api/admin/invites.test.js
           - test/unit/server/services/invites/index.test.ts
+          - test/integration/services/invites/acceptance-models.test.ts
       configuration:
         summary: >-
           add reads current title, admin URL and default email domain. Inviter name/email

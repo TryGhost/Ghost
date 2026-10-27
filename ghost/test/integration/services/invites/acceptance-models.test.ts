@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import * as security from '@tryghost/security';
-import type { InviteAcceptanceModelRegistry } from '../../../../core/server/models/invite-acceptance';
+import type { AcceptanceModels } from '../../../../core/server/services/invites/accept';
 import { agentProvider, fixtureManager } from '../../../utils/e2e-framework';
 
 const models = require('../../../../core/server/models');
-const acceptanceModels: InviteAcceptanceModelRegistry = models;
+// The registry has no declarations; this view checks the test's calls against
+// the contract accept.ts declares, and the assertions below check it at runtime.
+const acceptanceModels: AcceptanceModels = models;
 // Use the same CommonJS instance that boot initializes.
 const invites: typeof import('../../../../core/server/services/invites') = require('../../../../core/server/services/invites');
 
-describe('Invite acceptance with the production models contract', function () {
+describe('Invite acceptance against real models', function () {
   let email: string;
   let sequence = 0;
   const password = 'An invitation with a sufficiently long test passphrase!';
@@ -40,7 +42,7 @@ describe('Invite acceptance with the production models contract', function () {
 
   it('returns the model values used by acceptance and the transaction callback result', async function () {
     const result = await acceptanceModels.Base.transaction(async (transacting) => {
-      const options = { context: { internal: true }, transacting, forUpdate: true };
+      const options = { context: { internal: true }, transacting, forUpdate: true } as const;
       const invite = await acceptanceModels.Invite.findOne(
         { token: security.url.decodeBase64(token), status: 'sent' },
         options,
