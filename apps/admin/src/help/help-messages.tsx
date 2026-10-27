@@ -439,7 +439,6 @@ export function HelpAnswerMessage({
               <Stack gap="md">
                 <Text leading="relaxed">
                   Sorry that didn’t do it. Try asking another way, or send it to the support team.
-                  They’ll see your question and what you’ve already read.
                 </Text>
                 <Inline gap="sm">
                   <Button size="sm" onClick={onContactSupport}>
