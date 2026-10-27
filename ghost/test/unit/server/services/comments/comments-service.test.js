@@ -1,9 +1,15 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
+const DomainEvents = require('@tryghost/domain-events');
+const { mockSystemTime } = require('../../../../utils/clock-utils');
 const CommentsService = require('../../../../../core/server/services/comments/comments-service');
 
 describe('Comments Service: CommentsService', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
   function voteModel({ id, score }) {
     return {
       id,
@@ -794,6 +800,124 @@ describe('Comments Service: CommentsService', function () {
 
       assert.equal(result, commentModel);
       sinon.assert.notCalled(models.Comment.edit);
+    });
+
+    it('stamps edited_at with the current time when saving new content', async function () {
+      const now = new Date('2026-05-05T10:20:30.000Z');
+      mockSystemTime(now);
+      const { instance, models } = createClassInstance();
+      const options = { context: { member: { id: 'member-id' } } };
+
+      await instance.editCommentContent('comment-id', 'member-id', '<p>Edited</p>', options);
+
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.edit,
+        { html: '<p>Edited</p>', edited_at: now },
+        { id: 'comment-id', require: true, ...options },
+      );
+    });
+  });
+
+  describe('moderateComment', function () {
+    const now = new Date('2026-05-05T10:20:30.000Z');
+    const options = { context: { user: 'user-id' } };
+
+    beforeEach(function () {
+      mockSystemTime(now);
+    });
+
+    it('stamps pinned_at with the current time when pinning an unpinned comment', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.moderateComment('comment-id', { pinned: true }, options);
+
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.edit,
+        { pinned_at: now },
+        { id: 'comment-id', require: true, ...options },
+      );
+    });
+
+    it('keeps the existing pinned_at when a pinned comment is pinned again', async function () {
+      const { instance, models, commentModel } = createClassInstance();
+      const pinnedAt = new Date('2026-01-01T00:00:00.000Z');
+      commentModel.get.withArgs('pinned_at').returns(pinnedAt);
+
+      await instance.moderateComment('comment-id', { pinned: true }, options);
+
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.edit,
+        { pinned_at: pinnedAt },
+        { id: 'comment-id', require: true, ...options },
+      );
+    });
+
+    it('clears pinned_at when unpinning without reading the comment', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.moderateComment('comment-id', { pinned: false }, options);
+
+      sinon.assert.notCalled(models.Comment.findOne);
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.edit,
+        { pinned_at: null },
+        { id: 'comment-id', require: true, ...options },
+      );
+    });
+
+    it('clears pinned_at when deleting a comment', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.moderateComment('comment-id', { status: 'deleted' }, options);
+
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.edit,
+        { status: 'deleted', pinned_at: null },
+        { id: 'comment-id', require: true, ...options },
+      );
+    });
+  });
+
+  describe('commentOnPost', function () {
+    const options = { context: { member: { id: 'member-id' } } };
+
+    it('rejects after saving the comment when author notification fails, without dispatching the member comment event', async function () {
+      const { instance, models } = createClassInstance();
+      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const failure = new Error('Mail unavailable');
+      instance.emails.notifyPostAuthors = sinon.stub().rejects(failure);
+
+      await assert.rejects(
+        () => instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', options),
+        failure,
+      );
+
+      sinon.assert.calledOnce(models.Comment.add);
+      sinon.assert.notCalled(dispatch);
+      sinon.assert.notCalled(models.Comment.findOne);
+    });
+
+    it('skips notifications for an internal context and still dispatches the member comment event', async function () {
+      const { instance, models } = createClassInstance();
+      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      instance.emails.notifyPostAuthors = sinon.stub().resolves();
+
+      await instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', {
+        context: { internal: true },
+      });
+
+      sinon.assert.notCalled(instance.emails.notifyPostAuthors);
+      sinon.assert.calledOnce(dispatch);
+      assert.deepEqual(dispatch.firstCall.args[0].data, {
+        memberId: 'member-id',
+        postId: 'post-id',
+        commentId: 'comment-id',
+      });
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.findOne,
+        { id: 'comment-id' },
+        { context: { internal: true }, require: true },
+      );
     });
   });
 

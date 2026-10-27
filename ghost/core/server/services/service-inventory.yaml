@@ -1344,7 +1344,8 @@ services:
           pages, count maps or no result, and set
           invalidation headers; destroy rejects rather than deleting. The HTTP adapter owns
           serialization/status codes. Units assert selected controller arguments, errors and
-          headers with fake services, not the complete root shape or init return timing.
+          headers with fake services. The real-root integration pins init returning undefined
+          and publishing a controller whose service is the published api.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1354,6 +1355,7 @@ services:
           - core/server/api/endpoints/utils/serializers/output/mappers/comments.js
         tests:
           - test/unit/server/services/comments/comments-controller.test.js
+          - test/integration/services/comments-service.test.js
       construction:
         summary: >-
           Every init constructs GhostMailer, CommentsService, CommentsStats and CommentsController.
@@ -1363,7 +1365,8 @@ services:
           retained; stats retains the DB module, while reply mail reads emailService.renderer at
           send time. No other production construction of these comments classes was found.
           Units instantiate deep classes with fakes; the DB integration invokes the real root
-          and asserts pinned projections, not construction count or transport ownership.
+          and asserts pinned projections and that repeated init publishes a new api and
+          controller, not construction count or transport ownership.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1383,7 +1386,9 @@ services:
           subscriber. HTTP asserts selected CRUD/moderation, redaction, vote access, private-site
           guards, headers and bulk-hide results. Mail-intercepted comment/reply tests await test
           DomainEvents settlement and assert member timestamps; none pins wrapper replacement
-          through all consumers or production subscriber completion before the response.
+          through all consumers or production subscriber completion before the response. Mapper
+          units pin the Content post comments flag for off and paid and that a wrapper without a
+          published api reports comments on, the shape the mapper sees before init.
         sources:
           - core/server/api/endpoints/comments.js
           - core/server/api/endpoints/comments-members.js
@@ -1403,6 +1408,7 @@ services:
           - test/e2e-api/admin/member-commenting.test.js
           - test/e2e-api/members-comments/comments.test.js
           - test/e2e-api/members-comments/post-access.test.js
+          - test/unit/api/canary/utils/serializers/output/mapper.test.js
       startup:
         summary: >-
           Boot invokes synchronous comments.init in the service Promise.all array after invoking
@@ -1431,8 +1437,9 @@ services:
           old graph. There is no reset/shutdown or old-transport disposal. Comment, vote and report
           state lives in shared tables. Stats accesses db.knex when querying; notification helpers
           call retained settings/URL facades and current email-service renderer. HTML templates
-          are read/compiled each render; text modules are require-cached. Existing tests exercise
-          normal persistence/rendering and a real-root pinned query, not re-init or restart.
+          are read/compiled each render; text modules are require-cached. The real-root
+          integration pins that repeated init replaces the api and controller and that the
+          controller counts published comments through the wired stats; restart is untested.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-stats-service.js
@@ -1451,8 +1458,11 @@ services:
           by the renderer forwards to current i18n. GhostMailer captures transport/options at
           construction, while address normalization occurs at send. HTTP tests stub settings
           and mutate test config to assert disabled/paid access and support-address output;
-          renderer units assert selected English/German text. None establishes production
-          config hot reload or transport refresh from the immutable config tree.
+          renderer units assert selected English/German text. The real-root integration pins
+          enabled following the setting on each access with unknown values as off. Email units
+          pin the notification date as a calendar day in the site timezone setting, English
+          month abbreviations, for the author, reply and report templates. None establishes
+          production config hot reload or transport refresh from the immutable config tree.
         sources:
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-service-emails.js
@@ -1466,6 +1476,8 @@ services:
         tests:
           - test/e2e-api/members-comments/comments.test.js
           - test/unit/server/services/comments/comments-service-emails-renderer.test.ts
+          - test/unit/server/services/comments/comments-service-emails.test.js
+          - test/integration/services/comments-service.test.js
       resources:
         summary: >-
           The nested mailer owns a configured Nodemailer transport; comments has no close/drain
@@ -1478,6 +1490,10 @@ services:
           mail. Domain event subscribers run separately and test allSettled is not a production
           drain. Vote units assert arguments using fake transactions; HTTP mail replaces
           GhostMailer.sendMail, preserving normalization but bypassing transport/provider work.
+          Email units pin the reply notification reading the Email service renderer when
+          sending rather than at construction, its recipient, unsubscribe link, translated
+          subject and skip conditions, and the member and moderation timestamps as the
+          current time.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1501,8 +1517,10 @@ services:
           returns without retrying notification. Reaction controllers read after mutation before
           setting headers. HTTP asserts sequential duplicate-report suppression, access errors
           and successful mail/persistence; units assert notification recipient deduplication with
-          fake email helpers. Post-write mail/read failures, retry effects and concurrent
-          vote/report outcomes remain source-only and untested by those assertions.
+          fake email helpers, and that a failed author notification rejects commentOnPost after
+          the comment is saved without the member comment event or the final read, while an
+          internal context skips notifications and still dispatches. Post-write read failures,
+          retry effects and concurrent vote/report outcomes remain source-only.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1516,15 +1534,18 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin real-root exports, synchronous initialization, repeated replacement and retained
-        wrapper/implementation behavior, including failed construction and in-flight calls.
-        The Content post mapper currently treats missing api.enabled as not off; characterize
-        that pre-init/facade-shape edge rather than assuming optional chaining protects it.
+        The real-root integration now pins synchronous init returning undefined, the published
+        controller bound to the published api, and repeated init replacing both; mapper units
+        pin the Content post mapper reporting comments on for a wrapper without a published api.
+        Adoption must decide how one retained initializer instance replaces replacement per
+        init and whether the mapper keeps reading a possibly unpublished api. Failed
+        construction and in-flight calls across replacement remain uncharacterized.
       - >-
-        Cover actual composition when rendering, mail or the final read fails after comment/
-        report persistence, including recipient continuation, event dispatch, request retries
-        and omitted invalidation headers. Intercepted successful mail and fake recipient
-        helpers do not establish those failure contracts or notification durability.
+        Units now pin that a failed author notification rejects comment creation after
+        persistence without the member comment event or final read. Reply/report notification
+        failure, final read failure, recipient continuation, request retries and omitted
+        invalidation headers remain uncharacterized; intercepted successful mail and fake
+        recipient helpers do not establish notification durability.
       - >-
         Establish mail-transport ownership on replacement/shutdown and behavior of pending
         notification/domain-event work. Comments closes no transport and registers no cleanup;
