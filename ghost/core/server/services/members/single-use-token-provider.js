@@ -78,7 +78,12 @@ class SingleUseTokenProvider {
     const model = await this._findAndLockTokenModel(token, options.transacting);
 
     if (options.otcVerification) {
-      await this._validateOTCVerificationHash(options.otcVerification, model.get('token'));
+      // Reuse the locked UUID instead of querying outside this transaction.
+      await this._validateOTCVerificationHash(
+        options.otcVerification,
+        model.get('token'),
+        model.get('uuid'),
+      );
       await this._validateOTCUsageLimit(model, options.transacting);
     } else {
       await this._validateUsageLimit(model, options.transacting);
@@ -285,10 +290,11 @@ class SingleUseTokenProvider {
    *
    * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
    * @param {string} token - The token value
+   * @param {string} tokenId - Token UUID already loaded by the caller.
    * @returns {Promise<void>}
    */
-  async _validateOTCVerificationHash(otcVerificationHash, token) {
-    const isValid = await this._isValidOTCVerificationHash(otcVerificationHash, token);
+  async _validateOTCVerificationHash(otcVerificationHash, token, tokenId) {
+    const isValid = await this._isValidOTCVerificationHash(otcVerificationHash, token, tokenId);
 
     if (!isValid) {
       throw new ValidationError({
@@ -306,9 +312,10 @@ class SingleUseTokenProvider {
    *
    * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
    * @param {string} token - The token value
+   * @param {string} tokenId - Token UUID already loaded by the caller.
    * @returns {Promise<boolean>}
    */
-  async _isValidOTCVerificationHash(otcVerificationHash, token) {
+  async _isValidOTCVerificationHash(otcVerificationHash, token, tokenId) {
     try {
       if (!this.secret || !otcVerificationHash || !token) {
         return false;
@@ -330,7 +337,6 @@ class SingleUseTokenProvider {
         return false;
       }
 
-      const tokenId = await this.getRefByToken(token);
       if (!tokenId) {
         return false;
       }

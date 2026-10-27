@@ -287,8 +287,6 @@ describe('SingleUseTokenProvider', function () {
 
     beforeEach(function () {
       clock = sinon.useFakeTimers();
-
-      sinon.stub(tokenProvider, 'getRefByToken').resolves(testTokenUuid);
     });
 
     afterEach(function () {
@@ -474,7 +472,6 @@ describe('SingleUseTokenProvider', function () {
         const otcMockModel = createMockModel({ uuid: testTokenUuid });
         setupMockModelForValidation(otcMockModel);
 
-        // Need to mock getRefByToken since _validateOTCVerificationHash calls it
         const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
 
         const result = await tokenProvider.validate(testToken, {
@@ -482,6 +479,31 @@ describe('SingleUseTokenProvider', function () {
         });
 
         assert.deepEqual(result, testData);
+      });
+
+      it('should validate OTC when only the transaction connection is available', async function () {
+        const transacting = {};
+        const otcMockModel = createMockModel();
+        setupMockModelForValidation(otcMockModel, { transactionId: transacting });
+        otcMockModel.findOne.callsFake(async (_query, options = {}) => {
+          // A single-connection pool cannot serve queries outside this transaction.
+          if (options.transacting !== transacting) {
+            throw new Error('No connection available outside the active transaction');
+          }
+          return otcMockModel;
+        });
+        const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+        const result = await tokenProvider.validate(testToken, {
+          otcVerification: validOtcVerification,
+        });
+
+        assert.deepEqual(result, testData);
+        sinon.assert.calledWith(
+          otcMockModel.save,
+          sinon.match({ otc_used_count: 1 }),
+          sinon.match({ transacting }),
+        );
       });
 
       it('should throw ValidationError with malformed OTC verification hash', async function () {
