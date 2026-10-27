@@ -13,11 +13,11 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { prepareArticleHtml } from './help-article-html';
+import { prepareArticleHtml, splitFurtherReading } from './help-article-html';
 import { ARTICLE_CONTENT_CLASS_NAME } from './help-article-styles';
 import { fetchHelpArticleContent, type HelpArticle } from './help-center';
 import { HelpPanelSizeButton } from './help-panel-size';
-import { HelpResult } from './help-results';
+import { HelpLinkCard, HelpResult } from './help-results';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
 import type { HelpSession } from './use-help-search';
 import { useHelpCenterIndex } from './use-help-center-index';
@@ -34,6 +34,10 @@ import { useHelpCenterIndex } from './use-help-center-index';
  * help-article-html.ts. Its links to other help articles open in the panel
  * too, its in-article anchors scroll within it, and its images zoom.
  */
+
+// How many things to read next: the article's own further reading is usually
+// two, the search adds up to two more
+const MORE_LIMIT = 4;
 
 function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -69,14 +73,39 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
     queryFn: ({ signal }) => fetchHelpArticleContent(article.slug, signal),
     staleTime: 30 * 60 * 1000,
   });
-  const html = useMemo(
-    () => (content.data ? prepareArticleHtml(content.data.html) : ''),
+  // The article's own "Further reading" comes out of the body, to show once
+  // in the list under it rather than as a second list
+  const { html, links } = useMemo(
+    () =>
+      content.data
+        ? splitFurtherReading(prepareArticleHtml(content.data.html))
+        : { html: '', links: [] },
     [content.data],
   );
   const topic = article.tags[0]?.name;
   const readingTime = content.data?.readingTime;
-  // The search's other results, to read next
-  const more = (session.search?.results ?? []).filter(({ id }) => id !== article.id);
+  // What to read next: the article's own further reading first (help
+  // articles as articles, other pages as links), then the search's other
+  // results, each once and never this article
+  const more = useMemo(() => {
+    const articles: HelpArticle[] = [];
+    const elsewhere: { title: string; url: string }[] = [];
+    for (const link of links) {
+      const known = link.slug ? index.data?.find(({ slug }) => slug === link.slug) : undefined;
+      if (known) {
+        articles.push(known);
+      } else if (!link.slug) {
+        elsewhere.push(link);
+      }
+    }
+    articles.push(...(session.search?.results ?? []));
+    const seen = new Set([article.id]);
+    return {
+      articles: articles.filter(({ id }) => !seen.has(id) && seen.add(id)).slice(0, MORE_LIMIT),
+      elsewhere: elsewhere.slice(0, MORE_LIMIT),
+    };
+  }, [links, index.data, session.search, article.id]);
+  const moreCount = more.articles.length + more.elsewhere.length;
   const findingMore = session.searching;
 
   // Focus moves into the article, so keyboard and screen reader users land in it
@@ -194,7 +223,7 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
               onClick={onContentClick}
             />
 
-            {(more.length > 0 || findingMore) && (
+            {(moreCount > 0 || findingMore) && (
               <Stack
                 className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
                 gap="sm"
@@ -203,16 +232,24 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
                 <Text size="sm" tone="tertiary">
                   More from the help center
                 </Text>
-                {findingMore && !more.length && (
+                {findingMore && !moreCount && (
                   <Skeleton className="h-3.5 w-1/2" containerClassName="flex" />
                 )}
-                {more.map((result, position) => (
+                {more.articles.map((result, position) => (
                   <HelpResult
                     key={result.id}
                     article={result}
                     opened={session.openedArticles.some(({ id }) => id === result.id)}
                     step={position + 1}
                     onOpen={session.readArticle}
+                  />
+                ))}
+                {more.elsewhere.map((link, position) => (
+                  <HelpLinkCard
+                    key={link.url}
+                    step={more.articles.length + position + 1}
+                    title={link.title}
+                    url={link.url}
                   />
                 ))}
               </Stack>

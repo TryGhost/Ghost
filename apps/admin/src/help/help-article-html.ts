@@ -109,3 +109,59 @@ export function prepareArticleHtml(html: string) {
 
   return template.innerHTML;
 }
+
+/** A link from an article's own "Further reading": a help article (with its slug) or another page. */
+export interface FurtherReadingLink {
+  title: string;
+  url: string;
+  /** Set when it's a help center article, to open it in the panel */
+  slug: string | null;
+}
+
+const FURTHER_READING = /^further reading$/i;
+
+/**
+ * Takes an article's own "Further reading" section out of its prepared HTML
+ * (the heading, and the bookmark cards after it up to the next heading), so
+ * the panel can show those links once, merged with the search's other
+ * results, rather than as a second list under the article.
+ */
+export function splitFurtherReading(preparedHtml: string): {
+  html: string;
+  links: FurtherReadingLink[];
+} {
+  const template = document.createElement('template');
+  template.innerHTML = preparedHtml;
+  const content = template.content;
+  const heading = [...content.querySelectorAll('h1, h2, h3, h4')].find((element) =>
+    FURTHER_READING.test(element.textContent?.trim() ?? ''),
+  );
+  if (!heading) {
+    return { html: preparedHtml, links: [] };
+  }
+
+  const removed: Element[] = [heading];
+  let next = heading.nextElementSibling;
+  while (next && !/^H[1-4]$/.test(next.tagName)) {
+    removed.push(next);
+    next = next.nextElementSibling;
+  }
+  // A rule often sets the section off from the article
+  if (heading.previousElementSibling?.tagName === 'HR') {
+    removed.push(heading.previousElementSibling);
+  }
+
+  const links: FurtherReadingLink[] = [];
+  for (const element of removed) {
+    for (const link of element.querySelectorAll('a[href]')) {
+      const url = link.getAttribute('href') ?? '';
+      const title =
+        link.querySelector('.kg-bookmark-title')?.textContent?.trim() || link.textContent?.trim();
+      if (url.startsWith('https://') && title && !links.some((known) => known.url === url)) {
+        links.push({ title, url, slug: link.getAttribute('data-help-slug') });
+      }
+    }
+    element.remove();
+  }
+  return { html: template.innerHTML, links };
+}

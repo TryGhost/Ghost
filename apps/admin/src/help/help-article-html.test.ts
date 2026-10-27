@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_ID_PREFIX, getHelpArticleSlug, prepareArticleHtml } from './help-article-html';
+import {
+  ARTICLE_ID_PREFIX,
+  getHelpArticleSlug,
+  prepareArticleHtml,
+  splitFurtherReading,
+} from './help-article-html';
 
 function render(html: string) {
   const container = document.createElement('div');
@@ -112,5 +117,37 @@ describe('getHelpArticleSlug', () => {
     ['https://example.com/help/stripe/', null],
   ])('reads %s as %s', (href, slug) => {
     expect(getHelpArticleSlug(href)).toBe(slug);
+  });
+});
+
+describe('splitFurtherReading', () => {
+  const bookmark = (href: string, title: string) =>
+    `<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="${href}"><div class="kg-bookmark-content"><div class="kg-bookmark-title">${title}</div></div></a></figure>`;
+
+  it('takes the section out and keeps its links, help articles with their slug', () => {
+    const html = prepareArticleHtml(
+      `<p>Body.</p><hr><h3 id="further-reading">Further reading</h3>${bookmark(
+        'https://ghost.org/help/email-delivery-tips/',
+        'What should I do?',
+      )}${bookmark('https://ghost.org/resources/email-sender-names/', 'Sender names')}`,
+    );
+    const { html: rest, links } = splitFurtherReading(html);
+    expect(rest).toBe('<p>Body.</p>');
+    expect(links).toEqual([
+      {
+        title: 'What should I do?',
+        url: 'https://ghost.org/help/email-delivery-tips/',
+        slug: 'email-delivery-tips',
+      },
+      { title: 'Sender names', url: 'https://ghost.org/resources/email-sender-names/', slug: null },
+    ]);
+  });
+
+  it('stops at the next heading and leaves articles without the section alone', () => {
+    const html = prepareArticleHtml(
+      `<h3>Further reading</h3>${bookmark('https://ghost.org/help/a/', 'A')}<h3>Notes</h3><p>Kept.</p>`,
+    );
+    expect(splitFurtherReading(html).html).toBe('<h3>Notes</h3><p>Kept.</p>');
+    expect(splitFurtherReading('<p>Plain.</p>')).toEqual({ html: '<p>Plain.</p>', links: [] });
   });
 });

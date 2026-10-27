@@ -159,6 +159,36 @@ export function HelpResult({ article, opened, step, onOpen }: HelpResultProps) {
   );
 }
 
+/** A page beyond the article list (a Ghost resource, say): it opens in a new tab. */
+export function HelpLinkCard({ title, url, step }: { title: string; url: string; step: number }) {
+  return (
+    <a
+      className={cn(
+        'group block w-full rounded-xl outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring',
+        REVEAL_CLASS_NAME,
+      )}
+      href={url}
+      rel="noopener noreferrer"
+      style={revealAt(step)}
+      target="_blank"
+    >
+      <Card>
+        <Box padding="md">
+          <Inline align="start" gap="sm" justify="between">
+            <Text leading="snug" weight="semibold">
+              {title}
+            </Text>
+            <LucideIcon.ArrowUpRight className="mt-0.5 size-4 shrink-0 text-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:text-text-primary" />
+          </Inline>
+          <Text className="mt-2 truncate" size="xs" tone="tertiary">
+            {new URL(url).hostname}
+          </Text>
+        </Box>
+      </Card>
+    </a>
+  );
+}
+
 const PLACEHOLDERS = ['first', 'second', 'third'] as const;
 
 interface HelpResultsProps {

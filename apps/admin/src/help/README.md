@@ -346,10 +346,13 @@ Articles open in the panel (`help-article-view.tsx`), not a new tab, so the
 user stays in Admin: a picked FAQ question straight away, a result from its
 preview or card. The header links out to the help center, and the maximize
 button widens the panel over the page area right of Admin's sidebar, for long
-articles. Under the article, "More from the help center" lists the search's
-other results (a placeholder while a picked question's search is still
-running), and the article ends with "Did this answer your question?", whose
-"No" goes to the support form. Opened articles are marked "Read" in the
+articles. Under the article, "More from the help center" is one list of what
+to read next: the article's own "Further reading" first (the docs team's
+bookmark cards, lifted out of the body by `splitFurtherReading` so they don't
+show twice; help articles open in the panel, other pages in a new tab), then
+the search's other results, each once (a placeholder while a picked
+question's search is still running). The article ends with "Did this answer
+your question?", whose "No" goes to the support form. Opened articles are marked "Read" in the
 results and listed in what the support form sends.
 
 `help-article-html.ts` prepares the HTML:
@@ -437,7 +440,9 @@ Search the code for `PROTOTYPE:`. In short:
 
 - **Embeds (iframes, such as YouTube) are dropped.**
 - **Links to help articles that aren't in the loaded list** (unpublished, or
-  pages rather than posts) open in a new tab rather than the panel.
+  pages rather than posts) open in a new tab rather than the panel, and are
+  left out of "More from the help center" when they come from an article's
+  further reading.
 
 **Accessibility and behaviour**
 
