@@ -7,12 +7,13 @@ import {
   createPostFactory,
 } from '@/data-factory';
 import { PostPage } from '@/helpers/pages';
+import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { expect, test, withIsolatedPage } from '@/helpers/playwright';
 
 /**
- * The publishing journeys through the React post editor. Each case pins the
+ * The publishing journeys through the post editor. Each case pins the
  * state the server ends up holding, not the layout the editor reaches it
- * through. The draft autosave journeys stay in `editor-react.test.ts`.
+ * through. The draft autosave journeys stay in `editor.test.ts`.
  */
 
 const POSTS_API = '/ghost/api/admin/posts/';
@@ -49,7 +50,7 @@ async function readPage(page: Page, pageId: string) {
   return found;
 }
 
-/** A draft page, opened in the React editor. */
+/** A draft page, opened in the editor. */
 async function openDraftPage(page: Page, title: string) {
   const response = await page.request.post(PAGES_API, {
     data: { pages: [{ title, status: 'draft' }] },
@@ -98,7 +99,7 @@ async function startDraft(page: Page, { title, body }: { title: string; body: st
   return { editor, postId: await editor.getPostId(), postsPage };
 }
 
-test.describe('Ghost Admin - Publishing (React)', () => {
+test.describe('Ghost Admin - Publishing', () => {
   let postFactory: PostFactory;
 
   test.beforeEach(async ({ page }) => {
@@ -269,7 +270,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     test.setTimeout(90000);
 
     const title = `react-contributor-${Date.now()}`;
-    // Authored through the API rather than the editor: the React editor's
+    // Authored through the API rather than the editor: the editor's
     // create payload omits `authors`, which a contributor's add permission needs
     const created = await page.request.post(POSTS_API, {
       data: {
@@ -485,6 +486,32 @@ test.describe('Ghost Admin - Publishing (React)', () => {
       expect(Date.parse(post.published_at)).toBeGreaterThan(Date.now());
       expect(post.email).toBeNull();
       expect((await page.request.get(`/${post.slug}/`)).status()).toBe(404);
+    });
+  });
+
+  test.describe('with member signup disabled', () => {
+    // The settings change must not leak into the file's shared environment
+    test.use({ isolation: 'per-test' });
+
+    test('disabled subscription access leaves the publish flow without email', async ({ page }) => {
+      const settingsService = new SettingsService(page.request);
+      await settingsService.setMembersSignupAccess('none');
+      // Admin reads settings as it boots, so only a reload picks the change up
+      await page.reload();
+
+      const postsPage = new PostsPage(page);
+      await postsPage.goto();
+      await postsPage.newPostButton.click();
+
+      const editor = new PostEditorPage(page);
+      await editor.createDraft({ title: 'Test post' });
+      await expect(editor.postStatus).toContainText('Draft - Saved');
+      await editor.publishFlow.open();
+      await expect(editor.publishFlow.optionsStep).toBeVisible();
+
+      await expect(editor.publishFlow.publishTypeButton).toBeDisabled();
+      await expect(editor.publishFlow.publishTypeButton).toContainText('Publish on site');
+      await expect(editor.publishFlow.emailRecipientsSetting).toHaveCount(0);
     });
   });
 });

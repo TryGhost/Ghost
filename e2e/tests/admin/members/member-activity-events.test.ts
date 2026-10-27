@@ -1,7 +1,7 @@
 import { APIRequestContext } from '@playwright/test';
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { HomePage, PublicPage } from '@/public-pages';
-import { MemberDetailsPage, MembersPage } from '@/admin-pages';
+import { MemberDetailsPage, MembersListPage } from '@/admin-pages';
 import { MembersService } from '@/helpers/services/members';
 import { createAutomatedEmailFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
@@ -55,7 +55,7 @@ test.describe('Ghost Admin - Member Activity Events', () => {
 
     await waitForWelcomeEmailReceivedEvent(page.request, member.id);
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.getMemberByName(name).click();
 

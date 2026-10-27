@@ -35,7 +35,6 @@ function WhatsNewBanner() {
       aria-label="What’s new notification"
       aria-live="polite"
       className="mx-2"
-      data-test-toast="whats-new"
       data-testid="whats-new-banner"
       role="status"
       variant="gradient"
@@ -47,7 +46,6 @@ function WhatsNewBanner() {
         href={latestEntry.url}
         rel="noopener noreferrer"
         target="_blank"
-        data-test-toast-link
         onClick={handleLinkClick}
       >
         <div className="mb-2 flex items-center gap-2">
@@ -59,15 +57,10 @@ function WhatsNewBanner() {
         <div
           className="mb-1 text-base font-semibold text-gray-900 dark:text-foreground"
           data-testid="whats-new-banner-title"
-          data-test-toast-title
         >
           {latestEntry.title}
         </div>
-        <div
-          className="text-sm text-gray-700"
-          data-testid="whats-new-banner-excerpt"
-          data-test-toast-excerpt
-        >
+        <div className="text-sm text-gray-700" data-testid="whats-new-banner-excerpt">
           {latestEntry.customExcerpt}
         </div>
       </a>
