@@ -6502,8 +6502,9 @@ services:
           either. The deep service exposes async slug/create/filter/request operations and a
           synchronous relativeRedirectPrefix; only handleRequest is bound. Deep LinkRedirect
           objects retain mutable URL references and ObjectIDs, while RedirectEvent carries the
-          original request URL, link and timestamp. Units exercise deep methods and DTOs, not
-          root identity, detached init or the whole pre-init surface.
+          original request URL, link and timestamp. Units exercise deep methods and DTOs. Root
+          units pin the absent pre-init surface, retained identity across repeated init and the
+          published handleRequest and getSlugUrl paths; detached init remains source-only.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirects-service.js
@@ -6512,6 +6513,7 @@ services:
         tests:
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
+          - test/unit/server/services/link-redirection/index.test.js
       construction:
         summary: >-
           The first init loads shared models, chooses an optional adapter, constructs/publishes
@@ -6519,13 +6521,16 @@ services:
           await, so publication is synchronous; the service guard retains both on later calls.
           Cache-enabled repository construction immediately adds a site.changed listener. A
           later construction failure can leave that repository/listener published and retry
-          creates another. There is no pending promise, rollback or teardown. Construction and
-          partial-publication behavior are source-only.
+          creates another. There is no pending promise, rollback or teardown. Root units pin
+          graph retention, disabled-cache construction without an adapter or listener, and
+          adapter-acquisition failure publishing nothing before an explicit retry succeeds.
+          Later partial repository/listener publication remains source-only.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/adapter-manager/index.ts
-        tests: []
+        tests:
+          - test/unit/server/services/link-redirection/index.test.js
       consumers:
         summary: >-
           Frontend route mounting reads the /r/ prefix and captures the bound handleRequest.
@@ -6535,7 +6540,12 @@ services:
           proves generated links exist in the database and resolve through real frontend HTTP
           to the stored destination; its nonempty click assertion does not pin the individual
           relation because supplied member_id/link_id options are ignored. Wrapper tests inject
-          redirection dependencies; none prove retained consumers after root replacement.
+          redirection dependencies; none prove retained consumers after root replacement. Root
+          units invoke the published handleRequest with request/response fakes and a stateful
+          cache fake: a database miss and a serialized cache hit assert the same destination,
+          header, no next call and the same link id, automation revision and destination in the
+          dispatched event. Models and URL helpers are controlled, so this is not a real HTTP
+          test.
         sources:
           - core/frontend/web/routers/link-redirects.js
           - core/frontend/web/site.js
@@ -6548,14 +6558,16 @@ services:
         tests:
           - test/integration/services/email-service/batch-sending.test.js
           - test/unit/server/services/link-tracking/index.test.ts
+          - test/unit/server/services/link-redirection/index.test.js
       startup:
         summary: >-
           Boot awaits this init after route/custom redirects and before themes, Express route
           mounting, the main services phase and readiness. Despite the frontend-phase name,
           initialization also runs when frontend is disabled. Link tracking explicitly rejects
           if service is absent. No redirect rows are loaded during initialization. Successful
-          newsletter composition exercises completed boot; lifecycle tests do not cover this
-          wrapper's ordering, failed adapter/repository construction or backend-only startup.
+          newsletter composition exercises completed boot. Root units cover failed adapter
+          acquisition and retry; lifecycle tests do not cover this wrapper's ordering, later
+          repository construction failure or backend-only startup.
         sources:
           - core/boot.js
           - core/server/services/link-redirection/index.js
@@ -6564,6 +6576,7 @@ services:
         tests:
           - test/integration/services/email-service/batch-sending.test.js
           - test/unit/server/services/link-tracking/index.test.ts
+          - test/unit/server/services/link-redirection/index.test.js
       lifetime:
         summary: >-
           The wrapper keeps its first successful graph across init calls and has no reset.
@@ -6574,6 +6587,8 @@ services:
           deduplication instead relies on a unique revision/destination-hash pair and rereads a
           concurrent winner after a duplicate error. Real MySQL tests prove convergence for
           concurrent same/different revisions, not ordinary slug races or root/cache lifetime.
+          Root units pin retained service/repository identity after repeated init and one owned
+          invalidation listener.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirects-service.js
@@ -6582,6 +6597,7 @@ services:
         tests:
           - test/integration/services/link-redirection/automation-redirects.test.ts
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
+          - test/unit/server/services/link-redirection/index.test.js
       configuration:
         summary: >-
           Init captures cache enablement/adapter and service base URL; later init does not refresh
@@ -6589,11 +6605,14 @@ services:
           subdirectory and Admin URL values at construction; test replacement is not production
           hot reload. Persistence strips the subdirectory and request query. Destination hashes
           use full URL.href, and edited means updated_at exceeds created_at by more than one
-          second. Cache serialization keeps a subdirectory-bearing pathname: save/read keys differ
-          and cached reconstruction can prefix the subdirectory again. Units pin root-URL cache
-          results, timestamp thresholds and UUID substitution. The cache-hit fake supplies an
-          absolute from URL rather than the serialized pathname, so no real serialization round
-          trip or subdirectory behavior is pinned.
+          second. Cache serialization keeps a subdirectory-bearing pathname: save writes that
+          pathname as its key while getByURL reads and fills the stripped path, and cached
+          reconstruction prefixes the subdirectory again, so cache hits on subdirectory sites
+          rebuild LinkRedirect.from with a doubled path while to is unchanged. Units pin root-URL
+          cache results, timestamp thresholds and UUID substitution. Root units run a real
+          serialization round trip through the root graph with subdirectory URL helpers, pinning
+          destination and identifiers on miss and hit and slug URLs under the site URL; the
+          doubled from value is deliberately not pinned.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirect-repository.js
@@ -6605,6 +6624,7 @@ services:
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
           - test/integration/services/link-redirection/automation-redirects.test.ts
+          - test/unit/server/services/link-redirection/index.test.js
       resources:
         summary: >-
           The repository borrows models and an adapter-manager-owned cache, registering an
@@ -6614,7 +6634,9 @@ services:
           HTTP 302; shared DomainEvents logs ordinary async subscriber failures without making
           them part of the response. Newsletter integration waits for test-only allSettled,
           while production redirect completion does not await analytics. The reset unit checks
-          one invocation on an injected emitter, not resource ownership across restart.
+          one invocation on an injected emitter, not resource ownership across restart. Root
+          units assert one owned site.changed listener on the shared registry and cache reset
+          through its callback; production disposal is still absent.
         sources:
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/link-redirection/link-redirects-service.js
@@ -6625,6 +6647,7 @@ services:
         tests:
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
           - test/integration/services/email-service/batch-sending.test.js
+          - test/unit/server/services/link-redirection/index.test.js
       failures:
         summary: >-
           Repository/cache lookup and malformed-row errors propagate without a cache-error DB
@@ -6636,7 +6659,9 @@ services:
           rethrows, while other saves fail directly. Units pin that recovery and placeholder
           output with fakes, not cache faults, malformed stored rows, analytics failures or
           Express error responses. No-prefix unit cases simply inject a missing row; they do
-          not prove route matching or service-side prefix validation.
+          not prove route matching or service-side prefix validation. A root unit forwards a
+          model lookup rejection unchanged to next without redirect or event dispatch; cache
+          failure channels and full Express error responses remain gaps.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirect-repository.js
@@ -6646,22 +6671,28 @@ services:
         tests:
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
+          - test/unit/server/services/link-redirection/index.test.js
     unverified: []
     blockers:
       - >-
-        Pin root exports, synchronous publication, failed/repeated init, retained frontend/link
-        tracking consumers and backend-only boot. Decide how to restore invalidation after an
-        event-bus reset and dispose partially constructed repositories without changing identity.
+        Root units pin the absent pre-init surface, repeated-init identity and failed adapter
+        acquisition with retry. Pin synchronous publication timing, retained frontend/link
+        tracking consumers after root replacement and backend-only boot. Decide how to restore
+        invalidation after an event-bus reset and dispose partially constructed repositories
+        without changing identity.
       - >-
-        Add real cache composition contracts for hits, misses, disabled caching, edits and
-        site.changed, including subdirectories. Source and an isolated actual-repository/URL-helper
-        diagnostic show different save/read keys and duplicated subdirectory in cached link.from;
-        this does not establish a changed HTTP destination. Preserve or deliberately fix that
-        behavior separately; root-URL fakes do not protect it.
+        Root units cover disabled caching, a stateful miss-then-hit round trip, destination and
+        event identifiers, retained adapter choice and site.changed invalidation with controlled
+        subdirectory URL helpers. Serialized cache entries rebuild from against a site URL that
+        already carries the subdirectory, so cache hits on subdirectory sites yield a doubled
+        path, and the save-time key differs from the lookup key; current consumers do not read
+        that field from a hit. Fix that round trip separately rather than pinning it. Cover
+        edits and cache-enabled races separately.
       - >-
-        Cover cache read/write/reset failure channels, malformed model/cache rows, partial
-        persistence and Express next/error behavior. Cache writes and invalidation are not
-        awaited, so request success is not proof of settled cache work or safe shutdown.
+        Root units cover a model lookup failure reaching next without redirecting. Cover cache
+        read/write/reset failure channels, malformed model/cache rows, partial persistence and
+        full Express error responses. Cache writes and invalidation are not awaited, so request
+        success is not proof of settled cache work or safe shutdown.
       - >-
         Keep tested automation revision/hash uniqueness distinct from unprotected ordinary
         slug lookup/save. Test ordinary concurrent collisions, partial automation saves and
