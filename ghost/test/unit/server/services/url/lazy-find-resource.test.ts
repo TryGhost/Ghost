@@ -1,20 +1,24 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const {
-  createFindResource,
-} = require('../../../../../core/server/services/url/lazy-find-resource');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { createFindResource } from '../../../../../core/server/services/url/lazy-find-resource';
 
-function fakeModel() {
+type FakeModel = {
+  findOne: sinon.SinonStub<[Record<string, unknown>, Record<string, unknown>?]>;
+};
+
+type FakeModels = { Post: FakeModel; TagPublic: FakeModel; Author: FakeModel };
+
+function fakeModel(): FakeModel {
   return { findOne: sinon.stub() };
 }
 
-function record(attrs) {
+function record(attrs: Record<string, unknown>) {
   return { toJSON: () => attrs };
 }
 
 describe('createFindResource', function () {
-  let models;
-  let findResource;
+  let models: FakeModels;
+  let findResource: ReturnType<typeof createFindResource>;
 
   beforeEach(function () {
     models = { Post: fakeModel(), TagPublic: fakeModel(), Author: fakeModel() };
@@ -57,6 +61,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('posts', { slug: 'hello' });
 
+      assert.ok(result);
       assert.deepEqual(result.primary_author, { slug: 'jane' });
     });
 
@@ -80,6 +85,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('posts', { slug: 'hello' });
 
+      assert.ok(result);
       for (const key of [
         'title',
         'html',
@@ -108,6 +114,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('posts', { slug: 'hello' });
 
+      assert.ok(result);
       assert.deepEqual(result.tags, [{ id: 't1', slug: 'news' }]);
       assert.deepEqual(result.authors, [{ id: 'a1', slug: 'jane' }]);
     });
@@ -127,6 +134,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('posts', { slug: 'hello' });
 
+      assert.ok(result);
       assert.deepEqual(result.primary_author, { id: 'a1', slug: 'jane' });
       assert.deepEqual(result.primary_tag, { id: 't1', slug: 'news' });
     });
@@ -136,6 +144,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('posts', { slug: 'hello' });
 
+      assert.ok(result);
       assert.equal(result.primary_author, null);
     });
 
@@ -144,6 +153,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('posts', { slug: 'hello' });
 
+      assert.ok(result);
       assert.equal('primary_author' in result, false);
     });
   });
@@ -167,6 +177,7 @@ describe('createFindResource', function () {
       await findResource('pages', { slug: 'about' });
 
       const options = models.Post.findOne.firstCall.args[1];
+      assert.ok(options);
       assert.equal(options.withRelated, undefined);
     });
 
@@ -184,6 +195,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('pages', { slug: 'about' });
 
+      assert.ok(result);
       assert.equal(result.primary_tag, null);
       assert.equal(result.primary_author, null);
       assert.equal('tags' in result, false);
@@ -220,6 +232,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('tags', { slug: 'news' });
 
+      assert.ok(result);
       assert.equal('description' in result, false);
       assert.equal('meta_title' in result, false);
       assert.equal('meta_description' in result, false);
@@ -254,6 +267,7 @@ describe('createFindResource', function () {
 
       const result = await findResource('authors', { slug: 'jane' });
 
+      assert.ok(result);
       assert.equal('bio' in result, false);
       assert.equal('website' in result, false);
       assert.equal('twitter' in result, false);

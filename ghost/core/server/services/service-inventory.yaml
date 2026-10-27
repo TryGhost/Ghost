@@ -15835,7 +15835,7 @@ services:
           - core/server/services/url/routable-resources.js
         tests:
           - test/unit/server/services/url/lazy-url-service.test.ts
-          - test/unit/server/services/url/lazy-find-resource.test.js
+          - test/unit/server/services/url/lazy-find-resource.test.ts
       consumers:
         summary: >-
           API serializers/search ask the retained root for fields/relations and URLs; frontend
@@ -15946,7 +15946,7 @@ services:
           - package.json
         tests:
           - test/unit/server/services/url/lazy-url-service.test.ts
-          - test/unit/server/services/url/lazy-find-resource.test.js
+          - test/unit/server/services/url/lazy-find-resource.test.ts
           - test/unit/server/services/url/router-filter.test.ts
           - test/unit/server/services/url/routable-resources.test.js
           - test/integration/url-serialization.test.js
@@ -15990,7 +15990,7 @@ services:
         tests:
           - test/unit/server/services/url/lazy-url-service.test.ts
           - test/unit/server/services/url/router-filter.test.ts
-          - test/unit/server/services/url/permalink-matcher.test.js
+          - test/unit/server/services/url/permalink-matcher.test.ts
           - test/unit/bridge.test.js
           - test/integration/url-serialization.test.js
     unverified: []
