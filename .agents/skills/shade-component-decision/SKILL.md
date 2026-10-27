@@ -21,7 +21,7 @@ Before adding anything to Shade, walk the decision flow and the promotion checkl
 
 Plus one additional barrel:
 
-- **`page-templates/`** (`@tryghost/shade/page-templates`) — top-level page wrappers (`ListPage` today). Composes Patterns + Components + Primitives. If you're building a new shape that wraps a whole admin page, this is where it goes. See `shade-page-templates`.
+- **`page-templates/`** (`@tryghost/shade/page-templates`) — top-level page wrappers (`ListPage` today). Composes Patterns + Components + Primitives. If you're building a new shape that wraps a whole admin page, this is where it goes. See [`shade-page-templates`](../../../apps/shade/skills/shade-page-templates/SKILL.md).
 
 ## Decision flow (top-to-bottom, stop at first match)
 

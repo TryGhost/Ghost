@@ -31,8 +31,8 @@ pnpm dlx shadcn@latest add <component-name>
 
 Raw ShadCN output is not Shade-quality yet. Do all of these:
 
-1. **Swap raw colours for semantic tokens.** ShadCN ships things like `bg-white`, `border-gray-200`, `text-zinc-500`. Replace with `bg-surface-elevated`, `border-border-default`, `text-muted-foreground`, etc. See the `shade-tokens-not-hex` skill for the inventory.
-2. **Remove any `dark:` colour variants.** Semantic tokens flip automatically. See `shade-no-dark-variants`.
+1. **Swap raw colours for semantic tokens.** ShadCN ships things like `bg-white`, `border-gray-200`, `text-zinc-500`. Replace with `bg-surface-elevated`, `border-border-default`, `text-muted-foreground`, etc. See the [`shade-tokens-not-hex`](../../../apps/shade/skills/shade-tokens-not-hex/SKILL.md) skill for the inventory.
+2. **Remove any `dark:` colour variants.** Semantic tokens flip automatically. See [`shade-no-dark-variants`](../../../apps/shade/skills/shade-no-dark-variants/SKILL.md).
 3. **Use the `@/` alias** for internal imports (`@/lib/utils`, `@/components/ui/...`) — not relative paths.
 4. **Ensure all four required states** work: default, hover, focus-visible, disabled. (`focus-visible:` only — never `focus:`.)
 5. **Trim props that hint at a specific surface.** If a prop name reads like product workflow (`isMembersPage`, `layoutMode`), it doesn't belong on a generic Component — extract a Pattern instead.
