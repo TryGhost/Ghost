@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
@@ -41,11 +42,14 @@ const phoneField: MemberCustomField = {
   updated_at: null,
 };
 
+type HostSettings = ReturnType<typeof configResponse>['config']['hostSettings'];
+
 /** The checkout settings with this config saved, and the request that saves them. */
 async function openCheckoutFields(
   config: StripeCheckoutConfig,
   fields: MemberCustomField[] = [phoneField],
   labs: Record<string, boolean> = {},
+  hostSettings?: HostSettings,
 ) {
   fakeSettingsScreens();
   fakeTiers([freeTier, paidTier]);
@@ -58,14 +62,22 @@ async function openCheckoutFields(
   const saveApi = fakeAdminEndpoint('PUT', '/stripe/checkout/config/', {
     checkout_config: [config],
   });
+  const allLabs = {
+    stripeCheckoutDesign: true,
+    stripeCheckoutCollection: true,
+    membersCustomFields: true,
+    ...labs,
+  };
+  const siteConfig = configResponse({ labs: allLabs });
+  if (hostSettings) {
+    siteConfig.config.hostSettings = hostSettings;
+  }
   await renderAdminApp('/settings/tiers/checkout', {
-    labs: {
-      stripeCheckoutDesign: true,
-      stripeCheckoutCollection: true,
-      membersCustomFields: true,
-      ...labs,
+    labs: allLabs,
+    boot: {
+      browseSettings: { response: stripeSettings() },
+      browseConfig: { response: siteConfig },
     },
-    boot: { browseSettings: { response: stripeSettings() } },
   });
 
   const modal = page.getByRole('region', { name: 'Checkout' });
@@ -177,6 +189,47 @@ describe('Checkout settings', () => {
           },
         ],
       });
+  });
+
+  // A site keeps its Stripe connection when the host switches its custom fields off, so it
+  // can still reach these settings. Its fields read as archived, and the server refuses a new
+  // one with the host's sentence.
+  it('says why a site whose host switched custom fields off cannot add one', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'Host Limit error, cannot save members_metafield.',
+            context: 'Custom fields are available on the Publisher plan and above.',
+            type: 'HostLimitError',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [{ ...phoneField, status: 'archived' }],
+      {},
+      { limits: { limitCustomFields: { disabled: true } } },
+    );
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(
+      page.getByRole('textbox', { name: 'New custom field for Save phone as' }),
+      'Phone',
+    );
+    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    await form.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(form.getByText('Custom fields are available on the Publisher plan and above.'))
+      .toBeVisible();
+    await expect.element(form.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
   it('previews on paid tiers only, as a free tier has no checkout', async () => {
