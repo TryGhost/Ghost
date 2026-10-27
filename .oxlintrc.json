@@ -215,6 +215,7 @@
         "ghost/core/server/services/slack-ping/index.ts",
         "ghost/core/server/services/stripe-checkout-config/index.ts",
         "ghost/core/server/services/support-requests/index.ts",
+        "ghost/core/server/services/tags-public/index.ts",
         "ghost/core/server/services/upgrades/index.ts"
       ],
       "rules": {
