@@ -358,19 +358,27 @@ describe('Automations API', function () {
       assert.deepEqual(read.automations[0], created);
     });
 
-    it.each([
-      {},
-      { trigger_tier_scope: null, trigger_tier_ids: null },
-      { trigger_tier_scope: 'free', trigger_tier_ids: null },
-    ])('accepts omitted or null trigger data %j', async function (triggerData) {
+    it('accepts free trigger data without tier IDs', async function () {
       const { body } = await agent
         .post('automations')
-        .body({
-          automations: [{ ...payload, trigger_tier_scope: undefined, ...triggerData }],
-        })
+        .body({ automations: [{ ...payload, trigger_tier_scope: 'free', trigger_tier_ids: null }] })
         .expectStatus(201);
-      assert.equal(body.automations[0].trigger_tier_scope, triggerData.trigger_tier_scope ?? null);
+      assert.equal(body.automations[0].trigger_tier_scope, 'free');
       assert.equal(body.automations[0].trigger_tier_ids, null);
+    });
+
+    it.each([
+      { trigger_tier_scope: undefined },
+      { trigger_tier_scope: null, trigger_tier_ids: null },
+    ])('rejects missing or null trigger data %j', async function (triggerData) {
+      await agent
+        .post('automations')
+        .body({ automations: [{ ...payload, ...triggerData }] })
+        .expectStatus(422);
+      assert.equal(
+        await models.Base.knex('automations').where({ name: payload.name }).first(),
+        undefined,
+      );
     });
 
     it('rejects duplicate names', async function () {

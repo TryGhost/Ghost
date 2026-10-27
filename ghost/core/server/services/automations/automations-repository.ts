@@ -101,7 +101,7 @@ export type EditAutomationData = {
 ) &
   (
     | {
-        trigger_tier_scope?: null | 'free' | 'all_paid';
+        trigger_tier_scope?: 'free' | 'all_paid';
         trigger_tier_ids?: null;
       }
     | {
