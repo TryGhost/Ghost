@@ -208,7 +208,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/adapter-manager/index.ts
-        - core/server/services/adapter-manager/adapter-manager.ts
+        - core/kernel/adapter-manager/adapter-manager.ts
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
         - core/boot.js
@@ -221,35 +221,37 @@ services:
           preserve those callers, lazy adapter loading and cached identities.
         preparation:
           - >-
-            Separate adapter path/base-class/loader support shared with bin/validate-adapters.ts
-            from application singleton wiring; keep native module resolution and lookup precedence
-            unchanged.
-          - >-
             Move eager getAdapter calls in image and scheduling composition behind adapter-manager
             readiness before adopting a guarded service getter.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/adapter-manager/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/adapter-paths.ts
           - core/server/services/adapter-manager/base-classes.ts
-          - core/server/services/adapter-manager/utils.ts
+          - core/kernel/adapter-manager/loader.ts
+          - core/kernel/adapter-manager/options.ts
+          - core/server/services/adapter-manager/config.ts
           - bin/validate-adapters.ts
           - core/server/lib/image/index.js
           - core/server/services/post-scheduling/index.ts
     entryPoints:
       - adapter-manager/index.ts
     notes: >-
-      Planned split and relocation out of services: reusable adapter loading, validation and
-      instance management belong in kernel; Ghost's adapter registry, search paths and
-      configuration wiring belong in boot. Keep Ghost's legacy scheduling/storage
-      normalization, import-storage isolation and content-path defaults in application
-      wiring, preserving live resolution on each lookup. No source has moved. Reassess
-      initialization after separating ownership rather than migrating this root in place.
-      Preserve boot validation, lazy adapter construction, lookup precedence, live
-      configuration resolution and cached identity. Consumers retain adapters outside the
-      manager; disposal and replacement must account for those references and adapter-
-      specific resource owners.
+      Split in progress. The reusable loading, validation and instance-management machinery
+      now lives in core/kernel/adapter-manager and takes its configuration through an
+      explicit getConfig callback, so it imports nothing from the application. This
+      directory holds only Ghost's composition: the base-class registry, search paths, the
+      legacy scheduling/storage normalization, import-storage isolation and content-path
+      defaults, and the configured instance, with live resolution on each lookup. The
+      remaining relocation is of that composition into boot. The dependency audit still
+      counts the registry and path files as implementation because the service rule treats
+      every non-root file as one; a composition-only directory has no implementation to
+      isolate, which a boot home would resolve. Reassess initialization after that move
+      rather than migrating this root in place. Preserve boot validation, lazy adapter
+      construction, lookup precedence, live configuration resolution and cached identity.
+      Consumers retain adapters outside the manager; disposal and replacement must account
+      for those references and adapter-specific resource owners.
     contracts:
       exports:
         summary: >-
@@ -260,8 +262,8 @@ services:
           CLI. There is no manager shutdown or disposal API.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/types.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/types.ts
           - bin/validate-adapters.ts
         tests:
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
@@ -278,13 +280,14 @@ services:
           or configured adapters.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/adapter-paths.ts
           - core/server/services/adapter-manager/base-classes.ts
-          - core/server/services/adapter-manager/utils.ts
+          - core/kernel/adapter-manager/loader.ts
+          - core/server/services/adapter-manager/config.ts
           - bin/validate-adapters.ts
         tests:
-          - test/unit/server/services/adapter-manager/adapter-manager.test.ts
+          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/base-classes.test.ts
           - test/unit/server/services/adapter-manager/adapter-paths.test.ts
       consumers:
@@ -342,13 +345,13 @@ services:
           guard and import-time consumers can construct adapters independently of validation.
         sources:
           - core/boot.js
-          - core/server/services/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/utils.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
           - core/server/api/endpoints/authentication.js
           - core/server/lib/image/index.js
         tests:
-          - test/unit/server/services/adapter-manager/adapter-manager.test.ts
+          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
       lifetime:
         summary: >-
@@ -360,13 +363,13 @@ services:
           Conditional S3 route-store integration tests clear the cache before rereading settings;
           they do not establish replacement of retained consumers or cleanup.
         sources:
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/lib/image/index.js
           - core/server/services/jobs-service/index.ts
           - core/server/adapters/lib/redis/redis-store-factory.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/server/services/adapter-manager/adapter-manager.test.ts
+          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
           - test/unit/server/adapters/lib/redis/redis-store-factory.test.ts
       configuration:
@@ -380,13 +383,15 @@ services:
           config mutation; they establish neither production hot reload nor changed options
           reaching an already retained adapter.
         sources:
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/utils.ts
+          - core/kernel/adapter-manager/options.ts
+          - core/server/services/adapter-manager/config.ts
           - core/shared/config/defaults.json
         tests:
-          - test/unit/server/services/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/utils.test.ts
+          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/kernel/adapter-manager/options.test.ts
+          - test/unit/server/services/adapter-manager/config.test.ts
           - test/unit/server/services/adapter-manager/adapter-paths.test.ts
           - test/integration/adapters/storage/imports-storage-config.test.ts
       resources:
@@ -399,8 +404,8 @@ services:
           owns backend shutdown through GhostServer cleanup. clearCache invokes none of these
           owners and cannot drain active consumers or release custom-adapter resources.
         sources:
-          - core/server/services/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/types.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/types.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
           - core/server/adapters/lib/redis/AdapterCacheRedis.js
@@ -427,11 +432,12 @@ services:
           Static validation is synchronous and not awaited. No failed-init guard, rollback or
           manager retry exists; later calls retry uncached work using current config.
         sources:
-          - core/server/services/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/utils.ts
-          - core/server/services/adapter-manager/types.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/loader.ts
+          - core/server/services/adapter-manager/config.ts
+          - core/kernel/adapter-manager/types.ts
         tests:
-          - test/unit/server/services/adapter-manager/adapter-manager.test.ts
+          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/adapter-paths.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
     unverified: []
@@ -1886,7 +1892,7 @@ services:
           - core/server/services/custom-redirects/index.js
           - core/server/services/custom-redirects/redirects-service.ts
           - core/server/services/adapter-manager/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/boot.js
         tests: []
       consumers:
@@ -1965,7 +1971,7 @@ services:
           - core/server/web/shared/dynamic-redirect-manager.js
           - core/shared/url-utils.ts
           - core/shared/config/validated.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
         tests:
@@ -9840,7 +9846,7 @@ services:
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/storage/LocalImagesStorage.ts
           - core/server/adapters/storage/S3Storage.ts
           - core/server/lib/request-external.js
@@ -9903,7 +9909,7 @@ services:
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/server/services/recommendations/service/recommendation-metadata-service.ts
         tests:
@@ -9952,7 +9958,7 @@ services:
           - core/server/lib/request-external.js
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/adapters/storage/S3Storage.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/boot.js
           - package.json
         tests:
@@ -10568,7 +10574,7 @@ services:
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/api/endpoints/authentication.js
           - core/boot.js
@@ -10633,7 +10639,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/scheduling-default.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
       configuration:
@@ -10676,7 +10682,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/adapters/scheduling/scheduling-default.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
@@ -11096,7 +11102,7 @@ services:
         sources:
           - core/server/services/posts-public/index.ts
           - core/server/services/adapter-manager/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/api/endpoints/posts-public.js
           - core/server/services/posts/posts-service-instance.js
         tests:
@@ -11147,7 +11153,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/posts-public/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/api/endpoints/index.js
           - core/server/api/endpoints/posts-public.js
           - core/server/web/api/app.js
@@ -11170,7 +11176,7 @@ services:
         sources:
           - core/server/services/posts-public/index.ts
           - core/server/api/endpoints/posts-public.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/lib/common/events.js
           - core/server/ghost-server.ts
@@ -11194,8 +11200,8 @@ services:
           fields-variant assertion.
         sources:
           - core/server/services/posts-public/index.ts
-          - core/server/services/adapter-manager/utils.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/options.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/shared/config/defaults.json
           - core/shared/config/SCHEMA.md
           - core/server/api/endpoints/posts-public.js
@@ -11219,7 +11225,7 @@ services:
           using those adapters, resource disposal or completion at server shutdown.
         sources:
           - core/server/services/posts-public/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
           - core/server/adapters/cache/memory-ttl.js
@@ -11248,7 +11254,7 @@ services:
         sources:
           - core/kernel/define-service.ts
           - core/server/services/posts-public/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/api/endpoints/posts-public.js
           - core/server/api/endpoints/utils/gift-link-access.ts
           - core/server/adapters/lib/redis/AdapterCacheRedis.js
@@ -11849,7 +11855,7 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/dynamic-routing-service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/base-classes.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
@@ -11956,8 +11962,8 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/route-settings-parser.ts
-          - core/server/services/adapter-manager/utils.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/server/services/adapter-manager/config.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/shared/config/defaults.json
@@ -11967,7 +11973,7 @@ services:
           - core/frontend/services/routing/parent-router.js
         tests:
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
-          - test/unit/server/services/adapter-manager/utils.test.ts
+          - test/unit/server/services/adapter-manager/config.test.ts
           - test/unit/server/adapters/route-settings/s3-route-settings-store.test.ts
           - test/unit/server/services/route-settings/route-settings-parser.test.ts
           - test/unit/server/services/route-settings/validate-route-settings.test.ts
@@ -11985,7 +11991,7 @@ services:
           They do not prove transport release, collision safety or drain on shutdown.
         sources:
           - core/server/services/route-settings/dynamic-routing-service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/server/adapters/route-settings/utils.ts
@@ -13497,7 +13503,7 @@ services:
           - core/server/services/stats/referrers-stats-service.js
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
       consumers:
@@ -13556,7 +13562,7 @@ services:
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.js
           - core/server/api/endpoints/stats.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - package.json
         tests:
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
@@ -14213,7 +14219,7 @@ services:
         sources:
           - core/server/services/tags-public/service.js
           - core/server/services/adapter-manager/index.ts
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/public-response-caches.test.ts
       consumers:
@@ -14273,7 +14279,7 @@ services:
           api mutation, response-reference mutation and concurrent fill/reset remain source-only.
         sources:
           - core/server/services/tags-public/service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/api/endpoints/tags-public.js
           - core/server/lib/common/events.js
@@ -14293,7 +14299,7 @@ services:
           visibility, slug order and post counts remain; it does not enable this response cache.
         sources:
           - core/server/services/tags-public/service.js
-          - core/server/services/adapter-manager/utils.ts
+          - core/kernel/adapter-manager/options.ts
           - core/shared/config/defaults.json
           - core/shared/config/SCHEMA.md
           - core/server/api/endpoints/tags-public.js
@@ -14314,7 +14320,7 @@ services:
           timeout/reset/refresh results, not a real tags request with those adapters or shutdown.
         sources:
           - core/server/services/tags-public/service.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
           - core/server/adapters/cache/memory-ttl.js
@@ -14473,7 +14479,7 @@ services:
           - core/frontend/services/theme-engine/engine.js
           - core/frontend/services/theme-engine/i18n/index.js
           - core/frontend/services/theme-engine/i18next/index.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/themes/loader.test.js
           - test/unit/server/services/themes/storage.test.ts
@@ -14558,7 +14564,7 @@ services:
           - core/server/services/themes/list.js
           - core/server/services/themes/validate.js
           - core/server/services/themes/storage.js
-          - core/server/services/adapter-manager/adapter-manager.ts
+          - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/frontend/services/theme-engine/active.js
         tests:

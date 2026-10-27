@@ -6,12 +6,9 @@ import sinon from 'sinon';
 import {
   AdapterManager,
   type AdapterManagerOptions,
-} from '../../../../../core/server/services/adapter-manager/adapter-manager';
-import { resolveAdapterEntryPoint } from '../../../../../core/server/services/adapter-manager/utils';
-import { createConfig } from '../../../../../core/shared/config/validated';
-import { configSources } from '../../../../utils/config-sources';
-import type { ConfigInstance } from '../../../../../core/shared/config/loader';
-import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
+  resolveAdapterEntryPoint,
+} from '../../../../core/kernel/adapter-manager';
+import type { Adapter, AdapterConfig } from '../../../../core/kernel/adapter-manager';
 
 class BaseMailAdapter implements Adapter {
   readonly requiredFns: string[];
@@ -31,19 +28,12 @@ class DefaultMailAdapter extends BaseMailAdapter {
   someMethod() {}
 }
 
-// A minimal config instance, seeded with `adapters` config, that drives which
-// adapter class name and options getAdapter resolves. `url` and `env` are what
-// the schema requires of any config, as the loader always provides them.
-function makeConfig(adapters: object = {}): ConfigInstance {
-  return createConfig(configSources({ paths: { contentPath: '/some/path' }, adapters }));
-}
-
 describe('AdapterManager', function () {
   it('constructor throws if an adapter type has a ":"', function () {
     const opts: AdapterManagerOptions = {
       loadAdapterFromPath: sinon.stub(),
       pathsToAdapters: ['first/path'],
-      config: makeConfig(),
+      getConfig: () => ({}),
       baseClasses: { 'mail:newsletters': BaseMailAdapter },
     };
 
@@ -62,7 +52,7 @@ describe('AdapterManager', function () {
     const adapterManager = new AdapterManager({
       loadAdapterFromPath: sinon.stub(),
       pathsToAdapters: ['first/path'],
-      config: makeConfig({ mail: { active: 'custom' } }),
+      getConfig: () => ({ mail: { active: 'custom' } }),
       baseClasses: { mail: BaseMailAdapter },
     });
 
@@ -82,7 +72,7 @@ describe('AdapterManager', function () {
     const adapterManager = new AdapterManager({
       loadAdapterFromPath: sinon.stub(),
       pathsToAdapters: ['first/path'],
-      config: makeConfig({ mail: { active: 'custom' } }),
+      getConfig: () => ({ mail: { active: 'custom' } }),
       baseClasses: { some_other_adapter_type: BaseMailAdapter },
     });
 
@@ -107,7 +97,7 @@ describe('AdapterManager', function () {
         '', // node_modules
         'first/path',
       ],
-      config: makeConfig({ mail: { active: 'some-node-module-adapter' } }),
+      getConfig: () => ({ mail: { active: 'some-node-module-adapter' } }),
       baseClasses: { mail: BaseMailAdapter },
     });
 
@@ -131,7 +121,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath: require,
         pathsToAdapters: [tmpDir],
-        config: makeConfig({ scheduling: { active: 'BrokenAdapter' } }),
+        getConfig: () => ({ scheduling: { active: 'BrokenAdapter' } }),
         baseClasses: { scheduling: BaseMailAdapter },
       });
 
@@ -159,11 +149,11 @@ describe('AdapterManager', function () {
     loadAdapterFromPath.withArgs('third/path/mail/default').returns(DefaultMailAdapter);
     loadAdapterFromPath.withArgs('first/path/mail/broken').throwsException('SHIT_GOT_REAL');
 
-    const config = makeConfig({ mail: { active: 'custom' } });
+    let adapterConfig: AdapterConfig = { mail: { active: 'custom' } };
     const adapterManager = new AdapterManager({
       loadAdapterFromPath,
       pathsToAdapters,
-      config,
+      getConfig: () => adapterConfig,
       baseClasses: { mail: BaseMailAdapter },
     });
 
@@ -171,7 +161,7 @@ describe('AdapterManager', function () {
     assert(customAdapter instanceof BaseMailAdapter);
     assert(customAdapter instanceof CustomMailAdapter);
 
-    config.set('adapters', { mail: { active: 'incomplete' } });
+    adapterConfig = { mail: { active: 'incomplete' } };
     assert.throws(
       () => {
         adapterManager.getAdapter('mail');
@@ -182,12 +172,12 @@ describe('AdapterManager', function () {
       },
     );
 
-    config.set('adapters', { mail: { active: 'default' } });
+    adapterConfig = { mail: { active: 'default' } };
     const defaultAdapter = adapterManager.getAdapter('mail');
     assert(defaultAdapter instanceof BaseMailAdapter);
     assert(defaultAdapter instanceof DefaultMailAdapter);
 
-    config.set('adapters', { mail: { active: 'broken' } });
+    adapterConfig = { mail: { active: 'broken' } };
     assert.throws(
       () => {
         adapterManager.getAdapter('mail');
@@ -207,7 +197,7 @@ describe('AdapterManager', function () {
     const adapterManager = new AdapterManager({
       loadAdapterFromPath,
       pathsToAdapters,
-      config: makeConfig({ mail: { active: 'custom' } }),
+      getConfig: () => ({ mail: { active: 'custom' } }),
       baseClasses: { mail: BaseMailAdapter },
     });
 
@@ -227,7 +217,7 @@ describe('AdapterManager', function () {
     const adapterManager = new AdapterManager({
       loadAdapterFromPath,
       pathsToAdapters,
-      config: makeConfig({ mail: { active: 'custom' } }),
+      getConfig: () => ({ mail: { active: 'custom' } }),
       baseClasses: { mail: BaseMailAdapter },
     });
 
@@ -267,7 +257,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,
         pathsToAdapters: ['/path'],
-        config: makeConfig({ mail: { active: 'custom', custom: { some: 'value' } } }),
+        getConfig: () => ({ mail: { active: 'custom', custom: { some: 'value' } } }),
         baseClasses: { mail: BaseMailAdapter },
       });
 
@@ -283,7 +273,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,
         pathsToAdapters: ['/path'],
-        config: makeConfig({ mail: { active: 'custom' } }),
+        getConfig: () => ({ mail: { active: 'custom' } }),
         baseClasses: { mail: BaseMailAdapter },
       });
 
@@ -296,7 +286,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,
         pathsToAdapters: ['/path'],
-        config: makeConfig({}), // no active adapter configured
+        getConfig: () => ({}), // no active adapter configured
         baseClasses: { mail: BaseMailAdapter },
       });
 
@@ -311,7 +301,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,
         pathsToAdapters: ['/path'],
-        config: makeConfig({
+        getConfig: () => ({
           storage: {
             active: 'active-adapter',
             'active-adapter': { which: 'active' },
@@ -336,7 +326,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,
         pathsToAdapters: ['/path'],
-        config: makeConfig({
+        getConfig: () => ({
           storage: {
             active: 'the-adapter',
             // both features point at the active adapter (string form),
@@ -367,7 +357,7 @@ describe('AdapterManager', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath,
         pathsToAdapters: ['/path'],
-        config: makeConfig({
+        getConfig: () => ({
           mail: { active: 'bad-mail' },
           storage: { active: 'bad-storage' },
         }),
@@ -447,7 +437,7 @@ class ${className} extends BaseMailAdapter {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath: require,
         pathsToAdapters: [tmpDir],
-        config: makeConfig({ mail: { active: activeName } }),
+        getConfig: () => ({ mail: { active: activeName } }),
         baseClasses: { mail: BaseMailAdapter },
       });
 
@@ -651,6 +641,134 @@ class ${className} extends BaseMailAdapter {
           fs.realpathSync(path.join(pkgDir, 'dist', 'index.js')),
         );
       });
+    });
+  });
+
+  describe('retained instances', function () {
+    // The state boundary later migrations rely on: construction is idle,
+    // configuration is read on every lookup, and an instance cached under a
+    // name + class is kept until `clearCache`, whatever its options now say.
+    function makeManager(initial: AdapterConfig) {
+      let adapterConfig = initial;
+      const getConfig = sinon.spy(() => adapterConfig);
+      const loadAdapterFromPath = sinon.stub();
+      loadAdapterFromPath.withArgs('/path/mail/custom').returns(CustomMailAdapter);
+      loadAdapterFromPath.withArgs('/path/mail/default').returns(DefaultMailAdapter);
+
+      const adapterManager = new AdapterManager({
+        loadAdapterFromPath,
+        pathsToAdapters: ['/path'],
+        getConfig,
+        baseClasses: { mail: BaseMailAdapter },
+      });
+
+      return {
+        adapterManager,
+        getConfig,
+        loadAdapterFromPath,
+        setConfig(next: AdapterConfig) {
+          adapterConfig = next;
+        },
+      };
+    }
+
+    it('reads no configuration and loads nothing at construction', function () {
+      const { getConfig, loadAdapterFromPath } = makeManager({ mail: { active: 'custom' } });
+
+      sinon.assert.notCalled(getConfig);
+      sinon.assert.notCalled(loadAdapterFromPath);
+    });
+
+    it('re-reads configuration and re-loads the class on every lookup, even a cached one', function () {
+      const { adapterManager, getConfig, loadAdapterFromPath } = makeManager({
+        mail: { active: 'custom' },
+      });
+
+      const first = adapterManager.getAdapter('mail');
+      const second = adapterManager.getAdapter('mail');
+
+      assert.equal(first, second);
+      sinon.assert.calledTwice(getConfig);
+      sinon.assert.calledTwice(loadAdapterFromPath);
+    });
+
+    it('keeps the cached instance when only its options change', function () {
+      const { adapterManager, setConfig } = makeManager({
+        mail: { active: 'custom', custom: { region: 'eu' } },
+      });
+
+      const before = adapterManager.getAdapter('mail');
+      setConfig({ mail: { active: 'custom', custom: { region: 'us' } } });
+      const after = adapterManager.getAdapter('mail');
+
+      // The cache key is name + class, not options: a changed option reaches
+      // a new instance only after `clearCache`.
+      assert.equal(after, before);
+    });
+
+    it('returns the earlier instance when the active class switches back', function () {
+      const { adapterManager, setConfig } = makeManager({ mail: { active: 'custom' } });
+
+      const custom = adapterManager.getAdapter('mail');
+      setConfig({ mail: { active: 'default' } });
+      const fallback = adapterManager.getAdapter('mail');
+      setConfig({ mail: { active: 'custom' } });
+      const customAgain = adapterManager.getAdapter('mail');
+
+      assert.ok(fallback instanceof DefaultMailAdapter);
+      assert.notEqual(fallback, custom);
+      assert.equal(customAgain, custom);
+    });
+
+    it('throws for a cached name when the class can no longer be loaded', function () {
+      const { adapterManager, loadAdapterFromPath } = makeManager({ mail: { active: 'custom' } });
+
+      adapterManager.getAdapter('mail');
+      loadAdapterFromPath.withArgs('/path/mail/custom').throws(new Error('disk gone'));
+
+      assert.throws(() => adapterManager.getAdapter('mail'), {
+        errorType: 'IncorrectUsageError',
+      });
+    });
+
+    it('validates on init without constructing or discarding instances', function () {
+      let constructions = 0;
+      const validations: object[] = [];
+      class CountingMailAdapter extends BaseMailAdapter {
+        constructor() {
+          super();
+          constructions += 1;
+        }
+        someMethod() {}
+        static validate(config: object) {
+          validations.push(config);
+        }
+      }
+      const { adapterManager, loadAdapterFromPath } = makeManager({
+        mail: { active: 'counting', counting: { some: 'value' } },
+      });
+      loadAdapterFromPath.withArgs('/path/mail/counting').returns(CountingMailAdapter);
+
+      adapterManager.init();
+      assert.equal(constructions, 0);
+
+      const instance = adapterManager.getAdapter('mail');
+      adapterManager.init();
+
+      assert.equal(constructions, 1);
+      assert.equal(adapterManager.getAdapter('mail'), instance);
+      assert.deepEqual(validations, [{ some: 'value' }, { some: 'value' }]);
+    });
+
+    it('constructs a new instance after clearCache', function () {
+      const { adapterManager } = makeManager({ mail: { active: 'custom' } });
+
+      const before = adapterManager.getAdapter('mail');
+      adapterManager.clearCache();
+      const after = adapterManager.getAdapter('mail');
+
+      assert.ok(after instanceof CustomMailAdapter);
+      assert.notEqual(after, before);
     });
   });
 });
