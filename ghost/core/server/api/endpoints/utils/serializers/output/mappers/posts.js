@@ -20,7 +20,7 @@ const getPostServiceInstance = require('../../../../../../services/posts/posts-s
 const postsService = getPostServiceInstance();
 
 const commentsService = require('../../../../../../services/comments');
-const memberAttribution = require('../../../../../../services/member-attribution');
+const memberAttribution = require('../../../../../../services/member-attribution').default;
 
 module.exports = async (model, frame, options = {}) => {
   const { tiers: tiersData } = options || {};
@@ -117,7 +117,7 @@ module.exports = async (model, frame, options = {}) => {
 
     // Add outbound link tagging if we have the HTML
     if (jsonModel.html) {
-      jsonModel.html = await memberAttribution.outboundLinkTagger.addToHtml(jsonModel.html);
+      jsonModel.html = await memberAttribution.service.outboundLinkTagger.addToHtml(jsonModel.html);
     }
   }
 

@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
@@ -1488,7 +1489,7 @@ describe('automations repository', function () {
     it('allows keeping the current automation name', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
       const edited = await repo.edit(automation.id, {
-        ...automation,
+        ...omit(automation, ['trigger_tier_scope', 'trigger_tier_ids']),
         description: 'Updated description',
       });
       assert(edited);
@@ -1503,7 +1504,7 @@ describe('automations repository', function () {
         tierIds.map((id, index) => ({ id, type: 'paid', active: index === 0 })),
       );
       const edited = await repo.edit(initial.id, {
-        ...initial,
+        ...omit(initial, ['trigger_tier_scope', 'trigger_tier_ids']),
         trigger_tier_scope: 'selected_paid',
         trigger_tier_ids: tierIds,
       });
@@ -1534,7 +1535,7 @@ describe('automations repository', function () {
       const unchanged = await repo.edit(initial.id, graph);
       assert.equal(unchanged?.trigger_tier_scope, 'selected_paid');
       assert.deepEqual(unchanged?.trigger_tier_ids, [secondId]);
-      for (const scope of [null, 'free', 'all_paid'] as const) {
+      for (const scope of ['free', 'all_paid'] as const) {
         await repo.edit(initial.id, {
           ...graph,
           trigger_tier_scope: 'selected_paid',
@@ -1558,7 +1559,7 @@ describe('automations repository', function () {
         await assertValidationError(
           () =>
             repo.edit(initial.id, {
-              ...initial,
+              ...omit(initial, ['trigger_tier_scope', 'trigger_tier_ids']),
               name: 'Should not change',
               trigger_tier_scope: 'selected_paid',
               trigger_tier_ids: [tierId],
@@ -1644,7 +1645,7 @@ describe('automations repository', function () {
         });
 
         await repo.edit(automation.id, {
-          ...automation,
+          ...omit(automation, ['trigger_tier_scope', 'trigger_tier_ids']),
           status,
         });
 
@@ -1670,7 +1671,7 @@ describe('automations repository', function () {
         });
 
         await repo.edit(automation.id, {
-          ...automation,
+          ...omit(automation, ['trigger_tier_scope', 'trigger_tier_ids']),
           status,
         });
 
@@ -1695,7 +1696,7 @@ describe('automations repository', function () {
         const paidStep = await insertStep(paidRun.id, paidAction.revision_id);
 
         await repo.edit(freeAutomation.id, {
-          ...freeAutomation,
+          ...omit(freeAutomation, ['trigger_tier_scope', 'trigger_tier_ids']),
           status,
         });
 

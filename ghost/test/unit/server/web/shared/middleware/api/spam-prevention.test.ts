@@ -1,6 +1,5 @@
 import ExpressBrute from 'express-brute';
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import * as spamPrevention from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';

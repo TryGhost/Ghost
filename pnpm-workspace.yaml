@@ -47,7 +47,7 @@ allowBuilds:
   protobufjs: false
 
 catalog:
-  '@codemirror/autocomplete': 6.20.3
+  '@codemirror/autocomplete': 6.20.4
   '@codemirror/commands': 6.11.1
   '@codemirror/lang-css': 6.3.1
   '@codemirror/lang-html': 6.4.12
@@ -55,16 +55,16 @@ catalog:
   '@codemirror/lang-json': 6.0.2
   '@codemirror/lang-markdown': 6.5.2
   '@codemirror/lang-yaml': 6.1.3
-  '@codemirror/language': 6.12.4
+  '@codemirror/language': 6.13.1
   '@codemirror/search': 6.7.2
   '@codemirror/state': 6.7.6
   '@codemirror/theme-one-dark': 6.1.3
-  '@codemirror/view': 6.43.13
+  '@codemirror/view': 6.43.15
   '@eslint/compat': 2.1.1
   '@eslint/js': 9.39.5
   '@extractus/oembed-extractor': 6.0.0
   '@faker-js/faker': 10.5.0
-  '@playwright/test': 1.64.0
+  '@playwright/test': 1.64.1
   '@radix-ui/react-avatar': 1.2.1
   '@radix-ui/react-checkbox': 1.3.6
   '@radix-ui/react-context-menu': 2.3.2
@@ -138,7 +138,7 @@ catalog:
   ajv: 8.20.0
   ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
-  body-parser: 1.20.8
+  body-parser: 1.20.9
   bson-objectid: 2.0.4
   chai: 4.5.0
   chalk: 4.1.2
@@ -227,7 +227,7 @@ catalog:
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
   typescript-eslint: 8.71.1
-  undici: 8.11.0
+  undici: 8.12.3
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 5.2.0
@@ -239,7 +239,7 @@ catalog:
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2
   '@dnd-kit/utilities': 3.2.2
-  '@floating-ui/react-dom': 2.1.8
+  '@floating-ui/react-dom': 2.1.9
   shell-quote: 1.11.0
   unidecode: 1.1.0
   mppx: 0.6.20
@@ -262,6 +262,8 @@ catalog:
   remark-validate-links: 13.1.0
   markdownlint-cli2: 0.23.3
   parse-email-address: 0.0.5
+  nodemailer: 10.0.16
+  '@types/nodemailer': 8.0.2
   '@breejs/later': 4.2.0
   fastq: ^1.20.1
   cron-validate: 1.4.5
@@ -299,7 +301,7 @@ overrides:
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mppx pins ox exactly; use viem's copy so Ghost ships one ox
-  'mppx>ox': 0.14.33
+  'mppx>ox': 0.14.57
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and

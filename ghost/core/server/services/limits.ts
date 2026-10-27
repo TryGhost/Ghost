@@ -2,7 +2,6 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { LimitService } from '@tryghost/limit-service';
 import type { Subscription } from '@tryghost/limit-service';
-import type { RequestHandler } from 'express';
 import config from '../../shared/config';
 import db from '../data/db';
 
@@ -49,18 +48,3 @@ export const init = () => {
     }
   }
 };
-
-/**
- * Route guard for a feature a host can switch off, for the routes that exist only to
- * change it. Answers 403 with the host's own wording, which is a different thing to tell a
- * caller than the 404 a labs flag gives: the feature exists, this plan does not include it.
- */
-export const requireFeature = (limitName: string): RequestHandler =>
-  async function requireFeatureMw(_req, _res, next) {
-    try {
-      await limitService.errorIfWouldGoOverLimit(limitName);
-      next();
-    } catch (err) {
-      next(err);
-    }
-  };

@@ -31,7 +31,9 @@ copying an earlier migration blindly.
 ## 2. Audit the whole service and its callers
 
 Use `rg` across production and tests. Include deep imports, nested helpers,
-separate actions, job handlers, CLI use and CommonJS consumers. Record:
+separate actions, job handlers, CLI use and CommonJS consumers. Also inspect
+shared boot harnesses and tests that construct routers or renderers indirectly;
+a search for the service name alone misses those fixtures. Record:
 
 - Existing runtime/type exports and the intended instance and extras surfaces.
 - Who constructs each instance and whether consumers capture it during import.
@@ -51,8 +53,18 @@ exempt. Implementations must not retrieve collaborators through their own root.
 
 Wire application instances, models, logging and configured adapters in the root.
 Keep approved libraries imported where used and use explicit type-only imports.
-Review any new exact library allowance with its reason; do not widen directories,
-inject stateless utilities to evade the policy, or duplicate shared helpers.
+Do not inject stateless utilities to evade the policy or duplicate shared helpers.
+
+Inspect the source before adding a library allowance. Justify why the dependency
+is a library rather than an application-owned instance, and allow only its exact
+entry or file. Include the reason and a boundary regression in the migration PR
+that needs the allowance. Assert each rejected target as well as its rule and
+source in boundary regressions. Keep allowances out of standalone skill/tooling
+PRs.
+Seek review when that distinction is unclear or a broader policy change is
+needed; do not widen the rule merely to make lint pass. Normal inventory and
+root-shape opt-ins still belong in each migration.
+
 Preserve late acquisition with getters/factories when dependencies are unavailable
 at boot. If audit scripts exist, inspect their detailed output: findings may not
 make the audit command fail, and a summary may omit unresolved/own-root imports.
@@ -61,18 +73,32 @@ make the audit command fail, and a summary may omit unresolved/own-root imports.
 
 Map each proposed change to an existing behavioral assertion. Run the relevant
 unchanged root/implementation tests and real consumer checks on the base.
+Use the testing guide's focused Nx commands: they prepare workspace builds and
+Core assets before running the selected files. Direct Vitest or `test:single`
+commands skip those prerequisites; `pnpm bootstrap` alone does not supply them.
+Treat missing package outputs or card manifests as setup failures. Do not compile
+Core merely to supply workspace outputs: adjacent emitted JavaScript can shadow
+TypeScript edits in CommonJS consumers.
 Initialization complexity, an audited inventory entry or an old green result
-is not proof of coverage.
+is not proof of coverage. If a test reloads CommonJS modules, restore the loaded
+consumer chain too: cached consumers can retain a discarded root or collaborator.
+Run those suites with their neighboring consumers in one worker to check isolation.
 
 Cover the real risk: retained consumers, configuration timing, transaction or
 cache behavior, boot ordering and resource cleanup. Use existing cold-boot
 HTTP/job coverage where it already proves readiness. Do not copy a boot harness
 for every service or duplicate generic kernel concurrency/retry tests.
+For async ordering tests, verify both a missing required await and a harmless
+extra await: the first must fail and the second must pass. Avoid checks that
+count microtask turns; follow the testing guide's async-ordering advice.
 
 If a needed assertion is absent, prepare passing characterization against the
 old implementation in a tests-only PR and merge it first. Keep one commit per
 service in preparatory batches. If a test exposes a production bug, isolate the
 fix ahead of initializer adoption; do not change expectations to hide it.
+Update each prepared service's inventory evidence in that tests-only change,
+citing the new tests and narrowing only the blockers they cover. Preserve
+historical audit revisions; do not defer this evidence to initializer adoption.
 
 Substantial dependency refactors, fixture rewrites and business changes are also
 preparation work, separate from the minimal initializer PR. Preserve the old
@@ -106,14 +132,18 @@ redesign or broad boot orchestration, record the concrete mismatch and separate
 that decision from the small migration. Do not silently expand its scope.
 
 Migration tests may receive mechanical import/type/stub and initializer-await
-adaptations. Add no new test file/case in the migration commit; new assertions
-or substantial harness changes return to preparation. Never weaken assertions,
+adaptations. New behavioral assertions or substantial harness changes return to
+preparation. The only new cases permitted in the migration commit are boundary
+regressions for new exact dependency allowances. Never weaken assertions,
 coverage gates, lint or types to make the refactor pass.
 
 ## 5. Update metadata and verify
 
-Update only this service's inventory entry: `migrated`, entry points, evidence,
-contracts, extras and remaining gaps. Preserve historical audit provenance;
+Update this service's inventory entry: `migrated`, entry points, evidence,
+contracts, extras and remaining gaps. Repair affected file references and
+startup-order descriptions in other entries mechanically, without changing
+their unrelated assessments.
+Preserve historical audit provenance;
 record the inspected base and distinguish old evidence from new validation.
 Do not restore manual totals or erase unrelated backlog items.
 
@@ -130,7 +160,8 @@ retry or an unchanged file alone does not establish that a failure belongs to
 main. Keep unrelated fixes out of the migration.
 
 Review the final diff: one service, unchanged operation behavior, no hidden
-composition, no new tests, and only justified metadata/enforcement changes.
+composition, and only justified metadata/enforcement changes. New test cases
+are limited to boundary regressions for new exact dependency allowances.
 Use the repository commit skill and make **one commit for this service**.
 Keep unrelated tooling/skill changes on their own branch. Report the branch,
 commit, validation and unresolved prerequisites. Push/open a PR only within the

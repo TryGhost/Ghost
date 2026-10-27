@@ -5,6 +5,7 @@ const {
   mockManager,
   fixtureManager,
   matchers,
+  hostLimits,
 } = require('../../utils/e2e-framework');
 const nock = require('nock');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
@@ -969,6 +970,27 @@ describe('Create Stripe Checkout Session', function () {
         })
         .expectStatus(200);
       assert.equal(stripeMocker.checkoutSessions.at(-1).phone_number_collection, undefined);
+    });
+
+    // While the host switches custom fields off, every field reads as archived, so checkout
+    // stops asking for what it saves into one. A tax ID saves into no field, so it is still
+    // asked for.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('stops asking for it while still asking for a tax ID, and asks again once they are back on', async function () {
+        await setCheckout({ ...collect(), tax_number: { collect: true } });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        const session = await startCheckout();
+        assert.equal(session.phone_number_collection, undefined);
+        assert.deepEqual(session.tax_id_collection, { enabled: true });
+
+        await hostLimits.restoreHostLimits();
+        assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
+      });
     });
   });
 

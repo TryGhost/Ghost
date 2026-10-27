@@ -72,9 +72,7 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     ['dev'],
     ['dev', 'unknown'],
     ['dev', '--help'],
-    ['services'],
     ['services', 'unknown'],
-    ['services', '--help'],
     ['db'],
     ['db', 'unknown'],
     ['db', '--help'],
@@ -91,6 +89,24 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     assert.equal(result.status, 1, args.join(' '));
     assert.equal(result.stdout, '');
     assert.match(stripVTControlCharacters(result.stderr), /Usage:\s+pnpm gx/);
+  }
+});
+
+test('bare services shows service help without loading a command', async () => {
+  const root = await fixture();
+  const result = run(root, ['services']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stderr, '');
+  const output = stripVTControlCharacters(result.stdout);
+  assert.match(output, /Usage:\s+pnpm gx services <command>/);
+  for (const command of ['list', 'report', 'dependencies', 'audit']) {
+    assert.ok(output.includes(command), `Missing ${command}`);
+  }
+  for (const flag of ['--help', '-h']) {
+    const explicit = run(root, ['services', flag]);
+    assert.equal(explicit.status, 0, explicit.stderr);
+    assert.equal(explicit.stderr, '');
+    assert.equal(explicit.stdout, result.stdout);
   }
 });
 

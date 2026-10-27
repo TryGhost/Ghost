@@ -564,9 +564,11 @@ export const AppPage: React.FC = () => {
     body = <NotInstalled />;
   }
 
-  // Ghost keeps only the nav and the page margin; the rest is the app's.
+  // Ghost keeps only the nav; the rest is the app's, edge to edge. Like Admin's own screens,
+  // the app brings its page gutter (Shade's page templates do), so it can bleed a sticky
+  // header or a scrolling row to the edge.
   return (
-    <div className="size-full p-4 lg:p-6" data-testid="app-page">
+    <div className="size-full" data-testid="app-page">
       {body}
     </div>
   );

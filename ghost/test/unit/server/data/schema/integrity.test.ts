@@ -3,7 +3,6 @@ import _ from 'lodash';
 import crypto from 'crypto';
 import fs from 'fs-extra';
 import path from 'path';
-// @ts-expect-error This module lacks type definitions.
 import { config } from '../../../../utils/config-utils';
 import fixtures from '../../../../../core/server/data/schema/fixtures/fixtures.json';
 import defaultSettings from '../../../../../core/server/data/schema/default-settings/default-settings.json';

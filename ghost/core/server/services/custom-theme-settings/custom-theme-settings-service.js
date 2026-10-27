@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const BREAD = require('./custom-theme-settings-bread-service');
 const nql = require('@tryghost/nql');
 const tpl = require('@tryghost/tpl');
@@ -234,7 +234,7 @@ module.exports = class CustomThemeSettingsService {
     let knownSettings = settingsCollection.toJSON();
 
     // exit early if there's nothing to sync for this theme
-    if (knownSettings.length === 0 && _.isEmpty(themeSettings)) {
+    if (knownSettings.length === 0 && isEmpty(themeSettings)) {
       return [];
     }
 
@@ -295,7 +295,7 @@ module.exports = class CustomThemeSettingsService {
    * @private
    */
   _populateValueCacheForTheme(theme, settings) {
-    if (_.isEmpty(theme.customSettings)) {
+    if (isEmpty(theme.customSettings)) {
       this._valueCache.populate([]);
       return;
     }
@@ -309,7 +309,7 @@ module.exports = class CustomThemeSettingsService {
    * @private
    */
   _populateInternalCacheForTheme(theme, settings) {
-    if (_.isEmpty(theme.customSettings)) {
+    if (isEmpty(theme.customSettings)) {
       this._activeThemeSettings = new Map();
       return;
     }

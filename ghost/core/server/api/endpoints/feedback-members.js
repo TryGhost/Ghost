@@ -1,4 +1,4 @@
-const feedbackService = require('../../services/audience-feedback');
+const feedbackService = require('../../services/audience-feedback').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -23,7 +23,7 @@ const controller = {
       method: 'browse',
     },
     query(frame) {
-      return feedbackService.controller.browse(frame);
+      return feedbackService.service.controller.browse(frame);
     },
   },
 
@@ -44,7 +44,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
-      return feedbackService.controller.add(frame);
+      return feedbackService.service.controller.add(frame);
     },
   },
 };

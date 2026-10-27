@@ -3,6 +3,7 @@ import { type Locator, page, userEvent } from 'vitest/browser';
 
 import {
   configResponse,
+  currentRoute,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
@@ -85,29 +86,65 @@ describe('Custom fields', () => {
     const customFieldsApi = fakeCustomFields();
     await renderAdminApp('/settings');
 
+    await expect.element(settingsScreen.navItem('Tiers')).toBeVisible();
+    await expect(settingsScreen.navItem('Custom fields')).toHaveCount(0);
     await expect(settingsScreen.customFields()).toHaveCount(0);
     expect(customFieldsApi.requests).toHaveLength(0);
   });
 
   // A host can switch custom fields off for a site separately from the flag, so the
-  // feature can be sold with a plan. Settings is where a publisher would go to set fields
-  // up, so a limited site is offered nothing to set up. Reading definitions stays open on
-  // the server, so this is the check that stops a limited site being shown a section whose
-  // every save would come back refused.
-  it('stays hidden when the host limit disables the feature', async () => {
+  // feature can be sold. A site without them is still told they exist: Settings keeps the
+  // entry, in the sidebar and in search, and the section offers the upgrade in the host's
+  // words rather than a list whose every change would be refused.
+  it('offers the upgrade when the host switches custom fields off', async () => {
     fakeSettingsScreens();
-    const customFieldsApi = fakeCustomFields();
+    // As the server lists them while they're switched off.
+    fakeCustomFields([{ ...companyField, status: 'archived' }]);
     const config = configResponse({ labs: { membersCustomFields: true } });
     config.config.hostSettings = {
-      limits: { limitCustomFields: { disabled: true } },
+      limits: {
+        limitCustomFields: {
+          disabled: true,
+          error: 'Custom fields are available on the Publisher plan and above.',
+        },
+      },
+      billing: { enabled: true },
     };
     await renderAdminApp('/settings', {
       ...flagOn,
       boot: { browseConfig: { response: config } },
     });
 
-    await expect(settingsScreen.customFields()).toHaveCount(0);
-    expect(customFieldsApi.requests).toHaveLength(0);
+    const section = settingsScreen.customFields();
+    await expect
+      .element(section.getByText(/Custom fields are available on the Publisher plan and above/))
+      .toBeVisible();
+    await settleRequests();
+    await expect(section.getByRole('tablist')).toHaveCount(0);
+    await expect(section.getByRole('button', { name: 'Add custom field' })).toHaveCount(0);
+
+    await settingsScreen.search().fill('custom fields');
+    await expect.element(settingsScreen.navItem('Custom fields')).toBeVisible();
+
+    await section.getByRole('button', { name: 'Upgrade now' }).click();
+    await expect.poll(currentRoute).toBe('/pro');
+  });
+
+  it('says custom fields are unavailable when the host gives no words of its own', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, status: 'archived' }]);
+    const config = configResponse({ labs: { membersCustomFields: true } });
+    config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
+    await renderAdminApp('/settings', {
+      ...flagOn,
+      boot: { browseConfig: { response: config } },
+    });
+
+    await expect
+      .element(
+        settingsScreen.customFields().getByText(/Custom fields aren't available on this site/),
+      )
+      .toBeVisible();
   });
 
   it('stays visible when the host sets the limit but leaves it enabled', async () => {
