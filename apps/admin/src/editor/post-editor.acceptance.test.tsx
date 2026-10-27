@@ -170,6 +170,20 @@ describe('Post editor', () => {
     await expect.element(editorScreen.wordCount()).toHaveTextContent('5 words');
   });
 
+  it('counts the selected words against the total while body text is selected', async () => {
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+
+    const wordCount = editorScreen.wordCount();
+    await expect.element(wordCount).toHaveTextContent(/^3 words$/);
+    await editorScreen.body().click();
+    await userEvent.keyboard(`{End}{Shift>}${'{ArrowLeft}'.repeat('from React'.length)}{/Shift}`);
+    await expect.element(wordCount).toHaveTextContent(/^2 of 3 words$/);
+
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(wordCount).toHaveTextContent(/^3 words$/);
+  });
+
   it('offers every snippet in the card menu, past the first page of the browse', async () => {
     fakeEditorPost();
     // `limit=all` is capped by Core, so the site's snippets can span several pages.
