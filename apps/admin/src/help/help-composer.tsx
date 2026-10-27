@@ -26,16 +26,11 @@ interface HelpComposerProps {
   busy: boolean;
   followUp: boolean;
   onSubmit: (text: string) => void;
-  /** What's typed, owned by the panel, which also matches articles to it as the user types */
+  /** What's typed, owned by the panel (the number shortcuts depend on it being empty) */
   value: string;
   onValueChange: (value: string) => void;
-  /**
-   * Gets each key first, for the number shortcuts and moving through the
-   * matches as the user types; returns true when it handled the key
-   */
+  /** Gets each key first, for the number shortcuts; returns true when it handled the key */
   onKeyCommand: (event: React.KeyboardEvent<HTMLTextAreaElement>) => boolean;
-  /** Makes the box a combobox for the matches as the user types (use-help-typeahead.ts) */
-  comboboxProps: React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 }
 
 export function HelpComposer({
@@ -49,7 +44,6 @@ export function HelpComposer({
   value,
   onValueChange,
   onKeyCommand,
-  comboboxProps,
 }: HelpComposerProps) {
   const canSend = value.trim().length > 0 && !busy;
 
@@ -74,7 +68,6 @@ export function HelpComposer({
         </InputGroupAddon>
         <InputGroupTextarea
           ref={textareaRef}
-          {...comboboxProps}
           aria-label="Your question"
           // Sized to its content, its narrowest is its placeholder's width,
           // which would push the buttons beside it out of the panel

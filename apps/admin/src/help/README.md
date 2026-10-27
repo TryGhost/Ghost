@@ -3,16 +3,14 @@
 The Help panel tries to answer questions from the
 [help center](https://ghost.org/help/) before they turn into support tickets.
 It docks beside the page, suggests FAQ questions for the page the user is on,
-completes questions as they type, answers through DocsBot, opens articles
-inside Admin, and hands off to a support form that carries the context with it
-when an answer didn't do it.
+answers through DocsBot, opens articles inside Admin, and hands off to a
+support form that carries the context with it when an answer didn't do it.
 
 Answers come from [DocsBot](https://docsbot.ai), an agent trained on the help
 center, through its [chat agent API](https://docsbot.ai/documentation/developer/chat-agent)
 (`help-docsbot.ts`). The answer streams into the thread, and the help center
 pages it drew on are matched back to the article list so they open in the
-panel. Suggestions and completions as the user types come from the help
-center's FAQ (`help-questions.ts`).
+panel. Suggestions come from the help center's FAQ (`help-questions.ts`).
 
 ## Start here
 
@@ -28,7 +26,7 @@ center's FAQ (`help-questions.ts`).
 - **Reading order for the code:** `help-panel-provider.tsx` (the gate),
   `help-panel.tsx` (the shell), `use-help-conversation.ts` (what happens when
   someone asks), `help-docsbot.ts` (the DocsBot client), `help-questions.ts`
-  (the FAQ: suggestions, completions and asking for a person), then
+  (the FAQ: suggestions and asking for a person), then
   `help-suggestions.ts` and `help-pages.ts` (what's suggested where).
 - **Try it:** add the help center's API key locally first (it isn't in the
   repository), then see [Checking changes](#checking-changes).
@@ -178,7 +176,7 @@ around them are thin.
 | `help-pages.ts`           | Page keys, their labels, route to key (`getPageKey`), each page's topics, fallback articles and fallback FAQ questions |
 | `help-suggestions.ts`     | Account alerts (`getAccountAlert`) and the suggestion order (`getSuggestedArticles`)                                   |
 | `help-search.ts`          | Search terms, word forms, the account question check and ranking (`rankHelpArticles`), kept for reference              |
-| `help-questions.ts`       | The FAQ's questions, completing what's typed (`matchQuestions`), and spotting a request for a person (`wantsSupport`)  |
+| `help-questions.ts`       | The FAQ's questions, and spotting a request for a person (`wantsSupport`)                                              |
 | `help-site-card-kinds.ts` | Which answers get a site card (`SITE_CARDS`), and billing cards for billing managers only                              |
 | `help-contract.ts`        | Every key, slug and topic Admin relies on the help center for, in one place                                            |
 | `help-article-html.ts`    | Makes an article's HTML safe and readable in the panel (DocsBot's answers go through it too)                           |
@@ -202,7 +200,6 @@ around them are thin.
 | `help-panel-provider.tsx`, `help-panel-context.ts` | Whether the panel is open, and the Ghost(Pro) gate                                                                                       |
 | `use-help-conversation.ts`                         | The conversation: asking DocsBot, the streamed answer and its steps, feedback, reading articles, the support draft, and which view shows |
 | `use-help-suggestions.ts`                          | Runs `getSuggestedArticles` for the current page over the loaded article list                                                            |
-| `use-help-typeahead.ts`                            | Completions as the user types: the draft, the highlighted question, the keyboard, the combobox ARIA                                      |
 | `use-help-panel-size.ts`                           | The docked width, and the maximized width (the page area right of Admin's sidebar)                                                       |
 
 **Views**
@@ -212,7 +209,6 @@ around them are thin.
 | `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the three views (conversation, article, support)                         |
 | `help-welcome.tsx`      | The greeting and suggestions, or an error with a link to the help center                                                      |
 | `help-messages.tsx`     | The thread: the question (and its context), the answer, its steps and sources                                                 |
-| `help-typeahead.tsx`    | FAQ questions completing what's typed, above the composer                                                                     |
 | `help-composer.tsx`     | The question box, with the chip for the page the question is asked from                                                       |
 | `help-article-view.tsx` | An article read in the panel, ending with "Did this answer your question?"                                                    |
 | `help-site-card.tsx`    | The look at the user's own site beside some answers, with a button to act on it                                               |
@@ -381,12 +377,11 @@ panel (`HelpAnswerText` in `help-messages.tsx`), like links inside articles.
 
 ## How the keyword search ranked articles (kept for reference)
 
-`rankHelpArticles` in `help-search.ts` ranked the article list in the browser,
-for answers before DocsBot and for article matches before completions came
-from the FAQ. Nothing calls it now except its tests (`help-search.test.ts`
-keeps the questions that shaped it) and `isAboutAccount`; it's kept in case
-local ranking is wanted again, for example to match sources when the FAQ
-can't.
+`rankHelpArticles` in `help-search.ts` ranked the article list in the browser
+for answers before DocsBot, and for matches as the user typed before that was
+removed. Nothing calls it now except its tests (`help-search.test.ts` keeps
+the questions that shaped it); it's kept in case local ranking is wanted
+again, for example to match sources when the FAQ can't.
 
 1. **Words.** The question loses its stop words (how, my, the, another…).
 2. **Forms of each word.** Each word also matches its -ize spelling (the help
@@ -434,23 +429,6 @@ shaped them.
 DocsBot keeps the thread, so "how do I customise it" after "how to connect
 Stripe" is answered about Stripe. Admin sends no history and keeps no
 follow-up state of its own.
-
-### Completions as the user types
-
-From 3 characters, the FAQ questions that continue what's typed show above the
-composer (`matchQuestions` in `help-questions.ts`): every typed word has to
-start a word in the question, the last one usually half-typed, and questions
-that start the way the user did come first. Focus stays in the composer, which
-is a combobox for screen readers: the arrow keys move through the questions,
-Enter or Tab puts one in the composer in place of what was typed (Tab takes
-the first when none is highlighted), and Escape hides them until the text
-changes. The user sends the question from the composer, so they can still
-change it. A question already in the composer whole isn't offered as its own
-completion.
-
-`rankHelpArticles` in `help-search.ts` ranked articles for this and for answers
-before DocsBot and the FAQ took over; it's kept with its tests
-(`help-search.test.ts`) for reference and the account-question check.
 
 ## Reading articles in the panel
 
@@ -514,11 +492,12 @@ prototype".
   [The principle](#the-principle-admin-is-the-harness-the-help-center-owns-the-content).
   The cost is a contract that can break silently; `help-contract.ts` makes it
   checkable.
-- **Suggestions and completions are questions, not articles.** With an agent
-  answering, what's offered up front should read as something to ask; the
-  help center's FAQ is already written that way. Picking a suggestion asks it;
-  picking a completion fills the composer, so the user stays in charge of what
-  gets sent.
+- **Suggestions are questions, not articles.** With an agent answering, what's
+  offered up front should read as something to ask; the help center's FAQ is
+  already written that way. Picking a suggestion asks it.
+- **Nothing pops up while typing.** An earlier version matched articles, then
+  FAQ questions, to what was typed. Both pulled attention from the question
+  being written, so the composer is now just a composer.
 - **The support team is an escape valve, not a button.** There's no
   "Contact support" up front: it's offered where an answer didn't do it (a
   thumbs down, an answer DocsBot couldn't find, the error state, "No" at the
@@ -563,15 +542,12 @@ Search the code for `PROTOTYPE:`. In short:
   headings, bold, italic, code, links and lists. Tables and images in an
   answer would show as text.
 
-**Suggestions and completions**
+**Suggestions**
 
 - **The FAQ is small** (39 questions, 35 of them question-shaped), so pages
   with no FAQ of their own (Analytics, Network) borrow loosely related ones.
   Writing FAQ entries for the questions support gets most, and tagging them
   `#admin-<page>`, is the lever.
-- **Completions match words at their starts only.** "cancel subscription"
-  finds "How do I cancel member subscriptions", but "stop my subscription"
-  finds nothing; DocsBot still answers it.
 - **Ordering within a page is coarse:** featured first, then most recently
   updated. Ghost has no per-tag order.
 
@@ -583,8 +559,7 @@ Search the code for `PROTOTYPE:`. In short:
 
 **Accessibility and behaviour**
 
-- Escape closes the panel when no completions are showing, even mid-question;
-  on mobile it closes the sheet even while completions show.
+- Escape closes the panel even mid-question.
 - `wantsSupport` is a regular expression: "How do I message my team" would
   offer support. Tune it against real questions, or ask DocsBot's own
   escalation classifier (`human_escalation`) instead.

@@ -2,12 +2,11 @@ import type { HelpArticle } from './help-center';
 import { PAGE_TOPICS, type HelpPageKey } from './help-pages';
 
 /*
- * How the Help panel answers a question: keyword search over the help
- * center's article list, ranked in the browser (pure functions, covered by
- * help-search.test.ts). There's no LLM: answers are the help center's own
- * words, nothing the user types leaves the browser, and results are
- * predictable. Used for questions (use-help-conversation.ts) and for matches
- * as the user types (use-help-typeahead.ts).
+ * How the Help panel answered a question before DocsBot: keyword search over
+ * the help center's article list, ranked in the browser (pure functions,
+ * covered by help-search.test.ts). Nothing calls it now; it's kept, with the
+ * questions that shaped it, in case local ranking is wanted again (README.md,
+ * "How the keyword search ranked articles").
  *
  *   1. getSearchTerms: the question's words, without stop words.
  *   2. getTermGroups: each word's forms (its -ize spelling, SYNONYMS), and

@@ -21,7 +21,6 @@ import type { HelpPageKey } from './help-pages';
 import { REVEAL_CLASS_NAME } from './help-reveal';
 import { type HelpSignals, useHelpSignals } from './help-signals';
 import { HelpSupportView } from './help-support';
-import { HelpTypeahead } from './help-typeahead';
 import { HelpWelcome } from './help-welcome';
 import { type HelpConversation, useHelpConversation } from './use-help-conversation';
 import {
@@ -32,14 +31,13 @@ import {
   useMaximizedWidth,
 } from './use-help-panel-size';
 import { useHelpSuggestions } from './use-help-suggestions';
-import { useHelpTypeahead } from './use-help-typeahead';
 
 /*
  * The Help panel's shell. Docked beside the page on desktop (AdminLayout
  * places it after the page, which narrows to make room) and a sheet on
  * mobile. It shows one of three views (use-help-conversation.ts): the
- * conversation (welcome and suggestions, or the thread; completions as the
- * user types; the composer; the footer), an article, or the message to support.
+ * conversation (welcome and suggestions, or the thread; the composer; the
+ * footer), an article, or the message to support.
  * The conversation stays mounted behind the other two, so Back returns to the
  * same place.
  *
@@ -77,7 +75,8 @@ function HelpPanelContent({
   const [pageLeftOutOf, setPageLeftOutOf] = useState<HelpPageKey | null>(null);
   const withPage = pageLeftOutOf !== signals.pageKey;
   const suggestions = useHelpSuggestions(signals, withPage, open);
-  const typeahead = useHelpTypeahead({ enabled: open, busy: conversation.working });
+  // What's typed so far; the number shortcuts only apply while it's empty
+  const [draft, setDraft] = useState('');
 
   // A suggestion is a question from the FAQ: picking one asks it, with its
   // article leading the answer's sources
@@ -88,7 +87,7 @@ function HelpPanelContent({
   // digits ("2FA…") picks a suggestion instead.
   const pickByNumber = (event: React.KeyboardEvent) => {
     const suggestion =
-      !hasMessages && typeahead.draft === '' && /^[1-9]$/.test(event.key)
+      !hasMessages && draft === '' && /^[1-9]$/.test(event.key)
         ? suggestions.suggestions[Number(event.key) - 1]
         : undefined;
     if (!suggestion || event.metaKey || event.ctrlKey || event.altKey) {
@@ -136,7 +135,7 @@ function HelpPanelContent({
     <div
       className="flex h-full min-h-0 flex-col"
       onKeyDown={(event) => {
-        // Keys the composer already handled (the matches, or a number) stop there
+        // Keys the composer already handled (a number shortcut) stop there
         if (event.defaultPrevented) {
           return;
         }
@@ -245,36 +244,24 @@ function HelpPanelContent({
             <HelpWelcome
               failed={suggestions.isError}
               firstName={signals.user.name.split(' ')[0] ?? ''}
-              // The completions as the user types take their place for now
-              loading={!typeahead.showMatches && suggestions.isLoading}
-              suggestions={typeahead.showMatches ? [] : suggestions.suggestions}
+              loading={suggestions.isLoading}
+              suggestions={suggestions.suggestions}
               onPick={pick}
             />
           )}
         </div>
 
-        {typeahead.showMatches && (
-          <HelpTypeahead
-            highlighted={typeahead.highlighted}
-            listboxId={typeahead.listboxId}
-            matches={typeahead.matches}
-            optionId={typeahead.optionId}
-            onHighlight={typeahead.setHighlighted}
-            onPick={typeahead.pick}
-          />
-        )}
         <HelpComposer
           busy={conversation.working}
-          comboboxProps={typeahead.comboboxProps}
           followUp={hasMessages}
           page={signals.pageLabel}
           textareaRef={textareaRef}
-          value={typeahead.draft}
+          value={draft}
           withPage={withPage}
-          onKeyCommand={(event) => pickByNumber(event) || typeahead.onKeyCommand(event)}
+          onKeyCommand={pickByNumber}
           onSubmit={(text) => conversation.ask(text, withPage)}
           onTogglePage={() => setPageLeftOutOf(withPage ? signals.pageKey : null)}
-          onValueChange={typeahead.setDraft}
+          onValueChange={setDraft}
         />
 
         {/* Support isn't offered up front: it's where an answer or article
