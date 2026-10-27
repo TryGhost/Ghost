@@ -499,14 +499,13 @@ describe('JobsService', function () {
       );
     });
 
-    it('logs and drops delivery for an unknown job type', async function () {
+    it('rejects delivery for an unknown job type without logging, so the backend logs the failure once', async function () {
       const service = makeService();
       await service.start();
       await service.dispatch(new GreetJob({ name: 'Ada' }));
-      await backend.deliver();
+      await assert.rejects(() => backend.deliver(), /No handler registered for job type "greet"/);
 
-      assert.equal(logger.calls.error.length, 1);
-      assert.match(String(logger.calls.error[0]![0]), /No handler registered for job type "greet"/);
+      assert.equal(logger.calls.error.length, 0);
     });
   });
 
