@@ -11,7 +11,15 @@ Detached, so it outlives the chat, with its log in the system temp folder:
 (cd <checkout>/apps/shade && nohup pnpm storybook --no-open > "${TMPDIR:-/tmp}/shade-storybook.log" 2>&1 &)
 ```
 
-Stop it later with `lsof -ti tcp:6006 | xargs kill`.
+Once `llms.txt` answers, record the server this setup started, so it can be
+stopped without touching anything else:
+
+```sh
+lsof -ti tcp:6006 -sTCP:LISTEN > "${TMPDIR:-/tmp}/shade-storybook.pid"
+```
+
+Stop it later with `kill "$(cat "${TMPDIR:-/tmp}/shade-storybook.pid")"`. If it
+never answered, there's nothing to stop: setup ended before recording it.
 
 ## Pack the app SDK (step 6)
 
@@ -46,7 +54,9 @@ Check npm installs it, in a throwaway project outside the folder. It passes when
 ```sh
 here="$PWD" check="$(mktemp -d)"
 (cd "$check" && npm init -y > /dev/null && npm install --no-audit --no-fund "$here/vendor/tryghost-app-sdk.tgz" && npm ls @quilted/threads)
+status=$?
 rm -rf "$check"
+[ "$status" -eq 0 ] || { echo "The SDK tarball didn't install cleanly." >&2; exit "$status"; }
 ```
 
 ## `AGENTS.md` (step 7)

@@ -45,11 +45,14 @@ Storybook serves Shade's docs as Markdown, which the skills read.
    [Start Storybook](reference.md#start-storybook-step-3), and poll
    `llms.txt` every few seconds for up to three minutes. If it never answers,
    show the end of its log and stop.
-3. Tell the user it keeps running after this chat, and how to stop it.
+3. Once it answers, record its process as in
+   [Start Storybook](reference.md#start-storybook-step-3). Tell the user it
+   keeps running after this chat, and how to stop it. Only give the stop
+   command for a Storybook this setup started.
 
 ## 4. Shade's skills
 
-1. Run `npx -y skills add <checkout>/apps/shade/skills -a claude-code codex -y`.
+1. Run `npx -y skills@1.7.4 add <checkout>/apps/shade/skills --skill '*' -a claude-code codex -y`.
    `codex` puts the skills in `.agents/skills/`, which most clients read;
    `claude-code` links them into `.claude/skills/`.
 2. Check `.agents/skills/` has `build-ghost-app-ui`, `shade-imports`,
@@ -63,7 +66,7 @@ Storybook serves Shade's docs as Markdown, which the skills read.
 skill: the SDK, manifest, `connect()` and install link.
 
 1. Install it from the checkout, so it's current:
-   `npx -y skills add <checkout>/apps/shade/dev-skill/ghost-app-ui-dev-setup/build-ghost-app -a claude-code codex -y`
+   `npx -y skills@1.7.4 add <checkout>/apps/shade/dev-skill/ghost-app-ui-dev-setup/build-ghost-app -a claude-code codex -y`
 2. Check `.agents/skills/build-ghost-app/SKILL.md` exists and
    `.claude/skills/build-ghost-app` links to it.
 3. Delete `skills-lock.json`: it records the checkout path, and nothing here
