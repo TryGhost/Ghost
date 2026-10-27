@@ -14,7 +14,7 @@ Once migrations are on the `main` branch, they're final. If you need to make fur
 
 ## Use utility functions
 
-Wherever possible, use the utility functions in `ghost/core/core/server/data/migrations/utils`, such as `addTable`, `createTransactionalMigration`, and `addSetting`. These util functions have been tested and already include protections for idempotency, as well as log statements where appropriate to make migrations easier to debug.
+Wherever possible, use the utility functions in `ghost/core/server/data/migrations/utils`, such as `addTable`, `createTransactionalMigration`, and `addSetting`. These util functions have been tested and already include protections for idempotency, as well as log statements where appropriate to make migrations easier to debug.
 
 ## Migration PRs should be as minimal as possible
 
@@ -22,7 +22,7 @@ Migration PRs should contain the minimal amount of code to create the migration.
 
 - the new migration file
 - updates to the schema.js file
-- updated schema integrity hash tests
+- updated database integrity hashes (only when changing fixtures, default settings, or default routes)
 - updated exporter table lists (when adding or removing tables)
 
 ## Migrations should be defensive

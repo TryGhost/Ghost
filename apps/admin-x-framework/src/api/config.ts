@@ -11,10 +11,6 @@ interface JSONArray extends Array<string | number | boolean | Date | JSONObject 
 export type Config = {
   version: string;
   environment: string;
-  editor: {
-    url: string;
-    version: string;
-  };
   signupForm: {
     url: string;
     version: string;
@@ -42,7 +38,7 @@ export type Config = {
     siteId?: string;
     forceUpgrade?: boolean;
     limits?: {
-      // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
+      // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.
       customIntegrations?: {
         disabled: boolean;
       };
@@ -51,6 +47,10 @@ export type Config = {
         error?: string;
       };
       members?: {
+        max?: number;
+        error?: string;
+      };
+      limitAutomations?: {
         max?: number;
         error?: string;
       };

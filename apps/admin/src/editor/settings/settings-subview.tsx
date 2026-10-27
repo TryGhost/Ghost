@@ -35,11 +35,18 @@ export function SettingsSubview({
   contentClassName,
   children,
 }: SettingsSubviewProps) {
-  const { open, show, close } = useSubviews();
+  const { open, requested, show, close } = useSubviews();
   const isOpen = open?.id === id;
   const backRef = useRef<HTMLButtonElement>(null);
   const rowRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
+
+  // The panel was asked to show this section, such as to reach a field a save refused.
+  useEffect(() => {
+    if (requested === id && !isOpen) {
+      show({ id, title });
+    }
+  }, [id, isOpen, requested, show, title]);
 
   // Opening moves the writer into the pane; closing puts them back on the row
   // they opened it from, rather than at the top of the document.

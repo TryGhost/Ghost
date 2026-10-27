@@ -4,6 +4,7 @@ import { focusManager } from '@tanstack/react-query';
 
 import {
   currentRoute,
+  currentUserResponse,
   fakeAdminStats,
   fakeAdminEndpoint,
   fakeMembers,
@@ -16,6 +17,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  staffRole,
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
@@ -23,7 +25,6 @@ import { editorScreen } from '@/editor/editor.screen';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
-import { navigateTo } from '@/utils/navigation';
 import { postAnalyticsScreen } from './post-analytics.screen';
 
 const POST_ID = '64d623b64676110001e897d9';
@@ -51,12 +52,6 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
     count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
     newsletter: { id: NEWSLETTER_ID },
     ...overrides,
-  });
-}
-
-function fakeSubmittingBatches(batches: Array<{ id: string; status: string }> = []) {
-  return fakeAdminEndpoint('GET', new RegExp(`^/emails/${EMAIL_ID}/batches/(?:\\?|$)`), {
-    batches,
   });
 }
 
@@ -148,7 +143,7 @@ function seedEmptyPostAnalyticsWorld() {
 }
 
 describe('Post analytics overview', () => {
-  it('shows sending progress and withholds newsletter figures with the URL override', async () => {
+  it('shows sending progress and refreshes newsletter figures when sending finishes', async () => {
     const postOverrides = {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
     } as const;
@@ -220,7 +215,7 @@ describe('Post analytics overview', () => {
       };
     });
 
-    await renderAdminApp(`/posts/analytics/${POST_ID}?labs=improveSendingUI`, {
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -232,10 +227,13 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
-    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/newsletter`);
+    // The first visit loads the lazy Newsletter route; cold CI transforms can exceed 5s.
+    await expect
+      .poll(currentRoute, { timeout: 10_000 })
+      .toBe(`/posts/analytics/${POST_ID}/newsletter`);
     await expect.element(page.getByText('Newsletter clicks')).not.toBeInTheDocument();
     await expect
-      .element(page.getByText('Sends, opens and clicks will appear once every email has been sent'))
+      .element(page.getByText("You'll see sends, opens and clicks here once it finishes"))
       .toBeVisible();
     await expect
       .element(page.getByRole('button', { name: /View members/ }).first())
@@ -279,7 +277,6 @@ describe('Post analytics overview', () => {
     }));
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -324,7 +321,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -357,7 +353,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -371,7 +366,6 @@ describe('Post analytics overview', () => {
     seedPostAnalyticsWorld({ email_only: true, status: 'sent' });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -389,7 +383,6 @@ describe('Post analytics overview', () => {
       },
     } as const;
     seedPostAnalyticsWorld(postOverrides);
-    fakeSubmittingBatches();
     let hasRetried = false;
     let hasCompleted = false;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
@@ -400,6 +393,7 @@ describe('Post analytics overview', () => {
             sending: !hasRetried
               ? {
                   status: 'failed',
+                  retryable: true,
                   failed_during: 'submitting',
                   progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
                 }
@@ -424,7 +418,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -452,7 +445,6 @@ describe('Post analytics overview', () => {
         error: 'Please retry sending your newsletter.',
       },
     });
-    fakeSubmittingBatches();
     // The completed batch excluded all 250 recipients; the other batch failed.
     // Progress includes exclusions and therefore cannot establish a sent count.
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
@@ -461,6 +453,7 @@ describe('Post analytics overview', () => {
           id: EMAIL_ID,
           sending: {
             status: 'failed',
+            retryable: true,
             failed_during: 'submitting',
             progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
           },
@@ -468,7 +461,6 @@ describe('Post analytics overview', () => {
       ],
     });
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -479,50 +471,44 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByRole('button', { name: 'Retry sending email' })).toBeVisible();
   });
 
-  it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {
-    seedPostAnalyticsWorld({
-      email: {
-        id: EMAIL_ID,
-        email_count: 250,
-        opened_count: 0,
-        status: 'failed',
-        error: 'An error occurred, and your newsletter was only partially sent.',
-      },
-    });
-    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
-      email_statuses: [
-        {
+  it.each([false, undefined])(
+    'shows a generic failure without retry for API eligibility %s',
+    async (retryable) => {
+      seedPostAnalyticsWorld({
+        email: {
           id: EMAIL_ID,
-          sending: {
-            status: 'failed',
-            failed_during: 'submitting',
-            progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
-          },
+          email_count: 250,
+          opened_count: 0,
+          status: 'failed',
+          error: 'An error occurred, and your newsletter was only partially sent.',
         },
-      ],
-    });
-    const batchesApi = fakeSubmittingBatches([{ id: 'batch-1', status: 'submitting' }]);
-    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
-      boot: webAnalyticsBootOverrides(),
-    });
+      });
+      fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: {
+              status: 'failed',
+              ...(retryable === undefined ? {} : { retryable }),
+              failed_during: 'submitting',
+              progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+            },
+          },
+        ],
+      });
+      await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+        boot: webAnalyticsBootOverrides(),
+      });
 
-    await expect.element(page.getByText('Emails failed to send')).toBeVisible();
-    await expect.element(page.getByText(/only partially sent/)).toBeVisible();
-    await expect
-      .element(
-        postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
-      )
-      .not.toBeInTheDocument();
-    await expect
-      .poll(() =>
-        new URL(batchesApi.lastRequest?.url ?? 'http://localhost').searchParams.get('filter'),
-      )
-      .toBe('status:submitting');
-    const batchRequestUrl = new URL(batchesApi.lastRequest!.url);
-    expect(batchRequestUrl.searchParams.get('fields')).toBe('id,status');
-    expect(batchRequestUrl.searchParams.get('limit')).toBe('1');
-  });
+      await expect.element(page.getByText('Emails failed to send')).toBeVisible();
+      await expect.element(page.getByText(/only partially sent/)).toBeVisible();
+      await expect
+        .element(
+          postAnalyticsScreen.emailSendingStatusLine().getByRole('button', { name: /send|retry/i }),
+        )
+        .not.toBeInTheDocument();
+    },
+  );
 
   it('refreshes the failure reason and does not count prepared recipients as sent', async () => {
     const postOverrides = {
@@ -546,7 +532,6 @@ describe('Post analytics overview', () => {
         ),
       ];
     });
-    fakeSubmittingBatches();
     let statusRequestCount = 0;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
@@ -561,6 +546,7 @@ describe('Post analytics overview', () => {
                 }
               : {
                   status: 'failed',
+                  retryable: true,
                   failed_during: 'preparing',
                   progress: {
                     completed: 250,
@@ -574,7 +560,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -612,7 +597,6 @@ describe('Post analytics overview', () => {
     );
 
     const app = await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -635,7 +619,6 @@ describe('Post analytics overview', () => {
     );
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -671,6 +654,7 @@ describe('Post analytics overview', () => {
           id: EMAIL_ID,
           sending: {
             status: 'failed',
+            retryable: false,
             failed_during: 'preparing',
             progress: { completed: 0, total: 1000, estimated_seconds_remaining: null },
           },
@@ -679,7 +663,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -708,15 +691,26 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('100');
   });
 
+  it('renders for an administrator', async () => {
+    seedPostAnalyticsWorld();
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Administrator' })];
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      boot: { ...webAnalyticsBootOverrides(), browseMe: { response: me } },
+    });
+
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
+  });
+
   it('keeps the post context when switching to the web tab', async () => {
     const { kpisApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: false },
       boot: webAnalyticsBootOverrides(),
     });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-    await expect.element(page.getByText(/^Published and sent on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent to 1,000 members on/)).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
     const overviewKpiRequestCount = kpisApi.requests.length;
 
@@ -789,7 +783,6 @@ describe('Post analytics edit', () => {
     fakeNewsletters([]);
     fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [seededPost()] });
     await renderAdminApp(`/posts/analytics/${POST_ID}/web`, {
-      labs: { editorReact: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -812,7 +805,6 @@ describe('Post analytics delete', () => {
   const PUBLISHED_BUCKET = 'status:[published,sent]';
 
   it('leaves for a posts list that no longer carries the deleted post', async () => {
-    delete document.body.dataset.externalNavigate;
     fakePostsListScreen();
     const deleteApi = fakeAdminEndpoint('DELETE', `/posts/${POST_ID}/`, null, { status: 204 });
     // The list's published bucket and this screen's read by id, both of which
@@ -834,16 +826,10 @@ describe('Post analytics delete', () => {
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
     await postAnalyticsScreen.moreActionsButton().click();
     await postAnalyticsScreen.deletePostMenuItem().click();
+    const browsesBefore = listBrowses();
     await postAnalyticsScreen.confirmDeleteButton().click();
 
     await expect.poll(() => deleteApi.requests.length).toBe(1);
-    await expect.poll(() => document.body.dataset.externalNavigate).toBeDefined();
-    const handoff = JSON.parse(document.body.dataset.externalNavigate!) as { route: string };
-    expect(handoff.route).toBe('/posts/');
-    const browsesBefore = listBrowses();
-
-    navigateTo(handoff.route);
-
     await expect.poll(currentRoute).toBe('/posts/');
     // Without the delete invalidating it, the list is served from the cache it
     // was left with — within the five-minute staleTime, deleted row and all.

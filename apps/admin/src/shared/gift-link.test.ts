@@ -3,9 +3,7 @@ import type { UserRoleType } from '@tryghost/admin-x-framework/api/roles';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Ported from `apps/ember-admin/app/utils/gift-link.js`, which the Ember
- * context menu imports. Both implementations now read the same rules, so the
- * entry point can't appear on one side and not the other.
+ * Ported from Ember's `utils/gift-link.js`.
  *
  * A gift link shares a *gated* post with someone who isn't a member, so the
  * two halves of the rule are: a user senior enough to hand out access, and a

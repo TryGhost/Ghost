@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -43,6 +44,11 @@ vi.mock('@/settings/components/koenig-loader', () => {
   const resource = { read: () => stub };
   return { loadKoenig: () => resource, loadedKoenigVersion: () => 'test' };
 });
+
+vi.mock('@sentry/react', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  captureException: vi.fn(),
+}));
 
 vi.mock('@tryghost/shade/app', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
@@ -121,6 +127,7 @@ describe('KoenigPostEditor re-renders', () => {
 describe('KoenigPostEditor hidden instance', () => {
   afterEach(() => {
     editorRendered.mockReset();
+    vi.mocked(Sentry.captureException).mockClear();
     vi.restoreAllMocks();
   });
 
@@ -150,6 +157,10 @@ describe('KoenigPostEditor hidden instance', () => {
     );
 
     expect(onSecondaryError).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'hidden instance crashed' }),
+      expect.objectContaining({ tags: { lexical: true, koenig_instance: 'secondary' } }),
+    );
     expect(screen.getByTestId(editorBody)).toBeInTheDocument();
     expect(screen.queryByTestId(editorSecondaryInstance)).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -175,10 +186,18 @@ describe('KoenigPostEditor hidden instance', () => {
 
     fireEvent.click(within(screen.getByTestId(editorBody)).getByRole('button'));
     expect(onSecondaryError).not.toHaveBeenCalled();
+    expect(Sentry.captureException).toHaveBeenLastCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ tags: { lexical: true, koenig_instance: 'primary' } }),
+    );
 
     fireEvent.click(
       within(screen.getByTestId(editorSecondaryInstance)).getByRole('button', { hidden: true }),
     );
     expect(onSecondaryError).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureException).toHaveBeenLastCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ tags: { lexical: true, koenig_instance: 'secondary' } }),
+    );
   });
 });

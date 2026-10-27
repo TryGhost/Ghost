@@ -2,6 +2,8 @@ import React from 'react';
 import { H1 } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { Navbar, NavbarNavigation, PageMenu, PageMenuItem } from '@tryghost/shade/components';
+import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { useActiveVisitors, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import {
   useNewslettersEnabled,
@@ -19,13 +21,110 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const newslettersEnabled = useNewslettersEnabled();
   const { site, statsConfig } = useAnalyticsData();
+  const { largeTitles } = usePageChrome();
   const { activeVisitors, isLoading: isActiveVisitorsLoading } = useActiveVisitors({
     statsConfig,
-    enabled: webAnalyticsEnabled,
+    // Under large titles the frame's top bar shows them instead
+    enabled: webAnalyticsEnabled && !largeTitles,
   });
   const normalizedPath = location.pathname.endsWith('/')
     ? location.pathname
     : `${location.pathname}/`;
+
+  const siteMeta = webAnalyticsEnabled && (
+    <div className="flex items-center gap-2">
+      {site?.url && (
+        <div className="hidden items-center gap-1.5 sm:visible! sm:flex!">
+          {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
+          <LucideIcon.Globe className="text-muted-foreground" size={16} strokeWidth={1.5} />
+          <a
+            className="font-medium transition-all hover:opacity-75 dark:text-gray-100"
+            href={site.url}
+            rel="noopener noreferrer"
+            target="_blank"
+            title={`Visit ${new URL(site.url).hostname}`}
+          >
+            {new URL(site.url).hostname}
+          </a>
+          <span className="text-border">|</span>
+        </div>
+      )}
+      <div
+        className="flex items-center gap-2 text-muted-foreground"
+        title="Active visitors in the last 5 minutes · Updates every 60 seconds"
+      >
+        <span>{isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} online</span>
+        <div
+          className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}
+        ></div>
+      </div>
+    </div>
+  );
+  const tabs = (
+    <NavbarNavigation>
+      <PageMenu defaultValue={normalizedPath} responsive>
+        <PageMenuItem
+          value="/analytics/"
+          onClick={() => {
+            navigate('/analytics/');
+          }}
+        >
+          Overview
+        </PageMenuItem>
+
+        {webAnalyticsEnabled && (
+          <PageMenuItem
+            value="/analytics/web/"
+            onClick={() => {
+              navigate('/analytics/web/');
+            }}
+          >
+            Web traffic
+          </PageMenuItem>
+        )}
+
+        {newslettersEnabled && (
+          <PageMenuItem
+            value="/analytics/newsletters/"
+            onClick={() => {
+              navigate('/analytics/newsletters/');
+            }}
+          >
+            Newsletters
+          </PageMenuItem>
+        )}
+
+        <PageMenuItem
+          value="/analytics/growth/"
+          onClick={() => {
+            navigate('/analytics/growth/');
+          }}
+        >
+          Growth
+        </PageMenuItem>
+      </PageMenu>
+    </NavbarNavigation>
+  );
+
+  // With large titles on (admin7Design), the screen is a list page: the title
+  // large above a sticky header holding the tabs. No site meta: large titles
+  // only show inside the admin frame, whose top bar already has the visitors
+  // online
+  if (largeTitles) {
+    return (
+      <ListPage.Header>
+        <PageHeader blurredBackground={false} sticky={false}>
+          <PageHeader.Left>
+            <PageHeader.Title>Analytics</PageHeader.Title>
+          </PageHeader.Left>
+        </PageHeader>
+        <Navbar className="mt-4! flex-col items-start gap-y-0 border-none pt-0! pb-4! lg:flex-row lg:items-center">
+          {tabs}
+          {children}
+        </Navbar>
+      </ListPage.Header>
+    );
+  }
 
   return (
     <>
@@ -40,81 +139,11 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
           >
             Analytics
           </H1>
-          {webAnalyticsEnabled && (
-            <div className="flex items-center gap-2">
-              {site?.url && (
-                <div className="hidden items-center gap-1.5 sm:visible! sm:flex!">
-                  {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
-                  <LucideIcon.Globe className="text-muted-foreground" size={16} strokeWidth={1.5} />
-                  <a
-                    className="font-medium transition-all hover:opacity-75 dark:text-gray-100"
-                    href={site.url}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    title={`Visit ${new URL(site.url).hostname}`}
-                  >
-                    {new URL(site.url).hostname}
-                  </a>
-                  <span className="text-border">|</span>
-                </div>
-              )}
-              <div
-                className="flex items-center gap-2 text-muted-foreground"
-                title="Active visitors in the last 5 minutes · Updates every 60 seconds"
-              >
-                <span>{isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} online</span>
-                <div
-                  className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}
-                ></div>
-              </div>
-            </div>
-          )}
+          {siteMeta}
         </div>
       </header>
       <Navbar className="sticky top-0 z-40 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 pt-9 pb-6 backdrop-blur-md lg:flex-row lg:items-center dark:bg-background">
-        <NavbarNavigation>
-          <PageMenu defaultValue={normalizedPath} responsive>
-            <PageMenuItem
-              value="/analytics/"
-              onClick={() => {
-                navigate('/analytics/');
-              }}
-            >
-              Overview
-            </PageMenuItem>
-
-            {webAnalyticsEnabled && (
-              <PageMenuItem
-                value="/analytics/web/"
-                onClick={() => {
-                  navigate('/analytics/web/');
-                }}
-              >
-                Web traffic
-              </PageMenuItem>
-            )}
-
-            {newslettersEnabled && (
-              <PageMenuItem
-                value="/analytics/newsletters/"
-                onClick={() => {
-                  navigate('/analytics/newsletters/');
-                }}
-              >
-                Newsletters
-              </PageMenuItem>
-            )}
-
-            <PageMenuItem
-              value="/analytics/growth/"
-              onClick={() => {
-                navigate('/analytics/growth/');
-              }}
-            >
-              Growth
-            </PageMenuItem>
-          </PageMenu>
-        </NavbarNavigation>
+        {tabs}
         {children}
       </Navbar>
     </>

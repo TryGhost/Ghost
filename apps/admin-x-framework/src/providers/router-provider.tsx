@@ -1,18 +1,30 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import * as Sentry from '@sentry/react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useEffect } from 'react';
 import {
+  type ClientOnErrorFunction,
   createHashRouter,
+  Link as ReactRouterLink,
+  type LinkProps,
+  type Location,
+  type RelativeRoutingType,
+  resolvePath,
   RouteObject,
   RouterProvider as ReactRouterProvider,
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
   useLocation,
   useParams,
+  useResolvedPath,
   Navigate as ReactRouterNavigate,
 } from 'react-router';
 import { useFramework } from './framework-provider';
 import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';
-import { syncFeatureFlagOverrides } from '../utils/feature-flag-overrides';
+import {
+  getStoredFeatureFlagOverrides,
+  isAppPagePath,
+  syncFeatureFlagOverrides,
+} from '../utils/feature-flag-overrides';
 import { FeatureFlagOverridesContext } from './feature-flag-overrides-context';
 
 /**
@@ -32,13 +44,19 @@ export interface RouterProviderProps {
 
   // Custom routing props
   errorElement?: React.ReactNode;
+  /** Recovers from a route error, e.g. by reloading, and returns true if it did; recovered errors go unreported. */
+  recoverFromError?: (error: unknown, location: Location) => boolean;
   children?: React.ReactNode;
 }
 
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation();
+  const { pathname, search } = useLocation();
   const { onFeatureFlagOverridesChange } = useFramework();
-  const enabledFlags = useMemo(() => syncFeatureFlagOverrides(search), [search]);
+  const isAppPage = isAppPagePath(pathname);
+  const enabledFlags = useMemo(
+    () => (isAppPage ? getStoredFeatureFlagOverrides() : syncFeatureFlagOverrides(search)),
+    [search, isAppPage],
+  );
   const value = useMemo(() => ({ enabledFlags }), [enabledFlags]);
 
   useEffect(() => {
@@ -110,9 +128,33 @@ export function ScrollRestoration({ containerRef }: ScrollRestorationProps) {
   return null;
 }
 
-export function RouterProvider({ routes, prefix, errorElement, children }: RouterProviderProps) {
+/** The router that `RouterProvider` created, for code that reads its state outside a render. */
+interface FrameworkRouter {
+  router: ReturnType<typeof createHashRouter>;
+  /** The destination of a navigation that a screen transition is holding back, while it's held. */
+  held: { pathname?: string };
+}
+
+const RouterContext = createContext<FrameworkRouter | undefined>(undefined);
+
+// Route error boundaries swallow render crashes, so the SDK never sees them
+const reportRouteError: ClientOnErrorFunction = (error, { errorInfo }) => {
+  if (Sentry.getClient()) {
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: errorInfo?.componentStack } },
+    });
+  }
+};
+
+export function RouterProvider({
+  routes,
+  prefix,
+  errorElement,
+  recoverFromError,
+  children,
+}: RouterProviderProps) {
   // Memoize the router to avoid re-creating it on every render
-  const router = useMemo(() => {
+  const frameworkRouter = useMemo<FrameworkRouter>(() => {
     // Ensure prefix has a leading slash and no double+ or trailing slashes
     const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
@@ -131,26 +173,138 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
       })),
     };
 
-    return createHashRouter([rootRoute], {
-      basename: normalizedPrefix,
-    });
+    return {
+      router: createHashRouter([rootRoute], { basename: normalizedPrefix }),
+      held: {},
+    };
   }, [routes, prefix, errorElement, children]);
 
-  return <ReactRouterProvider router={router} />;
+  const onError = useCallback<ClientOnErrorFunction>(
+    (error, info) => {
+      if (!recoverFromError?.(error, info.location)) {
+        reportRouteError(error, info);
+      }
+    },
+    [recoverFromError],
+  );
+
+  return (
+    <RouterContext.Provider value={frameworkRouter}>
+      <ReactRouterProvider router={frameworkRouter.router} onError={onError} />
+    </RouterContext.Provider>
+  );
+}
+
+export type NavigateOptions = ReactRouterNavigateOptions;
+
+/**
+ * Returns `pathname` in the form `useLocation` gives it, without the router's basename. The
+ * basename is `RouterProvider`'s normalised prefix, and every location the router holds starts with
+ * it.
+ */
+function withinBasename(pathname: string, basename = '/'): string {
+  return basename === '/' ? pathname : pathname.slice(basename.length) || '/';
 }
 
 /**
- * Override the default navigate function to add the crossApp option. This is
- * used to determine if the navigate should be handled by the custom router, ie.
- * if we need to navigate outside of the current app in Ghost.
+ * Returns a function that reads the pathname the router is going to: the destination of a
+ * navigation that is in progress or held back by a screen transition, or otherwise the router's
+ * current pathname. The router's state changes as soon as a navigation starts and as soon as it
+ * finishes. `useLocation` only shows either change once React has committed it, which happens in a
+ * transition. Without this, code that runs in between, such as a handler for a message from a
+ * frame, would treat Admin as still on the page it's leaving. The function returns `undefined`
+ * outside `RouterProvider`.
  */
-export interface NavigateOptions extends ReactRouterNavigateOptions {
-  crossApp?: boolean;
+export function useRouterDestination(): () => string | undefined {
+  const frameworkRouter = useContext(RouterContext);
+  return useCallback(() => {
+    if (!frameworkRouter) {
+      return undefined;
+    }
+    const { router, held } = frameworkRouter;
+    if (held.pathname !== undefined) {
+      return held.pathname;
+    }
+    const { navigation, location } = router.state;
+    const headedFor = navigation.state === 'idle' ? location : navigation.location;
+    return withinBasename(headedFor.pathname, router.basename);
+  }, [frameworkRouter]);
+}
+
+/**
+ * Decides whether an in-router navigation to `pathname` (absolute, without the
+ * router's basename) runs as a view transition. Apps provide one with
+ * ViewTransitionControllerProvider; without one, navigations never transition.
+ */
+export interface ViewTransitionController {
+  shouldTransition: (pathname: string) => boolean;
+  /**
+   * Runs before a transitioning navigation, which waits for the promise and is
+   * dropped when it resolves false or rejects. Returning nothing navigates at once.
+   */
+  beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
+  /** Runs once a transitioning navigation has settled, whether it landed or a blocker held it. */
+  afterTransition?: (pathname: string) => void;
+  /**
+   * Whether a transitioning navigation runs as a browser view transition (the
+   * default), or only through `beforeTransition` and `afterTransition`, e.g.
+   * where the app animates the live page itself.
+   */
+  viewTransition?: (pathname: string) => boolean;
+}
+
+const ViewTransitionControllerContext = React.createContext<ViewTransitionController>({
+  shouldTransition: () => false,
+});
+
+export const ViewTransitionControllerProvider = ViewTransitionControllerContext.Provider;
+
+const ABSOLUTE_URL = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
+
+/**
+ * Runs `navigate` after the controller's `beforeTransition`, when it has one. While it waits,
+ * `held` records the navigation's destination.
+ */
+function navigateAfterTransitionStart(
+  controller: ViewTransitionController,
+  held: FrameworkRouter['held'] | undefined,
+  pathname: string,
+  navigate: () => void | Promise<void>,
+): void {
+  const navigateAndSettle = () => {
+    void Promise.resolve(navigate()).finally(() => controller.afterTransition?.(pathname));
+  };
+  const ready = controller.beforeTransition?.(pathname);
+  if (!ready) {
+    navigateAndSettle();
+    return;
+  }
+  if (held) {
+    held.pathname = pathname;
+  }
+  void ready
+    .catch(() => false)
+    .then((proceed) => {
+      if (held?.pathname === pathname) {
+        held.pathname = undefined;
+      }
+      if (proceed) {
+        navigateAndSettle();
+      }
+    });
 }
 
 export function useNavigate() {
   const navigate = useReactRouterNavigate();
-  const { externalNavigate } = useFramework();
+  const controller = useContext(ViewTransitionControllerContext);
+  const held = useContext(RouterContext)?.held;
+  const routePathname = useResolvedPath('.').pathname;
+  const locationPathname = useLocation().pathname;
+
+  // Read at call time so the returned function keeps its identity across navigations
+  const pathnameFor = useRef<(to: string, relative?: RelativeRoutingType) => string>((to) => to);
+  pathnameFor.current = (to, relative) =>
+    resolvePath(to, relative === 'path' ? locationPathname : routePathname).pathname;
 
   return useCallback(
     (to: string | number, options?: NavigateOptions) => {
@@ -159,16 +313,85 @@ export function useNavigate() {
         return;
       }
 
-      if (options?.crossApp) {
-        externalNavigate({ route: to, isExternal: true, replace: options.replace });
+      const pathname = pathnameFor.current(to, options?.relative);
+      if (options?.viewTransition === undefined && controller.shouldTransition(pathname)) {
+        navigateAfterTransitionStart(controller, held, pathname, () =>
+          navigate(to, {
+            ...options,
+            viewTransition: controller.viewTransition?.(pathname) ?? true,
+          }),
+        );
         return;
       }
 
       navigate(to, options);
     },
-    [navigate, externalNavigate],
+    [controller, held, navigate],
   );
 }
+
+function isPlainLeftClick(event: React.MouseEvent<HTMLAnchorElement>, target?: string): boolean {
+  return (
+    event.button === 0 &&
+    (!target || target === '_self') &&
+    !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+  );
+}
+
+/**
+ * React Router's Link, which also runs as a view transition when the app's
+ * ViewTransitionController asks for one and the caller has not set it.
+ */
+export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
+  { viewTransition, onClick, ...props },
+  ref,
+) {
+  const controller = useContext(ViewTransitionControllerContext);
+  const held = useContext(RouterContext)?.held;
+  const navigate = useReactRouterNavigate();
+  const { pathname } = useResolvedPath(props.to, { relative: props.relative });
+  const isAbsoluteUrl = typeof props.to === 'string' && ABSOLUTE_URL.test(props.to);
+  const transitions =
+    viewTransition ??
+    (!isAbsoluteUrl && !props.reloadDocument && controller.shouldTransition(pathname));
+  // Unless the caller set it, the controller may run the transition without a view transition
+  const browserTransition =
+    transitions && (viewTransition ?? controller.viewTransition?.(pathname) ?? true);
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    onClick?.(event);
+    if (
+      !transitions ||
+      viewTransition !== undefined ||
+      !controller.beforeTransition ||
+      event.defaultPrevented ||
+      !isPlainLeftClick(event, props.target)
+    ) {
+      return;
+    }
+    // Take the click from React Router's own handler so the navigation can wait
+    event.preventDefault();
+    const { to, replace, state, preventScrollReset, relative } = props;
+    navigateAfterTransitionStart(controller, held, pathname, () =>
+      navigate(to, {
+        replace,
+        state,
+        preventScrollReset,
+        relative,
+        viewTransition: browserTransition,
+      }),
+    );
+  };
+
+  return (
+    <ReactRouterLink
+      ref={ref}
+      {...props}
+      viewTransition={browserTransition || undefined}
+      onClick={handleClick}
+    />
+  );
+});
 
 export function useRouteHasParams() {
   const params = useParams();
@@ -179,31 +402,8 @@ interface CustomNavigateProps {
   to: string;
   replace?: boolean;
   state?: unknown;
-  crossApp?: boolean;
 }
 
-export function Navigate({ to, replace, state, crossApp }: CustomNavigateProps) {
-  const { externalNavigate } = useFramework();
-  const lastExternalNavigation = useRef<{ replace?: boolean; to: string } | null>(null);
-
-  useEffect(() => {
-    if (!crossApp) {
-      lastExternalNavigation.current = null;
-      return;
-    }
-
-    const previousNavigation = lastExternalNavigation.current;
-    if (previousNavigation?.to === to && previousNavigation.replace === replace) {
-      return;
-    }
-
-    lastExternalNavigation.current = { replace, to };
-    externalNavigate({ route: to, isExternal: true, replace });
-  }, [crossApp, externalNavigate, replace, to]);
-
-  if (crossApp) {
-    return null;
-  }
-
+export function Navigate({ to, replace, state }: CustomNavigateProps) {
   return <ReactRouterNavigate replace={replace} state={state} to={to} />;
 }

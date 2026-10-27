@@ -44,6 +44,7 @@ import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/sel
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { describeRejectedAction } from '@/editor/publish/completion-message';
+import { EMAIL_SUBJECT_MAX, overLength } from '@/editor/session/settings-fields';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
@@ -79,6 +80,8 @@ export interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Preselected when the post has no newsletter of its own, such as the publish flow's pick. */
   fallbackNewsletterSlug?: string;
+  /** Hears a newsletter the writer picks in the email preview. */
+  onNewsletterPick?: (slug: string) => void;
   /**
    * Awaited before the preview renders, so the caller can save the draft first.
    * A rejection's message is shown to the writer as the reason it could not.
@@ -89,6 +92,8 @@ export interface PostPreviewModalProps {
   /** Keeps the Publish button disabled while the caller cannot open its publish flow. */
   publishDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Called as the closed preview hands focus back; preventing it keeps focus where the caller puts it. */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 export function PostPreviewModal({
@@ -101,10 +106,12 @@ export function PostPreviewModal({
   post,
   newsletterSlug,
   fallbackNewsletterSlug,
+  onNewsletterPick,
   onBeforeOpen,
   onPublish,
   publishDisabled = false,
   onOpenChange,
+  onCloseAutoFocus,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
   const [device, setDevice] = useState<PreviewDevice>('desktop');
@@ -229,6 +236,14 @@ export function PostPreviewModal({
     // Each opening starts from the post's or the publish flow's newsletter, not an earlier pick.
     if (open) {
       setPickedNewsletterSlug(null);
+      // An over-long subject opens the preview in place of a refused action, on
+      // the tab that edits it.
+      if (emailAvailable && subjectEditor && overLength(subjectEditor.value, EMAIL_SUBJECT_MAX)) {
+        setFormat('email');
+        if (segment === 'anonymous') {
+          setSegment('free');
+        }
+      }
     }
   }
 
@@ -317,12 +332,28 @@ export function PostPreviewModal({
   const showTierSelect = segment === 'tier' && tiers.length > 0;
   const showEmail = format === 'email' && emailAvailable;
 
+  const pickNewsletter = (slug: string) => {
+    setPickedNewsletterSlug(slug);
+    onNewsletterPick?.(slug);
+  };
+
   const changeFormat = (next: PreviewFormat) => {
     setFormat(next);
 
     if (next === 'email' && segment === 'anonymous') {
       setSegment('free');
     }
+  };
+
+  // The subject is edited here, so a Publish its length would refuse shows the field
+  // and its rule rather than leaving the preview; the caller refuses the publish.
+  const subjectInvalid =
+    emailAvailable && !!subjectEditor && overLength(subjectEditor.value, EMAIL_SUBJECT_MAX);
+  const publish = () => {
+    if (subjectInvalid) {
+      changeFormat('email');
+    }
+    onPublish?.();
   };
 
   const copyPreviewLink = async () => {
@@ -364,7 +395,7 @@ export function PostPreviewModal({
             Close
           </Button>
           {onPublish ? (
-            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={onPublish}>
+            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={publish}>
               Publish
             </Button>
           ) : null}
@@ -467,6 +498,7 @@ export function PostPreviewModal({
       layout="header"
       open={open}
       title="Preview"
+      onCloseAutoFocus={onCloseAutoFocus}
       onOpenChange={onOpenChange}
     >
       <Inline
@@ -529,7 +561,7 @@ export function PostPreviewModal({
             postId={postId}
             subjectEditor={subjectEditor}
             tierName={selectedTier?.name}
-            onNewsletterChange={setPickedNewsletterSlug}
+            onNewsletterChange={pickNewsletter}
             onRetryNewsletterLookup={retryNewsletterLookup}
           />
         ) : (

@@ -99,6 +99,7 @@ type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
   to?: string;
   target?: string;
   rel?: string;
+  state?: unknown;
   activeOnSubpath?: boolean;
   isActive?: boolean;
 };
@@ -106,6 +107,7 @@ function NavMenuLink({
   to,
   target,
   rel,
+  state,
   activeOnSubpath = false,
   isActive: controlledIsActive,
   children,
@@ -139,6 +141,7 @@ function NavMenuLink({
         <AdminLink
           aria-current={isActive ? 'page' : undefined}
           rel={rel}
+          state={state}
           to={path}
           onClick={handleClick}
         >

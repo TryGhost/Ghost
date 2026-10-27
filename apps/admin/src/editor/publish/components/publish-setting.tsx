@@ -37,7 +37,7 @@ export function PublishSetting({
       <button
         aria-expanded={interactive ? open : undefined}
         className={cn(
-          'flex w-full items-center gap-3 px-1 py-4 text-left [&[aria-expanded=true]>svg]:rotate-180',
+          'flex w-full items-center gap-3 px-1 py-4 text-left',
           disabled && 'cursor-default text-foreground/40',
         )}
         disabled={!interactive}
@@ -48,7 +48,12 @@ export function PublishSetting({
         <Text className="grow text-inherit" size="lg" weight="medium">
           {title}
         </Text>
-        <LucideIcon.ChevronDown className="size-4 shrink-0 transition-transform" />
+        <LucideIcon.ChevronDown
+          className={cn(
+            'size-4 shrink-0 transition-transform',
+            interactive && open && 'rotate-180',
+          )}
+        />
       </button>
       {open && children ? (
         <Box className="pr-1 pb-5 pl-8 motion-safe:animate-in motion-safe:duration-200 motion-safe:fade-in motion-safe:slide-in-from-top-1">

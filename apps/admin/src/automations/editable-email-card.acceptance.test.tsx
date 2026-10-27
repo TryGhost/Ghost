@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp, settingsResponse } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  fakeAutomatedEmails,
+  fakeNewsletters,
+  fakeOffers,
+  fakePosts,
+  renderAdminApp,
+  settingsResponse,
+} from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   detail,
@@ -83,13 +91,13 @@ const serve = () => {
 };
 
 describe('Editable email cards', () => {
-  it('keeps the existing editor when run analytics is off', async () => {
+  it('keeps email cards editable when run analytics is absent', async () => {
     serve();
     await renderAdminApp('/automations/first', { labs: { automations: true } });
-    await expect.element(page.getByRole('button', { name: 'Send email: Welcome' })).toBeVisible();
-    await expect(emailCards()).toHaveCount(0);
-    await page.getByRole('button', { name: 'Send email: Welcome' }).click();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Welcome');
+    await expect(emailCards()).toHaveCount(2);
+    await expect
+      .element(emailCards().first().getByRole('textbox', { name: 'Subject line' }))
+      .toHaveValue('Welcome');
   });
 
   it('uses the three-dot menu instead of right-click actions', async () => {
@@ -199,6 +207,28 @@ describe('Editable email cards', () => {
       .toHaveTextContent('Message');
     await expect.element(emailCards().nth(0).getByRole('textbox')).toHaveValue('Welcome');
     expect(save.requests).toHaveLength(0);
+  });
+
+  it('can pick a callout emoji in the automation email modal', async () => {
+    serve();
+    fakeAutomatedEmails([]);
+    fakeNewsletters([]);
+    fakeOffers([]);
+    fakePosts([]);
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
+    await dialog.getByRole('textbox').fill('');
+    await dialog.getByRole('textbox').click();
+    await userEvent.keyboard('/callout');
+    await expect
+      .element(page.getByRole('menuitem', { name: 'Callout', exact: true }))
+      .toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    await dialog.getByRole('button', { name: '💡', exact: true }).click();
+    await page.getByRole('searchbox').fill('taco');
+    await page.getByRole('button', { name: '🌮', exact: true }).click();
+    await expect.element(dialog.getByRole('button', { name: '🌮', exact: true })).toBeVisible();
   });
 
   it.each([false, true])(

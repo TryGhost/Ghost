@@ -1,4 +1,5 @@
 import { Browser, BrowserContext, Page } from '@playwright/test';
+import { revealHiddenEditorChromeIn } from './editor-writing-focus';
 
 export async function withIsolatedPage<T>(
   browser: Browser,
@@ -6,6 +7,7 @@ export async function withIsolatedPage<T>(
   run: ({ page, context }: { page: Page; context: BrowserContext }) => Promise<T>,
 ): Promise<T> {
   const context = await browser.newContext(opts);
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
   try {
     return await run({ page, context });

@@ -48,13 +48,17 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
-**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Example: the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
+**What can't port.** UI fed by a cross-origin frame's `postMessage` reports (the billing app's subscription state) needs a stand-in origin; see `billing.acceptance.test.tsx` for the fake-frame helpers before reaching for `e2e/`.
 
 ## The 418 loop
 
 Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths _and_ known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
 
 **Embedded apps.** MSW cannot see iframe navigations, so an external frame gets a 418 page (no network) unless the spec declares `fakeFrameOrigin(origin, html)`. The stand-in HTML can script an embedding protocol with `window.parent.postMessage`; see `src/migrate/migrate.acceptance.test.tsx`.
+
+**Installed apps' pages.** An app's page uses the bridge, so `appFramePage(flags)` builds one for `fakeFrameOrigin` on the real app SDK (`app-frame-stand-in.ts`). The `bundleFrameScript` command bundles that script, because the frame can't load anything from the test server. The page loads the SDK's built bundle, the same one apps load. The `bundleAppSdk` command builds it with the SDK's own build config, as `pnpm build` writes it to `packages/app-sdk/dist/`, so the specs always run the SDK as built from the checkout, without waiting for a separate build. A spec acts as the app through the page's hooks with `callAppFrame(origin, hook, ...args)`, and reads what Admin sent it with the `state` hook. The SDK refuses a bad path or place before Admin sees it, so specs of Admin's own checks frame `appFramePage(flags, 'raw')` instead (`app-frame-raw.ts`, which uses the bridge without the SDK) and send Admin anything with `callHostRaw(origin, name, ...args)`. `fakeAppPage(installation)` in `src/apps/apps.test-utils.ts` fakes the Ghost requests that opening an app makes: the session start, which returns the installation, and the installation read, which only runs when the tab becomes visible again, to check whether the session has ended. See `src/apps/apps.acceptance.test.tsx`. `reloadFrame(origin)` and `postFrameForm(origin, action)` give the frame a new document, as the page's own reload or form would. The frame's lifecycle alone (how long a page gets to start, retries, new documents started in place, reloads, the limit on short-lived documents, and which changes are sent to the app but never echoed back) is unit-tested against a fake frame in `src/apps/lib/app-frame-session.test.ts`.
+
+**Code that fails to load.** `failModuleLoads(pathEnd)` fails the browser's requests for a module as a dropped connection would, so its dynamic import rejects. The browser keeps that module failed for the rest of the spec file, and every signed-in render preloads some modules (the search modal, the editor), so a spec that fails one of those needs a file of its own. `holdModuleLoads(pathEnd)` holds a module back instead, as a slow connection would. A navigation to a route the module serves stays pending until the spec calls the release function it returns. It can only hold a module that no earlier spec in the file loaded.
 
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
@@ -74,11 +78,11 @@ await renderAdminApp("/tags", {labs: {someFlag: true}});
 // The editor's autosave debounce, injected as a test-only `/config/` key, so a
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
 // autosave fires at once (`withFastAutosave()`):
-await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
+await renderAdminApp("/editor/post/abc123", withoutAutosave());
 
 // Router state the screen would have been navigated to with, e.g. the editor
 // opened from an analytics screen:
-await renderAdminApp("/editor/post/abc123", {labs: {editorReact: true}, locationState: {editorReturn: "/analytics"}});
+await renderAdminApp("/editor/post/abc123", {locationState: {editorReturn: "/analytics"}});
 
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();

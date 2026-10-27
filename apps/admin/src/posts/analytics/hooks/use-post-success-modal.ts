@@ -3,7 +3,6 @@ import { type Post, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useState } from 'react';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface PublishedPostData {
   id: string;
@@ -22,7 +21,6 @@ export const usePostSuccessModal = () => {
   const [publishedPostData, setPublishedPostData] = useState<PublishedPostData | null>(null);
   const [postCount, setPostCount] = useState<number | null>(null);
   const { site } = useAnalyticsData();
-  const improveSendingUI = useFeatureFlag('improveSendingUI');
 
   // Fetch the published post data if we have it
   const { data: postResponse } = useBrowsePosts({
@@ -66,12 +64,19 @@ export const usePostSuccessModal = () => {
 
   // Memoized modal props
   const modalProps = useMemo(() => {
-    if (!post) {
+    const emailStatus = post?.email?.status;
+    // Post analytics reports a failed send, so the modal claims no delivery for
+    // it, and an email-only send that failed has nothing to celebrate.
+    const didEmailFail = emailStatus === 'failed';
+
+    if (!post || (post.email_only && didEmailFail)) {
       return null;
     }
 
     const showPostCount = !!postCount;
-    const isEmailStillSending = improveSendingUI && post.email?.status !== 'submitted';
+    // The modal opens straight after a send is handed off, so only a submitted email reads as sent.
+    const isEmailStillSending = !didEmailFail && emailStatus !== 'submitted';
+    const emailCount = didEmailFail ? 0 : post.email?.email_count;
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
@@ -79,7 +84,7 @@ export const usePostSuccessModal = () => {
 
       if (post.email_only) {
         parts.push(isEmailStillSending ? 'Your email is being sent to' : 'Your email was sent to');
-      } else if (post.email?.email_count) {
+      } else if (emailCount) {
         parts.push(
           isEmailStillSending
             ? 'Your post was published on your site and is being sent to'
@@ -89,8 +94,8 @@ export const usePostSuccessModal = () => {
         parts.push('Your post was published on your site');
       }
 
-      if (post.email?.email_count) {
-        const subscriberText = formatSubscriberCount(post.email.email_count);
+      if (emailCount) {
+        const subscriberText = formatSubscriberCount(emailCount);
         parts.push(' ');
         parts.push(React.createElement('strong', { key: 'subscriber-count' }, subscriberText));
 
@@ -160,7 +165,7 @@ export const usePostSuccessModal = () => {
       author: getAuthorsText(post.authors),
       onClose: handleClose,
     };
-  }, [post, isModalOpen, postCount, site?.title, site?.icon, improveSendingUI]);
+  }, [post, isModalOpen, postCount, site?.title, site?.icon]);
 
   useEffect(() => {
     const checkForPublishedPost = () => {

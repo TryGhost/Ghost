@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/checkout",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Measured Stripe Checkout constraints: the countries it ships to, the values it returns, and the custom field types those land in",
   "license": "MIT",
@@ -33,7 +33,8 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/metafield-types": "workspace:*"
+    "@tryghost/metafield-types": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

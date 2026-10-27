@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
+import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
+import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -20,11 +22,14 @@ export type AddStepEdgeData = {
   disabled: boolean;
   disabledReason?: string;
   onPick: (type: StepPickerType, anchor: { sourceId: string; targetId: string }) => void;
+  // Draw the line in from its top, with the + appearing as it does.
+  connectIn?: boolean;
 };
 
 const INSERT_BUTTON_CLASSES =
   'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
+const DRAW_CLASS = `transition-[stroke-dashoffset] duration-180 ${ENTRANCE_EASE} motion-reduce:transition-none`;
 
 const AddStepEdge: React.FC<EdgeProps> = ({
   id,
@@ -37,9 +42,19 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   data,
 }) => {
   const [open, setOpen] = useState(false);
-  const [edgeHovered, setEdgeHovered] = useState(false);
-  const [labelHovered, setLabelHovered] = useState(false);
+  const { triggerRef, contentRef, onCloseAutoFocus } = useDismissOnOutsidePress(open, setOpen);
   const edgeData = data as AddStepEdgeData | undefined;
+  // A dash the length of the line, offset out of sight and slid back in. The line is a
+  // straight drop, so its length is the distance between its ends.
+  const drawLength = Math.abs(targetY - sourceY) + Math.abs(targetX - sourceX);
+  const [connectIn] = useState(Boolean(edgeData?.connectIn));
+  // React Flow renders an edge before its ends are measured; drawing a zero-length
+  // line would finish instantly, so wait for a real one.
+  const drawn = useRevealAfterMount(connectIn, drawLength > 0);
+  const stroke: React.CSSProperties = {
+    stroke: DEFAULT_EDGE_STROKE,
+    ...(connectIn && { strokeDasharray: drawLength, strokeDashoffset: drawn ? 0 : drawLength }),
+  };
 
   const [path, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -59,14 +74,13 @@ const AddStepEdge: React.FC<EdgeProps> = ({
     edgeData.onPick(type, { sourceId: edgeData.sourceId, targetId: edgeData.targetId });
   };
 
-  const visible = open || edgeHovered || labelHovered;
   const button = (
     <button
+      ref={triggerRef}
       aria-label={edgeData.label ?? 'Insert step here'}
       className={cn(
-        'flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
+        'flex size-8 items-center justify-center rounded-full border focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-none',
         INSERT_BUTTON_CLASSES,
-        visible ? 'opacity-100' : 'opacity-0',
         edgeData.disabled && 'cursor-not-allowed!',
       )}
       data-testid={`add-step-button-${edgeData.sourceId}-${edgeData.targetId}`}
@@ -96,10 +110,13 @@ const AddStepEdge: React.FC<EdgeProps> = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>{button}</PopoverTrigger>
         <PopoverContent
+          ref={contentRef}
           align="center"
           className="border-0 p-0 shadow-lg"
           side="top"
           sideOffset={12}
+          updatePositionStrategy="always"
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <StepPicker onPick={handlePick} />
         </PopoverContent>
@@ -108,22 +125,23 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   }
 
   return (
-    <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
-      <BaseEdge id={id} interactionWidth={30} path={path} style={{ stroke: DEFAULT_EDGE_STROKE }} />
+    <>
+      <BaseEdge className={connectIn ? DRAW_CLASS : undefined} id={id} path={path} style={stroke} />
       <EdgeLabelRenderer>
         <div
-          className="pointer-events-auto absolute"
+          className={cn(
+            'pointer-events-auto absolute',
+            connectIn && 'transition-opacity motion-reduce:transition-none',
+            !drawn && 'opacity-0',
+          )}
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
           }}
-          onMouseEnter={() => setLabelHovered(true)}
-          onMouseLeave={() => setLabelHovered(false)}
         >
-          {/* Wider hit zone so the + becomes visible when the cursor is near the edge midpoint. */}
-          <div className="flex h-10 w-16 items-center justify-center">{control}</div>
+          {control}
         </div>
       </EdgeLabelRenderer>
-    </g>
+    </>
   );
 };
 

@@ -38,13 +38,6 @@ describe('Posts and pages list routes', () => {
 
       await expect.element(postsListScreen.newLink(resource, newLabel)).toBeVisible();
     });
-
-    // Core can still report the retired Labs flag, even as false; Admin ignores it.
-    it('ignores the retired postsListReact flag', async () => {
-      await renderAdminApp(route, { labs: { postsListReact: false } });
-
-      await expect.element(postsListScreen.page(resource)).toBeVisible();
-    });
   });
 
   // The two routes share one screen implementation, so a copy-paste slip would

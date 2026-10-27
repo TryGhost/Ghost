@@ -30,6 +30,7 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -52,7 +53,6 @@ const PASSWORD = 'hunter22';
 /** A site whose bulk email provider is configured, so the flow offers a send. */
 function emailSite(settings: Record<string, unknown> = {}) {
   return {
-    labs: { editorReact: true },
     boot: {
       browseSettings: {
         response: settingsResponse({
@@ -199,6 +199,58 @@ describe('Editor publish journeys', () => {
     expect(params.get('email_segment')).toBe('tier:gold,label:vip');
   });
 
+  it('publishes and sends to default recipients saved as a bare tier id', async () => {
+    publishChrome([WEEKLY]);
+    const gold = tier({ id: '66b68362d3360500077ad2d2', slug: 'gold', name: 'Gold', active: true });
+    fakeTiers([gold, tier({ slug: 'silver', name: 'Silver', active: true })]);
+    fakeLabels([label({ slug: 'vip', name: 'VIP' })]);
+    const saveApi = fakeSavableDraft();
+    await renderAdminApp(
+      `/editor/post/${POST_ID}`,
+      emailSite({
+        editor_default_email_recipients: 'filter',
+        editor_default_email_recipients_filter: `${gold.id},label:vip`,
+      }),
+    );
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await expect.element(page.getByRole('button', { name: 'Remove Gold' })).toBeVisible();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')).toBe(`tier_id:${gold.id},label:vip`);
+  });
+
+  it('sends an editor who emails a post to the posts list, not post analytics', async () => {
+    publishChrome([WEEKLY]);
+    const published = post({ id: POST_ID, title: 'Hello from React', status: 'published' });
+    fakePosts(({ filter }) => (filter === `id:${POST_ID}` ? [published] : []));
+    fakeTiers([]);
+    fakeLabels([]);
+    const saveApi = fakeSavableDraft();
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    const site = emailSite();
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...site,
+      boot: { ...site.boot, browseMe: { response: me } },
+    });
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('Hello from React');
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('newsletter')).toBe('weekly');
+  });
+
   it.each([
     ['Administrator', 'count.active_members', ['Weekly (1,200)', 'Monthly roundup (34)']],
     ['Editor', null, ['Weekly', 'Monthly roundup']],
@@ -292,7 +344,7 @@ describe('Editor publish journeys', () => {
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     await settleTransitions();
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
     await expect.element(publishScreen.continueButton()).toBeVisible();
@@ -314,7 +366,7 @@ describe('Editor publish journeys', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     await chooseAccess('Paid-members only');
-    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    await expect.element(editorScreen.saveError()).toBeVisible();
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
 
     await expect
@@ -444,12 +496,15 @@ describe('Editor publish journeys', () => {
       .poll(() => emailPreviewApi.lastRequest?.url)
       .toContain('newsletter=monthly-roundup');
 
-    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    // A preview opened from the header, outside the flow, starts on the newsletter
+    // the draft remembers from the flow.
     await previewScreen.closeButton().click();
     await expect(publishScreen.root()).toHaveCount(0);
     await editorScreen.previewButton().click();
-    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
-    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
   });
 
   it('previews the publish flow’s newsletter over one picked in an earlier preview', async () => {

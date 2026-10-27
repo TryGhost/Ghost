@@ -58,9 +58,4 @@ const MetricValue = React.forwardRef<HTMLDivElement, MetricValueProps>(
 );
 MetricValue.displayName = 'MetricValue';
 
-export {
-  MetricValue,
-  metricValueRootVariants,
-  metricValueLabelVariants,
-  metricValueNumberVariants,
-};
+export { MetricValue };

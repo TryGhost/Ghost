@@ -7,6 +7,7 @@ import ThemePreview from './theme/theme-preview';
 import {
   Button,
   Dropzone,
+  Link,
   LoadingIndicator,
   Tabs,
   TabsList,
@@ -34,6 +35,7 @@ import {
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 interface ThemeToolbarProps {
   selectedTheme: OfficialTheme | null;
@@ -139,12 +141,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
         okVariant: 'destructive',
         onOk: async (confirmModal) => {
           setUploading(true);
-
-          // this is to avoid the themes array from returning the overwritten theme.
-          // find index of themeFileName in existingThemeNames and remove from the array
-          const index = existingThemeNames.indexOf(themeFileName);
-          themes.splice(index, 1);
-
           await handleThemeUpload({ file, onActivate: onClose });
           setUploading(false);
           setCurrentTab('installed');
@@ -235,10 +231,15 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
         prompt: uploadConfig.error || (
           <>
             Your current plan only supports official themes. You can install them from the{' '}
-            <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
+            <Link href="https://ghost.org/marketplace/" external>
+              Ghost theme marketplace
+            </Link>
+            .
           </>
         ),
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
     }
   };
@@ -393,11 +394,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
             let data: ThemesInstallResponseType | undefined;
             setInstalledFromMarketplace(true);
             try {
-              if (willOverwrite) {
-                if (themes) {
-                  themes.splice(index, 1);
-                }
-              }
               data = await installTheme(themeRef);
               if (data?.themes[0]) {
                 await activateTheme(data.themes[0].name);
@@ -454,7 +450,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       if (limitError) {
         showLimit({
           prompt: limitError,
-          onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+          onOk: () => {
+            navigateTo(upgradeRoute);
+          },
         });
         return;
       }

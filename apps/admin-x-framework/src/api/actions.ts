@@ -1,9 +1,13 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { ExternalLink, InternalLink } from '../providers/framework-provider';
 import { Meta, createInfiniteQuery } from '../utils/api/hooks';
 import { JSONObject } from './config';
 
 // Types
+
+/** An Admin route, e.g. `/tags/news` or `/settings/staff/jamie`. */
+export type LinkTarget = {
+  route: string;
+};
 
 export type Action = {
   id: string;
@@ -104,7 +108,7 @@ export const useBrowseActions = createInfiniteQuery<ActionsList>({
 
 // Helpers
 
-export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink | undefined => {
+export const getActorLinkTarget = (action: Action): LinkTarget | undefined => {
   if (!action.actor) {
     return;
   }
@@ -115,19 +119,19 @@ export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink 
         return;
       }
 
-      return { route: `integrations/${action.actor.id}` };
+      return { route: `/settings/integrations/${action.actor.id}` };
     case 'user':
       if (!action.actor.slug) {
         return;
       }
 
-      return { route: `staff/${action.actor.slug}` };
+      return { route: `/settings/staff/${action.actor.slug}` };
   }
 
   return;
 };
 
-export const getLinkTarget = (action: Action): InternalLink | ExternalLink | undefined => {
+export const getLinkTarget = (action: Action): LinkTarget | undefined => {
   let resourceType = action.resource_type;
 
   if (action.event !== 'deleted') {
@@ -144,45 +148,33 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
           }
         }
 
-        return {
-          isExternal: true,
-          route: `editor/${resourceType}/${action.resource.id}`,
-          models: [resourceType, action.resource.id],
-        };
+        return { route: `/editor/${resourceType}/${action.resource.id}` };
       case 'integration':
         if (!action.resource || !action.resource.id) {
           return;
         }
 
-        return { route: `integrations/${action.resource.id}` };
+        return { route: `/settings/integrations/${action.resource.id}` };
       case 'offer':
         if (!action.resource || !action.resource.id) {
           return;
         }
-        // replace with Settings route once Offers X GA is released
-        return {
-          isExternal: true,
-          route: `offers/${action.resource.id}`,
-          models: [action.resource.id],
-        };
+
+        return { route: `/settings/offers/edit/${action.resource.id}` };
       case 'tag':
         if (!action.resource || !action.resource.slug) {
           return;
         }
 
-        return {
-          isExternal: true,
-          route: 'tag',
-          models: [action.resource.slug],
-        };
+        return { route: `/tags/${action.resource.slug}` };
       case 'product':
-        return { route: 'tiers' };
+        return { route: '/settings/tiers' };
       case 'user':
         if (!action.resource || !action.resource.slug) {
           return;
         }
 
-        return { route: `staff/${action.resource.slug}` };
+        return { route: `/settings/staff/${action.resource.slug}` };
     }
   }
 
@@ -206,6 +198,8 @@ export const getActionTitle = (action: Action) => {
     resourceType = 'custom field';
   } else if (resourceType === 'app_installation') {
     resourceType = 'app';
+  } else if (resourceType === 'stripe_checkout_config') {
+    resourceType = 'checkout settings';
   }
 
   // Because a `page` and `post` both use the same model, we store the
@@ -228,6 +222,8 @@ export const getActionTitle = (action: Action) => {
     actionName = 'reset authentication';
   } else if (actionName === 'custom_fields_edited') {
     actionName = 'custom fields edited';
+  } else if (actionName === 'changes_approved') {
+    actionName = 'changes approved';
   }
 
   if (action.context?.count && (action.context?.count as number) > 1) {

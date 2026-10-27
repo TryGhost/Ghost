@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY } from '@tryghost/admin-x-framework/api/dunning';
 import {
+  DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+  DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+} from '@tryghost/admin-x-framework/api/dunning';
+import {
+  activeDunning,
   adminDestinationRoute,
   billingAdminPath,
   billingAlerts,
@@ -9,6 +13,7 @@ import {
   isBillingAppRoute,
   isBillingPath,
   parseBillingSubscription,
+  readDunningPaymentSettledFor,
   takePayNowReturnRoute,
 } from './billing-protocol';
 
@@ -28,12 +33,9 @@ describe('billing routes', () => {
   });
 
   it('loads the route Ember would load for each Admin URL', () => {
-    expect(initialBillingSubRoute('/tags', '')).toBeNull();
-    expect(initialBillingSubRoute('/pro', '')).toBe('/');
-    expect(initialBillingSubRoute('/pro', '?interval=year')).toBe('/');
-    expect(initialBillingSubRoute('/pro', '?action=checkout')).toBe('?action=checkout');
-    expect(initialBillingSubRoute('/pro/plans', '?interval=year')).toBe('/plans');
-    expect(initialBillingSubRoute('/pro/plans', '?action=checkout')).toBe('/plans');
+    expect(initialBillingSubRoute('/tags')).toBeNull();
+    expect(initialBillingSubRoute('/pro')).toBe('/');
+    expect(initialBillingSubRoute('/pro/plans')).toBe('/plans');
   });
 
   it('accepts paths from the billing app, never URLs', () => {
@@ -69,6 +71,13 @@ describe('adminDestinationRoute', () => {
     );
     expect(adminDestinationRoute('newsletters', { automations: true })).toBe('/settings/emails');
   });
+
+  it.each([false, true])(
+    'opens automations directly with the automations flag %s',
+    (automations) => {
+      expect(adminDestinationRoute('automations', { automations })).toBe('/automations');
+    },
+  );
 
   it('ignores anything else', () => {
     for (const destination of [
@@ -136,11 +145,56 @@ describe('parseBillingSubscription', () => {
 });
 
 describe('billingAlerts', () => {
-  it('flags an exceeded member limit that has a checkout route', () => {
-    const exceeded = { exceededLimits: ['members'], checkoutRoute: '/plans' };
+  it('flags exceeded member limits without a checkout route', () => {
+    const exceeded = { exceededLimits: ['members'] };
 
     expect(billingAlerts(exceeded).exceeded).toBe(true);
-    expect(billingAlerts({ ...exceeded, checkoutRoute: undefined }).exceeded).toBe(false);
+    expect(billingAlerts({ exceededLimits: [] })).toEqual({ exceeded: false });
     expect(billingAlerts({ exceededLimits: 'members' }).exceeded).toBe(false);
+  });
+});
+
+describe('activeDunning', () => {
+  const dunning = {
+    active: true,
+    paymentFailedAt: '2026-09-01T00:00:00Z',
+    suspendsAt: '2026-09-29T00:00:00Z',
+  };
+  const unsettled = { subscriptionStatus: 'past_due', paymentSettledFor: null };
+
+  it('returns the parsed block while the failure is outstanding', () => {
+    expect(activeDunning(dunning, unsettled)?.paymentFailedAt).toEqual(
+      new Date(dunning.paymentFailedAt),
+    );
+  });
+
+  it('stands down without a usable block', () => {
+    expect(activeDunning(undefined, unsettled)).toBeNull();
+    expect(activeDunning({ ...dunning, active: false }, unsettled)).toBeNull();
+  });
+
+  it('stands down once the billing app reports an active subscription', () => {
+    expect(activeDunning(dunning, { ...unsettled, subscriptionStatus: 'active' })).toBeNull();
+  });
+
+  it('stands down only for the failure settled this session', () => {
+    expect(
+      activeDunning(dunning, { ...unsettled, paymentSettledFor: '2026-09-01T00:00:00.000Z' }),
+    ).toBeNull();
+    expect(
+      activeDunning(dunning, { ...unsettled, paymentSettledFor: '2026-08-01T00:00:00.000Z' }),
+    ).not.toBeNull();
+  });
+});
+
+describe('readDunningPaymentSettledFor', () => {
+  afterEach(() => window.sessionStorage.clear());
+
+  it('reads the failure settled this session', () => {
+    expect(readDunningPaymentSettledFor()).toBeNull();
+
+    window.sessionStorage.setItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY, 'settled');
+
+    expect(readDunningPaymentSettledFor()).toBe('settled');
   });
 });

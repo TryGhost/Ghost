@@ -10,11 +10,10 @@ describe('EmailNode', function () {
     let dataset: Record<string, unknown>;
     let exportOptions: Record<string, unknown>;
 
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -146,7 +145,7 @@ describe('EmailNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders for email target', editorTest(function () {
+        it('renders for email target', editorTest(async function () {
             const payload = {
                 html: '<p>Hello World</p>'
             };
@@ -159,7 +158,7 @@ describe('EmailNode', function () {
             const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
-            assertPrettifiesTo(el.innerHTML, html`
+            await assertPrettifiesTo(el.innerHTML, html`
                 <p>Hello World</p>
             `);
         }));

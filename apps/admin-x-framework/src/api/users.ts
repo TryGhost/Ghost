@@ -111,14 +111,19 @@ export const useGetUserBySlug = createQueryWithId<UsersResponseType>({
   defaultSearchParams: { include: 'roles' },
 });
 
-export const useEditUser = createMutation<UsersResponseType, User>({
+export type EditUserPayload = User & {
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+};
+
+export const useEditUser = createMutation<UsersResponseType, EditUserPayload>({
   method: 'PUT',
   path: (user) => `/users/${user.id}/`,
-  body: (user) => ({ users: [user] }),
+  body: ({ sessionExpiryRedirect: _, ...user }) => ({ users: [user] }),
   searchParams: () => ({ include: 'roles' }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('users'),
   },
 });
@@ -128,7 +133,6 @@ export const useDeleteUser = createMutation<void, string>({
   path: (id) => `/users/${id}/`,
   updateQueries: {
     dataType,
-    emberUpdateType: 'delete',
     update: deleteFromQueryCache('users'),
   },
 });
@@ -160,7 +164,6 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
   }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('users'),
   },
 });

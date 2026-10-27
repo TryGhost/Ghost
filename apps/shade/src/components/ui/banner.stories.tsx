@@ -163,6 +163,14 @@ export const Warning: Story = {
 };
 
 export const Destructive: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Red-tinted border and background for an error the user needs to see, such as a failed save.',
+      },
+    },
+  },
   args: {
     variant: 'destructive',
     children: (

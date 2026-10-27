@@ -30,7 +30,7 @@
     "lint:code": "eslint src --cache",
     "lint:types": "pnpm test:types",
     "preship": "pnpm lint",
-    "ship": "node ../../scripts/release-apps.js",
+    "ship": "node ../../tools/scripts/release/release-apps.ts",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
     "@playwright/test": "catalog:",
     "@testing-library/jest-dom": "catalog:",
@@ -67,6 +68,7 @@
     "bson-objectid": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jiti": "catalog:",
     "jsdom": "catalog:",
     "moment": "catalog:",
     "postcss": "catalog:",
@@ -98,6 +100,11 @@
           "cwd": "apps/comments-ui",
           "command": "vite build --watch --mode development"
         }
+      },
+      "lint": {
+        "dependsOn": [
+          "^build"
+        ]
       }
     },
     "tags": [

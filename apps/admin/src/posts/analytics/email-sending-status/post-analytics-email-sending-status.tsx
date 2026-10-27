@@ -9,8 +9,6 @@ import { useChangeCount } from '@/posts/email-sending-status/use-change-count';
 import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
 
-// Use `fade-in-0`, not `fade-in`: Ember's ghost.css has its own `.fade-in`
-// that leaves content at opacity 0.
 const CROSSFADE = 'animate-in fade-in-0 duration-300 ease-out motion-reduce:animate-none';
 
 const failureDetail = (
@@ -32,14 +30,8 @@ const failureDetail = (
 
 const PostAnalyticsEmailSendingStatus = () => {
   const { post } = usePostAnalytics();
-  const {
-    status,
-    isStatusLoading,
-    isNewsletterDataHidden,
-    hasUnknownDeliveryOutcome,
-    isRetrying,
-    retrySending,
-  } = useEmailSendingStatusContext();
+  const { status, isStatusLoading, isNewsletterDataHidden, isRetrying, retrySending } =
+    useEmailSendingStatusContext();
   const sending = status?.sending;
   const estimate = useSendingEta(status);
   const isFailed = sending?.status === 'failed';
@@ -48,9 +40,10 @@ const PostAnalyticsEmailSendingStatus = () => {
   const swapCount = useChangeCount(isFailed, !isStatusLoading);
 
   if (isFailed) {
-    const detail = hasUnknownDeliveryOutcome
-      ? post?.email?.error || 'Something went wrong while sending this email.'
-      : failureDetail(sending, post?.email?.error);
+    const canRetry = sending.retryable === true;
+    const detail = canRetry
+      ? failureDetail(sending, post?.email?.error)
+      : post?.email?.error || 'Something went wrong while sending this email.';
 
     return (
       <Inline
@@ -66,7 +59,7 @@ const PostAnalyticsEmailSendingStatus = () => {
         <span className="font-medium text-state-danger">Emails failed to send</span>
         <span aria-hidden="true">·</span>
         <span>{detail}</span>
-        {!hasUnknownDeliveryOutcome && (
+        {canRetry && (
           <Button
             className="h-auto p-0 text-[length:inherit] leading-[inherit]"
             disabled={isRetrying}

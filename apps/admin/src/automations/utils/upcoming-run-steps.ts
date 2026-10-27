@@ -4,13 +4,14 @@ import type {
 } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { emailTextExcerpt } from './history-email-preview';
 import { waitDuration, type HistoryCardData } from './run-history';
+import { isAutomationStatusActive } from './is-automation-status-active';
 
 export function mapUpcomingRunSteps(
   history: AutomationRunHistory,
   plan: AutomationRunPlan,
   now = Date.now(),
 ): HistoryCardData[] {
-  if (history.status !== 'in_progress' || plan.status === 'inactive') {
+  if (history.status !== 'in_progress' || !isAutomationStatusActive(plan.status)) {
     return [];
   }
   const pending = history.steps.filter((step) => step.status === 'pending');

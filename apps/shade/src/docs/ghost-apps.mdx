@@ -1,0 +1,184 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Overview / Ghost Apps" />
+
+<div className="sb-doc">
+
+# Using Shade in a Ghost app
+
+<p className="excerpt">A Ghost app runs as a full page in a frame inside Ghost Admin. This page sets up Shade in that page so its screens look and behave like Admin's own.</p>
+
+A framed app owns its document: the frame inherits none of Admin's styles, fonts or theme. That makes it a standalone surface in the sense of [Embedded and standalone setup](?path=/docs/overview-introduction--docs#embedded-and-standalone-setup). The steps below assume a Vite, React and TypeScript app installed with npm.
+
+Connecting to Admin with `connect()`, the app manifest, installing and deploying belong to the `build-ghost-app` skill in the Ghost apps repo, not here.
+
+## Install
+
+Install Shade from the `alpha` tag. `@tryghost/shade` on its own installs `latest`, which points at an older alpha.
+
+Shade's peers are React 18 and Tailwind CSS 4.1 or later. `npm create vite` scaffolds React 19, and npm refuses to add Shade beside it, so move the React types to 18 first, then add Shade with React 18:
+
+```sh
+npm create vite@latest my-app -- --template react-ts --no-interactive
+cd my-app
+npm install -D @types/react@^18.3.0 @types/react-dom@^18.3.0 tailwindcss@^4.1 @tailwindcss/vite@^4.1
+npm install @tryghost/shade@alpha @fontsource/inter react@^18.3.1 react-dom@^18.3.1
+```
+
+Keep `skipLibCheck: true` from the Vite template's `tsconfig`. Without it, `tsc` fails inside Shade's own dependencies.
+
+`npm run build` warns that a chunk is larger than 500 kB, even for one small page. Much of it is a date library Shade's helpers import, a known Shade issue; the app doesn't need to split its bundle around it.
+
+## Tailwind and the stylesheet
+
+Add Tailwind's Vite plugin:
+
+```ts
+// vite.config.ts
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import {defineConfig} from 'vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()]
+});
+```
+
+The app has one stylesheet. Delete the template's `src/index.css` and `src/App.css` and their imports, and create:
+
+```css
+/* src/styles.css */
+@import "@tryghost/shade/styles.css";
+
+/* The app's own files, relative to this stylesheet. Shade registers its own. */
+@source "./";
+
+html {
+  font-size: 62.5%;
+}
+```
+
+Shade's `styles.css` brings Tailwind's theme and utilities, Shade's base styles and its animations, so the app doesn't also `@import "tailwindcss"`.
+
+The `62.5%` root font size makes `1rem` equal 10px, as it is in Admin. Shade's spacing and type scale assume it; without it, every size comes out 1.6 times too big.
+
+## Fonts
+
+Shade's font stack starts with `Inter`, but Shade doesn't load the font, and a framed page doesn't inherit the fonts Admin loads. Load Inter's regular, medium, semibold and bold weights, which are the ones Shade uses, from `@fontsource/inter`:
+
+```tsx
+// src/main.tsx
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import './styles.css';
+```
+
+The family name must be `Inter`. `@fontsource-variable/inter` registers the family as `Inter Variable`, which Shade's stack doesn't name, so the page falls back to system fonts.
+
+This is close to Admin, not identical. Admin uses variable Inter under its own family name, with its own font features and optical size, and an app can't reproduce that setup yet.
+
+## Wrap the app in ShadeApp
+
+Load Shade's stylesheet once, through the app stylesheet above, and render one `ShadeApp` at the root. This is the opposite of an embedded Admin app, which has neither, because Admin supplies both.
+
+```tsx
+import {ShadeApp} from '@tryghost/shade/app';
+
+<ShadeApp darkMode={mode === 'dark'}>
+  <App />
+</ShadeApp>
+```
+
+Leave `isAdmin7` at its default. It isn't Admin's `admin7Design` Labs flag: Admin passes `isAdmin7` on every route whatever the flag says, and it sets the current control shapes and header details. The flag changes Admin's own frame and large page titles.
+
+Don't add `PageChromeProvider`. Large titles depend on the `admin7Design` flag, the user's role and the width of Admin's window, and an app can see none of them, so an app keeps the default compact title.
+
+## Light and dark theme
+
+The app follows Admin's theme. On the Shade side that takes two things, always changed together:
+
+- The `dark` class on `<html>`. Shade's semantic tokens switch under it, including in menus and dialogs portalled outside the app's root.
+- The same state passed to `ShadeApp` as `darkMode`. On its own, `darkMode` changes no colours.
+
+Optionally, hold the `theme-switching` class on `<html>` while the theme changes. Shade turns transitions off under it, so the page switches in one paint instead of fading element by element. Admin holds it for two animation frames:
+
+```ts
+let releaseFrame: number | undefined;
+
+export function applyThemeMode(mode: 'light' | 'dark') {
+  const root = document.documentElement;
+  if (root.classList.contains('dark') === (mode === 'dark')) {
+    return;
+  }
+
+  root.classList.add('theme-switching');
+  root.classList.toggle('dark', mode === 'dark');
+  root.style.colorScheme = mode;
+
+  if (releaseFrame !== undefined) {
+    cancelAnimationFrame(releaseFrame);
+  }
+  releaseFrame = requestAnimationFrame(() => {
+    releaseFrame = requestAnimationFrame(() => {
+      root.classList.remove('theme-switching');
+      releaseFrame = undefined;
+    });
+  });
+}
+```
+
+The mode comes from Admin through the app SDK: apply `ghost.theme.mode` after connecting and before the first render, then follow `ghost.onThemeChange`, updating the `darkMode` state in the same callback.
+
+## Page frame and margins
+
+Admin places the frame; the app's page fills it. Inside `ShadeApp`, wrap the page in `Container size="page"`, as Admin's own list pages do, and let the page template inside it own the spacing:
+
+```tsx
+import {Container} from '@tryghost/shade/primitives';
+
+<Container size="page" className="relative flex min-h-dvh flex-col">
+  <ListPage>...</ListPage>
+</Container>
+```
+
+The flex column lets `ListPage` grow to fill the page, so an empty state in `ListPage.Body` can centre itself. `min-h-dvh` stands in for Admin's `h-full`, because nothing above the container in the frame has a height.
+
+Add no outer padding or margin of your own, on `body`, `ShadeApp` or the container. The page's margins then stay right if Admin changes how much space it leaves around the frame.
+
+## Start from a page template
+
+Name the page type and start from its template: [Page types](?path=/docs/page-templates-page-types--docs) lists them. Headers follow the [PageHeader design contract](?path=/docs/patterns-page-header--design-contract).
+
+## App state in the URL
+
+Admin keeps the app's path and query in its own URL. When Admin moves the app, with back, forward or one of Admin's links, the SDK rewrites the frame's URL and fires `popstate`.
+
+If the app keeps state in the query string, read it from the URL and read it again on `popstate`. Write it with `history.pushState` or `history.replaceState`, or the app's router, as usual.
+
+```ts
+const readFilter = () => new URLSearchParams(window.location.search).get('filter');
+
+useEffect(() => {
+  const onPopState = () => setFilter(readFilter());
+  window.addEventListener('popstate', onPopState);
+  return () => window.removeEventListener('popstate', onPopState);
+}, []);
+```
+
+## Docs that apply to apps
+
+Use these to build an app's screens:
+
+- [Introduction](?path=/docs/overview-introduction--docs): the import subpaths.
+- [Tokens](?path=/docs/tokens-tokens-guide--docs), [Primitives](?path=/docs/primitives-primitives-guide--docs), [Patterns](?path=/docs/patterns-patterns-guide--docs) and [Page types](?path=/docs/page-templates-page-types--docs).
+- The [PageHeader design contract](?path=/docs/patterns-page-header--design-contract).
+
+These are for Admin and for changing Shade itself; skip them in an app:
+
+- [Contributing to Shade](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md), including its layers.
+- Introduction's [Admin 7 milestones](?path=/docs/overview-introduction--docs#admin-7-milestones) and the page header's [Compatibility and rollout](?path=/docs/patterns-page-header--design-contract#compatibility-and-rollout).
+- Every `fallback*` prop, such as `fallbackStyle`, `fallbackVariant`, `fallbackSize` and `fallbackClassName`. They preserve older Admin screens; an app uses the defaults.
+
+</div>

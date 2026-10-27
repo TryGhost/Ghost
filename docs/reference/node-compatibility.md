@@ -4,7 +4,7 @@ Ghost, Node.js, and Ghost-CLI have independent release cycles. This reference
 records the points where their supported version ranges changed.
 
 Use the versions pinned in [`.nvmrc`](../../.nvmrc) and
-[`package.json`](../../ghost/core/package.json) when working on the current
+[`package.json`](../../ghost/package.json) when working on the current
 Ghost codebase. Use this history when maintaining or upgrading an older Ghost
 installation.
 

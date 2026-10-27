@@ -1,24 +1,8 @@
 import { z } from 'zod';
 
+import { isGhostOrigin } from './ghost-origin.ts';
 import { URL_MAX_LENGTH } from './limits.ts';
-
-// `URL` has already normalised the host by the time these run: every spelling of an IPv4
-// address is dotted decimal, and an IPv4-mapped IPv6 address is two hex groups.
-const LOOPBACK_HOSTS = [
-  /^localhost$/,
-  /\.localhost$/,
-  /^127\.\d+\.\d+\.\d+$/,
-  /^0\.0\.0\.0$/,
-  /^\[::1?\]$/,
-  /^\[::ffff:7f[0-9a-f]{2}:[0-9a-f]{1,4}\]$/,
-  /^\[::ffff:0:0\]$/,
-];
-
-/** Whether a host is the machine itself: `localhost`, or a loopback or unspecified address. */
-function isLocalhost(hostname: string): boolean {
-  const host = hostname.replace(/\.$/, '');
-  return LOOPBACK_HOSTS.some((pattern) => pattern.test(host));
-}
+import { isLocalhost } from './localhost.ts';
 
 /**
  * Checks a URL after it has been resolved, never before: a relative value can resolve to
@@ -46,7 +30,8 @@ export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | nu
 
 export interface UrlRules {
   base: URL;
-  ghostOrigins: Set<string | null>;
+  /** The URLs Ghost itself is served from, which no loaded URL may share an origin with. */
+  ghostUrls: string[];
   allowLocalhost: boolean;
 }
 
@@ -61,7 +46,7 @@ export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
  * Ghost is served from. `linkOnly` lifts that last rule for a URL that is only ever
  * linked to, which a publisher's own app may well point at their own site.
  */
-export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkOnly = false) {
+export function urlField({ base, ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
   return z
     .string('Expected a URL, or a path relative to the manifest')
     .min(1, 'Expected a URL, or a path relative to the manifest')
@@ -81,7 +66,7 @@ export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkO
         ctx.addIssue({ code: 'custom', message: problem });
         return z.NEVER;
       }
-      if (!linkOnly && ghostOrigins.has(url.origin)) {
+      if (!linkOnly && isGhostOrigin(url, ghostUrls)) {
         ctx.addIssue({
           code: 'custom',
           message: 'Expected an address other than the one Ghost itself is served from',

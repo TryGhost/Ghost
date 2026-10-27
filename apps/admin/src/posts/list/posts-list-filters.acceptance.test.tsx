@@ -6,6 +6,7 @@ import {
   fakeAdminEndpoint,
   fakePosts,
   fakePostsListScreen,
+  fakeTags,
   post,
   renderAdminApp,
   staffRole,
@@ -23,8 +24,7 @@ function asRole(name: StaffRoleName) {
 
 /**
  * The filter bar. What matters most is that chips and the URL stay in lockstep:
- * the five params are what sidebar saved views persist, and the Ember screen
- * reads the same ones while both implementations exist.
+ * the five params are what sidebar saved views persist.
  */
 describe('Posts list filters', () => {
   // The author and tag fields hydrate their selected values as soon as the
@@ -39,6 +39,29 @@ describe('Posts list filters', () => {
 
     await expect.element(postsListScreen.filterBar()).toBeVisible();
     await expect.element(postsListScreen.filterBar()).toHaveTextContent('Draft posts');
+  });
+
+  it('searches tags by name before selecting a post filter', async () => {
+    const news = tag({ name: 'News', slug: 'news' });
+    const halloween = tag({ name: 'Halloween', slug: 'halloween' });
+    fakePosts([]);
+    // Declare the server's response for this search without implementing NQL.
+    const tagsApi = fakeTags(({ filter }) =>
+      filter === "tags.name:~'Halloween'" ? [halloween] : [news, halloween],
+    );
+    fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, { tags: [halloween] });
+    await renderAdminApp('/posts');
+
+    await postsListScreen.addFilterButton().click();
+    await postsListScreen.filterFieldOption('Tag').click();
+    await expect.element(postsListScreen.filterValueOption('News')).toBeVisible();
+    await postsListScreen.filterSearchInput().fill('Halloween');
+
+    await expect(tagsApi).toHaveSentFilter("tags.name:~'Halloween'");
+    await expect(postsListScreen.filterValueOption('News')).toHaveCount(0);
+    await postsListScreen.filterValueOption('Halloween').click();
+    await expect.element(postsListScreen.filterBar()).toHaveTextContent('Halloween');
+    await expect.poll(currentRoute).toBe('/posts?tag=halloween');
   });
 
   // The slug-to-name lookup is its own request, and `fakeTags` only declares

@@ -470,6 +470,32 @@ describe('CallToActionNode', function () {
             expect(nodes[0].buttonTextColor).toBe('#654321');
         }));
 
+        it('can get an accent button colour', editorTest(function () {
+            dataset.buttonColor = 'accent';
+            dataset.buttonTextColor = '#ffffff';
+            const nodes = generateCallToActionNodes(dataset);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonColor).toBe('accent');
+            expect(nodes[0].buttonTextColor).toBe('#ffffff');
+        }));
+
+        it('falls back to default button colours when the button has no colour styles', editorTest(function () {
+            const document = createDocument(htmlTemplate`
+                <div class="kg-card kg-cta-card kg-cta-bg-grey kg-cta-minimal" data-layout="minimal">
+                    <div class="kg-cta-content">
+                        <div class="kg-cta-content-inner">
+                            <div class="kg-cta-text"><p>This is a cool advertisement</p></div>
+                            <a href="http://blog.com/post1" class="kg-cta-button">click me</a>
+                        </div>
+                    </div>
+                </div>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document) as CallToActionNode[];
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonColor).toBe('#000000');
+            expect(nodes[0].buttonTextColor).toBe('#ffffff');
+        }));
+
         it('can check if it has a sponsorLabel', editorTest(function () {
             const nodes = generateCallToActionNodes(dataset);
             expect(nodes.length).toBe(1);

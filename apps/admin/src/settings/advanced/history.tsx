@@ -28,6 +28,7 @@ const History: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="history"
       testId="history"
       title="History"
+      onOpen={openHistoryModal}
     />
   );
 };

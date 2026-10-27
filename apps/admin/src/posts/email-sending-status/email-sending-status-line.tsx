@@ -1,6 +1,6 @@
 import { Grid, Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { EmailSendingStatusIcon } from './email-sending-status-icon';
+import { PublishPhaseIcon } from './publish-phase-icon';
 import { useChangeCount } from './use-change-count';
 import { useEffect, useState } from 'react';
 import type { EmailSendingLine } from './email-sending-status-copy';
@@ -8,8 +8,6 @@ import type { EmailSendingLine } from './email-sending-status-copy';
 /** Covers the 250ms fade and the 400ms collapse that starts 150ms in. */
 export const EMAIL_SENDING_LEAVE_DURATION_MS = 600;
 
-// Use `fade-in-0`, not `fade-in`: Ember's ghost.css has its own `.fade-in`
-// that leaves content at opacity 0.
 const REVEAL =
   'animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out motion-reduce:animate-none';
 
@@ -74,10 +72,7 @@ export function EmailSendingStatusLine({
         className={cn('min-h-0 overflow-hidden', (appear || changeCount > 0) && REVEAL)}
       >
         <Inline className="leading-[1.65em]" data-testid={testId} gap="xs">
-          <EmailSendingStatusIcon
-            fractionComplete={shownLine.fractionComplete}
-            phase={shownLine.phase}
-          />
+          <PublishPhaseIcon fractionComplete={shownLine.fractionComplete} phase={shownLine.phase} />
           <span className="email-sending-shimmer font-medium tabular-nums">{shownLine.text}</span>
         </Inline>
       </div>

@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "busy",
+    "diagnostics": [
+      {
+        "source": "ghost-docker",
+        "code": "busy",
+        "severity": "error",
+        "message": "Another operation is changing this site."
+      }
+    ]
+  }
+}

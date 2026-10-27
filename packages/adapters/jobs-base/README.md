@@ -3,18 +3,19 @@
 Base class and contract for Ghost jobs backends.
 
 A jobs backend is the swappable transport behind Ghost's class-based jobs
-interface. It only ever sees serialised `{type, payload}` envelopes and a single
-delivery `processor` callback - it never touches a live job instance. That is
-what keeps jobs serialisable end to end and lets a durable backend replace the
-in-memory one with no call-site change.
+interface. It only ever sees serialised `DispatchEnvelope`s -
+`{version: 1, payload: {job: {type, payload}, routing?: {queue}}}` - and a
+single delivery `processor` callback that receives `payload.job`. It never
+touches a live job instance. That is what keeps jobs serialisable end to end
+and lets a durable backend replace the in-memory one with no call-site change.
 
 ## Contract
 
 A backend extends `JobsBackendBase` and implements four methods:
 
 - `start({processor, queues})` - wire the single delivery callback and begin accepting work. `queues` is the desired state declared by registered handlers (`{name: {concurrency}}`).
-- `enqueue(envelope, {queue})` - accept an envelope for delivery. Resolves on **acceptance**, not completion.
-- `scheduleRecurring(envelope, {cron}, {queue})` - register the recurring schedule for the envelope's type. The first registration per type wins; a later call for an already-scheduled type is ignored.
+- `enqueue(id, envelope)` - accept a `DispatchEnvelope` for delivery. `id` is the stable dispatch ID: a retry resubmits the same `id` and envelope, so a durable backend can dedupe on it. Resolves on **acceptance**, not completion.
+- `scheduleRecurring(envelope, {cron})` - register the recurring schedule for the envelope's job type (`payload.job.type`). The first registration per type wins; a later call for an already-scheduled type is ignored. Each tick delivers `payload.job` with the envelope's routing.
 - `shutdown({timeoutMs})` - stop accepting work and drain in-flight work within a bounded time.
 
 ### Queues
@@ -37,8 +38,8 @@ declared.
 
 ### Delivery outcome
 
-The backend delivers an envelope by calling `processor(envelope)` and awaiting the
-returned promise. **The processor may reject: a rejected promise means a failed
+The backend delivers an envelope by calling `processor(payload.job)` and awaiting
+the returned promise. **The processor may reject: a rejected promise means a failed
 delivery.** The backend decides what happens next - the in-memory reference
 backend logs and drops it (parity with the legacy in-process queue, no
 redelivery); a durable backend can redeliver. The processor never throws

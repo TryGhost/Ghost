@@ -36,7 +36,6 @@ import { deferred } from '@/utils/deferred';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new789';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
 
@@ -68,6 +67,56 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   });
 }
 
+const COLLISION = {
+  errors: [
+    {
+      code: 'UPDATE_COLLISION',
+      type: 'UpdateCollisionError',
+      message: 'Saving failed! Someone else is editing this post.',
+    },
+  ],
+};
+
+/**
+ * A post whose first save commits but is answered with a gateway error, as a
+ * proxy that gave up on Ghost would. Like Ghost, it refuses a save sent with any
+ * collision token but the latest.
+ */
+function fakePostLosingFirstAnswer() {
+  fakeEditorChrome();
+  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
+    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
+  }));
+  let current = post({
+    id: POST_ID,
+    title: 'Hello from React',
+    slug: 'hello-from-react',
+    status: 'draft',
+    lexical: buildLexicalParagraph('Hello from React'),
+    updated_at: LOADED_AT,
+    published_at: null,
+    tags: [],
+  });
+  let commits = 0;
+  const route = new RegExp(`^/posts/${POST_ID}/\\?`);
+  fakeAdminEndpoint('GET', route, () => ({ posts: [current] }));
+  return fakeAdminEndpoint('PUT', route, ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    if (submitted.updated_at !== current.updated_at) {
+      return Response.json(COLLISION, { status: 409 });
+    }
+    commits += 1;
+    current = {
+      ...current,
+      ...submitted,
+      updated_at: new Date(Date.parse(current.updated_at) + 1000).toISOString(),
+    };
+    return commits === 1
+      ? Response.json({ errors: [{ type: 'BadGatewayError' }] }, { status: 502 })
+      : { posts: [current] };
+  });
+}
+
 /** A post that does not exist yet, with the create and the follow-up writes answered. */
 function fakeCreatablePost() {
   fakeEditorChrome();
@@ -95,7 +144,7 @@ function fakeCreatablePost() {
 function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withFastAutosave({ boot: { browseMe: { response: me } } });
 }
 
 async function appendToBody(text: string) {
@@ -143,7 +192,7 @@ function failReads(status: number, body: object): EndpointCapture {
 describe('Post editor saving', () => {
   it('autosaves the body and sends the write contract', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
@@ -167,7 +216,7 @@ describe('Post editor saving', () => {
 
   it('stays clean once the save has been acknowledged and refetched', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
@@ -183,7 +232,7 @@ describe('Post editor saving', () => {
   it('leaves an old-schema post alone until it is edited', async () => {
     const legacy = OLD_SCHEMA_CORPUS.find(({ name }) => name === 'legacy-text-nodes');
     const saveApi = fakeSavablePost({ lexical: JSON.stringify(legacy?.before) });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toBeVisible();
     await expect.poll(() => saveApi.requests.length).toBe(0);
@@ -199,7 +248,7 @@ describe('Post editor saving', () => {
       lexical: buildLexical({ header: { accentColor: '#123456' } }),
     });
     const statuses = recordStatuses();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body().getByText('Header card')).toBeVisible();
     await expect
@@ -213,10 +262,9 @@ describe('Post editor saving', () => {
 
     await userEvent.keyboard(' edited');
 
-    await expect.poll(() => saveApi.requests.length).toBeGreaterThan(0);
-    const saved = submittedBody(saveApi);
-    expect(saved).toContain(' edited');
-    expect(saved).not.toContain('#123456');
+    // Fast autosave can send a partial edit before the keyboard sequence finishes.
+    await expect.poll(() => submittedBody(saveApi)).toContain(' edited');
+    expect(submittedBody(saveApi)).not.toContain('#123456');
   });
 
   it('creates a new post on the first edit and swaps the URL without remounting', async () => {
@@ -243,12 +291,15 @@ describe('Post editor saving', () => {
       posts: [created],
     }));
 
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post', withFastAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const mountedBody = bodyElement();
+    // A post that has never been saved has no status to report.
+    await expect(editorScreen.status()).toHaveCount(0);
 
     await appendToBody('First words');
 
+    await expect.element(editorScreen.status()).toHaveTextContent('Saving');
     await expect.poll(() => createApi.requests.length).toBe(1);
     expect(submittedPost(createApi)).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
     expect(submittedPost(createApi).id).toBeUndefined();
@@ -256,6 +307,7 @@ describe('Post editor saving', () => {
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
     expect(bodyElement()).toBe(mountedBody);
     await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
   // Core refuses an Author's or Contributor's create unless the payload names
@@ -306,13 +358,15 @@ describe('Post editor saving', () => {
       },
     );
 
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post', withFastAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
 
     await appendToBody('First words');
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     try {
+      // The save that creates the post is the first thing the status line reports.
+      await expect.element(editorScreen.status()).toHaveTextContent('Saving…');
       await appendToBody(' and then some');
       expect(submittedBody(createApi)).not.toContain('and then some');
     } finally {
@@ -331,7 +385,7 @@ describe('Post editor saving', () => {
 
   it('saves on Cmd-S and asks the server for a revision', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
@@ -352,7 +406,7 @@ describe('Post editor saving', () => {
 
   it('replaces the last save toast with the next one on a second Cmd-S', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
@@ -372,7 +426,7 @@ describe('Post editor saving', () => {
 
   it('lands a renamed draft clean, with the slug the server generated', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await editorScreen.titleInput().fill('Brand New Name');
@@ -392,7 +446,7 @@ describe('Post editor saving', () => {
 
   it('reports the save in the header and settles on saved', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     await appendToBody(' and more');
@@ -407,7 +461,7 @@ describe('Post editor saving', () => {
 
   it('saves its own version when a refetch finds the post published elsewhere, and collides', async () => {
     const saveApi = fakeSavablePost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
@@ -465,7 +519,7 @@ describe('Post editor saving', () => {
 
   it('keeps the editor and what was typed when the read after a save fails with a 500', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     const mountedBody = bodyElement();
 
@@ -489,7 +543,7 @@ describe('Post editor saving', () => {
 
   it('leaves an expired session to the next save when the read after a save is a 403', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     const mountedBody = bodyElement();
 
@@ -517,7 +571,7 @@ describe('Post editor saving', () => {
 
   it('leaves a post deleted elsewhere to the next save when the read after a save is a 404', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     const mountedBody = bodyElement();
 
@@ -549,7 +603,7 @@ describe('Post editor saving', () => {
     fakeEditorChrome();
     fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
     const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, POST_NOT_FOUND, { status: 404 });
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post', withFastAutosave());
 
     await appendToBody('First words');
 
@@ -563,7 +617,7 @@ describe('Post editor saving', () => {
 
   it('holds a title past the limit where it is typed, and refuses it on Cmd-S', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
@@ -571,12 +625,11 @@ describe('Post editor saving', () => {
 
     await expect.element(editorScreen.titleInput()).toHaveAttribute('aria-invalid', 'true');
     await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
-    await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(TITLE_TOO_LONG);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
     expect(saveApi.requests).toHaveLength(0);
 
     await editorScreen.titleInput().fill('A title the server keeps');
@@ -589,13 +642,13 @@ describe('Post editor saving', () => {
   it.each([
     {
       home: 'under the title',
-      options: withFastAutosave({ labs: { editorReact: true, editorExcerpt: true } }),
+      options: withFastAutosave({ labs: { editorExcerpt: true } }),
       open: async () => {},
       excerpt: () => editorScreen.excerptInput(),
     },
     {
       home: 'in the settings panel',
-      options: FLAG_ON,
+      options: withFastAutosave(),
       open: () => editorScreen.settingsToggle().click(),
       excerpt: () => editorScreen.settingsExcerpt(),
     },
@@ -612,12 +665,11 @@ describe('Post editor saving', () => {
 
       await expect.element(excerpt()).toHaveAttribute('aria-invalid', 'true');
       await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
-      await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(EXCERPT_TOO_LONG);
-      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+      await expect(editorScreen.saveError()).toHaveCount(0);
 
       await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.saveError()).toHaveTextContent(EXCERPT_TOO_LONG);
       expect(saveApi.requests).toHaveLength(0);
 
       await excerpt().fill('An excerpt the server keeps');
@@ -644,14 +696,14 @@ describe('Post editor saving', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await appendToBody(' and more');
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(CAPTION_REFUSED);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(CAPTION_REFUSED);
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .not.toHaveTextContent('Validation error, cannot edit post.');
     expect(refusedSave.requests).toHaveLength(1);
   });
@@ -672,14 +724,14 @@ describe('Post editor saving', () => {
       },
       { status: 403 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await appendToBody(' and more');
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(PLAN_LIMIT_REACHED);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(PLAN_LIMIT_REACHED);
     await expect
-      .element(editorScreen.saveErrorBanner().getByRole('link', { name: 'please upgrade' }))
+      .element(editorScreen.saveError().getByRole('link', { name: 'please upgrade' }))
       .toHaveAttribute('href', '#/pro');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(refusedSave.requests).toHaveLength(1);
@@ -687,13 +739,30 @@ describe('Post editor saving', () => {
 
   it('leaves tags alone when it saves', async () => {
     const saveApi = fakeSavablePost({ tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
     expect(submittedPost(saveApi)).not.toHaveProperty('tags');
+  });
+
+  it('adopts a save that landed although its answer was lost, instead of colliding with it', async () => {
+    const saveApi = fakePostLosingFirstAnswer();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+    await appendToBody(' and more');
+    await expect.element(editorScreen.saveError()).toBeVisible();
+
+    await appendToBody(' again');
+
+    await expect.poll(() => saveApi.requests.length).toBe(2);
+    expect(submittedPost(saveApi)).toMatchObject({ updated_at: '2026-01-01T00:00:01.000Z' });
+    expect(submittedBody(saveApi)).toContain('Hello from React and more again');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
   });
 
   it('halts on a collision and keeps the content', async () => {
@@ -725,7 +794,7 @@ describe('Post editor saving', () => {
       },
       { status: 409 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and more');

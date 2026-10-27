@@ -18,7 +18,7 @@ const ShowBadgeField: React.FC<ShowBadgeFieldProps> = ({ value, onChange }) => (
         </span>
       </div>
     </div>
-    <Switch checked={value} size="sm" onCheckedChange={onChange} />
+    <Switch checked={value} onCheckedChange={onChange} />
   </div>
 );
 

@@ -1,15 +1,90 @@
 # Shade
 
-Ghost Design System that can be used by micro-frontends.
+Shade is Ghost's design system for React apps: the tokens, layout primitives,
+components, patterns and page templates that Ghost Admin is built with.
 
-## Usage in embedded Ghost Admin apps
+## Install in an app
 
-Ghost Admin provides Shade's CSS and application wrapper centrally. Embedded
-Admin surfaces, including `apps/admin` and `apps/activitypub`, must not import
-`@tryghost/shade/styles.css` or add another `ShadeApp` wrapper. Import
-components from their layer-specific subpaths:
+These steps are for a standalone surface: an app that owns its page, rather
+than one bundled into Ghost Admin.
 
-Example:
+Building a Ghost app, which runs framed inside Admin? Follow
+[Using Shade in a Ghost app](https://github.com/TryGhost/Ghost/blob/main/apps/shade/src/docs/ghost-apps.mdx)
+instead: it also covers fonts, Admin's theme and the page frame.
+
+Shade requires React 18 and Tailwind CSS 4.1+. The app compiles Shade's
+`styles.css` together with its own styles using Tailwind's Vite or PostCSS
+integration. Shade does not ship a compiled stylesheet.
+
+For an existing React/Vite app:
+
+```sh
+pnpm add @tryghost/shade@alpha react@18 react-dom@18
+pnpm add -D tailwindcss@^4.1 @tailwindcss/vite@^4.1
+```
+
+Add Tailwind to the app's Vite plugins:
+
+```ts
+// vite.config.ts
+import {defineConfig} from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+    plugins: [react(), tailwindcss()]
+});
+```
+
+Import Shade and register the app's sources in the app stylesheet:
+
+```css
+/* src/styles.css */
+@import "@tryghost/shade/styles.css";
+@source "./";
+
+/* Shade's spacing and type scale assumes a 10px root rem. */
+html {
+    font-size: 62.5%;
+}
+```
+
+The published stylesheet registers Shade's sources automatically. The app's
+`@source` path is relative to this stylesheet.
+
+Shade supplies the theme, utilities, animations and base styles. Do not also
+import `tailwindcss`. Load your preferred font separately; Shade uses Inter when
+available and falls back to system fonts.
+
+Import the stylesheet once and wrap the app with `ShadeApp`:
+
+```tsx
+// src/main.tsx
+import {createRoot} from 'react-dom/client';
+import {ShadeApp} from '@tryghost/shade/app';
+import {Button} from '@tryghost/shade/components';
+import './styles.css';
+
+createRoot(document.getElementById('root')!).render(
+    <ShadeApp darkMode={false} className="min-h-dvh p-6">
+        <Button>Save changes</Button>
+    </ShadeApp>
+);
+```
+
+`ShadeApp` supplies the `.shade` container and providers. For dark mode, add
+`.dark` to `document.documentElement` and pass the same state to `ShadeApp` so
+portalled menus and dialogs receive the theme too.
+
+Import from the layer subpaths, such as `@tryghost/shade/components` and
+`@tryghost/shade/primitives`, never the root `@tryghost/shade`.
+
+## Inside Ghost Admin
+
+Shade is already set up. Ghost Admin provides Shade's CSS and the `ShadeApp`
+wrapper centrally, so embedded Admin apps, including `apps/admin` and
+`apps/activitypub`, must not import `@tryghost/shade/styles.css` or add another
+`ShadeApp`. They only import components:
 
 ```tsx
 import {Button} from '@tryghost/shade/components';
@@ -19,73 +94,16 @@ export function Example() {
 }
 ```
 
-## Usage in standalone surfaces
+## Docs
 
-The setup below applies only to a standalone surface that owns its complete
-application and CSS entry points. Shade is currently a private package; when
-published, consumption will follow standard npm usage.
+Shade's docs are its Storybook: how to use tokens, primitives, components,
+patterns and page templates, with live examples. It isn't hosted yet. Read the
+sources in
+[`src/docs/`](https://github.com/TryGhost/Ghost/tree/main/apps/shade/src/docs)
+on GitHub, or run it from a Ghost checkout with `pnpm storybook` in
+`apps/shade`.
 
-CSS-first styling contract:
+## Working on Shade?
 
-```css
-/* app entry CSS */
-@import "@tryghost/shade/styles.css";
-```
-
-No Tailwind preset/config import is required for Shade runtime styling.
-
-Scoping and dark mode:
-
-- All styles are scoped under a `.shade` container.
-- Dark mode is toggled by adding `.dark` within that scope.
-
-Wrap your surface with `ShadeApp` (includes provider and scoping):
-
-```tsx
-import {ShadeApp} from '@tryghost/shade/app';
-
-<ShadeApp darkMode={false}>
-    {/* your UI */}
-</ShadeApp>
-```
-
-## Develop
-
-This is a monorepo package.
-
-For a fresh clone or worktree, follow the setup instructions from the repository
-root:
-
-```bash
-corepack enable pnpm
-pnpm bootstrap
-```
-
-After setup, run the package commands below from `apps/shade` or with
-`pnpm --filter @tryghost/shade <command>`.
-
-Local docs with Storybook:
-
-- `pnpm storybook` — run Storybook and view docs under `src/docs/`
-- `pnpm build-storybook` — build a static export
-- `pnpm build` — build the package and its type declarations
-
-### Source exports
-
-Admin’s Vite development, production and test configurations select the `source`
-export condition to load this package directly from `src/`. Changes reach Vite
-without waiting for the library build. Consumers without that condition keep
-using the compiled exports; TypeScript continues using the generated declarations.
-The library build remains required for those consumers, including Ember.
-
-## Test
-
-- `pnpm test` — type-checks and runs Vitest with coverage
-- `pnpm test:unit` — runs Vitest
-- `pnpm test:types` — TypeScript only
-- `pnpm lint` — ESLint for `src/` and `test/`
-
-## Notes
-
-- Utilities live at `@/lib/utils` (not `@/utils`). Use `cn(...)` to merge class names and prefer CVA for variants.
-- Docs live alongside the code and are rendered via Storybook (`src/docs/*`).
+See [CONTRIBUTING.md](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md)
+for development, layers, conventions, tests and publishing.

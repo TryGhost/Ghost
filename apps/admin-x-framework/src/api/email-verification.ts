@@ -17,7 +17,6 @@ export const useVerifyEmailToken = createMutation<EmailVerificationResponseType,
     body: ({ token }) => ({ token }),
     updateQueries: {
       dataType,
-      emberUpdateType: 'createOrUpdate',
       update: (newData) => ({
         ...newData,
         settings: newData.settings,

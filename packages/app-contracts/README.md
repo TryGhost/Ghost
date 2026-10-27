@@ -16,16 +16,17 @@ validation only: nothing here fetches, stores or renders anything.
 
 Each contract is its own entry point, so a consumer only loads the one it uses.
 
-| Entry point                        | What it holds                            |
-| ---------------------------------- | ---------------------------------------- |
-| `@tryghost/app-contracts`          | Types, and limits that depend on nothing |
-| `@tryghost/app-contracts/manifest` | The app manifest and its validation      |
+| Entry point                        | What it holds                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `@tryghost/app-contracts`          | Types, and rules and limits that depend on nothing (`isLocalhost`, `isContainedPath`) |
+| `@tryghost/app-contracts/manifest` | The app manifest and its validation                                                   |
+| `@tryghost/app-contracts/bridge`   | The channel between Admin and an app's page, and its validation                       |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.
 
-A new contract, such as the bridge between admin and an app's page, gets its own
-folder under `src/` and its own entry point.
+A new contract, such as cards, gets its own folder under `src/` and its own
+entry point.
 
 ## The manifest
 
@@ -75,11 +76,14 @@ const result = parseManifest(json, {
 
 if (result.success) {
   result.manifest.surfaces[0].url; // https://podcast.example.com/admin
-  result.manifestUrl; // the manifest's URL as it was checked, which is the one to keep
 } else {
   result.errors; // [{ path: 'surfaces[0].url', message: '…' }]
 }
 ```
+
+`manifestUrl` is where the manifest was fetched from, after any redirects, so its
+relative URLs resolve as they would in a browser. It is checked by the same rules as
+the URLs inside the manifest.
 
 `parseManifest` is for a manifest as an app serves it. A manifest it has accepted is
 read back, from a database say, with `AppManifestSchema`: the same shape, with every
@@ -102,7 +106,120 @@ of the app's choosing. The author's link is exempt, since Ghost never loads it.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
-derive it where it is used, with `new URL(surface.url).origin`.
+derive it where it is used, with `new URL(surface.url).origin`. Admin treats
+everything on that origin as the app: any page there that sends a hello from the
+app's frame gets the bridge, including `fetch` as the staff user. So the origin
+must serve only the app (the SDK's README lists what to keep off it).
+
+### The manifest URL
+
+`parseManifestUrl(input, allowLocalhost)` applies the same rules to the address a
+manifest is read from, so it can run before anything is fetched. It hands back the
+address to keep, as the URL parser reads it and without a fragment, which never reaches
+the server. The parser settles most differences in spelling, but a trailing dot on the
+host or the case of a percent-encoding stays as given, so such an address reads as a
+change of manifest URL.
+
+```ts
+import { parseManifestUrl } from '@tryghost/app-contracts/manifest';
+
+const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json#install ', false);
+
+if (result.success) {
+  result.manifestUrl; // https://podcast.example.com/ghost-app.json
+} else {
+  result.error; // 'Expected an https URL for the manifest itself'
+}
+```
+
+### Comparing manifests
+
+`compareManifests(approved, next)` lists every field that differs between two
+versions of a manifest, each a parsed manifest with the address it was read
+from, and whether each change needs the publisher to approve it again. Only
+`description`, `accent_color` and `icon.name` change silently. Everything else
+says who the app is or is a URL Ghost loads or links to, so it needs approval,
+and so does any field added to the manifest later until it is listed as silent.
+A change of address is listed first, as `manifest_url`, and always needs
+approval: it decides what future updates say.
+
+```ts
+compareManifests(
+  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: approved },
+  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: next },
+);
+// {
+//   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+//   requiresApproval: true,
+// }
+```
+
+## The bridge
+
+Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK
+posts a `ghost-app:hello` to `window.parent`, with an ID for its document
+(random, made when the SDK loads); Admin checks the sender is the frame and its origin
+is the surface's, and answers with a `ghost-app:connect` carrying the port and
+the names of the calls it exports. The ID lets Admin tell whether a hello comes
+from a document it already connected or from a new document. Over the port,
+each side exposes named calls: `HostExports` are what an app may call on Admin
+(`fetch`, `titleChanged`, `pathChanged`, `open`), and `AppExports` what Admin
+calls on the app (`start`, `themeChanged`, `pathChanged`).
+
+The frame is untrusted, so Admin parses every argument with the schemas here
+(`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
+acting. Nothing is versioned: Admin only adds calls and optional fields, and the
+SDK rejects a call the connect doesn't list as `unsupported`, without sending it.
+
+The bridge's rules that have no dependencies live in `src/bridge/rules.ts`, and
+the root entry point exports them as well:
+
+- the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
+  the statuses a fetch response may have;
+- `isContainedPath`, and `normaliseAppPath`, which returns the one normalised
+  form both sides store an app path in, with `..` resolved within the app
+  (`AppPathSchema` already returns it, so Admin doesn't need to call it);
+- `isReservedRequestHeader` for the headers only Admin sets,
+  `isJsonContentType` for the one content type a body may have,
+  `methodAllowsBody`, and the messages both sides refuse an argument with
+  (`ARGUMENT_MESSAGES`);
+- the codes a refused call carries, written and read as `code: detail` by
+  `encodeBridgeError` and `decodeBridgeError`: `HOST_ERROR_CODES` are those Admin
+  refuses the page's calls with, `APP_ERROR_CODES` (`invalid_context` and
+  `invalid_argument`) those the page refuses Admin's with, and
+  `BRIDGE_ERROR_CODES` all of them;
+- the shapes Admin sends the page, `Theme`, `StartContext`, `ConnectMessage`
+  and `FetchResponse`, with a guard for each (`isTheme`, `isStartContext`,
+  `isConnectMessage`, `isFetchResponse`).
+
+The SDK checks what it sends and what Admin sends it with these, without zod.
+What Admin sends has no schema, because Admin builds it and never parses it;
+what a page sends does, and those schemas build on the same rules, so both
+sides read a path, a header or a refusal the same way.
+
+`fetch` takes an Admin API path, never a URL. Admin checks the request with
+`checkAdminApiRequest({ path, method, body }, apiRoot)`, which resolves the path
+against the Admin API root and returns the URL to request and the scope that
+allows it, or `invalid_path` for anything that leaves the root and `blocked`
+for anything else it refuses, with a `detail` naming the method and path or
+what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can reach, by
+method, under the scope names Permissions and auth will use; its header
+comment says what the security review (BER-3992) must look at. Writes of
+posts, pages and tags are also checked for code injection and mobiledoc
+(`content.ts`). It all stands in for apps' own token.
+
+```ts
+import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
+
+const root = new URL('https://site.example/ghost/api/admin/');
+checkAdminApiRequest({ path: '/posts/?limit=5' }, root);
+// { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/', scope: { name: 'posts:read', … } }
+checkAdminApiRequest({ path: '/../content/' }, root); // { problem: 'invalid_path' }
+checkAdminApiRequest({ path: '/db/' }, root);
+// { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }
+checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root);
+// { problem: 'blocked', …, detail: "Apps can't send codeinjection_head to POST /posts/" }
+```
 
 ## Develop
 

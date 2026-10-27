@@ -164,6 +164,7 @@ export type StripeCheckoutSessionResponse = Omit<
     | 'metadata'
     | 'mode'
     | 'object'
+    | 'status'
     | 'success_url'
     | 'url'
   >,
@@ -211,11 +212,46 @@ export interface StripeCheckoutSessionRequest {
   shipping_address_collection?: { allowed_countries: string[] };
   tax_id_collection?: { enabled: boolean };
   phone_number_collection?: { enabled: boolean };
+  // The page's design, as the publisher saved it. Absent when Stripe uses the design set in
+  // the Stripe dashboard.
+  branding_settings?: {
+    button_color: string;
+    background_color: string;
+    border_style: string;
+    font_family: string;
+  };
 }
 
 export interface RecordedStripeCheckoutSession {
   request: StripeCheckoutSessionRequest;
   response: StripeCheckoutSessionResponse;
+}
+
+/** The branding set in the Stripe dashboard, as Stripe reports it on a new checkout session. */
+export interface StripeCheckoutBranding {
+  display_name: string;
+  background_color: string;
+  button_color: string;
+  border_style: string;
+  font_family: string;
+  icon: null;
+  logo: null;
+}
+
+/** Stripe's own defaults, which a new Stripe account starts with. */
+export function buildCheckoutBranding(
+  overrides: Partial<StripeCheckoutBranding> = {},
+): StripeCheckoutBranding {
+  return {
+    display_name: 'Stripe Test Account',
+    background_color: '#ffffff',
+    button_color: '#0074d4',
+    border_style: 'rounded',
+    font_family: 'default',
+    icon: null,
+    logo: null,
+    ...overrides,
+  };
 }
 
 interface CheckoutSessionOverrides {
@@ -569,6 +605,7 @@ export function buildCheckoutSession(
       id,
       object: 'checkout.session',
       mode: 'subscription',
+      status: 'open',
       url: `http://localhost/checkout/sessions/${id}`,
       customer: null,
       customer_email: null,

@@ -23,6 +23,7 @@ import {
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
+  Link,
   MultiSelectCombobox,
   SortableList,
   Switch,
@@ -498,14 +499,9 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                         <FieldDescription>
                           <span className="mt-1">
                             Members will be subscribed at full price once the trial ends.{' '}
-                            <a
-                              className="text-green"
-                              href="https://ghost.org/help/free-trials/"
-                              rel="noreferrer"
-                              target="_blank"
-                            >
+                            <Link href="https://ghost.org/help/free-trials/" external>
                               Learn more
-                            </a>
+                            </Link>
                           </span>
                         </FieldDescription>
                       </Field>
@@ -602,7 +598,7 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                     children: <LucideIcon.Plus />,
                   },
                   (input) => (
-                    <Field className="w-100">
+                    <Field className="w-full">
                       <FieldLabel className="sr-only" htmlFor="new-tier-benefit">
                         New benefit
                       </FieldLabel>

@@ -1,26 +1,28 @@
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import IconToggleGroup from '@/settings/components/icon-toggle-group';
+import { FieldTitle } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const ButtonCornersField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
-    <div className="flex items-center justify-between">
-      <span>Button corners</span>
-      <ToggleGroup
-        type="single"
+    <Inline className="w-full" gap="sm" justify="between">
+      <FieldTitle>Button corners</FieldTitle>
+      <IconToggleGroup
+        label="Button corners"
+        options={[
+          { value: 'square', label: 'Squared', icon: <LucideIcon.Square className="size-3.5!" /> },
+          {
+            value: 'rounded',
+            label: 'Rounded',
+            icon: <LucideIcon.Squircle className="size-3.5!" />,
+          },
+          { value: 'pill', label: 'Pill', icon: <LucideIcon.Circle className="size-3.5!" /> },
+        ]}
         value={settings.button_corners || 'rounded'}
-        onValueChange={(value: string) => value && onSettingsChange({ button_corners: value })}
-      >
-        <ToggleGroupItem aria-label="Square" value="square">
-          <span className="inline-block size-4 border-[1.5px] border-current" />
-        </ToggleGroupItem>
-        <ToggleGroupItem aria-label="Rounded" value="rounded">
-          <span className="inline-block size-4 rounded-sm border-[1.5px] border-current" />
-        </ToggleGroupItem>
-        <ToggleGroupItem aria-label="Pill" value="pill">
-          <span className="inline-block size-4 rounded-full border-[1.5px] border-current" />
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </div>
+        onValueChange={(buttonCorners) => onSettingsChange({ button_corners: buttonCorners })}
+      />
+    </Inline>
   );
 };

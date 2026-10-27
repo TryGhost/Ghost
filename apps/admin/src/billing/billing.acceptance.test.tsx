@@ -1,14 +1,19 @@
+import * as Sentry from '@sentry/react';
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import {
+  type EndpointCapture,
   allowUnhandledRequests,
   configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEndpoint,
   fakeFrameOrigin,
   fakeTags,
   fakeUsers,
   renderAdminApp,
+  settleRequests,
+  siteResponse,
   staffRole,
   staffUser,
   type StaffRoleName,
@@ -85,7 +90,7 @@ async function postFromBillingApp(messages: StandInMessage[], message: unknown) 
   frame.contentWindow?.postMessage({ relay: message }, BILLING_ORIGIN);
 }
 
-/** Resolves once Admin has handled every message the stand-in posted before now. */
+/** Waits for message dispatch; asynchronous handlers may still be running. */
 async function billingAppSettled(messages: StandInMessage[]) {
   // A ping to a frame still loading is dropped like any other message
   await expect.poll(() => loads(messages).length).toBeGreaterThan(0);
@@ -109,15 +114,15 @@ async function renderBilling(
     role = 'Owner',
     hostSettings = {},
     labs = {},
-    billingReact = true,
     appearance,
+    sentryDsn,
   }: {
     role?: StaffRoleName;
     appearance?: 'dark' | 'light';
     /** Read on every `/config/` request, so a function can change what a refetch returns. */
     hostSettings?: Record<string, unknown> | (() => Record<string, unknown>);
     labs?: Record<string, boolean>;
-    billingReact?: boolean;
+    sentryDsn?: string;
   } = {},
 ) {
   const config = configResponse();
@@ -126,11 +131,17 @@ async function renderBilling(
   if (appearance) {
     me.users[0].accessibility = JSON.stringify({ nightShift: appearance });
   }
+  const site = siteResponse();
+  if (sentryDsn) {
+    site.site.sentry_dsn = sentryDsn;
+    site.site.sentry_env = 'testing';
+  }
   const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
-  await renderAdminApp(path, {
-    labs: { ...labs, billingReact },
+  return await renderAdminApp(path, {
+    labs,
     boot: {
+      browseSite: { response: site },
       browseConfig: {
         response: () => ({
           config: {
@@ -291,21 +302,24 @@ describe('Ghost(Pro) billing', () => {
       .toEqual({ query: 'routeUpdate', response: '/plans' });
   });
 
-  it('sends the billing app to checkout once it has reported where checkout is', async () => {
+  it('opens plans from the exceeded member limit banner', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/pro');
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
-      checkoutRoute: '/plans/checkout',
+      exceededLimits: ['members'],
     });
     await billingAppSettled(messages);
 
-    window.location.hash = '#/pro?action=checkout';
+    const link = page.getByRole('link', { name: 'confirm pricing for this number of members' });
+    await expect.element(link).toHaveAttribute('href', '#/pro/plans');
+    await link.click();
+    await expect.poll(currentRoute).toBe('/pro/plans');
 
     await expect
       .poll(() => received(messages, 'query').at(-1))
-      .toEqual({ query: 'routeUpdate', response: '/plans/checkout' });
+      .toEqual({ query: 'routeUpdate', response: '/plans' });
   });
 
   it('withholds the token from staff who are not the owner', async () => {
@@ -359,6 +373,20 @@ describe('Ghost(Pro) billing', () => {
 
     await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: 'staff' });
     await expect.poll(currentRoute).toBe('/settings/staff');
+    await expect.element(billingScreen.frame()).not.toBeVisible();
+  });
+
+  it('opens automations directly from a billing requirement', async () => {
+    // The automations app owns its request graph; this spec asserts the handoff.
+    allowUnhandledRequests();
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro', { labs: { automations: true } });
+    await expect.element(billingScreen.frame()).toBeVisible();
+
+    await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: 'automations' });
+
+    await expect.poll(currentRoute).toBe('/automations');
     await expect.element(billingScreen.frame()).not.toBeVisible();
   });
 
@@ -484,7 +512,7 @@ describe('Ghost(Pro) billing', () => {
     await fakeFrameOrigin(
       BILLING_ORIGIN,
       billingStandIn(
-        `${READY} parent.postMessage({ subscription: { status: 'active', isActiveTrial: false, trial_end: null }, exceededLimits: ['members'], checkoutRoute: '/plans' }, '*');`,
+        `${READY} parent.postMessage({ subscription: { status: 'active', isActiveTrial: false, trial_end: null }, exceededLimits: ['members'] }, '*');`,
       ),
     );
     await renderBilling('/tags', { role: 'Editor' });
@@ -504,7 +532,6 @@ describe('Ghost(Pro) billing', () => {
     await postFromBillingApp(messages, {
       subscription,
       exceededLimits: ['members'],
-      checkoutRoute: '/plans',
     });
     await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
 
@@ -525,13 +552,15 @@ describe('Ghost(Pro) billing', () => {
     fakeTags([]);
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
-    await renderBilling('/pro', { hostSettings: { forceUpgrade: true } });
+    const { queryClient } = await renderBilling('/pro', { hostSettings: { forceUpgrade: true } });
     await expect.element(billingScreen.frame()).toBeVisible();
 
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
     });
     await billingAppSettled(messages);
+    // Subscription state is applied after the report's config refetch completes.
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
     window.location.hash = '#/tags';
 
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
@@ -542,13 +571,17 @@ describe('Ghost(Pro) billing', () => {
     fakeTags([]);
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
-    await renderBilling('/pro', { role: 'Administrator', hostSettings: { forceUpgrade: true } });
+    const { queryClient } = await renderBilling('/pro', {
+      role: 'Administrator',
+      hostSettings: { forceUpgrade: true },
+    });
     await expect.element(billingScreen.frame()).toBeVisible();
 
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
     });
     await billingAppSettled(messages);
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
 
     expect(currentRoute()).toBe('/pro');
     await expect.element(billingScreen.frame()).toBeVisible();
@@ -599,6 +632,53 @@ describe('Ghost(Pro) billing', () => {
     await expect(alertsScreen.alerts()).toHaveCount(0);
   });
 
+  it('holds the exceeded member alert until the dunning payment is made', async () => {
+    fakeTags([]);
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags', { hostSettings: { billing: { dunning: dunningWindow(2) } } });
+    const pastDue = { status: 'past_due', isActiveTrial: false, trial_end: null };
+
+    await postFromBillingApp(messages, { subscription: pastDue, exceededLimits: ['members'] });
+    await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
+
+    // Pay now opens billing, whose limit refresh reports the exceeded limit again
+    await page.getByRole('link', { name: 'Pay now' }).click();
+    await expect.element(billingScreen.frame()).toBeVisible();
+    await postFromBillingApp(messages, { subscription: pastDue, exceededLimits: ['members'] });
+    await billingAppSettled(messages);
+    await expect(alertsScreen.alerts()).toHaveCount(0);
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'active', isActiveTrial: false, trial_end: null },
+      exceededLimits: ['members'],
+    });
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
+  });
+
+  it('clears a shown exceeded member alert once dunning starts', async () => {
+    fakeTags([]);
+    let hostSettings: Record<string, unknown> = {};
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/tags', { hostSettings: () => hostSettings });
+
+    await postFromBillingApp(messages, {
+      subscription: { status: 'active', isActiveTrial: false, trial_end: null },
+      exceededLimits: ['members'],
+    });
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).toBeVisible();
+
+    hostSettings = { billing: { dunning: dunningWindow(2) } };
+    await postFromBillingApp(messages, {
+      subscription: { status: 'past_due', isActiveTrial: false, trial_end: null },
+      exceededLimits: ['members'],
+    });
+
+    await expect.element(page.getByTestId('dunning-banner')).toBeVisible();
+    await expect.element(alertsScreen.alert(/Your audience has grown/)).not.toBeInTheDocument();
+  });
+
   it('loads a deep-linked billing route once, without its query', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
@@ -610,7 +690,7 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)[0]?.searchParams.has('interval')).toBe(false);
   });
 
-  it('hands the billing app its checkout action on the overview', async () => {
+  it('ignores the retired checkout action on the overview', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
     await renderBilling('/pro?action=checkout');
@@ -618,10 +698,10 @@ describe('Ghost(Pro) billing', () => {
     await billingAppSettled(messages);
 
     expect(loads(messages)).toHaveLength(1);
-    expect(loads(messages)[0]?.searchParams.get('action')).toBe('checkout');
+    expect(loads(messages)[0]?.searchParams.has('action')).toBe(false);
   });
 
-  it('holds the Ember editor on billing during a force upgrade', async () => {
+  it('holds the editor on billing during a force upgrade', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     await renderBilling('/editor/post', {
       role: 'Administrator',
@@ -687,11 +767,86 @@ describe('Ghost(Pro) billing', () => {
     expect(received(messages, 'query').filter(({ query }) => query === 'routeUpdate')).toEqual([]);
   });
 
-  it('leaves billing to Ember while the flag is off', async () => {
-    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
-    await renderBilling('/pro', { billingReact: false });
+  describe('when the billing app never becomes ready', () => {
+    const SENTRY_DSN = 'https://public@o0.ingest.sentry.io/1';
+    const ENVELOPE_URL = 'https://o0.ingest.sentry.io/api/1/envelope/';
 
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect.element(billingScreen.frame()).not.toBeInTheDocument();
+    /** The error events in the NDJSON envelopes the ingest fake received. */
+    function sentryEvents(ingest: EndpointCapture): Sentry.Event[] {
+      return ingest.requests.flatMap(({ body }) => {
+        const [, ...lines] = String(body).split('\n');
+        const events: Sentry.Event[] = [];
+        for (let index = 0; index + 1 < lines.length; index += 2) {
+          if ((JSON.parse(lines[index]) as { type: string }).type === 'event') {
+            events.push(JSON.parse(lines[index + 1]) as Sentry.Event);
+          }
+        }
+        return events;
+      });
+    }
+
+    afterEach(async () => {
+      vi.useRealTimers();
+      // Flush while the ingest fake is still registered, then unbind the closed client
+      await Sentry.close();
+      const hub = Sentry.getCurrentHub();
+      hub.bindClient(undefined);
+      hub.getScope().clear();
+      hub.getIsolationScope().clear();
+    });
+
+    it('shows the load error and reports it to Sentry as the billing monitor', async () => {
+      fakeTags([]);
+      const ingest = fakeEndpoint('POST', ENVELOPE_URL, {});
+      await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn());
+      const messages = standInMessages();
+      await renderBilling('/tags', { sentryDsn: SENTRY_DSN });
+      await expect.element(tagsScreen.newTagLink()).toBeVisible();
+      await expect.poll(() => Sentry.getClient()).toBeDefined();
+
+      // Opening billing restarts the load monitor, so only its timers are faked
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      window.location.hash = '#/pro/plans';
+      await expect.element(billingScreen.frame()).toBeVisible();
+      await expect.poll(() => loads(messages).at(-1)?.pathname).toBe('/plans');
+      // A 10s attempt, a 1s retry delay, then a second 10s attempt
+      vi.advanceTimersByTime(21_000);
+      vi.useRealTimers();
+
+      await expect.element(billingScreen.loadError()).toBeVisible();
+      await expect
+        .poll(() => sentryEvents(ingest)[0])
+        .toMatchObject({
+          level: 'warning',
+          message: 'Billing app failed to become ready',
+          exception: { values: [{ type: 'Error', value: 'Billing app failed to become ready' }] },
+          fingerprint: ['billing-app-load-failure', document.visibilityState, '2'],
+          contexts: {
+            ghost: {
+              billing_monitor: {
+                attempts: 2,
+                attempt_source: 'retry',
+                attempt_phase: 'shell_ready',
+                iframe_reload_reason: 'timeout_retry',
+                configured_billing_origin: BILLING_ORIGIN,
+                is_force_upgrade: false,
+                ready_received: false,
+                billing_window_open: true,
+              },
+            },
+          },
+          tags: {
+            source: 'billing-app-load-monitor',
+            billing_shell: 'react',
+            attempt_source: 'retry',
+            attempt_phase: 'shell_ready',
+            route: 'pro.pro-sub',
+            path: '#/pro/plans',
+          },
+        });
+      await settleRequests();
+      await Sentry.flush();
+      expect(sentryEvents(ingest)).toHaveLength(1);
+    });
   });
 });

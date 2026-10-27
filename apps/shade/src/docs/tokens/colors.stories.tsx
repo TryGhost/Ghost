@@ -189,7 +189,9 @@ export const SemanticAuthoring: Story = {
       <p>
         Semantic color variables in <code>theme-variables.css</code> should resolve directly to raw
         color tokens such as <code>--color-gray-700</code>, not to another semantic token such as{' '}
-        <code>--foreground</code> or <code>--muted-foreground</code>.
+        <code>--foreground</code> or <code>--muted-foreground</code>, unless the two must always
+        match and the alias is deliberate, like <code>--interactive-hover</code> pointing at{' '}
+        <code>--button-hover</code>.
       </p>
       <p>
         This keeps each semantic decision inspectable in one place while the raw palette remains the
@@ -239,6 +241,7 @@ export const Surface: Story = {
         { name: 'panel', cssVar: '--surface-panel' },
         { name: 'elevated', cssVar: '--surface-elevated' },
         { name: 'elevated-2', cssVar: '--surface-elevated-2' },
+        { name: 'glass', cssVar: '--surface-glass' },
         { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
       ]}
@@ -311,6 +314,7 @@ export const Border: Story = {
         { name: 'default', cssVar: '--border-default' },
         { name: 'control-border', cssVar: '--control-border' },
         { name: 'strong', cssVar: '--border-strong' },
+        { name: 'glass', cssVar: '--border-glass' },
         { name: 'focus-ring', cssVar: '--focus-ring' },
       ]}
       title="Border &amp; focus"

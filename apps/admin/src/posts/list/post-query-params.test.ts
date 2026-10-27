@@ -67,7 +67,7 @@ describe('buildAllFilter', () => {
   });
 
   // Key order is load-bearing only in that it must stay stable; this locks
-  // the order Ember produced so filters compare equal across the two apps.
+  // the order Ember produced.
   it('orders clauses tag, visibility, status, featured, authors', () => {
     expect(
       buildAllFilter({ tag: 'news', visibility: 'paid', type: 'featured', author: 'jo' }),

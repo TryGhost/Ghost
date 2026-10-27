@@ -3,7 +3,7 @@ import { isMacPlatform } from '@/utils/is-mac-platform';
 
 /** Mounted editor shortcuts share modifier matching, repeat suppression and cleanup. */
 function useShortcut(
-  key: 's' | 'p',
+  key: 's' | 'p' | '.',
   shiftKey: boolean | undefined,
   onPress: () => void,
   enabled = true,
@@ -15,6 +15,8 @@ function useShortcut(
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         !current.current.enabled ||
+        // autofill sends keydown events without a key
+        typeof event.key !== 'string' ||
         event.key.toLowerCase() !== key ||
         !(event.metaKey || event.ctrlKey) ||
         event.altKey ||
@@ -42,6 +44,11 @@ export function usePreviewShortcut(onToggle: () => void, enabled = true): void {
 /** Cmd/Ctrl+Shift+P opens the publish flow. */
 export function usePublishShortcut(onPublish: () => void, enabled = true): void {
   useShortcut('p', true, onPublish, enabled);
+}
+
+/** Cmd/Ctrl+. opens and closes the editor's settings panel. */
+export function useSettingsShortcut(onToggle: () => void, enabled = true): void {
+  useShortcut('.', false, onToggle, enabled);
 }
 
 /** The preview chord as the writer's platform names it: ⌘ on a Mac, Ctrl elsewhere. */

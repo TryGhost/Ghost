@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-jobs",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Base class and contract for Ghost jobs backends.",
   "keywords": [

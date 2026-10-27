@@ -2,15 +2,14 @@ import React from 'react';
 
 /**
  * Guards navigations that bypass react-router: plain `<a href="#/…">` anchors
- * (the admin sidebar, links into Ember-owned routes). Those clicks create a
+ * such as the admin sidebar's. Those clicks create a
  * browser-native history entry that reaches react-router as an untracked POP,
  * which `useBlocker` cannot intercept — so without this, a dirty screen is
  * silently abandoned.
  *
- * Ports Ember's proven approach 1:1 (`ghost/admin/app/initializers/trailing-hash.js`):
- * a capture-phase document click listener that, while `when` is true,
- * intercepts unmodified left-clicks on hash anchors and hands the target href
- * back to the caller to confirm. A click the caller does not `claim`, because
+ * While `when` is true, a capture-phase document click listener intercepts
+ * unmodified left-clicks on hash anchors and hands the target href back to the
+ * caller to confirm. A click the caller does not `claim`, because
  * it already holds another exit, is dropped. Links rendered by react-router
  * (marked with `data-discover`) are left alone — the router's own blocker
  * guards those.

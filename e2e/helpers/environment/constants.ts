@@ -1,5 +1,7 @@
 import path from 'path';
+import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
+import { statSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,11 +11,25 @@ export const CONFIG_DIR = path.resolve(__dirname, '../../data/state');
 // Repository root path (for source mounting and config files)
 export const REPO_ROOT = path.resolve(__dirname, '../../..');
 
+// A linked worktree's .git is a file. Worktrees key their e2e containers, gateway ports and
+// databases so their runs can overlap; the main checkout, which CI uses, keeps the plain names.
+const WORKTREE_KEY = statSync(path.join(REPO_ROOT, '.git'), { throwIfNoEntry: false })?.isFile()
+  ? createHash('sha1').update(REPO_ROOT).digest('hex').slice(0, 8)
+  : null;
+
+export const E2E_CONTAINER_PREFIX = WORKTREE_KEY ? `ghost-e2e-${WORKTREE_KEY}` : 'ghost-e2e';
+export const E2E_DATABASE_PREFIX = WORKTREE_KEY ? `ghost_e2e_${WORKTREE_KEY}_` : 'ghost_e2e_';
+export const E2E_BASE_DATABASE = `${E2E_DATABASE_PREFIX}base`;
+
+/** A worker's gateway host port. Empty lets Docker pick a free one. */
+export function gatewayHostPort(workerIndex: number): string {
+  return WORKTREE_KEY ? '' : String(30000 + workerIndex);
+}
+
 export const DEV_COMPOSE_PROJECT = process.env.COMPOSE_PROJECT_NAME || 'ghost-dev';
 // compose.dev.yaml pins the network name explicitly, so this does not follow COMPOSE_PROJECT_NAME.
 export const DEV_NETWORK_NAME = 'ghost_dev';
 export const DEV_SHARED_CONFIG_VOLUME = `${DEV_COMPOSE_PROJECT}_shared-config`;
-export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
 
 /**
  * Caddyfile paths for different modes.
@@ -91,10 +107,6 @@ export const BASE_GHOST_ENV = [
   // 2FA settings UI / sign-in flow render regardless of the dev default.
   'security__staffDeviceVerification=true',
 
-  // Serve the React post editor, as production will. config.labs outranks the
-  // stored Labs setting, so a spec's `labs` option cannot switch it off.
-  'labs__editorReact=true',
-
   // Skip gscan rule checks on the active theme at boot, as production does.
   'optimization__themes__skipBootChecks=true',
 
@@ -118,7 +130,7 @@ export const GHOST_OWNER = {
 } as const;
 
 export const TEST_ENVIRONMENT = {
-  projectNamespace: 'ghost-dev-e2e',
+  projectNamespace: WORKTREE_KEY ? `ghost-dev-e2e-${WORKTREE_KEY}` : 'ghost-dev-e2e',
   gateway: {
     image: `${DEV_COMPOSE_PROJECT}-ghost-dev-gateway`,
   },
@@ -178,6 +190,7 @@ export const EGRESS_ALLOWLIST: readonly string[] = [
 
   // Ghost-owned
   'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
+  'assets.ghost.io', // Ghost logo image on the Settings → About screen
 
   // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
   // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
-  settingsFacebookCardBackButton,
-  settingsFacebookCardRow,
+  settingsMetaDataBackButton,
+  settingsMetaDataRow,
 } from '@tryghost/test-data/selectors/editor';
 
 import {
@@ -31,7 +31,6 @@ import { deferred } from '@/utils/deferred';
 const POST_ID = 'abc123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const FEATURE = 'https://example.com/content/images/2026/09/coast.png';
@@ -45,7 +44,7 @@ type SavedPost = ReturnType<typeof post>;
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {
@@ -73,12 +72,14 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   });
 }
 
+/** Opens the Meta data pane on its Facebook card tab. */
 async function openFacebookCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
   await settleTransitions();
-  await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
+  await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+  await editorScreen.settingsMetaDataTab('Facebook card').click();
 }
 
 /**
@@ -103,7 +104,7 @@ describe('Post settings Facebook card', () => {
         },
         { status },
       );
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await openFacebookCard();
 
       try {
@@ -113,10 +114,11 @@ describe('Post settings Facebook card', () => {
         );
         await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
         await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
-        await editorScreen.settingsSubviewBack(settingsFacebookCardBackButton).click();
+        await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
         await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-        await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
+        await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
         await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+        await editorScreen.settingsMetaDataTab('Facebook card').click();
         await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
         await expect.element(editorScreen.settingsFacebookImageUnsplashButton()).toBeDisabled();
         expect(saveApi.requests).toHaveLength(0);
@@ -134,9 +136,9 @@ describe('Post settings Facebook card', () => {
     },
   );
 
-  it('opens the pane over the section list and comes back from it', async () => {
+  it('opens under the Meta data pane over the section list and comes back from it', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     // The pane replaces the list it was opened from.
@@ -144,13 +146,13 @@ describe('Post settings Facebook card', () => {
     await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
     await expect
       .element(editorScreen.settingsSidebar())
-      .toHaveAttribute('aria-label', settingsFacebookCardRow);
+      .toHaveAttribute('aria-label', settingsMetaDataRow);
 
-    await editorScreen.settingsSubviewBack(settingsFacebookCardBackButton).click();
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(settingsFacebookCardRow)).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
   });
 
   it('saves an uploaded Facebook image as soon as it lands', async () => {
@@ -158,7 +160,7 @@ describe('Post settings Facebook card', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: UPLOADED, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await userEvent.upload(
@@ -173,7 +175,7 @@ describe('Post settings Facebook card', () => {
 
   it('clears the Facebook image the writer removes', async () => {
     const saveApi = fakeSavablePost({ og_image: UPLOADED });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.removeSettingsFacebookImage().click();
@@ -184,7 +186,7 @@ describe('Post settings Facebook card', () => {
 
   it('persists a draft’s Facebook title and description on the blur that ends each edit', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.settingsFacebookTitle().fill('A better title for Facebook');
@@ -205,7 +207,7 @@ describe('Post settings Facebook card', () => {
 
   it('saves a published post’s Facebook title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.settingsFacebookTitle().fill('A better title for Facebook');
@@ -221,7 +223,7 @@ describe('Post settings Facebook card', () => {
 
   it('offers the post’s own title and excerpt until the Facebook fields carry their own', async () => {
     fakeSavablePost({ custom_excerpt: 'The excerpt this post already has' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await expect
@@ -247,7 +249,7 @@ describe('Post settings Facebook card', () => {
   it('previews the feature image the writer is looking at, and follows it as it changes', async () => {
     fakeSavablePost({ feature_image: FEATURE });
     fakeAdminEndpoint('POST', '/images/upload/', { images: [{ url: UPLOADED, ref: null }] });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     // The card falls back to it while the pane's own dropzone is still empty.
@@ -276,7 +278,7 @@ describe('Post settings Facebook card', () => {
 
   it('falls back to the site’s own description for a post that has none', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await expect
@@ -289,7 +291,7 @@ describe('Post settings Facebook card', () => {
 
   it('refuses to save a Facebook title longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.settingsFacebookTitle().fill('a'.repeat(301));
@@ -303,13 +305,13 @@ describe('Post settings Facebook card', () => {
       .toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Facebook title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });
@@ -329,7 +331,7 @@ describe('Post settings Facebook card', () => {
   it('offers Unsplash on an empty Facebook image field', async () => {
     fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.settingsFacebookImageUnsplashButton().click();
@@ -339,7 +341,7 @@ describe('Post settings Facebook card', () => {
 
   it('leaves Unsplash out while the site’s integration is off', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withoutUnsplash() });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(withoutUnsplash()));
     await openFacebookCard();
 
     await expect.element(editorScreen.settingsFacebookImageInput()).toBeInTheDocument();
@@ -349,7 +351,7 @@ describe('Post settings Facebook card', () => {
   it('saves a Facebook image picked from Unsplash as soon as it lands', async () => {
     const saveApi = fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.settingsFacebookImageUnsplashButton().click();
@@ -363,7 +365,7 @@ describe('Post settings Facebook card', () => {
   it('keeps the pane open when Escape dismisses the Unsplash search', async () => {
     fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
 
     await editorScreen.settingsFacebookImageUnsplashButton().click();
@@ -382,7 +384,7 @@ describe('Post settings Facebook card', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: UPLOADED, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withPintura() });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(withPintura()));
     await openFacebookCard();
 
     await editorScreen.editSettingsFacebookImage().click();

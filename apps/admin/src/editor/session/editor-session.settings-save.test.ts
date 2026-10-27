@@ -148,6 +148,34 @@ describe('createEditorSession', () => {
       },
     );
 
+    it('saves the settings of a published post loaded without a collision token', async () => {
+      const loaded = record({
+        status: 'published',
+        published_at: PUBLISHED_AT,
+        tags: [],
+        updated_at: null,
+      });
+      const { session, state } = sessionHarness(
+        { record: loaded, acknowledged: loaded, baseline: loaded.lexical },
+        { applied: serializedFields },
+      );
+
+      session.patchFields({ tags: [NEWS] });
+      session.commitSettings();
+      await settle();
+
+      expect(state.updates).toEqual([
+        {
+          payload: { id: 'abc123', updated_at: null, ...SAVED_CANVAS, tags: [{ id: 'tag1' }] },
+          saveRevision: false,
+        },
+      ]);
+      expect(session.getSaveSnapshot()).toMatchObject({
+        updatedAt: FIRST_SAVE_AT,
+        settingsDirty: false,
+      });
+    });
+
     it('collides rather than move onto another writer’s canvas, keeping what is staged', async () => {
       const theirs = {
         ...record({ status: 'published', published_at: PUBLISHED_AT, tags: [] }),

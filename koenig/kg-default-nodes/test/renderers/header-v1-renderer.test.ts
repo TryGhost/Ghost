@@ -26,12 +26,12 @@ describe('renderers/header-v1-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image"
                     data-kg-background-image="https://example.com/image.jpg"
@@ -52,7 +52,7 @@ describe('renderers/header-v1-renderer', function () {
             assert.equal(result.html, '');
         });
 
-        it('renders a minimal header card', function () {
+        it('renders a minimal header card', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
                 buttonEnabled: false,
@@ -61,7 +61,7 @@ describe('renderers/header-v1-renderer', function () {
                 subheader: 'hello sub world'
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style="">
                     <h2 class="kg-header-card-header" id="hello-world">hello world</h2>
                     <h3 class="kg-header-card-subheader" id="hello-sub-world">hello sub world</h3>
@@ -69,7 +69,7 @@ describe('renderers/header-v1-renderer', function () {
             `);
         });
 
-        it('renders without subheader', function () {
+        it('renders without subheader', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
                 buttonEnabled: false,
@@ -78,14 +78,14 @@ describe('renderers/header-v1-renderer', function () {
                 subheader: ''
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style="">
                     <h2 class="kg-header-card-header" id="hello-world">hello world</h2>
                 </div>
             `);
         });
 
-        it('renders without subheader when it only contains trailing BR variants', function () {
+        it('renders without subheader when it only contains trailing BR variants', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
                 buttonEnabled: false,
@@ -94,7 +94,7 @@ describe('renderers/header-v1-renderer', function () {
                 subheader: '<BR /><br/>'
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style="">
                     <h2 class="kg-header-card-header" id="hello-world">hello world</h2>
                 </div>
@@ -103,12 +103,12 @@ describe('renderers/header-v1-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image"
                     data-kg-background-image="https://example.com/image.jpg"

@@ -17,11 +17,10 @@ describe('CodeBlockNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -199,12 +198,12 @@ describe('CodeBlockNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders and escapes', editorTest(function () {
+        it('renders and escapes', editorTest(async function () {
             const codeBlockNode = $createCodeBlockNode({code});
             const {element} = codeBlockNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
-            assertPrettifiesTo(el.outerHTML, html`
+            await assertPrettifiesTo(el.outerHTML, html`
                 <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         }));

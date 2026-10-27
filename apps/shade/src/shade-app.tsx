@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React from 'react';
 import ShadeProvider from '@/providers/shade-provider';
-import type { ControlShape } from '@/providers/shade-provider';
+import type { ControlShape } from '@/providers/shade-context';
 
 /**
  * The className is used to scope the styles of the app to the app's namespace.

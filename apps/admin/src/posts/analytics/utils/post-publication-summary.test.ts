@@ -19,7 +19,7 @@ const publishedPost = (overrides: Partial<Post> = {}): Post =>
 const emailOnlyPost = (overrides: Partial<Post> = {}) =>
   publishedPost({ status: 'sent', email_only: true, ...overrides });
 
-const sent = { isEmailSent: true, improveSendingUI: true, timezone: TIMEZONE };
+const sent = { isEmailSent: true, timezone: TIMEZONE };
 const unsent = { ...sent, isEmailSent: false };
 
 describe('getPostPublicationSummary', () => {
@@ -55,14 +55,5 @@ describe('getPostPublicationSummary', () => {
   it('holds an email-only publication summary back until the send finishes', () => {
     expect(getPostPublicationSummary(emailOnlyPost(), unsent)).toBeNull();
     expect(getPostPublicationSummary(emailOnlyPost(), sent)).toBe(`Sent to 1,000 members ${ON}`);
-  });
-
-  it('keeps the previous wording without the improved sending UI', () => {
-    const flagOff = { ...unsent, improveSendingUI: false };
-
-    expect(getPostPublicationSummary(emailOnlyPost(), flagOff)).toBe(`Sent ${ON}`);
-    expect(getPostPublicationSummary(publishedPost(), { ...flagOff, isEmailSent: true })).toBe(
-      `Published and sent ${ON}`,
-    );
   });
 });

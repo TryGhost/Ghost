@@ -70,7 +70,7 @@ async function searchLinks(hook: SuggestionsHook, term = 'jamie') {
 const staffLinks = (groups: LinkSearchGroup[]) =>
   groups.find(({ label }) => label === 'Staff')?.items ?? [];
 const staffResults = (hook: SuggestionsHook) =>
-  hook.result.current.search.results.find(({ groupName }) => groupName === 'Staff')?.options ?? [];
+  hook.result.current.search.results.find(({ heading }) => heading === 'Staff')?.items ?? [];
 
 describe('usePostLinkSuggestions', () => {
   it.each(['global search', 'editor links'] as const)(
@@ -97,7 +97,7 @@ describe('usePostLinkSuggestions', () => {
 
       await hook.rerender({ term: 'jamie' });
       await expect.poll(() => hook.result.current.search.isLoading).toBe(false);
-      expect(staffResults(hook)).toMatchObject([{ id: 'user.team-jamie', title: 'Jamie Larson' }]);
+      expect(staffResults(hook)).toMatchObject([{ id: 'team-jamie', title: 'Jamie Larson' }]);
       await searchLinks(hook, 'interview');
       for (const endpoint of Object.values(index)) {
         expect(endpoint.requests).toHaveLength(1);
@@ -125,7 +125,7 @@ describe('usePostLinkSuggestions', () => {
     ]);
     await expect
       .poll(() => staffResults(hook))
-      .toMatchObject([{ id: `user.${saved.slug}`, title: saved.name }]);
+      .toMatchObject([{ id: saved.slug, title: saved.name }]);
     for (const endpoint of Object.values(index)) {
       expect(endpoint.requests).toHaveLength(1);
     }

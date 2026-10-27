@@ -381,7 +381,11 @@ export function fakeEndpoint(
         return undefined;
       }
 
-      requests.push({ url: request.url, body: await parseRequestBody(request) });
+      requests.push({
+        url: request.url,
+        body: await parseRequestBody(request),
+        headers: Object.fromEntries(request.headers),
+      });
 
       return HttpResponse.json(response as Record<string, unknown>, { status });
     }),
@@ -399,6 +403,8 @@ export interface CapturedEndpointRequest {
   url: string;
   /** Parsed JSON, multipart fields, or plain text; undefined when there is no body. */
   body: unknown;
+  /** The headers as the request was sent, with lowercase names. */
+  headers: Record<string, string>;
 }
 
 export interface EndpointCapture {
@@ -482,6 +488,7 @@ export function fakeAdminEndpoint(
     const captured: CapturedEndpointRequest = {
       url: request.url,
       body: await parseRequestBody(request),
+      headers: Object.fromEntries(request.headers),
     };
     requests.push(captured);
 

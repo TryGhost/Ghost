@@ -15,7 +15,7 @@ const upgradeStatusAlerts: Record<UpgradeStatus, { key: string; message: string 
   },
 };
 
-/** Each alert shows at most once per page load; keys match Ember's so either side replaces the other's. */
+/** Each alert shows at most once per page load. */
 export function useUpgradeStatusAlerts(store: AlertsStore) {
   const shown = useRef(new Set<UpgradeStatus>());
 

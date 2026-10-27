@@ -1,6 +1,12 @@
 import React from 'react';
 import type { Automation } from '@tryghost/admin-x-framework/api/automations';
 
+const inactiveBadge = (label: string) => (
+  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground uppercase">
+    {label}
+  </span>
+);
+
 const AutomationStatusBadge: React.FC<{ status: Automation['status'] }> = ({ status }) => {
   switch (status) {
     case 'active':
@@ -11,11 +17,9 @@ const AutomationStatusBadge: React.FC<{ status: Automation['status'] }> = ({ sta
         </span>
       );
     case 'inactive':
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground uppercase">
-          Off
-        </span>
-      );
+      return inactiveBadge('Off');
+    case 'archived':
+      return inactiveBadge('Archived');
     default: {
       const invalidStatus: never = status;
       throw new Error(`Unhandled status: ${String(invalidStatus)}`);

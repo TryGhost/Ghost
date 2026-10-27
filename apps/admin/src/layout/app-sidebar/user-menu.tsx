@@ -11,9 +11,11 @@ import {
   DropdownMenuTrigger,
   Indicator,
   SidebarMenuButton,
+  useSidebar,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useDeleteSession } from '@tryghost/admin-x-framework/api/session';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
@@ -25,19 +27,70 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { UserMenuItem } from './user-menu-item';
 import { UserMenuAvatar } from './user-menu-avatar';
 import { UserMenuHeader } from './user-menu-header';
-import { Link } from '@tryghost/admin-x-framework';
+import { Link, useFeaturebase } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function UserMenuProfile() {
   const currentUser = useCurrentUser();
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <UserMenuItem>
-      <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+      <Link state={settingsReturnToState} to={`/settings/staff/${currentUser.data?.slug}`}>
         <LucideIcon.User />
         <UserMenuItem.Label>Your profile</UserMenuItem.Label>
       </Link>
     </UserMenuItem>
+  );
+}
+
+/** Help and Feedback, which Admin 7 moves here from the sidebar. */
+function UserMenuHelp() {
+  const { data: currentUser } = useCurrentUser();
+  const {
+    isAvailable: featurebaseAvailable,
+    openFeedbackWidget,
+    preloadFeedbackWidget,
+  } = useFeaturebase();
+  const { isMobile, setOpenMobile } = useSidebar();
+  const showFeedback = currentUser && featurebaseAvailable && !isContributorUser(currentUser);
+
+  // Leaving the menu for another tab or the feedback widget also closes the mobile sheet
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
+  return (
+    <>
+      <UserMenuItem onSelect={closeMobileSidebar}>
+        <a
+          href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <LucideIcon.HelpCircle />
+          <UserMenuItem.Label>Help</UserMenuItem.Label>
+        </a>
+      </UserMenuItem>
+      {showFeedback && (
+        <UserMenuItem
+          asChild={false}
+          onFocus={preloadFeedbackWidget}
+          onMouseEnter={preloadFeedbackWidget}
+          onSelect={() => {
+            closeMobileSidebar();
+            openFeedbackWidget();
+          }}
+        >
+          <LucideIcon.MessageCircle />
+          <UserMenuItem.Label>Feedback</UserMenuItem.Label>
+        </UserMenuItem>
+      )}
+    </>
   );
 }
 
@@ -56,10 +109,7 @@ function UserMenuAppearance() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger
-        className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground"
-        data-test-nav="appearance"
-      >
+      <DropdownMenuSubTrigger className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground">
         <LucideIcon.Palette />
         <UserMenuItem.Label>Appearance</UserMenuItem.Label>
         <span className="text-sm text-muted-foreground">{THEME_LABELS[theme]}</span>
@@ -69,7 +119,6 @@ function UserMenuAppearance() {
           <DropdownMenuItem
             key={value}
             aria-label={`${label} appearance`}
-            data-test-theme-option={value}
             disabled={isSettingTheme}
             onSelect={() => {
               void setTheme(value);
@@ -121,6 +170,7 @@ function UserMenu(props: UserMenuProps) {
   const currentUser = useCurrentUser();
   const { hasNew } = useWhatsNew();
   const { showUpgradeBanner } = useUpgradeStatus();
+  const admin7Design = useFeatureFlag('admin7Design');
 
   return (
     <DropdownMenu {...props}>
@@ -149,10 +199,7 @@ function UserMenu(props: UserMenuProps) {
               {currentUser.data?.email}
             </span>
           </div>
-          <LucideIcon.ChevronsUpDown
-            className="ml-auto size-4 text-gray-700"
-            data-test-nav="arrow-down"
-          />
+          <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-gray-700" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -166,7 +213,6 @@ function UserMenu(props: UserMenuProps) {
         <DropdownMenuSeparator />
         <UserMenuItem
           asChild={false}
-          data-test-nav="whatsnew"
           onSelect={() => {
             props.onOpenWhatsNew?.();
           }}
@@ -186,6 +232,7 @@ function UserMenu(props: UserMenuProps) {
         </UserMenuItem>
         <UserMenuProfile />
         <DropdownMenuSeparator />
+        {admin7Design && <UserMenuHelp />}
         <UserMenuItem>
           <a
             href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"

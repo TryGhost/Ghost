@@ -10,6 +10,7 @@ import { postPreviewUrl } from './preview/preview-url';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { describeRevertToast, describeSaveToast, type SaveToast } from './save-toast';
 import { useSiteTimezone } from './use-editor-settings';
+import { useSmallScreen } from './use-small-screen';
 import type { SaveCompletion } from './engine/save-engine';
 import type { EditorSaveResult } from './session/editor-session';
 import type { EditorRecord } from './session/projection';
@@ -42,11 +43,14 @@ function savedRecordOf(completion: SaveCompletion): EditorRecord | undefined {
   return (completion.result as EditorSaveResult).post;
 }
 
-function showSaveToast({ title, description, action }: SaveToast): string {
+function showSaveToast({ title, description, action }: SaveToast, smallScreen: boolean): string {
   saveToastSeq += 1;
   const id = `editor-save-${saveToastSeq}`;
   toast.success(title, {
     id,
+    // Leave both the header and the mobile footer's actions reachable.
+    position: smallScreen ? 'top-left' : 'bottom-left',
+    className: smallScreen ? 'top-20!' : undefined,
     description: description ? (
       <>
         {description.map(({ text, strong }) =>
@@ -79,6 +83,7 @@ interface SaveFeedbackSources {
  * toast and, once the server acknowledges it, describes the post's new state.
  */
 export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackSources) {
+  const smallScreen = useSmallScreen();
   const timezone = useSiteTimezone();
   const audience = scheduledAudienceOf(session.loadedRecord);
   const { count } = useMembersCount(audience?.filter ?? null, {
@@ -96,6 +101,7 @@ export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackS
   ).length;
 
   const sources = {
+    smallScreen,
     session,
     displayName,
     siteUrl,
@@ -112,7 +118,7 @@ export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackS
     if (lastToastId.current) {
       toast.dismiss(lastToastId.current);
     }
-    lastToastId.current = showSaveToast(described);
+    lastToastId.current = showSaveToast(described, latest.current.smallScreen);
   }, []);
 
   const save = useCallback(async (): Promise<SaveCompletion> => {

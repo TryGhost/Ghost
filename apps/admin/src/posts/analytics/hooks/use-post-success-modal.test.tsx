@@ -8,20 +8,6 @@ import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import { usePostSuccessModal } from '@/posts/analytics/hooks/use-post-success-modal';
 
-const { mockUseFeatureFlag } = vi.hoisted(() => ({
-  mockUseFeatureFlag: vi.fn(),
-}));
-
-vi.mock('@tryghost/admin-x-framework/hooks', async () => {
-  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
-    '@tryghost/admin-x-framework/hooks',
-  );
-  return {
-    ...actual,
-    useFeatureFlag: (flag: string) => mockUseFeatureFlag(flag) as boolean,
-  };
-});
-
 // Mock the shared analytics data hook (not HTTP)
 vi.mock('@/shared/analytics/use-analytics-data', () => ({
   useAnalyticsData: vi.fn(),
@@ -61,7 +47,6 @@ const test = baseTest.extend<{
 describe('usePostSuccessModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseFeatureFlag.mockReturnValue(false);
 
     // Default mocks
     mockUseAnalyticsData.mockReturnValue({
@@ -439,14 +424,13 @@ describe('usePostSuccessModal', () => {
     });
   });
 
-  test('uses in-progress copy for a post and email when improved sending UI is enabled', async ({
+  test('uses in-progress copy for a post and email that is still sending', async ({
     server,
     wrapper,
   }) => {
-    mockUseFeatureFlag.mockReturnValue(true);
     mockPosts(server, [
       buildPost({
-        email: { email_count: 100, opened_count: 0 },
+        email: { email_count: 100, opened_count: 0, status: 'submitting' },
         newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
       }),
     ]);
@@ -461,11 +445,7 @@ describe('usePostSuccessModal', () => {
     ).toBeTruthy();
   });
 
-  test('uses completed copy when the legacy flow has already observed submission', async ({
-    server,
-    wrapper,
-  }) => {
-    mockUseFeatureFlag.mockReturnValue(true);
+  test('uses completed copy once the email has been submitted', async ({ server, wrapper }) => {
     mockPosts(server, [
       buildPost({
         email: { email_count: 100, opened_count: 0, status: 'submitted' },
@@ -481,11 +461,29 @@ describe('usePostSuccessModal', () => {
     expect(screen.getByText(/Your post was published on your site and sent to/)).toBeTruthy();
   });
 
-  test('uses in-progress copy for an email-only send when improved sending UI is enabled', async ({
+  test('uses in-progress copy for an email-only send that is still sending', async ({
     server,
     wrapper,
   }) => {
-    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email_only: true,
+        email: { email_count: 50, opened_count: 0, status: 'pending' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(screen.getByText(/Your email is being sent to/)).toBeTruthy();
+  });
+
+  test('treats an email whose status is not known yet as still sending', async ({
+    server,
+    wrapper,
+  }) => {
     mockPosts(server, [
       buildPost({
         email_only: true,
@@ -499,6 +497,41 @@ describe('usePostSuccessModal', () => {
     await waitFor(() => expect(result.current.modalProps).toBeTruthy());
     render(result.current.modalProps?.description);
     expect(screen.getByText(/Your email is being sent to/)).toBeTruthy();
+  });
+
+  test('claims no delivery for a published post whose email failed', async ({
+    server,
+    wrapper,
+  }) => {
+    mockPosts(server, [
+      buildPost({
+        email: { email_count: 100, opened_count: 0, status: 'failed' },
+        newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    const { container } = render(result.current.modalProps?.description);
+    expect(container.textContent).toMatch(/^Your post was published on your site/);
+    expect(container.textContent).not.toMatch(/sent|subscriber/);
+  });
+
+  test('opens no modal for an email-only send whose email failed', async ({ server, wrapper }) => {
+    mockPosts(server, [
+      buildPost({
+        email_only: true,
+        email: { email_count: 50, opened_count: 0, status: 'failed' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.post).toBeDefined());
+    expect(result.current.modalProps).toBeNull();
   });
 
   test('handles loading state', ({ server, wrapper }) => {

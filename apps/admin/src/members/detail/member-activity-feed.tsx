@@ -103,8 +103,7 @@ const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
   return link;
 };
 
-// Copy pinned to Ember's `activity-feed-empty.hbs:5` so any future refactor of
-// the message stays in lockstep with what Ember users see.
+// Copy ported verbatim from Ember's `activity-feed-empty.hbs`.
 const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
 
 const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
@@ -268,7 +267,8 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
       <Card>
         <CardContent className="pt-3">
           {isLoading ? (
-            <div className="flex flex-col gap-3">
+            // Held back like the loading spinners, so a quick feed never flashes skeletons
+            <div className="delayed-fade-in flex flex-col gap-3">
               <Skeleton className="h-10" />
               <Skeleton className="h-10" />
               <Skeleton className="h-10" />

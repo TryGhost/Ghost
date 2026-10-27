@@ -99,7 +99,7 @@ describe('Automation run list', () => {
       await expect
         .element(runsRegion().getByRole('status'))
         .toHaveTextContent('Loading automation runs');
-      await expect.element(runsRegion()).not.toHaveTextContent('No members match');
+      await expect.element(runsRegion()).not.toHaveTextContent('No members yet');
       await expect.element(runsRegion().getByRole('status')).toHaveClass('sr-only');
       expect(
         runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
@@ -111,7 +111,7 @@ describe('Automation run list', () => {
       finish();
     }
     await open();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members yet');
     expect(
       runsRegion().element().querySelectorAll('tbody tr[aria-hidden="true"][data-index]'),
     ).toHaveLength(0);
@@ -184,21 +184,21 @@ describe('Automation run list', () => {
     });
     const { queryClient } = await renderAdminApp('/automations/first', flags);
     await open();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members yet');
 
     const refresh = fakeAdminEndpoint('GET', endpoint, {}, { status: 500 });
-    // The app's authentication bridge can invalidate a previously successful query.
+    // A refetch can fail after a previously successful load.
     await queryClient.invalidateQueries();
     await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     expect(refresh.requests).toHaveLength(1);
-    await expect.element(runsRegion()).not.toHaveTextContent('No members match');
+    await expect.element(runsRegion()).not.toHaveTextContent('No members yet');
 
     fakeAdminEndpoint('GET', endpoint, {
       meta: { pagination: { limit: 50, next_cursor: null } },
       automation_runs: [],
     });
     await runsRegion().getByRole('button', { name: 'Retry' }).click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members yet');
     await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -208,7 +208,7 @@ describe('Automation run list', () => {
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
-    await expect.element(runsRegion()).not.toHaveTextContent('No members match');
+    await expect.element(runsRegion()).not.toHaveTextContent('No members yet');
   });
 
   it('fits long member names and emails inside a narrow sidebar', async () => {

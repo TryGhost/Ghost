@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/metafield-csv",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "How Ghost's members CSV import and export lay member custom field values out in columns",
   "license": "MIT",
@@ -33,7 +33,8 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/metafield-types": "workspace:*"
+    "@tryghost/metafield-types": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

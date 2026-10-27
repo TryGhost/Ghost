@@ -18,7 +18,6 @@ import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
 
 const SIGNUP_CARD_LEXICAL = JSON.stringify({
   root: {
@@ -61,7 +60,7 @@ const SITE_LABELS = [
 function bootAs(role: 'Contributor'): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
 function openSignupPost() {
@@ -102,7 +101,7 @@ async function focusLabelsInput() {
 describe('Signup card labels', () => {
   it('offers every site label, past the first page, as the writer types', async () => {
     const labelsApi = openSignupPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.poll(() => labelsApi.requests.map(({ page }) => page)).toEqual([1, 2]);
     expect(labelsApi.requests.map(({ limit }) => limit)).toEqual([100, 100]);
@@ -146,7 +145,7 @@ describe('Signup card labels', () => {
     window.addEventListener('unhandledrejection', collectRejection);
     navigation.addEventListener('navigate', recordDocumentLeave);
     try {
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await expect.poll(() => rejections.length).toBeGreaterThan(0);
       await expect.element(editorScreen.signupCard()).toBeVisible();

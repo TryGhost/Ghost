@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Container } from '@tryghost/shade/primitives';
-import { ListPage } from '@tryghost/shade/page-templates';
+import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { keepPreviousData } from '@tanstack/react-query';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { buildMemberListSearchParams, getMemberActiveColumns } from './member-query-params';
@@ -32,6 +32,8 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
 import { useShade } from '@tryghost/shade/app';
+import { useIdlePreload } from '@/shared/use-idle-preload';
+import { preloadMapAtlas } from './detail/map-atlas';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -50,6 +52,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
   timezone,
 }) => {
   const { isAdmin7 } = useShade();
+  // Under a large title (admin7Design), a roomier row of column labels
+  const { largeTitles } = usePageChrome();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -209,7 +213,12 @@ const MembersPage: React.FC<MembersPageProps> = ({
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
-        <ListPage data-testid="members-page">
+        <ListPage
+          className={cn(
+            largeTitles && '[&_[data-testid=members-list-scroll-root]>div:first-child_th]:h-11',
+          )}
+          data-testid="members-page"
+        >
           <ListPage.Header className="py-4 sidebar:py-5">
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
               <PageHeader blurredBackground={false} sticky={false}>
@@ -334,6 +343,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
 const Members: React.FC = () => {
   const [searchParams] = useSearchParams();
+  // A member's page draws a map behind its header; fetching the atlas now means
+  // it is usually there before the admin opens one.
+  useIdlePreload(preloadMapAtlas, true);
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const { data: configData, isLoading: isConfigLoading } = useBrowseConfig();
   const filterParam = searchParams.get('filter') ?? undefined;

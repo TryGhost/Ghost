@@ -99,8 +99,13 @@ const isSessionExpiry = (endpoint: string | URL) => {
   return GHOST_API_REQUEST.test(url) && !SESSION_API_REQUEST.test(url);
 };
 
+// Whether the error a request to `endpoint` failed with means the session expired. This is the
+// single rule for every request Admin makes, whether through `useFetchApi` or not.
+const isExpiredSession = (error: unknown, endpoint: string | URL): error is UnauthorizedError =>
+  error instanceof UnauthorizedError && isSessionExpiry(endpoint);
+
 // Replace to the admin root at most once across concurrent failures, unless
-// Ember is already booting or displaying an unauthenticated route, or a screen holds it
+// Admin is already on an unauthenticated route or a screen holds it
 const redirectOnSessionExpiry = () => {
   const { adminRoot } = getGhostPaths();
 
@@ -112,6 +117,61 @@ const redirectOnSessionExpiry = () => {
   ) {
     sessionExpiryHandled = true;
     window.location.replace(adminRoot);
+  }
+};
+
+// Runs one session check at a time, however many responses ask for one.
+let sessionCheck: Promise<boolean> | undefined;
+
+// How long the session check may take. An app's request waits on it, so a check that never answers
+// mustn't hold the request forever; one that times out counts as the session still working.
+const SESSION_CHECK_TIMEOUT_MS = 10_000;
+
+// Whether Ghost reports that the session has expired, checked with the current user's endpoint.
+const sessionHasExpired = (): Promise<boolean> => {
+  sessionCheck ??= (async () => {
+    const endpoint = apiUrl('/users/me/');
+    try {
+      const response = await fetch(endpoint, {
+        credentials: 'include',
+        headers: ghostApiRequestHeaders({}),
+        signal: AbortSignal.timeout(SESSION_CHECK_TIMEOUT_MS),
+      });
+      return await handleResponse(response).then(
+        () => false,
+        (error: unknown) => isExpiredSession(error, endpoint),
+      );
+    } catch {
+      return false;
+    }
+  })().finally(() => {
+    sessionCheck = undefined;
+  });
+  return sessionCheck;
+};
+
+/**
+ * Redirects to the Admin root, as `useFetchApi` does, when a request Admin makes for an app finds
+ * the session expired. An unauthorized response to these requests can't be trusted alone,
+ * because an app can trigger one, for example from a route that expects a token in its URL. So it
+ * only counts once Ghost confirms the session has expired, by checking `/users/me/`. As with any
+ * request, only a Ghost API path other than the session endpoint counts, and only once this page
+ * load has seen the session work. Reads a clone of a failed `response`, so the caller can still
+ * read its body. A successful response isn't read at all.
+ */
+export const handleSessionExpiry = async (
+  endpoint: string | URL,
+  response: Response,
+): Promise<void> => {
+  if (response.ok) {
+    return;
+  }
+  const expired = await handleResponse(response.clone()).then(
+    () => false,
+    (error: unknown) => isExpiredSession(error, endpoint),
+  );
+  if (expired && (await sessionHasExpired())) {
+    redirectOnSessionExpiry();
   }
 };
 
@@ -186,6 +246,25 @@ const fetchWithXhr = (
     xhr.send(body);
   });
 
+/**
+ * The headers Admin sends with every request to Ghost's API, with lowercase names. Requests Admin
+ * makes on an app's behalf use them too, so those requests look like Admin's own.
+ */
+export const ghostApiRequestHeaders = ({
+  ghostVersion,
+  body,
+}: {
+  ghostVersion?: string;
+  body?: unknown;
+}): Record<string, string> => ({
+  'app-pragma': 'no-cache',
+  // Only include version header if ghostVersion is provided
+  // This allows forward admin deployments to skip version checks
+  ...(ghostVersion ? { 'x-ghost-version': ghostVersion } : {}),
+  // By default, we set the Content-Type header to application/json
+  ...(typeof body === 'string' ? { 'content-type': 'application/json' } : {}),
+});
+
 export const useFetchApi = () => {
   const { ghostVersion } = useFramework();
 
@@ -212,12 +291,7 @@ export const useFetchApi = () => {
       const requestInit: InternalRequestInit = {
         method,
         headers: {
-          'app-pragma': 'no-cache',
-          // Only include version header if ghostVersion is provided
-          // This allows forward admin deployments to skip version checks
-          ...(ghostVersion ? { 'x-ghost-version': ghostVersion } : {}),
-          // By default, we set the Content-Type header to application/json
-          ...(typeof body === 'string' ? { ['content-type']: 'application/json' } : {}),
+          ...ghostApiRequestHeaders({ ghostVersion, body }),
           ...headers,
         },
         credentials,
@@ -306,7 +380,7 @@ export const useFetchApi = () => {
               throw new TimeoutError();
             }
 
-            if (error instanceof UnauthorizedError && isSessionExpiry(endpoint)) {
+            if (isExpiredSession(error, endpoint)) {
               if (sessionExpiryRedirect) {
                 redirectOnSessionExpiry();
               }

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(__dirname, '../helpers/services/stripe/fixtures');
 
-// Pinned to what ghost/core ships. Response shapes are version-dependent, so a
+// Pinned to what ghost ships. Response shapes are version-dependent, so a
 // fixture captured at any other version would describe an API we do not call.
 const API_VERSION = '2020-08-27';
 function log(message: string): void {

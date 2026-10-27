@@ -11,6 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Link,
 } from '@tryghost/shade/components';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -31,6 +32,7 @@ import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 interface ThemeActionProps {
   theme: Theme;
@@ -116,10 +118,13 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
       prompt: (
         <>
           You are about to delete <strong>&quot;{theme.name}&quot;.</strong> This is permanent! We
-          warned you, k? Maybe download{' '}
-          <span className="cursor-pointer text-green-500" onClick={handleDownload}>
-            your theme before continuing
-          </span>
+          warned you, k? Maybe{' '}
+          <Link asChild>
+            <button type="button" onClick={handleDownload}>
+              download your theme
+            </button>
+          </Link>{' '}
+          before continuing.
         </>
       ),
       okLabel: 'Delete',
@@ -142,7 +147,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
     if (limitError) {
       showLimit({
         prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
       return;
     }

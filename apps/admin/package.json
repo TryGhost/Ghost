@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
     "test:types": "tsc -b",
     "typecheck": "tsc -b",
-    "assemble:assets": "node ../../scripts/assemble-admin-assets.ts"
+    "assemble:assets": "node ../../tools/scripts/build/assemble-admin-assets.ts"
   },
   "dependencies": {
     "@codemirror/lang-css": "catalog:",
@@ -29,6 +29,8 @@
     "@dnd-kit/core": "catalog:",
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
+    "@floating-ui/react-dom": "catalog:",
+    "@quilted/threads": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
@@ -37,6 +39,7 @@
     "@tanstack/react-virtual": "catalog:",
     "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/custom-fonts": "catalog:",
@@ -59,7 +62,7 @@
     "dompurify": "catalog:",
     "flexsearch": "catalog:",
     "i18n-iso-countries": "7.14.0",
-    "jszip": "3.10.1",
+    "jszip": "3.10.2",
     "lucide-react": "catalog:",
     "luxon": "catalog:",
     "mingo": "catalog:",
@@ -82,8 +85,10 @@
     "@internal/cfg-eslint-react": "workspace:*",
     "@sentry/vite-plugin": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
+    "@tryghost/app-sdk": "workspace:*",
     "@tryghost/test-data": "workspace:*",
     "@types/node": "catalog:",
     "@types/papaparse": "5.5.2",
@@ -100,7 +105,7 @@
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "jsdom": "catalog:",
     "msw": "catalog:",
-    "sirv": "3.0.2",
+    "sirv": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
@@ -112,14 +117,14 @@
   "nx": {
     "namedInputs": {
       "cardAssets": [
-        "{workspaceRoot}/ghost/core/core/frontend/src/cards/**/*"
+        "{workspaceRoot}/ghost/core/frontend/src/cards/**/*"
       ],
       "reactTests": [
         "default",
         "cardAssets",
-        "{workspaceRoot}/scripts/hash-vite-env.ts",
+        "{workspaceRoot}/tools/scripts/build/hash-vite-env.ts",
         {
-          "runtime": "node scripts/hash-vite-env.ts --directory=apps/admin"
+          "runtime": "node tools/scripts/build/hash-vite-env.ts --directory=apps/admin"
         },
         {
           "runtime": "node -v"
@@ -165,10 +170,6 @@
     "tags": [
       "playwright"
     ],
-    "implicitDependencies": [
-      "ghost-admin",
-      "@internal/scripts"
-    ],
     "targets": {
       "test": {
         "executor": "nx:noop",
@@ -181,22 +182,13 @@
       "test:unit": {
         "inputs": [
           "reactTests",
-          "^reactAdminDependency"
+          "^default"
         ],
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
           }
@@ -206,7 +198,7 @@
         "cache": true,
         "inputs": [
           "reactTests",
-          "^reactAdminDependency"
+          "^default"
         ],
         "outputs": [
           "{projectRoot}/test-results/acceptance.json"
@@ -214,17 +206,8 @@
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
           }
@@ -233,7 +216,7 @@
       "test:types": {
         "inputs": [
           "default",
-          "^reactAdminDependency"
+          "^default"
         ],
         "outputs": [],
         "dependsOn": [
@@ -241,6 +224,8 @@
             "projects": [
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -269,43 +254,27 @@
           "@tryghost/shade:dev"
         ]
       },
-      "dev:ember": {
+      "dev:host": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
           "cwd": "apps/admin",
-          "command": "vite"
+          "command": "vite optimize --logLevel error && vite",
+          "envFile": ".ghost-dev.env"
         },
         "dependsOn": [
-          "ghost-monorepo:docker:up",
-          "ghost-admin:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/shade:dev"
+          "ghost-monorepo:dev:env",
+          "build:dev"
         ]
       },
       "build:dev": {
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
-          },
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build:dev"
           }
         ]
       },
@@ -317,23 +286,22 @@
           {
             "env": "IS_SHIPPING"
           },
+          {
+            "env": "GHOST_BUILD_VERSION"
+          },
           "default",
           "cardAssets",
+          "{workspaceRoot}/tools/scripts/build/assemble-admin-assets.ts",
+          "{workspaceRoot}/tools/scripts/build/admin-assets.ts",
           "^default"
         ],
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin",
-          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
+          "{workspaceRoot}/ghost/core/built/admin",
+          "{workspaceRoot}/ghost/core/built/embed-renderer"
         ],
         "dependsOn": [
-          "^build",
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "lint": {
@@ -341,6 +309,8 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/kg-converters",
               "@tryghost/metafield-types",
@@ -354,8 +324,8 @@
         "cache": false,
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin",
-          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
+          "{workspaceRoot}/ghost/core/built/admin",
+          "{workspaceRoot}/ghost/core/built/embed-renderer"
         ]
       }
     }

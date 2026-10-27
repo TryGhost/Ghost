@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Avatar,
   Breadcrumb,
@@ -21,10 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { Box, Container, Inline, Stack } from '@tryghost/shade/primitives';
-import { ListPage } from '@tryghost/shade/page-templates';
+import { Box, Container, H1, Inline, Stack } from '@tryghost/shade/primitives';
+import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { LucideIcon, formatNumber, getScrollParent } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber, getScrollParent } from '@tryghost/shade/utils';
 import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseMemberActivityFeed, useMember } from '@tryghost/admin-x-framework/api/members';
@@ -44,6 +44,12 @@ import {
   excludedActivityEvents,
   toggleActivityType,
 } from './activity-filters';
+
+// A member's activity, where list pages show large titles (admin7Design), gets
+// the detail screens' header: the member's name large under the breadcrumb,
+// the header sticking as a whole once the breadcrumb reaches the list pages'
+// collapsed header row, 24px from the top.
+const MEMBER_HEADER_TOP = 'calc(24px - var(--large-title-space))';
 
 function ActivityPage() {
   const [params, setParams] = useSearchParams();
@@ -118,12 +124,26 @@ function ActivityPage() {
   }, [feed.hasNextPage, feed.isFetching, feed.isError, feed.fetchNextPage]);
 
   const hasFilter = !!memberId || excludedTypes.length > 0;
+  const { largeTitles } = usePageChrome();
+  const memberHeader = largeTitles && !!memberId;
 
   return (
     <Box className="size-full">
       <Container className="relative h-full" size="page">
-        <ListPage data-testid="member-activity-page">
-          <ListPage.Header>
+        <ListPage
+          data-testid="member-activity-page"
+          style={
+            memberHeader
+              ? ({ '--list-page-header-top': MEMBER_HEADER_TOP } as CSSProperties)
+              : undefined
+          }
+        >
+          <ListPage.Header
+            className={cn(
+              memberHeader &&
+                'top-(--list-page-header-top) z-40 gap-1 bg-background bg-none! pt-(--large-title-space)! pb-8 backdrop-blur-none!',
+            )}
+          >
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
                 {memberId ? (
@@ -137,7 +157,7 @@ function ActivityPage() {
                       <BreadcrumbSeparator />
                       <BreadcrumbItem>
                         <BreadcrumbPage className="truncate">
-                          {member ? formatMemberName(member) : 'Member'}
+                          {member && !memberHeader ? formatMemberName(member) : 'Member'}
                         </BreadcrumbPage>
                       </BreadcrumbItem>
                     </BreadcrumbList>
@@ -189,9 +209,34 @@ function ActivityPage() {
                 </Inline>
               </PageHeader.Actions>
             </PageHeader>
+            {/* The name wraps rather than truncates, and stops short of the
+                actions above it on wide screens */}
+            {memberHeader && member && (
+              <Inline className="min-w-0 lg:pr-40" gap="lg">
+                <Avatar
+                  {...memberAvatarProps(member)}
+                  className="size-14 min-w-14 [&_span]:text-xl"
+                  src={member.avatar_image}
+                />
+                <Stack className="min-w-0" gap="none">
+                  <H1 className="text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]! break-words">
+                    {formatMemberName(member)}
+                  </H1>
+                  <Inline className="min-w-0 text-muted-foreground" gap="sm">
+                    {member.name?.trim() && <span className="truncate">{member.email}</span>}
+                    <Link
+                      className="shrink-0 font-medium text-foreground hover:underline"
+                      to={`/members/${encodeURIComponent(member.id)}`}
+                    >
+                      View member profile →
+                    </Link>
+                  </Inline>
+                </Stack>
+              </Inline>
+            )}
           </ListPage.Header>
           <ListPage.Body>
-            {member && (
+            {member && !memberHeader && (
               <Inline className="py-6" gap="lg">
                 <Avatar
                   {...memberAvatarProps(member)}
@@ -255,7 +300,14 @@ function ActivityPage() {
             ) : (
               <>
                 {events.length > 0 ? (
-                  <Box className="shrink-0 overflow-x-auto">
+                  <Box
+                    className={cn(
+                      'shrink-0',
+                      // Clipped rather than scrolled where the labels stick, so
+                      // they stick beneath the header and not in here
+                      largeTitles ? 'overflow-x-clip' : 'overflow-x-auto',
+                    )}
+                  >
                     <Table aria-label="Member activity" className="text-[13px]">
                       <TableHeader>
                         <TableRow>

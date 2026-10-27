@@ -63,12 +63,12 @@ describe('renderers/call-to-action-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-cta-card kg-cta-bg-none kg-cta-minimal kg-cta-has-img" data-layout="minimal">
                     <div class="kg-cta-sponsor-label-wrapper">
                         <div class="kg-cta-sponsor-label">
@@ -173,12 +173,12 @@ describe('renderers/call-to-action-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-card kg-cta-card kg-cta-bg-none kg-cta-minimal kg-cta-has-img" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tbody>
                         <tr>
@@ -321,13 +321,13 @@ describe('renderers/call-to-action-renderer', function () {
             assert.equal(result.element.querySelector('table.btn a').getAttribute('style'), null);
         });
 
-        it('can render outline custom buttons', function () {
+        it('can render outline custom buttons', async function () {
             const result = renderForEmail(getTestData({buttonColor: '#F0F0F0'}), {
                 feature: {},
                 design: {buttonStyle: 'outline'}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -342,11 +342,11 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('handles accent button color', function () {
+        it('handles accent button color', async function () {
             const data = getTestData({buttonColor: 'accent'});
             const result = renderForEmail(data, {feature: {}});
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -361,11 +361,11 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('handles outline buttons', function () {
+        it('handles outline buttons', async function () {
             const data = getTestData();
             const result = renderForEmail(data, {design: {buttonStyle: 'outline'}, feature: {}});
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -380,7 +380,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts black button to white on dark background with transparent CTA', function () {
+        it('converts black button to white on dark background with transparent CTA', async function () {
             const data = getTestData({
                 backgroundColor: 'none',
                 buttonColor: 'black'
@@ -390,7 +390,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -405,7 +405,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts #000000 button to white on dark background when CTA background is transparent', function () {
+        it('converts #000000 button to white on dark background when CTA background is transparent', async function () {
             const data = getTestData({
                 backgroundColor: 'none',
                 buttonColor: '#000000'
@@ -415,7 +415,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -430,7 +430,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts #000 button to white on dark background when CTA background is transparent', function () {
+        it('converts #000 button to white on dark background when CTA background is transparent', async function () {
             const data = getTestData({
                 backgroundColor: 'none',
                 buttonColor: '#000'
@@ -440,7 +440,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -455,7 +455,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts #000000 button to white on dark background when CTA background is white', function () {
+        it('converts #000000 button to white on dark background when CTA background is white', async function () {
             const data = getTestData({
                 backgroundColor: 'white',
                 buttonColor: '#000000'
@@ -465,7 +465,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -480,7 +480,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('converts #000 button to white on dark background when CTA background is white', function () {
+        it('converts #000 button to white on dark background when CTA background is white', async function () {
             const data = getTestData({
                 backgroundColor: 'white',
                 buttonColor: '#000'
@@ -490,7 +490,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -505,7 +505,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('does not convert black button when background is not dark', function () {
+        it('does not convert black button when background is not dark', async function () {
             const data = getTestData({
                 backgroundColor: 'none',
                 buttonColor: '#000000'
@@ -515,7 +515,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
@@ -530,7 +530,7 @@ describe('renderers/call-to-action-renderer', function () {
             `);
         });
 
-        it('does not convert black button when CTA background is not transparent or white', function () {
+        it('does not convert black button when CTA background is not transparent or white', async function () {
             const data = getTestData({
                 backgroundColor: 'blue',
                 buttonColor: '#000000'
@@ -540,7 +540,7 @@ describe('renderers/call-to-action-renderer', function () {
                 feature: {}
             });
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>

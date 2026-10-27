@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 
 import {
   configResponse,
+  currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
   fakeSettingsScreens,
@@ -48,6 +49,7 @@ function stripeLimitConfig() {
         error: "Your current plan doesn't support Stripe Connect.",
       },
     },
+    billing: { enabled: true },
   };
   return config;
 }
@@ -321,7 +323,7 @@ describe('Tier settings', () => {
       .toHaveTextContent("Your current plan doesn't support Stripe Connect");
     await expect(settingsScreen.stripeModal()).toHaveCount(0);
     await settingsScreen.limitModal().getByRole('button', { name: 'Upgrade' }).click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await expect.poll(currentRoute).toBe('/pro');
   });
 
   it('allows an already-connected site to manage Stripe despite the plan limit', async () => {
@@ -383,6 +385,6 @@ describe('Tier settings', () => {
       .toHaveTextContent("Your current plan doesn't support Stripe Connect");
     await expect(settingsScreen.stripeModal()).toHaveCount(0);
     await settingsScreen.limitModal().getByRole('button', { name: 'Upgrade' }).click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await expect.poll(currentRoute).toBe('/pro');
   });
 });

@@ -1,9 +1,0 @@
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <title>stats</title>
-    <defs>
-        <style>
-        .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
-        </style>
-    </defs>
-    <path class="a" d="M14 3h-4v18h4V3ZM5 14H1v7h4v-7Zm18-5h-4v12h4V9Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

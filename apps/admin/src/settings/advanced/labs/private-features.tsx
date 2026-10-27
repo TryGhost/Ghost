@@ -20,14 +20,9 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
-    title: 'Automations per tier',
-    description: 'Allow automations to be configured for individual tiers.',
-    flag: 'automationsPerTier',
-  },
-  {
-    title: 'Automation run analytics',
-    description: 'Track run-level analytics for automations.',
-    flag: 'automationRunAnalytics',
+    title: 'Automations lifecycle triggers',
+    description: 'Triggers for upgrades and downgrades.',
+    flag: 'automationsLifecycleTriggers',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -45,15 +40,21 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
+    title: 'Admin 7 · Design',
+    description: 'Preview the floating Admin 7 sidebar and its navigation layout.',
+    flag: 'admin7Design',
+  },
+  {
+    title: 'Admin 7 · Customize from View site',
+    description:
+      'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
+    flag: 'admin7CustomizeFromViewSite',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
-  },
-  {
-    title: 'Improve sending UI',
-    description: 'Enables improvements to email sending and delivery status for large email sends',
-    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -90,34 +91,10 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'React editor',
-    description:
-      'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
-    flag: 'editorReact',
-  },
-  {
-    title: 'React sign-in screens',
-    description:
-      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
-    flag: 'authReact',
-  },
-  {
     title: 'Machine payments',
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
-  },
-  {
-    title: 'Navigation URL suggestions',
-    description:
-      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
-    flag: 'navigationUrlSuggestions',
-  },
-  {
-    title: 'React Ghost(Pro) billing',
-    description:
-      'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
-    flag: 'billingReact',
   },
   {
     title: 'Apps',

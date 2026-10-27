@@ -1,31 +1,12 @@
 import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps } from 'class-variance-authority';
 
+import { settingGroupVariants } from '@/components/patterns/setting-group-variants';
 import { Grid } from '@/components/primitives/grid';
 import { Inline } from '@/components/primitives/inline';
 import { Stack } from '@/components/primitives/stack';
 import { Text } from '@/components/primitives/text';
 import { cn } from '@/lib/utils';
-
-const settingGroupVariants = cva(
-  'group/setting-group relative flex flex-col gap-6 rounded-xl text-card-foreground transition-all',
-  {
-    variants: {
-      variant: {
-        outline: 'border border-border-default bg-card p-5 hover:shadow-sm md:p-7',
-        plain: 'bg-transparent',
-      },
-      highlighted: {
-        true: 'shadow-sm',
-        false: '',
-      },
-    },
-    defaultVariants: {
-      variant: 'outline',
-      highlighted: false,
-    },
-  },
-);
 
 interface SettingGroupProps
   extends React.ComponentPropsWithoutRef<'div'>, VariantProps<typeof settingGroupVariants> {
@@ -169,6 +150,5 @@ export {
   SettingGroupValue,
   SettingGroupValueContent,
   SettingGroupValueTitle,
-  settingGroupVariants,
 };
 export type { SettingGroupContentProps, SettingGroupProps };

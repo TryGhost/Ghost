@@ -3,7 +3,6 @@ import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {
-  Button,
   Combobox,
   ComboboxContent,
   ComboboxTrigger,
@@ -13,6 +12,7 @@ import {
   FieldError,
   FieldLabel,
   Input,
+  Link,
   MultiSelectCombobox,
 } from '@tryghost/shade/components';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
@@ -121,16 +121,10 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
 
   const hint = (
     <>
-      Default: English (<strong>en</strong>); find out more about
-      <a
-        className="text-primary"
-        href="https://docs.ghost.org/faq/translation/"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        {' '}
+      Default: English (<strong>en</strong>); find out more about{' '}
+      <Link href="https://docs.ghost.org/faq/translation/" external>
         using Ghost in other languages
-      </a>
+      </Link>
     </>
   );
 
@@ -153,19 +147,18 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
             <FieldDescription>Enter a custom locale code.</FieldDescription>
           )}
         </Field>
-        <Button
-          className="h-auto self-start px-0"
-          size="sm"
-          type="button"
-          variant="link"
-          onClick={() => {
-            setIsOtherSelected(false);
-            setValidationError(null);
-            handleLanguageChange('en');
-          }}
-        >
-          Choose from list
-        </Button>
+        <Link className="self-start text-sm" asChild>
+          <button
+            type="button"
+            onClick={() => {
+              setIsOtherSelected(false);
+              setValidationError(null);
+              handleLanguageChange('en');
+            }}
+          >
+            Choose from list
+          </button>
+        </Link>
       </>
     ) : (
       <Field data-invalid={Boolean(errors.publicationLanguage) || undefined}>

@@ -26,11 +26,11 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 import { CODE_INJECTION_HEAD_TOO_LONG, CODE_INJECTION_MAX } from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${POST_ID}/\\?`);
@@ -44,7 +44,7 @@ type SavedPost = ReturnType<typeof post>;
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {
@@ -99,6 +99,14 @@ function footEditor() {
   return editorScreen.settingsCodeInjection(codeInjectionFootLabel);
 }
 
+/** The site's member total, which the publish inputs read before Publish is offered. */
+function fakeMembersTotal() {
+  fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+  });
+}
+
 async function openCodeInjection() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
@@ -132,7 +140,7 @@ async function typeInto(editor: ReturnType<typeof headEditor>, code: string) {
 describe('Post settings code injection', () => {
   it('opens the pane over the section list and comes back from it', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     // The pane replaces the list it was opened from, without resizing the panel.
@@ -150,7 +158,7 @@ describe('Post settings code injection', () => {
 
   it('closes the pane on Escape from outside the editors', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     // Opening a pane leaves the writer on its back button.
@@ -165,7 +173,7 @@ describe('Post settings code injection', () => {
 
   it('keeps the pane open on Escape inside an editor', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     await headEditor().click();
@@ -177,7 +185,7 @@ describe('Post settings code injection', () => {
 
   it('moves between the editors on the Tab that follows Escape', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     await headEditor().click();
@@ -196,7 +204,7 @@ describe('Post settings code injection', () => {
 
   it('names a page’s editors for a page', async () => {
     fakeSavablePage();
-    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${POST_ID}`, withoutAutosave());
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     await settleTransitions();
@@ -215,7 +223,7 @@ describe('Post settings code injection', () => {
     const head = '<script>\n    head();\n</script>';
     const foot = '<style>\n    .footer { display: block; }\n</style>';
     fakeSavablePost({ codeinjection_head: head, codeinjection_foot: foot });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     await expect.poll(() => (headEditor().element() as HTMLElement).innerText).toBe(head);
@@ -224,7 +232,7 @@ describe('Post settings code injection', () => {
 
   it('persists a draft’s header and footer code on the blur that ends each edit', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     await typeInto(headEditor(), '<script>head();</script>');
@@ -252,7 +260,7 @@ describe('Post settings code injection', () => {
 
   it('saves a published post’s header code on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     await typeInto(headEditor(), '<script>staged();</script>');
@@ -268,7 +276,7 @@ describe('Post settings code injection', () => {
 
   it('persists the focused editor when the writer closes the pane', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     await typeInto(headEditor(), '<script>onClose();</script>');
@@ -290,7 +298,8 @@ describe('Post settings code injection', () => {
     const saveApi = fakeSavablePost({
       codeinjection_head: lines + 'a'.repeat(CODE_INJECTION_MAX - lines.length),
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    fakeMembersTotal();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openCodeInjection();
 
     // The label focuses the editor; a click on its content would aim far below the pane.
@@ -300,17 +309,22 @@ describe('Post settings code injection', () => {
 
     await expect.element(headEditor()).toHaveAttribute('aria-invalid', 'true');
     await expect.element(headEditor()).toHaveAccessibleDescription(CODE_INJECTION_HEAD_TOO_LONG);
-    await expect
-      .element(editorScreen.pendingSaveNotice())
-      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
-    await expect
-      .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Publish is refused too, and opens the closed panel on the pane, in the header code.
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(headEditor()).toHaveFocus();
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -321,7 +335,7 @@ describe('Post settings code injection', () => {
         codeinjection_head: '<script>head();</script>',
         codeinjection_foot: '<script>foot();</script>',
       });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await openCodeInjection();
 
       const editor = field === 'codeinjection_head' ? headEditor() : footEditor();
