@@ -7,6 +7,8 @@ import { resolveMaxDefinitions } from './config';
 import { customFields } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
 import { fieldSource, type FieldSource } from './queries';
+import { tracer } from '../../lib/tracing';
+import { metafieldsTracking } from './tracking';
 
 export type { Metafield } from './models';
 export type { FieldSource } from './queries';
@@ -71,7 +73,14 @@ export function init(): void {
   namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })]);
   fields = fieldSource(namespaces);
 
-  definitions = new MetafieldDefinitionsService({ knex, fields, recordAction, namespaces });
+  const tracking = metafieldsTracking(tracer);
+  definitions = new MetafieldDefinitionsService({
+    knex,
+    fields,
+    recordAction,
+    namespaces,
+    tracking,
+  });
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the
   // definitions service.
