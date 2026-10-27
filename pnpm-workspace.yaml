@@ -143,7 +143,7 @@ catalog:
   chai: 4.5.0
   chalk: 4.1.2
   cheerio: 1.2.0
-  chrono-node: 2.10.1
+  chrono-node: 2.10.3
   cli-progress: 3.12.0
   clsx: 2.1.1
   concurrently: 10.0.6
