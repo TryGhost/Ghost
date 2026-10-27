@@ -34,8 +34,6 @@ const GA_FEATURES = [
   'automationsPerTier',
   'selfServeArchives',
   'admin7EditorImprovements',
-  'editorReact',
-  'billingReact',
   'stripeCheckoutDesign',
 ];
 
