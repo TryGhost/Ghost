@@ -6,6 +6,7 @@ import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool } from './spool';
 import MembersImportJob from '../../jobs/members-import-job';
+import type { ImportAttempt, ImportExportTracking } from '../tracking';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -133,6 +134,7 @@ interface ImporterDeps {
   dispatchJob: (job: MembersImportJob) => Promise<void>;
   getTimezone: () => string;
   getInlineThreshold: () => number;
+  tracking: ImportExportTracking;
 }
 
 // The values built for one row and handed to the members repository. Indexed off
@@ -228,6 +230,7 @@ class MembersCSVImporter {
   private _dispatchJob: (job: MembersImportJob) => Promise<void>;
   private _getTimezone: () => string;
   private _getInlineThreshold: () => number;
+  private _tracking: ImportExportTracking;
 
   constructor({
     knex,
@@ -243,6 +246,7 @@ class MembersCSVImporter {
     dispatchJob,
     getTimezone,
     getInlineThreshold,
+    tracking,
   }: ImporterDeps) {
     this._knex = knex;
     this._readRows = readRows;
@@ -257,6 +261,7 @@ class MembersCSVImporter {
     this._dispatchJob = dispatchJob;
     this._getTimezone = getTimezone;
     this._getInlineThreshold = getInlineThreshold;
+    this._tracking = tracking;
   }
 
   async importCSV(
@@ -268,7 +273,9 @@ class MembersCSVImporter {
     const extraLabels = request.extraLabels ?? [];
 
     if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
-      const result = await this.importRows(rows, labelName, extraLabels, verificationTrigger);
+      const result = await this._tracking.import('inline', (attempt) =>
+        this.importRows(attempt, rows, labelName, extraLabels, verificationTrigger),
+      );
       return { deferred: false, originalImportSize: rows.length, result };
     }
 
@@ -285,11 +292,9 @@ class MembersCSVImporter {
     verificationTrigger: VerificationTrigger,
   ): Promise<ImportResult> {
     const rows = await this._readRows(request.filePath, request.mapping);
-    return this.importRows(
-      rows,
-      buildImportLabelName(this._getTimezone()),
-      request.extraLabels ?? [],
-      verificationTrigger,
+    const labelName = buildImportLabelName(this._getTimezone());
+    return this._tracking.import('inline', (attempt) =>
+      this.importRows(attempt, rows, labelName, request.extraLabels ?? [], verificationTrigger),
     );
   }
 
@@ -334,10 +339,18 @@ class MembersCSVImporter {
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
     try {
-      const spooledRows = await this._spool.read(spoolKey);
-      result = await this.importRows(spooledRows, labelName, extraLabels, verificationTrigger);
+      // The rows are read back as part of the run, so a run that can't read them has failed.
+      result = await this._tracking.import('background', async (attempt) =>
+        this.importRows(
+          attempt,
+          await this._spool.read(spoolKey),
+          labelName,
+          extraLabels,
+          verificationTrigger,
+        ),
+      );
     } catch (error) {
-      // importRows only throws before its write loop, so nothing was written.
+      // A run only throws before its write loop, so nothing was written.
       this._report(error);
     } finally {
       await this.settle(() => this._spool.remove(spoolKey));
@@ -377,14 +390,18 @@ class MembersCSVImporter {
   // Only the write itself may throw. Callers rely on that to tell an import that never
   // ran from one that ran and then failed to tidy up after itself.
   private async importRows(
+    attempt: ImportAttempt,
     rows: MemberImportRow[],
     labelName: string,
     extraLabels: Label[],
     verificationTrigger: VerificationTrigger,
   ): Promise<ImportResult> {
     const startedAt = Date.now();
+    attempt.read(rows.length);
     const prepared = await this.prepareRun(labelName, extraLabels);
+    attempt.readsFields(prepared.activeMetafields, rows);
     const written = await this.writeRows(rows, prepared);
+    attempt.wrote({ imported: written.imported, rejected: written.errors.length });
     const result: ImportResult = { imported: written.imported, errors: written.errors };
 
     // Bookkeeping, and the publisher's result is already in hand. Nothing below is
