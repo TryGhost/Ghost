@@ -6,7 +6,7 @@ import { Metafield } from './models';
 import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
 import { metafieldCodec } from './codec';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
-import { assertDefinable } from './namespaces';
+import type { Namespaces } from './namespaces';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
 import {
   ADMIN,
@@ -114,25 +114,20 @@ const EditFieldInput = z.object({
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private recordAction: RecordMetafieldAction;
-  private getMaxDefinitions: () => number;
+  private namespaces: Namespaces;
 
   constructor({
     knex,
     recordAction,
-    getMaxDefinitions,
+    namespaces,
   }: {
     knex: Knex;
     recordAction: RecordMetafieldAction;
-    getMaxDefinitions: () => number;
+    namespaces: Namespaces;
   }) {
     this.knex = knex;
     this.recordAction = recordAction;
-    // A getter, not a value: the ceiling can be raised or lowered at any time,
-    // and a Ghost container holds no state across requests, so the limit that
-    // applies is whatever it resolves to when the request lands. Asking on
-    // every create means a change takes effect on the next one, with no
-    // restart. Where the number comes from is the caller's business.
-    this.getMaxDefinitions = getMaxDefinitions;
+    this.namespaces = namespaces;
   }
 
   async browse(
@@ -186,7 +181,7 @@ export class MetafieldDefinitionsService {
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
   async add(context: RequestContext, namespace: Namespace, input: unknown): Promise<Metafield[]> {
-    assertDefinable(namespace);
+    await this.namespaces.assertChangeable(namespace);
     const requestedCount = Array.isArray(input) ? input.length : 0;
 
     const parsed = AddFieldsInput.safeParse(input);
@@ -217,7 +212,7 @@ export class MetafieldDefinitionsService {
     let created: Metafield[];
     try {
       created = await this.knex.transaction(async (trx) => {
-        await this.assertWithinLimit(trx, fields.length);
+        await this.assertRoom(trx, namespace, fields.length);
 
         // Read once, before the loop: a batch appends as consecutive ranks, so
         // the five fields of one request land in the order the request gave
@@ -278,12 +273,13 @@ export class MetafieldDefinitionsService {
     },
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
+    await this.namespaces.assertChangeable(namespace);
     // Before any database access, the way `add` mints before opening its transaction:
     // an unusable key is a payload problem worth reporting on its own terms.
     const key = usableKey(wanted.key);
 
     const write = async (db: Knex) => {
-      await this.assertWithinLimit(db, 1);
+      await this.assertRoom(db, namespace, 1);
       await this.assertKeyAvailable(db, { namespace, key });
       await this.assertNameAvailable(db, namespace, wanted.name);
 
@@ -362,48 +358,16 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * The operational ceiling on how many definitions a site can hold. This is a
-   * safeguard against the database load unbounded definitions would create, not
-   * a pricing or packaging limit, so it applies wherever the feature is available
-   * and is deliberately not routed through the entitlement-driven limit service.
+   * Refuses adding `adding` fields to a namespace its limits leave no room in, counting every
+   * field it holds, archived ones included.
    *
-   * Both active and archived definitions count: an archived field still occupies
-   * a row and still carries its members' values, so archiving alone frees no
-   * space. Deleting an archived field is what releases a slot.
-   *
-   * The count is a consistent read, not a locking one, so two creates landing at
-   * the same instant can both pass and take a site one over. That is deliberate:
-   * this is a ceiling on database load, and holding a table lock across every
-   * create to make it exact would cost more than the overshoot it prevents.
-   *
+   * The count is a consistent read, not a locking one, so two creates landing at the same
+   * instant can both pass and take a namespace one over. That is deliberate: holding a table
+   * lock across every create to make it exact would cost more than the overshoot it prevents.
    */
-  private async assertWithinLimit(db: Knex, addedCount: number): Promise<void> {
-    const max = this.getMaxDefinitions();
-
-    const row = await db(TABLE).count({ count: '*' }).first();
-    const total = Number(row?.count ?? 0);
-    if (total + addedCount <= max) {
-      return;
-    }
-
-    // Two different situations reach here and they need different advice. At or
-    // over the ceiling there is nothing to do but free a slot. With slots still
-    // free the request was simply too big, and telling that operator to delete
-    // something is wrong: they have room, just not this much.
-    const remaining = max - total;
-    const advice =
-      remaining > 0
-        ? `You can add ${remaining} more.`
-        : 'Delete a field you no longer need to make room.';
-
-    throw new errors.HostLimitError({
-      message: `Custom fields are limited to ${max} per site. ${advice}`,
-      code: 'CUSTOM_FIELDS_LIMIT_REACHED',
-      // `requested` is carried alongside the limit-service shape so a batch
-      // rejection is self-describing: without it a client sees free slots and
-      // a refusal, and has to re-derive its own payload size to explain why.
-      errorDetails: { limit: max, total, requested: addedCount },
-    });
+  private async assertRoom(db: Knex, namespace: Namespace, adding: number): Promise<void> {
+    const row = await db(TABLE).where({ namespace }).count({ count: '*' }).first();
+    await this.namespaces.assertRoom(namespace, Number(row?.count ?? 0), adding);
   }
 
   /**
@@ -416,7 +380,7 @@ export class MetafieldDefinitionsService {
     namespace: Namespace,
     input: unknown,
   ): Promise<Metafield[]> {
-    assertDefinable(namespace);
+    await this.namespaces.assertChangeable(namespace);
     const parsed = ReorderInput.safeParse(input);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
@@ -568,6 +532,7 @@ export class MetafieldDefinitionsService {
     key: Key,
     input: unknown,
   ): Promise<Metafield> {
+    await this.namespaces.assertChangeable(namespace);
     const parsed = EditFieldInput.safeParse(input);
     if (!parsed.success) {
       throw new errors.ValidationError({
@@ -662,6 +627,7 @@ export class MetafieldDefinitionsService {
    * reversible soft state (see `edit` with a status change).
    */
   async destroy(context: RequestContext, namespace: Namespace, key: Key): Promise<void> {
+    await this.namespaces.assertChangeable(namespace);
     const field = await this.knex(TABLE).where({ namespace, key }).first();
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });

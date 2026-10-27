@@ -8567,9 +8567,10 @@ services:
     contracts:
       exports:
         summary: >-
-          Named runtime exports are synchronous init, mutable definitions/values/bindings,
+          Named runtime exports are synchronous init, mutable namespaces/definitions/values/bindings,
           audience/access constants, canWrite, actingContext and adminWriteOrigin. Service
-          bindings are undefined before init; class methods depend on their receiver. Definitions
+          bindings are undefined before init; class methods depend on their receiver. Namespaces
+          resolves a namespace's policy (owner and limits) and refuses what it doesn't allow. Definitions
           exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
           bind/remove/planning. HTTP tests assert selected serialized definitions, values, access
@@ -8578,6 +8579,7 @@ services:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/access.ts
           - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/namespaces.ts
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
@@ -8586,15 +8588,18 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       construction:
         summary: >-
-          Init obtains the shared Knex getter, models and config, then publishes definitions,
-          values and bindings sequentially; bindings retains that values instance. Definitions
-          receives an action-recording closure over models.Action; definitions and values receive
-          limit callbacks. Constructors store dependencies without querying or starting work.
+          Init obtains the shared Knex getter, models and config, then publishes namespaces,
+          definitions, values and bindings sequentially; bindings retains that values instance.
+          Namespaces is built from custom fields' policy, which holds a ceiling callback.
+          Definitions receives an action-recording closure over models.Action and the namespaces;
+          values receives the ceiling callback. Constructors store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
           No other production construction of these classes was found. Binding units construct
           the class with fake query/values collaborators, not the root or publication sequence.
         sources:
           - core/server/services/members-metafields/index.ts
+          - core/server/services/members-metafields/namespaces.ts
+          - core/server/services/members-metafields/custom-fields.ts
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
@@ -8656,7 +8661,7 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       lifetime:
         summary: >-
-          Once all three bindings exist, init preserves them and their captured Knex/dependencies.
+          Once all four bindings exist, init preserves them and their captured Knex/dependencies.
           There is no reset or shutdown hook. If construction throws after an assignment, a retry
           replaces earlier instances; retained members/CSV references would not follow that
           replacement. Definitions, bindings, values and change history
@@ -8674,16 +8679,17 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       configuration:
         summary: >-
-          Limit callbacks read members:metafields:maxDefinitions when adding definitions or
+          Limit callbacks read members:metafields:maxDefinitions when adding custom fields or
           planning value writes; the shipped fallback is captured and validated at import.
           The parser accepts nonnegative safe integers/numeric strings, including zero, and
-          falls back to the shipped 100 for invalid input. Definitions count active and archived
-          rows; lowering the limit does not remove them. HTTP asserts zero/string/fallback and
+          falls back to the shipped 100 for invalid input. Adding counts the namespace's active and
+          archived rows; lowering the limit does not remove them. HTTP asserts zero/string/fallback and
           next-request changes using test config mutation, not production hot reload of the
           immutable config tree. Constructors retain Knex; schema/type/key rules are imported.
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/config.ts
+          - core/server/services/members-metafields/custom-fields.ts
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/schema.ts

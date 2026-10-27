@@ -1147,6 +1147,25 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(created.key, 'bio');
     });
 
+    it("counts only the publisher's own fields, as each namespace has its own limits", async function () {
+      configUtils.set('members:metafields:maxDefinitions', 1);
+      // Written straight to the table, as an app's would be.
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000c1',
+        namespace: 'shop',
+        key: 'company',
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+
+      const body = await createFieldExpecting('Role', 403);
+      assert.deepEqual(body.errors[0].details, { limit: 1, total: 1, requested: 1 });
+    });
+
     it('restores an archived definition while at the limit', async function () {
       // Restoring changes no row count, so the cap has nothing to say about it.
       configUtils.set('members:metafields:maxDefinitions', 2);
