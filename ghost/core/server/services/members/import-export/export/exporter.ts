@@ -1,10 +1,10 @@
 import moment from 'moment';
 import { Transform, pipeline, type Readable } from 'node:stream';
 import type { Knex } from 'knex';
+import { csvCellsForFields, type CsvField } from '@tryghost/metafield-csv';
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { csvCellsForFields } = require('@tryghost/metafield-csv');
 
 // Options accepted by the export, forwarded to the members query for filtering.
 export interface ExportOptions {
@@ -14,17 +14,15 @@ export interface ExportOptions {
   [option: string]: unknown;
 }
 
-// A metafield definition, opaque to the exporter: it only counts the set and hands
-// it to the values codec, which decides the columns. Named for intent; its shape is
-// the metafields service's concern, not this one's.
-export type MetafieldDefinition = Record<string, unknown>;
+// A member's metafield values, by namespace and then key, as the columns are filled from.
+type MemberValues = Record<string, Record<string, unknown>>;
 
 // The metafields collaborator: the active column set for this export, and the
 // per-member values that fill those columns. Both resolve empty when the feature is
 // off, so the exporter carries no flag of its own.
 export interface MetafieldsService {
-  activeDefinitions(): Promise<MetafieldDefinition[]>;
-  valuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
+  activeDefinitions(): Promise<CsvField[]>;
+  valuesForMembers(memberIds: string[]): Promise<Map<string, MemberValues>>;
 }
 
 // The members aggregate, narrowed to the one read the export makes: the ids matching
@@ -45,14 +43,14 @@ interface BatchRelatedData {
   stripeCustomerMap: Map<string, string>;
   subscribedSet: Set<string>;
   giftIdMap: Map<string, string>;
-  metafieldValuesMap: Map<string, Record<string, unknown>>;
+  metafieldValuesMap: Map<string, MemberValues>;
 }
 
 // The reference data read once up front and shared across every batch.
 interface ReferenceData {
   allProducts: Record<string, string>;
   allLabels: Record<string, string>;
-  activeMetafields: MetafieldDefinition[];
+  activeMetafields: CsvField[];
 }
 
 // A member row as the export query selects it -- the shape the stream emits, and the
@@ -283,7 +281,7 @@ export default class MembersCSVExporter {
   // values are read only when there are columns to fill.
   private async assembleRelatedData(
     memberIds: string[],
-    activeMetafields: MetafieldDefinition[],
+    activeMetafields: CsvField[],
   ): Promise<BatchRelatedData> {
     const knex = this._knex;
 
@@ -313,7 +311,7 @@ export default class MembersCSVExporter {
 
         activeMetafields.length > 0
           ? this._metafields.valuesForMembers(memberIds)
-          : new Map<string, Record<string, unknown>>(),
+          : new Map<string, MemberValues>(),
       ]);
 
     return {
