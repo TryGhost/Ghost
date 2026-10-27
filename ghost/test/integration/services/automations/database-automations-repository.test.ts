@@ -122,8 +122,9 @@ describe('database automations repository', function () {
         edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
         name: `Creation test ${ObjectId().toHexString()}`,
         description: 'Test description',
-        trigger_tier_scope: 'free' as const,
-        trigger_tier_ids: null,
+        trigger_rules: [
+          { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+        ],
       };
       const automation = await repo.add(data);
 

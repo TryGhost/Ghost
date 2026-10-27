@@ -102,6 +102,7 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
         trigger_type: 'free_signup',
         scope: null,
         product_id: null,
+        direction: null,
       },
     ],
     automation_status: 'active',
@@ -305,6 +306,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started',
           scope: 'any_paid_tier',
           product_id: null,
+          direction: null,
         },
       ],
     });
@@ -331,6 +333,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started',
           scope: 'specific_paid_tier',
           product_id: 'bronze',
+          direction: null,
         },
         {
           id: 'trigger-rule-4',
@@ -339,6 +342,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started',
           scope: 'specific_paid_tier',
           product_id: 'silver',
+          direction: null,
         },
       ],
     });
@@ -363,6 +367,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started' as const,
           scope: 'specific_paid_tier' as const,
           product_id: 'silver',
+          direction: null,
         },
         {
           id: 'trigger-rule-6',
@@ -371,6 +376,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started' as const,
           scope: 'specific_paid_tier' as const,
           product_id: 'gold',
+          direction: null,
         },
       ],
     };
@@ -428,6 +434,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started',
           scope: 'specific_paid_tier',
           product_id: productId,
+          direction: null,
         })),
       });
       automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
@@ -515,6 +522,7 @@ describe('automations poll', function () {
           trigger_type: 'paid_subscription_started',
           scope: 'any_paid_tier',
           product_id: null,
+          direction: null,
         },
       ],
     });
