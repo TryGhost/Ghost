@@ -5,8 +5,10 @@ import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 import { customFields } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
+import { fieldSource, type FieldSource } from './queries';
 
 export type { Metafield } from './models';
+export type { FieldSource } from './queries';
 export type { RequestContext } from './actions';
 export { actingContext, adminWriteOrigin } from './actions';
 export type { BoundField } from './bindings-service';
@@ -29,20 +31,23 @@ export {
 // technical layers: `definitions` owns the field definitions, which belong to the
 // site's settings, `values` owns the per-member values, which belong to the
 // member, and `bindings` owns which of a source's ports writes into which field.
-// The values service reads the definitions table directly for the reference data
-// it needs — a value referencing its definition, not a boundary crossing.
+// The values service reads the definitions itself, through the same field source, for
+// the reference data it needs — a value referencing its definition, not a boundary
+// crossing.
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 /** The namespaces fields can be defined in, and the policy each one's fields follow. */
 export let namespaces: Namespaces | undefined;
+/** The fields as this site reads them, for every read here and in the domains that join them. */
+export let fields: FieldSource | undefined;
 export let definitions: MetafieldDefinitionsService | undefined;
 export let values: MetafieldValuesService | undefined;
 export let bindings: MetafieldBindingsService | undefined;
 
 export function init(): void {
-  // The four are constructed together below, so checking all of them keeps the "all or
+  // The five are constructed together below, so checking all of them keeps the "all or
   // none" invariant explicit rather than trusting one to stand in for the rest.
-  if (namespaces && definitions && values && bindings) {
+  if (namespaces && fields && definitions && values && bindings) {
     return;
   }
 
@@ -63,15 +68,16 @@ export function init(): void {
   // Custom fields are the one application of metafields so far, and the only namespace
   // anyone can define fields in.
   namespaces = createNamespaces([customFields({ getMaxDefinitions })]);
+  fields = fieldSource();
 
-  definitions = new MetafieldDefinitionsService({ knex, recordAction, namespaces });
-  // The values service reads the field definitions straight from the table, so it needs
-  // knex and the ceiling, which also caps how many values one request can carry — no
-  // handle on the definitions service.
-  values = new MetafieldValuesService({ knex, getMaxDefinitions });
+  definitions = new MetafieldDefinitionsService({ knex, fields, recordAction, namespaces });
+  // The values service reads the field definitions itself, so it needs knex, the fields and
+  // the ceiling, which also caps how many values one request can carry — no handle on the
+  // definitions service.
+  values = new MetafieldValuesService({ knex, fields, getMaxDefinitions });
 
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both
   // asks for both.
-  bindings = new MetafieldBindingsService({ knex, values });
+  bindings = new MetafieldBindingsService({ knex, fields, values });
 }
