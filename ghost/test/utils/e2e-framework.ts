@@ -24,7 +24,6 @@ import assert from 'node:assert/strict';
 import fixtureUtils from './fixture-utils';
 import { cacheRules } from './fixtures/cache-rules';
 import * as redirectsUtils from './redirects';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from './config-utils';
 import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.

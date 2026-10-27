@@ -8,7 +8,6 @@ import url from '../../../../core/frontend/helpers/url';
 // @ts-expect-error This module lacks type definitions.
 import { handlebars } from '../../../../core/frontend/services/theme-engine/engine';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 
 let defaultGlobals: Record<string, unknown>;
