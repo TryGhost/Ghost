@@ -80,6 +80,8 @@ describe('BullMQJobsBackend', function () {
     ['stalledInterval', null],
     ['maxStalledCount', null],
     ['maxStalledCount', -1],
+    ['timezone', 'Not/AZone'],
+    ['timezone', 42],
     ['connection', { port: 0 }],
     ['connection', null],
     ['connection', { port: null }],
@@ -247,12 +249,14 @@ describe('BullMQJobsBackend', function () {
     );
   });
 
-  it('throws on a recurring schedule before start', function () {
-    assert.throws(
-      () =>
-        new BullMQJobsBackend({ prefix }).scheduleRecurring(envelope, {
-          cron: '* * * * *',
-        }),
+  it('accepts a null timezone as the process timezone', function () {
+    assert.doesNotThrow(() => new BullMQJobsBackend({ prefix, timezone: null }));
+  });
+
+  it('throws on a recurring schedule before start', async function () {
+    await assert.rejects(
+      async () =>
+        new BullMQJobsBackend({ prefix }).scheduleRecurring(envelope, { cron: '* * * * *' }),
       /before the jobs backend is started/,
     );
   });

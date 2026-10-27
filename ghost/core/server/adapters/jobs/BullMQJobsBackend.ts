@@ -32,6 +32,8 @@ const messages = {
   invalidPayload: 'Job {id} has an invalid payload and will not be retried.',
   enqueueBeforeStart: 'Cannot enqueue job "{type}" before the jobs backend is started.',
   enqueueTimedOut: 'Timed out enqueueing job "{type}": Redis is unavailable.',
+  scheduleBeforeStart: 'Cannot schedule recurring job "{type}" before the jobs backend is started.',
+  scheduleTimedOut: 'Timed out scheduling recurring job "{type}": Redis is unavailable.',
   redisTimeoutContext: 'Redis did not answer within {timeoutMs}ms.',
   redisTimeoutHelp: 'Check that Redis is reachable, then retry.',
   closeFailed: 'Jobs backend failed to close cleanly',
@@ -42,11 +44,21 @@ const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10000;
 // Closing still gets this long when draining used up the whole shutdown budget.
 const MIN_CLOSE_GRACE_MS = 1000;
 // A producer waits for its first connection, which never comes when Redis is
-// down, so enqueue gives up after this long instead of hanging its caller.
+// down, so enqueue and recurring registration give up after this long instead
+// of hanging their caller.
 const ENQUEUE_TIMEOUT_MS = 2000;
 // Envelopes with no routing share this lane; routing to "default" by name is
 // the same lane, not a collision.
 const DEFAULT_QUEUE = 'default';
+
+function isKnownTimezone(zone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: zone });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // Ghost's config loader parses environment values, so an all-digit string
 // setting arrives as a number.
@@ -167,6 +179,12 @@ const schema = z.strictObject({
   lockDuration: z.number().int().positive().default(30000),
   stalledInterval: z.number().int().positive().default(30000),
   maxStalledCount: z.number().int().nonnegative().default(1),
+  // Cron schedules are read in this zone: the configured one, else the process's.
+  timezone: z
+    .string()
+    .refine(isKnownTimezone, 'Expected an IANA timezone name')
+    .nullish()
+    .transform((zone) => zone ?? Intl.DateTimeFormat().resolvedOptions().timeZone),
 });
 
 type ResolvedConfig = z.output<typeof schema>;
@@ -227,6 +245,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
   private _lockDuration: number;
   private _stalledInterval: number;
   private _maxStalledCount: number;
+  private _timezone: string;
   private _lanes: Map<string, Lane>;
   // Deliveries running now. Shutdown waits on them, within its time budget.
   private _inflight: Set<Promise<void>>;
@@ -242,6 +261,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     this._lockDuration = resolved.lockDuration;
     this._stalledInterval = resolved.stalledInterval;
     this._maxStalledCount = resolved.maxStalledCount;
+    this._timezone = resolved.timezone;
     this._lanes = new Map();
     this._inflight = new Set();
   }
@@ -405,19 +425,33 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     }
   }
 
-  scheduleRecurring(envelope: DispatchEnvelope, _schedule: RecurringSchedule): never {
+  async scheduleRecurring(envelope: DispatchEnvelope, { cron }: RecurringSchedule): Promise<void> {
     if (this._stopped) {
-      return undefined as never;
+      return;
     }
-    const { job } = envelope.payload;
+    const { job, routing } = envelope.payload;
     if (!this._processor) {
       throw new errors.IncorrectUsageError({
-        message: `Cannot schedule recurring job "${job.type}" before the jobs backend is started.`,
+        message: tpl(messages.scheduleBeforeStart, { type: job.type }),
       });
     }
-    throw new errors.IncorrectUsageError({
-      message: 'BullMQJobsBackend does not support recurring schedules yet.',
-    });
+    const { queue } = this._lane(routing?.queue ?? DEFAULT_QUEUE);
+    // First schedule per type wins, even when the cron differs: a re-registration
+    // (every boot, every container) must not disturb a schedule already in Redis.
+    // Check-then-upsert is not atomic, so two containers booting at the same
+    // moment with different crons can race; identical crons are harmless.
+    const timeoutMessage = tpl(messages.scheduleTimedOut, { type: job.type });
+    if (await this._withTimeout(queue.getJobScheduler(job.type), timeoutMessage)) {
+      return;
+    }
+    await this._withTimeout(
+      queue.upsertJobScheduler(
+        job.type,
+        { pattern: cron, tz: this._timezone },
+        { name: job.type, data: job },
+      ),
+      timeoutMessage,
+    );
   }
 
   async shutdown(options: JobsShutdownOptions = {}): Promise<void> {
