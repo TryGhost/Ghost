@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
@@ -264,7 +265,10 @@ describe('Automation host limits', () => {
       const automation = await repository.getById(free.id);
       assert.ok(automation);
       assert.equal(automation.status, 'active');
-      await repository.edit(free.id, { ...automation, status: 'inactive' });
+      await repository.edit(free.id, {
+        ...omit(automation, ['trigger_tier_scope', 'trigger_tier_ids']),
+        status: 'inactive',
+      });
     } finally {
       db.knex.off('query', capture);
     }
@@ -402,11 +406,20 @@ describe('Automation host limits', () => {
     db.knex.on('query', capture);
     try {
       const draft = await repository.add(payload('inactive'));
-      await repository.edit(draft.id, { ...draft, description: 'Edited draft' });
-      await repository.edit(active.id, { ...active, status: 'inactive' });
+      await repository.edit(draft.id, {
+        ...omit(draft, ['trigger_tier_scope', 'trigger_tier_ids']),
+        description: 'Edited draft',
+      });
+      await repository.edit(active.id, {
+        ...omit(active, ['trigger_tier_scope', 'trigger_tier_ids']),
+        status: 'inactive',
+      });
       assert.deepEqual(limitLockQueries, []);
       assert.equal(await countActiveAutomations(), 1);
-      await repository.edit(republished.id, { ...republished, description: 'Edited active' });
+      await repository.edit(republished.id, {
+        ...omit(republished, ['trigger_tier_scope', 'trigger_tier_ids']),
+        description: 'Edited active',
+      });
       assert.equal(limitLockQueries.length, 1);
       assert.equal(await countActiveAutomations(), 1);
     } finally {
@@ -456,19 +469,39 @@ describe('Automation host limits', () => {
         case 'add/edit':
           attempts = [
             () => repositories[0].add(payload()),
-            () => repositories[1].edit(second.id, { ...second, status: 'active' }),
+            () =>
+              repositories[1].edit(second.id, {
+                ...omit(second, ['trigger_tier_scope', 'trigger_tier_ids']),
+                status: 'active',
+              }),
           ];
           break;
         case 'edit/edit':
           attempts = [
-            () => repositories[0].edit(first.id, { ...first, status: 'active' }),
-            () => repositories[1].edit(second.id, { ...second, status: 'active' }),
+            () =>
+              repositories[0].edit(first.id, {
+                ...omit(first, ['trigger_tier_scope', 'trigger_tier_ids']),
+                status: 'active',
+              }),
+            () =>
+              repositories[1].edit(second.id, {
+                ...omit(second, ['trigger_tier_scope', 'trigger_tier_ids']),
+                status: 'active',
+              }),
           ];
           break;
         case 'same edit':
           attempts = [
-            () => repositories[0].edit(first.id, { ...first, status: 'active' }),
-            () => repositories[1].edit(first.id, { ...first, status: 'active' }),
+            () =>
+              repositories[0].edit(first.id, {
+                ...omit(first, ['trigger_tier_scope', 'trigger_tier_ids']),
+                status: 'active',
+              }),
+            () =>
+              repositories[1].edit(first.id, {
+                ...omit(first, ['trigger_tier_scope', 'trigger_tier_ids']),
+                status: 'active',
+              }),
           ];
           expectedSuccesses = 2;
           break;
