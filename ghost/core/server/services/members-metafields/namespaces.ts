@@ -20,6 +20,20 @@ export interface Owner {
   staff: ManagingPermission;
 }
 
+/**
+ * Whether a namespace can be used at all. While it can't, each of its fields reads as archived
+ * whatever status it holds, so whatever already happens to an archived field happens to every
+ * one of them, and none of them can be changed. Nothing is stored, so each comes back as it was
+ * once the namespace is available again.
+ */
+export interface AvailabilityLimit {
+  kind: 'availability';
+  /** Asked on every read and change, as what answers it can change while Ghost runs. */
+  isAvailable(): boolean;
+  /** Throws the limit's own reason for refusing a change, once `isAvailable` has said no. */
+  refuse(): Promise<void>;
+}
+
 /** How many fields a namespace may hold, asked whenever fields are added to it. */
 export interface CountLimit {
   kind: 'count';
@@ -28,7 +42,7 @@ export interface CountLimit {
 }
 
 /** Something holding a namespace's fields back. Each kind is applied where it bites, below. */
-export type NamespaceLimit = CountLimit;
+export type NamespaceLimit = AvailabilityLimit | CountLimit;
 
 /**
  * The rules a namespace's fields follow. Whatever puts fields in a namespace states them, and
@@ -45,6 +59,8 @@ export interface NamespacePolicy {
 export interface Namespaces {
   /** The policy of a namespace someone owns. Nobody owns any other, so no field can be defined there. */
   owned(namespace: Namespace): NamespacePolicy;
+  /** The namespaces unavailable right now, whose fields read as archived. */
+  unavailable(): Namespace[];
   /** Refuses any change to the namespace's fields its policy doesn't allow. */
   assertChangeable(namespace: Namespace): Promise<void>;
   /** Refuses adding `adding` fields to the `held` the namespace already has. */
@@ -76,14 +92,25 @@ export function createNamespaces(policies: readonly NamespacePolicy[]): Namespac
   return {
     owned,
 
+    unavailable() {
+      return policies
+        .filter(({ limits }) => limits.some(makesUnavailable))
+        .map(({ namespace }) => namespace);
+    },
+
     async assertChangeable(namespace) {
       for (const limit of owned(namespace).limits) {
         switch (limit.kind) {
+          case 'availability':
+            if (!limit.isAvailable()) {
+              await limit.refuse();
+            }
+            break;
           case 'count':
             // Asked of adding only: no other change holds more fields.
             break;
           default: {
-            const _exhaustive: never = limit.kind;
+            const _exhaustive: never = limit;
             throw new errors.InternalServerError({ message: `Unhandled limit: ${_exhaustive}` });
           }
         }
@@ -93,15 +120,34 @@ export function createNamespaces(policies: readonly NamespacePolicy[]): Namespac
     async assertRoom(namespace, held, adding) {
       for (const limit of owned(namespace).limits) {
         switch (limit.kind) {
+          case 'availability':
+            if (!limit.isAvailable()) {
+              await limit.refuse();
+            }
+            break;
           case 'count':
             await limit.assertRoom(held, adding);
             break;
           default: {
-            const _exhaustive: never = limit.kind;
+            const _exhaustive: never = limit;
             throw new errors.InternalServerError({ message: `Unhandled limit: ${_exhaustive}` });
           }
         }
       }
     },
   };
+}
+
+function makesUnavailable(limit: NamespaceLimit): boolean {
+  switch (limit.kind) {
+    case 'availability':
+      return !limit.isAvailable();
+    case 'count':
+      // A namespace with no room left still reads as it is stored.
+      return false;
+    default: {
+      const _exhaustive: never = limit;
+      throw new errors.InternalServerError({ message: `Unhandled limit: ${_exhaustive}` });
+    }
+  }
 }

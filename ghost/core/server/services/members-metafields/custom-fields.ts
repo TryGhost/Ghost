@@ -1,22 +1,40 @@
 import errors from '@tryghost/errors';
+import type { LimitService } from '@tryghost/limit-service';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import type { CountLimit, NamespacePolicy } from './namespaces';
+import type { AvailabilityLimit, CountLimit, NamespacePolicy } from './namespaces';
 
 /**
  * Custom fields: the publisher's own namespace, and the policy its fields follow. Staff with
- * the custom fields permission manage them, and an operational ceiling caps how many a site
- * can hold.
+ * the custom fields permission manage them. A host can switch them off, and an operational
+ * ceiling caps how many a site can hold.
  */
 export function customFields({
+  limitService,
   getMaxDefinitions,
 }: {
+  limitService: Pick<LimitService, 'isDisabled' | 'errorIfWouldGoOverLimit'>;
   /** Asked on every add, as an operator can change it while Ghost runs. */
   getMaxDefinitions: () => number;
 }): NamespacePolicy {
   return {
     namespace: CUSTOM_NAMESPACE,
     owner: { staff: 'member_custom_field' },
-    limits: [operationalCeiling(getMaxDefinitions)],
+    limits: [hostSwitch(limitService, 'limitCustomFields'), operationalCeiling(getMaxDefinitions)],
+  };
+}
+
+/**
+ * A host limit that switches a feature off. The limit service is asked each time, as a host's
+ * limits can change while Ghost runs, and its error carries the host's own words.
+ */
+function hostSwitch(
+  limitService: Pick<LimitService, 'isDisabled' | 'errorIfWouldGoOverLimit'>,
+  name: string,
+): AvailabilityLimit {
+  return {
+    kind: 'availability',
+    isAvailable: () => limitService.isDisabled(name) !== true,
+    refuse: () => limitService.errorIfWouldGoOverLimit(name),
   };
 }
 
