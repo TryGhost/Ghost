@@ -606,8 +606,8 @@ catalogs:
       specifier: 2.7.0
       version: 2.7.0
     jose:
-      specifier: 6.2.12
-      version: 6.2.12
+      specifier: 6.2.13
+      version: 6.2.13
     js-yaml:
       specifier: 4.3.2
       version: 4.3.2
@@ -2459,7 +2459,7 @@ importers:
         version: 2.5.0
       jose:
         specifier: 'catalog:'
-        version: 6.2.12
+        version: 6.2.13
       js-yaml:
         specifier: 'catalog:'
         version: 4.3.2
@@ -12609,8 +12609,8 @@ packages:
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
-  jose@6.2.12:
-    resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
+  jose@6.2.13:
+    resolution: {integrity: sha512-7TIg10ZE1x82YediN+lcrPNvGMKge9yFHQD+Qho/b8y2adfugU3AsvvHfxV0fzyFllT6l9xCjf4RWY9g/Z9PJQ==}
 
   jpeg-js@0.4.4:
     resolution: {integrity: sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==}
@@ -25373,7 +25373,7 @@ snapshots:
 
   jose@5.10.0: {}
 
-  jose@6.2.12: {}
+  jose@6.2.13: {}
 
   jpeg-js@0.4.4: {}
 
