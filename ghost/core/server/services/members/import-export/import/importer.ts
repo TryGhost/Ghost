@@ -115,7 +115,7 @@ type MetafieldPlan = unknown;
 export interface MetafieldsImport {
   activeFields(): Promise<CsvField[]>;
   planWrite(values: Record<string, unknown>): Promise<MetafieldPlan[]>;
-  applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex): Promise<void>;
+  applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex.Transaction): Promise<void>;
 }
 
 // The collaborators the import depends on, one per concern.

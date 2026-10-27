@@ -84,7 +84,7 @@ export function init(): void {
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the
   // definitions service.
-  values = new MetafieldValuesService({ knex, fields, getMaxDefinitions });
+  values = new MetafieldValuesService({ knex, fields, getMaxDefinitions, tracking });
 
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both

@@ -135,6 +135,12 @@ export type WriteOrigin =
       source: Extract<MetafieldChangeSource, 'portal' | 'checkout'>;
     };
 
+/**
+ * Where a write of one member's values was made, by anyone but an import, which stores each
+ * row's values through a write of its own.
+ */
+export type SingleWriteOrigin = Exclude<WriteOrigin, { source: 'import' }>;
+
 /** The fields an entry names. */
 export const MetafieldChangeEventFields = z.array(MetafieldChangeEventFieldSchema);
 

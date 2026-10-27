@@ -1,6 +1,7 @@
 import type { FieldType } from '@tryghost/metafield-types';
 import type { Tracer } from '../../lib/tracing/tracer';
 import type { MetafieldVerb } from './actions';
+import type { SingleWriteOrigin } from './schema';
 
 // The outcome spans the custom fields commands record, in one place: a command reports what
 // it did in its own terms, and this decides the span names and attributes dashboards read.
@@ -58,6 +59,25 @@ export function metafieldsTracking(tracer: Tracer) {
           },
         });
       });
+    },
+
+    /**
+     * Each write of a member's values reported here records a span once `stored` settles.
+     * Recorded alongside the write rather than awaited by it, as a write that joined its
+     * caller's transaction is only stored once that commits.
+     */
+    valuesWrite(
+      { source, fields }: { source: SingleWriteOrigin['source']; fields: Fields },
+      stored: Promise<unknown>,
+    ): void {
+      tracer
+        .track('members.metafields.values', async (span) => {
+          span.setAttribute('source', source);
+          span.setAttribute('field_types', fieldTypes(fields));
+          await stored;
+        })
+        // The write's own caller hears of any failure.
+        .catch(() => {});
     },
   };
 }

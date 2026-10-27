@@ -26,9 +26,11 @@ import {
   FIELD_STATUS,
   StoredFieldList,
   type MetafieldChangeEvent,
+  type SingleWriteOrigin,
   type WriteOrigin,
 } from './schema';
 import { toDatabaseDate } from '../../lib/db-types/date';
+import type { MetafieldsTracking } from './tracking';
 import {
   ACTIVE_ONLY,
   FIELDS_TABLE,
@@ -131,8 +133,17 @@ export interface PlannedWrite {
 /** Checked writes and who is making them: everything needed to store them. */
 export interface MetafieldPlan {
   writes: PlannedWrite[];
-  origin: WriteOrigin;
+  origin: SingleWriteOrigin;
 }
+
+/**
+ * Every value an import writes came out of its file, whichever column carried it. An import
+ * has no id to give until its runs are stored with one, so it names its kind only.
+ */
+const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
+  writtenBy: { type: 'import', id: null },
+  source: 'import',
+};
 
 /**
  * What a member holds for each defined field. Separate from the definitions service
@@ -144,19 +155,23 @@ export class MetafieldValuesService {
   private fields: FieldSource;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
+  private tracking: MetafieldsTracking;
 
   constructor({
     knex,
     fields,
     getMaxDefinitions,
+    tracking,
   }: {
     knex: Knex;
     fields: FieldSource;
     getMaxDefinitions: () => number;
+    tracking: MetafieldsTracking;
   }) {
     this.knex = knex;
     this.fields = fields;
     this.getMaxDefinitions = getMaxDefinitions;
+    this.tracking = tracking;
   }
 
   // The query is scoped to the audience, so a field they may not see is absent from
@@ -423,23 +438,61 @@ export class MetafieldValuesService {
    * itself and where it wrote, so a new one cannot quietly inherit the identity of
    * whichever was written first.
    *
-   * Always transactional. Given an executor it joins that transaction, so the importer's
-   * failed value write takes its member with it; given none it opens its own.
+   * Always transactional. Given an executor it joins that transaction, so a failed value
+   * write takes the member save it joined with it; given none it opens its own.
    *
    * Every write also puts an entry on the member's activity feed, naming the fields it
    * touched and who wrote them where, in the same transaction, so the feed cannot name a
    * change that was not stored or miss one that was. A value has more than one author,
    * and the feed is where a publisher finds out which of them changed it.
+   *
+   * Every write is reported to the metafields tracking, saying where it was made and whether it
+   * was stored, so a dashboard can follow how each place saves values. A value `planWrite`
+   * refuses never gets here: the refusal is answered to whoever wrote it.
    */
   async applyWrite(
     memberId: string,
     writes: PlannedWrite[],
-    { writtenBy, source, executor = this.knex }: WriteOrigin & { executor?: Knex },
+    origin: SingleWriteOrigin & { executor?: Knex.Transaction },
   ): Promise<void> {
     if (writes.length === 0) {
       return;
     }
+    const { executor } = origin;
+    const stored = this.store(memberId, writes, origin, executor);
 
+    // A write that joined the caller's transaction is only stored once that transaction
+    // finishes without an error.
+    this.tracking.valuesWrite(
+      { source: origin.source, fields: writes.map(({ field }) => field) },
+      executor ? stored.then(() => executor.executionPromise) : stored,
+    );
+    await stored;
+  }
+
+  /**
+   * Stores the values from one row of a members import, joining the row's transaction so a
+   * value that fails takes its member with it. The import records its run as a whole, so the
+   * row's write is not reported to the tracking.
+   */
+  async applyImportedWrite(
+    memberId: string,
+    writes: PlannedWrite[],
+    executor: Knex.Transaction,
+  ): Promise<void> {
+    if (writes.length === 0) {
+      return;
+    }
+    await this.store(memberId, writes, IMPORTED, executor);
+  }
+
+  /** Stores a write and its activity feed entry, joining `executor`'s transaction if given. */
+  private async store(
+    memberId: string,
+    writes: PlannedWrite[],
+    { writtenBy, source }: WriteOrigin,
+    executor: Knex.Transaction | undefined,
+  ): Promise<void> {
     const apply = async (trx: Knex) => {
       // Built first, then sent as whole statements: a handful per member rather
       // than one per part, under one timestamp, because a write happened once
@@ -531,12 +584,8 @@ export class MetafieldValuesService {
       });
     };
 
-    // knex's marker for a transactor: join it rather than nesting a savepoint under it.
-    if (executor.isTransaction) {
-      await apply(executor);
-    } else {
-      await executor.transaction(apply);
-    }
+    // Joins the caller's transaction rather than nesting a savepoint under it.
+    await (executor ? apply(executor) : this.knex.transaction(apply));
   }
 
   /**
