@@ -3667,12 +3667,14 @@ services:
           The TypeScript root exposes named createService and async init exports, consumed by
           CommonJS boot. Neither exposes a retained service instance or a stop/reset method.
           The implementation class and dependency type are deep exports; only tests construct
-          that class directly outside the factory in the searched repository.
+          that class directly outside the factory in the searched repository. Root units pin
+          init resolving undefined on every call and the ping starting on the factory's instance.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
       construction:
         summary: >-
           Every createService call constructs ExplorePingService and a fresh posts service,
@@ -3680,6 +3682,9 @@ services:
           emailService.service, though this consumer only uses stats. Other dependencies are
           shared module objects. Every eligible init calls the factory, even when ping is disabled or
           its URL is absent. The environment guard does not prevent module-scope imports.
+          Root units pin that test and staging environments construct neither the Posts graph
+          nor an instance, that each eligible init constructs a fresh instance with its own Posts
+          service, and that a synchronous Posts construction error rejects init unchanged.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/posts/posts-service-instance.js
@@ -3687,48 +3692,64 @@ services:
           - core/server/services/posts/posts-exporter.js
           - core/server/services/posts/post-email-handler.js
           - core/server/services/posts/stats/post-stats.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
       consumers:
         summary: >-
           Boot is the only production root caller found; no request, job or CLI consumer or
           second composition path was found. Payload collection consumes posts.stats,
           members.stats and statsService.api.mrr. Missing MRR availability silently produces
-          an empty array. Implementation tests inject these shapes and do not verify the real
-          roots remain compatible.
+          an empty array. Implementation tests inject these shapes. Root units wire the shared
+          Members statistics object and Stats facade and pin the exact request body, reading MRR
+          from a facade that becomes available during payload collection. The isolated boot case
+          collects the payload through the real Posts, Members and Stats roots against the
+          default database, including the real Stats API's zero-MRR currency entry.
         sources:
           - core/boot.js
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/server/services/members/service.js
           - core/server/services/stats/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
+          - test/e2e-server/boot-explore-ping.isolated.test.ts
       startup:
         summary: >-
           Foreground boot calls init after database/settings setup, before app mounting and
           readiness. Only production/development proceed. Member stats already exists at import;
           stats init appears earlier in the same Promise.all list and currently sets api without
           awaiting. Explore init launches ping and resolves without awaiting payload collection
-          or HTTP completion; direct factory use has no environment or readiness guard.
+          or HTTP completion; direct factory use has no environment or readiness guard. Root
+          units apply the real configuration policy per environment, including development, and
+          show init resolving while post statistics and the request are held pending. The
+          isolated boot case opens the gate for this initializer only during a real boot:
+          readiness is notified once and the Admin API answers while the Explore response is
+          held. Boot's Promise.all propagation is covered generically, not per service.
         sources:
           - core/boot.js
           - core/shared/config/helpers.ts
           - core/server/services/explore-ping/index.ts
           - core/server/services/members/service.js
           - core/server/services/stats/service.js
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
+          - test/e2e-server/boot-explore-ping.isolated.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           No instance, completion promise, success state or deduplication guard is retained by
           the root. Repeated eligible init creates independent pings that can overlap; there is
           no implemented schedule or retry at this layer. An instance retains dependency
           references but reads their mutable properties during each ping. Server stop neither
-          drains these pings nor prevents later calls.
+          drains these pings nor prevents later calls. Root units pin that repeated eligible init
+          constructs separate instances and Posts services.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/explore-ping/index.test.ts
       configuration:
         summary: >-
           Ping reads URL then enabled state once; payload reads version/site metadata before
@@ -3769,24 +3790,31 @@ services:
           Missing URL warns, disabled ping skips. Any post-query/date failure nulls all post
           fields; member or MRR failure nulls both growth fields. Request rejection warns and
           fulfills, while payload setup or serialization errors can reject ping outside these
-          catches and reach boot's unhandled-rejection logger. Tests assert null fallback for
-          post/member failure and request-error logging, but not MRR failure or detached rejection.
+          catches and reach boot's unhandled-rejection logger. Implementation tests assert null
+          fallback for post/member failure and request-error logging. Root units pin a request
+          rejection warning while the detached ping fulfills, and a synchronous payload error
+          rejecting the detached ping while init resolves. MRR failure and boot's handling of
+          the detached rejection remain untested.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
         tests:
           - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/index.test.ts
     unverified: []
     blockers:
       - >-
-        Add root export/factory and boot contracts for environment gating, repeated init,
-        construction failure and nonblocking completion. Current tests instantiate only the
-        implementation; the shared config helper's tests do not prove the root uses its gate.
+        Root units now pin environment gating through the real configuration policy, fresh
+        construction per eligible init, construction failure rejecting init and init resolving
+        before payload and request completion; the isolated boot case runs the real boot.
+        Adoption must decide how one retained initializer instance replaces fresh construction
+        per init.
       - >-
-        Exercise payload collection with the real service roots and database. Changing stats'
-        facade can silently replace MRR with an empty array while injected-shape tests pass.
-        Preserve member stats availability and stats initialization ordering explicitly.
+        The isolated boot case now collects the payload through the real Posts, Members and
+        Stats roots and database, including the Stats API's zero-MRR entry, and root units read
+        the Stats facade when it becomes available during collection. Stats initialization
+        ordering relative to this init remains source evidence.
       - >-
         Decide ownership of overlapping pings, unfinished queries/requests, cancellation and
         shutdown. No service drain exists, and the request has no configured timeout; current
@@ -3796,9 +3824,10 @@ services:
         growth permission and Stripe mode later. Setting changes do not cancel a launched ping.
         Cover real post/member count semantics and unavailable versus failed MRR distinctly.
       - >-
-        Characterize detached payload/serialization failures, MRR rejection, post-date errors
-        and sibling queries continuing after Promise.all rejects. Existing fallback assertions
-        do not prove warning details for statistics failures or boot's error handling.
+        Root units now pin a detached payload error rejecting ping while init resolves.
+        Serialization failures, MRR rejection, post-date errors, sibling queries continuing
+        after Promise.all rejects, warning details for statistics failures and boot's handling
+        of the detached rejection remain uncharacterized.
   export-requests:
     kind: directory
     disposition: retain
