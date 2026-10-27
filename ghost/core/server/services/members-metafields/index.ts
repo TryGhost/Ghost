@@ -3,6 +3,8 @@ import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './bindings-service';
 import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
+import { customFields } from './custom-fields';
+import { createNamespaces, type Namespaces } from './namespaces';
 
 export type { Metafield } from './models';
 export type { RequestContext } from './actions';
@@ -31,14 +33,16 @@ export {
 // it needs — a value referencing its definition, not a boundary crossing.
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
+/** The namespaces fields can be defined in, and the policy each one's fields follow. */
+export let namespaces: Namespaces | undefined;
 export let definitions: MetafieldDefinitionsService | undefined;
 export let values: MetafieldValuesService | undefined;
 export let bindings: MetafieldBindingsService | undefined;
 
 export function init(): void {
-  // The three are constructed together below, so checking all of them keeps the "all or
+  // The four are constructed together below, so checking all of them keeps the "all or
   // none" invariant explicit rather than trusting one to stand in for the rest.
-  if (definitions && values && bindings) {
+  if (namespaces && definitions && values && bindings) {
     return;
   }
 
@@ -53,18 +57,18 @@ export function init(): void {
   // ceiling is an operator setting that can change between requests, and a Ghost
   // container holds no state across them.
   const config = require('../../../shared/config');
+  const getMaxDefinitions = () =>
+    resolveMaxDefinitions(config.get('members:metafields:maxDefinitions'));
 
-  definitions = new MetafieldDefinitionsService({
-    knex,
-    recordAction,
-    getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:metafields:maxDefinitions')),
-  });
-  // The values service reads the field definitions straight from the table, so
-  // it needs knex and the same ceiling — no handle on the definitions service.
-  values = new MetafieldValuesService({
-    knex,
-    getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:metafields:maxDefinitions')),
-  });
+  // Custom fields are the one application of metafields so far, and the only namespace
+  // anyone can define fields in.
+  namespaces = createNamespaces([customFields({ getMaxDefinitions })]);
+
+  definitions = new MetafieldDefinitionsService({ knex, recordAction, namespaces });
+  // The values service reads the field definitions straight from the table, so it needs
+  // knex and the ceiling, which also caps how many values one request can carry — no
+  // handle on the definitions service.
+  values = new MetafieldValuesService({ knex, getMaxDefinitions });
 
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both

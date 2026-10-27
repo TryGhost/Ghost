@@ -1,6 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { ADMIN, actingContext, definitions } from '../../services/members-metafields';
-import { assertDefinable } from '../../services/members-metafields/namespaces';
+import { ADMIN, actingContext, definitions, namespaces } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 const permissionsService = require('../../services/permissions');
@@ -27,26 +26,19 @@ type WriteFrame = Frame<{
 
 // Reading a definition needs no permission. A definition says only that the site collects
 // a shoe size, and every signed-in member is already shown the whole list, so there is
-// nothing here to keep from staff. Defining one is the publisher's own, and with
+// nothing here to keep from staff. Managing them is the namespace owner's, and with
 // `permissions: true` the framework would check against the Bookshelf model named after
 // the resource — these fields have no Bookshelf model, so each writing handler asks the
 // permissions service directly.
-function canThis(frame: ReadFrame) {
-  return permissionsService.canThis(frame.options.context);
-}
 
 /**
- * Settle the namespace before the caller.
- *
- * Which namespace is being written to decides whose authority applies, so it is resolved
- * first; only once the publisher turns out to own it does a staff role become the
- * question. The other order answers a request to define a field somewhere nobody owns
- * with "you lack a permission", which sends the caller after a permission that would not
- * have helped.
+ * Whether the caller may manage the route's namespace, asked of whoever owns it. The
+ * namespace is settled first, as which one is being written to decides whose authority
+ * applies.
  */
-async function canDefine(frame: ReadFrame, action: (frame: ReadFrame) => Promise<unknown>) {
-  assertDefinable(namespaceRoute(frame.options).namespace);
-  return action(frame);
+async function canManage(frame: ReadFrame, action: 'add' | 'edit' | 'destroy', key?: string) {
+  const { owner } = namespaces!.owned(namespaceRoute(frame.options).namespace);
+  return permissionsService.canThis(frame.options.context)[action][owner.staff](key);
 }
 
 const noCacheInvalidation = { cacheInvalidate: false };
@@ -84,7 +76,7 @@ const controller = {
     options: ['namespace'],
     validation: { options: { namespace: { required: true } } },
     permissions(frame: WriteFrame) {
-      return canDefine(frame, (f) => canThis(f).add.member_custom_field());
+      return canManage(frame, 'add');
     },
     query(frame: WriteFrame) {
       return definitions!.add(
@@ -100,7 +92,7 @@ const controller = {
     options: ['namespace'],
     validation: { options: { namespace: { required: true } } },
     permissions(frame: WriteFrame) {
-      return canDefine(frame, (f) => canThis(f).edit.member_custom_field());
+      return canManage(frame, 'edit');
     },
     query(frame: WriteFrame) {
       return definitions!.reorder(
@@ -116,7 +108,7 @@ const controller = {
     options: ['namespace', 'key'],
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions(frame: WriteFrame) {
-      return canDefine(frame, (f) => canThis(f).edit.member_custom_field(f.options.key));
+      return canManage(frame, 'edit', frame.options.key);
     },
     query(frame: WriteFrame) {
       const { namespace, key } = fieldRoute(frame.options);
@@ -135,7 +127,7 @@ const controller = {
     options: ['namespace', 'key'],
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions(frame: WriteFrame) {
-      return canDefine(frame, (f) => canThis(f).destroy.member_custom_field(f.options.key));
+      return canManage(frame, 'destroy', frame.options.key);
     },
     async query(frame: WriteFrame) {
       const { namespace, key } = fieldRoute(frame.options);
