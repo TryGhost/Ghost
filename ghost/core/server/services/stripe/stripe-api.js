@@ -2,7 +2,7 @@ const { ValidationError, VersionMismatchError } = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
-const i18n = require('../i18n');
+const i18n = require('../i18n').default;
 const logging = require('@tryghost/logging');
 const { z } = require('zod');
 const { checkoutSessionParts, taxSessionParams } = require('./checkout-session-params');
@@ -911,8 +911,8 @@ module.exports = class StripeAPI {
 
     const cadenceLabel =
       cadence === 'year'
-        ? i18n.t('{count} year', { count: duration })
-        : i18n.t('{count} month', { count: duration });
+        ? i18n.service.t('{count} year', { count: duration })
+        : i18n.service.t('{count} month', { count: duration });
 
     const stripeSessionOptions = {
       mode: 'payment',
@@ -936,7 +936,7 @@ module.exports = class StripeAPI {
             currency,
             unit_amount: amount,
             product_data: {
-              name: `${i18n.t('Gift subscription')} — ${tierName} (${cadenceLabel})`,
+              name: `${i18n.service.t('Gift subscription')} — ${tierName} (${cadenceLabel})`,
             },
           },
           quantity: 1,

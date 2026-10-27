@@ -5,15 +5,9 @@ const events = require('../../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/i18n');
 const LOCALE_EVENT = 'settings.locale.edited';
-const NOT_INITIALIZED = /Expected i18n instance to be initialized/;
+const NOT_INITIALIZED = /i18n used before init\(\)/;
 
-type TranslateOptions = Record<string, unknown>;
-type Root = {
-  init(): void;
-  t(key: string, options?: TranslateOptions): string;
-  dir(language?: string): string;
-  changeLanguage(language: string): Promise<(key: string, options?: TranslateOptions) => string>;
-};
+type Root = typeof import('../../../../../core/server/services/i18n').default;
 type LocaleListener = (model: { get: (key: string) => unknown }) => void;
 
 describe('i18n root', function () {
@@ -35,7 +29,7 @@ describe('i18n root', function () {
     existingListeners = events.listeners(LOCALE_EVENT);
     delete require.cache[ROOT_PATH];
     getLocale = sandbox.stub(settingsCache, 'get').withArgs('locale').returns('en');
-    root = require(ROOT_PATH);
+    root = require(ROOT_PATH).default;
   });
 
   afterEach(function () {
@@ -50,64 +44,59 @@ describe('i18n root', function () {
     }
   });
 
-  it('throws before init when a retained delegate is called', function () {
-    const { t, dir, changeLanguage } = root;
-
-    assert.throws(() => t('Gift subscription'), NOT_INITIALIZED);
-    assert.throws(() => dir(), NOT_INITIALIZED);
-    assert.throws(() => changeLanguage('fr'), NOT_INITIALIZED);
+  it('throws before init when the service is read', function () {
+    assert.throws(() => root.service, NOT_INITIALIZED);
   });
 
-  it('does not subscribe to locale changes until init', function () {
+  it('does not subscribe to locale changes until init', async function () {
     assert.deepEqual(addedListeners(), []);
 
-    root.init();
+    await root.init();
 
     assert.equal(addedListeners().length, 1);
   });
 
-  it('falls back to English when no locale is configured', function () {
+  it('falls back to English when no locale is configured', async function () {
     getLocale.returns(undefined);
-    root.init();
+    await root.init();
 
-    assert.equal(root.t('Gift subscription'), 'Gift subscription');
+    assert.equal(root.service.t('Gift subscription'), 'Gift subscription');
   });
 
-  it('translates with the configured locale', function () {
+  it('translates with the configured locale', async function () {
     getLocale.returns('fr');
-    root.init();
+    await root.init();
 
-    assert.equal(root.t('Gift subscription'), 'Abonnement offert');
+    assert.equal(root.service.t('Gift subscription'), 'Abonnement offert');
   });
 
-  it('forwards translation options to the translator', function () {
+  it('forwards translation options to the translator', async function () {
     getLocale.returns('fr');
-    root.init();
+    await root.init();
 
     assert.equal(
-      root.t('Welcome back to {siteTitle}!', { siteTitle: 'Example' }),
+      root.service.t('Welcome back to {siteTitle}!', { siteTitle: 'Example' }),
       'Quel plaisir de vous revoir sur Example !',
     );
   });
 
-  it('forwards direction arguments and reports the current direction', function () {
+  it('forwards direction arguments and reports the current direction', async function () {
     getLocale.returns('fr');
-    root.init();
+    await root.init();
 
-    assert.equal(root.dir(), 'ltr');
-    assert.equal(root.dir('ar'), 'rtl');
+    assert.equal(root.service.dir(), 'ltr');
+    assert.equal(root.service.dir('ar'), 'rtl');
   });
 
-  it('changes the language for retained delegates and returns the translator', async function () {
+  it('changes the language for the retained root and returns the translator', async function () {
     getLocale.returns('fr');
-    const { t, dir, changeLanguage } = root;
-    root.init();
+    await root.init();
 
-    const translate = await changeLanguage('ar');
+    const translate = await root.service.changeLanguage('ar');
 
-    assert.equal(dir(), 'rtl');
+    assert.equal(root.service.dir(), 'rtl');
     assert.equal(
-      t('Welcome back to {siteTitle}!', { siteTitle: 'Example' }),
+      root.service.t('Welcome back to {siteTitle}!', { siteTitle: 'Example' }),
       'مرحبا بك مرة اخرى في Example!',
     );
     assert.equal(
@@ -116,53 +105,49 @@ describe('i18n root', function () {
     );
   });
 
-  it('changes the language when its locale listener receives an edited setting', function () {
-    const { t } = root;
-    root.init();
+  it('changes the language when its locale listener receives an edited setting', async function () {
+    await root.init();
     const get = sandbox.stub().returns('fr');
     const [listener] = addedListeners();
 
     // Call only this root's listener: roots loaded by other files share the process bus.
     listener.call(events, { get });
 
-    assert.equal(t('Gift subscription'), 'Abonnement offert');
+    assert.equal(root.service.t('Gift subscription'), 'Abonnement offert');
     sinon.assert.alwaysCalledWithExactly(get, 'value');
   });
 
-  // Boot calls init once. Repeating it is current behaviour, not a supported contract.
-  it('replaces the translator and adds another listener when init repeats', function () {
-    const { t } = root;
-    root.init();
+  it('retains one translator and one listener across repeated init', async function () {
+    await root.init();
+    const translator = root.service;
     getLocale.returns('fr');
 
-    root.init();
+    await root.init();
 
-    assert.equal(t('Gift subscription'), 'Abonnement offert');
-    assert.equal(addedListeners().length, 2);
+    assert.equal(root.service, translator);
+    assert.equal(root.service.t('Gift subscription'), 'Gift subscription');
+    assert.equal(addedListeners().length, 1);
   });
 
-  it('propagates a settings read failure from init without publishing a translator or listener', function () {
+  it('rejects init with a settings read failure without publishing a translator or listener', async function () {
     const failure = new Error('Locale setting unavailable');
     getLocale.throws(failure);
 
-    assert.throws(
-      () => root.init(),
-      (error: unknown) => error === failure,
-    );
+    await assert.rejects(root.init(), (error: unknown) => error === failure);
 
-    assert.throws(() => root.t('Gift subscription'), NOT_INITIALIZED);
+    assert.throws(() => root.service, NOT_INITIALIZED);
     assert.deepEqual(addedListeners(), []);
   });
 
-  it('initializes after a failed init once the locale setting is readable', function () {
+  it('initializes after a failed init once the locale setting is readable', async function () {
     getLocale.throws(new Error('Locale setting unavailable'));
-    assert.throws(() => root.init());
+    await assert.rejects(root.init());
     getLocale.resetBehavior();
     getLocale.returns('fr');
 
-    root.init();
+    await root.init();
 
-    assert.equal(root.t('Gift subscription'), 'Abonnement offert');
+    assert.equal(root.service.t('Gift subscription'), 'Abonnement offert');
     assert.equal(addedListeners().length, 1);
   });
 });

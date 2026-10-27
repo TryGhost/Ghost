@@ -1,32 +1,38 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const { generateGiftPreviewImage } = require('./image');
-const { t } = require('../../services/i18n');
+const i18n = require('../../services/i18n').default;
 
 function getCadenceLabel(cadence, duration) {
   if (cadence === 'year') {
-    return t('{count} year', { count: duration });
+    return i18n.service.t('{count} year', { count: duration });
   }
 
-  return t('{count} month', { count: duration });
+  return i18n.service.t('{count} month', { count: duration });
 }
 
 function getOgTitle({ cadence, duration, tierName, siteTitle }) {
   if (cadence === 'year') {
-    return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
+    return i18n.service.t(
+      `You've been gifted a {duration}-year {tierName} membership to {siteTitle}`,
+      {
+        duration,
+        tierName,
+        siteTitle,
+        interpolation: { escapeValue: false },
+      },
+    );
+  }
+
+  return i18n.service.t(
+    `You've been gifted a {duration}-month {tierName} membership to {siteTitle}`,
+    {
       duration,
       tierName,
       siteTitle,
       interpolation: { escapeValue: false },
-    });
-  }
-
-  return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
-    duration,
-    tierName,
-    siteTitle,
-    interpolation: { escapeValue: false },
-  });
+    },
+  );
 }
 
 function escapeHtml(str) {
@@ -67,7 +73,7 @@ async function giftPreview(req, res) {
     tierName: preview.tier.name,
     siteTitle,
   });
-  const ogDescription = t('Open this link to redeem your gift.');
+  const ogDescription = i18n.service.t('Open this link to redeem your gift.');
   const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
   const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
   const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
@@ -102,7 +108,7 @@ async function giftPreview(req, res) {
 </head>
 <body>
     <script>window.location.replace(${JSON.stringify(redirectUrl)});</script>
-    <noscript><a href="${escapeHtml(redirectUrl)}">${escapeHtml(t('Redeem your gift subscription'))}</a></noscript>
+    <noscript><a href="${escapeHtml(redirectUrl)}">${escapeHtml(i18n.service.t('Redeem your gift subscription'))}</a></noscript>
 </body>
 </html>`;
 
@@ -129,7 +135,7 @@ async function giftPreviewImage(req, res) {
     const png = await generateGiftPreviewImage({
       accentColor,
       siteTitle,
-      tierLabel: t('{tierName} membership', {
+      tierLabel: i18n.service.t('{tierName} membership', {
         tierName: preview.tier.name,
         interpolation: { escapeValue: false },
       }),

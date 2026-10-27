@@ -3,7 +3,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
 const { toPlain } = require('../../lib/common/to-plain');
-const { t } = require('../i18n');
+const i18n = require('../i18n').default;
 
 class CommentsServiceEmails {
   constructor({
@@ -24,7 +24,9 @@ class CommentsServiceEmails {
     this.settingsHelpers = settingsHelpers;
     this.urlService = urlService;
     this.urlUtils = urlUtils;
-    this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({ t });
+    this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({
+      t: (...args) => i18n.service.t(...args),
+    });
   }
 
   /**
@@ -136,7 +138,7 @@ class CommentsServiceEmails {
     const parentMemberEmail = parentMember.get('email');
     const subject =
       '↪️ ' +
-      t(`New reply to your comment on {siteTitle}`, {
+      i18n.service.t(`New reply to your comment on {siteTitle}`, {
         siteTitle: this.settingsCache.get('title'),
         interpolation: { escapeValue: false },
       });

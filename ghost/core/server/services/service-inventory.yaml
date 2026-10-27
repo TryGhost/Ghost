@@ -1425,7 +1425,7 @@ services:
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/members/service.js
           - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/i18n/index.js
+          - core/server/services/i18n/index.ts
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/integration/services/comments-service.test.js
@@ -1469,7 +1469,7 @@ services:
           - core/server/services/comments/comments-service-email-renderer.js
           - core/server/services/comments/comments-stats-service.js
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/i18n/index.js
+          - core/server/services/i18n/index.ts
           - core/server/lib/mail/ghost-mailer.js
           - core/shared/config/SCHEMA.md
           - core/shared/url-utils.ts
@@ -4651,6 +4651,7 @@ services:
     kind: directory
     disposition: relocate
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
@@ -4663,7 +4664,7 @@ services:
         an explicit regression check, not a new helper feature.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/i18n/index.js
+        - core/server/services/i18n/index.ts
         - core/boot.js
         - core/server/services/gifts/index.ts
         - test/unit/boot/init-core.test.ts
@@ -4676,49 +4677,55 @@ services:
         preparation: []
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/i18n/index.js
+          - core/server/services/i18n/index.ts
           - core/server/services/i18n/README.md
           - core/server/auth/session/index.js
           - core/boot.js
     entryPoints:
-      - i18n/index.js
+      - i18n/index.ts
     notes: >-
       Planned relocation to core/shared/i18n: this is Ghost's configured translation facade, while
       the reusable translation engine stays in @tryghost/i18n. Boot owns initialization and
       locale-event wiring. This revisits the earlier move into services under the clarified Shared
-      boundary; no source has moved. Preserve the live delegating functions and translation
-      options while establishing ownership of repeated initialization and locale listeners. Other
-      translation instances have separate owners and are not consumers of this facade.
+      boundary; no source has moved. The prior auditedAt records the pre-migration CommonJS facade
+      at core/server/services/i18n/index.js. The bounded migration was inspected on main
+      9687efed5b3180f97e35078367822db16aa1c152 with its characterization commit applied; the root
+      became a TypeScript defineService initializer exposing the translator as .service, and
+      every consumer now reads .service.t, .service.dir or .service.changeLanguage at use time
+      instead of capturing delegates during import. Translation options and the locale listener
+      are unchanged. Other translation instances have separate owners and are not consumers of
+      this facade.
     contracts:
       exports:
         summary: >-
-          CommonJS exports init, changeLanguage, dir and t; no instance, reset or shutdown
-          is exposed. init synchronously returns undefined. The other arrow functions
-          assert initialization, forward all arguments to the current private instance and
-          return its result without depending on their receiver. changeLanguage returns
-          the library promise; t and dir return their synchronous library results. Focused
-          root tests assert the pre-init guards, receiver-independent retained delegates,
-          forwarded translation options and direction arguments, and the translator that
-          changeLanguage returns; the exact export shape and undefined init return remain
-          source evidence.
+          The TypeScript root default-exports a defineService initializer with init and a
+          guarded service getter; there are no extras or named runtime exports. The ready
+          service is the ghost-namespace i18next translator, so t, dir and changeLanguage
+          are library methods read through .service at use time; no reset or shutdown is
+          exposed. Focused root tests assert the readiness guard, forwarded translation
+          options and direction arguments, and the translator that changeLanguage returns;
+          generic readiness and retry belong to kernel tests.
         sources:
-          - core/server/services/i18n/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/i18n/index.ts
           - package.json
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
           - test/unit/server/services/i18n/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
-          Import creates only the facade and debug helper. Every init lazily loads the
-          workspace i18n package, shared events and settings cache, creates a fresh ghost
-          namespace translator, publishes it, then adds an anonymous locale listener.
-          Boot is the only production init caller found. Email-service, member welcome
-          emails and theme translation construct independent package instances; they do
-          not initialize or share this facade's private translator. Focused root tests
-          assert that import adds no locale listener and that init publishes a translator
-          and exactly one listener.
+          Import creates only the initializer. The first init lazily loads the debug helper,
+          workspace i18n package, shared events and settings cache, creates one ghost
+          namespace translator, adds an anonymous locale listener and publishes the
+          translator as .service. Boot is the only production init caller found.
+          Email-service, member welcome emails and theme translation construct independent
+          package instances; they do not initialize or share this root's translator. Focused
+          root tests assert that import adds no locale listener and that init publishes a
+          translator and exactly one listener.
         sources:
-          - core/server/services/i18n/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/i18n/index.ts
           - core/boot.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/member-welcome-emails/service.js
@@ -4728,13 +4735,16 @@ services:
           - test/unit/server/services/i18n/index.test.ts
       consumers:
         summary: >-
-          Members mail callbacks, donation payment nicknames, comment email subjects and
-          rendering, staff device-verification mail, gifts mail/renderers and gift-preview
-          controllers retain t. Stripe keeps the module and reads t at use time. Retained
-          facade functions still delegate to the latest translator. No production caller
-          of this root's dir or changeLanguage was found. Real-root consumer tests cover
-          English gift labels/previews, French donation labels and booted signup subjects;
-          comment-renderer locale tests instead inject a separate package translator.
+          Members mail callbacks, donation payment nicknames, comment email subjects,
+          gift-preview controllers and Stripe gift checkout keep the root and read
+          .service.t at use time. Staff device-verification mail, the comment email
+          renderer and gifts mail/renderers receive a t function that forwards to
+          .service.t when invoked, so the translator is read at send time rather than at
+          construction. No production caller of this root's dir or changeLanguage was
+          found. Real-root consumer tests await init before exercising English gift
+          labels/previews and French donation labels; signup subjects run booted; the
+          Stripe translated-label case stubs the ready translator's t; comment-renderer
+          locale tests inject a separate package translator.
         sources:
           - core/server/services/members/api.js
           - core/server/services/members/members-api/services/payments-service.js
@@ -4755,18 +4765,19 @@ services:
           - test/unit/server/services/comments/comments-service-emails-renderer.test.ts
       startup:
         summary: >-
-          initCore awaits init after settings and signing keys, before frontend/application
-          services. The current package initializes synchronously from local resources,
-          so init's undefined return does not leave translation loading pending. Requiring
-          or retaining t before init is safe; invoking it is not. init itself has no settings
-          readiness guard and falls back to English if the cache is uninitialized. Existing
-          unit consumers manually init; signup HTTP tests exercise booted English output.
-          Boot tests hold init pending to prove initCore awaits it before Gift Links and
-          propagates its rejection; focused root tests cold-load the facade and retain
-          delegates before init.
+          initCore awaits init after settings and signing keys, before Gift Links and the
+          frontend/application services. The factory is synchronous from local resources,
+          so the resolved init promise leaves no translation loading pending. Requiring the
+          root before init is safe; reading .service is not. init itself has no settings
+          readiness guard and falls back to English if the cache is uninitialized. Unit
+          consumer fixtures await init before use; signup HTTP tests exercise booted English
+          output. Boot tests hold init pending to prove initCore awaits it before Gift Links
+          and propagates its rejection; focused root tests cold-load the root and assert
+          the readiness guard before init.
         sources:
           - core/boot.js
-          - core/server/services/i18n/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/i18n/index.ts
           - core/shared/settings-cache/cache-manager.js
           - package.json
         tests:
@@ -4777,22 +4788,22 @@ services:
           - test/unit/server/services/i18n/index.test.ts
       lifetime:
         summary: >-
-          Exports remain stable across init while the private translator is replaced. Each
-          init appends a listener that dereferences the latest variable, so old listeners
-          repeatedly change the newest translator rather than pinning old translators.
-          No guard, listener removal or GhostServer cleanup exists. Language changes retain
-          loaded locale bundles in the current translator. A library t returned through
-          changeLanguage is bound to that instance, unlike the exported delegating t.
-          Focused root tests pin that retained delegates follow the translator replaced by
-          a repeated init and that each init adds another listener; same-process
-          stop/reboot listener counts remain source-only.
+          Repeated init shares the first initialization, so one translator and one locale
+          listener are retained for the process; the listener changes that same translator.
+          No listener removal or GhostServer cleanup exists. Language changes retain loaded
+          locale bundles in the translator. A library t returned through changeLanguage is
+          bound to that instance, as are the methods read through .service. Focused root
+          tests pin the retained translator identity and single listener across repeated
+          init; same-process stop/reboot listener counts remain source-only.
         sources:
-          - core/server/services/i18n/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/i18n/index.ts
           - core/server/lib/common/events.js
           - core/server/ghost-server.ts
           - package.json
         tests:
           - test/unit/server/services/i18n/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       configuration:
         summary: >-
           init captures settings locale or en and fixes the ghost namespace. Later model locale
@@ -4808,7 +4819,7 @@ services:
           the registered locale callback; they invoke that callback directly rather than
           persisting a settings edit.
         sources:
-          - core/server/services/i18n/index.js
+          - core/server/services/i18n/index.ts
           - core/server/data/schema/default-settings/default-settings.json
           - core/server/services/members/api.js
           - core/server/services/members/members-api/services/payments-service.js
@@ -4830,7 +4841,7 @@ services:
           or resets state; settings changes are delivered immediately or after transaction
           commit, with rolled-back changes suppressed by the model event layer.
         sources:
-          - core/server/services/i18n/index.js
+          - core/server/services/i18n/index.ts
           - core/server/lib/common/events.js
           - core/server/models/settings.js
           - core/server/models/base/plugins/events.js
@@ -4839,20 +4850,21 @@ services:
         tests: []
       failures:
         summary: >-
-          Pre-init calls synchronously assert. Dependency, settings or factory exceptions
-          escape init and abort boot; a factory failure leaves any prior instance intact,
-          while listener-registration failure occurs after replacement. Unreadable or invalid
-          locale JSON is treated as missing by the package, with English/key fallback.
-          The locale callback neither catches errors nor returns/awaits changeLanguage;
-          synchronous exceptions escape raw event delivery and can interrupt later listeners.
-          The current local-resource path changes language synchronously despite returning
-          a promise. The facade adds no retry, rollback or error translation. Focused tests
-          assert the pre-init errors, a failed first init that publishes no translator or
-          listener, a successful retry, and boot propagating an init rejection. Factory or
-          registration failure after publication, malformed locale events and callback
+          Reading .service before init throws IncorrectUsageError. Dependency, settings or
+          factory exceptions reject init and abort boot; the listener is registered before
+          the translator is published, so a failed init publishes nothing and a later init
+          retries. Unreadable or invalid locale JSON is treated as missing by the package,
+          with English/key fallback. The locale callback neither catches errors nor
+          returns/awaits changeLanguage; synchronous exceptions escape raw event delivery and
+          can interrupt later listeners. The current local-resource path changes language
+          synchronously despite returning a promise. The root adds no rollback or error
+          translation. Focused tests assert the readiness guard, a rejected first init that
+          publishes no translator or listener, a successful retry, and boot propagating an
+          init rejection. Registration failure, malformed locale events and callback
           failures remain source-only.
         sources:
-          - core/server/services/i18n/index.js
+          - core/kernel/define-service.ts
+          - core/server/services/i18n/index.ts
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/boot.js
@@ -4863,15 +4875,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin the exact export shape and init return before changing initialization. Pre-init
-        guards, importing before init, retained delegates across re-init and boot awaiting
-        init before Gift Links now have focused tests.
-      - >-
         Characterize same-process stop/reboot listener counts, callback multiplicity and
-        cleanup without affecting independent email/theme subscribers; repeated init's
-        replacement and extra listener are pinned as current behaviour. Preserve the
-        distinction between a retained delegating t and an instance-bound translator returned
-        by changeLanguage; there is no production cleanup today.
+        cleanup without affecting independent email/theme subscribers; the retained
+        translator and single listener across repeated init are pinned. There is no
+        production cleanup today.
       - >-
         Exercise real settings edits and transaction commit/rollback through retained mail,
         gift and payment consumers, including fallback locales and escaping. Focused root
@@ -4879,8 +4886,8 @@ services:
         persisted settings-event delivery; package translation tests and separate renderer
         instances do not prove this root's wiring.
       - >-
-        Cover factory or registration failure after publication, malformed locale events and
-        callback failures; failed first init and its retry are covered. Decide the contract
+        Cover listener registration failure, malformed locale events and callback failures;
+        a rejected first init and its retry are covered. Decide the contract
         before introducing any asynchronous resource loader: boot and raw event delivery
         currently rely on local synchronous initialization and do not own pending
         language-change work.

@@ -5,15 +5,15 @@ const DomainEvents = require('@tryghost/domain-events');
 
 const Tier = require('../../../../../../../core/server/services/tiers/tier');
 
-// Initialise i18n before requiring the service so its destructured `t` import
-// resolves to the live i18next instance. The init helper falls back to 'en'
-// when the locale setting isn't set.
-const i18n = require('../../../../../../../core/server/services/i18n');
-i18n.init();
-
+const i18n = require('../../../../../../../core/server/services/i18n').default;
 const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/payments-service');
 
 describe('PaymentsService', function () {
+  // The service reads the translator at use time; init falls back to 'en' without a locale setting.
+  beforeAll(async function () {
+    await i18n.init();
+  });
+
   let Bookshelf;
   let db;
 
@@ -339,7 +339,7 @@ describe('PaymentsService', function () {
     }
 
     afterEach(function () {
-      i18n.changeLanguage('en');
+      i18n.service.changeLanguage('en');
     });
 
     it('builds the nickname from the site title', function () {
@@ -348,7 +348,7 @@ describe('PaymentsService', function () {
     });
 
     it('localizes the prefix while keeping the site title interpolated', async function () {
-      await i18n.changeLanguage('fr');
+      await i18n.service.changeLanguage('fr');
       const service = createService('Mon Site');
       assert.equal(service.getDonationPriceNickname(), 'Soutenir Mon Site');
     });

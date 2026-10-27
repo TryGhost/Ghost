@@ -5,11 +5,7 @@ const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
 
-// Initialise i18n before requiring the controller so its destructured `t`
-// import resolves to the live i18next instance. The init helper falls back
-// to 'en' when the locale setting isn't set.
-require('../../../../../core/server/services/i18n').init();
-
+const i18n = require('../../../../../core/server/services/i18n').default;
 const controller = require('../../../../../core/server/web/gift-preview/controller');
 
 // The gifts module's exports are getter-only under tsx, so the service can't be
@@ -19,6 +15,11 @@ const controller = require('../../../../../core/server/web/gift-preview/controll
 const giftsModulePath = require.resolve('../../../../../core/server/services/gifts');
 
 describe('Gift Preview Controller', function () {
+  // The controller reads the translator at use time; init falls back to 'en' without a locale setting.
+  beforeAll(async function () {
+    await i18n.init();
+  });
+
   let giftService;
   let originalModuleLoad;
   let req;

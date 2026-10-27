@@ -3,7 +3,7 @@ const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const stripe = require('stripe');
-const i18n = require('../../../../../core/server/services/i18n');
+const i18n = require('../../../../../core/server/services/i18n').default;
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
 const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
 const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
@@ -11,9 +11,11 @@ const {
   NOTHING_COLLECTED,
 } = require('../../../../../core/server/services/stripe-checkout-config/checkout-service');
 
-i18n.init();
-
 describe('StripeAPI', function () {
+  beforeAll(async function () {
+    await i18n.init();
+  });
+
   const mockCustomerEmail = 'foo@example.com';
   const mockCustomerId = 'cust_mock_123456';
   const mockCustomerName = 'Example Customer';
@@ -1152,7 +1154,7 @@ describe('StripeAPI', function () {
     });
 
     it('uses translated title and cadence labels', async function () {
-      sinon.stub(i18n, 't').callsFake((key, options = {}) => {
+      sinon.stub(i18n.service, 't').callsFake((key, options = {}) => {
         if (key === 'Gift subscription') {
           return 'Abonnement offert';
         }

@@ -61,7 +61,7 @@ export function init(options: GiftServiceInitOptions): void {
   const settingsHelpers = require('../settings-helpers');
   const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
   const { blogIcon } = require('../../../server/lib/image');
-  const { t } = require('../i18n');
+  const i18n: typeof import('../i18n').default = require('../i18n').default;
 
   const repository = new GiftBookshelfRepository({
     GiftModel,
@@ -86,7 +86,7 @@ export function init(options: GiftServiceInitOptions): void {
     getFromAddress: () => formatAddressForDelivery(settingsHelpers.getDefaultEmail()),
     getReplyToAddress: () => settingsHelpers.getMembersSupportAddress(),
     blogIcon,
-    t,
+    t: (key, translateOptions) => i18n.service.t(key, translateOptions),
   });
   const giftDeliveryScheduler = new SignedFlushScheduler({
     apiUrl: options.apiUrl,

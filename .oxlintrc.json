@@ -206,6 +206,7 @@
         "ghost/core/server/services/explore-ping/index.ts",
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/gift-links/index.ts",
+        "ghost/core/server/services/i18n/index.ts",
         "ghost/core/server/services/indexnow-ping/index.ts",
         "ghost/core/server/services/integrations/index.ts",
         "ghost/core/server/services/internal-keys/index.ts",

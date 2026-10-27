@@ -2,15 +2,18 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const emailService = require('../../../../../core/server/services/email-service');
 
-// The email helper destructures `t` from the i18n root at load time; the reply
-// notification subject calls it, so the root must be initialised first. The
-// init helper falls back to 'en' when the locale setting is not set.
-const i18n = require('../../../../../core/server/services/i18n');
-i18n.init();
+// The reply notification subject reads `t` through the i18n root when it sends,
+// so the root must be initialised first. The root falls back to 'en' when the
+// locale setting is not set.
+const i18n = require('../../../../../core/server/services/i18n').default;
 
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
 
 describe('Comments Service: CommentsServiceEmails', function () {
+  beforeAll(async function () {
+    await i18n.init();
+  });
+
   afterEach(function () {
     sinon.restore();
   });

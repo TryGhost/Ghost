@@ -25,7 +25,7 @@ const giftService = require('../gifts');
 const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
-const { t } = require('../i18n');
+const i18n = require('../i18n').default;
 const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
@@ -97,19 +97,19 @@ function createApiInstance(config) {
         const siteTitle = settingsCache.get('title');
         switch (type) {
           case 'subscribe':
-            return `📫 ${t(`Confirm your subscription to {siteTitle}`, { siteTitle, interpolation: { escapeValue: false } })}`;
+            return `📫 ${i18n.service.t(`Confirm your subscription to {siteTitle}`, { siteTitle, interpolation: { escapeValue: false } })}`;
           case 'signup':
-            return `🙌 ${t(`Complete your sign up to {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
+            return `🙌 ${i18n.service.t(`Complete your sign up to {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
           case 'signup-paid':
-            return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
+            return `🙌 ${i18n.service.t(`Thank you for signing up to {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
           case 'updateEmail':
-            return `📫 ${t(`Confirm your email update for {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
+            return `📫 ${i18n.service.t(`Confirm your email update for {siteTitle}!`, { siteTitle, interpolation: { escapeValue: false } })}`;
           case 'signin':
           default:
             if (otc) {
-              return `🔑 ${t('Sign in to {siteTitle} with code {otc}', { siteTitle, otc, interpolation: { escapeValue: false } })}`;
+              return `🔑 ${i18n.service.t('Sign in to {siteTitle} with code {otc}', { siteTitle, otc, interpolation: { escapeValue: false } })}`;
             } else {
-              return `🔑 ${t(`Secure sign in link for {siteTitle}`, { siteTitle, interpolation: { escapeValue: false } })}`;
+              return `🔑 ${i18n.service.t(`Secure sign in link for {siteTitle}`, { siteTitle, interpolation: { escapeValue: false } })}`;
             }
         }
       },
@@ -118,91 +118,91 @@ function createApiInstance(config) {
         switch (type) {
           case 'subscribe':
             return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                        ${i18n.service.t(`Hey there,`)}
 
-                        ${t("You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:", { siteTitle, interpolation: { escapeValue: false } })}
+                        ${i18n.service.t("You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:", { siteTitle, interpolation: { escapeValue: false } })}
 
                         ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                        ${i18n.service.t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('All the best!')}
+                        ${i18n.service.t('All the best!')}
 
                         ---
 
-                        ${t('Sent to {email}', { email })}
-                        ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
+                        ${i18n.service.t('Sent to {email}', { email })}
+                        ${i18n.service.t('If you did not make this request, you can simply delete this message.')} ${i18n.service.t('You will not be subscribed.')}
                         `;
           case 'signup':
             return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                        ${i18n.service.t(`Hey there,`)}
 
-                        ${t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', { siteTitle, interpolation: { escapeValue: false } })}
+                        ${i18n.service.t('Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:', { siteTitle, interpolation: { escapeValue: false } })}
 
                         ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                        ${i18n.service.t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('See you soon!')}
+                        ${i18n.service.t('See you soon!')}
 
                         ---
 
-                        ${t('Sent to {email}', { email })}
-                        ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
+                        ${i18n.service.t('Sent to {email}', { email })}
+                        ${i18n.service.t('If you did not make this request, you can simply delete this message.')} ${i18n.service.t('You will not be signed up, and no account will be created for you.')}
                         `;
           case 'signup-paid':
             return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                        ${i18n.service.t(`Hey there,`)}
 
-                        ${t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', { siteTitle, interpolation: { escapeValue: false } })}
+                        ${i18n.service.t('Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:', { siteTitle, interpolation: { escapeValue: false } })}
 
                         ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                        ${i18n.service.t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('See you soon!')}
+                        ${i18n.service.t('See you soon!')}
 
                         ---
 
-                        ${t('Sent to {email}', { email })}
-                        ${t('Thank you for subscribing to {siteTitle}!', { siteTitle, interpolation: { escapeValue: false } })}
+                        ${i18n.service.t('Sent to {email}', { email })}
+                        ${i18n.service.t('Thank you for subscribing to {siteTitle}!', { siteTitle, interpolation: { escapeValue: false } })}
                         `;
           case 'updateEmail':
             return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                        ${i18n.service.t(`Hey there,`)}
 
-                        ${t('Please confirm your email address with this link:')}
+                        ${i18n.service.t('Please confirm your email address with this link:')}
 
                         ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                        ${i18n.service.t('For your security, the link will expire in 24 hours time.')}
 
                         ---
 
-                        ${t('Sent to {email}', { email })}
-                        ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
+                        ${i18n.service.t('Sent to {email}', { email })}
+                        ${i18n.service.t('If you did not make this request, you can simply delete this message.')} ${i18n.service.t('This email address will not be used.')}
                         `;
           case 'signin':
           default:
             return trimLeadingWhitespace`
-                        ${t(`Hey there,`)}
+                        ${i18n.service.t(`Hey there,`)}
 
                         ${
                           otc
-                            ? `${t('Your verification code for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}: ${otc}\n\n${t('Or use this link to securely sign in', { interpolation: { escapeValue: false } })}:`
-                            : `${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', { siteTitle, interpolation: { escapeValue: false } })}`
+                            ? `${i18n.service.t('Your verification code for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}: ${otc}\n\n${i18n.service.t('Or use this link to securely sign in', { interpolation: { escapeValue: false } })}:`
+                            : `${i18n.service.t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', { siteTitle, interpolation: { escapeValue: false } })}`
                         }
 
                         ${url}
 
-                        ${t('For your security, the link will expire in 24 hours time.')}
+                        ${i18n.service.t('For your security, the link will expire in 24 hours time.')}
 
-                        ${t('See you soon!')}
+                        ${i18n.service.t('See you soon!')}
 
                         ---
 
-                        ${t('Sent to {email}', { email })}
-                        ${t('If you did not make this request, you can safely ignore this email.')}
+                        ${i18n.service.t('Sent to {email}', { email })}
+                        ${i18n.service.t('If you did not make this request, you can safely ignore this email.')}
                     `;
         }
       },
@@ -214,6 +214,7 @@ function createApiInstance(config) {
           .match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         const siteDomain = domain && domain[1];
         const accentColor = settingsCache.get('accent_color');
+        const t = (...args) => i18n.service.t(...args);
         switch (type) {
           case 'subscribe':
             return subscribeEmail({ t, url, email, siteTitle, accentColor, siteDomain, siteUrl });
