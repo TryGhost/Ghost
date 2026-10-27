@@ -16,35 +16,30 @@ import { getInitials } from './help-format';
 import { HelpPanelSizeButton } from './help-panel-size';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
 import type { HelpSignals } from './help-signals';
-import type { HelpConversation } from './use-help-conversation';
+import type { HelpSession } from './use-help-search';
 
 /*
  * The message to the support team, which takes over the panel. Its draft
- * lives in the conversation, so going back or closing the panel keeps it. The
- * message starts as the first question asked, and the conversation goes with
- * it unless the user turns that off (what it carries: getSupportContext in
- * help-signals.ts).
+ * lives in the session, so going back or closing the panel keeps it. The
+ * message starts as the first search, and the searches and articles read go
+ * with it unless the user turns that off (what it carries: getSupportContext
+ * in help-signals.ts).
  *
- * PROTOTYPE: nothing is sent (sendToSupport in use-help-conversation.ts).
+ * PROTOTYPE: nothing is sent (sendToSupport in use-help-search.ts).
  */
 
 interface HelpSupportViewProps {
-  conversation: HelpConversation;
+  session: HelpSession;
   signals: HelpSignals;
   showClose: boolean;
   onClose: () => void;
 }
 
 /** A message to the support team, in place of the conversation it came from. */
-export function HelpSupportView({
-  conversation,
-  signals,
-  showClose,
-  onClose,
-}: HelpSupportViewProps) {
+export function HelpSupportView({ session, signals, showClose, onClose }: HelpSupportViewProps) {
   const id = useId();
   const fileInput = useRef<HTMLInputElement>(null);
-  const { support, questionCount, editSupport, sendToSupport, leaveSupport } = conversation;
+  const { support, questionCount, editSupport, sendToSupport, leaveSupport } = session;
   const { user } = signals;
   const sending = support.status === 'sending';
   const sent = support.status === 'sent';
@@ -204,9 +199,9 @@ export function HelpSupportView({
             {questionCount > 0 && (
               <Inline align="center" gap="sm" justify="between">
                 <Stack gap="none">
-                  <FieldLabel htmlFor={`${id}-attach`}>Attach this conversation</FieldLabel>
+                  <FieldLabel htmlFor={`${id}-attach`}>Attach your searches</FieldLabel>
                   <Text size="xs" tone="tertiary">
-                    Your questions, the answers and the articles you read
+                    What you searched for and the articles you read
                   </Text>
                 </Stack>
                 <Switch

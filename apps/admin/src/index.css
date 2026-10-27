@@ -115,7 +115,7 @@ body {
   }
 }
 
-/* The help panel's status verb while it searches: a light sweeping across
+/* The help panel's status while it searches: a light sweeping across
    muted text, on the same keyframes as the send shimmer. */
 @utility help-working-shimmer {
   background-image: linear-gradient(
@@ -133,32 +133,6 @@ body {
     background-image: none;
     color: var(--text-secondary);
     animation: none;
-  }
-}
-
-/* The help panel's answer while it streams in: a caret after the last word. */
-@utility help-streaming {
-  & > :last-child::after {
-    content: '';
-    display: inline-block;
-    width: 0.5em;
-    height: 1em;
-    margin-left: 2px;
-    vertical-align: text-bottom;
-    background: currentColor;
-    animation: help-streaming-caret 1s steps(2, start) infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    & > :last-child::after {
-      animation: none;
-    }
-  }
-}
-
-@keyframes help-streaming-caret {
-  to {
-    visibility: hidden;
   }
 }
 

@@ -17,9 +17,9 @@ describe('the contract with the help center', () => {
       expect.arrayContaining([
         'manage-your-subscription',
         'troubleshooting-payment-issues',
-        'commenting',
+        'members-sign-in',
       ]),
     );
-    expect(getReferencedTopics()).toEqual(expect.arrayContaining(['ghost-pro', 'publishing']));
+    expect(getReferencedTopics()).toEqual(expect.arrayContaining(['faq', 'publishing']));
   });
 });

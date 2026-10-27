@@ -1,4 +1,3 @@
-import { ACCOUNT_TOPIC } from './help-search';
 import {
   GENERAL_KEY,
   PAGE_ARTICLES,
@@ -8,7 +7,6 @@ import {
   type HelpPageKey,
 } from './help-pages';
 import { FAQ_TOPIC } from './help-questions';
-import { SITE_CARDS } from './help-site-card-kinds';
 import { ACCOUNT_ALERTS } from './help-suggestions';
 
 /*
@@ -18,8 +16,8 @@ import { ACCOUNT_ALERTS } from './help-suggestions';
  *
  * - Keys: the docs team tags an article #admin-<key> to attach it to an Admin
  *   page or account state. Never rename a key; adding keys is safe.
- * - Slugs: articles Admin falls back on or shows a site card for. If one is
- *   renamed or unpublished, its fallback or card silently disappears. Check
+ * - Slugs: articles and FAQ questions Admin falls back on. If one is renamed
+ *   or unpublished, its fallback silently disappears. Check
  *   them against the live help center (getReferencedSlugs) after the docs team
  *   reorganizes.
  * - Topics: tag slugs Admin maps pages to.
@@ -41,12 +39,11 @@ export function getReferencedSlugs(): string[] {
       ...Object.values(PAGE_ARTICLES).flat(),
       ...Object.values(PAGE_QUESTIONS).flat(),
       ...Object.values(ACCOUNT_ALERTS).map(({ fallbackSlug }) => fallbackSlug),
-      ...Object.keys(SITE_CARDS),
     ]),
   ].sort();
 }
 
 /** Every help center topic (tag slug) the panel refers to. */
 export function getReferencedTopics(): string[] {
-  return [...new Set([...Object.values(PAGE_TOPICS).flat(), ACCOUNT_TOPIC, FAQ_TOPIC])].sort();
+  return [...new Set([...Object.values(PAGE_TOPICS).flat(), FAQ_TOPIC])].sort();
 }

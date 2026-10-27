@@ -17,13 +17,13 @@ import { prepareArticleHtml } from './help-article-html';
 import { fetchHelpArticleContent, type HelpArticle } from './help-center';
 import { HelpPanelSizeButton } from './help-panel-size';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
-import type { HelpConversation } from './use-help-conversation';
+import type { HelpSession } from './use-help-search';
 import { useHelpCenterIndex } from './use-help-center-index';
 
 /*
  * An article read in the panel, so the user doesn't leave Admin for the
  * answer. It takes over the panel like the message to support, with the
- * conversation kept behind it, and ends by asking whether it answered their
+ * search kept behind it, and ends by asking whether it answered their
  * question: "No" goes straight to the support team.
  *
  * The article's HTML comes from the help center, made safe and readable by
@@ -79,17 +79,12 @@ const SKELETON_LINES = [
 
 interface HelpArticleViewProps {
   article: HelpArticle;
-  conversation: HelpConversation;
+  session: HelpSession;
   showClose: boolean;
   onClose: () => void;
 }
 
-export function HelpArticleView({
-  article,
-  conversation,
-  showClose,
-  onClose,
-}: HelpArticleViewProps) {
+export function HelpArticleView({ article, session, showClose, onClose }: HelpArticleViewProps) {
   const index = useHelpCenterIndex(true);
   const titleRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -131,7 +126,7 @@ export function HelpArticleView({
     const linked = slug ? index.data?.find((candidate) => candidate.slug === slug) : undefined;
     if (linked) {
       event.preventDefault();
-      conversation.readArticle(linked);
+      session.readArticle(linked);
       return;
     }
     if (target instanceof HTMLImageElement && !target.closest('a')) {
@@ -148,7 +143,7 @@ export function HelpArticleView({
             className="shrink-0"
             size="icon-sm"
             variant="ghost"
-            onClick={conversation.leaveArticle}
+            onClick={session.leaveArticle}
           >
             <LucideIcon.ArrowLeft />
           </Button>
@@ -245,7 +240,7 @@ export function HelpArticleView({
                       <LucideIcon.ThumbsUp />
                       Yes
                     </Button>
-                    <Button size="sm" variant="outline" onClick={conversation.contactSupport}>
+                    <Button size="sm" variant="outline" onClick={session.contactSupport}>
                       <LucideIcon.MessageCircle />
                       No, contact support
                     </Button>

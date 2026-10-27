@@ -10,8 +10,8 @@ import { plural } from './help-format';
 import { getPageKey, PAGE_LABELS, type HelpPageKey } from './help-pages';
 
 /*
- * What the Help panel knows about the user, used to pick and rank articles,
- * and the context a message to support carries:
+ * What the Help panel knows about the user, used to pick suggestions, and the
+ * context a message to support carries:
  *
  * - The page they're on, as a page key (help-pages.ts).
  * - Who they are and their staff role, the site's address and timezone.
@@ -19,7 +19,7 @@ import { getPageKey, PAGE_LABELS, type HelpPageKey } from './help-pages';
  *   (trial, status, a failed payment), as Admin's upgrade banner and dunning
  *   warnings use it. Empty until the billing app reports.
  *
- * Search runs in the browser, so none of this leaves it with a question.
+ * None of it goes to DocsBot with a search.
  */
 
 type HelpDunning = NonNullable<ReturnType<typeof useDunningState>>;
@@ -125,21 +125,6 @@ export function describeBilling({ status, trialDaysLeft, paymentFailed }: HelpBi
   return status;
 }
 
-/**
- * What the panel had to go on for a question, shown behind its chevron: the
- * page (unless the user took it out) and the signals ranking and site cards
- * use. Nothing here is sent anywhere.
- */
-export function getQuestionContext(signals: HelpSignals, withPage: boolean) {
-  const billing = describeBilling(signals.billing);
-  return [
-    withPage ? `Page: ${signals.pageLabel}` : 'Page: left out',
-    `Role: ${signals.role}`,
-    ...(billing ? [`Ghost(Pro): ${billing}`] : []),
-    `Site: ${signals.siteHost}`,
-  ];
-}
-
 interface SupportContextOptions {
   signals: HelpSignals;
   /**
@@ -173,7 +158,7 @@ export function getSupportContext({
     ['Site', signals.siteHost],
     ...(billing ? [['Ghost(Pro)', billing] as [string, string]] : []),
     ...(questionCount
-      ? [['Conversation', plural(questionCount, 'question')] as [string, string]]
+      ? [['Searches', plural(questionCount, 'search', 'searches')] as [string, string]]
       : []),
     ...(openedArticles.length
       ? [['Articles read', openedArticles.map(({ title }) => title).join(', ')] as [string, string]]

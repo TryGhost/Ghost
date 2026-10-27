@@ -4,8 +4,8 @@
  */
 
 /** "1 article", "3 articles". */
-export function plural(count: number, word: string) {
-  return `${count} ${word}${count === 1 ? '' : 's'}`;
+export function plural(count: number, word: string, words = `${word}s`) {
+  return `${count} ${count === 1 ? word : words}`;
 }
 
 /** "today", "tomorrow", "in 3 days". */

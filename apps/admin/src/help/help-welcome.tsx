@@ -6,12 +6,12 @@ import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
 import type { HelpSuggestion } from './use-help-suggestions';
 
 /*
- * What the panel shows before the user asks anything: a greeting and up to
- * three numbered questions from the help center's FAQ for the page they're on
- * (use-help-suggestions.ts).
- * The keys 1 to 3 pick them (handled in help-panel.tsx). While they load, rows
- * of the same size stand in, and when they change (a new page) they cascade in
- * afresh.
+ * What the panel shows before the user searches: a greeting above the search
+ * field, and under it up to three numbered questions from the help center's
+ * FAQ for the page they're on (use-help-suggestions.ts). The keys 1 to 3
+ * search for them (handled in help-panel.tsx). While they load, rows of the
+ * same size stand in, and when they change (a new page) they cascade in
+ * afresh. Completions as the user types take their place.
  */
 
 // Where suggestions go, shown as rows of the same size while they load
@@ -23,8 +23,15 @@ const SUGGESTION_SLOTS = [
 
 const SUGGESTION_ROW_CLASS_NAME = 'flex w-full items-center gap-3 rounded-lg p-2';
 
-interface HelpWelcomeProps {
-  firstName: string;
+export function HelpGreeting({ firstName }: { firstName: string }) {
+  return (
+    <Text as="h3" className={REVEAL_CLASS_NAME} leading="heading" size="xl" weight="semibold">
+      {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
+    </Text>
+  );
+}
+
+interface HelpSuggestionsProps {
   suggestions: HelpSuggestion[];
   loading: boolean;
   /** The help center couldn't be reached, so there's nothing to suggest */
@@ -32,14 +39,9 @@ interface HelpWelcomeProps {
   onPick: (article: HelpArticle) => void;
 }
 
-export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }: HelpWelcomeProps) {
+export function HelpSuggestions({ suggestions, loading, failed, onPick }: HelpSuggestionsProps) {
   return (
-    <Stack className="mt-auto pt-6" gap="lg">
-      <Stack className={REVEAL_CLASS_NAME} gap="xs">
-        <Text leading="heading" size="xl" weight="semibold">
-          {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
-        </Text>
-      </Stack>
+    <Stack gap="sm">
       {failed && (
         <Text leading="snug" size="sm" tone="secondary">
           The help center couldn’t be reached just now.{' '}
@@ -55,11 +57,11 @@ export function HelpWelcome({ firstName, suggestions, loading, failed, onPick }:
         </Text>
       )}
       {/* Keyed by what it shows, so each change (loading, or a new page's
-          articles) cascades in row by row and reads as new */}
+          questions) cascades in row by row and reads as new */}
       <ol
         key={loading ? 'loading' : suggestions.map(({ article }) => article.id).join()}
         aria-busy={loading}
-        aria-label="Questions to ask"
+        aria-label="Questions to search for"
         className="-mx-2 flex flex-col"
       >
         {(loading ? SUGGESTION_SLOTS : SUGGESTION_SLOTS.slice(0, suggestions.length)).map(

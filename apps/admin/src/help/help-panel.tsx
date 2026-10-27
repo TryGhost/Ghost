@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import {
   Button,
   Sheet,
@@ -13,16 +13,13 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, useIsMobile } from '@tryghost/shade/utils';
 import { HelpArticleView } from './help-article-view';
 import { type HelpArticle, HELP_CENTER_URL } from './help-center';
-import { HelpComposer } from './help-composer';
-import { HelpAnswerMessage, HelpQuestionMessage } from './help-messages';
 import { useHelpPanel } from './help-panel-context';
 import { HelpPanelSizeButton } from './help-panel-size';
-import type { HelpPageKey } from './help-pages';
-import { REVEAL_CLASS_NAME } from './help-reveal';
+import { HelpResults } from './help-results';
+import { HelpCompletions, HelpSearchField } from './help-search-field';
 import { type HelpSignals, useHelpSignals } from './help-signals';
 import { HelpSupportView } from './help-support';
-import { HelpWelcome } from './help-welcome';
-import { type HelpConversation, useHelpConversation } from './use-help-conversation';
+import { HelpGreeting, HelpSuggestions } from './help-welcome';
 import {
   HelpPanelSizeContext,
   MAXIMIZED_COLUMN_WIDTH,
@@ -30,64 +27,52 @@ import {
   useHelpPanelSize,
   useMaximizedWidth,
 } from './use-help-panel-size';
+import { type HelpSession, useHelpSearch } from './use-help-search';
 import { useHelpSuggestions } from './use-help-suggestions';
+import { useHelpTypeahead } from './use-help-typeahead';
 
 /*
  * The Help panel's shell. Docked beside the page on desktop (AdminLayout
  * places it after the page, which narrows to make room) and a sheet on
- * mobile. It shows one of three views (use-help-conversation.ts): the
- * conversation (welcome and suggestions, or the thread; the composer; the
- * footer), an article, or the message to support.
- * The conversation stays mounted behind the other two, so Back returns to the
- * same place.
+ * mobile. It shows one of three views (use-help-search.ts): the search (a
+ * greeting and the search field, then the FAQ questions to pick from, the
+ * completions of what's being typed, or the results), an article, or the
+ * message to support. The search stays mounted behind the other two, so Back
+ * returns to the same place.
  *
- * The conversation and signals live in HelpPanel, so they survive closing the
+ * The session and signals live in HelpPanel, so they survive closing the
  * panel and moving between pages. README.md explains how it all fits together.
  */
 
-function prefersReducedMotion() {
-  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-}
-
 interface HelpPanelContentProps {
-  conversation: HelpConversation;
+  session: HelpSession;
   signals: HelpSignals;
   open: boolean;
   showClose: boolean;
   onClose: () => void;
 }
 
-function HelpPanelContent({
-  conversation,
-  signals,
-  open,
-  showClose,
-  onClose,
-}: HelpPanelContentProps) {
-  const { messages } = conversation;
-  const hasMessages = messages.length > 0;
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inConversation = conversation.view === 'conversation';
+function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPanelContentProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const inSearch = session.view === 'search';
+  const idle = session.search === null;
+  const suggestions = useHelpSuggestions(signals, true, open);
+  const typeahead = useHelpTypeahead({
+    enabled: open,
+    onPick: (question) => session.searchFor(question.title),
+  });
 
-  // Leaving the page out of questions (the composer's chip) lasts until the
-  // user moves to another page
-  const [pageLeftOutOf, setPageLeftOutOf] = useState<HelpPageKey | null>(null);
-  const withPage = pageLeftOutOf !== signals.pageKey;
-  const suggestions = useHelpSuggestions(signals, withPage, open);
-  // What's typed so far; the number shortcuts only apply while it's empty
-  const [draft, setDraft] = useState('');
+  const pick = (article: HelpArticle) => {
+    typeahead.setDraft(article.title);
+    session.searchFor(article.title);
+  };
 
-  // A suggestion is a question from the FAQ: picking one asks it, with its
-  // article leading the answer's sources
-  const pick = (article: HelpArticle) => conversation.ask(article.title, withPage, article);
-
-  // 1, 2 and 3 pick the welcome suggestions, as their number badges say, while
+  // 1, 2 and 3 search for the suggestions, as their number badges say, while
   // nothing is typed. A trade-off: a question starting with one of those
   // digits ("2FA…") picks a suggestion instead.
   const pickByNumber = (event: React.KeyboardEvent) => {
     const suggestion =
-      !hasMessages && draft === '' && /^[1-9]$/.test(event.key)
+      idle && typeahead.draft === '' && /^[1-9]$/.test(event.key)
         ? suggestions.suggestions[Number(event.key) - 1]
         : undefined;
     if (!suggestion || event.metaKey || event.ctrlKey || event.altKey) {
@@ -100,42 +85,31 @@ function HelpPanelContent({
 
   useEffect(() => {
     if (open) {
-      textareaRef.current?.focus({ preventScroll: true });
+      inputRef.current?.focus({ preventScroll: true });
     }
   }, [open]);
 
-  // Each new question (or message to support) scrolls up to the top, so its
-  // answer reads from the start as it comes in beneath it. Again once the
-  // answer is in: while it's working, it's too short to scroll that far.
-  const lastTurnId = [...messages].reverse().find(({ type }) => type !== 'answer')?.id;
-  const lastMessage = messages.at(-1);
-  const lastAnswerStatus = lastMessage?.type === 'answer' ? lastMessage.status : null;
-  useEffect(() => {
-    const scroller = scrollRef.current;
-    const turn = scroller?.querySelector<HTMLElement>(`[data-help-message="${lastTurnId}"]`);
-    if (scroller && turn) {
-      scroller.scrollTo({
-        top: turn.offsetTop - 12,
-        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-      });
-    }
-  }, [lastTurnId, lastAnswerStatus]);
-
   // Back from reading an article or writing to support, the user picks up
   // where they left off
-  const wasInConversation = useRef(inConversation);
+  const wasInSearch = useRef(inSearch);
   useEffect(() => {
-    if (!wasInConversation.current && inConversation) {
-      textareaRef.current?.focus({ preventScroll: true });
+    if (!wasInSearch.current && inSearch) {
+      inputRef.current?.focus({ preventScroll: true });
     }
-    wasInConversation.current = inConversation;
-  }, [inConversation]);
+    wasInSearch.current = inSearch;
+  }, [inSearch]);
+
+  const startOver = () => {
+    session.reset();
+    typeahead.setDraft('');
+    inputRef.current?.focus();
+  };
 
   return (
     <div
       className="flex h-full min-h-0 flex-col"
       onKeyDown={(event) => {
-        // Keys the composer already handled (a number shortcut) stop there
+        // Keys the field already handled (a completion, or a number) stop there
         if (event.defaultPrevented) {
           return;
         }
@@ -144,24 +118,24 @@ function HelpPanelContent({
           return;
         }
         // From anywhere else in the panel, eg. after clicking a suggestion's row
-        if (inConversation && !(event.target instanceof HTMLTextAreaElement)) {
+        if (inSearch && !(event.target instanceof HTMLInputElement)) {
           pickByNumber(event);
         }
       }}
     >
-      {conversation.view === 'article' && conversation.reading && (
+      {session.view === 'article' && session.reading && (
         <HelpArticleView
           // A new article starts at the top, with its own feedback
-          key={conversation.reading.id}
-          article={conversation.reading}
-          conversation={conversation}
+          key={session.reading.id}
+          article={session.reading}
+          session={session}
           showClose={showClose}
           onClose={onClose}
         />
       )}
-      {conversation.view === 'support' && (
+      {session.view === 'support' && (
         <HelpSupportView
-          conversation={conversation}
+          session={session}
           showClose={showClose}
           signals={signals}
           onClose={onClose}
@@ -171,7 +145,7 @@ function HelpPanelContent({
           reads an article or writes to support */}
       <div
         className={
-          inConversation
+          inSearch
             ? 'flex h-full min-h-0 flex-col motion-safe:animate-in motion-safe:duration-300 motion-safe:fade-in'
             : 'hidden'
         }
@@ -181,22 +155,19 @@ function HelpPanelContent({
             Help
           </Text>
           <Inline gap="xs">
-            {hasMessages && (
+            {!idle && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    aria-label="New conversation"
+                    aria-label="Start over"
                     size="icon-sm"
                     variant="ghost"
-                    onClick={() => {
-                      conversation.reset();
-                      textareaRef.current?.focus();
-                    }}
+                    onClick={startOver}
                   >
-                    <LucideIcon.SquarePen />
+                    <LucideIcon.RotateCcw />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>New conversation</TooltipContent>
+                <TooltipContent>Start over</TooltipContent>
               </Tooltip>
             )}
             <HelpPanelSizeButton />
@@ -208,65 +179,47 @@ function HelpPanelContent({
           </Inline>
         </header>
 
-        <div
-          ref={scrollRef}
-          className="relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6"
-        >
-          {hasMessages ? (
-            // Announced as they arrive, for screen readers
-            <Stack aria-live="polite" className="pt-2" gap="xl">
-              {messages.map((message) => (
-                <div key={message.id} data-help-message={message.id}>
-                  {message.type === 'question' && <HelpQuestionMessage message={message} />}
-                  {message.type === 'answer' && (
-                    <HelpAnswerMessage
-                      message={message}
-                      openedArticles={conversation.openedArticles}
-                      signals={signals}
-                      onAskAgain={() => textareaRef.current?.focus()}
-                      onContactSupport={conversation.contactSupport}
-                      onRate={conversation.rate}
-                      onReadArticle={conversation.readArticle}
-                      onRetry={conversation.retry}
-                    />
-                  )}
-                  {message.type === 'receipt' && (
-                    // PROTOTYPE: nothing was sent
-                    <Text className={REVEAL_CLASS_NAME} leading="relaxed" tone="secondary">
-                      Sent to the Ghost(Pro) support team. We’ll reply to {signals.user.email}{' '}
-                      within 24h during working days.
-                    </Text>
-                  )}
-                </div>
-              ))}
-            </Stack>
-          ) : (
-            <HelpWelcome
-              failed={suggestions.isError}
-              firstName={signals.user.name.split(' ')[0] ?? ''}
-              loading={suggestions.isLoading}
-              suggestions={suggestions.suggestions}
-              onPick={pick}
-            />
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-2 pb-6">
+          {/* Outside the stack below: a sibling that comes and goes would
+              re-key the field and remount it, losing what's typed */}
+          {idle && (
+            <div className="mb-6">
+              <HelpGreeting firstName={signals.user.name.split(' ')[0] ?? ''} />
+            </div>
           )}
+          <Stack gap="lg">
+            <HelpSearchField
+              busy={session.searching}
+              inputRef={inputRef}
+              typeahead={typeahead}
+              onKeyCommand={pickByNumber}
+              onSearch={session.searchFor}
+            />
+            {/* Under the field, one of: the completions of what's being
+                typed, the questions to pick from, or the results */}
+            {typeahead.showMatches ? (
+              <HelpCompletions typeahead={typeahead} />
+            ) : session.search ? (
+              <HelpResults
+                openedArticles={session.openedArticles}
+                search={session.search}
+                onContactSupport={session.contactSupport}
+                onRead={session.readArticle}
+                onRetry={session.retry}
+              />
+            ) : (
+              <HelpSuggestions
+                failed={suggestions.isError}
+                loading={suggestions.isLoading}
+                suggestions={suggestions.suggestions}
+                onPick={pick}
+              />
+            )}
+          </Stack>
         </div>
 
-        <HelpComposer
-          busy={conversation.working}
-          followUp={hasMessages}
-          page={signals.pageLabel}
-          textareaRef={textareaRef}
-          value={draft}
-          withPage={withPage}
-          onKeyCommand={pickByNumber}
-          onSubmit={(text) => conversation.ask(text, withPage)}
-          onTogglePage={() => setPageLeftOutOf(withPage ? signals.pageKey : null)}
-          onValueChange={setDraft}
-        />
-
-        {/* Support isn't offered up front: it's where an answer or article
-            didn't do it (help-messages.tsx, help-article-view.tsx), or when
-            the user asks for a person (use-help-conversation.ts) */}
+        {/* Support isn't offered up front: it's where a search or article
+            didn't do it (help-results.tsx, help-article-view.tsx) */}
         <footer className="flex h-11 shrink-0 items-center border-t border-border-default pr-2 pl-4">
           <a
             className="inline-flex items-center gap-1 rounded-sm text-sm text-text-secondary outline-hidden transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-focus-ring"
@@ -292,7 +245,7 @@ export function HelpPanel() {
   const helpPanel = useHelpPanel();
   const isMobile = useIsMobile();
   const signals = useHelpSignals();
-  const conversation = useHelpConversation(signals);
+  const session = useHelpSearch();
   const asideRef = useRef<HTMLElement>(null);
   const open = helpPanel?.open ?? false;
   const size = useHelpPanelSize(open);
@@ -321,8 +274,8 @@ export function HelpPanel() {
         >
           <SheetTitle className="sr-only">Help</SheetTitle>
           <HelpPanelContent
-            conversation={conversation}
             open={open}
+            session={session}
             showClose={false}
             signals={signals}
             onClose={close}
@@ -357,8 +310,8 @@ export function HelpPanel() {
           }}
         >
           <HelpPanelContent
-            conversation={conversation}
             open={open}
+            session={session}
             signals={signals}
             showClose
             onClose={close}
