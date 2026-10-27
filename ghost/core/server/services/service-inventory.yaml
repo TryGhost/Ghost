@@ -3028,7 +3028,7 @@ services:
         final storage/aggregation without rollback of earlier effects.
   email-service:
     kind: directory
-    disposition: retain
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -7911,7 +7911,7 @@ services:
         misplaced. Keep rendering/sender/verification business logic outside the HTTP layer.
   members:
     kind: directory
-    disposition: retain
+    disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -14935,7 +14935,7 @@ services:
         completion, atomicity, retry safety, listener disposal or a production drain.
   tinybird:
     kind: directory
-    disposition: retain
+    disposition: review
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:
@@ -14981,9 +14981,9 @@ services:
     entryPoints:
       - tinybird/index.js
     notes: >-
-      Retain as Ghost's configured analytics-access capability: allowed pipes and site scoping are
+      Review ownership and client lifetime before migration. Allowed pipes and site scoping are
       application policy across traffic, gifts and automation analytics. Reusable provider/JWT
-      mechanics could become library support without removing this owner; they are not Kernel
+      mechanics could become library support; they are not Kernel
       machinery. An optional token service is published through static methods. Preserve the
       different lifetimes of request-time initialization, retained stats clients and automation
       lookups.
