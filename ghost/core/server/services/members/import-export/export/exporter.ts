@@ -1,7 +1,9 @@
 import moment from 'moment';
-import { Transform, pipeline, type Readable } from 'node:stream';
+import { Transform, type Readable } from 'node:stream';
+import { finished, pipeline } from 'node:stream/promises';
 import type { Knex } from 'knex';
 import { csvCellsForFields, type CsvField } from '@tryghost/metafield-csv';
+import type { ImportExportTracking } from '../tracking';
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -35,6 +37,7 @@ export interface ExporterDeps {
   knex: Knex;
   members: MembersRepository;
   metafields: MetafieldsService;
+  tracking: ImportExportTracking;
 }
 
 interface BatchRelatedData {
@@ -140,11 +143,13 @@ export default class MembersCSVExporter {
   private _knex: Knex;
   private _members: MembersRepository;
   private _metafields: MetafieldsService;
+  private _tracking: ImportExportTracking;
 
-  constructor({ knex, members, metafields }: ExporterDeps) {
+  constructor({ knex, members, metafields, tracking }: ExporterDeps) {
     this._knex = knex;
     this._members = members;
     this._metafields = metafields;
+    this._tracking = tracking;
   }
 
   async export(options: ExportOptions = {}): Promise<Readable> {
@@ -169,22 +174,30 @@ export default class MembersCSVExporter {
       { event: { name: 'members-export.started' } },
       'Starting streaming export of members',
     );
+    const attempt = this._tracking.export(reference.activeMetafields);
     const batchingTransform = this.createBatchingTransform();
-    const processingTransform = this.createProcessingTransform(reference);
+    const processingTransform = this.createProcessingTransform(reference, (rows) =>
+      attempt.wrote(rows),
+    );
 
-    pipeline(membersQuery.stream(), batchingTransform, processingTransform, (err) => {
-      if (err) {
-        logging.error(
-          { event: { name: 'members-export.stream.error' }, err },
-          'Members export stream failed',
-        );
-      } else {
+    // Over once the reader has taken every row, not once the last one is buffered for it, so a
+    // small export that fits in the buffer still counts as broken off if its download is.
+    const streamed = pipeline(membersQuery.stream(), batchingTransform, processingTransform).then(
+      () => finished(processingTransform),
+    );
+    streamed.then(
+      () =>
         logging.info(
           { event: { name: 'members-export.completed' }, durationMs: Date.now() - start },
           'Members export completed',
-        );
-      }
-    });
+        ),
+      (err) =>
+        logging.error(
+          { event: { name: 'members-export.stream.error' }, err },
+          'Members export stream failed',
+        ),
+    );
+    attempt.ended(streamed);
 
     return processingTransform;
   }
@@ -252,7 +265,10 @@ export default class MembersCSVExporter {
   }
 
   // Each flattened row is pushed individually so a batch's rows do not pile up in memory.
-  private createProcessingTransform(reference: ReferenceData): Transform {
+  private createProcessingTransform(
+    reference: ReferenceData,
+    onWritten: (rows: number) => void,
+  ): Transform {
     const assembleRelatedData = (memberIds: string[]) =>
       this.assembleRelatedData(memberIds, reference.activeMetafields);
     const flattenBatch = (members: MemberDbRow[], related: BatchRelatedData) =>
@@ -267,6 +283,7 @@ export default class MembersCSVExporter {
           const related = await assembleRelatedData(memberIds);
           const rows = flattenBatch(batch, related);
           rows.forEach((row) => this.push(row));
+          onWritten(rows.length);
           callback();
         } catch (err) {
           callback(

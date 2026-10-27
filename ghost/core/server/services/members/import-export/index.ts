@@ -197,6 +197,8 @@ export function makeExporter({
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
     },
+
+    tracking: importExportTracking(tracer),
   });
 
   return (options = {}) => exporter.export(options);

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import type { SpanDocument } from '../../../core/server/lib/tracing/create-tracer';
 
+const sinon = require('sinon');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
@@ -11,6 +12,7 @@ const configUtils = require('../../utils/config-utils');
 const models = require('../../../core/server/models');
 // Required rather than imported, so the test shares the module instances Ghost boots with.
 const { mockManager } = require('../../utils/e2e-framework');
+const metafieldsService: typeof import('../../../core/server/services/members-metafields') = require('../../../core/server/services/members-metafields');
 
 interface MockedMetrics {
   tracked: (_name: string) => SpanDocument[];
@@ -59,6 +61,7 @@ describe('Members import and export outcomes', function () {
   });
 
   afterEach(async function () {
+    sinon.restore();
     mockManager.restore();
     await configUtils.restore();
     await models.Base.knex('members_metafield_values').del();
@@ -125,6 +128,76 @@ describe('Members import and export outcomes', function () {
       await importCSV(['email', 'outcome-1@example.com'].join('\n'), 201);
 
       expect(runs()).toMatchObject([{ labels: { has_custom_fields: false } }]);
+    });
+  });
+
+  describe('Exporting', function () {
+    const runs = () => metrics.tracked('members.export.run');
+
+    function exportCSV(query = 'limit=all') {
+      return request
+        .get(localUtils.API.getApiQuery(`members/upload/?${query}`))
+        .set('Origin', config.get('url'));
+    }
+
+    // An export is only over once its rows have streamed, which can be after the response
+    // has started.
+    async function exported(): Promise<SpanDocument[]> {
+      for (let attempt = 0; attempt < 100 && runs().length === 0; attempt++) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 20);
+        });
+      }
+      return runs();
+    }
+
+    async function memberCount(): Promise<number> {
+      const { body } = await request
+        .get(localUtils.API.getApiQuery('members/?limit=1'))
+        .set('Origin', config.get('url'))
+        .expect(200);
+      return body.meta.pagination.total;
+    }
+
+    it('records an export once its rows have streamed, with how many it exported', async function () {
+      await defineField('Nickname', 'short_text');
+      await exportCSV().expect(200);
+
+      expect(await exported()).toMatchObject([
+        {
+          event: { outcome: 'success' },
+          labels: { has_custom_fields: true },
+          numeric_labels: { rows: await memberCount() },
+        },
+      ]);
+    });
+
+    it('records that an export without custom field columns carries none', async function () {
+      await exportCSV().expect(200);
+
+      expect(await exported()).toMatchObject([
+        { event: { outcome: 'success' }, labels: { has_custom_fields: false } },
+      ]);
+    });
+
+    it('records an export that broke off part way as failed', async function () {
+      await defineField('Nickname', 'short_text');
+      // Stopping an export once it has started streaming takes a failure Ghost can't be
+      // made to have on its own.
+      const { values } = metafieldsService;
+      assert(values);
+      sinon.stub(values, 'getValuesForMembers').rejects(new Error('Lost the connection'));
+      await exportCSV().catch(() => {});
+
+      expect(await exported()).toMatchObject([
+        {
+          event: { outcome: 'failure' },
+          error: { type: 'Error' },
+          labels: { has_custom_fields: true },
+          // The values read fails on the first batch, so no row reached the file.
+          numeric_labels: { rows: 0 },
+        },
+      ]);
     });
   });
 });
