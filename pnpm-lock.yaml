@@ -510,8 +510,8 @@ catalogs:
       specifier: 1.2.0
       version: 1.2.0
     chrono-node:
-      specifier: 2.10.1
-      version: 2.10.1
+      specifier: 2.10.3
+      version: 2.10.3
     cli-progress:
       specifier: 3.12.0
       version: 3.12.0
@@ -2348,7 +2348,7 @@ importers:
         version: 1.2.0
       chrono-node:
         specifier: 'catalog:'
-        version: 2.10.1
+        version: 2.10.3
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
@@ -10284,8 +10284,8 @@ packages:
   chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
 
-  chrono-node@2.10.1:
-    resolution: {integrity: sha512-tPOsBzYVAK5zth+CiHCgp5NGeqRc4mMD8FPthQ5IxkgjPWWxIFdM5odnmfw//IRAzl6C++Xy8olQW7wn5qBR1g==}
+  chrono-node@2.10.3:
+    resolution: {integrity: sha512-MOfrzXgSMZTH4SZ5gyRKQCVwiCrCKY+uYkSJiWoRLXS88DA6WGJm8UjgS+VVEuUQeew/UUXaxrO+SeDn/WCisg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   chunk-data@0.1.0:
@@ -22663,7 +22663,7 @@ snapshots:
 
   chownr@1.1.4: {}
 
-  chrono-node@2.10.1: {}
+  chrono-node@2.10.3: {}
 
   chunk-data@0.1.0: {}
 
