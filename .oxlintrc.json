@@ -203,6 +203,7 @@
         "ghost/core/server/services/audience-feedback/index.ts",
         "ghost/core/server/services/custom-theme-settings/index.ts",
         "ghost/core/server/services/donations/index.ts",
+        "ghost/core/server/services/explore-ping/index.ts",
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/gift-links/index.ts",
         "ghost/core/server/services/indexnow-ping/index.ts",
