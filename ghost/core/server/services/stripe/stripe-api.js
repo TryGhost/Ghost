@@ -6,11 +6,10 @@ const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
 const { z } = require('zod');
 const { checkoutSessionParts, taxSessionParams } = require('./checkout-session-params');
-const { trackCheckoutSession } = require('./checkout-session-track');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 /** @import { CheckoutSessionParts } from './checkout-session-params' */
-/** @import { Tracer } from '../../lib/tracing/tracer' */
+/** @import { StripeTracking } from './tracking' */
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -88,6 +87,16 @@ const reportRefusedDesign = (err) => {
   });
 };
 
+/**
+ * A buyer's checkout goes ahead in Stripe's default design when Stripe refuses the publisher's,
+ * so the refusal is only logged.
+ */
+const logRefusedDesign = (err) =>
+  logging.error(
+    { event: { name: 'stripe_checkout.design.refused' }, err },
+    'Stripe refused the Stripe Checkout design',
+  );
+
 module.exports = class StripeAPI {
   static API_VERSION = STRIPE_API_VERSION;
 
@@ -96,14 +105,14 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
-   * @param {Tracer} deps.tracer
+   * @param {StripeTracking} deps.tracking
    */
   constructor(deps) {
     /** @type {Stripe} */
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
-    this.tracer = deps.tracer;
+    this.tracking = deps.tracking;
   }
 
   /**
@@ -123,8 +132,11 @@ module.exports = class StripeAPI {
    */
   async _createCheckoutSession(params, requestOptions, checkout) {
     const parts = checkoutSessionParts(checkout, params);
-    return trackCheckoutSession(this.tracer, parts, (onDesignRefused) =>
-      this._createWithFallback(params, requestOptions, parts, onDesignRefused),
+    return this.tracking.checkoutSession(parts, (attempt) =>
+      this._createWithFallback(params, requestOptions, parts, (err) => {
+        logRefusedDesign(err);
+        attempt.designRefused();
+      }),
     );
   }
 
