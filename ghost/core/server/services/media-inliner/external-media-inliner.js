@@ -88,8 +88,8 @@ class ExternalMediaInliner {
     // Enforce http - http > https redirects are commonplace
     requestURL = requestURL.replace(/^\/\//g, 'http://');
 
-    // Encode to handle special characters in URLs
-    requestURL = encodeURI(requestURL);
+    // Encode raw characters but keep existing %XX escapes intact
+    requestURL = encodeURI(requestURL).replace(/%25([0-9a-f]{2})/gi, '%$1');
     try {
       const response = await request(requestURL, {
         followRedirect: true,
