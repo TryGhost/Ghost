@@ -286,6 +286,9 @@
           {
             "env": "IS_SHIPPING"
           },
+          {
+            "env": "GHOST_BUILD_VERSION"
+          },
           "default",
           "cardAssets",
           "{workspaceRoot}/tools/scripts/build/assemble-admin-assets.ts",

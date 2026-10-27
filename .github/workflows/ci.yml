@@ -1386,7 +1386,14 @@ jobs:
         # are uploaded by job_upload_sourcemaps so Sentry can't block the build.
         # Builds apps/admin/dist, ghost/core/built/admin (assemble:assets),
         # and ghost/core/built/embed-renderer (separate-origin previews).
-        run: pnpm nx run @tryghost/admin:build
+        # Non-tag builds bake in GHOST_BUILD_VERSION, in the same format as the
+        # server version job_docker sets, for About's Admin version.
+        run: |
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            PKG_VERSION=$(jq -r .version ghost/package.json)
+            export GHOST_BUILD_VERSION="${PKG_VERSION}+${GITHUB_SHA:0:7}"
+          fi
+          pnpm nx run @tryghost/admin:build
 
       # The built admin and embed renderer are consumed by both job_pack (packed
       # into the Ghost-CLI archive) and job_docker (COPYed into the full image).
