@@ -127,7 +127,9 @@ describe('the package', () => {
     expect(source.typeReferenceDirectives).toEqual([]);
   });
 
-  it('declares every type it exports, with nothing missing', () => {
+  // Type-checking against the DOM lib takes under a second alone, but 10-18s on a CI runner
+  // running every project's tests at once, so it gets a timeout to match.
+  it('declares every type it exports, with nothing missing', { timeout: 60_000 }, () => {
     const program = ts.createProgram([declarations], {
       strict: true,
       noEmit: true,
