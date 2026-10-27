@@ -1,10 +1,32 @@
-const assert = require('node:assert/strict');
-const crypto = require('crypto');
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 
-const testUtils = require('../../utils');
-const BaseModel = require('../../../core/server/models/base');
-const { Member } = require('../../../core/server/models/member');
-const knex = require('../../../core/server/data/db').knex;
+// @ts-expect-error Test utilities do not have type definitions.
+import testUtils from '../../utils';
+// @ts-expect-error Base model does not have type definitions.
+import BaseModel from '../../../core/server/models/base';
+// @ts-expect-error Models do not have type definitions.
+import models from '../../../core/server/models';
+import { knex } from '../../../core/server/data/db';
+
+type PageOptions = {
+  limit: number;
+  page: number;
+  autoOrder?: string;
+  order?: string;
+  filter?: string;
+};
+
+type MemberPage = {
+  data: { get(key: 'email'): string }[];
+  meta: {
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+    };
+  };
+};
 
 describe('Member Model: deep offset pagination', function () {
   // Deep pages (offset > 1000) trigger the deferred-join rewrite in
@@ -17,7 +39,7 @@ describe('Member Model: deep offset pagination', function () {
 
   // idx 0..TOTAL-1, created_at strictly increasing with idx, so
   // created_at DESC === descending idx. Every 10th member is comped.
-  let seededEmails;
+  let seededEmails: string[];
 
   beforeAll(testUtils.teardownDb);
   beforeAll(testUtils.setup());
@@ -47,20 +69,20 @@ describe('Member Model: deep offset pagination', function () {
     await knex.batchInsert('members', rows, 200);
   });
 
-  async function findPageCapturingSql(options) {
-    const sqls = [];
-    const onQuery = (data) => sqls.push(data.sql);
+  async function findPageCapturingSql(options: PageOptions) {
+    const sqls: string[] = [];
+    const onQuery = (data: { sql: string }) => sqls.push(data.sql);
 
     knex.on('query', onQuery);
     try {
-      const page = await Member.findPage(options);
+      const page: MemberPage = await models.Member.findPage(options);
       return { page, sqls };
     } finally {
       knex.removeListener('query', onQuery);
     }
   }
 
-  function pageEmails(page) {
+  function pageEmails(page: MemberPage) {
     return page.data.map((model) => model.get('email'));
   }
 
