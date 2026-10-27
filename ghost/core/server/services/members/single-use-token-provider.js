@@ -290,7 +290,7 @@ class SingleUseTokenProvider {
    *
    * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
    * @param {string} token - The token value
-   * @param {string} [tokenId] - Token UUID already loaded by the caller.
+   * @param {string} tokenId - Token UUID already loaded by the caller.
    * @returns {Promise<void>}
    */
   async _validateOTCVerificationHash(otcVerificationHash, token, tokenId) {
@@ -312,7 +312,7 @@ class SingleUseTokenProvider {
    *
    * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
    * @param {string} token - The token value
-   * @param {string} [tokenId] - Token UUID already loaded by the caller.
+   * @param {string} tokenId - Token UUID already loaded by the caller.
    * @returns {Promise<boolean>}
    */
   async _isValidOTCVerificationHash(otcVerificationHash, token, tokenId) {
@@ -337,7 +337,6 @@ class SingleUseTokenProvider {
         return false;
       }
 
-      tokenId = tokenId || (await this.getRefByToken(token));
       if (!tokenId) {
         return false;
       }
