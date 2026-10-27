@@ -461,6 +461,13 @@ patchedDependencies:
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The
   # dependency is dropped in .pnpmfile.mjs - patches apply after resolution.
   '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
+  # Radix layers (dialogs, popovers, menus) join and leave the layer stack,
+  # and take or give up Escape, in passive effects: a scheduler task after the
+  # layer appears or goes. An Escape in that gap reaches the layer underneath,
+  # so a dialog's "unsaved changes" confirm can't be dismissed straight after
+  # it opens. The patch moves those effects to layout effects so the stack
+  # changes in the same commit as the screen. 1.2.1 still behaves the same.
+  '@radix-ui/react-dismissable-layer@1.1.14': patches/@radix-ui__react-dismissable-layer@1.1.14.patch
   # Radix modals call hideOthers from an effect; StrictMode's dev replay sets,
   # removes and re-sets aria-hidden on the whole page in one task, which stalls
   # Safari for ~2s per open. The patch defers an undo that runs in the same task

@@ -1,10 +1,46 @@
 import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 
+import { Dialog, DialogContent, DialogTitle } from '../../../../src/components/ui/dialog';
 import { DirtyConfirmDialog } from '../../../../src/components/patterns/dirty-confirm-dialog';
 import { useDirtyConfirmation } from '../../../../src/components/patterns/use-dirty-confirmation';
 import { render } from '../../utils/test-utils';
+
+// A dialog that asks before Escape closes it, as Admin's email design modal does.
+const DialogHarness = ({ onLeave }: { onLeave: () => void }) => {
+  const { confirm, dialogProps } = useDirtyConfirmation();
+
+  return (
+    <Dialog open>
+      <DialogContent
+        aria-describedby={undefined}
+        onEscapeKeyDown={(event) => {
+          event.preventDefault();
+          confirm(true, onLeave);
+        }}
+      >
+        <DialogTitle>Customize</DialogTitle>
+      </DialogContent>
+      <DirtyConfirmDialog {...dialogProps} />
+    </Dialog>
+  );
+};
+
+// Escape as a browser delivers it: outside act(), so React schedules work as it does on a page
+// rather than flushing everything before the next line runs.
+const pressEscapeOutsideAct = () => {
+  const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+  const wasActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+  actEnvironment.IS_REACT_ACT_ENVIRONMENT = false;
+  try {
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Escape' }),
+    );
+  } finally {
+    actEnvironment.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+  }
+};
 
 const TestHarness = ({ dirty, onLeave }: { dirty: boolean; onLeave: () => void }) => {
   const { confirm, dialogProps } = useDirtyConfirmation();
@@ -55,5 +91,46 @@ describe('DirtyConfirmDialog', () => {
 
     assert.equal(onLeave.mock.calls.length, 1);
     assert.equal(screen.queryByRole('alertdialog'), null);
+  });
+
+  it('closes on an Escape pressed as soon as it appears over a dialog', async () => {
+    const onLeave = vi.fn();
+    render(<DialogHarness onLeave={onLeave} />);
+
+    pressEscapeOutsideAct();
+    // The confirmation is on screen once React has committed, a microtask later; press again
+    // straight away, before anything React schedules for later has run.
+    for (let i = 0; i < 10 && !screen.queryByRole('alertdialog'); i++) {
+      await Promise.resolve();
+    }
+    // Messages keep a failure from formatting the whole element, which outlasts the test.
+    assert.ok(screen.queryByRole('alertdialog'), 'the confirmation did not open');
+    pressEscapeOutsideAct();
+
+    await waitFor(() => {
+      assert.ok(!screen.queryByRole('alertdialog'), 'the confirmation is still open');
+    });
+    assert.ok(screen.queryByRole('dialog', { name: 'Customize' }), 'the dialog closed too');
+    assert.equal(onLeave.mock.calls.length, 0);
+  });
+
+  it('hands Escape back to the dialog as soon as it closes', async () => {
+    const onLeave = vi.fn();
+    render(<DialogHarness onLeave={onLeave} />);
+
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    assert.ok(screen.queryByRole('alertdialog'), 'the confirmation did not open');
+
+    pressEscapeOutsideAct();
+    for (let i = 0; i < 10 && screen.queryByRole('alertdialog'); i++) {
+      await Promise.resolve();
+    }
+    assert.ok(!screen.queryByRole('alertdialog'), 'the confirmation did not close');
+    pressEscapeOutsideAct();
+
+    await waitFor(() => {
+      assert.ok(screen.queryByRole('alertdialog'), 'the dialog did not ask again');
+    });
+    assert.equal(onLeave.mock.calls.length, 0);
   });
 });

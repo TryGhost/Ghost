@@ -1,0 +1,84 @@
+diff --git a/dist/index.js b/dist/index.js
+index f2a1696fc5e0f2253ff98c9f933a79a138060c89..4aff798787bd1f0239249970b3b5b971b779c656 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -130,14 +130,17 @@ var DismissableLayer = React.forwardRef(
+         onDismiss();
+       }
+     });
+-    React.useEffect(() => {
++    // Ghost patch: register and unregister the layer in layout effects. As passive effects they ran
++    // a scheduler task after the layer was on screen, so an Escape pressed in between reached the
++    // layer underneath, or nothing at all.
++    React.useLayoutEffect(() => {
+       if (!isHighestLayer) {
+         return;
+       }
+       ownerDocument.addEventListener("keydown", handleKeyDown, { capture: true });
+       return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
+     }, [ownerDocument, isHighestLayer]);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       if (!node) return;
+       if (disableOutsidePointerEvents) {
+         if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
+@@ -157,7 +160,7 @@ var DismissableLayer = React.forwardRef(
+         }
+       };
+     }, [node, ownerDocument, disableOutsidePointerEvents, context]);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       return () => {
+         if (!node) return;
+         context.layers.delete(node);
+@@ -165,7 +168,7 @@ var DismissableLayer = React.forwardRef(
+         dispatchUpdate();
+       };
+     }, [node, context]);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       const handleUpdate = () => force({});
+       document.addEventListener(CONTEXT_UPDATE, handleUpdate);
+       return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 949d1a7d3bd94e3fa2caf3edda0788582d2d434a..14f2ffdbd877d973b708c1b5fb72d51f1ccf6ab8 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -91,14 +91,17 @@ var DismissableLayer = React.forwardRef(
+         onDismiss();
+       }
+     });
+-    React.useEffect(() => {
++    // Ghost patch: register and unregister the layer in layout effects. As passive effects they ran
++    // a scheduler task after the layer was on screen, so an Escape pressed in between reached the
++    // layer underneath, or nothing at all.
++    React.useLayoutEffect(() => {
+       if (!isHighestLayer) {
+         return;
+       }
+       ownerDocument.addEventListener("keydown", handleKeyDown, { capture: true });
+       return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
+     }, [ownerDocument, isHighestLayer]);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       if (!node) return;
+       if (disableOutsidePointerEvents) {
+         if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
+@@ -118,7 +121,7 @@ var DismissableLayer = React.forwardRef(
+         }
+       };
+     }, [node, ownerDocument, disableOutsidePointerEvents, context]);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       return () => {
+         if (!node) return;
+         context.layers.delete(node);
+@@ -126,7 +129,7 @@ var DismissableLayer = React.forwardRef(
+         dispatchUpdate();
+       };
+     }, [node, context]);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       const handleUpdate = () => force({});
+       document.addEventListener(CONTEXT_UPDATE, handleUpdate);
+       return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
