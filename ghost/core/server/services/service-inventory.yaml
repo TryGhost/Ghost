@@ -6942,7 +6942,7 @@ services:
           - core/server/services/machine-payments/types.ts
         tests:
           - test/unit/server/services/machine-payments/service.test.ts
-          - test/unit/server/services/machine-payments/adapters.test.js
+          - test/unit/server/services/machine-payments/adapters.test.ts
       construction:
         summary: >-
           First init creates a deposit-address store, payment recorder, event repository retaining
@@ -7000,7 +7000,7 @@ services:
           - core/server/services/machine-payments/adapters/mpp-adapter.ts
           - core/server/services/machine-payments/adapters/x402-adapter.ts
         tests:
-          - test/unit/server/services/machine-payments/adapters.test.js
+          - test/unit/server/services/machine-payments/adapters.test.ts
           - test/e2e-frontend/machine-payments-markdown.test.js
       lifetime:
         summary: >-
@@ -7021,7 +7021,7 @@ services:
           - core/server/services/machine-payments/stripe/deposit-address-store.ts
           - core/server/services/machine-payments/stripe/payment-recorder.ts
         tests:
-          - test/unit/server/services/machine-payments/adapters.test.js
+          - test/unit/server/services/machine-payments/adapters.test.ts
           - test/unit/server/services/machine-payments/deposit-address-store.test.ts
       configuration:
         summary: >-
@@ -7055,7 +7055,7 @@ services:
         tests:
           - test/unit/server/services/machine-payments/service.test.ts
           - test/unit/server/services/machine-payments/eligibility.test.ts
-          - test/unit/server/services/machine-payments/adapters.test.js
+          - test/unit/server/services/machine-payments/adapters.test.ts
           - test/unit/server/services/machine-payments/stripe-client-options.test.js
           - test/unit/server/services/machine-payments/deposit-address-store.test.ts
           - test/integration/services/machine-payments/content-loader.test.js
@@ -7088,7 +7088,7 @@ services:
           - core/boot.js
         tests:
           - test/unit/server/services/machine-payments/deposit-address-store.test.ts
-          - test/unit/server/services/machine-payments/adapters.test.js
+          - test/unit/server/services/machine-payments/adapters.test.ts
           - test/integration/services/machine-payments/content-loader.test.js
           - test/integration/services/machine-payments/orchestration.test.js
       failures:
@@ -7117,7 +7117,7 @@ services:
           - core/server/services/machine-payments/events/machine-payment-event-repository.ts
         tests:
           - test/unit/server/services/machine-payments/service.test.ts
-          - test/unit/server/services/machine-payments/adapters.test.js
+          - test/unit/server/services/machine-payments/adapters.test.ts
           - test/unit/server/services/machine-payments/content-loader.test.ts
           - test/integration/services/machine-payments/orchestration.test.js
     unverified: []
