@@ -150,7 +150,7 @@ catalog:
   country-flag-icons: 1.6.20
   dependency-cruiser: ^18.1.1
   dequal: 2.0.3
-  dompurify: 3.4.16
+  dompurify: 3.4.17
   dotenv: 17.4.2
   entities: 4.5.0
   esbuild: 0.28.2
