@@ -232,6 +232,7 @@ done
 | Mailpit (E2E)              | [http://localhost:8026](http://localhost:8026)                           |
 | MySQL                      | `localhost:3306` using the `ghost_dev` database                          |
 | Redis                      | `localhost:6379`                                                         |
+| Redis (jobs)               | `localhost:6380` with `pnpm dev:jobs-redis`                              |
 | Tinybird                   | [http://localhost:7181](http://localhost:7181) with `pnpm dev:analytics` |
 | VersityGW WebUI            | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage`   |
 | VersityGW S3 API           | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage`   |
@@ -255,11 +256,19 @@ Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service                   |
 | `pnpm dev:storage`         | S3-compatible storage through VersityGW, with its WebUI on port `9001`                                          |
+| `pnpm dev:jobs-redis`      | Durable background jobs on Redis (BullMQ) instead of in memory                                                  |
 | `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)                    |
 | `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                                     |
 | `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
 | `pnpm dev:fake-upgrades`   | Ghost updates in Settings → About against a fake host; see [testing Ghost updates](testing-ghost-updates.md)    |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
+
+`pnpm dev:jobs-redis` sets the jobs backend's required key `prefix` to `ghost-dev`
+in `compose.dev.jobs-redis.yaml`.
+
+To combine variants, list their compose files in `DEV_COMPOSE_FILES`, for example
+`DEV_COMPOSE_FILES='-f compose.dev.jobs-redis.yaml -f compose.dev.storage.yaml' pnpm dev`.
+With plain Docker Compose, add one `-f` per override after `-f compose.dev.yaml`.
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.
