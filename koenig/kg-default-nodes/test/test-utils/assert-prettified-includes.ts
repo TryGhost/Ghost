@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
-import {minify} from 'html-minifier';
+import {minify} from 'html-minifier-next';
 import {prettifyHTML} from './prettify-html.js';
 
-export function assertPrettifiedIncludes(actual: string, expected: string): void {
-    const actualPrettified = prettifyHTML(actual);
-    const expectedPrettified = prettifyHTML(expected);
+export async function assertPrettifiedIncludes(actual: string, expected: string): Promise<void> {
+    const actualPrettified = await prettifyHTML(actual);
+    const expectedPrettified = await prettifyHTML(expected);
 
-    const normalizedActual = minify(actualPrettified, {collapseWhitespace: true, collapseInlineTagWhitespace: true, minifyCSS: true});
-    const normalizedExpected = minify(expectedPrettified, {collapseWhitespace: true, collapseInlineTagWhitespace: true, minifyCSS: true});
+    const normalizedActual = await minify(actualPrettified, {collapseWhitespace: true, collapseInlineTagWhitespace: true, minifyCSS: true});
+    const normalizedExpected = await minify(expectedPrettified, {collapseWhitespace: true, collapseInlineTagWhitespace: true, minifyCSS: true});
 
     const message = [
         'Expected HTML to include substring:',

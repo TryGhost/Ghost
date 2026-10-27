@@ -65,8 +65,10 @@ migration, private feature flag, Shade component, or internal package.
   use TypeScript; keep CommonJS only
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
+- **Repository tooling:** read the [tooling ownership guide](tools/README.md)
+  and the owning folder README before adding or relocating scripts.
 - **ESLint:** use the shared factories and dependency rules in the
-  [ESLint configuration README](configs/eslint/README.md). A hand-written config
+  [ESLint configuration README](tools/configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.
 - **Analytics:** start with `pnpm dev:analytics` and follow the nearby Tinybird
   READMEs under `ghost/core/server/data/tinybird/`.

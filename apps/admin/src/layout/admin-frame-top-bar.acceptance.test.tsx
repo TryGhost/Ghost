@@ -153,8 +153,6 @@ describe('Admin 7 frame top bar', () => {
       labs: {
         admin7Design: true,
         automations: true,
-        automationsPerTier: true,
-        automationRunAnalytics: true,
       },
     });
     await expect.element(page.getByRole('button', { name: 'Add step', exact: true })).toBeVisible();

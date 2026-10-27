@@ -20,7 +20,13 @@ import HomeRedirect from './home-redirect';
 import { lazyEditorScreen, lazyRestoreScreen } from './editor/api';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
-import { canManageApps, lazyAppInstallScreen, lazyAppsScreen } from './apps/api';
+import {
+  canManageApps,
+  lazyAppDetailsScreen,
+  lazyAppInstallScreen,
+  lazyAppPageScreen,
+  lazyAppsScreen,
+} from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -84,6 +90,19 @@ const appRoutes: RouteObject[] = [
     // Open to all staff, so those who can't install are told who can, not redirected.
     path: '/apps/install',
     lazy: lazyComponent(lazyAppInstallScreen),
+  },
+  {
+    // `/apps/:id` is the app's own page, so details live under `/apps/details/`.
+    path: '/apps/details/:installationId',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppDetailsScreen),
+  },
+  {
+    // An installed app's page, in a sandboxed frame. `*` is the app's own route, e.g.
+    // /apps/<id>/week, which the bridge passes to the app along with the query.
+    path: '/apps/:installationId/*',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppPageScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,

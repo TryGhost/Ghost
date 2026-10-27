@@ -46,10 +46,12 @@ Ghost/
 │   └── test/           # Server tests
 ├── koenig/            # Editor and content-format packages
 ├── packages/          # Shared libraries and adapter contracts
-├── configs/           # Shared build, lint, test, and TypeScript config
+├── tools/             # Repository tooling workspaces
+│   ├── configs/       # Shared build, lint, test, and TypeScript config
+│   ├── scripts/       # Repository automation
+│   └── gx/            # Contributor CLI and code generators
 ├── e2e/               # Browser end-to-end tests
-├── docker/            # Local development containers and services
-└── scripts/           # Repository tooling
+└── docker/            # Local development containers and services
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
@@ -98,8 +100,10 @@ Practice and contributor guides explain how to make and verify changes:
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
 - [Internal package migrations](contributing/internal-package-migrations.md)
+- [Tooling ownership](../tools/README.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Stripe testing](contributing/testing-stripe.md)
+- [Testing Ghost updates](contributing/testing-ghost-updates.md)
 - [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
 
@@ -107,6 +111,7 @@ Reference guides provide tables and other information to look up while working
 on Ghost:
 
 - [Node.js compatibility](reference/node-compatibility.md)
+- [TypeScript inventory](reference/typescript-inventory.md)
 
 ### Finding Issues to Work On
 

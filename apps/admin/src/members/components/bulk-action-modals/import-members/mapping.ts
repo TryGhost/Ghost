@@ -1,4 +1,5 @@
 import validator from 'validator';
+import { SEPARATOR } from '@tryghost/metafield-types/identity';
 import {
   isMetafieldColumn,
   type MemberCustomFieldCsvColumn,
@@ -262,8 +263,9 @@ export function formatImportError(error: string): string {
 export function suggestedFieldName(column: string): string {
   // A custom field column is `metafields.<namespace>.<key>[.<part>]`. The name being
   // suggested is the field's, so only the key segment is kept: the part is asked for
-  // separately.
-  const key = isMetafieldColumn(column) ? column.split('.')[2] : column;
+  // separately. Read as text rather than as an identity: a column someone typed need not
+  // follow the key rule, and its key segment is still the best name on offer.
+  const [, , key] = isMetafieldColumn(column) ? column.split(SEPARATOR) : [];
   const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }

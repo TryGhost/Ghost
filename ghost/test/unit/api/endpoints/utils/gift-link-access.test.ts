@@ -5,13 +5,12 @@ import sinon from 'sinon';
 // reaches the gift-links singleton through its own require chain, which is a
 // separate module instance from an ESM import's — stubs must target the
 // instance the code under test actually uses.
-const giftLinksService = require('../../../../../core/server/services/gift-links');
+const giftLinksService = require('../../../../../core/server/services/gift-links').default;
 const {
   generateGiftKeyData,
   applyGiftAccess,
 } = require('../../../../../core/server/api/endpoints/utils/gift-link-access');
 const { Product } = require('../../../../../core/server/models/product');
-const postsPublicController = require('../../../../../core/server/api/endpoints/posts-public');
 const pagesPublicController = require('../../../../../core/server/api/endpoints/pages-public');
 
 function frameWithGift(giftToken?: string) {
@@ -19,13 +18,17 @@ function frameWithGift(giftToken?: string) {
 }
 
 describe('Gift link access', function () {
+  beforeAll(async function () {
+    await require('../../../../../core/server/services/posts-public').default.init();
+  });
+
   let getPostByTokenStub: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     // The service singleton is normally wired at boot; the stub replaces
     // its only query so no DB is touched.
-    giftLinksService.init();
-    getPostByTokenStub = sinon.stub(giftLinksService.service!, 'getPostByToken');
+    await giftLinksService.init();
+    getPostByTokenStub = sinon.stub(giftLinksService.service, 'getPostByToken');
 
     sinon.stub(Product, 'findAll').resolves([
       {
@@ -43,12 +46,13 @@ describe('Gift link access', function () {
   // Pages has no response cache yet, but its key must stay paired with the
   // applyGiftAccess call in its read so a future cache can't poison the
   // anonymous key with unlocked content.
-  for (const [docName, controller] of [
-    ['posts', postsPublicController],
-    ['pages', pagesPublicController],
-  ] as const) {
+  for (const docName of ['posts', 'pages'] as const) {
     describe(`${docName}-public read cache key`, function () {
       function readKey(giftToken?: string) {
+        const controller =
+          docName === 'posts'
+            ? require('../../../../../core/server/api/endpoints/posts-public')
+            : pagesPublicController;
         return controller.read.generateCacheKeyData({
           options: {},
           original: { context: { giftToken } },

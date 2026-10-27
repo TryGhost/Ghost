@@ -1,5 +1,59 @@
 'use strict';
 
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
+const yaml = require('js-yaml');
+const { sourceExclusions } = require('./tools/scripts/ci/service-dependency-resolver.mjs');
+
+// Keep service policy here. The audit applies it to every service; normal lint
+// applies it only to entries marked migrated in the inventory.
+const servicesRoot = 'ghost/core/server/services';
+const auditServices = process.env.GHOST_SERVICE_DEPENDENCY_AUDIT === '1';
+const { services } = yaml.load(
+  readFileSync(path.join(__dirname, servicesRoot, 'service-inventory.yaml'), 'utf8'),
+);
+const migratedServices = Object.entries(services)
+  .filter(([, entry]) => entry.migrated === true)
+  .map(([name]) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('|');
+const serviceImplementations = {
+  path: `^${servicesRoot}/(${auditServices ? '[^/]+' : migratedServices || '(?!)'})(?:/|$)`,
+  pathNot: `^${servicesRoot}/[^/]+/index\\.${auditServices ? '(?:js|ts)' : 'ts'}$`,
+};
+
+// Explicit code-library and contract allowances, not application instances.
+// Keep each package or file named individually and explain additions here.
+const serviceDependencyAllowlist = [
+  '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
+  '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
+  '(^|/)node_modules/@tryghost/debug/|^@tryghost/debug$', // Namespaced developer tracing gated by the DEBUG environment variable; no configuration or application instance.
+  '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.
+  '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
+  '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
+  '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
+  '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
+  '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
+  '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
+  '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
+  '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
+  '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
+  '^lodash/isEmpty(?:\\.js)?$|(^|/)node_modules/lodash/isEmpty\\.js$', // Pure value/collection inspection; only the isEmpty helper.
+  '^@tryghost/nql$|(^|/)node_modules/@tryghost/nql/index\\.js$', // Caller-local query parsing and JSON matching; no application instances or I/O.
+  '^(node:)?crypto$', // Cryptographic algorithms and key generation.
+  '^(node:)?util$', // Node utilities, including promisify.
+  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
+  '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
+  '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
+  '^ghost/core/server/lib/common/to-plain\\.ts$', // Bookshelf/plain-object normalization; no application instances or captured state.
+  '^ghost/core/server/lib/link-replacer\\.js$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
+  '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
+  '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
+  '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
+  '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
+  '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
+];
+
 /*
  * Architectural boundary rules for the monorepo, enforced on the resolved
  * module graph (require AND import). Two sections:
@@ -15,15 +69,51 @@
  *                 feature apps. Public UMD bundles (portal, comments-ui,
  *                 etc.) must not depend on admin libs.
  *
- *                 Workspace packages appear as unresolved `@tryghost/*` module
- *                 specifiers in the graph (pnpm workspace symlinks are stopped
- *                 by doNotFollow:node_modules), so `to.path` matches on
- *                 package name rather than a file path.
+ *                 Workspace imports may resolve to source through package exports.
+ *                 Match both package specifiers and workspace paths so resolution
+ *                 cannot bypass a boundary.
  *
  * @type {import('dependency-cruiser').IConfiguration}
  */
 module.exports = {
   forbidden: [
+    {
+      name: 'service-dependencies',
+      comment:
+        'Wire application dependencies in the root index.ts and inject them into the implementation.',
+      severity: 'error',
+      from: serviceImplementations,
+      to: {
+        // $1 is the service name captured by from.path.
+        pathNot: [...serviceDependencyAllowlist, `^${servicesRoot}/$1/`],
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'service-own-root',
+      comment: 'Service implementations must not retrieve dependencies from their own wiring root.',
+      severity: 'error',
+      from: serviceImplementations,
+      to: {
+        path: `^${servicesRoot}/$1/index\\.(js|ts)$`,
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'service-unresolved',
+      comment: 'Resolve this runtime import so the service dependency rule can be checked.',
+      severity: 'error',
+      from: serviceImplementations,
+      to: { couldNotResolve: true, dependencyTypesNot: ['type-only', 'type-import'] },
+    },
+    // Kernel primitives must be independent of the application they support.
+    {
+      name: 'kernel-not-application',
+      comment: 'Kernel code must not import application code, including shared.',
+      severity: 'error',
+      from: { path: '^ghost/core/kernel/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================
@@ -115,7 +205,7 @@ module.exports = {
       comment: 'shade/ must not depend on admin-x-framework. It is the foundation layer.',
       severity: 'error',
       from: { path: '^apps/shade/' },
-      to: { path: '^@tryghost/admin-x-framework' },
+      to: { path: '^@tryghost/admin-x-framework($|/)|^apps/admin-x-framework/' },
     },
     // ============================================================
     // apps/ — admin-x-framework/ must not depend on feature apps
@@ -126,7 +216,7 @@ module.exports = {
         'admin-x-framework/ must not depend on feature apps (activitypub). The framework layer sits below the feature layer.',
       severity: 'error',
       from: { path: '^apps/admin-x-framework/' },
-      to: { path: '^@tryghost/activitypub' },
+      to: { path: '^@tryghost/activitypub($|/)|^apps/activitypub/' },
     },
     // ============================================================
     // apps/ — public UMD apps must not depend on admin-only libraries
@@ -139,7 +229,7 @@ module.exports = {
       from: {
         path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
-      to: { path: '^@tryghost/(shade|admin-x-framework)' },
+      to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^apps/(shade|admin-x-framework)/' },
     },
     // ============================================================
     // apps/ — admin is an app, not a library
@@ -230,9 +320,34 @@ module.exports = {
     },
   ],
   options: {
-    doNotFollow: { path: 'node_modules' },
-    // Keeps edges into node_modules so rules can see npm packages, but skips
-    // our own tests and build output
-    exclude: { path: '^(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/' },
+    // Resolve public package exports to authored workspace source when available.
+    enhancedResolveOptions: {
+      exportsFields: ['exports'],
+      conditionNames: ['source', 'import', 'require', 'node', 'default'],
+    },
+    reporterOptions: {
+      err: { showExternalModulesUnresolved: true },
+      markdown: { showExternalModulesUnresolved: true },
+    },
+    // Use the CLI's supported resolver hook to inspect authored TypeScript,
+    // even when build:tsc has emitted adjacent JavaScript.
+    webpackConfig: { fileName: './tools/scripts/ci/service-dependency-resolver.mjs' },
+    // Keep incoming edges to built packages visible without scanning their output.
+    doNotFollow: {
+      path: auditServices
+        ? `^(?!${servicesRoot}/)`
+        : [
+            'node_modules',
+            '^(?!ghost/core/server/services/)(apps|ghost|packages|koenig)/.*/(build|built|dist)/',
+          ],
+    },
+    // Skip our own tests and emitted companions. All source inside services stays visible:
+    // a nested directory name must not hide a production dependency.
+    exclude: {
+      path: [
+        '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test)/',
+        ...sourceExclusions(__dirname),
+      ],
+    },
   },
 };

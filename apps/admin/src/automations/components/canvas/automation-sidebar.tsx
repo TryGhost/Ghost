@@ -1,24 +1,28 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
+import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import React, { useId, useState } from 'react';
 import type {
+  AutomationPerformanceStats,
   AutomationRunStatusFilter,
   AutomationTrigger,
 } from '@tryghost/admin-x-framework/api/automations';
+import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-stats';
+import { mapAutomationStatusStats } from '@/automations/utils/automation-status-stats';
 import {
   Button,
+  EmptyIndicator,
   Field,
   FieldLabel,
   FieldDescription,
-  FieldError,
-  Input,
   Textarea,
   Tabs,
   TabsList,
   TabsTrigger,
   TabsContent,
 } from '@tryghost/shade/components';
-import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
@@ -32,7 +36,52 @@ import {
 } from '@/automations/utils/performance-date-range';
 
 type AutomationSidebarTab = 'performance' | 'settings';
+
 type AutomationMetadata = 'hidden' | 'editable' | 'readonly';
+
+// What the server reports for an automation nobody has started: every count at
+// zero and today's empty day. An unsaved automation can't be asked, so it shows this.
+const unstartedStats = (): AutomationPerformanceStats => {
+  const { endDate, timezone } = getRangeDates(1);
+  const today = formatQueryDate(endDate);
+  return {
+    automation_id: '',
+    total_run_count: 0,
+    in_progress_run_count: 0,
+    completed_run_count: 0,
+    exited_early_run_count: 0,
+    entries: [{ date: today, count: 0 }],
+    entry_window: {
+      date_from: today,
+      date_to: new Date(Date.parse(today) + 86_400_000).toISOString().slice(0, 10),
+      bucket: 'day',
+      timezone,
+    },
+  };
+};
+
+const UnsavedPerformance: React.FC = () => {
+  const [stats] = useState(unstartedStats);
+  return (
+    <Stack className="mt-4" gap="md">
+      <TotalEntries chart={mapAutomationEntryStats(stats)} isLoading={false} />
+      <StatusCounts
+        data={mapAutomationStatusStats(stats)}
+        isLoading={false}
+        selectedStatus={null}
+        onStatusChange={() => {}}
+      />
+      <EmptyIndicator
+        className="px-4 py-12"
+        description="Once someone starts your automation, they'll show here"
+        role="status"
+        title="No members yet"
+      >
+        <LucideIcon.Users />
+      </EmptyIndicator>
+    </Stack>
+  );
+};
 
 const PerformanceContent: React.FC<{
   automationId: string;
@@ -97,24 +146,32 @@ const PerformanceContent: React.FC<{
     );
   }
 
+  const statusCounts = (compact = false) => (
+    <StatusCounts
+      compact={compact}
+      data={counts}
+      isLoading={isLoading}
+      selectedStatus={selectedStatus}
+      onStatusChange={onStatusChange}
+    />
+  );
+
   return (
-    <>
-      <Grid
-        ref={(summary) => {
-          if (summary) {
-            summary.inert = searchActive;
-          }
-        }}
-        aria-hidden={searchActive || undefined}
-        className={cn(
-          'shrink-0 transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
-          searchActive ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100',
-        )}
-        gap="none"
-      >
-        <Box className="min-h-0 overflow-hidden">
-          {/* Keep spacing inside the collapse so the list slides all the way up. */}
-          <Stack className="pb-3" gap="md">
+    <RunList
+      key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
+      automationId={automationId}
+      dateRange={dateRange}
+      direction={direction}
+      enabled={enabled}
+      isSelectionDisabled={isRunSelectionDisabled}
+      queryScope={runQueryScope}
+      search={search}
+      selectedRunId={selectedRunId}
+      status={searchActive ? null : selectedStatus}
+      stickySummary={!searchActive && statusCounts(true)}
+      summary={
+        !searchActive && (
+          <Stack gap="md">
             {dateRange.value !== 'all' && (
               <Button
                 aria-label="Clear date filter"
@@ -128,42 +185,28 @@ const PerformanceContent: React.FC<{
               </Button>
             )}
             <TotalEntries chart={chart} isLoading={isLoading} />
-            <StatusCounts
-              data={counts}
-              isLoading={isLoading}
-              selectedStatus={selectedStatus}
-              onStatusChange={onStatusChange}
-            />
+            {statusCounts()}
           </Stack>
-        </Box>
-      </Grid>
-      <RunList
-        key={`${automationId}:${JSON.stringify(dateRange.searchParams)}`}
-        automationId={automationId}
-        dateRange={dateRange}
-        direction={direction}
-        enabled={enabled}
-        isSelectionDisabled={isRunSelectionDisabled}
-        queryScope={runQueryScope}
-        search={search}
-        selectedRunId={selectedRunId}
-        status={searchActive ? null : selectedStatus}
-        updating={updating}
-        onDirectionChange={onDirectionChange}
-        onSelectRun={onSelectRun}
-      />
-    </>
+        )
+      }
+      updating={updating}
+      onDirectionChange={onDirectionChange}
+      onSelectRun={onSelectRun}
+    />
   );
 };
 
 export const AutomationSidebar: React.FC<{
   automationId: string;
-  name: string;
   description: string;
   triggerTierScope: AutomationTrigger['trigger_tier_scope'];
+  triggerTierIds: readonly string[];
+  tiers: readonly Tier[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
-  onDetailsChange: (details: { name: string; description: string }) => void;
+  onDescriptionChange: (description: string) => void;
+  selectedTab: AutomationSidebarTab;
+  onTabChange: (tab: AutomationSidebarTab) => void;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedRunId: string | null;
@@ -171,21 +214,21 @@ export const AutomationSidebar: React.FC<{
   isRunSelectionDisabled: boolean;
 }> = ({
   automationId,
-  name,
   description,
   triggerTierScope,
+  triggerTierIds,
+  tiers,
   performanceEnabled,
   metadata,
-  onDetailsChange,
+  onDescriptionChange,
   isOpen,
+  selectedTab,
+  onTabChange,
   onOpenChange,
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
 }) => {
-  const [selectedTab, setSelectedTab] = useState<AutomationSidebarTab>(
-    performanceEnabled ? 'performance' : 'settings',
-  );
   let activeTab: AutomationSidebarTab;
   switch (metadata) {
     case 'hidden':
@@ -200,10 +243,7 @@ export const AutomationSidebar: React.FC<{
       throw new Error(`Unknown automation metadata mode: ${String(_exhaustive)}`);
     }
   }
-  const nameId = useId();
   const descriptionId = useId();
-  const nameErrorId = useId();
-  const isNameValid = name.trim().length > 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
@@ -224,20 +264,32 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
-  let exitConditionDescription: string;
+  let stopConditionDescription: string;
   switch (triggerTierScope) {
     case 'free':
     case null:
-      exitConditionDescription = 'Members exit early if they unsubscribe.';
+      stopConditionDescription = 'Members stop early if they unsubscribe.';
       break;
     case 'all_paid':
-      exitConditionDescription =
-        'Members exit early if they unsubscribe or cancel their subscription.';
+      stopConditionDescription = 'Members stop early if they unsubscribe or leave any paid tier.';
       break;
-    case 'selected_paid':
-      exitConditionDescription =
-        'Members exit early if they unsubscribe, cancel their subscription, or leave the selected tier(s).';
+    case 'selected_paid': {
+      const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
+      const tierNames = triggerTierIds
+        .map((id) => triggerNamesById.get(id))
+        .filter((tierName): tierName is string => tierName !== undefined);
+      let tierDescription = 'selected tiers';
+      if (tierNames.length === 1 && tierNames.length === triggerTierIds.length) {
+        tierDescription = `${tierNames[0]} tier`;
+      } else if (tierNames.length > 1 && tierNames.length === triggerTierIds.length) {
+        const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
+          tierNames,
+        );
+        tierDescription = `${tierList} tiers`;
+      }
+      stopConditionDescription = `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
       break;
+    }
     default: {
       const _exhaustive: never = triggerTierScope;
       throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
@@ -288,11 +340,11 @@ export const AutomationSidebar: React.FC<{
             variant="button"
             onValueChange={(value) => {
               if (value === 'performance' || value === 'settings') {
-                setSelectedTab(value);
+                onTabChange(value);
               }
             }}
           >
-            <Inline className="h-9 shrink-0 pl-10" gap="sm">
+            <Inline className="h-(--control-height) shrink-0 pl-10" gap="sm">
               <TabsList
                 aria-label="Automation sidebar"
                 className={searchOpen && activeTab === 'performance' ? 'sr-only' : 'min-w-0 flex-1'}
@@ -300,7 +352,7 @@ export const AutomationSidebar: React.FC<{
                 {performanceEnabled && <TabsTrigger value="performance">Performance</TabsTrigger>}
                 {metadata !== 'hidden' && <TabsTrigger value="settings">Settings</TabsTrigger>}
               </TabsList>
-              {activeTab === 'performance' && (
+              {activeTab === 'performance' && automationId && (
                 <>
                   <MemberSearch
                     open={searchOpen}
@@ -332,7 +384,8 @@ export const AutomationSidebar: React.FC<{
               value="performance"
               forceMount
             >
-              {performanceEnabled && hasOpened && (
+              {performanceEnabled && !automationId && <UnsavedPerformance />}
+              {performanceEnabled && automationId && hasOpened && (
                 <Stack className="mt-4 min-h-0 flex-1" gap="none">
                   <PerformanceContent
                     automationId={automationId}
@@ -364,23 +417,6 @@ export const AutomationSidebar: React.FC<{
             {metadata !== 'hidden' && (
               <TabsContent className="mt-6" value="settings">
                 <Stack gap="xl">
-                  <Field data-invalid={!isNameValid || undefined}>
-                    <FieldLabel htmlFor={nameId}>Name</FieldLabel>
-                    <Input
-                      aria-describedby={!isNameValid ? nameErrorId : undefined}
-                      aria-invalid={!isNameValid || undefined}
-                      disabled={metadata === 'readonly'}
-                      id={nameId}
-                      maxLength={191}
-                      value={name}
-                      onChange={(event) =>
-                        onDetailsChange({ name: event.target.value, description })
-                      }
-                    />
-                    {!isNameValid && (
-                      <FieldError id={nameErrorId}>Add an automation name.</FieldError>
-                    )}
-                  </Field>
                   <Field>
                     <FieldLabel htmlFor={descriptionId}>Description</FieldLabel>
                     <Textarea
@@ -389,14 +425,12 @@ export const AutomationSidebar: React.FC<{
                       maxLength={2000}
                       rows={4}
                       value={description}
-                      onChange={(event) =>
-                        onDetailsChange({ name, description: event.target.value })
-                      }
+                      onChange={(event) => onDescriptionChange(event.target.value)}
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>Exit conditions</FieldLabel>
-                    <FieldDescription>{exitConditionDescription}</FieldDescription>
+                    <FieldLabel>Stop conditions</FieldLabel>
+                    <FieldDescription>{stopConditionDescription}</FieldDescription>
                   </Field>
                 </Stack>
               </TabsContent>

@@ -51,8 +51,10 @@ describe('Automation run pagination', () => {
       .closest('tr')!
       .getBoundingClientRect().height;
     const headerHeight = region().element().querySelector('thead')!.getBoundingClientRect().height;
+    const tableOffset =
+      region().element().getBoundingClientRect().top - runsScroller().getBoundingClientRect().top;
     expect(runsScroller().scrollHeight).toBeLessThanOrEqual(
-      Math.ceil(51 * rowHeight + headerHeight + 2),
+      Math.ceil(tableOffset + 51 * rowHeight + headerHeight + 2),
     );
     scrollRunsToEnd();
     await expect.element(region().getByRole('alert')).toHaveTextContent('Could not load runs');

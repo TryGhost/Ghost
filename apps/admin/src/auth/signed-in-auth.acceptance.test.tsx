@@ -31,7 +31,7 @@ it.each([
   [
     'reset',
     `/reset/${authToken('owner@example.com')}`,
-    "You can't reset your password while you're signed in.",
+    'You can’t reset your password while you’re signed in.',
   ],
   [
     'signup',

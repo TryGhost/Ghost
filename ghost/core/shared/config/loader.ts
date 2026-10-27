@@ -58,39 +58,43 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   // Finally, we load defaults, if nothing else has a value this will
   nconf.file('defaults', path.join(baseConfigPath, 'defaults.json'));
 
+  for (const name of ['overrides', 'docker-env', 'default-env', 'defaults']) {
+    localUtils.makeBundledDatabasePathsAbsolute(nconf.stores[name]?.store);
+  }
+
+  // ## Hand over
+
+  // nconf's job ends here: it layered the sources. Everything below works on
+  // the merged plain tree, and the validated, frozen tree createConfig returns
+  // is the only representation anything reads from now on. See ./schema.ts.
+  const tree = localUtils.mergeStores(nconf);
+
   // ## Sanitization
 
   // transform all relative paths to absolute paths
-  localUtils.makePathsAbsolute(nconf, nconf.get('paths'), 'paths');
+  localUtils.makePathsAbsolute(tree.paths);
 
-  // transform sqlite filename path for Ghost-CLI
-  localUtils.sanitizeDatabaseProperties(nconf);
+  localUtils.sanitizeDatabaseProperties(tree.database);
 
   // Check if the URL in config has a protocol
-  localUtils.checkUrlProtocol(nconf.get('url'));
+  localUtils.checkUrlProtocol(tree.url);
 
   // Ensure that the content path exists
-  localUtils.doesContentPathExist(nconf.get('paths:contentPath'));
+  localUtils.doesContentPathExist((tree.paths as Record<string, unknown> | undefined)?.contentPath);
 
   // ## Other Stuff!
 
   // Manually set values
-  nconf.set('env', env);
+  tree.env = env;
 
-  // Wrap this in a check, because else nconf.get() is executed unnecessarily
   // To output this, use DEBUG=ghost:*,ghost-config
   if (_debug.enabled('ghost-config')) {
-    debug(nconf.get());
+    debug(tree);
   }
 
   debug('config end');
 
-  // ## Hand over
-
-  // nconf's job ends here: it layered the sources, and the validated, frozen
-  // tree createConfig returns is the only representation anything reads from
-  // now on. See ./schema.ts.
-  return createConfig(localUtils.mergeStores(nconf));
+  return createConfig(tree);
 }
 
 export { loadNconf };

@@ -1,11 +1,12 @@
-import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
-import { ASYNC_EXPORT_COMPONENTS } from '../exports/export-components';
+import {
+  buildSignedWebhookRequest,
+  describeWebhookError,
+  sanitizeWebhookUrl,
+} from '../../lib/signed-webhook';
+import type { ASYNC_EXPORT_COMPONENTS } from '../../data/exporter/export-components';
 
 type AsyncExportComponents = Record<(typeof ASYNC_EXPORT_COMPONENTS)[number], boolean>;
-const logging = require('@tryghost/logging');
-const request = require('@tryghost/request');
 const errors = require('@tryghost/errors');
-const config = require('../../../shared/config');
 
 type ExportRequestBody = {
   type: 'export';
@@ -31,7 +32,7 @@ export class ExportRequestsService {
   #logging: ExportRequestsServiceDependencies['logging'];
   #request: ExportRequestsServiceDependencies['request'];
 
-  constructor(dependencies: ExportRequestsServiceDependencies = { config, logging, request }) {
+  constructor(dependencies: ExportRequestsServiceDependencies) {
     this.#config = dependencies.config;
     this.#logging = dependencies.logging;
     this.#request = dependencies.request;
@@ -115,7 +116,7 @@ export class ExportRequestsService {
     try {
       await this.#request(webhookUrl, requestOptions);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeWebhookError(error);
       this.#logging.error(`Failed to request export generation from "${sanitizedUrl}": ${message}`);
       throw new errors.InternalServerError({
         statusCode: 502,
@@ -124,5 +125,3 @@ export class ExportRequestsService {
     }
   }
 }
-
-export const exportRequestsService = new ExportRequestsService();

@@ -49,7 +49,7 @@ pnpm data:analytics:clear
 
 ### Database Connection
 
-The `pnpm` scripts run through `scripts/with-ghost-dev-env.ts`, so they use the
+The `pnpm` scripts run through `tools/scripts/with-ghost-dev-env.ts`, so they use the
 same database as the checkout's `pnpm dev`: `ghost_dev` in the main checkout and
 `dev_<worktree>` in a linked worktree. Override via environment variables:
 

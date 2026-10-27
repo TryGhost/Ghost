@@ -76,6 +76,12 @@ const buttonVariants = cva(
       },
       {
         isAdmin7: true,
+        variant: 'ghost',
+        className:
+          'hover:bg-button-ghost-hover enabled:active:bg-button-ghost-hover enabled:aria-expanded:bg-button-ghost-hover',
+      },
+      {
+        isAdmin7: true,
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',

@@ -9,6 +9,7 @@ let mailer;
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const emailAddress = require('../../../../../core/server/services/email-address');
+const settingsHelpers = require('../../../../../core/server/services/settings-helpers');
 
 // Mock SMTP config
 const SMTP = {
@@ -59,6 +60,109 @@ describe('Mail: Ghostmailer', function () {
 
     assertExists(mailer);
     assert.equal(typeof mailer.send, 'function');
+  });
+
+  it('reads sender defaults at send time on one mailer and preserves delivery formatting', async function () {
+    configUtils.set({ mail: { transport: 'stub' } });
+    configUtils.set('hostSettings:managedEmail:enabled', false);
+    const getDefaultEmail = sandbox.stub(settingsHelpers, 'getDefaultEmail').returns({
+      address: 'first@example.com',
+      name: 'First ✅',
+    });
+    mailer = new mail.GhostMailer();
+    const sendMail = sandbox.stub(mailer, 'sendMail').resolves({});
+
+    await mailer.send(mailDataNoServer);
+    assert.equal(sendMail.firstCall.args[0].from, '"First" <first@example.com>');
+    assert.equal(sendMail.firstCall.args[0].headers.Sender, '"First" <first@example.com>');
+
+    getDefaultEmail.returns({ address: 'second@example.com', name: 'a\\b"c ✔' });
+    await mailer.send(mailDataNoServer);
+
+    assert.equal(sendMail.secondCall.args[0].from, '"a\\\\b\\"c" <second@example.com>');
+    assert.equal(sendMail.secondCall.args[0].headers.Sender, '"a\\\\b\\"c" <second@example.com>');
+    assert.equal(sendMail.secondCall.args[0].replyTo, null);
+  });
+
+  describe('sender policy at delivery', function () {
+    beforeEach(function () {
+      configUtils.set({
+        mail: {
+          transport: 'stub',
+          from: '"Default Sender ✅" <default@publication.example>',
+        },
+      });
+      configUtils.set('hostSettings:managedEmail:enabled', true);
+      configUtils.set('hostSettings:managedEmail:sendingDomain', 'publication.example');
+      mailer = new mail.GhostMailer();
+    });
+
+    for (const { name, sender } of [
+      { name: 'omitted', sender: {} },
+      { name: 'empty', sender: { from: '' } },
+      {
+        name: 'multiple-address',
+        sender: { from: 'first@publication.example, second@publication.example' },
+      },
+      { name: 'group', sender: { from: 'Editors: editor@publication.example;' } },
+      {
+        name: 'mailbox-object',
+        sender: { from: { address: 'earlier@publication.example', name: 'Earlier Default' } },
+      },
+    ]) {
+      it(`uses the configured default for ${name} From and preserves Reply-To and recipient`, async function () {
+        const sendMail = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+        await mailer.send({
+          ...mailDataNoServer,
+          ...sender,
+          replyTo: '"Reply Person ✔" <reply@elsewhere.example>',
+        });
+
+        sinon.assert.calledOnce(sendMail);
+        const sentMessage = sendMail.firstCall.args[0];
+        assert.equal(sentMessage.to, mailDataNoServer.to);
+        assert.equal(sentMessage.from, '"Default Sender" <default@publication.example>');
+        assert.equal(sentMessage.replyTo, '"Reply Person" <reply@elsewhere.example>');
+        assert.equal(sentMessage.headers.Sender, sentMessage.from);
+      });
+    }
+
+    for (const { name, from, replyTo, expectedFrom, expectedReplyTo } of [
+      {
+        name: 'allows a sender on the configured sending domain',
+        from: '"Editor" <editor@publication.example>',
+        replyTo: 'reply@elsewhere.example',
+        expectedFrom: '"Editor" <editor@publication.example>',
+        expectedReplyTo: 'reply@elsewhere.example',
+      },
+      {
+        name: 'replaces a restricted sender while keeping an explicit Reply-To',
+        from: '"Editor" <editor@elsewhere.example>',
+        replyTo: 'reply@elsewhere.example',
+        expectedFrom: '"Editor" <default@publication.example>',
+        expectedReplyTo: 'reply@elsewhere.example',
+      },
+      {
+        name: 'preserves a restricted sender as Reply-To when none is supplied',
+        from: '"Editor" <editor@elsewhere.example>',
+        expectedFrom: '"Editor" <default@publication.example>',
+        expectedReplyTo: '"Editor" <editor@elsewhere.example>',
+      },
+    ]) {
+      it(name, async function () {
+        const sendMail = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+        await mailer.send({ ...mailDataNoServer, from, replyTo });
+
+        sinon.assert.calledOnce(sendMail);
+        const sentMessage = sendMail.firstCall.args[0];
+        assert.equal(sentMessage.to, mailDataNoServer.to);
+        assert.equal(sentMessage.from, expectedFrom);
+        assert.equal(sentMessage.replyTo, expectedReplyTo);
+        assert.equal(sentMessage.headers.Sender, expectedFrom);
+      });
+    }
   });
 
   it('should setup SMTP transport on initialization', function () {

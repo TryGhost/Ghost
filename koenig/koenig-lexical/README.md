@@ -63,6 +63,28 @@ All styles are scoped under `.koenig-lexical` class to avoid clashes and keep st
 
 When packaging the module, styles are included inside the JS file rather than being separate to allow for a single import of the module in the consuming app.
 
+**Content fonts**
+
+A host can restyle the text a writer writes by setting these variables on an
+ancestor of `.koenig-lexical`. Each falls back to the editor's own typography,
+so a host that sets none sees no change.
+
+| Variable                            | Applies to                                                                        | Default                 |
+| ----------------------------------- | --------------------------------------------------------------------------------- | ----------------------- |
+| `--kg-font-body`                    | Paragraphs, lists, quotes, tables, the placeholder and callout, toggle and CTA text | Georgia                 |
+| `--kg-font-body-scale`              | Multiplies the body's font sizes                                                  | `1`                     |
+| `--kg-font-body-line-height`        | The body's line height                                                            | `1.6em`                 |
+| `--kg-font-body-tracking`           | The body's letter spacing                                                         | inherited               |
+| `--kg-font-heading`                 | Headings, and the heading and subheading text of header, signup, product and toggle cards | Inter         |
+| `--kg-font-heading-scale`           | Multiplies the H1–H6 font sizes                                                   | `1`                     |
+| `--kg-font-heading-tracking-scale`  | Multiplies the H1–H6 letter spacing                                               | `1`                     |
+| `--kg-font-code-size`               | Inline code's font size, relative to the text around it                           | `.8em`                  |
+| `--kg-font-code-vertical-align`     | Inline code's vertical alignment; `baseline` suits code set at the body's size    | `middle`                |
+
+In Tailwind, `font-body`, `font-heading` and `text-body` read the same variables.
+Captions, buttons, link previews and the editor's own controls are not content
+and always stay in Inter.
+
 **SVGs**
 
 SVGs can be imported as React components in the [same way as create-react-app](https://create-react-app.dev/docs/adding-images-fonts-and-files/#adding-svgs). Typically files are stored in `src/assets/`.

@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { z } from 'zod';
+import ts from 'typescript';
 
 const coreRoot = path.resolve(__dirname, '../../../..');
 const servicesRoot = path.join(coreRoot, 'core/server/services');
@@ -26,17 +27,49 @@ const recordedContract = z
     tests: z.array(description),
   })
   .strict();
+const dependencyAssessment = z
+  .object({
+    complexity: z.enum(['straightforward', 'complex', 'not-applicable']),
+    reason: description,
+    preparation: z.array(description),
+    reviewedAt: z.string().regex(/^[0-9a-f]{40}$/),
+    sources: z.array(description).min(1),
+  })
+  .strict();
+const migration = z
+  .object({
+    complexity: z.enum(['straightforward', 'complex', 'not-applicable']),
+    modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
+    dependencies: dependencyAssessment.optional(),
+    reason: description,
+    reviewedAt: z.string().regex(/^[0-9a-f]{40}$/),
+    sources: z.array(description).min(1),
+  })
+  .strict();
+const extraSchema = z
+  .object({
+    purpose: description,
+    callers: z.array(description).min(1),
+    timing: description,
+    dependencies: z.array(description),
+    failurePolicy: description,
+    destination: description,
+  })
+  .strict();
 const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
     status: z.enum(['pending', 'auditing', 'audited']),
+    migrated: z.literal(true).optional(),
+    extras: z.record(description, extraSchema).optional(),
     auditedAt: z
       .string()
       .regex(/^[0-9a-f]{40}$/)
       .optional(),
     entryPoints: z.array(description).min(1),
     notes: description,
+    migration,
     contracts: z.partialRecord(facet, recordedContract),
     unverified: z.array(facet),
     blockers: z.array(description),
@@ -44,7 +77,7 @@ const entry = z
   .strict();
 const inventorySchema = z
   .object({
-    version: z.literal(1),
+    exemplaryMigration: description,
     services: z.record(description, entry),
   })
   .strict();
@@ -59,12 +92,87 @@ function assertFileWithin(root: string, relativePath: string) {
   assert.ok(statSync(resolved).isFile(), `Expected a file: ${relativePath}`);
 }
 
+// Extract catalogue names only. Oxlint separately enforces the root's source shape.
+function declaredExtras(fileName: string): string[] {
+  const source = ts.createSourceFile(
+    fileName,
+    readFileSync(fileName, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const constants = new Map<string, ts.Expression>();
+  let exported: ts.Expression | undefined;
+  for (const statement of source.statements) {
+    if (ts.isExportAssignment(statement)) {
+      exported = statement.expression;
+    }
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.initializer) {
+          constants.set(declaration.name.text, declaration.initializer);
+        }
+      }
+    }
+  }
+  function resolve(
+    expression: ts.Expression | undefined,
+    seen = new Set<string>(),
+  ): ts.Expression | undefined {
+    if (!expression) {
+      return;
+    }
+    if (
+      ts.isParenthesizedExpression(expression) ||
+      ts.isAsExpression(expression) ||
+      ts.isTypeAssertionExpression(expression) ||
+      ts.isSatisfiesExpression(expression) ||
+      ts.isNonNullExpression(expression)
+    ) {
+      return resolve(expression.expression, seen);
+    }
+    if (!ts.isIdentifier(expression)) {
+      return expression;
+    }
+    if (seen.has(expression.text)) {
+      return;
+    }
+    seen.add(expression.text);
+    return resolve(constants.get(expression.text), seen);
+  }
+  const initializer = resolve(exported);
+  assert.ok(
+    initializer && ts.isCallExpression(initializer),
+    `Cannot read initializer arguments: ${fileName}`,
+  );
+  if (!initializer.arguments[2]) {
+    return [];
+  }
+  const extras = resolve(initializer.arguments[2]);
+  assert.ok(
+    extras && ts.isObjectLiteralExpression(extras),
+    `Cannot read declared extras: ${fileName}`,
+  );
+  return extras.properties
+    .flatMap((property) =>
+      property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name))
+        ? [property.name.text]
+        : [],
+    )
+    .sort();
+}
+
 describe('service migration inventory', function () {
-  // Read metadata only: importing the catalogue could construct resources or
+  // Read metadata and source only: importing the catalogue could construct resources or
   // require a database before a service's real owner has initialized it.
   const inventory = inventorySchema.parse(
     yaml.load(readFileSync(path.join(servicesRoot, 'service-inventory.yaml'), 'utf8')),
   );
+
+  it('identifies a migrated service as the example to follow', function () {
+    const example = inventory.services[inventory.exemplaryMigration];
+    assert.ok(example, 'The exemplary migration must exist in the inventory');
+    assert.equal(example.migrated, true, 'The example must use defineService');
+  });
 
   it('accounts for every service directory and standalone file', function () {
     for (const name of metadata) {
@@ -85,7 +193,72 @@ describe('service migration inventory', function () {
   });
 
   for (const [name, service] of Object.entries(inventory.services)) {
-    it(`${name} has valid evidence and explicit audit gaps`, function () {
+    if (service.migrated) {
+      it(`${name} has exactly the catalogued extras`, function () {
+        const rootFile = path.join(
+          servicesRoot,
+          service.kind === 'directory' ? `${name}/index.ts` : name,
+        );
+        const actual = declaredExtras(rootFile);
+        assert.deepEqual(
+          actual,
+          Object.keys(service.extras ?? {}).sort(),
+          'Catalogue every extra and remove stale catalogue entries',
+        );
+      });
+    }
+    it(`${name} has valid evidence, migration assessment and explicit audit gaps`, function () {
+      assert.equal(
+        service.migration.complexity === 'not-applicable',
+        service.migration.modelImpact === 'not-applicable',
+        'Non-service entries must use not-applicable for both migration dimensions',
+      );
+      if (service.migration.complexity === 'not-applicable') {
+        assert.equal(
+          service.disposition,
+          'relocate',
+          'Only supporting code marked for relocation can skip migration assessment',
+        );
+      }
+      if (service.migration.modelImpact === 'may-change') {
+        assert.equal(
+          service.migration.complexity,
+          'complex',
+          'An open model question requires a complex migration assessment',
+        );
+      }
+      if (service.migrated) {
+        assert.notEqual(
+          service.migration.complexity,
+          'not-applicable',
+          'A migrated service cannot be classified as a non-service',
+        );
+      }
+      const dependencies = service.migration.dependencies;
+      if (!service.migrated) {
+        assert.ok(dependencies, 'Unmigrated entries need a dependency assessment');
+      }
+      if (dependencies) {
+        if (dependencies.complexity === 'not-applicable') {
+          assert.equal(
+            service.migration.complexity,
+            'not-applicable',
+            'Only confirmed non-services can skip dependency migration assessment',
+          );
+        }
+        for (const source of dependencies.sources) {
+          assertFileWithin(coreRoot, source);
+        }
+      }
+      for (const extra of Object.values(service.extras ?? {})) {
+        for (const caller of extra.callers) {
+          assertFileWithin(coreRoot, caller);
+        }
+      }
+      for (const source of service.migration.sources) {
+        assertFileWithin(coreRoot, source);
+      }
+
       assert.equal(new Set(service.entryPoints).size, service.entryPoints.length);
       for (const entryPoint of service.entryPoints) {
         assert.ok(

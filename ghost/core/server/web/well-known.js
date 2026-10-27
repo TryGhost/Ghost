@@ -1,12 +1,12 @@
 const express = require('../../shared/express');
 const config = require('../../shared/config');
 const { cacheControl } = require('./shared/middleware');
-const signingKeys = require('../services/signing-keys');
+const signingKeys = require('../services/signing-keys').default;
 
 module.exports = function setupWellKnownApp() {
   const wellKnownApp = express('well-known');
 
-  const staffKeys = signingKeys.getInstance().forPurpose('staff');
+  const staffKeys = signingKeys.service.forPurpose('staff');
 
   const cache = cacheControl('public', { maxAge: config.get('caching:wellKnown:maxAge') });
 

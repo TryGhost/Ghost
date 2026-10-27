@@ -252,14 +252,16 @@ describe('Automation performance date filter', () => {
     try {
       await render();
       await expectCounts([10, 20, 30]);
-      const cards = labels.map((label) => card(label).element());
-      const chartCard = entries().element();
+      const cardHeights = labels.map(
+        (label) => card(label).element().getBoundingClientRect().height,
+      );
+      const chartHeight = entries().element().getBoundingClientRect().height;
       await selectRange('Last 7 days');
       await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total runs');
-      expect(entries().element()).toBe(chartCard);
+      expect(entries().element().getBoundingClientRect().height).toBe(chartHeight);
       for (const [index, label] of labels.entries()) {
-        expect(card(label).element()).toBe(cards[index]);
-        expect(cards[index].querySelectorAll('.animate-pulse')).toHaveLength(1);
+        expect(card(label).element().getBoundingClientRect().height).toBe(cardHeights[index]);
+        expect(card(label).element().querySelectorAll('.animate-pulse')).toHaveLength(1);
       }
       await selectRange('Last 30 days');
       await expectCounts([4, 5, 6]);
@@ -288,7 +290,7 @@ describe('Automation performance date filter', () => {
     }
   });
 
-  it('shows one empty message in the list for all time, a period, and a status filter', async () => {
+  it('shows the empty message in the list for all time, a period, and a status filter', async () => {
     fakeAdminEndpoint('GET', endpoint, ({ url }) =>
       response(params(url).date_from ? '2024-03-04' : '2023-12-01', [0, 0, 0]),
     );
@@ -297,12 +299,18 @@ describe('Automation performance date filter', () => {
     const expectEmpty = async (message: string) => {
       await expect.element(runs().getByRole('status')).toHaveTextContent(message);
       await expect(page.getByText(message, { exact: true })).toHaveCount(1);
-      await expect.element(entries()).not.toHaveTextContent('No members match');
+      await expect.element(entries()).not.toHaveTextContent(message);
       await expectCounts([0, 0, 0]);
     };
-    await expectEmpty('No members match');
+    await expectEmpty('No members yet');
+    await expect
+      .element(runs().getByRole('status'))
+      .toHaveTextContent("Once someone starts your automation, they'll show here");
     await selectRange('Last 7 days');
     await expectEmpty('No members match');
+    await expect
+      .element(runs().getByRole('status'))
+      .toHaveTextContent('Try a different search or filter');
     await card('Completed').click();
     await expectEmpty('No members match');
     await card('Completed').click();

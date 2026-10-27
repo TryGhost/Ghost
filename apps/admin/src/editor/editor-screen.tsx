@@ -51,6 +51,7 @@ import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
+import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
@@ -72,6 +73,8 @@ import {
 import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
+import { useSettingsShortcut } from './use-editor-shortcuts';
+import { useSettingsOpen } from './use-settings-open';
 import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
 
@@ -106,22 +109,23 @@ function EditorHeader({
       className="grid-cols-[auto_minmax(0,1fr)_auto] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] max-[500px]:pt-3 max-[500px]:pr-[calc(var(--spacing)*(1+2*var(--editor-settings-progress,0))-1px)] max-[500px]:pl-3 [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
+      {/* The back link shows its arrow alone, its destination named only to assistive tech. */}
       <PageHeader.Action
         className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
-        fallbackSize="sm"
+        fallbackSize="icon-sm"
         fallbackVariant="ghost"
         label={backLabel}
+        tooltip={false}
         asChild
+        iconOnly
       >
         {analyticsReturn ? (
           <AdminLink to={analyticsReturn}>
             <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
           </AdminLink>
         ) : (
           <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
             <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
           </AdminLink>
         )}
       </PageHeader.Action>
@@ -219,9 +223,10 @@ function EditorContent({
     postType === 'post' &&
     (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
     statusRecord.emailStatus === 'failed';
-  // Closed on every editor entry, as the menu it replaces was.
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsPresent, setSettingsPresent] = useState(false);
+  // The panel opens as the writer last left it; restored open, it is in place from the first paint.
+  const settingsMemory = useSettingsOpen();
+  const [settingsOpen, setSettingsOpen] = useState(settingsMemory.openAtStart);
+  const [settingsPresent, setSettingsPresent] = useState(settingsMemory.openAtStart);
   const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   // From a toggle until everything moving with the panel has arrived. Meanwhile
   // the editor sizes Koenig's breakout cards from the moving layout.
@@ -302,14 +307,35 @@ function EditorContent({
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
-  const toggleSettings = useCallback(() => {
-    settingsToggleRef.current?.focus();
+  const { toggled: settingsToggled } = settingsMemory;
+  const flipSettings = useCallback(() => {
     // A manual toggle ends the reveal, so reopening starts on the section list.
     setSettingsReveal(null);
     setSettingsMoving(true);
     setSettingsPresent(true);
+    // Only the writer's own toggle is remembered, never a reveal's open.
+    settingsToggled(!settingsOpen);
     setSettingsOpen((open) => !open);
-  }, []);
+  }, [settingsOpen, settingsToggled]);
+  const toggleSettings = useCallback(() => {
+    settingsToggleRef.current?.focus();
+    flipSettings();
+  }, [flipSettings]);
+  // The shortcut leaves focus where the writer is typing, unless closing the
+  // panel would take it away: then it lands on the toggle, as a click does.
+  useSettingsShortcut(
+    useCallback(() => {
+      // A modal dialog hides the editor from assistive technology while it is open.
+      if (shellRef.current?.closest('[aria-hidden="true"]')) {
+        return;
+      }
+      if (settingsOpen && settingsFrameRef.current?.contains(document.activeElement)) {
+        settingsToggleRef.current?.focus();
+      }
+      flipSettings();
+    }, [flipSettings, settingsOpen]),
+    openFlow === 'none',
+  );
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
   const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
@@ -341,13 +367,10 @@ function EditorContent({
   }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const writingAreaRef = useRef<HTMLDivElement>(null);
-  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  // The chrome stays while the settings panel is out or the status line reports
+  const editorFont = useEditorFont();
+  // The chrome stays while the settings panel is out, or the status line reports
   // a failed save or a failed newsletter.
   const writingFocus = useWritingFocus({
-    enabled: editorImprovements,
     blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
     writingAreaRef,
   });
@@ -429,43 +452,48 @@ function EditorContent({
               'screen-exit-chrome-top pointer-events-none relative z-20 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
-            data-writing-focus={writingFocus}
           >
+            {/* The back link stays while the writer types, so the way out is always in view. */}
             <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
-                <EditorStatus
-                  isDirty={session.isDirty()}
-                  pendingSave={session.pendingSave}
-                  record={statusRecord}
-                  state={session.state}
-                  onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                  onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-                  onRetrySave={session.retrySave}
-                />
+                <Box className="min-w-0" data-writing-focus={writingFocus}>
+                  <EditorStatus
+                    isDirty={session.isDirty()}
+                    pendingSave={session.pendingSave}
+                    record={statusRecord}
+                    state={session.state}
+                    onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                    onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                    onRetrySave={session.retrySave}
+                  />
+                </Box>
               ) : null}
-              <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                <EditorHeaderActions
-                  bottomBar={bottomBar}
-                  currentUser={currentUser}
-                  offersEmailRetry={offersEmailRetry}
-                  openFlow={openFlow}
-                  post={publishPost}
-                  postType={postType}
-                  revealInvalidField={revealInvalidField}
-                  session={session}
-                  siteUrl={cardConfig.siteUrl}
-                  tkCount={tkCount}
-                  onOpenFlow={setOpenFlow}
-                />
-                <Box
-                  aria-hidden="true"
-                  className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
-                />
-              </PageHeader.ActionGroup>
+              <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
+                <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
+                  <EditorHeaderActions
+                    bottomBar={bottomBar}
+                    currentUser={currentUser}
+                    offersEmailRetry={offersEmailRetry}
+                    openFlow={openFlow}
+                    post={publishPost}
+                    postType={postType}
+                    revealInvalidField={revealInvalidField}
+                    session={session}
+                    siteUrl={cardConfig.siteUrl}
+                    tkCount={tkCount}
+                    onOpenFlow={setOpenFlow}
+                  />
+                  <Box
+                    aria-hidden="true"
+                    className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
+                  />
+                </PageHeader.ActionGroup>
+              </Box>
             </EditorHeader>
           </Box>
-          {/* The document reaches up behind the floating header. */}
-          <Box ref={writingAreaRef} className="relative min-h-0 flex-1">
+          {/* The document reaches up behind the floating header. Isolated so a
+              selected card's z-index stays inside it, beneath the header. */}
+          <Box ref={writingAreaRef} className="relative isolate min-h-0 flex-1">
             <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
               <PostEditor
                 key={session.contentKey}
@@ -475,6 +503,7 @@ function EditorContent({
                 cardConfig={currentCardConfig}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
+                font={editorFont.font}
                 handleRef={postEditorRef}
                 postType={postType}
                 settingsMoving={settingsMoving}
@@ -504,9 +533,11 @@ function EditorContent({
           <PostSettingsSidebar
             cardConfig={currentCardConfig}
             currentUser={currentUser}
+            editorFont={editorFont}
             featureImage={featureImage.featureImage}
             frameRef={settingsFrameRef}
             hasInlineExcerpt={showExcerpt}
+            opensInPlace={settingsMemory.restored}
             postType={postType}
             reveal={settingsReveal}
             session={session}

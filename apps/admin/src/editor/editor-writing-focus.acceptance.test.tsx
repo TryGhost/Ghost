@@ -34,22 +34,18 @@ function writingFocusOf(control: Locator) {
 
 function chrome() {
   return [
-    editorScreen.backLink('post'),
+    editorScreen.status(),
     editorScreen.publishButton(),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
-    editorScreen.helpLink(),
     editorScreen.featureImageInput(),
   ];
 }
 
-describe('Writing focus (admin7EditorImprovements)', () => {
+describe('Writing focus', () => {
   it('hides the chrome while the writer types and shows it again when the mouse moves', async () => {
     fakeDraft();
-    await renderAdminApp('/editor/post/abc123', {
-      ...withoutAutosave(),
-      labs: { admin7EditorImprovements: true },
-    });
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     for (const control of chrome()) {
       expect(writingFocusOf(control)).toBe('shown');
@@ -58,20 +54,20 @@ describe('Writing focus (admin7EditorImprovements)', () => {
     await userEvent.click(editorScreen.body());
     await userEvent.keyboard('More');
     await expect.poll(() => chrome().map(writingFocusOf)).toEqual(chrome().map(() => 'hidden'));
+    // The way out stays in view, and takes the pointer.
+    expect(writingFocusOf(editorScreen.backLink('post'))).toBeUndefined();
+    expect(getComputedStyle(editorScreen.backLink('post').element()).pointerEvents).not.toBe(
+      'none',
+    );
 
-    // The first move marks where the pointer is; the next one travels from there.
+    // The pointer travels from where it was, even in a single jump.
     await userEvent.hover(editorScreen.titleInput());
-    expect(writingFocusOf(editorScreen.settingsToggle())).toBe('hidden');
-    await userEvent.hover(editorScreen.body());
     await expect.poll(() => chrome().map(writingFocusOf)).toEqual(chrome().map(() => 'shown'));
   });
 
   it('shows the chrome again when the writer scrolls with a wheel or trackpad', async () => {
     fakeDraft();
-    await renderAdminApp('/editor/post/abc123', {
-      ...withoutAutosave(),
-      labs: { admin7EditorImprovements: true },
-    });
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     await userEvent.click(editorScreen.body());
     await userEvent.keyboard('More');
@@ -84,10 +80,7 @@ describe('Writing focus (admin7EditorImprovements)', () => {
 
   it('keeps the chrome while the settings panel is open', async () => {
     fakeDraft();
-    await renderAdminApp('/editor/post/abc123', {
-      ...withoutAutosave(),
-      labs: { admin7EditorImprovements: true },
-    });
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
@@ -98,19 +91,5 @@ describe('Writing focus (admin7EditorImprovements)', () => {
     await expect.element(editorScreen.body()).toHaveTextContent(/More/);
     expect(writingFocusOf(editorScreen.settingsToggle())).toBe('shown');
     expect(writingFocusOf(editorScreen.wordCount())).toBe('shown');
-  });
-
-  it('leaves the chrome alone with the flag off', async () => {
-    fakeDraft();
-    await renderAdminApp('/editor/post/abc123', withoutAutosave());
-    await expect.element(editorScreen.body()).toBeVisible();
-
-    await userEvent.click(editorScreen.body());
-    await userEvent.keyboard('More');
-
-    await expect.element(editorScreen.body()).toHaveTextContent(/More/);
-    for (const control of chrome()) {
-      expect(writingFocusOf(control)).toBeUndefined();
-    }
   });
 });

@@ -24,20 +24,82 @@ Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 
 **Semantic tokens** are named by purpose — `--background`, `--text-primary`, `--border-default`, `--surface-elevated`. They flip between light and dark mode automatically. Reach for these by default.
 
-**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. They never change between modes. Use only when no semantic token fits (chart series, brand assets, illustrations).
+**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. Most keep their value in both modes; dark mode remaps the grey scale, but a raw shade still has no role, so it won't follow the job it does the way a semantic token does. Use only when no semantic token fits (chart series, brand assets, illustrations).
 
 ## Source files
 
-- `apps/shade/theme-variables.css` — semantic tokens + dark-mode overrides.
-- `apps/shade/tailwind.theme.css` — Tailwind `@theme` block: raw catalogue and bindings.
-- Semantic color variables should resolve directly to raw `--color-*` tokens, not to another semantic token. For example, prefer `--text-primary: var(--color-black)` over `--text-primary: var(--foreground)`.
+Shade defines its tokens in two stylesheets at the root of the package:
+
+- `theme-variables.css` holds every semantic token's value, with the `.dark` overrides.
+- `tailwind.theme.css` is the Tailwind `@theme` block: the raw `--color-*` catalogue, and the bindings that turn semantic tokens into utility names such as `bg-surface-elevated`.
+
+Apps read these files; they don't add to them. An app that needs a colour no semantic token covers uses a raw token, never a literal value or a colour variable of its own.
+
+Inside Shade, change a token's value in `theme-variables.css` and wire a new utility name or raw colour in `tailwind.theme.css`. Don't introduce ad-hoc CSS variables in component files. Build semantic color variables from raw `--color-*` tokens, for example `--text-primary: var(--color-black)` rather than `--text-primary: var(--foreground)`. Point one semantic token at another only as a deliberate alias, when the two must always match (like `--interactive-hover: var(--button-hover)` or `--control-surface: var(--surface-elevated)`). A token may combine raw tokens with `color-mix()` when it needs a blended or translucent value (like `--border-default`, or dark mode's `--tab-hover`), or use a literal colour when no raw token fits (like dark mode's `--background`).
+
+## Common semantic tokens
+
+| Use for                                                                                                         | Tailwind utility                                    | CSS variable                             |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
+| Page canvas                                                                                                     | `bg-background`                                     | `--background`                           |
+| One step above the page                                                                                         | `bg-surface-elevated`                               | `--surface-elevated`                     |
+| Floating menu on top of an elevated surface                                                                     | `bg-surface-elevated-2`                             | `--surface-elevated-2`                   |
+| Primary text                                                                                                    | `text-foreground`, or `Text tone="primary"`         | `--foreground`, `--text-primary`         |
+| Secondary, muted text                                                                                           | `text-muted-foreground`, or `Text tone="secondary"` | `--muted-foreground`, `--text-secondary` |
+| Default border: cards, banners, dividers (opaque)                                                               | `border-border-default`                             | `--border-default`                       |
+| Border of a floating surface: popover, dropdown, select (translucent in dark mode, usually with `/60` or `/30`) | `border-border`                                     | `--border`                               |
+| Form-control border: inputs, selects, outline buttons                                                           | `border-control-border`                             | `--control-border`                       |
+| Generic hover                                                                                                   | `bg-interactive-hover`                              | `--interactive-hover`                    |
+| Outline button hover                                                                                            | `bg-button-hover`                                   | `--button-hover`                         |
+| Tab and page menu hover, active                                                                                 | `bg-tab-hover`, `bg-tab-active`                     | `--tab-hover`, `--tab-active`            |
+| Table row hover                                                                                                 | `bg-table-row-hover`                                | `--table-row-hover`                      |
+| Destructive                                                                                                     | `bg-destructive`, `text-destructive`                | `--destructive`                          |
+| Focus ring                                                                                                      | `ring-focus-ring`, `border-focus-ring`              | `--focus-ring`                           |
+
+The sections below explain how to choose between the surface, hover and border tokens. `theme-variables.css` lists every semantic token; the raw colour catalogue is in `tailwind.theme.css`.
 
 ## Rules of consumption
 
 - Prefer Tailwind utilities — `bg-background`, `text-foreground`, `rounded-md` — over inline styles.
-- Never hard-code hex or `hsl()` values for UI chrome. They don't theme and don't dark-mode. Chart tokens are the current exception until the chart palette has its own raw scale.
-- Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions.
-- Don't write `dark:` variants for colour. The tokens do that. (Exceptions: assets like logos and illustrations.)
+- Never hard-code hex or `hsl()` values, or raw palette utilities such as `bg-gray-200` and `text-zinc-500`, for UI chrome. Dark mode remaps the raw grey scale, but a raw shade says nothing about its job, so it won't follow the role it plays (a border, a surface, muted text) the way a semantic token does. Chart tokens are the current exception until the chart palette has its own raw scale.
+- Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions: they already hold complete colours, so `hsl(var(--surface-elevated))` is an invalid colour.
+- Use the dedicated hover and active tokens below rather than an opacity modifier on a raw grey, such as `hover:bg-gray-900/30`.
+
+```tsx
+// Correct
+<div className="rounded-md border border-border-default bg-surface-elevated p-4">
+    <p className="text-foreground">Primary copy</p>
+    <p className="text-sm text-muted-foreground">Secondary copy</p>
+</div>
+
+// Incorrect
+<div className="border border-gray-200 bg-gray-50 dark:bg-gray-900">            // raw palette
+<div style={{backgroundColor: '#f9fafb', color: '#111'}}>                       // hex
+<div style={{background: 'hsl(var(--background))'}}>                            // wrapped variable
+<div className="hover:bg-gray-900/30">                                          // raw grey hover
+```
+
+```css
+/* Correct */
+.thing { background: var(--surface-elevated); }
+
+/* Incorrect: wraps a complete colour */
+.thing { background: hsl(var(--surface-elevated)); }
+```
+
+## Dark mode
+
+Semantic tokens carry both themes, so colour needs no `dark:` variants. A colour `dark:` variant means the wrong token was picked. Either it patches a raw palette utility (`bg-white dark:bg-gray-900`), or it repeats a semantic token (`bg-surface-elevated dark:bg-surface-elevated`), which adds a duplicate rule and suggests dark mode is special-cased when it isn't.
+
+To fix one:
+
+1. Identify what the class describes: a surface, text, a border or a hover state.
+2. Pick the matching semantic token from the tables on this page.
+3. Drop both the light class and its `dark:` variant; the token handles both modes.
+
+Use `dark:` only for assets that genuinely differ in dark mode and can't be expressed as a token: logos and brand marks, illustrations and SVG art, screenshots and other imagery. A narrow `dark:` opacity modifier on an existing token is acceptable when no token covers it. Two examples: `dark:aria-[invalid=true]:ring-destructive/40` in the `inputSurface` recipe, which only applies to invalid fields, and `dark:border-border/30` on the dropdown surfaces described below. Inside Shade, first check whether a new token belongs in `theme-variables.css`.
+
+When something looks wrong only in dark mode, the fix is almost always a different token, not an added `dark:` variant.
 
 ## Surface elevation
 
@@ -55,12 +117,13 @@ In light mode all three flatten to near-white, so borders and shadows carry the 
 
 Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.
 
-| Token                          | Use for                                                                                                                               |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `--interactive-hover`          | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all.                                                  |
-| `--button-hover`               | Outline / dropdown `Button` hover. Currently aliased to `--interactive-hover`; kept separate so the button surface can diverge later. |
-| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark).                                       |
-| `--table-row-hover`            | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell).            |
+| Token                          | Use for                                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `--interactive-hover`          | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all.                                       |
+| `--button-hover`               | Outline / dropdown `Button` hover. `--interactive-hover` currently points at this token, so changing it changes both.      |
+| `--button-ghost-hover`         | Ghost `Button` hover (Admin 7). Translucent in light mode so it stays visible on tinted surfaces like hovered list rows.   |
+| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark).                            |
+| `--table-row-hover`            | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell). |
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
@@ -70,6 +133,6 @@ Inputs, textareas, outline `Button`s, dropdown triggers, and the `inputSurface` 
 
 ## Dropdown surface contract
 
-`DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. Treat them as one component for any surface decision — change all three together.
+`DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. The one exception is a `DropdownMenu` submenu, which uses `shadow-lg` so it stands apart from the menu it overlaps. Treat them as one component for any surface decision — change all three together.
 
 </div>

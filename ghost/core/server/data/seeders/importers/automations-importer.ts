@@ -5,14 +5,16 @@ import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';
 import { blogStartDate } from '../utils/blog-info';
 import { toDatabaseDate } from '../../../lib/db-types/date';
+import type { AutomationStatus } from '../../../services/automations/automations-repository';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../services/member-welcome-emails/constants';
 
 type Automation = {
   id: string;
-  status: 'active' | 'inactive';
+  status: AutomationStatus;
   name: string;
   slug: string;
   description: string;
+  trigger_type: 'membership_started';
   trigger_tier_scope: 'free' | 'all_paid';
   created_at: string;
   updated_at: string;
@@ -61,6 +63,7 @@ export class AutomationsImporter extends TableImporter<Automation> {
       name,
       description: defaultAutomation?.description ?? '',
       slug,
+      trigger_type: 'membership_started',
       trigger_tier_scope: defaultAutomation?.trigger_tier_scope ?? 'all_paid',
       created_at: toDatabaseDate(createdAt),
       updated_at: toDatabaseDate(createdAt),

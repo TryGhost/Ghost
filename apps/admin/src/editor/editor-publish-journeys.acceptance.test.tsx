@@ -494,12 +494,15 @@ describe('Editor publish journeys', () => {
       .poll(() => emailPreviewApi.lastRequest?.url)
       .toContain('newsletter=monthly-roundup');
 
-    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    // A preview opened from the header, outside the flow, starts on the newsletter
+    // the draft remembers from the flow.
     await previewScreen.closeButton().click();
     await expect(publishScreen.root()).toHaveCount(0);
     await editorScreen.previewButton().click();
-    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
-    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
   });
 
   it('previews the publish flow’s newsletter over one picked in an earlier preview', async () => {

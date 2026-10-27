@@ -82,7 +82,8 @@ export type MetafieldVerb = keyof typeof COMMANDS;
 // A change to one field always passes its `primary_name` so the log reads as a human
 // label, not a bare key — this is what keeps the timeline legible after a hard delete,
 // when the row itself is gone. `key` rides alongside it because the key is how a field
-// is addressed publicly — its id never leaves the API.
+// is addressed publicly — its id never leaves the API. The namespace goes unrecorded:
+// staff only ever change fields in `custom`.
 //
 // A reorder names no field: it carries the count and the word the feed reads it by.
 export type MetafieldActionDetails =

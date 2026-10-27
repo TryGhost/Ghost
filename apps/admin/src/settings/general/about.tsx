@@ -1,4 +1,5 @@
-import { GhostLogo, Separator } from '@tryghost/shade/components';
+import GhostUpdates from './ghost-updates/ghost-updates';
+import { GhostLogo, Link, Separator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { SettingsModal } from '@tryghost/shade/patterns';
@@ -15,9 +16,9 @@ function VersionLink({ label, version }: { label: string; version: string }) {
     <div>
       <strong>{label}:</strong>{' '}
       {link ? (
-        <a className="text-green" href={link} rel="noopener noreferrer" target="_blank">
+        <Link href={link} external>
           {version}
-        </a>
+        </Link>
       ) : (
         version
       )}
@@ -68,7 +69,7 @@ function AboutModal() {
         <GhostLogo className="h-auto w-[120px] dark:invert" />
         <div className="mt-3 flex flex-col gap-1.5">
           {upgradeStatus?.message && (
-            <div className="gh-prose-links mb-4 rounded-sm border border-green p-5">
+            <div className="mb-4 rounded-sm border border-green p-5 [&_a]:text-foreground [&_a]:underline [&_a]:decoration-border-strong [&_a]:underline-offset-4">
               <strong>Update available!</strong>
               <div dangerouslySetInnerHTML={{ __html: upgradeStatus.message }} />
             </div>
@@ -103,17 +104,14 @@ function AboutModal() {
           {showSystemInfo() && showDatabaseWarning(config.environment, config.database) && (
             <div className="text-red-500 dark:text-red-400">
               You are running an unsupported database in production. Please{' '}
-              <a
-                href="https://docs.ghost.org/faq/supported-databases/"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <Link href="https://docs.ghost.org/faq/supported-databases/" external>
                 upgrade to MySQL 8
-              </a>
+              </Link>
               .
             </div>
           )}
         </div>
+        <GhostUpdates />
         <Separator />
         <div className="flex flex-col gap-1.5">
           <a
@@ -144,32 +142,17 @@ function AboutModal() {
         <Separator />
         <p className="max-w-[460px] text-sm">
           Copyright © 2013 &ndash; {copyrightYear()} Ghost Foundation, released under the{' '}
-          <a
-            className="text-green"
-            href="https://github.com/TryGhost/Ghost/blob/main/LICENSE"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://github.com/TryGhost/Ghost/blob/main/LICENSE" external>
             MIT license
-          </a>
+          </Link>
           .{' '}
-          <a
-            className="text-green"
-            href="https://ghost.org/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://ghost.org/" external>
             Ghost
-          </a>{' '}
+          </Link>{' '}
           is a registered trademark of{' '}
-          <a
-            className="text-green"
-            href="https://ghost.org/trademark/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://ghost.org/trademark/" external>
             Ghost Foundation Ltd
-          </a>
+          </Link>
           .
         </p>
       </div>

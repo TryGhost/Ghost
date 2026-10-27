@@ -13,7 +13,8 @@ describe('Automations list', () => {
     await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.heading()).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Last started')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No automations yet' })).toBeVisible();
+    await expect.element(page.getByText('Automations you create will show up here.')).toBeVisible();
   });
 
   it('lists the welcome automations', async () => {
@@ -86,7 +87,7 @@ describe('Automations list', () => {
     ]);
 
     await renderAdminApp('/automations', {
-      labs: { automations: true, automationsPerTier: true },
+      labs: { automations: true },
     });
     const filter = () => page.getByRole('combobox', { name: 'Automations to show' });
 

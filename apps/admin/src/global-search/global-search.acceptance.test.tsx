@@ -5,16 +5,19 @@ import {
   allowUnhandledRequests,
   configResponse,
   currentRoute,
+  currentUserResponse,
   fakeAdminEndpoint,
   fakeSettingsScreens,
   fakeTags,
   newsletter,
   renderAdminApp,
+  staffRole,
   type RenderAdminAppOptions,
   tag,
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 
+import { installation, labs, manifest } from '@/apps/apps.test-utils';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -454,5 +457,63 @@ describe('Cmd-K search', () => {
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
     await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
     expect(globalSearchScreen.dispatchShortcut()).toBe(false);
+  });
+});
+
+describe('Apps search', () => {
+  const SUSPENDED_MANIFEST_URL = 'https://second.example.com/ghost-app.json';
+  let installations: ReturnType<typeof fakeAdminEndpoint>;
+
+  beforeEach(() => {
+    fakeTags([]);
+    fakeSearchIndex();
+    installations = fakeAdminEndpoint('GET', '/apps/installations/', {
+      app_installations: [
+        installation(),
+        installation({
+          id: 'installation-2',
+          status: 'suspended',
+          manifest_url: SUSPENDED_MANIFEST_URL,
+          manifest: manifest({ name: 'Second app' }),
+        }),
+      ],
+    });
+  });
+
+  it('opens an installed app’s page from the Apps group', async () => {
+    // the app page owns its frame's requests
+    allowUnhandledRequests();
+    await renderAdminApp('/tags', { labs });
+    await openAndSearch('podcast');
+
+    await expect.element(globalSearchScreen.group('Apps')).toBeVisible();
+    await expect(globalSearchScreen.option(/Second app/)).toHaveCount(0);
+    await globalSearchScreen.option(/Podcast/).click();
+
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
+  });
+
+  it('opens a suspended app’s review rather than its page', async () => {
+    // the review fetches the app's latest manifest
+    allowUnhandledRequests();
+    await renderAdminApp('/tags', { labs });
+    await openAndSearch('second');
+
+    await globalSearchScreen.option(/Second app/).click();
+
+    await expect
+      .poll(currentRoute)
+      .toBe(`/apps/install?manifest=${encodeURIComponent(SUSPENDED_MANIFEST_URL)}`);
+  });
+
+  it('leaves Apps out, without loading them, for staff who can’t manage apps', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    await renderAdminApp('/tags', { labs, boot: { browseMe: { response: me } } });
+    await openAndSearch('first');
+
+    await expect.element(globalSearchScreen.option(/First tag/)).toBeVisible();
+    await expect(globalSearchScreen.group('Apps')).toHaveCount(0);
+    expect(installations.requests).toHaveLength(0);
   });
 });

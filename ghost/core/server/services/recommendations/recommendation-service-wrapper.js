@@ -24,6 +24,11 @@ class RecommendationServiceWrapper {
   controller;
 
   /**
+   * @type {import('./service').WellknownController}
+   */
+  wellknownController;
+
+  /**
    * @type {import('./service').RecommendationService}
    */
   service;
@@ -39,16 +44,11 @@ class RecommendationServiceWrapper {
   incomingRecommendationService;
 
   init() {
-    const config = require('../../../shared/config');
-    if (config.get('services:recommendations:enabled') === false) {
-      logging.info('[Recommendations] Service is disabled via config');
-      return;
-    }
-
     if (this.repository) {
       return;
     }
 
+    const config = require('../../../shared/config');
     const urlUtils = require('../../../shared/url-utils').default;
     const models = require('../../models');
     const sentry = require('../../../shared/sentry');
@@ -60,6 +60,7 @@ class RecommendationServiceWrapper {
       RecommendationService,
       RecommendationController,
       WellknownService,
+      WellknownController,
       BookshelfClickEventRepository,
       IncomingRecommendationController,
       IncomingRecommendationService,
@@ -70,14 +71,13 @@ class RecommendationServiceWrapper {
     const mentions = require('../mentions');
 
     if (!mentions.sendingService || !mentions.api) {
-      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
       throw new Error(
         'MentionSendingService not intialized, but this is a dependency of RecommendationServiceWrapper. Check boot order.',
       );
     }
 
     const wellknownService = new WellknownService({
-      dir: config.getContentPath('public'),
       urlUtils,
     });
 
@@ -151,12 +151,20 @@ class RecommendationServiceWrapper {
       service: this.service,
     });
 
+    this.wellknownController = new WellknownController({
+      service: this.service,
+    });
+
     this.incomingRecommendationController = new IncomingRecommendationController({
       service: this.incomingRecommendationService,
     });
 
-    this.service.init().catch(logging.error);
-    this.incomingRecommendationService.init().catch(logging.error);
+    if (config.get('services:recommendations:enabled') === false) {
+      logging.info('[Recommendations] Background refreshes are disabled via config');
+    } else {
+      this.service.init().catch(logging.error);
+      this.incomingRecommendationService.init().catch(logging.error);
+    }
 
     const PATH_SUFFIX = '/.well-known/recommendations.json';
 

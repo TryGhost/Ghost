@@ -3,12 +3,19 @@ import {
   FIELD_TYPE_IDS,
   type MemberAccess,
   partTypesOf,
-  subFieldsOf,
+  partsOf,
   type FieldKind,
   type FieldType,
   type PartType,
   type PartsOf,
 } from '@tryghost/metafield-types';
+import { z } from 'zod';
+import {
+  IdentityTextSchema,
+  type Key,
+  type Namespace,
+  type Part,
+} from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 import { countryName } from '../utils/countries';
@@ -16,7 +23,6 @@ import { countryName } from '../utils/countries';
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
 export { isMetafieldColumn } from '@tryghost/metafield-csv';
-export type { FieldIdentity, FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 // Re-exported so admin apps can type address values and validate against the
 // same schemas the server enforces, without a direct dependency on the shared
@@ -27,11 +33,11 @@ export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/metafield-ty
 export type { FieldKind as MemberCustomFieldKind } from '@tryghost/metafield-types';
 
 export type MemberCustomField = {
-  namespace: string;
+  namespace: Namespace;
   // The Admin API never serializes a database id for these records, so there is no `id` to
   // key off. A field is addressed by its namespace and key, and neither is reissued once
   // minted.
-  key: string;
+  key: Key;
   name: string;
   // The same field-type enum the backend validates against, so admin and
   // server never drift on the set.
@@ -43,6 +49,16 @@ export type MemberCustomField = {
   created_at: string;
   updated_at: string | null;
 };
+
+/**
+ * A field's identity as text, or the identity of one part of its value when parts are given.
+ * Written by the shared codec, so every identity Admin keys or compares by is spelled the way
+ * the server spells it.
+ */
+export const memberCustomFieldIdentity = (
+  field: Pick<MemberCustomField, 'namespace' | 'key'>,
+  parts: Part[] = [],
+): string => z.encode(IdentityTextSchema, { namespace: field.namespace, key: field.key, parts });
 
 // The levels themselves are the shared vocabulary; what a publisher is told they mean
 // is presentation, and stays below.
@@ -112,8 +128,8 @@ export type FieldTypePresentation<T extends FieldType> = {
   label: string;
   input: MemberCustomFieldUserType['input'];
 } & ([PartsOf<T>] extends [never]
-  ? { subFields?: never }
-  : { subFields: Record<PartsOf<T>, string> });
+  ? { partLabels?: never }
+  : { partLabels: Record<PartsOf<T>, string> });
 
 // Presentation for every field type in the shared catalog. The mapped type keeps this
 // exhaustive: adding a field type upstream fails to compile here until it has one.
@@ -123,7 +139,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
   address: {
     label: 'Address',
     input: 'address',
-    subFields: {
+    partLabels: {
       line1: 'Address line 1',
       line2: 'Address line 2',
       city: 'City',
@@ -142,7 +158,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
  * reaches it: `FieldTypePresentation` refuses to compile a catalog missing one.
  */
 const partLabelsFor = (type: FieldType): Record<string, string> => {
-  const labels: Record<string, string> | undefined = fieldTypePresentation[type]?.subFields;
+  const labels: Record<string, string> | undefined = fieldTypePresentation[type]?.partLabels;
   return labels ?? {};
 };
 
@@ -185,7 +201,7 @@ export type MemberCustomFieldCsvColumn = {
 
 /**
  * The CSV import mapping targets for a set of custom fields: one per column the export
- * writes, labeled for the field (and sub-field, for a composite). Column names come from
+ * writes, labeled for the field (and part, for a composite). Column names come from
  * the shared codec the exporter writes and the importer reads, so a target is exactly a
  * round-tripping column rather than one hand-kept in sync.
  */
@@ -194,18 +210,16 @@ export const memberCustomFieldCsvColumns = (
 ): MemberCustomFieldCsvColumn[] => {
   return fields.flatMap((field) => {
     const labels = partLabelsFor(field.type);
-    return csvColumnsForField({ namespace: field.namespace, key: field.key, type: field.type }).map(
-      ({ column, subField }) => {
-        const partLabel = subField === null ? undefined : labels[subField];
-        return {
-          value: column,
-          fieldName: field.name,
-          ...(partLabel === undefined ? {} : { partLabel }),
-          label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
-          type: field.type,
-        };
-      },
-    );
+    return csvColumnsForField(field).map(({ column, part }) => {
+      const partLabel = part === null ? undefined : labels[part];
+      return {
+        value: column,
+        fieldName: field.name,
+        ...(partLabel === undefined ? {} : { partLabel }),
+        label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
+        type: field.type,
+      };
+    });
   });
 };
 
@@ -227,7 +241,7 @@ export type MemberCustomFieldPart<T extends FieldType = FieldType> = {
 export const memberCustomFieldParts = <T extends FieldType>(
   type: T,
 ): MemberCustomFieldPart<T>[] | null => {
-  const partKeys = subFieldsOf(type);
+  const partKeys = partsOf(type);
   const partTypes = partTypesOf(type);
   if (!partKeys || !partTypes) {
     return null;
@@ -275,7 +289,7 @@ const fusedParts: CompositePartRuns = {
  * reordering a type upstream costs a comma rather than a wrong sentence.
  */
 function partRunsFor(type: FieldType): string[][] {
-  const parts: string[] | null = subFieldsOf(type);
+  const parts: string[] | null = partsOf(type);
   if (!parts) {
     return [];
   }
@@ -318,7 +332,7 @@ const partRuns = Object.fromEntries(
 export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): string => {
   // Null for a scalar, and for a type this build has never heard of — both of which read
   // as text or as nothing.
-  if (subFieldsOf(type) === null) {
+  if (partsOf(type) === null) {
     return typeof value === 'string' ? value : '';
   }
 

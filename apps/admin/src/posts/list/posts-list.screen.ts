@@ -126,6 +126,7 @@ export const postsListScreen = {
   filterValueOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   /** A field in the add-filter popover, which renders into a portal. */
   filterFieldOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
+  filterSearchInput: () => page.getByRole('dialog').getByRole('combobox'),
   sortButton: () => page.getByTestId(postsSort),
   /** Select options, so the active sort is announced and visibly checked. */
   sortOption: (label: string) => page.getByRole('option', { name: label, exact: true }),

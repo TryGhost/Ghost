@@ -16,7 +16,7 @@ name: Publish Packages
 #     assumes the version was already bumped (by a release consuming a changeset,
 #     or manually), since it only publishes versions missing from npm.
 #
-# scripts/publish-packages.js asks npm what already exists and publishes only
+# tools/scripts/release/publish-packages.ts asks npm what already exists and publishes only
 # the gaps, so every trigger is idempotent.
 
 on:
@@ -40,7 +40,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: 22.23.3
+  NODE_VERSION: 22.23.4
 
 jobs:
   publish:
@@ -86,7 +86,7 @@ jobs:
           # Read-only, for the compare API call that asserts GITHUB_SHA is on
           # main — the replacement for pnpm's own (unusable here) branch check.
           GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/publish-packages.js
+        run: node tools/scripts/release/publish-packages.ts
 
   # Alert on-call if a publish fails. This publish used to be a job inside
   # ci.yml, covered by its notify_release_failure job; as its own workflow it

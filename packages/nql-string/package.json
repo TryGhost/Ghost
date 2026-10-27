@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/nql-string",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "license": "MIT",
   "author": "Ghost Foundation",

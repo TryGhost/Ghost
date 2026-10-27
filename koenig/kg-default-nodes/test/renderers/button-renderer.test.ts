@@ -20,21 +20,21 @@ describe('renderers/button-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-button-card kg-align-center">
                     <a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a>
                 </div>
             `);
         });
 
-        it('renders default button text with a missing buttonText', function () {
+        it('renders default button text with a missing buttonText', async function () {
             const result = renderForWeb(getTestData({buttonText: ''}));
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-button-card kg-align-center">
                     <a href="http://blog.com/post1" class="kg-btn kg-btn-accent">Button Title</a>
                 </div>
@@ -48,10 +48,10 @@ describe('renderers/button-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData(), {feature: {}});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>
@@ -73,9 +73,9 @@ describe('renderers/button-renderer', function () {
         });
 
         // TODO: This is a bug in the email renderer, it should render the default button text
-        it('renders default button text with a missing buttonText', function () {
+        it('renders default button text with a missing buttonText', async function () {
             const result = renderForEmail(getTestData({buttonText: ''}));
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>

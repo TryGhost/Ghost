@@ -17,7 +17,7 @@ const messages = {
   reason: ' Reason: {reason}.',
   messageSent: 'Message sent. Double check inbox and spam folder!',
 };
-const emailAddressParser = require('../../services/email-address/email-address-parser');
+const { formatAddressForDelivery } = require('./format-address-for-delivery');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 const MAX_MAILGUN_TAGS = 10;
 
@@ -54,8 +54,8 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
   }
 
   return {
-    from: emailAddressParser.stringify(addresses.from),
-    replyTo: addresses.replyTo ? emailAddressParser.stringify(addresses.replyTo) : null,
+    from: formatAddressForDelivery(addresses.from),
+    replyTo: addresses.replyTo ? formatAddressForDelivery(addresses.replyTo) : null,
   };
 }
 

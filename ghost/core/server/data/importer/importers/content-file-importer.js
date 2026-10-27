@@ -153,7 +153,7 @@ class ContentFileImporter {
       } catch (rollbackFailure) {
         // AggregateError is the native error for preserving both storage failures;
         // it is not a GhostError and therefore does not accept an options object.
-        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+        // oxlint-disable-next-line ghost/ghost-custom/ghost-error-usage
         throw new AggregateError(
           [failure.reason, rollbackFailure],
           'Asset storage failed and rollback was incomplete.',

@@ -1,6 +1,13 @@
 {
   "url": "http://127.0.0.1:2369",
   "createInDevelopmentTables": true,
+  "services": {
+    "jobs": {
+      "outbox": {
+        "enabled": true
+      }
+    }
+  },
   "database": {
     "client": "better-sqlite3",
     "connection": {

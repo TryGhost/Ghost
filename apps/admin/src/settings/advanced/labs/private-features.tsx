@@ -20,19 +20,9 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
-    title: 'Archive automations',
-    description: 'Let members archive and restore automations.',
-    flag: 'automationsArchive',
-  },
-  {
-    title: 'Automations per tier',
-    description: 'Allow automations to be configured for individual tiers.',
-    flag: 'automationsPerTier',
-  },
-  {
-    title: 'Automation run analytics',
-    description: 'Track run-level analytics for automations.',
-    flag: 'automationRunAnalytics',
+    title: 'Automations lifecycle triggers',
+    description: 'Triggers for upgrades and downgrades.',
+    flag: 'automationsLifecycleTriggers',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -59,12 +49,6 @@ const features: Feature[] = [
     description:
       'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
     flag: 'admin7CustomizeFromViewSite',
-  },
-  {
-    title: 'Admin 7 · Editor improvements',
-    description:
-      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
-    flag: 'admin7EditorImprovements',
   },
   {
     title: 'Email Unique ID',
@@ -102,12 +86,6 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
-    title: 'Stripe checkout design',
-    description:
-      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
-    flag: 'stripeCheckoutDesign',
-  },
-  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -117,12 +95,6 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
-  },
-  {
-    title: 'Navigation URL suggestions',
-    description:
-      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
-    flag: 'navigationUrlSuggestions',
   },
   {
     title: 'Apps',

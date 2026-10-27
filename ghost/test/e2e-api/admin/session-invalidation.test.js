@@ -153,7 +153,7 @@ describe('Session invalidation on password change', function () {
       expires: moment().add(1, 'days').valueOf(),
       email: ownerFixture.email,
       dbHash,
-      password: user.get('password'),
+      passwordHash: user.get('password'),
     });
     const encodedToken = security.url.encodeBase64(resetToken);
     const newPassword = 'Sl1m3rson99-reset!';

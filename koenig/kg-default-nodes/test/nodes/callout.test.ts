@@ -15,11 +15,10 @@ describe('CalloutNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -116,11 +115,11 @@ describe('CalloutNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('can render to HTML', editorTest(function () {
+        it('can render to HTML', editorTest(async function () {
             const node = $createCalloutNode(dataset);
             const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            assertPrettifiesTo(element.outerHTML, html`
+            await assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">

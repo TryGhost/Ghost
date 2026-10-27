@@ -376,6 +376,20 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(billingScreen.frame()).not.toBeVisible();
   });
 
+  it('opens automations directly from a billing requirement', async () => {
+    // The automations app owns its request graph; this spec asserts the handoff.
+    allowUnhandledRequests();
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro', { labs: { automations: true } });
+    await expect.element(billingScreen.frame()).toBeVisible();
+
+    await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: 'automations' });
+
+    await expect.poll(currentRoute).toBe('/automations');
+    await expect.element(billingScreen.frame()).not.toBeVisible();
+  });
+
   it('returns to the page a payment started from', async () => {
     window.sessionStorage.setItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY, '/tags');
     fakeTags([]);

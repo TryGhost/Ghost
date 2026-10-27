@@ -44,8 +44,9 @@ class EmailContentGenerator {
     const htmlContent = compiled(data);
 
     // lazyload the lib, and generate a plain-text version of the same email
-    const htmlToText = require('html-to-text');
-    const textContent = htmlToText.fromString(htmlContent);
+    const { convert } = require('html-to-text');
+    // Trim the non-breaking spaces from the templates' spacer cells
+    const textContent = convert(htmlContent).trim();
 
     return {
       html: htmlContent,

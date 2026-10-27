@@ -9,21 +9,15 @@ describe('Unit: models/automation', function () {
   });
 
   describe('defaults', function () {
-    it('sets default status to inactive', function () {
-      const model = new Automation();
-      const defaults = model.defaults();
-
-      assert.equal(defaults.status, 'inactive');
-    });
-
     it('returns expected default values', function () {
       const model = new Automation();
       const defaults = model.defaults();
 
       assert.ok(defaults);
-      assert.equal(Object.keys(defaults).length, 2);
+      assert.equal(Object.keys(defaults).length, 3);
       assert.equal(defaults.status, 'inactive');
       assert.equal(defaults.description, '');
+      assert.equal(defaults.trigger_type, 'membership_started');
     });
   });
 

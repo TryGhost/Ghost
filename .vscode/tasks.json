@@ -14,8 +14,8 @@
     {
       "label": "Ghost: Reset data (empty)",
       "type": "shell",
-      "command": "node ../scripts/with-ghost-dev-env.ts node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
-      "options": { "cwd": "${workspaceFolder}/ghost" },
+      "command": "pnpm gx data generate --clear-database --quantities members:0,posts:0 --seed 123",
+      "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []
     }
   ]

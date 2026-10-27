@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
   isAuthorOrContributor,
@@ -22,6 +22,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
+  settingsEditorHelpRow,
   settingsExcerptInput,
   settingsFeaturedToggle,
 } from '@tryghost/test-data/selectors/editor';
@@ -35,7 +36,11 @@ import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
 import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
-import { MetaDataSection } from './meta-data-section';
+import { SettingsLinkRow } from './settings-navigation-row';
+import { EDITOR_HELP_URL } from '@/editor/editor-help';
+import { MetaDataTabsSection } from './meta-data-tabs-section';
+import { EditorFontSection } from './editor-font-section';
+import type { EditorFontControl } from '@/editor/use-editor-font';
 import { PostHistorySection } from './post-history-section';
 import { focusSettingsField } from './focus-settings-field';
 import {
@@ -47,8 +52,6 @@ import {
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
-import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
-import { SocialCardSection } from './social-card-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
@@ -58,11 +61,10 @@ const MemoAuthorsSection = memo(AuthorsSection);
 const MemoCodeInjectionSection = memo(CodeInjectionSection);
 const MemoDeleteSection = memo(DeleteSection);
 const MemoKeyboardShortcutsSection = memo(KeyboardShortcutsSection);
-const MemoMetaDataSection = memo(MetaDataSection);
+const MemoMetaDataTabsSection = memo(MetaDataTabsSection);
 const MemoPostHistorySection = memo(PostHistorySection);
 const MemoPublishDateSection = memo(PublishDateSection);
 const MemoShowTitleSection = memo(ShowTitleSection);
-const MemoSocialCardSection = memo(SocialCardSection);
 const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
@@ -140,6 +142,13 @@ export interface PostSettingsSidebarProps {
   reveal?: SettingsFieldReveal | null;
   /** The panel's frame, whose width transition the screen waits on before unmounting it. */
   frameRef?: Ref<HTMLDivElement | null>;
+  /**
+   * The panel opens with the editor, restored as the writer left it, so it mounts
+   * already open rather than sliding in. Read only as the panel mounts.
+   */
+  opensInPlace?: boolean;
+  /** The writer's editor font, chosen in the panel. */
+  editorFont?: EditorFontControl;
 }
 
 /**
@@ -156,6 +165,8 @@ export function PostSettingsSidebar({
   hasInlineExcerpt = false,
   reveal,
   frameRef,
+  opensInPlace = false,
+  editorFont,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -163,7 +174,8 @@ export function PostSettingsSidebar({
   // The panel mounts in the render that opens it, and a new element has no
   // earlier style to transition from. It renders closed first, its style is
   // read, and then it takes the shell's progress, so it opens like a reopen.
-  const [entering, setEntering] = useState(true);
+  // A panel restored with the editor skips this and is open from the first paint.
+  const [entering, setEntering] = useState(!opensInPlace);
   useLayoutEffect(() => {
     ownFrameRef.current?.getBoundingClientRect();
     setEntering(false);
@@ -212,8 +224,22 @@ export function PostSettingsSidebar({
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
-    'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
+    'meta-data': (
+      <MemoMetaDataTabsSection
+        cardConfig={cardConfig}
+        featureImage={featureImage}
+        revealField={focusing?.field}
+        session={session}
+        siteUrl={siteUrl}
+      />
+    ),
+    'editor-font': editorFont ? <EditorFontSection control={editorFont} /> : null,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
+    'editor-help': (
+      <SettingsLinkRow href={EDITOR_HELP_URL} icon={<LucideIcon.CircleHelp />}>
+        {settingsEditorHelpRow}
+      </SettingsLinkRow>
+    ),
     // The list's last entry, pushed to the panel's foot while the list is
     // shorter than the panel. A post with nothing to delete yet gets nothing,
     // not an empty wrapper.
@@ -221,24 +247,6 @@ export function PostSettingsSidebar({
       <Box className="mt-auto">
         <MemoDeleteSection postType={postType} session={session} />
       </Box>
-    ),
-    'x-card': (
-      <MemoSocialCardSection
-        cardConfig={cardConfig}
-        featureImage={featureImage}
-        network={X_CARD_NETWORK}
-        session={session}
-        siteUrl={siteUrl}
-      />
-    ),
-    'facebook-card': (
-      <MemoSocialCardSection
-        cardConfig={cardConfig}
-        featureImage={featureImage}
-        network={FACEBOOK_CARD_NETWORK}
-        session={session}
-        siteUrl={siteUrl}
-      />
     ),
     'post-history': (
       <MemoPostHistorySection

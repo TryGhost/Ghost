@@ -5,8 +5,9 @@ const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const emailService = require('../../../core/server/services/email-service');
 const BatchSendingService = require('../../../core/server/services/email-service/batch-sending-service');
+const { waitForEmailStatus } = require('../../utils/batch-email-utils');
 
-describe('Republishing posts with failed emails', function () {
+describe('Republishing posts with emails', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -19,7 +20,7 @@ describe('Republishing posts with failed emails', function () {
   });
 
   for (const concurrentRetry of [false, true]) {
-    it(`returns the claimed email after republishing (concurrentRetry=${concurrentRetry})`, async function () {
+    it(`retries a failed email and returns the claimed email (concurrentRetry=${concurrentRetry})`, async function () {
       const emailId = fixtureManager.get('emails', 1).id;
       const email = await models.Email.findOne({ id: emailId });
       const postId = email.get('post_id');
@@ -60,4 +61,53 @@ describe('Republishing posts with failed emails', function () {
       assert.equal((await db.knex('posts').where({ id: postId }).first()).status, 'published');
     });
   }
+
+  it('republishes an emailed post after its newsletter is archived', async function () {
+    mockManager.mockMailgun();
+
+    // Create a newsletter that existing members are subscribed to
+    const { body: newsletters } = await agent
+      .post('newsletters/?opt_in_existing=true')
+      .body({ newsletters: [{ name: 'Archived after sending' }] })
+      .expectStatus(201);
+    const newsletter = newsletters.newsletters[0];
+
+    // Create a draft post
+    const { body: created } = await agent
+      .post('posts/')
+      .body({ posts: [{ title: 'Republished post', status: 'draft' }] })
+      .expectStatus(201);
+    const postId = created.posts[0].id;
+
+    // Publish it and send the email
+    const { body: published } = await agent
+      .put(`posts/${postId}/?newsletter=${newsletter.slug}`)
+      .body({ posts: [{ status: 'published', updated_at: created.posts[0].updated_at }] })
+      .expectStatus(200);
+    const email = await waitForEmailStatus(published.posts[0].email.id);
+    assert.equal(email.get('status'), 'submitted');
+
+    // Revert it to draft, which keeps its newsletter because the email exists
+    const { body: reverted } = await agent
+      .put(`posts/${postId}/`)
+      .body({ posts: [{ status: 'draft', updated_at: published.posts[0].updated_at }] })
+      .expectStatus(200);
+
+    // Archive the newsletter
+    await agent
+      .put(`newsletters/${newsletter.id}/`)
+      .body({ newsletters: [{ status: 'archived' }] })
+      .expectStatus(200);
+
+    // Republish it
+    const response = await agent
+      .put(`posts/${postId}/`)
+      .body({ posts: [{ status: 'published', updated_at: reverted.posts[0].updated_at }] })
+      .expectStatus(200);
+
+    assert.equal(response.body.posts[0].status, 'published');
+    assert.deepEqual(await db.knex('emails').select('id', 'status').where({ post_id: postId }), [
+      { id: email.id, status: 'submitted' },
+    ]);
+  });
 });

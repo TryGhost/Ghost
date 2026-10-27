@@ -2,6 +2,7 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
+  Link,
   Select,
   SelectContent,
   SelectItem,
@@ -74,13 +75,9 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void }> 
         </Select>
         <FieldDescription>
           This user is the owner of the site.{' '}
-          <a
-            href="https://ghost.org/help/transfer-publication-ownership/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://ghost.org/help/transfer-publication-ownership/" external>
             Transfer ownership
-          </a>{' '}
+          </Link>{' '}
           first to change their role.
         </FieldDescription>
       </Field>

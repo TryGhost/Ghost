@@ -12,11 +12,11 @@ const customRedirects = require('../../services/custom-redirects');
 const { serializeToYaml } = require('../../services/custom-redirects/redirect-config-parser');
 const themeService = require('../../services/themes');
 const themeList = require('../../services/themes/list');
-const { SiteExporter } = require('../../services/exports/site-exporter');
+const { SiteExporter } = require('../../data/exporter/site-exporter');
 const {
   SYNC_EXPORT_COMPONENTS,
   ASYNC_EXPORT_COMPONENTS,
-} = require('../../services/exports/export-components');
+} = require('../../data/exporter/export-components');
 const { getExportFileName } = require('./utils/csv-export-filename');
 const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 const {
@@ -26,7 +26,7 @@ const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
-const { exportRequestsService } = require('../../services/export-requests/export-requests-service');
+const exportRequests = require('../../services/export-requests').default;
 
 const postsService = getPostServiceInstance();
 
@@ -192,7 +192,7 @@ const controller = {
         components[key] = frame.data.components[key] === true;
       }
 
-      await exportRequestsService.requestExport({
+      await exportRequests.service.requestExport({
         components,
         requestedByUserId: frame.options.context.user,
       });

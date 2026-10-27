@@ -14,6 +14,7 @@ import {
   type User,
   type UsersResponseType,
 } from '@tryghost/admin-x-framework/api/users';
+import type { RequestOptions } from '@tryghost/admin-x-framework/hooks';
 import { isoDatetimeToDate } from '@/schemas/primitives';
 import { deepMerge, type DeepPartial } from '@/utils/deep-merge';
 
@@ -57,6 +58,23 @@ export const NavigationPreferencesSchema = z.looseObject({
     // useSidebarMode falls back to "full".
     mode: z.enum(['full', 'compact']).optional().catch(undefined),
   }),
+  // Installation ids of the apps this user pinned to, or unpinned from, the
+  // sidebar. Apps in neither are pinned while there's room (see
+  // resolvePinnedApps). Optional, like menu.mode.
+  apps: z
+    .object({
+      pinned: z.array(z.string()).catch([]),
+      unpinned: z.array(z.string()).catch([]),
+    })
+    .optional()
+    .catch(undefined),
+});
+
+export const EDITOR_BODY_FONTS = ['serif', 'sans', 'mono'] as const;
+
+export const EditorPreferencesSchema = z.looseObject({
+  // Optional, like nightShift: the editor falls back to "serif" where it reads it.
+  bodyFont: z.enum(EDITOR_BODY_FONTS).optional().catch(undefined),
 });
 
 const PreferencesSchema = z.looseObject({
@@ -72,12 +90,17 @@ const PreferencesSchema = z.looseObject({
   navigation: NavigationPreferencesSchema.default(DEFAULT_NAVIGATION_PREFERENCES).catch(
     DEFAULT_NAVIGATION_PREFERENCES,
   ),
+  editor: EditorPreferencesSchema.optional().catch(undefined),
 });
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export type WhatsNewPreferences = z.infer<typeof WhatsNewPreferencesSchema>;
 export type OnboardingPreferences = z.infer<typeof OnboardingPreferencesSchema>;
 export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
+export type EditorPreferences = z.infer<typeof EditorPreferencesSchema>;
+
+/** The transport options a screen that handles an expired session itself passes on. */
+type PreferencesRequestOptions = Pick<RequestOptions, 'sessionExpiryRedirect'>;
 
 const userPreferencesQueryKey = (user: User | undefined) =>
   ['userPreferences', user?.id, user?.accessibility] as const;
@@ -104,13 +127,14 @@ function parsePreferences(user: User): Preferences {
   return PreferencesSchema.parse(parsed);
 }
 
-export function useUserPreferences<TData = Preferences>(
-  options?: Omit<
-    UseQueryOptions<Preferences, Error, TData>,
-    'queryKey' | 'queryFn' | 'staleTime' | 'gcTime'
-  >,
-): UseQueryResult<TData> {
-  const { data: user } = useCurrentUser();
+export function useUserPreferences<TData = Preferences>({
+  requestOptions,
+  ...options
+}: Omit<
+  UseQueryOptions<Preferences, Error, TData>,
+  'queryKey' | 'queryFn' | 'staleTime' | 'gcTime'
+> & { requestOptions?: PreferencesRequestOptions } = {}): UseQueryResult<TData> {
+  const { data: user } = useCurrentUser({ requestOptions });
 
   return useQuery<Preferences, Error, TData>({
     ...options,
@@ -134,14 +158,24 @@ export function useUserPreferences<TData = Preferences>(
   });
 }
 
-export const useEditUserPreferences = (): UseMutationResult<
+/**
+ * The preferences to change, or a function that works them out from the
+ * preferences as they are when the edit runs, after any edits queued ahead of it.
+ */
+export type PreferencesUpdate =
+  | DeepPartial<Preferences>
+  | ((current: Preferences) => DeepPartial<Preferences>);
+
+export const useEditUserPreferences = ({
+  requestOptions,
+}: { requestOptions?: PreferencesRequestOptions } = {}): UseMutationResult<
   void,
   Error,
-  DeepPartial<Preferences>,
+  PreferencesUpdate,
   unknown
 > => {
   const queryClient = useQueryClient();
-  const { data: user } = useCurrentUser();
+  const { data: user } = useCurrentUser({ requestOptions });
   const { mutateAsync: editUser } = useEditUser();
 
   return useMutation({
@@ -149,7 +183,7 @@ export const useEditUserPreferences = (): UseMutationResult<
     // the current state; the shared scope serializes concurrent edits so
     // the later one merges on top of the earlier write instead of racing.
     scope: { id: 'user-preferences' },
-    mutationFn: async (updatedPreferences: DeepPartial<Preferences>) => {
+    mutationFn: async (update: PreferencesUpdate) => {
       // Read the user at run time (not from the render closure): a
       // serialized mutation must merge on top of the previous write.
       const latestUser =
@@ -159,13 +193,18 @@ export const useEditUserPreferences = (): UseMutationResult<
         throw new Error('User is not loaded');
       }
 
-      const newPreferences = deepMerge(parsePreferences(latestUser), updatedPreferences);
+      const current = parsePreferences(latestUser);
+      const newPreferences = deepMerge(
+        current,
+        typeof update === 'function' ? update(current) : update,
+      );
 
       const encodedForStorage = PreferencesSchema.encode(newPreferences);
 
       await editUser({
         ...latestUser,
         accessibility: JSON.stringify(encodedForStorage),
+        ...requestOptions,
       });
     },
   });

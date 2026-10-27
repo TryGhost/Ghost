@@ -1,8 +1,5 @@
-import type {
-  AutomationStepToRun,
-  AutomationTriggerTierScope,
-  AutomationsRepository,
-} from './automations-repository';
+import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
+import type { AutomationTriggerTierScope } from './automations-repository-2';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
@@ -13,7 +10,6 @@ import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 import { Member } from '../../models';
 
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
 
 type MemberWelcomeEmailService = {
   init: () => unknown;
@@ -242,8 +238,7 @@ const processStep = async ({
           return null;
         }
         memberWelcomeEmailService.init();
-        const trackClicks =
-          labs.isSet('automationAnalytics') && Boolean(settingsCache.get('email_track_clicks'));
+        const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
         const trackOpens = Boolean(settingsCache.get('email_track_opens'));
         const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
           email: {

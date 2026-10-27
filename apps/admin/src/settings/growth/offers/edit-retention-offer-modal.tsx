@@ -13,6 +13,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
+  Link,
   RadioGroup,
   RadioGroupItem,
   Select,
@@ -291,9 +292,7 @@ const RetentionOfferSidebar: React.FC<{
                   ) : null}
                 </div>
                 {redemptions > 0 && membersFilterUrl ? (
-                  <a className="font-semibold text-green" href={membersFilterUrl}>
-                    See members →
-                  </a>
+                  <Link href={membersFilterUrl}>See members</Link>
                 ) : null}
               </div>
             </div>

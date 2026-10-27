@@ -186,7 +186,7 @@
       postUpgradeTasks: {
         commands: [
           'pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts',
-          'node scripts/generate-changeset.js',
+          'node tools/scripts/release/generate-changeset.ts',
         ],
         fileFilters: ['.changeset/**'],
         executionMode: 'branch',
@@ -272,7 +272,7 @@
     //    Node.js runtime declared in `engines`, not a dependency — so a hard
     //    version cap is the only lever. Raise it when we bump the Node engine.
     {
-      description: 'Cap @types/node at the default Node major (devEngines: 22.23.3)',
+      description: 'Cap @types/node at the default Node major (devEngines: 22.23.4)',
       matchPackageNames: ['@types/node'],
       allowedVersions: '<23',
     },

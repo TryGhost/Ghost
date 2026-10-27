@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import {
-  Button,
   FieldError,
   Tooltip,
   TooltipContent,
@@ -38,6 +37,7 @@ import { textHasTk } from './tk';
 import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 import type { WritingFocus } from './writing-focus';
+import type { EditorFont } from './editor-font';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -74,6 +74,8 @@ export interface PostEditorProps {
   settingsMoving?: boolean;
   /** Whether the chrome here (the empty feature image bar and the footer) is hidden while the writer types. */
   writingFocus?: WritingFocus;
+  /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
+  font?: EditorFont;
 }
 
 export interface PostEditorHandle {
@@ -88,7 +90,11 @@ const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slic
 const fieldClassName =
   'block w-full max-w-none min-w-0 min-h-0 resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 
-function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: string) {
+function useAutosize(
+  ref: React.RefObject<HTMLTextAreaElement | null>,
+  value: string,
+  font: EditorFont | undefined,
+) {
   const measure = useCallback(() => {
     const element = ref.current;
     if (!element) {
@@ -98,7 +104,9 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
     element.style.height = `${element.scrollHeight}px`;
   }, [ref]);
 
-  useLayoutEffect(measure, [measure, value]);
+  // A new editor font rewraps the text without resizing the field, and a system
+  // font such as mono loads no web font to announce it
+  useLayoutEffect(measure, [measure, value, font]);
 
   useEffect(() => {
     const element = ref.current;
@@ -199,6 +207,7 @@ export function PostEditor({
   handleRef,
   settingsMoving = false,
   writingFocus,
+  font,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -215,8 +224,8 @@ export function PostEditor({
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
 
-  useAutosize(titleRef, title);
-  useAutosize(excerptRef, excerpt);
+  useAutosize(titleRef, title, font);
+  useAutosize(excerptRef, excerpt, font);
 
   // Koenig's breakout cards are sized in viewport units less
   // `--kg-breakout-adjustment`, the width beside the writing area. The settings
@@ -419,7 +428,11 @@ export function PostEditor({
   };
 
   return (
-    <div className="relative h-full min-h-0" data-testid={postEditor}>
+    <div
+      className="editor-optical-sizing relative h-full min-h-0"
+      data-editor-font={font}
+      data-testid={postEditor}
+    >
       <div
         ref={scrollPaneRef}
         className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
@@ -489,7 +502,8 @@ export function PostEditor({
                 autoFocus={autofocusTitle}
                 className={cn(
                   fieldClassName,
-                  'heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  // The --editor-display-* variables come from the writer's font (index.css).
+                  'heading-font-features mb-4 pb-1 font-(family-name:--editor-display-font) text-[length:calc(4.8rem*var(--editor-title-scale,1))] leading-[1.18] font-bold tracking-[calc(-0.017em*var(--editor-display-tracking-scale,1))] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[length:calc(3.6rem*var(--editor-title-scale,1))] max-[501px]:text-[length:calc(2.8rem*var(--editor-title-scale,1))]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
@@ -523,7 +537,7 @@ export function PostEditor({
                   aria-label="Excerpt"
                   className={cn(
                     fieldClassName,
-                    'text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
+                    'font-(family-name:--editor-display-font) text-[length:calc(2rem*var(--editor-excerpt-scale,1))] leading-[1.5] font-[440] tracking-[calc(-0.018em*var(--editor-display-tracking-scale,1))] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
@@ -563,8 +577,8 @@ export function PostEditor({
         </Stack>
       </div>
       {/* Below the small breakpoint the footer spans the screen: the word count at
-          the left, the header's actions at the right, and no help link. Only its
-          controls take pointer input, so the document between them stays reachable.
+          the left and the header's actions at the right. Only its controls take
+          pointer input, so the document between them stays reachable.
           Actions that wrap grow upward, leaving the word count in the corner. The
           footer moves with the settings panel and its contents fade while the
           writer types, each on a transition of its own. */}
@@ -606,25 +620,6 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          <Button
-            className={cn(
-              'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-              isAdmin7 && '[&_svg]:stroke-2!',
-            )}
-            shape="pill"
-            size={isAdmin7 ? 'icon' : 'icon-sm'}
-            variant="ghost"
-            asChild
-          >
-            <a
-              aria-label="Editor help"
-              href="https://ghost.org/help/using-the-editor/"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <LucideIcon.CircleHelp />
-            </a>
-          </Button>
         </Inline>
       </Inline>
     </div>

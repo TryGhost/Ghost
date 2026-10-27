@@ -1,49 +1,43 @@
 import logging from '@tryghost/logging';
-import * as errors from '@tryghost/errors';
+import { defineService } from '../../../kernel/define-service';
 import type { JobsService } from '../jobs-service/jobs-service';
 import CheckSigningKeysJob from './check-signing-keys-job';
 import { SigningKeyService } from './signing-key-service';
 
 export type { SigningKeyProvider, SigningKeyPurpose } from './signing-key-service';
 
-let service: SigningKeyService | undefined;
 let jobs: JobsService | undefined;
 let scheduled = false;
 
+const extras = { scheduleCheckJob };
+
 // Runs after settings init so the key rows exist; advances any rotation that's due before
 // anything signs or publishes a key.
-export async function init(): Promise<void> {
-  if (service) {
-    return;
-  }
-
-  const settingsCache = require('../../../shared/settings-cache');
-  const models = require('../../models');
-  const instance = new SigningKeyService({
-    settingsCache,
-    Settings: models.Settings,
-    transaction: (fn) => models.Base.transaction(fn),
-    logging,
-    onRotationStarted: schedule,
-  });
-  await instance.check();
-  service = instance;
-}
-
-export function getInstance(): SigningKeyService {
-  if (!service) {
-    throw new errors.IncorrectUsageError({
-      message: 'Signing keys used before init(). Call init() from boot first.',
+const signingKeys = defineService(
+  'Signing keys',
+  async () => {
+    const settingsCache = require('../../../shared/settings-cache');
+    const models = require('../../models');
+    const instance = new SigningKeyService({
+      settingsCache,
+      Settings: models.Settings,
+      transaction: (fn) => models.Base.transaction(fn),
+      logging,
+      onRotationStarted: schedule,
     });
-  }
-  return service;
-}
+    await instance.check();
+    return instance;
+  },
+  extras,
+);
 
-export async function scheduleCheckJob(jobsService: JobsService): Promise<void> {
+export default signingKeys;
+
+async function scheduleCheckJob(jobsService: JobsService): Promise<void> {
   jobs = jobsService;
 
   // Nothing to advance until a key is rotated
-  if (getInstance().isRotating()) {
+  if (signingKeys.service.isRotating()) {
     await schedule();
   }
 }

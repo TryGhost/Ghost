@@ -1,4 +1,8 @@
-import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
+import {
+  buildSignedWebhookRequest,
+  describeWebhookError,
+  sanitizeWebhookUrl,
+} from '../../lib/signed-webhook';
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const config = require('../../../shared/config');
@@ -92,7 +96,7 @@ export class VerificationWebhookService {
       await this.#request(webhookUrl, requestOptions);
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeWebhookError(error);
       this.#logging.error(
         `Failed to send verification webhook to "${sanitizedWebhookUrl}": ${message}`,
       );

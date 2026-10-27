@@ -10,6 +10,7 @@
 | `isPost`                 | Pages have no email preview                                                                  |
 | `newsletterSlug`         | The post's own newsletter, preselected in the email preview                                  |
 | `fallbackNewsletterSlug` | Preselected when the post has no newsletter of its own, such as the publish flow's pick      |
+| `onNewsletterPick`       | Hears a newsletter the writer picks in the email preview                                     |
 | `subjectEditor`          | The session's subject field: value, title fallback, save state, and stage and commit         |
 | `onBeforeOpen`           | Awaited before the preview renders, so the caller can save the draft it previews             |
 | `onPublish`              | Renders a Publish button; supplied for every user who can publish                            |
@@ -56,7 +57,7 @@ The newsletters offered are the site's active ones, read from the same full brow
 
 Each newsletter is shown with the address its email goes out from: its sender address, or the site's default address when it has none. When the host manages the site's email, the default address also replaces a sender that is not on the host's sending domain, or any sender when there is no sending domain.
 
-Each opening preselects the post's own newsletter, else `fallbackNewsletterSlug`, else the first one offered; a newsletter picked inside the preview lasts until it closes.
+Each opening preselects the post's own newsletter, else `fallbackNewsletterSlug`, else the first one offered; a newsletter picked inside the preview lasts until it closes. The editor passes the draft's remembered newsletter as the fallback when the publish flow is not open, and remembers each pick through `onNewsletterPick`, as described in [the publish README](../publish/README.md#remembering-a-drafts-newsletter).
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
 

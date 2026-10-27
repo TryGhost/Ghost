@@ -60,8 +60,8 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   const isComposite = parts.length > 0;
 
   // The part first, then what it holds: one text, or the codes an "is any of" lists.
-  const [subfield = '', ...rest] = values;
-  const partType = definition ? partFilterType(definition.type, subfield) : undefined;
+  const [part = '', ...rest] = values;
+  const partType = definition ? partFilterType(definition.type, part) : undefined;
   const filtersAs = isComposite ? (partType ?? 'whole') : null;
 
   const {
@@ -89,14 +89,13 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
           ariaLabel={`${fieldLabel} part`}
           options={partOptions}
           readOnly={readOnly}
-          testId="custom-field-filter-subfield"
-          value={subfield}
-          onChange={(nextSubfield) => {
+          testId="custom-field-filter-part"
+          value={part}
+          onChange={(nextPart) => {
             // What one part holds is meaningless to a part of another type: a
             // country code is not a city, and a city is not on the country list.
-            const sameType =
-              definition && partFilterType(definition.type, nextSubfield) === partType;
-            onChange(sameType ? [nextSubfield, ...rest] : [nextSubfield]);
+            const sameType = definition && partFilterType(definition.type, nextPart) === partType;
+            onChange(sameType ? [nextPart, ...rest] : [nextPart]);
           }}
         />
       )}
@@ -121,7 +120,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
           searchPlaceholder="Search countries..."
           testId="custom-field-filter-value"
           values={codes}
-          onChange={(nextCodes) => onChange([subfield, ...nextCodes])}
+          onChange={(nextCodes) => onChange([part, ...nextCodes])}
         />
       )}
 
@@ -132,7 +131,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
           readOnly={readOnly}
           testId="custom-field-filter-value"
           value={rest[0] ?? ''}
-          onChange={(nextValue) => onChange([subfield, nextValue])}
+          onChange={(nextValue) => onChange([part, nextValue])}
         />
       )}
     </>

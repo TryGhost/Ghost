@@ -181,4 +181,4 @@ jobs:
           # `allowedCommands` is the current name; the old
           # `allowedPostUpgradeCommands` is silently ignored on Renovate >= 41,
           # which left every npm PR with a failed `renovate/artifacts` status.
-          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node scripts/generate-changeset\\.js$"]'
+          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node tools/scripts/release/generate-changeset\\.ts$"]'

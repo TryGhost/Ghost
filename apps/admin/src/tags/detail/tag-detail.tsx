@@ -381,17 +381,8 @@ const TagDetail: React.FC = () => {
   }
 
   const internalBadge = tag?.visibility === 'internal' && (
-    <Badge
-      className={
-        isAdmin7
-          ? 'leading-none tracking-wider'
-          : 'px-1 py-px text-[10px] leading-none tracking-wider'
-      }
-      data-testid="tag-detail-internal-badge"
-      size={isAdmin7 ? 'md' : 'default'}
-      variant="secondary"
-    >
-      {isAdmin7 ? 'Internal' : 'INTERNAL'}
+    <Badge data-testid="tag-detail-internal-badge" variant="secondary">
+      Internal
     </Badge>
   );
 
@@ -402,7 +393,7 @@ const TagDetail: React.FC = () => {
           <DetailPage.Header
             className={cn(
               largeTitles &&
-                'sticky top-[calc(24px-var(--large-title-space))] z-60 -mx-(--page-gutter) gap-1 bg-background px-(--page-gutter) pt-(--large-title-space)! pb-8',
+                'sticky top-[calc(24px-var(--large-title-space))] z-40 -mx-(--page-gutter) gap-1 bg-background px-(--page-gutter) pt-(--large-title-space)! pb-8',
             )}
           >
             <PageHeader blurredBackground={false} sticky={false}>
@@ -486,13 +477,15 @@ const TagDetail: React.FC = () => {
                 </PageHeader.Actions>
               )}
             </PageHeader>
+            {/* The title wraps rather than truncates, and stops short of the
+                actions above it on wide screens */}
             {largeTitles && (
-              <div className="flex min-w-0 items-baseline gap-3">
+              <div className="flex min-w-0 items-baseline gap-3 lg:pr-40">
                 {!isCreating && isLoading ? (
                   <Skeleton className="h-(--large-title-size) w-64" />
                 ) : (
                   <H1
-                    className="min-w-0 truncate text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]!"
+                    className="min-w-0 text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]! break-words"
                     data-testid="tag-detail-title"
                   >
                     {isCreating ? draft?.name || 'New tag' : title}

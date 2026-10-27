@@ -50,8 +50,6 @@ const stripeConnectedBoot = {
   },
 };
 
-const suggestionsOn = { labs: { navigationUrlSuggestions: true } };
-
 describe('Navigation settings', () => {
   it('edits primary and secondary navigation', async () => {
     fakeSettingsScreens();
@@ -146,27 +144,15 @@ describe('Navigation settings', () => {
     await expect.element(added.getByLabelText('Label')).toHaveValue('Label');
     await expect.element(added.getByLabelText('URL')).toHaveValue('https://google.com/');
     await expect.element(item.getByLabelText('Label')).toHaveValue('');
-    await expect.element(item.getByLabelText('URL')).toHaveValue('http://test.com/');
-  });
-
-  it('keeps the URL field plain while navigation URL suggestions are off', async () => {
-    fakeSettingsScreens();
-    const pages = fakeAdminEndpoint('GET', /^\/search-index\/pages\//, { pages: [] });
-    const posts = fakeAdminEndpoint('GET', /^\/search-index\/posts\//, { posts: [] });
-    await renderAdminApp('/settings/navigation/edit');
-
-    await newItem().getByLabelText('URL').click();
-    await userEvent.keyboard('{ArrowDown}');
-    await expect(suggestions()).toHaveCount(0);
-    expect(pages.requests).toHaveLength(0);
-    expect(posts.requests).toHaveLength(0);
+    // Suggestions are always on, so a new row starts empty rather than the site root
+    await expect.element(item.getByLabelText('URL')).toHaveValue('');
   });
 
   it('suggests site links, offers and content in the URL dropdown', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
     fakeOffers([offer({ name: 'Black Friday', code: 'black-friday' })]);
-    await renderAdminApp('/settings/navigation/edit', { ...suggestionsOn, ...stripeConnectedBoot });
+    await renderAdminApp('/settings/navigation/edit', stripeConnectedBoot);
 
     // Starts empty rather than prefilled with the site root
     await expect.element(newItem().getByLabelText('URL')).toHaveValue('');
@@ -227,7 +213,7 @@ describe('Navigation settings', () => {
       await released;
       return { posts: [] };
     });
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     // Focusing starts the download, and ArrowDown searches again straight
     // away while nothing is showing yet
@@ -251,7 +237,7 @@ describe('Navigation settings', () => {
       return { pages: [aboutPage] };
     });
     fakeAdminEndpoint('GET', /^\/search-index\/posts\//, { posts: [] });
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('URL').click();
     await expect.poll(() => pages.requests.length).toBe(1);
@@ -264,7 +250,7 @@ describe('Navigation settings', () => {
   it('suggests content whose path matches what is typed', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('/abo');
@@ -285,7 +271,7 @@ describe('Navigation settings', () => {
       offer({ name: 'Offer Five', code: 'five' }),
       offer({ name: 'Offer Six', code: 'six' }),
     ]);
-    await renderAdminApp('/settings/navigation/edit', { ...suggestionsOn, ...stripeConnectedBoot });
+    await renderAdminApp('/settings/navigation/edit', stripeConnectedBoot);
 
     await newItem().getByLabelText('URL').click();
     await expect
@@ -302,7 +288,7 @@ describe('Navigation settings', () => {
   it('offers no checkout destinations while Stripe is disconnected', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('URL').click();
     await expect.element(suggestions()).toBeInTheDocument();
@@ -322,7 +308,6 @@ describe('Navigation settings', () => {
     fakeSettingsScreens();
     fakeSiteContent();
     await renderAdminApp('/settings/navigation/edit', {
-      ...suggestionsOn,
       boot: {
         browseSettings: {
           response: settingsResponse({
@@ -348,7 +333,7 @@ describe('Navigation settings', () => {
   it('adds the item when Enter is pressed in the URL field', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(2);
     await newItem().getByLabelText('Label').fill('Contact');
@@ -365,7 +350,7 @@ describe('Navigation settings', () => {
 
   it('keeps the typed URL when Enter fails validation', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('/contact{Enter}');
@@ -392,7 +377,7 @@ describe('Navigation settings', () => {
   it('keeps the dropdown shut for a field that already holds a URL until ArrowDown', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     // The existing About item, shown as http://test.com/about/
     await existingItem(1).getByLabelText('URL').click();
@@ -412,7 +397,7 @@ describe('Navigation settings', () => {
   it('closes the dropdown with Escape without closing the modal', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('URL').click();
     await expect.element(suggestions()).toBeInTheDocument();
@@ -426,7 +411,7 @@ describe('Navigation settings', () => {
     fakeSettingsScreens();
     fakeSiteContent();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('Label').fill('About us');
     await newItem().getByLabelText('URL').click();
@@ -452,7 +437,7 @@ describe('Navigation settings', () => {
   it('selects a suggestion with the keyboard', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', { ...suggestionsOn, ...stripeConnectedBoot });
+    await renderAdminApp('/settings/navigation/edit', stripeConnectedBoot);
 
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('tips');
@@ -470,7 +455,7 @@ describe('Navigation settings', () => {
   it('confirms before discarding a URL edit closed with Escape', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     // Text that matches nothing keeps the dropdown shut, so Escape reaches the modal
     await existingItem().getByLabelText('URL').click();
@@ -509,7 +494,7 @@ describe('Navigation settings', () => {
   it('confirms before discarding a URL typed into the new item with Escape', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
-    await renderAdminApp('/settings/navigation/edit', suggestionsOn);
+    await renderAdminApp('/settings/navigation/edit');
 
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('zzz');

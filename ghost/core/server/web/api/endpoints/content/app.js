@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('web:api:endpoints:content:app');
-const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
+const { parseQueryBooleans } = require('../../middleware/parse-query-booleans');
 const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const config = require('../../../../../shared/config');
@@ -21,7 +21,7 @@ module.exports = function setupApiApp() {
   apiApp.use(bodyParser.json({ limit: '50mb' }));
 
   // Query parsing
-  apiApp.use(boolParser());
+  apiApp.use(parseQueryBooleans);
 
   // Content API should allow public caching
   apiApp.use(

@@ -117,7 +117,7 @@ STAGED_TREE=$(git write-tree 2>/dev/null || true)
 
 if [ -z "$CHANGESET_BASE" ] || [ -z "$STAGED_TREE" ]; then
     echo "No merge-base with main, skipping changeset check..."
-elif node scripts/change-check.js "$CHANGESET_BASE" "$STAGED_TREE"; then
+elif node tools/scripts/ci/change-check.ts "$CHANGESET_BASE" "$STAGED_TREE"; then
     echo "Changesets look good, continuing..."
 else
     echo -e "${grey}⚠️  Reminder only (not blocking) — run 'pnpm change' to add a changeset. CI enforces this.${no_color}"

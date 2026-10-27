@@ -27,7 +27,7 @@ require(REGISTRATION_PATH);
 
 describe('register-job-handlers', function () {
   let originalModules: Map<string, NodeJS.Module | undefined>;
-  let signingKeys: typeof import('../../../../../core/server/services/signing-keys');
+  let signingKeys: typeof import('../../../../../core/server/services/signing-keys').default;
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
   let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
@@ -56,11 +56,11 @@ describe('register-job-handlers', function () {
   beforeEach(function () {
     // Keep the root uninitialized to prove registration defers access until execution.
     // Restore complete cache entries so existing consumers retain their original modules.
-    originalModules = new Map(MODULE_PATHS.map((path) => [path, require.cache[path]]));
+    originalModules = new Map(Object.entries(require.cache));
     for (const path of MODULE_PATHS) {
       delete require.cache[path];
     }
-    signingKeys = require(SIGNING_KEYS_PATH);
+    signingKeys = require(SIGNING_KEYS_PATH).default;
     const registerJobHandlers = require(REGISTRATION_PATH).default;
     jobsService = sinon.createStubInstance(JobsService);
     mediaInliner = sinon.createStubInstance(ExternalMediaInliner);
@@ -95,12 +95,14 @@ describe('register-job-handlers', function () {
 
   afterEach(function () {
     sinon.restore();
-    for (const [path, original] of originalModules) {
-      if (original) {
-        require.cache[path] = original;
-      } else {
+    // Restore newly loaded dependencies too, not just the roots we reloaded.
+    for (const path of Object.keys(require.cache)) {
+      if (!originalModules.has(path)) {
         delete require.cache[path];
       }
+    }
+    for (const [path, original] of originalModules) {
+      require.cache[path] = original;
     }
   });
 
@@ -271,7 +273,7 @@ describe('register-job-handlers', function () {
     try {
       await setImmediate();
       sinon.assert.calledOnceWithExactly(check);
-      sinon.assert.calledOn(check, signingKeys.getInstance());
+      sinon.assert.calledOn(check, signingKeys.service);
       assert.equal(completed, false);
     } finally {
       ready.resolve();
@@ -298,7 +300,6 @@ describe('register-job-handlers', function () {
     const job = new ProcessWebmentionJob({
       source: 'https://source.com/post/',
       target: 'https://target.com/post/',
-      payload: {},
     });
 
     await processWebmentionHandler(job);
@@ -319,8 +320,7 @@ describe('register-job-handlers', function () {
     const sendWebmentionsHandler = handlerFor('send-webmentions');
     const job = new SendWebmentionsJob({
       sourceUrl: 'https://site.com/post/',
-      html: '<a href="https://example.com/">link</a>',
-      previousHtml: null,
+      links: ['https://example.com/'],
     });
 
     await sendWebmentionsHandler(job);
