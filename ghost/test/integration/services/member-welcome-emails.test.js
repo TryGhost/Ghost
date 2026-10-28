@@ -83,7 +83,6 @@ describe('Member Welcome Emails Integration', function () {
       name: 'Free Member Welcome Email',
       description: 'Welcome new free members after they sign up.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-      trigger_type: 'membership_started',
       created_at: new Date(),
     });
     await db.knex('welcome_email_automated_emails').insert({
@@ -103,7 +102,6 @@ describe('Member Welcome Emails Integration', function () {
       name: 'Paid Member Welcome Email',
       description: 'Welcome new paid members after they start their subscription.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
-      trigger_type: 'membership_started',
       created_at: new Date(),
     });
     await db.knex('welcome_email_automated_emails').insert({

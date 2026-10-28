@@ -45,7 +45,6 @@ describe('database automations repository', function () {
       slug,
       name: `Test automation ${id}`,
       status: 'active',
-      trigger_type: 'membership_started',
       created_at: now,
       updated_at: now,
     });

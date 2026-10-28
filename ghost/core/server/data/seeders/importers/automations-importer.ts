@@ -13,7 +13,6 @@ type Automation = {
   name: string;
   slug: string;
   description: string;
-  trigger_type: 'membership_started';
   created_at: string;
   updated_at: string;
 };
@@ -78,7 +77,6 @@ export class AutomationsImporter extends TableImporter<Automation> {
       name,
       description: defaultAutomation?.description ?? '',
       slug,
-      trigger_type: 'membership_started',
       created_at: toDatabaseDate(createdAt),
       updated_at: toDatabaseDate(createdAt),
     };
