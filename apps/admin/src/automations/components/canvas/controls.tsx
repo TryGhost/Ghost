@@ -9,12 +9,15 @@ import {
   DropdownMenuTrigger,
 } from '@tryghost/shade/components';
 import { Controls, useReactFlow, useViewport } from '@xyflow/react';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { CANVAS_ZOOM_CONFIG } from './use-canvas-viewport';
 
 const VIEWPORT_ANIMATION_DURATION = 180;
 
-export const AutomationCanvasControls: React.FC = () => {
+// isHidden slides the controls off the canvas, as while the email editor is open.
+export const AutomationCanvasControls: React.FC<{ isHidden?: boolean }> = ({
+  isHidden = false,
+}) => {
   const [open, setOpen] = useState(false);
   const { fitView, zoomIn, zoomOut, zoomTo } = useReactFlow();
   const { zoom } = useViewport();
@@ -33,7 +36,10 @@ export const AutomationCanvasControls: React.FC = () => {
 
   return (
     <Controls
-      className="gap-1 overflow-hidden rounded-md bg-surface-elevated p-0.5 text-foreground shadow-sm"
+      className={cn(
+        'gap-1 overflow-hidden rounded-md bg-surface-elevated p-0.5 text-foreground shadow-sm transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+        isHidden && 'translate-y-[calc(100%+2rem)]',
+      )}
       orientation="horizontal"
       showFitView={false}
       showInteractive={false}

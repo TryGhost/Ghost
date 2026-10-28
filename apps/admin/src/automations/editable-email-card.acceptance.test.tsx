@@ -1,14 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import {
-  fakeAdminEndpoint,
-  fakeAutomatedEmails,
-  fakeNewsletters,
-  fakeOffers,
-  fakePosts,
-  renderAdminApp,
-  settingsResponse,
-} from '@test-utils/acceptance';
+import { fakeAdminEndpoint, renderAdminApp, settingsResponse } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   detail,
@@ -20,6 +12,13 @@ import {
   select,
   close,
 } from './run-history.test-utils';
+import {
+  editEmailSubject,
+  emailEditor,
+  emailEditorBody,
+  fakeEmailEditorData,
+  minimizeEmailEditor,
+} from './email-editor.test-utils';
 
 const lexical = (text: string) =>
   JSON.stringify({
@@ -79,8 +78,11 @@ const emailCards = () =>
   page
     .getByRole('region', { name: 'Editing canvas' })
     .getByRole('article', { name: /^Send email/ });
+const preview = (card: ReturnType<typeof emailCards>) =>
+  card.getByRole('region', { name: 'Email message preview' });
 const serve = () => {
   setup();
+  fakeEmailEditorData();
   const data = workflow();
   fakeAdminEndpoint('GET', '/automations/first/', { automations: [data] });
   return fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => ({
@@ -95,9 +97,7 @@ describe('Editable email cards', () => {
     serve();
     await renderAdminApp('/automations/first', { labs: { automations: true } });
     await expect(emailCards()).toHaveCount(2);
-    await expect
-      .element(emailCards().first().getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('Welcome');
+    await expect.element(preview(emailCards().first())).toHaveTextContent('Welcome');
   });
 
   it('uses the three-dot menu instead of right-click actions', async () => {
@@ -118,22 +118,18 @@ describe('Editable email cards', () => {
     await expect
       .poll(() => document.querySelector('[data-slot="dropdown-menu-content"]'))
       .toBeNull();
-    await emailCards().nth(0).getByRole('textbox', { name: 'Subject line' }).click();
-    await expect
-      .element(emailCards().nth(0).getByRole('textbox', { name: 'Subject line' }))
-      .toHaveFocus();
+    await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
+    await expect.element(emailEditor()).toBeVisible();
     expect(save.requests).toHaveLength(0);
   });
 
-  it('keeps separate inline drafts and saves through the existing automation Save action', async () => {
+  it('keeps separate email drafts and saves through the existing automation Save action', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
-    const first = emailCards().nth(0).getByRole('textbox', { name: 'Subject line' });
-    await first.click();
-    await first.fill('Updated welcome');
-    await expect.element(first).toHaveFocus();
-    await emailCards().nth(1).getByRole('textbox', { name: 'Subject line' }).fill('Follow up');
-    await expect.element(first).toHaveValue('Updated welcome');
+    await editEmailSubject(emailCards().nth(0), 'Updated welcome');
+    await editEmailSubject(emailCards().nth(1), 'Follow up');
+    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('Updated welcome');
+    await expect.element(preview(emailCards().nth(1))).toHaveTextContent('Follow up');
     expect(save.requests).toHaveLength(0);
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect.poll(() => save.requests.length).toBe(1);
@@ -149,23 +145,14 @@ describe('Editable email cards', () => {
     const save = serve();
     respond(history('a'));
     await renderAdminApp('/automations/first', flags);
-    await expect
-      .element(emailCards().nth(1).getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('');
-    await expect
-      .element(emailCards().nth(1).getByRole('region', { name: 'Email message preview' }))
-      .toHaveTextContent('Message');
-    await emailCards().nth(0).getByRole('textbox').fill('Draft before history');
+    await expect.element(preview(emailCards().nth(1))).toHaveTextContent('SubjectMessage');
+    await editEmailSubject(emailCards().nth(0), 'Draft before history');
     await open();
     await select();
     await close();
-    await expect
-      .element(emailCards().nth(0).getByRole('textbox'))
-      .toHaveValue('Draft before history');
-    await emailCards().nth(0).getByRole('textbox').fill('');
-    await expect
-      .element(emailCards().nth(0).getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('');
+    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('Draft before history');
+    await editEmailSubject(emailCards().nth(0), '');
+    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('Subject');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect.poll(() => save.requests.length).toBe(1);
     const saved = (save.requests[0].body as { automations: AutomationDetail[] }).automations[0];
@@ -185,41 +172,26 @@ describe('Editable email cards', () => {
     );
     await renderAdminApp('/automations/first', flags);
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-    await expect.element(dialog).toBeVisible();
-    const editor = dialog.getByRole('textbox');
-    await expect.element(editor).toHaveTextContent('Thanks for joining.');
-    await editor.fill('Rewritten message');
-    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
-    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-    await expect(dialog).toHaveCount(0);
-    await expect
-      .element(emailCards().nth(0).getByRole('region', { name: 'Email message preview' }))
-      .toHaveTextContent('Rewritten message');
+    await expect.element(emailEditor()).toBeVisible();
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
+    await emailEditorBody().fill('Rewritten message');
+    await minimizeEmailEditor();
+    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('Rewritten message');
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
-    await expect.element(dialog).toBeVisible();
-    await dialog.getByRole('textbox').fill('');
-    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
-    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-    await expect(dialog).toHaveCount(0);
-    await expect
-      .element(emailCards().nth(0).getByRole('region', { name: 'Email message preview' }))
-      .toHaveTextContent('Message');
-    await expect.element(emailCards().nth(0).getByRole('textbox')).toHaveValue('Welcome');
+    await expect.element(emailEditor()).toBeVisible();
+    await emailEditorBody().fill('');
+    await minimizeEmailEditor();
+    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('WelcomeMessage');
     expect(save.requests).toHaveLength(0);
   });
 
   it('can pick a callout emoji in the automation email modal', async () => {
     serve();
-    fakeAutomatedEmails([]);
-    fakeNewsletters([]);
-    fakeOffers([]);
-    fakePosts([]);
     await renderAdminApp('/automations/first', flags);
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-    await dialog.getByRole('textbox').fill('');
-    await dialog.getByRole('textbox').click();
+    const dialog = emailEditor();
+    await emailEditorBody().fill('');
+    await emailEditorBody().click();
     await userEvent.keyboard('/callout');
     await expect
       .element(page.getByRole('menuitem', { name: 'Callout', exact: true }))
@@ -250,11 +222,8 @@ describe('Editable email cards', () => {
         },
       });
       await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
-      const editor = page
-        .getByRole('dialog', { name: 'Edit email', exact: true })
-        .getByRole('textbox');
-      await editor.fill('');
-      await editor.click();
+      await emailEditorBody().fill('');
+      await emailEditorBody().click();
       await userEvent.keyboard('/');
       await expect
         .element(page.getByRole('menuitem', { name: 'Image', exact: true }))
@@ -284,7 +253,7 @@ describe('Editable email cards', () => {
         .element(page.getByText('Add a subject line and a message before this email can be sent.'))
         .toBeVisible();
       await userEvent.keyboard('{Escape}');
-      await emailCards().nth(1).getByRole('textbox').fill('A subject');
+      await editEmailSubject(emailCards().nth(1), 'A subject');
       await emailCards()
         .nth(1)
         .getByRole('button', { name: 'Why this step needs attention' })
@@ -293,9 +262,6 @@ describe('Editable email cards', () => {
         .element(page.getByText('Add a message before this email can be sent.'))
         .toBeVisible();
       await userEvent.keyboard('{Escape}');
-      await expect
-        .element(emailCards().nth(1).getByRole('textbox'))
-        .not.toHaveAttribute('aria-invalid', 'true');
       const wait = page.getByRole('article', { name: 'Wait: 1 day' });
       await expect
         .poll(
@@ -331,9 +297,9 @@ describe('Editable email cards', () => {
       const newCard = emailCards().nth(1);
       const warning = newCard.getByRole('button', { name: 'Why this step needs attention' });
       await expect(warning).toHaveCount(0);
-      await newCard.getByRole('textbox').fill('New subject');
+      await editEmailSubject(newCard, 'New subject');
       await expect(warning).toHaveCount(0);
-      await emailCards().nth(0).getByRole('textbox').click();
+      await emailCards().nth(0).getByRole('heading', { name: 'Send email' }).click();
       await expect.element(warning).toBeVisible();
 
       await addEmail();

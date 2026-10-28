@@ -260,6 +260,8 @@ export const AutomationSidebar: React.FC<{
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isRunSelectionDisabled: boolean;
+  // Slides the toggle off the canvas, as while the email editor is open.
+  isToggleHidden?: boolean;
 }> = ({
   automationId,
   description,
@@ -275,6 +277,7 @@ export const AutomationSidebar: React.FC<{
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
+  isToggleHidden = false,
 }) => {
   let activeTab: AutomationSidebarTab;
   switch (metadata) {
@@ -322,7 +325,10 @@ export const AutomationSidebar: React.FC<{
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
-        className="absolute top-4 left-4 z-20"
+        className={cn(
+          'absolute top-4 left-4 z-20 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+          isToggleHidden && 'translate-x-[calc(-100%-2rem)]',
+        )}
         size="icon"
         type="button"
         variant="ghost"
