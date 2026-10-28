@@ -179,6 +179,29 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
   });
 
+  it('counts days in the site’s timezone, whoever is looking', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', {
+      boot: {
+        ...webAnalyticsBootOverrides(),
+        browseSettings: {
+          response: settingsResponse({
+            settings: { web_analytics_enabled: true, timezone: 'Asia/Tokyo' },
+          }),
+        },
+      },
+    });
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('timezone')).toBe('Asia/Tokyo');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('timezone'),
+      )
+      .toBe('Asia/Tokyo');
+  });
+
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();
     seedTopPostsViews();
@@ -217,6 +240,56 @@ describe('Analytics overview', () => {
         new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
       )
       .toBe('2018-06-15');
+  });
+
+  it('shows Analytics without waiting for where the site’s history starts', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    const pendingFirstMember = deferred<unknown>();
+    fakeAdminEndpoint(
+      'GET',
+      /^\/members\/\?limit=1&order=created_at\+asc/,
+      () => pendingFirstMember.promise,
+    );
+
+    try {
+      await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+      await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+    } finally {
+      pendingFirstMember.resolve({
+        members: [{ id: 'first-member', created_at: '2020-01-01T00:00:00.000Z' }],
+        meta: { pagination: { page: 1, limit: 1, pages: 1, total: 1, next: null, prev: null } },
+      });
+    }
+  });
+
+  it('starts All time where the site’s history does when picked before that’s known', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    const pendingFirstMember = deferred<unknown>();
+    fakeAdminEndpoint(
+      'GET',
+      /^\/members\/\?limit=1&order=created_at\+asc/,
+      () => pendingFirstMember.promise,
+    );
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+    pendingFirstMember.resolve({
+      members: [{ id: 'first-member', created_at: '2018-06-15T10:00:00.000Z' }],
+      meta: { pagination: { page: 1, limit: 1, pages: 1, total: 1, next: null, prev: null } },
+    });
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2018-06-15');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2018-06-15');
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('All time');
   });
 
   it('never starts All time before 2013, whatever an import says', async () => {

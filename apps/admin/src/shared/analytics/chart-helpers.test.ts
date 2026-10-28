@@ -12,6 +12,8 @@ import {
   getPeriodText,
   getRangeDates,
   getRangeForStartDate,
+  getStatsTimezone,
+  setStatsTimezone,
   isCustomRange,
   resolveEffectiveRangeDays,
   sanitizeChartData,
@@ -630,6 +632,39 @@ describe('chart-helpers', () => {
     it('charts a long history as months', () => {
       const data = createDateRange(3000, '2017-06-01', () => 5);
       expect(getAggregationStrategy(STATS_RANGES.allTime.value, data)).toBe('monthly');
+    });
+  });
+
+  describe('the site timezone', () => {
+    afterEach(() => {
+      setStatsTimezone(null);
+    });
+
+    it('counts days in the site timezone once it is known', () => {
+      setStatsTimezone('Asia/Tokyo');
+
+      const { startDate, timezone } = getRangeDates(STATS_RANGES.last7Days.value);
+
+      expect(getStatsTimezone()).toBe('Asia/Tokyo');
+      expect(timezone).toBe('Asia/Tokyo');
+      expect(startDate.tz()).toBe('Asia/Tokyo');
+    });
+
+    it('takes Today from the site clock, which near midnight can be a day ahead', () => {
+      vi.useFakeTimers();
+      // 8pm on the 20th in UTC is already 5am on the 21st in Tokyo
+      vi.setSystemTime(new Date('2026-10-20T20:00:00Z'));
+      setStatsTimezone('Asia/Tokyo');
+
+      try {
+        expect(getSingleDay(STATS_RANGES.today.value)).toBe('2026-10-21');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('uses the viewer timezone until then', () => {
+      expect(getStatsTimezone()).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
   });
 });
