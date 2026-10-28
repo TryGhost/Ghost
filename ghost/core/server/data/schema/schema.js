@@ -2191,7 +2191,9 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['free_signup', 'paid_subscription_started']] },
+      validations: {
+        isIn: [['free_signup', 'paid_subscription_started', 'paid_subscription_changed']],
+      },
     },
     scope: {
       type: 'string',
