@@ -2493,6 +2493,40 @@ services:
         Cover saved-event browsing/export and staff failure channels through real
         consumers, including pending shutdown. Existing single-delivery HTTP tests prove
         selected rows and mail values, not exactly-once delivery or drain.
+  editor-presence:
+    kind: directory
+    disposition: retain
+    status: pending
+    migrated: true
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        New root created on the defineService contract. Boot selects the presence store from
+        the cache:presence adapter once and retains one service instance; the endpoint reads
+        the ready instance per request. No background work, listeners or shutdown hook.
+      reviewedAt: 948314cfc1aa6d0b5865f00fee94611fa01c9279
+      sources:
+        - core/server/services/editor-presence/index.ts
+        - core/server/services/editor-presence/editor-presence-service.ts
+        - core/server/api/endpoints/presence.js
+        - core/boot.js
+    entryPoints:
+      - editor-presence/index.ts
+    notes: >-
+      Site-scoped presence heartbeats in a Redis sorted set or an in-process map, read by the
+      Admin presence endpoint behind the editorPresencePolling flag. Contract audit pending.
+    contracts: {}
+    unverified:
+      - exports
+      - construction
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+      - failures
+    blockers: []
   email-address:
     kind: directory
     disposition: relocate

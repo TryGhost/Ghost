@@ -102,6 +102,12 @@ const features: Feature[] = [
       'Install and manage third-party apps that run on their own servers. Early and incomplete.',
     flag: 'apps',
   },
+  {
+    title: 'Editor presence polling',
+    description:
+      'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
+    flag: 'editorPresencePolling',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
