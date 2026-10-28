@@ -9,9 +9,13 @@ const TYPEAHEAD_RESET_MS = 500;
 // from the bottom here, rather than under the field.
 const SHEET_QUERY = '(max-width: 480px)';
 
-// Twelve rows of 34px and the list's padding: room for a long list like the countries,
-// and never more than there is space for on the side the list opens to.
-const MAX_LIST_HEIGHT = 416;
+// The rows the dropdown shows before it scrolls. A longer list, like the countries, gets a
+// search box above it, since finding one option among many by scrolling is slow.
+const LIST_ROWS = 12;
+
+// Those rows at 34px and the list's padding, and never more than there is space for on the
+// side the list opens to.
+const MAX_LIST_HEIGHT = LIST_ROWS * 34 + 8;
 
 const CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aeaeae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`;
 
@@ -167,6 +171,36 @@ export const ChoicePickerStyles = `
         bottom: calc(100% + 6px);
     }
 
+    .gh-portal-choice-search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--grey12);
+        color: var(--grey8);
+    }
+
+    .gh-portal-choice-search input {
+        flex: 1;
+        min-width: 0;
+        height: 40px;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--grey1);
+        font: inherit;
+        font-size: 1.5rem;
+    }
+
+    /* A search that finds nothing shows an icon rather than a sentence, so the picker adds
+       no wording for translators to keep up with. */
+    .gh-portal-choice-empty {
+        display: flex;
+        justify-content: center;
+        padding: 14px;
+        color: var(--grey8);
+    }
+
     .gh-portal-choice-list {
         max-height: ${MAX_LIST_HEIGHT}px;
         margin: 0;
@@ -176,16 +210,19 @@ export const ChoicePickerStyles = `
         list-style: none;
     }
 
+    /* Whole pixels throughout: a row of 7px, a 20px line and 7px is 34px exactly, so every
+       row starts on the pixel grid and each checkbox's tick renders the same way. A line
+       height of 1.3 made rows 35.5px, and the tick sat differently on every other row. */
     .gh-portal-choice-option {
         display: flex;
         align-items: center;
         gap: 10px;
         min-height: 34px;
         margin: 0;
-        padding: 8px 10px;
+        padding: 7px 10px;
         border-radius: 6px;
         font-size: 1.5rem;
-        line-height: 1.3;
+        line-height: 20px;
         cursor: pointer;
     }
 
@@ -308,6 +345,13 @@ export const ChoicePickerStyles = `
         cursor: pointer;
     }
 
+    .gh-portal-choice-sheet .gh-portal-choice-search {
+        flex: none;
+        margin: 4px 12px 0;
+        border: 1px solid var(--grey11);
+        border-radius: 8px;
+    }
+
     .gh-portal-choice-sheet .gh-portal-choice-list {
         flex: 1;
         min-height: 0;
@@ -419,6 +463,8 @@ export default function ChoicePicker({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState('');
   const typed = useRef({ letters: '', at: 0 });
   const drag = useRef<{ from: number; at: number; by: number } | null>(null);
 
@@ -432,10 +478,17 @@ export default function ChoicePicker({
   ];
   const labelOf = (picked: string) =>
     choices.find((choice) => choice.value === picked)?.label ?? picked;
+  const searchable = choices.length > LIST_ROWS;
+  const term = query.trim().toLowerCase();
+  // What the list shows: every option, or those whose label holds what was searched for.
+  const shown = term
+    ? choices.filter((choice) => choice.label.toLowerCase().includes(term))
+    : choices;
   const optionId = (index: number) => `${id}-option-${index}`;
 
   const openList = () => {
     setSheet(Boolean(rootRef.current?.ownerDocument.defaultView?.matchMedia(SHEET_QUERY).matches));
+    setQuery('');
     setActive(
       Math.max(
         0,
@@ -476,7 +529,7 @@ export default function ChoicePicker({
   const jumpTo = (letter: string) => {
     const letters = (isTyping() ? typed.current.letters : '') + letter.toLowerCase();
     typed.current = { letters, at: Date.now() };
-    const match = startingWith(choices, letters, letters.length === 1 ? active + 1 : active);
+    const match = startingWith(shown, letters, letters.length === 1 ? active + 1 : active);
     if (match !== -1) {
       setActive(match);
     }
@@ -487,16 +540,24 @@ export default function ChoicePicker({
     if (!open || !rootRef.current || !popoverRef.current) {
       return;
     }
-    listRef.current?.focus();
+    const view = rootRef.current.ownerDocument.defaultView;
+    // A search box would raise a phone's keyboard over the options, so there it waits to be
+    // tapped and the list takes the keys.
+    if (searchable && !view?.matchMedia('(pointer: coarse)').matches) {
+      searchRef.current?.focus();
+    } else {
+      listRef.current?.focus();
+    }
     if (!sheet && listRef.current) {
       const field = rootRef.current.getBoundingClientRect();
-      const viewport = rootRef.current.ownerDocument.defaultView?.innerHeight ?? 0;
-      const below = viewport - field.bottom - 12;
+      const below = (view?.innerHeight ?? 0) - field.bottom - 12;
       const above = field.top - 12;
-      const opensUp =
-        below < Math.min(MAX_LIST_HEIGHT, listRef.current.scrollHeight) && above > below;
+      // The search box, if any, sits above the list and takes its share of the room.
+      const chrome = popoverRef.current.offsetHeight - listRef.current.offsetHeight;
+      const wanted = Math.min(MAX_LIST_HEIGHT, listRef.current.scrollHeight) + chrome;
+      const opensUp = below < wanted && above > below;
       setUp(opensUp);
-      setListHeight(Math.min(MAX_LIST_HEIGHT, opensUp ? above : below));
+      setListHeight(Math.min(MAX_LIST_HEIGHT, (opensUp ? above : below) - chrome));
     }
   }, [open, sheet]);
 
@@ -522,8 +583,9 @@ export default function ChoicePicker({
     return () => doc.removeEventListener('pointerdown', closeOutside);
   }, [open, sheet]);
 
-  const handleListKeys = (event: React.KeyboardEvent<HTMLUListElement>) => {
-    const last = choices.length - 1;
+  const handleListKeys = (event: React.KeyboardEvent<HTMLElement>) => {
+    const inSearch = event.currentTarget === searchRef.current;
+    const last = shown.length - 1;
     const moves: Record<string, number> = {
       ArrowDown: Math.min(last, active + 1),
       ArrowUp: Math.max(0, active - 1),
@@ -534,15 +596,24 @@ export default function ChoicePicker({
     if (move !== undefined) {
       event.preventDefault();
       setActive(move);
-    } else if (event.key === 'Enter' || (event.key === ' ' && !isTyping())) {
+    } else if (event.key === 'Enter' || (event.key === ' ' && !inSearch && !isTyping())) {
       event.preventDefault();
-      const choice = choices[active];
+      const choice = shown[active];
       if (choice !== undefined) {
         pick(choice.value);
       }
     } else if (event.key === 'Tab') {
       setOpen(false);
-    } else if (event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    } else if (event.key === 'Backspace' && inSearch && !query && multiple && value.length) {
+      // An empty search box steps back into the chips, as a tag field does.
+      onChange(value.slice(0, -1));
+    } else if (
+      !inSearch &&
+      event.key.length === 1 &&
+      !event.altKey &&
+      !event.ctrlKey &&
+      !event.metaKey
+    ) {
       event.preventDefault();
       jumpTo(event.key);
     }
@@ -590,7 +661,7 @@ export default function ChoicePicker({
   const list = (
     <ul
       ref={listRef}
-      aria-activedescendant={choices.length ? optionId(active) : undefined}
+      aria-activedescendant={shown.length ? optionId(active) : undefined}
       aria-labelledby={labelId}
       aria-multiselectable={multiple || undefined}
       className="gh-portal-choice-list"
@@ -600,7 +671,7 @@ export default function ChoicePicker({
       tabIndex={-1}
       onKeyDown={handleListKeys}
     >
-      {choices.map(({ value: choice, label: optionLabel }, index) => (
+      {shown.map(({ value: choice, label: optionLabel }, index) => (
         // Picked from the keyboard through the listbox's active option, so a row only
         // answers the pointer.
         <li
@@ -625,13 +696,55 @@ export default function ChoicePicker({
     </ul>
   );
 
-  let shown = placeholder;
+  // Named by the field it searches, so it needs no wording of its own.
+  const search = searchable && (
+    <div className="gh-portal-choice-search">
+      <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+        <path d="m20 20-3.5-3.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+      </svg>
+      <input
+        ref={searchRef}
+        aria-activedescendant={shown.length ? optionId(active) : undefined}
+        aria-autocomplete="list"
+        aria-controls={`${id}-list`}
+        aria-expanded="true"
+        aria-labelledby={labelId}
+        autoComplete="off"
+        role="combobox"
+        spellCheck={false}
+        type="text"
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setActive(0);
+        }}
+        onKeyDown={handleListKeys}
+      />
+    </div>
+  );
+
+  const nothingFound = searchable && shown.length === 0 && (
+    <div aria-hidden="true" className="gh-portal-choice-empty">
+      <svg fill="none" height="20" viewBox="0 0 24 24" width="20">
+        <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+        <path
+          d="m21 21-4.3-4.3M13.5 8.5l-5 5M8.5 8.5l5 5"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="2"
+        />
+      </svg>
+    </div>
+  );
+
+  let fieldText = placeholder;
   if (multiple && value.length) {
-    shown = '';
+    fieldText = '';
   } else if (value.length) {
     // A field that took several answers before it was changed to take one keeps them
     // until the member picks again.
-    shown = value.map(labelOf).join(', ');
+    fieldText = value.map(labelOf).join(', ');
   }
 
   const triggerClasses = [
@@ -704,13 +817,15 @@ export default function ChoicePicker({
             }
           }}
         >
-          <span className="gh-portal-choice-value">{shown}</span>
+          <span className="gh-portal-choice-value">{fieldText}</span>
           <span aria-hidden="true" className="gh-portal-choice-chevron" />
         </button>
       </div>
       {open && !sheet && (
         <div ref={popoverRef} className={`gh-portal-choice-popover${up ? ' is-up' : ''}`}>
+          {search}
           {list}
+          {nothingFound}
         </div>
       )}
       {/* Rendered into the page's body: Portal's popup is transformed, which would hold a
@@ -749,7 +864,9 @@ export default function ChoicePicker({
                   <Cross size={16} />
                 </button>
               </div>
+              {search}
               {list}
+              {nothingFound}
             </div>
           </>,
           doc.body,
