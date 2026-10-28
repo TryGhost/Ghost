@@ -71,12 +71,17 @@ async function openThemeTab() {
 }
 
 describe('Design settings', () => {
-  it('restores both tab selections from the URL after remounting', async () => {
+  it('restores both tabs and the preview device from the URL after remounting', async () => {
     fakeDesignWorld([navigationLayout()], { withPost: true });
     await renderAdminApp('/settings/design/edit?ref=setup');
     const modal = await openThemeTab();
     await settingsScreen.designToolbar().getByRole('tab', { name: 'Post' }).click();
     await expect.poll(currentRoute).toBe('/settings/design/edit?ref=setup&tab=theme&preview=post');
+
+    await modal.getByRole('radio', { name: 'Mobile' }).click();
+    await expect
+      .poll(currentRoute)
+      .toBe('/settings/design/edit?ref=setup&tab=theme&preview=post&device=mobile');
 
     const route = currentRoute();
     await cleanup();
@@ -87,6 +92,9 @@ describe('Design settings', () => {
     await expect
       .element(settingsScreen.designToolbar().getByRole('tab', { name: 'Post' }))
       .toHaveAttribute('aria-selected', 'true');
+    await expect.element(settingsScreen.previewMobile()).toBeVisible();
+    await modal.getByRole('radio', { name: 'Desktop' }).click();
+    await expect.poll(currentRoute).toBe('/settings/design/edit?ref=setup&tab=theme&preview=post');
   });
 
   it('keeps unsaved settings and the preview when switching tabs', async () => {
@@ -120,12 +128,19 @@ describe('Design settings', () => {
     await settingsScreen.designToolbar().getByRole('tab', { name: 'Post' }).click();
     await expect.poll(currentRoute).toBe('/settings/design/edit?tab=theme&preview=post');
 
+    await settingsScreen.designModal().getByRole('radio', { name: 'Mobile' }).click();
+    await expect
+      .poll(currentRoute)
+      .toBe('/settings/design/edit?tab=theme&preview=post&device=mobile');
+
     window.history.back();
     await expect.poll(currentRoute).toBe('/settings/design');
     await expect(settingsScreen.designModal()).toHaveCount(0);
 
     window.history.forward();
-    await expect.poll(currentRoute).toBe('/settings/design/edit?tab=theme&preview=post');
+    await expect
+      .poll(currentRoute)
+      .toBe('/settings/design/edit?tab=theme&preview=post&device=mobile');
     await expect
       .element(settingsScreen.designModal().getByRole('tab', { name: 'Theme' }))
       .toHaveAttribute('aria-selected', 'true');
