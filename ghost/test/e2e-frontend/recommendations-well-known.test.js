@@ -18,9 +18,9 @@ describe('Recommendations well-known file', function () {
   });
 
   afterEach(async function () {
-    for (const recommendation of await recommendationsService.repository.getAll()) {
+    for (const recommendation of await recommendationsService.service.repository.getAll()) {
       recommendation.delete();
-      await recommendationsService.repository.save(recommendation);
+      await recommendationsService.service.repository.save(recommendation);
     }
   });
 
@@ -35,8 +35,8 @@ describe('Recommendations well-known file', function () {
       oneClickSubscribe: false,
       createdAt: new Date('2021-01-01T00:00:00.000Z'),
     });
-    await recommendationsService.repository.save(recommendation);
-    return recommendationsService.repository.getById(recommendation.id);
+    await recommendationsService.service.repository.save(recommendation);
+    return recommendationsService.service.repository.getById(recommendation.id);
   }
 
   it('serves the recommendations stored in the database', async function () {
@@ -64,7 +64,7 @@ describe('Recommendations well-known file', function () {
     assert.ok(before.text.includes(JSON.stringify('https://recommended.example.com/')));
 
     recommendation.delete();
-    await recommendationsService.repository.save(recommendation);
+    await recommendationsService.service.repository.save(recommendation);
 
     const after = await request.get('/.well-known/recommendations.json').expect(200);
     assert.equal(after.text, '[]');
@@ -80,7 +80,7 @@ describe('Recommendations well-known file', function () {
       .expect(304);
 
     recommendation.delete();
-    await recommendationsService.repository.save(recommendation);
+    await recommendationsService.service.repository.save(recommendation);
 
     await request
       .get('/.well-known/recommendations.json')

@@ -12,7 +12,7 @@ const controller = {
     permissions: true,
     validation: {},
     async query(frame) {
-      return await recommendations.controller.browse(frame);
+      return await recommendations.service.controller.browse(frame);
     },
   },
 
@@ -24,7 +24,7 @@ const controller = {
     permissions: true,
     validation: {},
     async query(frame) {
-      return await recommendations.controller.read(frame);
+      return await recommendations.service.controller.read(frame);
     },
   },
 
@@ -37,7 +37,7 @@ const controller = {
     validation: {},
     permissions: true,
     async query(frame) {
-      return await recommendations.controller.add(frame);
+      return await recommendations.service.controller.add(frame);
     },
   },
 
@@ -55,7 +55,7 @@ const controller = {
       method: 'add',
     },
     async query(frame) {
-      return await recommendations.controller.check(frame);
+      return await recommendations.service.controller.check(frame);
     },
   },
 
@@ -73,7 +73,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      return await recommendations.controller.edit(frame);
+      return await recommendations.service.controller.edit(frame);
     },
   },
 
@@ -92,7 +92,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return recommendations.controller.destroy(frame);
+      return recommendations.service.controller.destroy(frame);
     },
   },
 };

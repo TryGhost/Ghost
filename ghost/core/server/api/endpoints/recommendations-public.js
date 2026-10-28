@@ -12,7 +12,7 @@ const controller = {
     permissions: true,
     validation: {},
     async query(frame) {
-      return await recommendations.controller.browse(frame);
+      return await recommendations.service.controller.browse(frame);
     },
   },
 
@@ -31,7 +31,7 @@ const controller = {
     permissions: true,
     statusCode: 204,
     async query(frame) {
-      await recommendations.controller.trackClicked(frame);
+      await recommendations.service.controller.trackClicked(frame);
     },
   },
 
@@ -50,7 +50,7 @@ const controller = {
     permissions: true,
     statusCode: 204,
     async query(frame) {
-      await recommendations.controller.trackSubscribed(frame);
+      await recommendations.service.controller.trackSubscribed(frame);
     },
   },
 };

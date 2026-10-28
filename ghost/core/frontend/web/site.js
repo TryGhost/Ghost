@@ -72,7 +72,7 @@ module.exports = function setupSiteApp(routerConfig) {
   siteApp.get(
     '/.well-known/recommendations.json',
     function lazyRecommendationsWellKnownMw(req, res, next) {
-      return recommendationsService.wellknownController.getRecommendations(req, res, next);
+      return recommendationsService.service.wellknownController.getRecommendations(req, res, next);
     },
   );
 

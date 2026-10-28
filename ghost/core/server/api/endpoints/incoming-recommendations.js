@@ -12,7 +12,7 @@ const controller = {
     permissions: true,
     validation: {},
     async query(frame) {
-      return await recommendations.incomingRecommendationController.browse(frame);
+      return await recommendations.service.incomingRecommendationController.browse(frame);
     },
   },
 };
