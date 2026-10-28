@@ -10,6 +10,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const gifts = sinon.stub();
   const analytics = sinon.stub();
   const mentions = sinon.stub().resolves();
+  // Recommendations initializes synchronously and reads the mentions fields during its call.
+  const recommendations = sinon.stub();
   const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
   const donations = sinon.stub().resolves();
@@ -50,6 +52,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         controller: {},
         sendingService: {},
       },
+      './server/services/recommendations': { init: recommendations },
       './server/services/email-analytics': {
         getGifts: () => ({}),
         getAutomations: () => ({}),
@@ -75,6 +78,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     emailAddress,
     gifts,
     mentions,
+    recommendations,
     analytics,
     media,
     email,
@@ -150,6 +154,36 @@ it('waits for Stripe initialization before initializing gifts and the other serv
   sinon.assert.calledOnce(boot.gifts);
   sinon.assert.calledOnce(boot.register);
   sinon.assert.calledOnce(boot.start);
+});
+
+it('calls recommendations init after mentions init starts, without waiting for mentions to finish', async function () {
+  const boot = createServicesHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.mentions.returns(ready.promise);
+  const startup = boot.initServices();
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.mentions);
+    sinon.assert.calledOnce(boot.recommendations);
+    sinon.assert.callOrder(boot.mentions, boot.recommendations);
+  } finally {
+    ready.resolve();
+    await startup;
+  }
+});
+
+it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
+  const boot = createServicesHarness();
+  const failure = new Error('recommendations initialization failed');
+  boot.recommendations.throws(failure);
+
+  await assert.rejects(boot.initServices(), (error) => error === failure);
+
+  sinon.assert.notCalled(boot.register);
+  sinon.assert.notCalled(boot.start);
+  sinon.assert.notCalled(boot.automations);
+  sinon.assert.notCalled(boot.reschedule);
 });
 
 for (const dependency of ['mentions', 'media', 'email', 'donations'] as const) {

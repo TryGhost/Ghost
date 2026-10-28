@@ -11556,7 +11556,10 @@ services:
           barrel exports constructors and entities, not another application instance. Inner
           methods return promises; controllers serialize plain recommendation values into
           data/meta responses. Controller units with fake services assert selected serialized
-          fields, pagination and validation; they do not assert root identity or initialization.
+          fields, pagination and validation. The root test loads the index and asserts it is one
+          wrapper instance whose eight fields are undefined before init, that init returns
+          undefined, and that the three endpoint modules read the controller fields per request,
+          rejecting with a TypeError before publication.
         sources:
           - core/server/services/recommendations/index.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
@@ -11564,6 +11567,8 @@ services:
           - core/server/services/recommendations/service/recommendation-controller.ts
           - core/server/services/recommendations/service/incoming-recommendation-controller.ts
         tests:
+          - test/unit/server/services/recommendations/index.test.ts
+          - test/unit/api/endpoints/recommendations.test.js
           - test/unit/server/services/recommendations/service/recommendation-controller.test.ts
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       construction:
@@ -11576,7 +11581,14 @@ services:
           notifications. Metadata borrows the shared oEmbed and external-request objects; the
           renderer retains the staff wrapper. No other production root construction or deep
           composition was found. Service units use in-memory repositories and fake dependencies;
-          booted API/email tests exercise normal composition, not individual constructor failures.
+          booted API/email tests exercise normal composition. The root test runs the real init
+          with mentions fields replaced and asserts the repositories are bound to the three
+          models and shared Sentry, the subscribe repository is the click class, the outgoing
+          service holds the published repositories, the mentions sender and the shared URL
+          helpers, controllers hold their services, metadata is fetched through the shared
+          external request client with oEmbed fallback, incoming emails go through GhostMailer
+          to the alert users mapped to email and slug, and the renderer reads the staff API at
+          send time. Failure of a model lookup after the repository is published is asserted.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
@@ -11586,6 +11598,7 @@ services:
           - core/server/services/settings/settings-bread-service.js
           - core/server/lib/mail/ghost-mailer.js
         tests:
+          - test/unit/server/services/recommendations/index.test.ts
           - test/unit/server/services/recommendations/service/recommendation-service.test.ts
           - test/e2e-api/admin/recommendations.test.js
           - test/e2e-server/services/recommendation-emails.test.js
@@ -11601,7 +11614,12 @@ services:
           tests save real mentions and assert two rendered notifications, recommendation-back
           wording and exclusion of ordinary/unverified mentions, using mocked mail transport and
           test-only event settlement. Helper tests replace the API; incoming browse units replace
-          its service. Neither proves the real incoming HTTP path or well-known publication timing.
+          its service. The endpoint test asserts each query forwards its frame to the controller
+          read at request time and that tracking queries resolve without a body; the root test
+          browses incoming recommendations through the wrapper controller with a fake mentions
+          API and the published repository. Booted frontend tests assert the well-known file
+          reflects repository changes and revalidates its ETag. The real incoming HTTP path and
+          well-known readiness at boot remain unproven.
         sources:
           - core/boot.js
           - core/server/api/endpoints/recommendations.js
@@ -11619,7 +11637,10 @@ services:
           - test/e2e-api/admin/recommendations.test.js
           - test/e2e-api/content/recommendations.test.js
           - test/e2e-api/members/recommendations.test.js
+          - test/e2e-frontend/recommendations-well-known.test.js
           - test/e2e-server/services/recommendation-emails.test.js
+          - test/unit/api/endpoints/recommendations.test.js
+          - test/unit/server/services/recommendations/index.test.ts
           - test/unit/frontend/helpers/recommendations.test.ts
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       startup:
@@ -11631,8 +11652,14 @@ services:
           file before checking recommendations_enabled and scheduling metadata refresh. Incoming
           init schedules revalidation. Direct inner-service units assert well-known invocation,
           refresh invocation after advancing a day, outgoing production/development enablement
-          and test/disabled suppression. They do not establish exact jitter, wrapper readiness,
-          completion before HTTP readiness or behavior when startup file/DB work fails.
+          and test/disabled suppression. The root test asserts init throws before publishing
+          anything when either mentions field is missing and succeeds once present, starts both
+          inner initializers on the published services without awaiting them unless config is
+          explicitly false, logs the disabled case, and logs an inner initializer rejection
+          while still returning. The boot harness asserts recommendations init is called after
+          mentions init starts without waiting for it, and that its synchronous throw rejects
+          initServices before job registration. Exact jitter, completion before HTTP readiness
+          and behavior when startup file/DB work fails remain source-only.
         sources:
           - core/boot.js
           - core/server/services/mentions/service.js
@@ -11640,6 +11667,8 @@ services:
           - core/server/services/recommendations/service/recommendation-service.ts
           - core/server/services/recommendations/service/incoming-recommendation-service.ts
         tests:
+          - test/unit/boot/init-services.test.ts
+          - test/unit/server/services/recommendations/index.test.ts
           - test/unit/server/services/recommendations/service/recommendation-service.test.ts
           - test/unit/server/services/recommendations/service/incoming-recommendation-service.test.ts
       lifetime:
@@ -11650,16 +11679,21 @@ services:
           init return; it does not remove existing fields or stop work. Controllers, incoming
           service and outgoing service retain their collaborators, while the event callback
           rereads the wrapper's incoming service and the renderer rereads staff.api. Inner init
-          methods have no repeat guard, and their timers are not retained. These lifecycle and
-          dependency-replacement contracts are source-only; no root repeat/failure/reset tests
-          were found. There is no exposed reset or shutdown method.
+          methods have no repeat guard, and their timers are not retained. The root test asserts
+          repeated init retains every published object and installs the mapper, subscriber and
+          inner initializers once, that a construction failure after the repository is published
+          leaves the other fields undefined and makes the next init return without completing
+          the graph, and that the event callback emails through the wrapper's current incoming
+          service. Timer retention and dependency replacement in retained controllers remain
+          source-only. There is no exposed reset or shutdown method.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
           - core/server/services/recommendations/service/incoming-recommendation-service.ts
           - core/server/services/recommendations/service/incoming-recommendation-email-renderer.ts
           - core/server/services/mentions/webmention-metadata.js
-        tests: []
+        tests:
+          - test/unit/server/services/recommendations/index.test.ts
       configuration:
         summary: >-
           Only explicit false for services:recommendations:enabled prevents root construction.
@@ -11673,6 +11707,10 @@ services:
           got, not production request-external. Mail integration asserts recommendation sender
           addresses under selected config overrides with mocked sendMail; it does not prove
           transport reconfiguration. Immutable config replacement does not update captured values.
+          The root test asserts the enabler reads the current setting synchronously on every
+          call and stringifies it, that only an explicit false config value skips the inner
+          initializers, and that metadata requests carry the 5-second timeout and retry limit 3
+          to the shared request client.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/recommendation-enabler-service.js
@@ -11685,6 +11723,7 @@ services:
           - core/server/lib/mail/ghost-mailer.js
           - core/server/lib/request-external.js
         tests:
+          - test/unit/server/services/recommendations/index.test.ts
           - test/unit/server/services/recommendations/service/recommendation-service.test.ts
           - test/unit/server/services/recommendations/service/recommendation-metadata-service.test.ts
           - test/integration/services/q-email-addresses.test.js
@@ -11699,7 +11738,9 @@ services:
           atomic rename. Its unit asserts actual JSON file content, not concurrent writes. Email
           tests use DomainEvents.allSettled, whose tracking is test-only. Helper timeout tests
           prove fallback HTML/logging with an injected API, not cancellation of underlying work.
-          No test establishes production shutdown settlement or transport/socket disposal.
+          The root test asserts the mapper strips only the well-known suffix, preserves the
+          query string and leaves its input unchanged. No test establishes production shutdown
+          settlement or transport/socket disposal.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
@@ -11715,6 +11756,7 @@ services:
           - core/frontend/helpers/recommendations.js
           - package.json
         tests:
+          - test/unit/server/services/recommendations/index.test.ts
           - test/unit/server/services/recommendations/service/well-known-service.test.ts
           - test/unit/frontend/helpers/recommendations.test.ts
           - test/e2e-server/services/recommendation-emails.test.js
@@ -11729,8 +11771,12 @@ services:
           the row. Incoming conversion failure omits a recommendation; recipient/render/send
           rejection stops that handler, whose DomainEvents boundary logs it. Units assert selected
           fallback values, mapping failure/null and non-propagation of a rejected mention sender
-          using fakes; timer rejection cases only assert invocation. They do not prove rollback,
-          ordered persistence, notification retry or recovery from partial root construction.
+          using fakes; timer rejection cases only assert invocation. The root test asserts
+          setSetting resolves before the settings edit settles, that an inner initializer
+          rejection is logged rather than thrown, and that partial root construction is neither
+          cleaned up nor retried; the service unit asserts checkRecommendation saves and returns
+          the stored values before its metadata refresh settles. They do not prove rollback,
+          ordered persistence or notification retry.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/recommendation-enabler-service.js
@@ -11742,6 +11788,7 @@ services:
           - core/server/services/settings/settings-bread-service.js
           - package.json
         tests:
+          - test/unit/server/services/recommendations/index.test.ts
           - test/unit/server/services/recommendations/service/recommendation-service.test.ts
           - test/unit/server/services/recommendations/service/incoming-recommendation-service.test.ts
           - test/unit/server/services/recommendations/service/recommendation-metadata-service.test.ts
@@ -11750,26 +11797,30 @@ services:
     unverified: []
     blockers:
       - >-
-        Characterize root identity, first disabled initialization, dependency absence and failure
-        after repository publication. Boot does not await initial DB/file work; later init skips
-        partial graphs. Existing HTTP success does not establish wrapper readiness or retry.
+        Root identity, first disabled initialization, dependency absence and failure after
+        repository publication are characterized in the root test. Boot still does not await
+        initial DB/file work, and existing HTTP success does not establish wrapper readiness
+        or retry after a partial graph.
       - >-
         Account for timers, mapper/listener retention and both mail transports when changing
         lifecycle ownership. No teardown, cancellation or production event drain is exposed;
         retained controllers/services can keep old dependencies after another root is replaced.
       - >-
-        Preserve the enabler's synchronous settings read boundary and explicitly characterize
-        its dropped edit promise. Current setting tests use an in-memory synchronous replacement;
-        successful mutation responses do not prove settings persistence completed before return.
+        The enabler's synchronous settings read boundary and its dropped edit promise are
+        characterized in the root test against the real BREAD service with a stubbed edit.
+        Successful mutation responses still do not prove settings persistence completed before
+        return.
       - >-
-        Cover held metadata/settings/file operations at the boundary being migrated. Existing
-        checkRecommendation tests use immediately settled metadata and shared in-memory entities,
-        so they do not expose its unawaited refresh or partial DB/file/settings side effects.
+        checkRecommendation's unawaited metadata refresh is characterized with a pending fetch
+        in the service unit. Partial DB/file/settings side effects of held operations at the
+        boundary being migrated are still not covered.
       - >-
-        Real incoming browse, well-known publication readiness, live disable and captured config
-        replacement lack targeted coverage. The helper test titled for a disabled setting actually
-        sets it true; metadata units inject raw got and do not establish production retries,
-        DNS guards, shared socket ownership or timeout completion.
+        Incoming browse is covered through the wrapper controller with a fake mentions API and
+        the well-known file through a booted frontend test; the real incoming HTTP path,
+        well-known readiness at boot, live disable and captured config replacement still lack
+        targeted coverage. The helper test titled for a disabled setting actually sets it true;
+        metadata units inject raw got and do not establish production retries, DNS guards,
+        shared socket ownership or timeout completion.
   remote-flags:
     kind: directory
     disposition: relocate
