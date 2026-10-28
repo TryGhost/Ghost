@@ -60,13 +60,30 @@ const sameName = (a: unknown, b: unknown) =>
   typeof b === 'string' &&
   a.trim().toLowerCase() === b.trim().toLowerCase();
 
-// Real fields first, list fields after, then the last reorder over both. A field created
-// since that reorder keeps to the end, which is where the real API puts a new one.
-const inStoredOrder = <T extends { key: string }>(fields: T[], order: string[]): T[] => {
-  const placeOf = new Map(order.map((key, place) => [key, place]));
-  return [...fields].sort(
-    (a, b) => (placeOf.get(a.key) ?? Infinity) - (placeOf.get(b.key) ?? Infinity),
-  );
+// Ghost's fields stay in the order Ghost returns them, which every reorder is sent to. Each
+// list field goes in after the field it last followed in the stored order, and one the order
+// has never seen goes last, where Ghost puts a new field. A stale order, such as a phone's
+// seed, can then only misplace list fields, never Ghost's own.
+const inStoredOrder = <T extends { key: string }>(real: T[], list: T[], order: string[]): T[] => {
+  const result = [...real];
+  const placeOf = (key: string) => {
+    const place = order.indexOf(key);
+    return place === -1 ? Infinity : place;
+  };
+  for (const field of [...list].sort((a, b) => placeOf(a.key) - placeOf(b.key))) {
+    const place = order.indexOf(field.key);
+    if (place === -1) {
+      result.push(field);
+      continue;
+    }
+    const before = order
+      .slice(0, place)
+      .reverse()
+      .map((key) => result.findIndex((placed) => placed.key === key))
+      .find((index) => index !== -1);
+    result.splice(before === undefined ? 0 : before + 1, 0, field);
+  }
+  return result;
 };
 
 export function installListFieldFakeApi() {
@@ -100,7 +117,7 @@ export function installListFieldFakeApi() {
     const listFields = store.fields.filter((field) => withArchived || field.status === 'active');
     return json(response.status, {
       ...body,
-      members_metafields: inStoredOrder([...body.members_metafields, ...listFields], store.order),
+      members_metafields: inStoredOrder(body.members_metafields, listFields, store.order),
     });
   };
 
@@ -195,7 +212,7 @@ export function installListFieldFakeApi() {
     writeStore({ ...store, order: keys });
     return json(response.status, {
       ...body,
-      members_metafields: inStoredOrder([...body.members_metafields, ...store.fields], keys),
+      members_metafields: inStoredOrder(body.members_metafields, store.fields, keys),
     });
   };
 
