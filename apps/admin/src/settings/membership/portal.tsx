@@ -3,7 +3,7 @@ import FakeLogo from '@/settings/assets/images/portal-splash-default-logo.png';
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import UserAddIcon from '@/settings/assets/images/portal-splash-user-add.png';
-import { Button } from '@tryghost/shade/components';
+import { Banner, Button, Link } from '@tryghost/shade/components';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -48,13 +48,14 @@ const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   };
 
   const color = accentColor || '#F6414E';
+  const isDisabled = membersSignupAccess === 'none';
 
   return (
     <TopLevelGroup
       customButtons={
         <Button
           className="mt-[-5px]"
-          disabled={membersSignupAccess === 'none'}
+          disabled={isDisabled}
           size="sm"
           type="button"
           variant="ghost"
@@ -70,6 +71,23 @@ const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       title="Signup portal"
       onOpen={openPreviewModal}
     >
+      {isDisabled && (
+        <Banner size="sm" variant="default">
+          Your{' '}
+          <Link asChild>
+            <button
+              type="button"
+              onClick={() => {
+                updateRoute('members');
+              }}
+            >
+              Subscription access
+            </button>
+          </Link>{' '}
+          is set to &lsquo;Nobody&rsquo;, which disables the signup portal and member sign-ins.
+          Change to &lsquo;Invite-only&rsquo; or another option to customize Portal.
+        </Banner>
+      )}
       <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-gray-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
         <div
           className="absolute right-6 bottom-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg"
