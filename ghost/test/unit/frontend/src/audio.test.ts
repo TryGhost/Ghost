@@ -105,6 +105,13 @@ describe('audio card controls', function () {
     expect(second.pause.classList.contains('kg-audio-hide')).toBe(false);
     expect(frames.size).toBe(1);
 
+    second.audio.currentTime = 1;
+    advanceFrame();
+    expect(second.element.querySelector('.kg-audio-current-time')?.textContent).toBe('0:01');
+    expect(second.element.querySelector<HTMLInputElement>('.kg-audio-seek-slider')?.value).toBe(
+      '1',
+    );
+
     first.play.click();
     expect(first.audio.play).toHaveBeenCalledTimes(2);
     expect(first.play.classList.contains('kg-audio-hide')).toBe(true);
