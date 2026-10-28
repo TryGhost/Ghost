@@ -115,10 +115,9 @@ export function HelpSupportView({
             We’ll reply to {user.email} within 24h during working days.
           </Text>
           <Button
-            className={cn('mt-6', REVEAL_CLASS_NAME)}
+            className={cn('mt-3', REVEAL_CLASS_NAME)}
             size="sm"
             style={revealAt(3)}
-            variant="outline"
             onClick={onStartOver}
           >
             Done
