@@ -300,6 +300,44 @@ describe('Unit: utils/serializers/output/mappers', function () {
       assert.equal(result.slug, undefined);
       assert.equal(result.id, 'id1');
     });
+
+    describe('Content API comments flag', function () {
+      const commentsService = require('../../../../../../../core/server/services/comments');
+
+      function contentFrame() {
+        return { original: { context: {} }, options: { context: {} }, apiType: 'content' };
+      }
+
+      function createPost() {
+        return createJsonModel(testUtils.DataGenerator.forKnex.createPost({ id: 'id1' }));
+      }
+
+      it('reports comments off when the comments service reports off', async function () {
+        sinon.define(commentsService, 'api', { enabled: 'off' });
+
+        const result = await mappers.posts(createPost(), contentFrame());
+
+        assert.equal(result.comments, false);
+      });
+
+      it('reports comments on when the comments service reports paid', async function () {
+        sinon.define(commentsService, 'api', { enabled: 'paid' });
+
+        const result = await mappers.posts(createPost(), contentFrame());
+
+        assert.equal(result.comments, true);
+      });
+
+      it('reports comments on before the comments service has published its api', async function () {
+        // The unit harness never initialises the comments root, so this is the
+        // pre-init shape the mapper would see during boot.
+        assert.equal(Object.hasOwn(commentsService, 'api'), false);
+
+        const result = await mappers.posts(createPost(), contentFrame());
+
+        assert.equal(result.comments, true);
+      });
+    });
   });
 
   describe('User Mapper', function () {

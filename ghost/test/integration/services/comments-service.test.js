@@ -18,6 +18,58 @@ describe('CommentsService', function () {
     restoreMocks();
   });
 
+  async function addComment(data) {
+    const post = await models.Post.findOne({}, testUtils.context.internal);
+    const email = 'comment-service-test@example.com';
+    const member =
+      (await models.Member.findOne({ email }, testUtils.context.internal)) ||
+      (await models.Member.add({ email, email_disabled: false }, testUtils.context.internal));
+
+    return models.Comment.add(
+      { html: '<p>Hello.</p>', member_id: member.id, post_id: post.id, ...data },
+      testUtils.context.internal,
+    );
+  }
+
+  describe('root', function () {
+    it('init returns undefined and publishes a controller bound to the api', function () {
+      const result = commentsService.init();
+
+      // Compare the type: a failure message that inspects the wrapper would
+      // serialise the whole model graph.
+      assert.equal(typeof result, 'undefined');
+      assert.equal(commentsService.controller.service, commentsService.api);
+    });
+
+    it('repeated init replaces the api and the controller', function () {
+      const { api, controller } = commentsService;
+
+      commentsService.init();
+
+      assert.notEqual(commentsService.api, api);
+      assert.notEqual(commentsService.controller, controller);
+    });
+
+    it('reads the comments_enabled setting on every access and treats unknown values as off', function () {
+      mockSetting('comments_enabled', 'paid');
+      assert.equal(commentsService.api.enabled, 'paid');
+
+      mockSetting('comments_enabled', 'sometimes');
+      assert.equal(commentsService.api.enabled, 'off');
+    });
+
+    it('counts only published comments per post through the wired stats', async function () {
+      const comment = await addComment({});
+      const hiddenComment = await addComment({});
+      await testUtils.knex('comments').where({ id: hiddenComment.id }).update({ status: 'hidden' });
+      const postId = comment.get('post_id');
+
+      const counts = await commentsService.controller.count({ options: { ids: postId } });
+
+      assert.deepEqual(counts, { [postId]: 1 });
+    });
+  });
+
   describe('getComments', function () {
     it('computes pinned state when requested', async function () {
       const post = await models.Post.findOne({}, testUtils.context.internal);

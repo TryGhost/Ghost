@@ -220,6 +220,7 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
     'Move or split planned': 0,
     'Ownership undecided': 0,
     'Migrated — staying in services/': 0,
+    'Migrated — Move or split planned': 0,
     'Needs preparation': 0,
     'Straightforward migrations': 1,
     'Straightforward — dependency violations': 1,
@@ -403,6 +404,7 @@ test('list filters match every report group, including unknown analysis and ever
     ['relocation', 'Move or split planned', ['relocate', 'moved']],
     ['ownership-undecided', 'Ownership undecided', ['review', 'reviewRefactor']],
     ['migrated-retained', 'Migrated — staying in services/', ['done', 'drift']],
+    ['migrated-relocation', 'Migrated — Move or split planned', ['moved']],
     ['needs-preparation', 'Needs preparation', ['prepare']],
     [
       'straightforward',
@@ -431,7 +433,16 @@ test('list filters match every report group, including unknown analysis and ever
   ];
   const report = f.run(['report']);
   assert.equal(report.status, 0, report.stderr);
-  assert.match(report.stdout, /^OWNERSHIP\s+MIGRATED\s+UNMIGRATED\s+TOTAL\s+GROUP/m);
+  const [reportTable, ...footer] = report.stdout.trimEnd().split('\n\n');
+  const [header, ...reportRows] = reportTable!.split('\n');
+  assert.match(header!, /^MIGRATION\s+COUNT\s+GROUP$/);
+  assert.equal(reportRows.length, groups.length - 2);
+  assert.doesNotMatch(report.stdout, /Not analyzed|Not inventoried/);
+  assert.match(
+    report.stdout,
+    /migrated-retained\nMigrated — Move or split planned\s+1\s+migrated-relocation\n/,
+  );
+  assert.deepEqual(footer, ['List a group: pnpm gx services list --group <group>']);
   const summary = f.run(['report', '--json']);
   assert.equal(summary.status, 0, summary.stderr);
   const counts = JSON.parse(summary.stdout);
@@ -451,12 +462,6 @@ test('list filters match every report group, including unknown analysis and ever
     counts['Unmigrated — staying in services/'],
     counts['Needs preparation'] + counts['Straightforward migrations'],
   );
-  assert.match(report.stdout, /^Staying in services\/\s+2\s+6\s+8\s+retained$/m);
-  assert.match(report.stdout, /^Move or split planned\s+1\s+1\s+2\s+relocation$/m);
-  assert.match(report.stdout, /^Ownership undecided\s+0\s+2\s+2\s+ownership-undecided$/m);
-  assert.match(report.stdout, /^Total\s+3\s+9\s+12\s+catalogued$/m);
-  assert.match(report.stdout, /8 retained = 2 migrated \+ 6 unmigrated\./);
-  assert.match(report.stdout, /6 unmigrated = 1 needing preparation \+ 5 straightforward\./);
   const reviewDetails = f.run(['report', 'reviewRefactor']);
   assert.equal(reviewDetails.status, 0, reviewDetails.stderr);
   assert.match(reviewDetails.stdout, /Ownership undecided\s+Needs preparation/);
@@ -469,6 +474,15 @@ test('list filters match every report group, including unknown analysis and ever
       group,
     );
     assert.equal(counts[label], names.length, group);
+    const line = reportRows.find((row) => row.endsWith(`  ${group}`));
+    if (['not-analyzed', 'not-inventoried'].includes(group)) {
+      assert.equal(line, undefined);
+      continue;
+    }
+    assert.ok(line, `${group} is discoverable next to its report count`);
+    assert.deepEqual(line.split(/ {2,}/), [label, String(names.length), group]);
+    assert.equal(line.indexOf(String(names.length), label.length), header!.indexOf('COUNT'));
+    assert.equal(line.lastIndexOf(group), header!.indexOf('GROUP'));
   }
   const clean = f.run(['list', '--group=straightforward-clear']);
   assert.equal(clean.status, 0, clean.stderr);
@@ -520,6 +534,7 @@ test('list help describes groups and invalid filters fail before the audit runs'
     'relocation',
     'ownership-undecided',
     'migrated-retained',
+    'migrated-relocation',
     'needs-preparation',
     'straightforward',
     'straightforward-with-violations',
