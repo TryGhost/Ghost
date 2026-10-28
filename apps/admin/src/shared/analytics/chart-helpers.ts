@@ -1,5 +1,5 @@
 import moment, { type Moment } from 'moment-timezone';
-import { STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
+import { ALL_TIME_START, STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
 
 export type AggregationType = 'sum' | 'avg' | 'exact';
 
@@ -15,6 +15,19 @@ export const centsToDollars = (value: number) => {
   return Math.round(value / 100);
 };
 
+// Where the site's history starts (YYYY-MM-DD): its first published post or
+// page, first member or first visit, whichever came first. Loaded once when
+// Analytics opens (useAllTimeStart); until then All time starts at the floor
+let siteHistoryStart: string | null = null;
+
+export const setAllTimeStart = (date: string | null) => {
+  siteHistoryStart = date;
+};
+
+/** The day All time starts: where the site's history does, never before ALL_TIME_START */
+export const getAllTimeStart = (): string =>
+  siteHistoryStart && siteHistoryStart > ALL_TIME_START ? siteHistoryStart : ALL_TIME_START;
+
 // Return today and startdate for charts
 export const getRangeDates = (range: number) => {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -24,6 +37,10 @@ export const getRangeDates = (range: number) => {
   if (range === -1) {
     // Year to date - use January 1st of current year
     startDate = moment().tz(timezone).startOf('year');
+  } else if (range === STATS_RANGES.allTime.value) {
+    // All time starts where the site's history does, however old it is,
+    // imported posts and members included
+    startDate = moment.tz(getAllTimeStart(), timezone).startOf('day');
   } else {
     // Regular range calculation
     startDate = moment()
@@ -94,8 +111,8 @@ export function truncateLeadingEmptyData<T>(
  * Resolves a range selection to the number of days the chart actually spans.
  * Fixed ranges are already day counts; the sentinels need resolving:
  * - Year to date (-1) resolves to the days elapsed since January 1st
- * - All time (1000) resolves to the span of the supplied data — the fetch
- *   window is a fixed 1000 days, but a younger site or post has far less
+ * - All time (100000) resolves to the span of the supplied data — the fetch
+ *   window starts where the site's history does, but a post has far less
  *   real data (pass data with leading empty rows already trimmed)
  */
 export function resolveEffectiveRangeDays(range: number, data: { date: string }[] = []): number {
@@ -107,7 +124,8 @@ export function resolveEffectiveRangeDays(range: number, data: { date: string }[
     if (data.length > 0) {
       return moment(data[data.length - 1].date).diff(moment(data[0].date), 'days') + 1;
     }
-    return range;
+    const { startDate, endDate } = getRangeDates(range);
+    return endDate.diff(startDate, 'days') + 1;
   }
   return range;
 }

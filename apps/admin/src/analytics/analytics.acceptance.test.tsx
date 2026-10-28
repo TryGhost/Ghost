@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -6,6 +6,7 @@ import {
   fakeAdminEndpoint,
   fakeAdminStats,
   fakeAnalyticsOverview,
+  fakeSiteHistoryStart,
   fakeNewsletters,
   fakePosts,
   fakeSnippets,
@@ -22,6 +23,11 @@ import { deferred } from '@/utils/deferred';
 import { analyticsScreen } from './analytics.screen';
 
 const LATEST_POST_ID = '64d623b64676110001e897d1';
+
+// Every Analytics view first looks up where the site's history starts
+beforeEach(() => {
+  fakeSiteHistoryStart();
+});
 
 function daysAgo(days: number): string {
   const date = new Date();
@@ -175,6 +181,41 @@ describe('Analytics overview', () => {
 
     await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).not.toBe(initialDateFrom);
+  });
+
+  it('starts All time where the site’s history does', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    // An imported member from 2018 predates the posts and the first visit
+    fakeSiteHistoryStart({
+      firstMember: '2018-06-15T10:00:00.000Z',
+      firstPage: '2020-02-01T09:00:00.000Z',
+      firstVisit: '2025-03-01 08:00:00',
+    });
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2018-06-15');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2018-06-15');
+  });
+
+  it('never starts All time before 2013, whatever an import says', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    fakeSiteHistoryStart({ firstMember: '1970-01-01T00:00:00.000Z' });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2013-01-01');
   });
 
   it('renders the latest and top posts with zeroed stats when nothing is recorded', async () => {
@@ -440,6 +481,39 @@ describe('Analytics newsletters', () => {
     await expect
       .element(analyticsScreen.topNewslettersCard())
       .toHaveTextContent('Weekly Digest Issue #1');
+  });
+
+  it('spans a lone subscriber count across All time, not centuries', async () => {
+    seedAnalyticsWorld();
+    fakeSiteHistoryStart({ firstMember: '2020-01-01T00:00:00.000Z' });
+    fakeNewsletters([
+      newsletter({
+        name: 'Weekly Digest',
+        status: 'active',
+        sort_order: 0,
+        count: { posts: 3, active_members: 543 },
+      }),
+    ]);
+    // Only one count comes back
+    const subscribersApi = fakeAdminStats.newsletterSubscribers({
+      total: 543,
+      values: [{ date: daysAgo(1), value: 543 }],
+    });
+    fakeAdminStats.newsletterBasic();
+    fakeAdminStats.newsletterClicks();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect
+      .poll(() =>
+        new URL(subscribersApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2020-01-01');
+    await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
+    // Counting 100000 days back put the axis in 1753
+    expect(analyticsScreen.newslettersCard().element().textContent).not.toMatch(/17\d\d/);
   });
 
   it('shows the empty state on every newsletter card when none were sent', async () => {

@@ -27,9 +27,17 @@ export const STATS_RANGES = {
   },
   allTime: {
     name: 'All time',
-    value: 1000,
+    // A sentinel, not a day count: All time starts where the site's history
+    // does (see setAllTimeStart). It's larger than any post's age in days, so
+    // getRangeForStartDate can't land on it, and still reads as a long range
+    // where code compares day counts
+    value: 100000,
   },
 };
+
+// The earliest All time can start: Ghost's launch. Older dates would only
+// come from broken imports (1970, 1900), so they're left out
+export const ALL_TIME_START = '2013-01-01';
 
 export const STATS_RANGE_OPTIONS = Object.values(STATS_RANGES);
 
