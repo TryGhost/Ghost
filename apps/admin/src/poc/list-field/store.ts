@@ -20,7 +20,7 @@ export type StoredListField = {
   multiple: boolean;
 };
 
-export type ListFieldStore = {
+type ListFieldStore = {
   version: 1;
   /** The list fields, which the real API has never heard of. */
   fields: StoredListField[];
@@ -30,7 +30,7 @@ export type ListFieldStore = {
   answers: Record<string, Record<string, string[]>>;
 };
 
-export const STORE_KEY = 'ghost-poc-list-field';
+const STORE_KEY = 'ghost-poc-list-field';
 
 const empty = (): ListFieldStore => ({ version: 1, fields: [], order: [], answers: {} });
 

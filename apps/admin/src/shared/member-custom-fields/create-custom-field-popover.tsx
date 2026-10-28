@@ -33,7 +33,8 @@ export function CreateCustomFieldPopover({
       }}
     >
       <PopoverAnchor virtualRef={anchorRef as RefObject<HTMLElement>} />
-      {/* Above Settings modals (z-[1000]), as the sheet is; Select menus open at z-[9999]. */}
+      {/* Above Settings modals (z-[1000]). Select menus open at z-[9999], so the type menu
+          still opens over it. */}
       <PopoverContent
         // No visible title: it opens from "Add custom field", which already says what it is.
         // Named for screen readers.
@@ -42,6 +43,21 @@ export function CreateCustomFieldPopover({
         className="z-[1002] max-h-(--radix-popover-content-available-height) w-[360px] max-w-[calc(100vw-32px)] overflow-y-auto"
         collisionPadding={16}
         sideOffset={8}
+        // Back to the control it hangs from, the column's button or the picker's. Radix
+        // would look for a trigger, and this popover only has an anchor. Focus that has
+        // fallen back to the page or to the modal around the control goes back to it, but
+        // a layer opened as this one closed, such as the picker a composite reopens, keeps
+        // its own.
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          const anchor = anchorRef.current;
+          const layer = document.activeElement?.closest('[role="dialog"]');
+          if (layer && anchor && !layer.contains(anchor)) {
+            return;
+          }
+          const control = anchor?.matches('button') ? anchor : anchor?.querySelector('button');
+          control?.focus();
+        }}
         // Opened as another popover closes, which hands focus back to its own trigger. That
         // is not the publisher leaving the form, so only a click outside, Escape or Cancel
         // closes it.

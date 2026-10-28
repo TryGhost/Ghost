@@ -47,8 +47,8 @@ export interface CustomFieldPickerProps {
   invalid?: boolean;
   onChange: (key: string) => void;
   /**
-   * The types a field created from this picker may have: one entry pins the type and the
-   * create form asks only for a name; several show a type choice among exactly these.
+   * The types a field created from this picker may have: one entry pins the type, which the
+   * create form still shows, disabled; several offer a choice among exactly these.
    * Keep it within the types `fields` is filtered by — a creation outside that range
    * would make a field this picker then refuses to list. Omit to hide the create action.
    */
@@ -64,10 +64,10 @@ export interface CustomFieldPickerProps {
  * which also stands in for the empty state, since a search finding nothing is the strongest
  * signal the field does not exist yet.
  *
- * Creation opens the same field panel the CSV import does, seeded from the search text, with the
- * type pinned to what this place can use. The refusal handling follows the import
- * mapping's: a name problem lands on the input, a ceiling or permission problem lands
- * below the form and stops inviting retries.
+ * Creation opens the same popover the CSV import does, anchored to this picker, seeded from
+ * the search text, with the type pinned to what this place can use. The refusal handling
+ * follows the import mapping's: a name problem lands on the input, a ceiling or permission
+ * problem lands below the form and stops inviting retries.
  */
 export function CustomFieldPicker({
   id,
@@ -79,11 +79,11 @@ export function CustomFieldPicker({
   createTypes,
 }: CustomFieldPickerProps) {
   const [open, setOpen] = useState(false);
-  // What the field panel hangs from, when it is a popover.
+  // What the create popover hangs from.
   const pickerRef = useRef<HTMLDivElement>(null);
-  // Set while the list closes to open the field panel, so it leaves focus to the panel.
-  const openingPanel = useRef(false);
-  // The field panel stays mounted and only opens and closes, so it can animate away rather
+  // Set while the list closes to open the create popover, so it leaves focus to the popover.
+  const openingCreate = useRef(false);
+  // The create popover stays mounted and only opens and closes, so it can fade away rather
   // than vanish. Each opening is a new session, which starts its form afresh.
   const [creating, setCreating] = useState(false);
   const [createSession, setCreateSession] = useState({ id: 0, initialName: '' });
@@ -130,8 +130,8 @@ export function CustomFieldPicker({
           just push it down (the CSV import's picker behaves the same way). */}
           <ComboboxContent
             onCloseAutoFocus={(event) => {
-              if (openingPanel.current) {
-                openingPanel.current = false;
+              if (openingCreate.current) {
+                openingCreate.current = false;
                 event.preventDefault();
               }
             }}
@@ -179,12 +179,12 @@ export function CustomFieldPicker({
                       value="__create-custom-field__"
                       forceMount
                       onSelect={() => {
-                        // The field panel takes over from the list, keeping what was searched for.
+                        // The create popover takes over from the list, keeping what was searched for.
                         setCreateSession((session) => ({
                           id: session.id + 1,
                           initialName: search.trim(),
                         }));
-                        openingPanel.current = true;
+                        openingCreate.current = true;
                         setCreating(true);
                         setOpen(false);
                         setSearch('');
@@ -201,7 +201,7 @@ export function CustomFieldPicker({
         </Combobox>
       </div>
       {createTypes?.length ? (
-        <CreateFieldInPanel
+        <CreateFieldPopover
           key={createSession.id}
           anchorRef={pickerRef}
           initialName={createSession.initialName}
@@ -219,10 +219,10 @@ export function CustomFieldPicker({
 }
 
 /**
- * A field made from this picker, in the shared field panel. One offered type pins it; several show
- * a choice among exactly those. Refusal handling mirrors the import mapping.
+ * A field made from this picker, in the shared create popover. One offered type pins it;
+ * several offer a choice among exactly those. Refusal handling mirrors the import mapping.
  */
-function CreateFieldInPanel({
+function CreateFieldPopover({
   anchorRef,
   initialName,
   open,

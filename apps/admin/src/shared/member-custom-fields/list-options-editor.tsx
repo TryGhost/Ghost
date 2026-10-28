@@ -24,8 +24,10 @@ import { MAX_OPTION_LENGTH, sameOption } from './list-options';
 const ListOptionsEditor: React.FC<{
   options: string[];
   error?: string;
+  // Prefixes the new option input's id, as the form's other inputs are.
+  idPrefix: string;
   onChange: (options: string[]) => void;
-}> = ({ options, error, onChange }) => {
+}> = ({ options, error, idPrefix, onChange }) => {
   const list = useSortableIndexedList({
     items: options,
     setItems: onChange,
@@ -96,13 +98,13 @@ const ListOptionsEditor: React.FC<{
           <Inline align="center" className="py-1" gap="md">
             <LucideIcon.Plus aria-hidden="true" className="size-4 text-muted-foreground" />
             <Field className="w-full">
-              <FieldLabel className="sr-only" htmlFor="new-custom-field-option">
+              <FieldLabel className="sr-only" htmlFor={`${idPrefix}-new-option`}>
                 New option
               </FieldLabel>
               <InputGroup>
                 <InputGroupInput
                   ref={newOptionInputRef}
-                  id="new-custom-field-option"
+                  id={`${idPrefix}-new-option`}
                   maxLength={MAX_OPTION_LENGTH}
                   placeholder="Add an option"
                   value={list.newItem}

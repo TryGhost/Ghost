@@ -33,6 +33,7 @@ export const SCALAR_KIND_FILTER_TYPE: {
   text: 'text',
   date: 'plain_date',
   number: 'number',
+  // Required by the type; unreachable while list fields are left out below.
   choice: 'set',
 };
 

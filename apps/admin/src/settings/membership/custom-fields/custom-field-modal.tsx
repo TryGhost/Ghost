@@ -35,7 +35,8 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   const isEdit = field !== undefined;
 
   const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps } = useForm({
-    // The same draft every place a field is made from; its type maps to the API's on save.
+    // The same draft every place a field is made from. It holds the API's own type, so it is
+    // sent as it is.
     initialState: draftOf(field),
     savingDelay: 500,
     // Name uniqueness is enforced by the API (unique among custom fields); a 422 comes back

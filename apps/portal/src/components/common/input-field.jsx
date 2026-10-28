@@ -277,8 +277,10 @@ function InputField({
         <InputError message={errorMessage} name={name} />
       </div>
       {type === 'choice' ? (
-        // One option picked from a list that opens below, in place of a native select. The
-        // field is still a .gh-portal-input, so it sits in an input group like the rest.
+        // POC: only an address's country reaches this, behind COUNTRY_PICKER. One option
+        // picked from a list that opens below, or as a sheet on a phone, in place of a native
+        // select. The field is still a .gh-portal-input, so it sits in an input group like
+        // the rest.
         <ChoicePicker
           describedBy={describedBy}
           id={id}

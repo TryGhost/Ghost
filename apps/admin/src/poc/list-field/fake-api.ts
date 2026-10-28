@@ -1,6 +1,7 @@
 /**
- * POC ONLY. Answers the Admin API's custom field requests for list fields from
- * localStorage, and passes everything else through to Ghost untouched.
+ * POC ONLY. Answers the Admin API's custom field requests for list fields, and adds and
+ * saves members' list answers, from localStorage. Everything else goes through to Ghost
+ * untouched.
  *
  * The UI is written against the real endpoints and the shape a list field is expected to
  * have over the API (see README.md), so nothing outside `src/poc/` knows this exists.
@@ -59,6 +60,10 @@ const sameName = (a: unknown, b: unknown) =>
   typeof a === 'string' &&
   typeof b === 'string' &&
   a.trim().toLowerCase() === b.trim().toLowerCase();
+
+// Ghost never sees list fields, so it would let one of its own take a list field's name.
+const takenByListField = (name: unknown) =>
+  readStore().fields.some((field) => sameName(field.name, name));
 
 // Ghost's fields stay in the order Ghost returns them, which every reorder is sent to. Each
 // list field goes in after the field it last followed in the stored order, and one the order
@@ -267,13 +272,17 @@ export function installListFieldFakeApi() {
 
     const key = match[1] ? decodeURIComponent(match[1]) : undefined;
     const body = readBody(init);
+    const sent = body.members_metafields?.[0];
 
     if (!key) {
       if (method === 'GET') {
         return browse(url, init);
       }
-      if (method === 'POST' && body.members_metafields?.[0]?.type === 'list') {
-        return create(url, init, body.members_metafields[0]);
+      if (method === 'POST' && sent?.type === 'list') {
+        return create(url, init, sent);
+      }
+      if (method === 'POST' && takenByListField(sent?.name)) {
+        return nameTaken();
       }
       if (method === 'PUT') {
         return reorder(
@@ -287,10 +296,13 @@ export function installListFieldFakeApi() {
 
     const field = readStore().fields.find((stored) => stored.key === key);
     if (!field) {
+      if (method === 'PUT' && takenByListField(sent?.name)) {
+        return nameTaken();
+      }
       return realFetch(input, init);
     }
     if (method === 'PUT') {
-      return edit(url, init, field, body.members_metafields?.[0] ?? {});
+      return edit(url, init, field, sent ?? {});
     }
     if (method === 'DELETE') {
       return remove(field);

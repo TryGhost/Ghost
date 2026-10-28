@@ -33,23 +33,25 @@ interface CreateCustomFieldFormProps {
   nameError: string | null;
   // Below the form, for one they cannot.
   saveError: string | null;
-  // False once a refusal cannot be argued with — a site at its field ceiling — so the
+  // False once a refusal cannot be argued with, such as a site at its field ceiling, so the
   // button stops inviting the same doomed request.
   canRetry: boolean;
   onSubmit: (field: NewMemberCustomField) => void;
   // Editing answers the last refusal: it was about what was there before.
   onEdit: () => void;
   onCancel: () => void;
+  testId?: string;
 }
 
 /**
  * A field created without leaving what the publisher was doing: the same form Settings
- * uses, with its own buttons. Given cells, a list starts from the answers they hold, so a
- * publisher reviews what is already there rather than typing it out again.
+ * uses, with its own buttons, shown in the create popover. Given cells, a list starts from
+ * the answers they hold, so a publisher reviews what is already there rather than typing it
+ * out again.
  *
- * Holds only what is being typed. Whether a name is acceptable is the server's answer — it
- * owns the rule and the sentence for breaking it, and a copy here would be a second opinion
- * that could disagree.
+ * Checks only what a draft can tell about itself, an empty name or a list's options, with
+ * the same `customFieldErrors` Settings uses. Whether a name is already taken is the
+ * server's answer, and comes back as `nameError`.
  */
 export function CreateCustomFieldForm({
   initialName,
@@ -62,22 +64,25 @@ export function CreateCustomFieldForm({
   onSubmit,
   onEdit,
   onCancel,
+  testId = 'create-custom-field',
 }: CreateCustomFieldFormProps) {
   const [draft, setDraft] = useState<CustomFieldDraft>(() => {
-    // Cells with commas read as several answers each.
-    const multiple = holdsSeveralAnswers(cells);
+    const type = types?.[0] ?? draftOf().type;
+    // A list's options come from the cells, read only once the field is a list: an import
+    // column can hold thousands of rows, and most fields made from one are not lists.
+    const multiple = type === 'list' && holdsSeveralAnswers(cells);
     return {
       ...draftOf(),
       name: initialName,
-      type: types?.[0] ?? draftOf().type,
-      options: optionsFromCells(cells, multiple),
+      type,
+      options: type === 'list' ? optionsFromCells(cells, multiple) : [],
       multiple,
     };
   });
-  // Bumped when switching to several answers or back suggests the options again.
+  // Bumped whenever the options are suggested again, since the editor keeps its own rows.
   const [suggestion, setSuggestion] = useState(0);
   // Whether the options are still the ones suggested from the cells. Once the publisher has
-  // touched them they are theirs, and switching answers no longer replaces them.
+  // touched them they are theirs, and nothing replaces them.
   const [optionsSuggested, setOptionsSuggested] = useState(true);
   // The draft's own problems, found on Save; a refusal from the server comes in as nameError.
   const [errors, setErrors] = useState<{ name?: string; options?: string }>({});
@@ -89,9 +94,18 @@ export function CreateCustomFieldForm({
     if (next.options !== undefined) {
       setOptionsSuggested(false);
     }
-    if (optionsSuggested && next.multiple !== undefined && next.multiple !== draft.multiple) {
-      const multiple = next.multiple;
-      setDraft((current) => ({ ...current, ...next, options: optionsFromCells(cells, multiple) }));
+    // Becoming a list, or switching between one and several answers, suggests the options
+    // from the cells again: cells with commas read as several answers each.
+    const becomesList = next.type === 'list' && draft.type !== 'list';
+    const switchesAnswers = next.multiple !== undefined && next.multiple !== draft.multiple;
+    if (optionsSuggested && (becomesList || switchesAnswers)) {
+      const multiple = next.multiple ?? holdsSeveralAnswers(cells);
+      setDraft((current) => ({
+        ...current,
+        ...next,
+        multiple,
+        options: optionsFromCells(cells, multiple),
+      }));
       setSuggestion((count) => count + 1);
       return;
     }
@@ -114,25 +128,22 @@ export function CreateCustomFieldForm({
   };
 
   return (
+    // Not a form element: Admin's element styles colour every label inside a form, which
+    // would set these apart from the same labels in Settings. Enter in a text input submits
+    // as it would in a form, unless the input has used it, as the options editor does to
+    // add one. The type menu, the switch and the buttons keep Enter for themselves. Escape
+    // is the popover's, which closes it unless a save is in flight.
     <div
       className="space-y-5"
-      data-testid="create-custom-field"
-      // Left to travel, Escape reaches the import dialog and closes the whole thing from
-      // inside a form the publisher was only trying to back out of.
+      data-testid={testId}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') {
-          event.stopPropagation();
-          // Swallowed but not acted on mid-save, matching the Cancel button beside it:
-          // backing out of a create already in flight would leave its answer nowhere.
-          if (!isSaving) {
-            onCancel();
-          }
-          return;
-        }
-        // Enter submits, as it would in a form — there is no form element here because
-        // this sits inside the import dialog's own, and nesting one is invalid. Not when a
-        // control inside has used it, as the options editor does to add one.
-        if (event.key === 'Enter' && !event.defaultPrevented && !isSaving && canRetry) {
+        if (
+          event.key === 'Enter' &&
+          event.target instanceof HTMLInputElement &&
+          !event.defaultPrevented &&
+          !isSaving &&
+          canRetry
+        ) {
           event.preventDefault();
           submit();
         }

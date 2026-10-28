@@ -29,7 +29,11 @@ export const listOptionsError = (options: string[]): string | undefined => {
 };
 
 // How a cell holds several answers, as Ghost's own exports write lists such as labels.
-export const ANSWER_SEPARATOR = ',';
+const ANSWER_SEPARATOR = ',';
+
+// More different answers than this, and a column is free text rather than a list, so it
+// suggests no options at all rather than hundreds a publisher would have to delete.
+const MAX_SUGGESTED_OPTIONS = 50;
 
 /** Whether a column's cells read like several answers each, which decides the default. */
 export const holdsSeveralAnswers = (cells: string[]) =>
@@ -37,11 +41,22 @@ export const holdsSeveralAnswers = (cells: string[]) =>
 
 /**
  * The options a column's cells suggest: every different answer once, in the order they
- * first appear, split into its answers when a cell holds several.
+ * first appear, split into its answers when a cell holds several. One pass, since an import
+ * column can run to tens of thousands of rows, and none at all past MAX_SUGGESTED_OPTIONS.
  */
-export const optionsFromCells = (cells: string[], several: boolean): string[] =>
-  cells
-    .flatMap((cell) => (several ? cell.split(ANSWER_SEPARATOR) : [cell]))
-    .map((answer) => answer.trim())
-    .filter(Boolean)
-    .filter((answer, index, all) => all.findIndex((seen) => sameOption(seen, answer)) === index);
+export const optionsFromCells = (cells: string[], several: boolean): string[] => {
+  const found = new Map<string, string>();
+  for (const cell of cells) {
+    for (const part of several ? cell.split(ANSWER_SEPARATOR) : [cell]) {
+      const answer = part.trim().slice(0, MAX_OPTION_LENGTH);
+      const seen = answer.toLowerCase();
+      if (answer && !found.has(seen)) {
+        found.set(seen, answer);
+        if (found.size > MAX_SUGGESTED_OPTIONS) {
+          return [];
+        }
+      }
+    }
+  }
+  return [...found.values()];
+};

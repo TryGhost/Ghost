@@ -25,6 +25,69 @@ import {
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 /**
+ * Whether members can see a field, with what that means for this field spelled out. Its own
+ * component so the member count it reads is only asked for where the question is.
+ */
+function VisibilityField({
+  access,
+  field,
+  idPrefix,
+  onChange,
+}: {
+  access: CustomFieldDraft['access'];
+  field?: MemberCustomField;
+  idPrefix: string;
+  onChange: (access: CustomFieldDraft['access']) => void;
+}) {
+  const memberCount = useMemberCount();
+  const isArchived = field?.status === 'archived';
+
+  // The API keeps a third access level, `read`, that the switch doesn't offer. A field
+  // already set to it reads as open and is described as such; saving without touching
+  // the switch leaves it there, since the edit sends only what changed, and switching it
+  // off and on again returns it to the level it had rather than upgrading it.
+  const isOpenToMembers = access !== 'none';
+  const storedOpenLevel = field && field.access.member !== 'none' ? field.access.member : 'write';
+  // Opening a field that was closed discloses whatever staff have recorded in it so far.
+  const isOpeningClosedField =
+    field !== undefined && isOpenToMembers && field.access.member === 'none';
+
+  let description;
+  if (isArchived) {
+    description =
+      'Members never see an archived field. Reactivate it to choose whether they can see this one.';
+  } else if (isOpenToMembers) {
+    // The count is left out while it loads, as the newsletter modal does.
+    const members = `Your ${memberCount === undefined ? '' : formatNumber(memberCount)} member${memberCount === 1 ? '' : 's'}`;
+    description =
+      access === 'read'
+        ? `${members} can see this field in their Portal account settings, but not change it.`
+        : `${members} can see and update this field in their Portal account settings.`;
+  } else {
+    description = 'Only staff can see this field and what you record in it.';
+  }
+
+  return (
+    <Field data-disabled={isArchived || undefined} orientation="horizontal">
+      <FieldContent>
+        <FieldLabel htmlFor={`${idPrefix}-visible-to-members`}>Visible to members</FieldLabel>
+        <FieldDescription>
+          {description}
+          {isOpeningClosedField && <> Anything already recorded will become visible.</>}
+        </FieldDescription>
+      </FieldContent>
+      <Switch
+        checked={!isArchived && isOpenToMembers}
+        data-testid="custom-field-access"
+        disabled={isArchived}
+        id={`${idPrefix}-visible-to-members`}
+        onCheckedChange={(checked) => onChange(checked ? storedOpenLevel : 'none')}
+      />
+    </Field>
+  );
+}
+
+/**
  * The fields that make a custom field: its name, its type, a list's options, and whether
  * members can see it. Shared by every place a field is created or edited, so each asks the
  * same questions the same way; the place decides what surrounds it and what Save does.
@@ -58,38 +121,12 @@ export function CustomFieldForm({
   onChange: (change: Partial<CustomFieldDraft>) => void;
   onClearError?: (key: 'name' | 'options') => void;
 }) {
-  const memberCount = useMemberCount();
   const isEdit = field !== undefined;
-  const isArchived = field?.status === 'archived';
   const offeredTypes = memberCustomFieldUserTypes.filter(
     (userType) => !types || types.includes(userType.id),
   );
   // Shown even when it can't change, so what is being made is never a surprise.
   const typeFixed = isEdit || offeredTypes.length === 1;
-
-  // The API keeps a third access level, `read`, that the switch doesn't offer. A field
-  // already set to it reads as open and is described as such; saving without touching
-  // the switch leaves it there, since the edit sends only what changed, and switching it
-  // off and on again returns it to the level it had rather than upgrading it.
-  const isOpenToMembers = draft.access !== 'none';
-  const storedOpenLevel = field && field.access.member !== 'none' ? field.access.member : 'write';
-  // Opening a field that was closed discloses whatever staff have recorded in it so far.
-  const isOpeningClosedField = isEdit && isOpenToMembers && field.access.member === 'none';
-
-  let accessDescription;
-  if (isArchived) {
-    accessDescription =
-      'Members never see an archived field. Reactivate it to choose whether they can see this one.';
-  } else if (isOpenToMembers) {
-    // The count is left out while it loads, as the newsletter modal does.
-    const members = `Your ${memberCount === undefined ? '' : formatNumber(memberCount)} member${memberCount === 1 ? '' : 's'}`;
-    accessDescription =
-      draft.access === 'read'
-        ? `${members} can see this field in their Portal account settings, but not change it.`
-        : `${members} can see and update this field in their Portal account settings.`;
-  } else {
-    accessDescription = 'Only staff can see this field and what you record in it.';
-  }
 
   return (
     <FieldGroup className={compact ? 'gap-5' : 'gap-8'}>
@@ -140,6 +177,7 @@ export function CustomFieldForm({
           <ListOptionsEditor
             key={optionsVersion}
             error={errors.options}
+            idPrefix={idPrefix}
             options={draft.options}
             onChange={(options) => {
               onClearError?.('options');
@@ -160,22 +198,12 @@ export function CustomFieldForm({
         </>
       )}
       {withVisibility && (
-        <Field data-disabled={isArchived || undefined} orientation="horizontal">
-          <FieldContent>
-            <FieldLabel htmlFor={`${idPrefix}-visible-to-members`}>Visible to members</FieldLabel>
-            <FieldDescription>
-              {accessDescription}
-              {isOpeningClosedField && <> Anything already recorded will become visible.</>}
-            </FieldDescription>
-          </FieldContent>
-          <Switch
-            checked={!isArchived && isOpenToMembers}
-            data-testid="custom-field-access"
-            disabled={isArchived}
-            id={`${idPrefix}-visible-to-members`}
-            onCheckedChange={(checked) => onChange({ access: checked ? storedOpenLevel : 'none' })}
-          />
-        </Field>
+        <VisibilityField
+          access={draft.access}
+          field={field}
+          idPrefix={idPrefix}
+          onChange={(access) => onChange({ access })}
+        />
       )}
     </FieldGroup>
   );

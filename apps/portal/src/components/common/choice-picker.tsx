@@ -65,8 +65,6 @@ export const ChoicePickerStyles = `
         z-index: 1;
     }
 
-    
-
     .gh-portal-choice-chip {
         display: inline-flex;
         align-items: center;
@@ -268,7 +266,7 @@ export const ChoicePickerStyles = `
         height: 5px;
         border: 0;
         border-radius: 50%;
-                background: var(--white);
+        background: var(--white);
         transform: none;
     }
 
@@ -296,7 +294,7 @@ export const ChoicePickerStyles = `
         padding-bottom: env(safe-area-inset-bottom);
         border-radius: 16px 16px 0 0;
         background: var(--white);
-                box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
         transition: transform 0.2s ease-out;
         animation: gh-portal-choice-rise 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
@@ -373,7 +371,7 @@ export const ChoicePickerStyles = `
         from { transform: translateY(100%); }
     }
 
-        @media (prefers-reduced-motion: reduce) {
+    @media (prefers-reduced-motion: reduce) {
         .gh-portal-choice-backdrop,
         .gh-portal-choice-sheet {
             transition: none;
@@ -439,8 +437,9 @@ function startingWith(choices: ChoiceOption[], typed: string, from: number): num
  * phone's screen that drags down to close: one, or several shown as chips.
  * Portal can't use Admin's pickers, so this follows how they behave: ↑ ↓ Home and End move,
  * Enter or Space picks, Escape and Tab close, and typing jumps to the option that starts
- * with what was typed, the way a native select does. There's no search box, so a phone
- * never raises its keyboard to show the list.
+ * with what was typed, the way a native select does. Past 12 options a search box sits
+ * above the list, named after the field. On a touch screen it waits to be tapped, so a
+ * phone doesn't raise its keyboard over the options.
  */
 export default function ChoicePicker({
   id,
