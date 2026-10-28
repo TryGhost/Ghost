@@ -281,7 +281,11 @@ To see where a suggestion came from, inspect its row: `data-help-source` is
 The keys 1, 2 and 3 pick the suggestions, as their number badges say, while
 nothing is typed. A suggestion is an FAQ article, so picking one opens it at
 once, while a search for it runs to fill "More from the help center" under
-it.
+it. That search exists only for the article: the field stays empty, and Back
+from the article is the intro screen again rather than a results list for a
+question the user never typed (`HelpSearchOrigin` in `use-help-search.ts`).
+A completion, by contrast, fills the field and leaves its results behind the
+article like a typed search.
 
 ## Completions as the user types
 

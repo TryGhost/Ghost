@@ -20,8 +20,17 @@ import { helpCenterIndexQuery } from './use-help-center-index';
  * preview: the nearest page isn't always the answer, so the user decides.
  */
 
+/**
+ * Where a search came from. One started by picking a question on the intro
+ * screen only exists to fill "More from the help center" under its article:
+ * Back from that article returns to the intro, not to a results list for a
+ * question the user never typed.
+ */
+export type HelpSearchOrigin = 'field' | 'suggestion';
+
 export interface HelpSearch {
   query: string;
+  origin: HelpSearchOrigin;
   status: 'searching' | 'done' | 'error';
   results: HelpArticle[];
 }
@@ -83,11 +92,11 @@ export function useHelpSearch() {
 
   /** Searches the help center for the query, replacing the last results. */
   const run = useCallback(
-    async (query: string) => {
+    async (query: string, origin: HelpSearchOrigin) => {
       stopRequest();
       const controller = new AbortController();
       request.current = controller;
-      setSearch({ query, status: 'searching', results: [] });
+      setSearch({ query, origin, status: 'searching', results: [] });
 
       try {
         const [hits, articles] = await Promise.all([
@@ -97,11 +106,11 @@ export function useHelpSearch() {
         if (controller.signal.aborted) {
           return;
         }
-        setSearch({ query, status: 'done', results: toSearchResults(hits, articles) });
+        setSearch({ query, origin, status: 'done', results: toSearchResults(hits, articles) });
       } catch {
         // DocsBot or the help center couldn't be reached
         if (!controller.signal.aborted) {
-          setSearch({ query, status: 'error', results: [] });
+          setSearch({ query, origin, status: 'error', results: [] });
         }
       } finally {
         if (request.current === controller) {
@@ -117,7 +126,7 @@ export function useHelpSearch() {
    * opens at once while its search finds more.
    */
   const searchFor = useCallback(
-    (text: string, picked: HelpArticle | null = null) => {
+    (text: string, picked: HelpArticle | null = null, origin: HelpSearchOrigin = 'field') => {
       const query = text.trim();
       if (!query) {
         return;
@@ -126,14 +135,14 @@ export function useHelpSearch() {
       if (picked) {
         readArticle(picked);
       }
-      void run(query);
+      void run(query, origin);
     },
     [readArticle, run],
   );
 
   const retry = useCallback(() => {
     if (search) {
-      void run(search.query);
+      void run(search.query, search.origin);
     }
   }, [run, search]);
 
@@ -171,7 +180,14 @@ export function useHelpSearch() {
     setView('search');
   }, [support]);
 
-  const leaveArticle = useCallback(() => setView('search'), []);
+  /** Back from an article: to the results, or to the intro if the article was a picked question. */
+  const leaveArticle = useCallback(() => {
+    if (search?.origin === 'suggestion') {
+      stopRequest();
+      setSearch(null);
+    }
+    setView('search');
+  }, [search, stopRequest]);
 
   /** Back to the start: no search, nothing read. */
   const reset = useCallback(() => {

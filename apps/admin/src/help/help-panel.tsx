@@ -58,16 +58,15 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
   const idle = session.search === null;
   const suggestions = useHelpSuggestions(signals, true, open);
   // A picked question is an FAQ article: it opens at once, and its search
-  // finds more to read under it
+  // finds more to read under it. A completion fills the field like a typed
+  // search; a question from the intro screen leaves the field empty, so Back
+  // from its article is the intro again.
   const typeahead = useHelpTypeahead({
     enabled: open,
     pageKey: signals.pageKey,
     onPick: (question) => session.searchFor(question.title, question),
   });
-  const pick = (article: HelpArticle) => {
-    typeahead.setDraft(article.title);
-    session.searchFor(article.title, article);
-  };
+  const pick = (article: HelpArticle) => session.searchFor(article.title, article, 'suggestion');
 
   // 1, 2 and 3 search for the suggestions, as their number badges say, while
   // nothing is typed. A trade-off: a question starting with one of those
