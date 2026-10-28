@@ -3,12 +3,18 @@ import { STATS_RANGES, STATS_RANGE_OPTIONS } from '@/shared/analytics/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   centsToDollars,
+  formatCustomRange,
   formatQueryDate,
   getAggregationStrategy,
+  getCustomRangeDays,
+  getSingleDay,
   getEffectiveChartRange,
   getPeriodText,
   getRangeDates,
   getRangeForStartDate,
+  getStatsTimezone,
+  setStatsTimezone,
+  isCustomRange,
   resolveEffectiveRangeDays,
   sanitizeChartData,
   truncateLeadingEmptyData,
@@ -42,11 +48,11 @@ describe('chart-helpers', () => {
     it('returns correct text for known ranges', () => {
       const ranges = [
         { value: 7, expected: 'in the last 7 days' },
-        { value: 31, expected: 'in the last 30 days' },
-        { value: 91, expected: 'in the last 90 days' },
-        { value: 372, expected: 'in the last 12 months' },
+        { value: 30, expected: 'in the last 30 days' },
+        { value: 90, expected: 'in the last 90 days' },
+        { value: 365, expected: 'in the last 12 months' },
         { value: -1, expected: 'year to date' },
-        { value: 1000, expected: '(all time)' },
+        { value: STATS_RANGES.allTime.value, expected: '(all time)' },
       ];
 
       ranges.forEach(({ value, expected }) => {
@@ -177,19 +183,22 @@ describe('chart-helpers', () => {
     });
 
     it('falls back to the full all time window without data', () => {
-      expect(resolveEffectiveRangeDays(STATS_RANGES.allTime.value)).toBe(1000);
+      const { startDate, endDate } = getRangeDates(STATS_RANGES.allTime.value);
+      expect(resolveEffectiveRangeDays(STATS_RANGES.allTime.value)).toBe(
+        endDate.diff(startDate, 'days') + 1,
+      );
     });
   });
 
   describe('getAggregationStrategy', () => {
     it('applies the daily/weekly/monthly thresholds to fixed ranges', () => {
       expect(getAggregationStrategy(7)).toBe('none');
-      expect(getAggregationStrategy(31)).toBe('none');
-      expect(getAggregationStrategy(90)).toBe('none');
-      expect(getAggregationStrategy(91)).toBe('weekly');
+      expect(getAggregationStrategy(30)).toBe('none');
+      expect(getAggregationStrategy(89)).toBe('none');
+      expect(getAggregationStrategy(90)).toBe('weekly');
       expect(getAggregationStrategy(270)).toBe('weekly');
       expect(getAggregationStrategy(271)).toBe('monthly');
-      expect(getAggregationStrategy(372)).toBe('monthly');
+      expect(getAggregationStrategy(365)).toBe('monthly');
     });
 
     it('honors an override strategy', () => {
@@ -435,20 +444,20 @@ describe('chart-helpers', () => {
     });
 
     it('maps weekly bucketing into the "Week of" display band', () => {
-      expect(getEffectiveChartRange(180, createDateRange(180))).toBe(91);
+      expect(getEffectiveChartRange(180, createDateRange(180))).toBe(90);
     });
 
     it('maps monthly bucketing into the "MMM YYYY" display band', () => {
-      expect(getEffectiveChartRange(300, createDateRange(300))).toBe(366);
-      expect(getEffectiveChartRange(372, createDateRange(372))).toBe(366);
+      expect(getEffectiveChartRange(300, createDateRange(300))).toBe(365);
+      expect(getEffectiveChartRange(365, createDateRange(365))).toBe(365);
     });
 
     it('follows an override strategy', () => {
       expect(getEffectiveChartRange(31, createDateRange(31), { overrideStrategy: 'monthly' })).toBe(
-        366,
+        365,
       );
       expect(getEffectiveChartRange(31, createDateRange(31), { overrideStrategy: 'weekly' })).toBe(
-        91,
+        90,
       );
     });
 
@@ -467,6 +476,91 @@ describe('chart-helpers', () => {
       expect(getEffectiveChartRange(STATS_RANGES.yearToDate.value, data)).toBe(46);
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('custom ranges', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2024-07-10T12:00:00'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('tells custom ranges apart from presets', () => {
+      expect(isCustomRange({ from: '2024-06-01', to: '2024-06-30' })).toBe(true);
+      expect(isCustomRange(STATS_RANGES.last30Days.value)).toBe(false);
+      expect(isCustomRange(STATS_RANGES.yearToDate.value)).toBe(false);
+    });
+
+    it('counts both ends of the range', () => {
+      expect(getCustomRangeDays({ from: '2024-06-01', to: '2024-06-30' })).toBe(30);
+      expect(getCustomRangeDays({ from: '2024-06-01', to: '2024-06-01' })).toBe(1);
+      expect(resolveEffectiveRangeDays({ from: '2023-12-25', to: '2024-01-07' })).toBe(14);
+    });
+
+    it('resolves to the start and end of the selected days', () => {
+      const { startDate, endDate } = getRangeDates({ from: '2024-03-04', to: '2024-03-17' });
+
+      expect(formatQueryDate(startDate)).toBe('2024-03-04');
+      expect(formatQueryDate(endDate)).toBe('2024-03-17');
+      expect(startDate.isSame(startDate.clone().startOf('day'))).toBe(true);
+      expect(endDate.isSame(endDate.clone().endOf('day'))).toBe(true);
+    });
+
+    it('formats ranges, showing the year only outside the current one', () => {
+      expect(formatCustomRange({ from: '2024-03-04', to: '2024-03-17' })).toBe('4 Mar – 17 Mar');
+      expect(formatCustomRange({ from: '2024-03-04', to: '2024-03-04' })).toBe('4 Mar');
+      expect(formatCustomRange({ from: '2023-03-04', to: '2023-04-17' })).toBe(
+        '4 Mar – 17 Apr 2023',
+      );
+      expect(formatCustomRange({ from: '2023-12-20', to: '2024-01-05' })).toBe(
+        '20 Dec 2023 – 5 Jan 2024',
+      );
+    });
+
+    it('describes the period for subheads', () => {
+      expect(getPeriodText({ from: '2024-03-04', to: '2024-03-17' })).toBe(
+        'between 4 Mar and 17 Mar',
+      );
+      expect(getPeriodText({ from: '2023-12-20', to: '2024-01-05' })).toBe(
+        'between 20 Dec 2023 and 5 Jan 2024',
+      );
+      expect(getPeriodText({ from: '2024-03-04', to: '2024-03-04' })).toBe('on 4 Mar');
+    });
+
+    it('buckets by the length of the range', () => {
+      expect(getAggregationStrategy({ from: '2024-05-01', to: '2024-06-30' })).toBe('none');
+      expect(getAggregationStrategy({ from: '2024-01-01', to: '2024-06-30' })).toBe('weekly');
+      expect(getAggregationStrategy({ from: '2023-01-01', to: '2024-06-30' })).toBe('monthly');
+    });
+
+    it('labels the partial first bucket with the range start', () => {
+      // 2024-01-03 is a Wednesday, mid-week
+      const range = { from: '2024-01-03', to: '2024-06-30' };
+      const data = createDateRange(getCustomRangeDays(range), range.from);
+      const result = sanitizeChartData(data, range, 'value', 'sum');
+
+      expect(result[0].date).toBe('2024-01-03');
+      expect(result[1].date).toBe(
+        moment('2024-01-03').add(1, 'week').startOf('week').format('YYYY-MM-DD'),
+      );
+    });
+
+    it('finds the day a single-day range covers', () => {
+      expect(getSingleDay(STATS_RANGES.today.value)).toBe('2024-07-10');
+      expect(getSingleDay({ from: '2024-03-04', to: '2024-03-04' })).toBe('2024-03-04');
+      expect(getSingleDay({ from: '2024-03-04', to: '2024-03-05' })).toBeNull();
+      expect(getSingleDay(STATS_RANGES.last7Days.value)).toBeNull();
+    });
+
+    it('reports the range length for daily charts', () => {
+      expect(getEffectiveChartRange({ from: '2024-06-01', to: '2024-06-10' })).toBe(10);
+      // A single day reports 1, like Today, so visits chart by the hour
+      expect(getEffectiveChartRange({ from: '2024-06-01', to: '2024-06-01' })).toBe(1);
+      expect(getEffectiveChartRange({ from: '2024-01-01', to: '2024-06-30' })).toBe(90);
     });
   });
 
@@ -506,6 +600,15 @@ describe('chart-helpers', () => {
       expect(getRangeForStartDate(publishedAt)).toBe(expectedRange);
     });
 
+    it('never lands on the All time marker, however old the post', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-10-21T12:00:00Z'));
+
+      // 999 days ago: a 1,000-day range, which All time used to be
+      expect(getRangeForStartDate('2024-01-26T12:00:00Z')).toBe(1000);
+      expect(getRangeForStartDate('2024-01-26T12:00:00Z')).not.toBe(STATS_RANGES.allTime.value);
+    });
+
     it('produces a date range that includes the publish calendar day', () => {
       vi.useFakeTimers();
       vi.setSystemTime(currentTime);
@@ -517,6 +620,51 @@ describe('chart-helpers', () => {
       const { startDate } = getRangeDates(range);
 
       expect(formatQueryDate(startDate)).toBe(formatQueryDate(expectedStartDate));
+    });
+  });
+
+  describe('All time', () => {
+    it('starts on 1 January 2013, so a site’s whole history shows', () => {
+      const { startDate } = getRangeDates(STATS_RANGES.allTime.value);
+      expect(formatQueryDate(startDate)).toBe('2013-01-01');
+    });
+
+    it('charts a long history as months', () => {
+      const data = createDateRange(3000, '2017-06-01', () => 5);
+      expect(getAggregationStrategy(STATS_RANGES.allTime.value, data)).toBe('monthly');
+    });
+  });
+
+  describe('the site timezone', () => {
+    afterEach(() => {
+      setStatsTimezone(null);
+    });
+
+    it('counts days in the site timezone once it is known', () => {
+      setStatsTimezone('Asia/Tokyo');
+
+      const { startDate, timezone } = getRangeDates(STATS_RANGES.last7Days.value);
+
+      expect(getStatsTimezone()).toBe('Asia/Tokyo');
+      expect(timezone).toBe('Asia/Tokyo');
+      expect(startDate.tz()).toBe('Asia/Tokyo');
+    });
+
+    it('takes Today from the site clock, which near midnight can be a day ahead', () => {
+      vi.useFakeTimers();
+      // 8pm on the 20th in UTC is already 5am on the 21st in Tokyo
+      vi.setSystemTime(new Date('2026-10-20T20:00:00Z'));
+      setStatsTimezone('Asia/Tokyo');
+
+      try {
+        expect(getSingleDay(STATS_RANGES.today.value)).toBe('2026-10-21');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('uses the viewer timezone until then', () => {
+      expect(getStatsTimezone()).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
   });
 });

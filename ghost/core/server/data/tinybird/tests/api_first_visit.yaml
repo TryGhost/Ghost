@@ -1,0 +1,11 @@
+- name: first_visit_default_site
+  description: The earliest visit for the fixture site
+  parameters: site_uuid=mock_site_uuid
+  expected_result: |
+    {"first_visit":"2100-01-01 00:06:15"}
+
+- name: first_visit_site_without_visits
+  description: A site with no visits has no first visit
+  parameters: site_uuid=site_without_visits
+  expected_result: |
+    {"first_visit":null}

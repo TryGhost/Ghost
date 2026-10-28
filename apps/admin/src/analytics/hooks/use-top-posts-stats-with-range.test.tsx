@@ -34,8 +34,8 @@ describe('useTopPostsStatsWithRange', () => {
     dateMocking = setupDateMocking();
 
     // Mock the date functions with consistent behavior
-    mockGetRangeDates.mockImplementation((range: number) => {
-      const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(range);
+    mockGetRangeDates.mockImplementation((range) => {
+      const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(range as number);
       return {
         startDate: moment.utc(expectedDateFrom).startOf('day'),
         endDate: moment.utc(expectedDateTo).startOf('day'),

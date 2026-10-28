@@ -24,6 +24,7 @@ export * from './components/ui/combobox';
 export * from './components/ui/context-menu';
 export * from './components/ui/copy-field';
 export * from './components/ui/data-list';
+export * from './components/ui/date-range-picker';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/dropzone';

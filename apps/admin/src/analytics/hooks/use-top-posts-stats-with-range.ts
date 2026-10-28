@@ -1,4 +1,4 @@
-import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { type StatsRange, formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { useMemo } from 'react';
 import { useTopPostsStats } from '@tryghost/admin-x-framework/api/stats';
 
@@ -11,15 +11,15 @@ type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 type ContentType = 'posts' | 'pages' | 'posts_and_pages';
 
 /**
- * Hook to fetch Top Posts Stats, handling the conversion from a numeric range
+ * Hook to fetch Top Posts Stats, handling the conversion from a date range
  * and an optional order parameter to API query parameters.
  *
- * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
+ * @param range - The date range: a number of days (e.g., 7, 30, 90) or a custom range. Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'mrr desc'). Defaults to 'mrr desc'.
  * @param contentType - The content type to filter by ('posts', 'pages', 'posts_and_pages'). Defaults to undefined (all).
  */
 export const useTopPostsStatsWithRange = (
-  range?: number,
+  range?: StatsRange,
   order?: TopPostsOrder,
   contentType?: ContentType,
 ) => {

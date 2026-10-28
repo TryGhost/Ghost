@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -6,6 +7,8 @@ import {
   fakeAdminEndpoint,
   fakeAdminStats,
   fakeAnalyticsOverview,
+  fakeHourlyHistory,
+  fakeSiteHistoryStart,
   fakeNewsletters,
   fakePosts,
   fakeSnippets,
@@ -18,15 +21,31 @@ import {
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { formatCustomRange, getPeriodText } from '@/shared/analytics/chart-helpers';
 import { deferred } from '@/utils/deferred';
 import { analyticsScreen } from './analytics.screen';
 
 const LATEST_POST_ID = '64d623b64676110001e897d1';
 
+// Every Analytics view first looks up where the site's history starts; the
+// test site has members from 2020
+beforeEach(() => {
+  fakeSiteHistoryStart({ firstMember: '2020-01-01T00:00:00.000Z' });
+});
+
 function daysAgo(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date.toISOString().slice(0, 10);
+}
+
+// The calendar and its queries use the viewer's local dates, not UTC ones
+function localDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 /**
@@ -160,6 +179,29 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
   });
 
+  it('counts days in the site’s timezone, whoever is looking', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', {
+      boot: {
+        ...webAnalyticsBootOverrides(),
+        browseSettings: {
+          response: settingsResponse({
+            settings: { web_analytics_enabled: true, timezone: 'Asia/Tokyo' },
+          }),
+        },
+      },
+    });
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('timezone')).toBe('Asia/Tokyo');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('timezone'),
+      )
+      .toBe('Asia/Tokyo');
+  });
+
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();
     seedTopPostsViews();
@@ -175,6 +217,223 @@ describe('Analytics overview', () => {
 
     await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).not.toBe(initialDateFrom);
+  });
+
+  it('starts All time where the site’s history does', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    // An imported member from 2018 predates the posts and the first visit
+    fakeSiteHistoryStart({
+      firstMember: '2018-06-15T10:00:00.000Z',
+      firstPage: '2020-02-01T09:00:00.000Z',
+      firstVisit: '2025-03-01 08:00:00',
+    });
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2018-06-15');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2018-06-15');
+  });
+
+  it('shows Analytics without waiting for where the site’s history starts', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    const pendingFirstMember = deferred<unknown>();
+    fakeAdminEndpoint(
+      'GET',
+      /^\/members\/\?limit=1&order=created_at\+asc/,
+      () => pendingFirstMember.promise,
+    );
+
+    try {
+      await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+      await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+    } finally {
+      pendingFirstMember.resolve({
+        members: [{ id: 'first-member', created_at: '2020-01-01T00:00:00.000Z' }],
+        meta: { pagination: { page: 1, limit: 1, pages: 1, total: 1, next: null, prev: null } },
+      });
+    }
+  });
+
+  it('starts All time where the site’s history does when picked before that’s known', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    const pendingFirstMember = deferred<unknown>();
+    fakeAdminEndpoint(
+      'GET',
+      /^\/members\/\?limit=1&order=created_at\+asc/,
+      () => pendingFirstMember.promise,
+    );
+    const memberCountApi = fakeAdminStats.memberCount();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+    pendingFirstMember.resolve({
+      members: [{ id: 'first-member', created_at: '2018-06-15T10:00:00.000Z' }],
+      meta: { pagination: { page: 1, limit: 1, pages: 1, total: 1, next: null, prev: null } },
+    });
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2018-06-15');
+    await expect
+      .poll(() =>
+        new URL(memberCountApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2018-06-15');
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('All time');
+  });
+
+  it('never starts All time before 2013, whatever an import says', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    fakeSiteHistoryStart({ firstMember: '1970-01-01T00:00:00.000Z' });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe('2013-01-01');
+  });
+
+  it('queries a custom date range picked on the calendar', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+
+    const from = localDaysAgo(10);
+    const to = localDaysAgo(3);
+
+    await analyticsScreen.dateRangeSelect().click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+
+    // The first click starts the range, the second applies it
+    await analyticsScreen.calendarDay(from)!.click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+    await analyticsScreen.calendarDay(to)!.click();
+
+    await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
+    await expect
+      .element(analyticsScreen.dateRangeSelect())
+      .toHaveTextContent(formatCustomRange({ from, to }));
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(from);
+    expect(kpisApi.lastRequest?.params.get('date_to')).toBe(to);
+
+    // Reopening shows the applied range, and closing without a second click
+    // keeps it
+    await analyticsScreen.dateRangeSelect().click();
+    await expect
+      .element(analyticsScreen.calendarDay(from)!)
+      .toHaveAttribute('data-range-start', 'true');
+    await expect
+      .element(analyticsScreen.calendarDay(to)!)
+      .toHaveAttribute('data-range-end', 'true');
+    await analyticsScreen.calendarDay(localDaysAgo(20))!.click();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
+    await expect
+      .element(analyticsScreen.dateRangeSelect())
+      .toHaveTextContent(formatCustomRange({ from, to }));
+
+    // Presets still apply after a custom range
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('Last 7 days').click();
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(localDaysAgo(6));
+  });
+
+  it('picks a preset with its key from anywhere on the page', async () => {
+    const { kpisApi } = seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+
+    // The picker shows each preset's key
+    await analyticsScreen.dateRangeSelect().click();
+    await expect
+      .element(analyticsScreen.rangeOption('Last 7 days'))
+      .toHaveAttribute('aria-keyshortcuts', 'w');
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.keyboard('w');
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(localDaysAgo(6));
+  });
+
+  it('lets a custom range reach back exactly as far as All time', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    // All time, and so the calendar, starts at the site's first member
+    const earliest = localDaysAgo(999);
+    fakeSiteHistoryStart({ firstMember: `${earliest}T12:00:00.000Z` });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    const [year, month] = earliest.split('-');
+
+    await analyticsScreen.dateRangeSelect().click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+
+    const yearOptions = Array.from(
+      (analyticsScreen.calendarYearSelect().element() as HTMLSelectElement).options,
+    ).map((option) => option.value);
+    expect(yearOptions[0]).toBe(year);
+
+    await analyticsScreen.calendarYearSelect().selectOptions(year);
+    await analyticsScreen.calendarMonthSelect().selectOptions(String(Number(month) - 1));
+    await expect.poll(() => analyticsScreen.calendarDay(earliest)).not.toBeNull();
+
+    await expect.element(analyticsScreen.calendarDay(earliest)!).toBeEnabled();
+    const earlierDays = analyticsScreen.calendarDays().filter(({ date }) => date < earliest);
+    expect(earlierDays.every(({ disabled }) => disabled)).toBe(true);
+    await expect
+      .element(
+        analyticsScreen
+          .customRangePicker()
+          .getByRole('button', { name: 'Go to the Previous Month', includeHidden: true }),
+      )
+      .not.toBeVisible();
+  });
+
+  it("keeps each month's dropdowns on that month", async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    const thisYear = new Date().getFullYear();
+    const thisMonth = new Date().getMonth();
+
+    await analyticsScreen.dateRangeSelect().click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+
+    // The right-hand month is this month, so there's nowhere further to go
+    await expect
+      .element(
+        analyticsScreen
+          .customRangePicker()
+          .getByRole('button', { name: 'Go to the Next Month', includeHidden: true }),
+      )
+      .not.toBeVisible();
+
+    // Changing the right-hand month's year keeps that month on the right
+    await analyticsScreen.calendarYearSelect(1).selectOptions(String(thisYear - 1));
+    await expect.element(analyticsScreen.calendarMonthSelect(1)).toHaveValue(String(thisMonth));
+    await expect.element(analyticsScreen.calendarYearSelect(1)).toHaveValue(String(thisYear - 1));
+
+    // Moving the left month onto this month keeps both months visible:
+    // this month can only be the right-hand one
+    await analyticsScreen.calendarMonthSelect(0).selectOptions(String(thisMonth));
+    await analyticsScreen.calendarYearSelect(0).selectOptions(String(thisYear));
+    await expect.element(analyticsScreen.calendarMonthSelect(1)).toHaveValue(String(thisMonth));
+    await expect.element(analyticsScreen.calendarYearSelect(1)).toHaveValue(String(thisYear));
   });
 
   it('renders the latest and top posts with zeroed stats when nothing is recorded', async () => {
@@ -327,6 +586,28 @@ describe('Analytics web traffic', () => {
     await expect.element(analyticsScreen.locationsCard()).toHaveTextContent('No visitors');
   });
 
+  it('applies a single custom day and describes the cards by its date', async () => {
+    seedEmptyAnalyticsWorld();
+    seedEmptyWebTraffic();
+    const kpisApi = fakeTinybirdPipe('api_kpis', []);
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.uniqueVisitorsTab()).toHaveTextContent('0');
+
+    const day = localDaysAgo(2);
+
+    await analyticsScreen.dateRangeSelect().click();
+    await expect.element(analyticsScreen.customRangePicker()).toBeVisible();
+    // Clicking the same day twice picks just that day
+    await analyticsScreen.calendarDay(day)!.click();
+    await analyticsScreen.calendarDay(day)!.click();
+
+    await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(day);
+    expect(kpisApi.lastRequest?.params.get('date_to')).toBe(day);
+    await expect
+      .element(analyticsScreen.topContentCard())
+      .toHaveTextContent(`No visitors ${getPeriodText({ from: day, to: day })}`);
+  });
+
   it('keeps the empty state across the top content tabs', async () => {
     seedEmptyAnalyticsWorld();
     seedEmptyWebTraffic();
@@ -400,6 +681,56 @@ describe('Analytics growth', () => {
   });
 });
 
+describe('Analytics on servers without hourly history', () => {
+  // Admin ships ahead of the server on Ghost(Pro). A server that can't chart
+  // a day by the hour only has daily totals for members, revenue and
+  // subscribers, so those views don't offer a single day until it can
+  function seedViews() {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers();
+    fakeAdminStats.newsletterBasic();
+    fakeAdminStats.newsletterClicks();
+    fakeAdminStats.topPosts();
+    fakeAdminStats.topContent();
+    fakeTinybirdPipe('api_top_sources', []);
+    fakeTinybirdPipe('api_top_locations', []);
+  }
+
+  it.each(['/analytics', '/analytics/growth', '/analytics/newsletters'])(
+    'leaves Today out of %s',
+    async (route) => {
+      seedViews();
+      await renderAdminApp(route, { boot: webAnalyticsBootOverrides() });
+
+      await analyticsScreen.dateRangeSelect().click();
+      await expect.element(analyticsScreen.rangeOption('Last 7 days')).toBeVisible();
+      await expect.element(analyticsScreen.rangeOption('Today')).not.toBeInTheDocument();
+    },
+  );
+
+  it('still offers Today on Web traffic, which charts visitors by the hour', async () => {
+    seedViews();
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await expect.element(analyticsScreen.rangeOption('Today')).toBeVisible();
+  });
+
+  it.each(['/analytics', '/analytics/growth', '/analytics/newsletters'])(
+    'offers Today on %s once the server charts days by the hour',
+    async (route) => {
+      seedViews();
+      fakeHourlyHistory();
+      await renderAdminApp(route, { boot: webAnalyticsBootOverrides() });
+
+      await analyticsScreen.dateRangeSelect().click();
+      await expect.element(analyticsScreen.rangeOption('Today')).toBeVisible();
+    },
+  );
+});
+
 describe('Analytics newsletters', () => {
   it('renders the seeded subscriber KPIs and top newsletters', async () => {
     seedAnalyticsWorld();
@@ -440,6 +771,39 @@ describe('Analytics newsletters', () => {
     await expect
       .element(analyticsScreen.topNewslettersCard())
       .toHaveTextContent('Weekly Digest Issue #1');
+  });
+
+  it('spans a lone subscriber count across All time, not centuries', async () => {
+    seedAnalyticsWorld();
+    fakeSiteHistoryStart({ firstMember: '2020-01-01T00:00:00.000Z' });
+    fakeNewsletters([
+      newsletter({
+        name: 'Weekly Digest',
+        status: 'active',
+        sort_order: 0,
+        count: { posts: 3, active_members: 543 },
+      }),
+    ]);
+    // Only one count comes back
+    const subscribersApi = fakeAdminStats.newsletterSubscribers({
+      total: 543,
+      values: [{ date: daysAgo(1), value: 543 }],
+    });
+    fakeAdminStats.newsletterBasic();
+    fakeAdminStats.newsletterClicks();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+
+    await expect
+      .poll(() =>
+        new URL(subscribersApi.lastRequest?.url ?? 'http://x').searchParams.get('date_from'),
+      )
+      .toBe('2020-01-01');
+    await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
+    // Counting 100000 days back put the axis in 1753
+    expect(analyticsScreen.newslettersCard().element().textContent).not.toMatch(/17\d\d/);
   });
 
   it('shows the empty state on every newsletter card when none were sent', async () => {
