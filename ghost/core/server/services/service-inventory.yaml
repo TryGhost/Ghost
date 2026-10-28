@@ -11552,8 +11552,9 @@ services:
         summary: >-
           CommonJS exports one mutable RecommendationServiceWrapper with receiver-dependent,
           synchronous init returning undefined and public repositories, services and controllers.
-          Fields are undefined before construction or when disabled on first init. The service
-          barrel exports constructors and entities, not another application instance. Inner
+          Fields are undefined before the first init; when services:recommendations:enabled is
+          false, init still publishes them and skips only the two background initializers. The
+          service barrel exports constructors and entities, not another application instance. Inner
           methods return promises; controllers serialize plain recommendation values into
           data/meta responses. Controller units with fake services assert selected serialized
           fields, pagination and validation. The root test loads the index and asserts it is one
@@ -11696,7 +11697,8 @@ services:
           - test/unit/server/services/recommendations/index.test.ts
       configuration:
         summary: >-
-          Only explicit false for services:recommendations:enabled prevents root construction.
+          Explicit false for services:recommendations:enabled skips only the two background
+          initializers; repositories, services and controllers are still published.
           Public-directory path, model/service references and both mail transports are captured;
           settings BREAD reads current cache synchronously, URL generation uses retained helpers,
           and notification recipients/settings/sender are read during work. Outgoing refresh is
