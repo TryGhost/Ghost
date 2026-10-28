@@ -11,7 +11,7 @@ const {
   NOTHING_COLLECTED,
 } = require('../../../../../core/server/services/stripe-checkout-config/checkout-service');
 
-i18n.init();
+i18n.init({ events: require('../../../../../core/server/lib/common/events') });
 
 describe('StripeAPI', function () {
   const mockCustomerEmail = 'foo@example.com';

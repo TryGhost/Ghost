@@ -9,7 +9,7 @@ const Tier = require('../../../../../../../core/server/services/tiers/tier');
 // resolves to the live i18next instance. The init helper falls back to 'en'
 // when the locale setting isn't set.
 const i18n = require('../../../../../../../core/server/services/i18n');
-i18n.init();
+i18n.init({ events: require('../../../../../../../core/server/lib/common/events') });
 
 const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/payments-service');
 
