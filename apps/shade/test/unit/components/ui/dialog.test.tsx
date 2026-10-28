@@ -82,7 +82,7 @@ describe('Dialog Components', () => {
     );
 
     const content = screen.getByTestId('dialog-content');
-    const scroller = content.closest<HTMLElement>('.overflow-y-auto');
+    const scroller = content.closest<HTMLElement>('[data-slot="dialog-scroller"]');
     assert.ok(scroller, 'The dialog should sit in a scroll container');
     assert.ok(
       scroller.className.includes('pointer-events-none'),

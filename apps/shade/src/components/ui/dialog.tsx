@@ -37,7 +37,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 // The panel itself, shared by both ways a dialog can sit on the page.
 const dialogPanelClassName =
-  'z-50 grid w-full max-w-lg transform-gpu gap-6 bg-surface-elevated-2 p-6 shadow-lg outline-hidden duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:rounded-lg';
+  'z-50 grid w-full max-w-lg transform-gpu gap-6 bg-surface-elevated-2 p-6 shadow-lg outline-hidden duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95';
 
 export interface DialogContentProps extends React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
@@ -63,7 +63,7 @@ const DialogContent = React.forwardRef<
       className={cn(
         scroll === 'overlay'
           ? 'pointer-events-auto relative rounded-lg'
-          : 'fixed top-[8vmin] left-[50%] translate-x-[-50%]',
+          : 'fixed top-[8vmin] left-[50%] translate-x-[-50%] sm:rounded-lg',
         dialogPanelClassName,
         className,
       )}
@@ -85,11 +85,16 @@ const DialogContent = React.forwardRef<
       <ShadeScope>
         {scroll === 'overlay' ? (
           modal ? (
-            <DialogOverlay className="overflow-y-auto">{scrollingPanel}</DialogOverlay>
+            // The dialog sits inside the backdrop here, so the backdrop animates as long as the
+            // dialog does; otherwise closing unmounts the dialog part-way through its animation.
+            <DialogOverlay className="overflow-y-auto duration-200">{scrollingPanel}</DialogOverlay>
           ) : (
             // Radix renders no backdrop for a non-modal dialog, and the page behind stays
             // usable, so this scroll container lets presses beside the dialog through.
-            <div className="pointer-events-none fixed inset-0 z-50 overflow-y-auto">
+            <div
+              className="pointer-events-none fixed inset-0 z-50 overflow-y-auto"
+              data-slot="dialog-scroller"
+            >
               {scrollingPanel}
             </div>
           )
