@@ -1344,7 +1344,8 @@ services:
           pages, count maps or no result, and set
           invalidation headers; destroy rejects rather than deleting. The HTTP adapter owns
           serialization/status codes. Units assert selected controller arguments, errors and
-          headers with fake services, not the complete root shape or init return timing.
+          headers with fake services. The real-root integration pins init returning undefined
+          and publishing a controller whose service is the published api.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1354,6 +1355,7 @@ services:
           - core/server/api/endpoints/utils/serializers/output/mappers/comments.js
         tests:
           - test/unit/server/services/comments/comments-controller.test.js
+          - test/integration/services/comments-service.test.js
       construction:
         summary: >-
           Every init constructs GhostMailer, CommentsService, CommentsStats and CommentsController.
@@ -1363,7 +1365,8 @@ services:
           retained; stats retains the DB module, while reply mail reads emailService.renderer at
           send time. No other production construction of these comments classes was found.
           Units instantiate deep classes with fakes; the DB integration invokes the real root
-          and asserts pinned projections, not construction count or transport ownership.
+          and asserts pinned projections and that repeated init publishes a new api and
+          controller, not construction count or transport ownership.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1383,7 +1386,9 @@ services:
           subscriber. HTTP asserts selected CRUD/moderation, redaction, vote access, private-site
           guards, headers and bulk-hide results. Mail-intercepted comment/reply tests await test
           DomainEvents settlement and assert member timestamps; none pins wrapper replacement
-          through all consumers or production subscriber completion before the response.
+          through all consumers or production subscriber completion before the response. Mapper
+          units pin the Content post comments flag for off and paid and that a wrapper without a
+          published api reports comments on, the shape the mapper sees before init.
         sources:
           - core/server/api/endpoints/comments.js
           - core/server/api/endpoints/comments-members.js
@@ -1403,6 +1408,7 @@ services:
           - test/e2e-api/admin/member-commenting.test.js
           - test/e2e-api/members-comments/comments.test.js
           - test/e2e-api/members-comments/post-access.test.js
+          - test/unit/api/canary/utils/serializers/output/mapper.test.js
       startup:
         summary: >-
           Boot invokes synchronous comments.init in the service Promise.all array after invoking
@@ -1431,8 +1437,9 @@ services:
           old graph. There is no reset/shutdown or old-transport disposal. Comment, vote and report
           state lives in shared tables. Stats accesses db.knex when querying; notification helpers
           call retained settings/URL facades and current email-service renderer. HTML templates
-          are read/compiled each render; text modules are require-cached. Existing tests exercise
-          normal persistence/rendering and a real-root pinned query, not re-init or restart.
+          are read/compiled each render; text modules are require-cached. The real-root
+          integration pins that repeated init replaces the api and controller and that the
+          controller counts published comments through the wired stats; restart is untested.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-stats-service.js
@@ -1451,8 +1458,11 @@ services:
           by the renderer forwards to current i18n. GhostMailer captures transport/options at
           construction, while address normalization occurs at send. HTTP tests stub settings
           and mutate test config to assert disabled/paid access and support-address output;
-          renderer units assert selected English/German text. None establishes production
-          config hot reload or transport refresh from the immutable config tree.
+          renderer units assert selected English/German text. The real-root integration pins
+          enabled following the setting on each access with unknown values as off. Email units
+          pin the notification date as a calendar day in the site timezone setting, English
+          month abbreviations, for the author, reply and report templates. None establishes
+          production config hot reload or transport refresh from the immutable config tree.
         sources:
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-service-emails.js
@@ -1466,6 +1476,8 @@ services:
         tests:
           - test/e2e-api/members-comments/comments.test.js
           - test/unit/server/services/comments/comments-service-emails-renderer.test.ts
+          - test/unit/server/services/comments/comments-service-emails.test.js
+          - test/integration/services/comments-service.test.js
       resources:
         summary: >-
           The nested mailer owns a configured Nodemailer transport; comments has no close/drain
@@ -1478,6 +1490,10 @@ services:
           mail. Domain event subscribers run separately and test allSettled is not a production
           drain. Vote units assert arguments using fake transactions; HTTP mail replaces
           GhostMailer.sendMail, preserving normalization but bypassing transport/provider work.
+          Email units pin the reply notification reading the Email service renderer when
+          sending rather than at construction, its recipient, unsubscribe link, translated
+          subject and skip conditions, and the member and moderation timestamps as the
+          current time.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1501,8 +1517,10 @@ services:
           returns without retrying notification. Reaction controllers read after mutation before
           setting headers. HTTP asserts sequential duplicate-report suppression, access errors
           and successful mail/persistence; units assert notification recipient deduplication with
-          fake email helpers. Post-write mail/read failures, retry effects and concurrent
-          vote/report outcomes remain source-only and untested by those assertions.
+          fake email helpers, and that a failed author notification rejects commentOnPost after
+          the comment is saved without the member comment event or the final read, while an
+          internal context skips notifications and still dispatches. Post-write read failures,
+          retry effects and concurrent vote/report outcomes remain source-only.
         sources:
           - core/server/services/comments/index.js
           - core/server/services/comments/comments-service.js
@@ -1516,15 +1534,18 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin real-root exports, synchronous initialization, repeated replacement and retained
-        wrapper/implementation behavior, including failed construction and in-flight calls.
-        The Content post mapper currently treats missing api.enabled as not off; characterize
-        that pre-init/facade-shape edge rather than assuming optional chaining protects it.
+        The real-root integration now pins synchronous init returning undefined, the published
+        controller bound to the published api, and repeated init replacing both; mapper units
+        pin the Content post mapper reporting comments on for a wrapper without a published api.
+        Adoption must decide how one retained initializer instance replaces replacement per
+        init and whether the mapper keeps reading a possibly unpublished api. Failed
+        construction and in-flight calls across replacement remain uncharacterized.
       - >-
-        Cover actual composition when rendering, mail or the final read fails after comment/
-        report persistence, including recipient continuation, event dispatch, request retries
-        and omitted invalidation headers. Intercepted successful mail and fake recipient
-        helpers do not establish those failure contracts or notification durability.
+        Units now pin that a failed author notification rejects comment creation after
+        persistence without the member comment event or final read. Reply/report notification
+        failure, final read failure, recipient continuation, request retries and omitted
+        invalidation headers remain uncharacterized; intercepted successful mail and fake
+        recipient helpers do not establish notification durability.
       - >-
         Establish mail-transport ownership on replacement/shutdown and behavior of pending
         notification/domain-event work. Comments closes no transport and registers no cleanup;
@@ -4675,14 +4696,17 @@ services:
           is exposed. init synchronously returns undefined. The other arrow functions
           assert initialization, forward all arguments to the current private instance and
           return its result without depending on their receiver. changeLanguage returns
-          the library promise; t and dir return their synchronous library results. Consumer
-          tests assert translated nickname text, not the facade export shape, init return,
-          receiver independence or dir behavior.
+          the library promise; t and dir return their synchronous library results. Focused
+          root tests assert the pre-init guards, receiver-independent retained delegates,
+          forwarded translation options and direction arguments, and the translator that
+          changeLanguage returns; the exact export shape and undefined init return remain
+          source evidence.
         sources:
           - core/server/services/i18n/index.js
           - package.json
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
+          - test/unit/server/services/i18n/index.test.ts
       construction:
         summary: >-
           Import creates only the facade and debug helper. Every init lazily loads the
@@ -4690,7 +4714,9 @@ services:
           namespace translator, publishes it, then adds an anonymous locale listener.
           Boot is the only production init caller found. Email-service, member welcome
           emails and theme translation construct independent package instances; they do
-          not initialize or share this facade's private translator.
+          not initialize or share this facade's private translator. Focused root tests
+          assert that import adds no locale listener and that init publishes a translator
+          and exactly one listener.
         sources:
           - core/server/services/i18n/index.js
           - core/boot.js
@@ -4698,7 +4724,8 @@ services:
           - core/server/services/member-welcome-emails/service.js
           - core/frontend/services/theme-engine/i18next/theme-i18n.js
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/i18n/index.test.ts
       consumers:
         summary: >-
           Members mail callbacks, donation payment nicknames, comment email subjects and
@@ -4734,6 +4761,9 @@ services:
           or retaining t before init is safe; invoking it is not. init itself has no settings
           readiness guard and falls back to English if the cache is uninitialized. Existing
           unit consumers manually init; signup HTTP tests exercise booted English output.
+          Boot tests hold init pending to prove initCore awaits it before Gift Links and
+          propagates its rejection; focused root tests cold-load the facade and retain
+          delegates before init.
         sources:
           - core/boot.js
           - core/server/services/i18n/index.js
@@ -4743,6 +4773,8 @@ services:
           - test/unit/server/services/stripe/stripe-api.test.js
           - test/unit/server/web/gift-preview/controller.test.js
           - test/e2e-api/members/send-magic-link.test.js
+          - test/unit/boot/init-core.test.ts
+          - test/unit/server/services/i18n/index.test.ts
       lifetime:
         summary: >-
           Exports remain stable across init while the private translator is replaced. Each
@@ -4751,12 +4783,16 @@ services:
           No guard, listener removal or GhostServer cleanup exists. Language changes retain
           loaded locale bundles in the current translator. A library t returned through
           changeLanguage is bound to that instance, unlike the exported delegating t.
+          Focused root tests pin that retained delegates follow the translator replaced by
+          a repeated init and that each init adds another listener; same-process
+          stop/reboot listener counts remain source-only.
         sources:
           - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/ghost-server.ts
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/i18n/index.test.ts
       configuration:
         summary: >-
           init captures settings locale or en and fixes the ghost namespace. Later model locale
@@ -4767,7 +4803,10 @@ services:
           disable escaping. Independent email/theme translators have their own locale listeners;
           manually changing this facade does not change them. Core tests pin French donation
           nicknames, unescaped titles and English gift labels; Stripe's translated-label case
-          stubs t. Locale loading/fallback and listener behavior here are source-only.
+          stubs t. Focused root tests cover the English fallback, the configured French
+          locale, forwarded options and direction arguments, a French-to-Arabic change and
+          the registered locale callback; they invoke that callback directly rather than
+          persisting a settings edit.
         sources:
           - core/server/services/i18n/index.js
           - core/server/data/schema/default-settings/default-settings.json
@@ -4780,6 +4819,7 @@ services:
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
           - test/unit/server/services/stripe/stripe-api.test.js
+          - test/unit/server/services/i18n/index.test.ts
       resources:
         summary: >-
           The root owns its translator reference and locale subscriptions on the borrowed
@@ -4806,35 +4846,44 @@ services:
           The locale callback neither catches errors nor returns/awaits changeLanguage;
           synchronous exceptions escape raw event delivery and can interrupt later listeners.
           The current local-resource path changes language synchronously despite returning
-          a promise. The facade adds no retry, rollback or error translation.
+          a promise. The facade adds no retry, rollback or error translation. Focused tests
+          assert the pre-init errors, a failed first init that publishes no translator or
+          listener, a successful retry, and boot propagating an init rejection. Factory or
+          registration failure after publication, malformed locale events and callback
+          failures remain source-only.
         sources:
           - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/boot.js
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/i18n/index.test.ts
+          - test/unit/boot/init-core.test.ts
     unverified: []
     blockers:
       - >-
-        Pin exact exports/returns, pre-init assertions, importing before init, retained t
-        across re-init, and real boot ordering. Existing manually initialized consumers
-        and English signup output do not characterize replacement or failure boundaries.
+        Pin the exact export shape and init return before changing initialization. Pre-init
+        guards, importing before init, retained delegates across re-init and boot awaiting
+        init before Gift Links now have focused tests.
       - >-
-        Characterize repeated init and same-process stop/reboot listener counts, callback
-        multiplicity and cleanup without affecting independent email/theme subscribers.
-        Preserve the distinction between a retained delegating t and an instance-bound
-        translator returned by changeLanguage; there is no production cleanup today.
+        Characterize same-process stop/reboot listener counts, callback multiplicity and
+        cleanup without affecting independent email/theme subscribers; repeated init's
+        replacement and extra listener are pinned as current behaviour. Preserve the
+        distinction between a retained delegating t and an instance-bound translator returned
+        by changeLanguage; there is no production cleanup today.
       - >-
         Exercise real settings edits and transaction commit/rollback through retained mail,
-        gift and payment consumers, including fallback locales, direction and escaping.
-        Direct French changeLanguage coverage does not test the settings listener; package
-        translation tests and separate renderer instances do not prove this root's wiring.
+        gift and payment consumers, including fallback locales and escaping. Focused root
+        tests exercise the registered locale callback and direction but do not prove
+        persisted settings-event delivery; package translation tests and separate renderer
+        instances do not prove this root's wiring.
       - >-
-        Cover failed first/repeated init, registration failure after publication, malformed
-        locale events and callback failures. Decide the contract before introducing any
-        asynchronous resource loader: boot and raw event delivery currently rely on local
-        synchronous initialization and do not own pending language-change work.
+        Cover factory or registration failure after publication, malformed locale events and
+        callback failures; failed first init and its retry are covered. Decide the contract
+        before introducing any asynchronous resource loader: boot and raw event delivery
+        currently rely on local synchronous initialization and do not own pending
+        language-change work.
   identity-tokens:
     kind: directory
     disposition: relocate
@@ -6495,8 +6544,9 @@ services:
           either. The deep service exposes async slug/create/filter/request operations and a
           synchronous relativeRedirectPrefix; only handleRequest is bound. Deep LinkRedirect
           objects retain mutable URL references and ObjectIDs, while RedirectEvent carries the
-          original request URL, link and timestamp. Units exercise deep methods and DTOs, not
-          root identity, detached init or the whole pre-init surface.
+          original request URL, link and timestamp. Units exercise deep methods and DTOs. Root
+          units pin the absent pre-init surface, retained identity across repeated init and the
+          published handleRequest and getSlugUrl paths; detached init remains source-only.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirects-service.js
@@ -6505,6 +6555,7 @@ services:
         tests:
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
+          - test/unit/server/services/link-redirection/index.test.js
       construction:
         summary: >-
           The first init loads shared models, chooses an optional adapter, constructs/publishes
@@ -6512,13 +6563,16 @@ services:
           await, so publication is synchronous; the service guard retains both on later calls.
           Cache-enabled repository construction immediately adds a site.changed listener. A
           later construction failure can leave that repository/listener published and retry
-          creates another. There is no pending promise, rollback or teardown. Construction and
-          partial-publication behavior are source-only.
+          creates another. There is no pending promise, rollback or teardown. Root units pin
+          graph retention, disabled-cache construction without an adapter or listener, and
+          adapter-acquisition failure publishing nothing before an explicit retry succeeds.
+          Later partial repository/listener publication remains source-only.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/adapter-manager/index.ts
-        tests: []
+        tests:
+          - test/unit/server/services/link-redirection/index.test.js
       consumers:
         summary: >-
           Frontend route mounting reads the /r/ prefix and captures the bound handleRequest.
@@ -6528,7 +6582,12 @@ services:
           proves generated links exist in the database and resolve through real frontend HTTP
           to the stored destination; its nonempty click assertion does not pin the individual
           relation because supplied member_id/link_id options are ignored. Wrapper tests inject
-          redirection dependencies; none prove retained consumers after root replacement.
+          redirection dependencies; none prove retained consumers after root replacement. Root
+          units invoke the published handleRequest with request/response fakes and a stateful
+          cache fake: a database miss and a serialized cache hit assert the same destination,
+          header, no next call and the same link id, automation revision and destination in the
+          dispatched event. Models and URL helpers are controlled, so this is not a real HTTP
+          test.
         sources:
           - core/frontend/web/routers/link-redirects.js
           - core/frontend/web/site.js
@@ -6541,14 +6600,16 @@ services:
         tests:
           - test/integration/services/email-service/batch-sending.test.js
           - test/unit/server/services/link-tracking/index.test.ts
+          - test/unit/server/services/link-redirection/index.test.js
       startup:
         summary: >-
           Boot awaits this init after route/custom redirects and before themes, Express route
           mounting, the main services phase and readiness. Despite the frontend-phase name,
           initialization also runs when frontend is disabled. Link tracking explicitly rejects
           if service is absent. No redirect rows are loaded during initialization. Successful
-          newsletter composition exercises completed boot; lifecycle tests do not cover this
-          wrapper's ordering, failed adapter/repository construction or backend-only startup.
+          newsletter composition exercises completed boot. Root units cover failed adapter
+          acquisition and retry; lifecycle tests do not cover this wrapper's ordering, later
+          repository construction failure or backend-only startup.
         sources:
           - core/boot.js
           - core/server/services/link-redirection/index.js
@@ -6557,6 +6618,7 @@ services:
         tests:
           - test/integration/services/email-service/batch-sending.test.js
           - test/unit/server/services/link-tracking/index.test.ts
+          - test/unit/server/services/link-redirection/index.test.js
       lifetime:
         summary: >-
           The wrapper keeps its first successful graph across init calls and has no reset.
@@ -6567,6 +6629,8 @@ services:
           deduplication instead relies on a unique revision/destination-hash pair and rereads a
           concurrent winner after a duplicate error. Real MySQL tests prove convergence for
           concurrent same/different revisions, not ordinary slug races or root/cache lifetime.
+          Root units pin retained service/repository identity after repeated init and one owned
+          invalidation listener.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirects-service.js
@@ -6575,6 +6639,7 @@ services:
         tests:
           - test/integration/services/link-redirection/automation-redirects.test.ts
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
+          - test/unit/server/services/link-redirection/index.test.js
       configuration:
         summary: >-
           Init captures cache enablement/adapter and service base URL; later init does not refresh
@@ -6582,11 +6647,14 @@ services:
           subdirectory and Admin URL values at construction; test replacement is not production
           hot reload. Persistence strips the subdirectory and request query. Destination hashes
           use full URL.href, and edited means updated_at exceeds created_at by more than one
-          second. Cache serialization keeps a subdirectory-bearing pathname: save/read keys differ
-          and cached reconstruction can prefix the subdirectory again. Units pin root-URL cache
-          results, timestamp thresholds and UUID substitution. The cache-hit fake supplies an
-          absolute from URL rather than the serialized pathname, so no real serialization round
-          trip or subdirectory behavior is pinned.
+          second. Cache serialization keeps a subdirectory-bearing pathname: save writes that
+          pathname as its key while getByURL reads and fills the stripped path, and cached
+          reconstruction prefixes the subdirectory again, so cache hits on subdirectory sites
+          rebuild LinkRedirect.from with a doubled path while to is unchanged. Units pin root-URL
+          cache results, timestamp thresholds and UUID substitution. Root units run a real
+          serialization round trip through the root graph with subdirectory URL helpers, pinning
+          destination and identifiers on miss and hit and slug URLs under the site URL; the
+          doubled from value is deliberately not pinned.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirect-repository.js
@@ -6598,6 +6666,7 @@ services:
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
           - test/integration/services/link-redirection/automation-redirects.test.ts
+          - test/unit/server/services/link-redirection/index.test.js
       resources:
         summary: >-
           The repository borrows models and an adapter-manager-owned cache, registering an
@@ -6607,7 +6676,9 @@ services:
           HTTP 302; shared DomainEvents logs ordinary async subscriber failures without making
           them part of the response. Newsletter integration waits for test-only allSettled,
           while production redirect completion does not await analytics. The reset unit checks
-          one invocation on an injected emitter, not resource ownership across restart.
+          one invocation on an injected emitter, not resource ownership across restart. Root
+          units assert one owned site.changed listener on the shared registry and cache reset
+          through its callback; production disposal is still absent.
         sources:
           - core/server/services/link-redirection/link-redirect-repository.js
           - core/server/services/link-redirection/link-redirects-service.js
@@ -6618,6 +6689,7 @@ services:
         tests:
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
           - test/integration/services/email-service/batch-sending.test.js
+          - test/unit/server/services/link-redirection/index.test.js
       failures:
         summary: >-
           Repository/cache lookup and malformed-row errors propagate without a cache-error DB
@@ -6629,7 +6701,9 @@ services:
           rethrows, while other saves fail directly. Units pin that recovery and placeholder
           output with fakes, not cache faults, malformed stored rows, analytics failures or
           Express error responses. No-prefix unit cases simply inject a missing row; they do
-          not prove route matching or service-side prefix validation.
+          not prove route matching or service-side prefix validation. A root unit forwards a
+          model lookup rejection unchanged to next without redirect or event dispatch; cache
+          failure channels and full Express error responses remain gaps.
         sources:
           - core/server/services/link-redirection/index.js
           - core/server/services/link-redirection/link-redirect-repository.js
@@ -6639,22 +6713,28 @@ services:
         tests:
           - test/unit/server/services/link-redirection/link-redirects-service.test.js
           - test/unit/server/services/link-redirection/link-redirect-repository.test.js
+          - test/unit/server/services/link-redirection/index.test.js
     unverified: []
     blockers:
       - >-
-        Pin root exports, synchronous publication, failed/repeated init, retained frontend/link
-        tracking consumers and backend-only boot. Decide how to restore invalidation after an
-        event-bus reset and dispose partially constructed repositories without changing identity.
+        Root units pin the absent pre-init surface, repeated-init identity and failed adapter
+        acquisition with retry. Pin synchronous publication timing, retained frontend/link
+        tracking consumers after root replacement and backend-only boot. Decide how to restore
+        invalidation after an event-bus reset and dispose partially constructed repositories
+        without changing identity.
       - >-
-        Add real cache composition contracts for hits, misses, disabled caching, edits and
-        site.changed, including subdirectories. Source and an isolated actual-repository/URL-helper
-        diagnostic show different save/read keys and duplicated subdirectory in cached link.from;
-        this does not establish a changed HTTP destination. Preserve or deliberately fix that
-        behavior separately; root-URL fakes do not protect it.
+        Root units cover disabled caching, a stateful miss-then-hit round trip, destination and
+        event identifiers, retained adapter choice and site.changed invalidation with controlled
+        subdirectory URL helpers. Serialized cache entries rebuild from against a site URL that
+        already carries the subdirectory, so cache hits on subdirectory sites yield a doubled
+        path, and the save-time key differs from the lookup key; current consumers do not read
+        that field from a hit. Fix that round trip separately rather than pinning it. Cover
+        edits and cache-enabled races separately.
       - >-
-        Cover cache read/write/reset failure channels, malformed model/cache rows, partial
-        persistence and Express next/error behavior. Cache writes and invalidation are not
-        awaited, so request success is not proof of settled cache work or safe shutdown.
+        Root units cover a model lookup failure reaching next without redirecting. Cover cache
+        read/write/reset failure channels, malformed model/cache rows, partial persistence and
+        full Express error responses. Cache writes and invalidation are not awaited, so request
+        success is not proof of settled cache work or safe shutdown.
       - >-
         Keep tested automation revision/hash uniqueness distinct from unprotected ordinary
         slug lookup/save. Test ordinary concurrent collisions, partial automation saves and
