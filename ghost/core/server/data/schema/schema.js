@@ -2199,7 +2199,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: true,
-      validations: { isIn: [['any_paid_tier', 'specific_paid_tier']] },
+      validations: { isIn: [['any_paid_tier', 'specific_paid_tier', 'free']] },
     },
     direction: {
       type: 'string',
