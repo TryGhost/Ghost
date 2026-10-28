@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
+const { MemberCommentEvent } = require('../../../../../core/shared/events');
 const { mockSystemTime } = require('../../../../utils/clock-utils');
 const CommentsService = require('../../../../../core/server/services/comments/comments-service');
 
@@ -900,13 +901,22 @@ describe('Comments Service: CommentsService', function () {
     it('notifies the post authors and dispatches the member comment event for a member comment', async function () {
       const { instance, models } = createClassInstance();
       const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const savedComment = { id: 'comment-id' };
+      models.Comment.findOne.resolves(savedComment);
       instance.emails.notifyPostAuthors = sinon.stub().resolves();
 
-      await instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', options);
+      const comment = await instance.commentOnPost(
+        'post-id',
+        'member-id',
+        '<p>Comment</p>',
+        options,
+      );
 
+      assert.equal(comment, savedComment);
       sinon.assert.calledOnce(instance.emails.notifyPostAuthors);
       assert.equal(instance.emails.notifyPostAuthors.firstCall.args[0].id, 'comment-id');
       sinon.assert.calledOnce(dispatch);
+      assert.ok(dispatch.firstCall.args[0] instanceof MemberCommentEvent);
       assert.deepEqual(dispatch.firstCall.args[0].data, {
         memberId: 'member-id',
         postId: 'post-id',
