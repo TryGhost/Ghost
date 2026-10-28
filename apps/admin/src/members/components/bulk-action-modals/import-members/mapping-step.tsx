@@ -10,8 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { CreateCustomFieldForm } from '@/shared/member-custom-fields/create-custom-field-form';
-import { CreateCustomFieldPanel } from '@/shared/member-custom-fields/create-custom-field-panel';
+import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
   APIError,
   HostLimitError,
@@ -40,10 +39,6 @@ import {
   type NewMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
-
-// POC: a new field is created in a sheet beside the table rather than in a row of it, to
-// compare the two. False puts the row back.
-const CREATE_FIELD_IN_SHEET = true;
 
 interface MappingPreviewRow {
   key: string;
@@ -266,20 +261,17 @@ export function MappingStep({
     showPicker(rowKey, field.name);
   };
 
-  // The column the sheet was last opened for, kept after it closes so the sheet slides away
+  // The column a field is being made for, kept after the popover closes so it fades out
   // showing that column's form rather than an empty one.
-  const lastSheetColumn = useRef<string | null>(null);
+  const lastPanelColumn = useRef<string | null>(null);
   if (createFieldForColumn) {
-    lastSheetColumn.current = createFieldForColumn;
+    lastPanelColumn.current = createFieldForColumn;
   }
-  const sheetColumn = lastSheetColumn.current;
-  // What the field panel hangs from, when it is a popover: that column's field button.
-  const sheetAnchor = useRef<HTMLElement | null>(null);
-  sheetAnchor.current = sheetColumn ? (fieldTriggers.current.get(sheetColumn) ?? null) : null;
+  const panelColumn = lastPanelColumn.current;
+  // What the popover hangs from: that column's field button.
+  const panelAnchor = useRef<HTMLElement | null>(null);
+  panelAnchor.current = panelColumn ? (fieldTriggers.current.get(panelColumn) ?? null) : null;
 
-  // The row form dims the other rows; the sheet's own overlay does that for it.
-  const isDimmed = (row: MappingPreviewRow) =>
-    !CREATE_FIELD_IN_SHEET && Boolean(createFieldForColumn) && createFieldForColumn !== row.key;
   // Locked only while a create is actually in flight — long enough that the form cannot be
   // taken away before its own request settles, and no longer, so moving on to another column
   // still puts a form the publisher has finished with away.
@@ -502,9 +494,8 @@ export function MappingStep({
                                                     import it read as the row coming back to life. */}
                           <TableRow
                             className={cn(
-                              'transition-opacity [&>td]:group-hover:bg-transparent',
+                              '[&>td]:group-hover:bg-transparent',
                               !isImported(row) && 'bg-muted/50',
-                              isDimmed(row) && 'opacity-40',
                             )}
                           >
                             <TableCell>
@@ -571,40 +562,6 @@ export function MappingStep({
                               />
                             </TableCell>
                           </TableRow>
-                          {/* The create form is a row of the table rather than a layer over it, so it
-                                                    scrolls with the rows, needs no anchoring or collision handling, and can't
-                                                    be scrolled out from under itself. It follows the row it belongs to, which
-                                                    keeps that column's name and sample value in view while deciding. */}
-                          {!CREATE_FIELD_IN_SHEET && createFieldForColumn === row.key && (
-                            <TableRow className="bg-transparent hover:bg-transparent">
-                              <TableCell className="p-2" colSpan={columnCount}>
-                                {/* Raised rather than floating: it reads as a surface above the table
-                                                                while remaining a row of it, so nothing has to be anchored to the
-                                                                row or repositioned when the table scrolls. */}
-                                <div className="rounded-lg border bg-surface-elevated-2 p-3 shadow-lg">
-                                  <CreateCustomFieldForm
-                                    canRetry={canRetry}
-                                    cells={fileData.map((record) => record[row.key] ?? '')}
-                                    initialName={suggestedFieldName(row.key)}
-                                    isSaving={isCreating}
-                                    nameError={nameError}
-                                    saveError={saveError}
-                                    onCancel={() => {
-                                      clearCreateErrors();
-                                      setCreateFieldForColumn(null);
-                                      // Unmounting the form drops focus to the body, leaving a
-                                      // keyboard publisher to tab back from the top of the table.
-                                      fieldTriggers.current.get(row.key)?.focus();
-                                    }}
-                                    onEdit={clearCreateErrors}
-                                    onSubmit={(newField) =>
-                                      void createFieldForRow(row.key, newField)
-                                    }
-                                  />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
                         </Fragment>
                       ))
                     ) : (
@@ -616,33 +573,31 @@ export function MappingStep({
                     )}
                   </TableBody>
                 </Table>
-                {CREATE_FIELD_IN_SHEET && (
-                  <CreateCustomFieldPanel
-                    key={sheetColumn ?? 'none'}
-                    anchorRef={sheetAnchor}
-                    canRetry={canRetry}
-                    cells={sheetColumn ? fileData.map((record) => record[sheetColumn] ?? '') : []}
-                    initialName={sheetColumn ? suggestedFieldName(sheetColumn) : ''}
-                    isSaving={isCreating}
-                    nameError={nameError}
-                    open={createFieldForColumn !== null}
-                    saveError={saveError}
-                    onCancel={() => {
-                      const rowKey = createFieldForColumn;
-                      clearCreateErrors();
-                      setCreateFieldForColumn(null);
-                      if (rowKey) {
-                        fieldTriggers.current.get(rowKey)?.focus();
-                      }
-                    }}
-                    onEdit={clearCreateErrors}
-                    onSubmit={(newField) => {
-                      if (createFieldForColumn) {
-                        void createFieldForRow(createFieldForColumn, newField);
-                      }
-                    }}
-                  />
-                )}
+                <CreateCustomFieldPopover
+                  key={panelColumn ?? 'none'}
+                  anchorRef={panelAnchor}
+                  canRetry={canRetry}
+                  cells={panelColumn ? fileData.map((record) => record[panelColumn] ?? '') : []}
+                  initialName={panelColumn ? suggestedFieldName(panelColumn) : ''}
+                  isSaving={isCreating}
+                  nameError={nameError}
+                  open={createFieldForColumn !== null}
+                  saveError={saveError}
+                  onCancel={() => {
+                    const rowKey = createFieldForColumn;
+                    clearCreateErrors();
+                    setCreateFieldForColumn(null);
+                    if (rowKey) {
+                      fieldTriggers.current.get(rowKey)?.focus();
+                    }
+                  }}
+                  onEdit={clearCreateErrors}
+                  onSubmit={(newField) => {
+                    if (createFieldForColumn) {
+                      void createFieldForRow(createFieldForColumn, newField);
+                    }
+                  }}
+                />
               </div>
             </div>
 

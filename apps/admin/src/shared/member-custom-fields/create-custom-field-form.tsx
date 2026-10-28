@@ -11,7 +11,7 @@ import {
   optionsFromCells,
 } from '@/shared/member-custom-fields/list-options';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type {
   MemberCustomField,
   NewMemberCustomField,
@@ -76,23 +76,20 @@ export function CreateCustomFieldForm({
   });
   // Bumped when switching to several answers or back suggests the options again.
   const [suggestion, setSuggestion] = useState(0);
+  // Whether the options are still the ones suggested from the cells. Once the publisher has
+  // touched them they are theirs, and switching answers no longer replaces them.
+  const [optionsSuggested, setOptionsSuggested] = useState(true);
   // The draft's own problems, found on Save; a refusal from the server comes in as nameError.
   const [errors, setErrors] = useState<{ name?: string; options?: string }>({});
-
-  // Opened from a row that may sit at the bottom edge of the scroll area, in which case the
-  // form lands below the fold and its buttons are out of reach. `nearest` scrolls only when
-  // some of it is actually hidden, so a form that already fits doesn't move the table, and
-  // the scroll margin below carries it clear of the edge rather than flush against it.
-  const formRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    formRef.current?.scrollIntoView({ block: 'nearest' });
-  }, []);
 
   const change = (next: Partial<CustomFieldDraft>) => {
     if (next.name !== undefined) {
       onEdit();
     }
-    if (next.multiple !== undefined && next.multiple !== draft.multiple) {
+    if (next.options !== undefined) {
+      setOptionsSuggested(false);
+    }
+    if (optionsSuggested && next.multiple !== undefined && next.multiple !== draft.multiple) {
       const multiple = next.multiple;
       setDraft((current) => ({ ...current, ...next, options: optionsFromCells(cells, multiple) }));
       setSuggestion((count) => count + 1);
@@ -118,8 +115,7 @@ export function CreateCustomFieldForm({
 
   return (
     <div
-      ref={formRef}
-      className="scroll-mb-8 space-y-5"
+      className="space-y-5"
       data-testid="create-custom-field"
       // Left to travel, Escape reaches the import dialog and closes the whole thing from
       // inside a form the publisher was only trying to back out of.

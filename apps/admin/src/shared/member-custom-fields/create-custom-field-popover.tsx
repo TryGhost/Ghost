@@ -9,10 +9,10 @@ type CreateCustomFieldPopoverProps = ComponentProps<typeof CreateCustomFieldForm
 };
 
 /**
- * POC: the field panel as a popover under the control it was opened from, to compare with
- * the sheet. Opens leftward from the control, which sits in the right-hand column wherever
- * it is used, and is as tall as the room below or above allows, with the form scrolling
- * inside it once a list's options run long.
+ * Where a field is made from anywhere outside Settings: a popover under the control it was
+ * opened from, with the same form as Settings. Opens leftward from the control, which sits
+ * in the right-hand column wherever it is used, and is as tall as the room below or above
+ * allows, with the form scrolling inside it once a list's options run long.
  */
 export function CreateCustomFieldPopover({
   open,

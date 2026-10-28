@@ -19,7 +19,7 @@ import {
   CommandList,
   commandDefaultFilter,
 } from '@tryghost/shade/components';
-import { CreateCustomFieldPanel } from '@/shared/member-custom-fields/create-custom-field-panel';
+import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   type MemberCustomField,
@@ -277,7 +277,7 @@ function CreateFieldInPanel({
   };
 
   return (
-    <CreateCustomFieldPanel
+    <CreateCustomFieldPopover
       anchorRef={anchorRef}
       canRetry={canRetry}
       initialName={initialName}
