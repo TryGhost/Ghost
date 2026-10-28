@@ -27,6 +27,26 @@ export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigg
       direction: z.null(),
     }),
   ]),
+  z.discriminatedUnion('scope', [
+    z.object({
+      trigger_type: z.literal('paid_subscription_changed'),
+      scope: z.literal('any_paid_tier'),
+      product_id: z.null(),
+      direction: z.literal('from'),
+    }),
+    z.object({
+      trigger_type: z.literal('paid_subscription_changed'),
+      scope: z.literal('free'),
+      product_id: z.null(),
+      direction: z.literal('to'),
+    }),
+    z.object({
+      trigger_type: z.literal('paid_subscription_changed'),
+      scope: z.literal('specific_paid_tier'),
+      product_id: ObjectIdSchema,
+      direction: z.enum(['from', 'to']),
+    }),
+  ]),
 ]);
 
 export type AutomationTriggerRuleDefinition = z.infer<typeof automationTriggerRuleDefinitionSchema>;

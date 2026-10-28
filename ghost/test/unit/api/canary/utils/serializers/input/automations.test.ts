@@ -1,7 +1,9 @@
 import ObjectId from 'bson-objectid';
+import sinon from 'sinon';
 import { Frame, serializers as frameworkSerializers } from '@tryghost/api-framework';
 
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const labs = require('../../../../../../../core/shared/labs');
 
 const rules = [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }];
 const data = { name: 'Draft', description: '', status: 'inactive', actions: [], edges: [] };
@@ -45,6 +47,110 @@ const triggerCases = [
 ];
 
 const commonTests = (method: 'add' | 'edit') => {
+  describe('paid subscription changed trigger validation', () => {
+    const tier = '64b6f7b7c8f1a2b3c4d5e6f7';
+    const otherTier = '64b6f7b7c8f1a2b3c4d5e6f8';
+    const destinationTier = '64b6f7b7c8f1a2b3c4d5e6f9';
+    const rule = (scope: string, direction: string | null, product_id: string | null = null) => ({
+      trigger_type: 'paid_subscription_changed',
+      scope,
+      direction,
+      product_id,
+    });
+    const fromAny = rule('any_paid_tier', 'from');
+    const toFree = rule('free', 'to');
+
+    beforeEach(() => {
+      sinon.stub(labs, 'isSet').withArgs('automationsLifecycleTriggers').returns(true);
+    });
+
+    afterEach(() => sinon.restore());
+
+    it.each([
+      [fromAny, toFree],
+      [
+        rule('specific_paid_tier', 'from', tier),
+        rule('specific_paid_tier', 'from', otherTier),
+        rule('specific_paid_tier', 'to', destinationTier),
+      ],
+      [
+        fromAny,
+        rule('specific_paid_tier', 'to', tier),
+        rule('specific_paid_tier', 'to', otherTier),
+      ],
+    ])('accepts valid transitions: %j', async (...trigger_rules) => {
+      const request = { ...payload, trigger_rules };
+      await expect(serializeInput(method, request)).resolves.toEqual(request);
+    });
+
+    it.each([
+      [],
+      [fromAny],
+      [toFree],
+      [rule('free', 'from'), toFree],
+      [rule('any_paid_tier', 'to'), fromAny],
+      [rule('any_paid_tier', null), toFree],
+      [fromAny, fromAny, toFree],
+      [fromAny, rule('specific_paid_tier', 'from', tier), toFree],
+      [fromAny, toFree, rule('specific_paid_tier', 'to', tier)],
+      [fromAny, rule('specific_paid_tier', 'to', tier), rule('specific_paid_tier', 'to', tier)],
+      [rule('specific_paid_tier', 'from'), toFree],
+      [fromAny, rule('free', 'to', tier)],
+      [fromAny, { trigger_type: 'free_signup', scope: null, direction: null, product_id: null }],
+    ])('rejects invalid transitions: %j', async (...trigger_rules) => {
+      await expect(serializeInput(method, { ...payload, trigger_rules })).rejects.toMatchObject({
+        errorType: 'ValidationError',
+        statusCode: 422,
+      });
+    });
+  });
+
+  describe('lifecycle trigger feature flag', () => {
+    let isSet: sinon.SinonStub;
+    const changedRules = [
+      {
+        trigger_type: 'paid_subscription_changed',
+        scope: 'any_paid_tier',
+        direction: 'from',
+        product_id: null,
+      },
+      {
+        trigger_type: 'paid_subscription_changed',
+        scope: 'free',
+        direction: 'to',
+        product_id: null,
+      },
+    ];
+
+    beforeEach(() => {
+      isSet = sinon.stub(labs, 'isSet').withArgs('automationsLifecycleTriggers').returns(false);
+    });
+
+    afterEach(() => sinon.restore());
+
+    it('rejects changed triggers when lifecycle triggers are disabled', async () => {
+      await expect(
+        serializeInput(method, { ...payload, trigger_rules: changedRules }),
+      ).rejects.toMatchObject({
+        errorType: 'ValidationError',
+        statusCode: 422,
+        property: 'trigger_rules',
+        message:
+          'Paid subscription changed triggers require automationsLifecycleTriggers to be enabled.',
+      });
+    });
+
+    it('accepts changed triggers when lifecycle triggers are enabled', async () => {
+      isSet.withArgs('automationsLifecycleTriggers').returns(true);
+      const request = { ...payload, trigger_rules: changedRules };
+      await expect(serializeInput(method, request)).resolves.toEqual(request);
+    });
+
+    it('accepts valid free signup rules when lifecycle triggers are disabled', async () => {
+      await expect(serializeInput(method, payload)).resolves.toEqual(payload);
+    });
+  });
+
   it.each([
     undefined,
     null,

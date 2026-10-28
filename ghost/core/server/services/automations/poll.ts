@@ -67,6 +67,10 @@ const getFreeOrPaidForTriggerType = (
       return 'free';
     case 'paid_subscription_started':
       return 'paid';
+    case 'paid_subscription_changed':
+      throw new errors.InternalServerError({
+        message: `Unexpected automation trigger type: ${triggerType}`,
+      });
     default: {
       const _exhaustive: never = triggerType;
       throw new errors.InternalServerError({
@@ -107,6 +111,8 @@ const doesMemberMatchTriggerRule = (
       return true;
     case 'specific_paid_tier':
       return member.related('products').models.some((tier) => tier.id === rule.product_id);
+    case 'free':
+      throw new errors.InternalServerError({ message: `Unexpected rule: ${rule}` });
     default: {
       const _exhaustive: never = rule;
       throw new errors.InternalServerError({ message: `Unexpected rule: ${_exhaustive}` });

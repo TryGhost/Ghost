@@ -373,9 +373,11 @@ export function createDatabaseAutomationsRepository({
             });
           }
         }
-        const tierIds = data.trigger_rules.flatMap((rule) =>
-          rule.product_id ? [rule.product_id] : [],
-        );
+        const tierIds = [
+          ...new Set(
+            data.trigger_rules.flatMap((rule) => (rule.product_id ? [rule.product_id] : [])),
+          ),
+        ];
         if (tierIds.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
           const tiers = await trx('products')
@@ -447,7 +449,9 @@ export function createDatabaseAutomationsRepository({
         const now = new Date();
 
         const triggerRules = data.trigger_rules ?? [];
-        const tierIds = triggerRules.flatMap((rule) => (rule.product_id ? [rule.product_id] : []));
+        const tierIds = [
+          ...new Set(triggerRules.flatMap((rule) => (rule.product_id ? [rule.product_id] : []))),
+        ];
         if (tierIds.length > 0) {
           // Lock the products so they aren't deleted while we're editing.
           const tiers = await trx('products')
@@ -1849,7 +1853,7 @@ async function buildAutomation(
     await trx('automation_trigger_rules')
       .select('trigger_type', 'scope', 'product_id', 'direction')
       .where('automation_id', automation.id)
-      .orderBy('product_id')
+      .orderBy(['product_id', 'direction'])
   ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
 
   if (rules.length === 0) {
