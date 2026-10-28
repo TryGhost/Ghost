@@ -12,7 +12,7 @@ import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
 import { type Knex } from 'knex';
-import { DefaultMap } from '../../../shared/default-map';
+import { AutoFillingMap } from '../../lib/auto-filling-map';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -590,7 +590,7 @@ export function createDatabaseAutomationsRepository({
         const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
 
         const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
-        const newOpensPerRevision = new DefaultMap<string, number>(() => 0);
+        const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
 
         for (const [
           id,
@@ -1178,8 +1178,8 @@ async function fetchAndLockSteps(
 async function getRulesByAutomation(
   trx: Knex.Transaction,
   stepsToRun: ReadonlyDeep<StepToRunRow[]>,
-): Promise<DefaultMap<string, AutomationTriggerRule[]>> {
-  const result = new DefaultMap<string, AutomationTriggerRule[]>(() => []);
+): Promise<AutoFillingMap<string, AutomationTriggerRule[]>> {
+  const result = new AutoFillingMap<string, AutomationTriggerRule[]>(() => []);
 
   const automationIds = [...new Set(stepsToRun.map((step) => step.automation_id))];
   if (automationIds.length === 0) {
