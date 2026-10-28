@@ -27,8 +27,8 @@ import { useHelpCenterIndex } from './use-help-center-index';
  * answer. It's where a search lands: its first result, or the FAQ question
  * picked. It takes over the panel like the message to support, with the
  * search kept behind it, lists the search's other results under "More from
- * the help center", and ends by asking whether they still need help: a new
- * search, or the support team.
+ * the help center", and ends by asking whether it was what they were looking
+ * for, with a new search or the support team if not.
  *
  * The article's HTML comes from the help center, made safe and readable by
  * help-article-html.ts. Its links to other help articles open in the panel
@@ -268,7 +268,7 @@ export function HelpArticleView({
               style={revealAt(3)}
             >
               <Text size="sm" weight="medium">
-                Still need help?
+                Not what you were looking for?
               </Text>
               <Inline gap="sm" wrap>
                 <Button size="sm" variant="outline" onClick={onStartOver}>

@@ -187,7 +187,7 @@ around them are thin.
 | `help-welcome.tsx`      | The greeting, and the page's FAQ questions to pick from under a headline naming the page (or an error with a link to the help center) |
 | `help-search-field.tsx` | The search field at the top, and the completions under it                                                                             |
 | `help-results.tsx`      | A search's results: the first as a preview of the article, the rest with title and excerpt; the searching, empty and error states     |
-| `help-article-view.tsx` | An article read in the panel, ending with "Still need help?": a new search, or support                                                |
+| `help-article-view.tsx` | An article read in the panel, ending with "Not what you were looking for?": a new search, or support                                  |
 | `help-support.tsx`      | The message to support, which takes over the panel                                                                                    |
 | `help-panel-size.tsx`   | The maximize button                                                                                                                   |
 | `help-reveal.ts`        | The staggered entrance blocks use                                                                                                     |
@@ -351,9 +351,9 @@ to read next: the article's own "Further reading" first (the docs team's
 bookmark cards, lifted out of the body by `splitFurtherReading` so they don't
 show twice; help articles open in the panel, other pages in a new tab), then
 the search's other results, each once (a placeholder while a picked
-question's search is still running). The article ends with "Still need
-help?": a new search, or the support form; Back in the header returns to the
-results. An earlier "Did this answer your question?" with Yes and No went:
+question's search is still running). The article ends with "Not what you
+were looking for?": a new search, or the support form; Back in the header
+returns to the results. An earlier "Did this answer your question?" with Yes and No went:
 Yes led nowhere, and the choices that matter are where to go next. Opened articles are marked "Read" in the
 results and listed in what the support form sends.
 

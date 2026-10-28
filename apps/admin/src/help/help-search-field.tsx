@@ -53,7 +53,7 @@ export function HelpSearchField({
           ref={inputRef}
           {...typeahead.comboboxProps}
           aria-label="Search the help center"
-          placeholder="Search the help center, or ask a question…"
+          placeholder="Search or ask a question…"
           value={typeahead.draft}
           onChange={(event) => typeahead.setDraft(event.target.value)}
           onKeyDown={(event) => {
