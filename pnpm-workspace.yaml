@@ -196,7 +196,7 @@ catalog:
   postcss: 8.5.26
   preact: ^10.29.2
   prettier: 3.9.10
-  qs: 6.16.0
+  qs: 6.16.1
   react: 18.3.1
   react-day-picker: 9.14.0
   react-dom: 18.3.1
