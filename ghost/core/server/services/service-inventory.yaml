@@ -13947,9 +13947,9 @@ services:
       - >-
         Strengthen specific weak business assertions before moving composition: three member-
         attribution cases permit empty results; the page-growth fixture creates post-type events;
-        referrer ranking tests re-sort actual output; four subscription-upgrade total assertions
-        assign values instead of comparing them. Pin upgrade totals, true page attribution, filter/value
-        forms, timezone/day boundaries, MySQL query failures and recovery. Existing real SQLite
+        referrer ranking tests re-sort actual output. Subscription-upgrade totals and UTC
+        timezone/day boundaries are now compared. Pin true page attribution, filter/value forms,
+        MySQL query failures and recovery. Existing real SQLite
         totals are useful evidence, not proof of every named contract or concurrent snapshots.
       - >-
         Establish ownership and limits for optional cache/HTTP resources, in-flight queries,
