@@ -2199,6 +2199,12 @@ module.exports = {
       nullable: true,
       validations: { isIn: [['any_paid_tier', 'specific_paid_tier']] },
     },
+    direction: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['from', 'to']] },
+    },
     product_id: {
       type: 'string',
       maxlength: 24,
