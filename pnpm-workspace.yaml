@@ -88,10 +88,10 @@ catalog:
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.13
-  '@testing-library/dom': 10.4.1
+  '@testing-library/dom': 10.4.2
   '@testing-library/jest-dom': 6.9.1
-  '@testing-library/preact': 3.2.4
-  '@testing-library/react': 16.3.2
+  '@testing-library/preact': 3.2.6
+  '@testing-library/react': 16.3.3
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.23
   '@tryghost/custom-fonts': 1.0.14
