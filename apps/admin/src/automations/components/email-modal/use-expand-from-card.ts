@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-// The editor panel grows out of the email card it was opened from and shrinks back into it on
-// close. The panel keeps its final size throughout; a clip-path reveals it from the card's
-// outline, so the editor never reflows mid-animation.
+// Grows the editor panel out of its email card and shrinks it back on close. The panel stays
+// full size and a clip-path reveals it, so the editor never reflows mid-animation.
 
 const DURATION = 200;
 const EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
@@ -21,8 +20,8 @@ const findCard = (stepId: string) =>
     .querySelector(`.react-flow__node[data-id="${CSS.escape(stepId)}"]`)
     ?.querySelector<HTMLElement>('[role="article"]') ?? null;
 
-// The panel clipped to the card's outline, `progress` of the way there. A clip only shows what's
-// inside the panel, so a card partly outside the panel's area also moves the panel over to it.
+// The clip-path and translate that place the panel over the card, `progress` of the way there.
+// A clip can't reach past the panel's bounds, so a card outside them is reached by translating.
 const cardFrame = (panelRect: DOMRect, card: HTMLElement, progress = 1) => {
   const p = panelRect;
   const c = card.getBoundingClientRect();
@@ -35,7 +34,7 @@ const cardFrame = (panelRect: DOMRect, card: HTMLElement, progress = 1) => {
   };
 };
 
-// EASING as a function, for the shrink, which runs frame by frame.
+// EASING as a JS function, for the frame-by-frame shrink.
 const easeStandard = (x: number) => {
   const bezier = (t: number, a: number, b: number) =>
     3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * b + t * t * t;
@@ -55,7 +54,7 @@ const easeStandard = (x: number) => {
 export const useExpandFromCard = (stepId: string | undefined) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  // The card is hidden while the editor stands in for it, so their outlines never overlap.
+  // Hide the card while the editor stands in for it.
   const hiddenCardRef = useRef<HTMLElement | null>(null);
   const showCard = useCallback(() => {
     if (hiddenCardRef.current) {
@@ -68,8 +67,8 @@ export const useExpandFromCard = (stepId: string | undefined) => {
   const hasOpenedRef = useRef(false);
   const isClosingRef = useRef(false);
 
-  // A callback ref, as the dialog portals its content a commit later; it runs before paint, so
-  // the full-size panel never flashes.
+  // A callback ref because the dialog portals its content a commit later. It runs before
+  // paint, so the full-size panel never flashes.
   const setPanel = useCallback(
     (panel: HTMLDivElement | null) => {
       panelRef.current = panel;
@@ -134,7 +133,7 @@ export const useExpandFromCard = (stepId: string | undefined) => {
           fill: 'forwards',
         });
       }
-      // Frame by frame, re-measuring the card, as a reopening sidebar moves it during the shrink.
+      // Runs frame by frame so it can re-measure the card, which a reopening sidebar moves.
       const startsAt = performance.now() + CONTENT_FADE_OUT / 2;
       const panelRect = panel.getBoundingClientRect();
       const step = (now: number) => {

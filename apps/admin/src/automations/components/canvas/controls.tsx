@@ -14,7 +14,6 @@ import { CANVAS_ZOOM_CONFIG } from './use-canvas-viewport';
 
 const VIEWPORT_ANIMATION_DURATION = 180;
 
-// isHidden slides the controls off the canvas, as while the email editor is open.
 export const AutomationCanvasControls: React.FC<{ isHidden?: boolean }> = ({
   isHidden = false,
 }) => {

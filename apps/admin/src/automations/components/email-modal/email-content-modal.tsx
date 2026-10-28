@@ -37,8 +37,7 @@ interface EmailPreviewModalContentProps {
   isEditMode?: boolean;
 }
 
-// Nothing is clipped at the panel's edges, so Koenig's + button can sit out past the left one;
-// min-h-0 keeps the panel to the dialog's height so its body scrolls.
+// The panel doesn't clip, so Koenig's + button can sit outside its left edge.
 const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewModalContentProps>(
   ({ title, headerActions, headerBelow, children, isEditMode = false }, ref) => (
     <div
@@ -111,13 +110,13 @@ export interface EmailContentModalProps {
   initialLexical: string;
   initialMode?: EmailModalMode;
   initialSubject: string;
-  // The email step whose card the editor grows out of.
+  // The step whose card the editor opens from and closes into.
   originStepId: string;
   onClose: () => void;
-  // As the editor starts shrinking back into its card.
+  // Called when the close animation starts; onClose runs when it ends.
   onCloseStart?: () => void;
-  // Edits apply to the automation as they're made, like edits on the canvas; the automation's
-  // own Save / Publish changes is what keeps them.
+  // Applies edits to the automation draft as they're made. The automation's own
+  // Save / Publish changes persists them.
   onChange: (data: { subject: string; lexical: string }) => void;
 }
 
@@ -144,7 +143,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     onCloseStart?.();
     closeIntoCard(onClose);
   }, [closeIntoCard, onClose, onCloseStart]);
-  // Edits flow back in through initialLexical, so keep the content as it was on open.
+  // initialLexical updates with every edit, so keep the value from open.
   const [lexicalAtOpen] = useState(initialLexical || '');
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
   const { data: automatedEmailsData } = useBrowseAutomatedEmails();
@@ -252,7 +251,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   // has ever been focused - normalization happens before focus is possible, so any
   // onChange before first focus is normalization. After focus, we compare against
   // the normalized baseline to tell an edit from a no-op.
-  // An unedited body hands back what was there on open, so the automation compares clean.
+  // An unedited body returns the original lexical, so the draft isn't marked dirty.
   const bodyToApply = useCallback(
     (lexical: string) => (lexical === normalizedLexical.current ? lexicalAtOpen : lexical),
     [lexicalAtOpen],
@@ -289,7 +288,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             onChange({ subject, lexical: bodyToApply(formStateRef.current.lexical) });
           }}
           onKeyDown={(event) => {
-            // Tab carries on into the body, as from a post's title to its content.
+            // Tab moves into the body, as from a post's title.
             if (event.key !== 'Tab' || event.shiftKey) {
               return;
             }
@@ -327,8 +326,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         }
       }}
     >
-      {/* The automation header (h-14) stays usable while the editor is open, so the editor's
-          layer starts below it and the inert treatment above leaves it out. */}
+      {/* Starts below the automation header (h-14), which stays usable. */}
       <DialogContent
         ref={setDialogContentNode}
         aria-describedby={undefined}
@@ -359,8 +357,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           event.preventDefault();
         }}
         onOpenAutoFocus={(event) => {
-          // Focus lands in the subject, caret at the end, rather than on a header button,
-          // whose tooltip would show straight away.
+          // Focus the subject, not the first header button, which would open its tooltip.
           event.preventDefault();
           const subject = subjectRef.current;
           subject?.focus({ preventScroll: true });
@@ -432,10 +429,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             </span>
           }
         >
+          {/* pt-1 fits Koenig's + button, which sits 4px above the first line. */}
           <div
             className={cn(
               'flex grow flex-col items-center',
-              mode === 'edit' ? 'px-8 pb-8' : 'p-6 pt-12',
+              mode === 'edit' ? 'px-8 pt-1 pb-8' : 'p-8',
             )}
           >
             {mode === 'preview' && (
@@ -506,8 +504,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               <div
                 ref={editorColumnRef}
                 className={cn(
-                  // Koenig's + button sits 24px out past the panel's left edge, measured from its
-                  // own right edge so it holds at every breakpoint, on the panel's fill.
+                  // Keeps Koenig's + button 24px outside the panel's left edge at every breakpoint.
                   'mx-auto w-full max-w-[600px] [&_[data-kg-plus-button]]:right-[calc(100%+56px)]! [&_[data-kg-plus-button]]:left-auto! [&_[data-kg-plus-button]>button]:bg-surface-elevated',
                   mode === 'preview' && 'hidden',
                 )}
@@ -516,8 +513,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                   hasEditorBeenFocused.current = true;
                 }}
               >
-                {/* Room below the last line, so a new line near the bottom, and the + menu
-                    that opens from it, can scroll into view. */}
+                {/* Bottom room so the last line and its + menu can scroll into view. */}
                 <EmailEditor
                   className="automation-email-editor pb-[30vh]"
                   placeholder="Begin writing your email..."
