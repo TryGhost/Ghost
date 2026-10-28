@@ -39,6 +39,7 @@ describe('Staff invitations', () => {
       await expect(modal).toHaveCount(0);
 
       await openInviteModal();
+      await expect.element(modal).toBeVisible();
       await userEvent.keyboard('{Escape}');
       await expect(modal).toHaveCount(0);
       await expect.element(settingsScreen.users()).toBeVisible();
