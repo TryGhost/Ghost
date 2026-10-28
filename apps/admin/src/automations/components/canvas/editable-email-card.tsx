@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Button, buttonVariants, inputSurface } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -112,6 +112,8 @@ export const EditableEmailCard: React.FC<
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
+  // The button's name says what it does; its subject and message describe it.
+  const previewTextId = useId();
   return (
     <AutomationCard
       aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
@@ -158,6 +160,7 @@ export const EditableEmailCard: React.FC<
               {/* A read-only panel that turns into an input on hover; an empty email shows as an
                   input from the start, as there's something to fill in. */}
               <button
+                aria-describedby={previewTextId}
                 aria-label="Edit email content"
                 className={cn(
                   inputSurface('self'),
@@ -169,7 +172,7 @@ export const EditableEmailCard: React.FC<
                 type="button"
                 onClick={email.onEditContent}
               >
-                <span className="block min-w-0 flex-1">
+                <span className="block min-w-0 flex-1" id={previewTextId}>
                   <span
                     className={cn(
                       'mb-2 block truncate text-md font-medium',

@@ -123,6 +123,10 @@ export const useExpandFromCard = (stepId: string | undefined) => {
         return;
       }
       isClosingRef.current = true;
+      // A still-running open animation would override the inline styles the shrink sets.
+      for (const animation of panel.getAnimations({ subtree: true })) {
+        animation.cancel();
+      }
       for (const child of panel.children) {
         child.animate([{ opacity: 1 }, { opacity: 0 }], {
           duration: CONTENT_FADE_OUT,
