@@ -511,7 +511,7 @@ describe('Publish flow', () => {
     });
   });
 
-  it('keeps the scheduled time while a typed one is refused', async () => {
+  it('stays on the options while a typed time is refused', async () => {
     const { dispatch } = await renderPublishFlow({
       now: () => new Date('2026-09-03T20:00:00.000Z'),
     });
@@ -519,12 +519,20 @@ describe('Publish flow', () => {
     await publishScreen.setting('publish-at').click();
     await page.getByLabelText('Schedule for later').click();
     await publishScreen.scheduleTime().tripleClick();
-    await userEvent.keyboard('9:30 PM');
+    await userEvent.keyboard('2754');
+    // Left first: the message's row moves Continue, so a click from the field misses it here.
     await userEvent.tab();
 
     await expect
       .element(publishScreen.scheduleTime())
       .toHaveAccessibleDescription('Must be in format: "15:00"');
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.scheduleTime()).toHaveFocus();
+    await expect(publishScreen.confirm()).toHaveCount(0);
+
+    // An emptied field puts back the time held, which Continue then reviews.
+    await publishScreen.scheduleTime().fill('');
+    await userEvent.tab();
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
@@ -547,7 +555,7 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.scheduleTime()).toHaveValue('20:00');
   });
 
-  it('keeps the scheduled date while a typed one is refused', async () => {
+  it('stays on the options while a typed date is refused', async () => {
     const { dispatch } = await renderPublishFlow({
       now: () => new Date('2026-09-03T20:00:00.000Z'),
     });
@@ -575,6 +583,13 @@ describe('Publish flow', () => {
     expect(fields().top - radio().top).toBe(level);
     expect(message.getBoundingClientRect().left).toBe(fields().left);
 
+    // Continue takes the writer back to the date rather than past it.
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.scheduleDate()).toHaveFocus();
+    await expect(publishScreen.confirm()).toHaveCount(0);
+
+    await publishScreen.scheduleDate().fill('');
+    await userEvent.tab();
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 

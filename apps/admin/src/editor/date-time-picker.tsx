@@ -58,6 +58,11 @@ export interface DateTimePickerProps {
   /** Names the pair as a group, for a caller whose own label is not on a field. */
   labelledBy?: string;
   onChange: (date: Date) => void;
+  /**
+   * Told the input holding an entry the fields refused as soon as it is refused,
+   * and null once neither holds one, so the caller can keep the writer on it.
+   */
+  onRefusalChange?: (input: HTMLInputElement | null) => void;
 }
 
 /**
@@ -83,6 +88,7 @@ export function DateTimePicker({
   describedBy,
   labelledBy,
   onChange,
+  onRefusalChange,
 }: DateTimePickerProps) {
   const current = moment.tz(value, timezone);
   // Null while the field is not being edited, so caller-side changes show through.
@@ -96,8 +102,23 @@ export function DateTimePicker({
   const interactedOutside = useRef(false);
   const anchorRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
+  // Mirrors the errors for `onRefusalChange`, which must hear of a refusal in the
+  // blur that makes it, before the click that caused the blur acts.
+  const refused = useRef({ date: false, time: false });
   const dateErrorId = useId();
   const timeErrorId = useId();
+
+  const showError = (field: 'date' | 'time', message: string | null) => {
+    if (field === 'date') {
+      setDateError(message);
+    } else {
+      setTimeError(message);
+    }
+    refused.current[field] = message !== null;
+    const { date, time } = refused.current;
+    onRefusalChange?.(date ? dateInputRef.current : time ? timeInputRef.current : null);
+  };
 
   const commitDay = (day: string) => {
     // Parsed rather than set, so a held time the day's clock change skips moves forward.
@@ -114,7 +135,7 @@ export function DateTimePicker({
 
   const discardDateDraft = () => {
     setDateDraft(null);
-    setDateError(null);
+    showError('date', null);
   };
 
   const commitDate = (selected: Date | undefined) => {
@@ -136,7 +157,7 @@ export function DateTimePicker({
 
     const error = dateDraft ? typedDateError(dateDraft, timezone) : null;
     if (error) {
-      setDateError(error);
+      showError('date', error);
       return;
     }
 
@@ -165,7 +186,7 @@ export function DateTimePicker({
       // Keeps the document-level save shortcut from saving past a refused date.
       event.preventDefault();
       event.stopPropagation();
-      setDateError(refusal);
+      showError('date', refusal);
     }
   };
 
@@ -176,12 +197,12 @@ export function DateTimePicker({
 
     const time = typedTime(timeDraft);
     if (!time && timeDraft.trim()) {
-      setTimeError(INVALID_TIME);
+      showError('time', INVALID_TIME);
       return;
     }
 
     setTimeDraft(null);
-    setTimeError(null);
+    showError('time', null);
     // An emptied field falls back to the time already held.
     if (time && (time.hour !== current.hour() || time.minute !== current.minute())) {
       onChange(
@@ -198,7 +219,7 @@ export function DateTimePicker({
       // Keeps the document-level save shortcut from saving past a refused time.
       event.preventDefault();
       event.stopPropagation();
-      setTimeError(INVALID_TIME);
+      showError('time', INVALID_TIME);
     }
   };
 
@@ -321,6 +342,7 @@ export function DateTimePicker({
         <InputGroup className="min-w-0" data-disabled={disabled}>
           <InputGroupAddon className="text-sm font-normal">{current.format('z')}</InputGroupAddon>
           <InputGroupInput
+            ref={timeInputRef}
             aria-describedby={timeDescribedBy || undefined}
             aria-invalid={invalid || timeError !== null || undefined}
             aria-label={timeLabel}

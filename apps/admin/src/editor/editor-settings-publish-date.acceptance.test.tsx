@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -253,6 +254,46 @@ describe('Post settings publish date', () => {
     await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
     await expect.element(editorScreen.settingsPublishTime()).not.toHaveAccessibleDescription();
     expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it.each([
+    {
+      field: 'time',
+      input: () => editorScreen.settingsPublishTime(),
+      typed: '2754',
+      error: 'Must be in format: "15:00"',
+    },
+    {
+      field: 'date',
+      input: () => editorScreen.settingsPublishDate(),
+      typed: '2025-02-30',
+      error: 'Invalid date',
+    },
+  ])('keeps the writer on a $field it cannot read', async ({ input, typed, error }) => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // Each click leaves the field, refusing the entry, and is then held back by it.
+    await input().fill(typed);
+    await editorScreen.settingsToggle().click();
+    await expect.element(input()).toHaveFocus();
+    await expect.element(input()).toHaveAccessibleDescription(error);
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+
+    await editorScreen.publishButton().click();
+    await expect.element(input()).toHaveFocus();
+    await expect(publishScreen.root()).toHaveCount(0);
+
+    await editorScreen.backLink('post').click();
+    await expect.element(input()).toHaveFocus();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Once the field is emptied, it puts back the value held and nothing is held up.
+    await input().fill('');
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
   });
 
   it('refuses a published post a publish time that has not passed', async () => {
