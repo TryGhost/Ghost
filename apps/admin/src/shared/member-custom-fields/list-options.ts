@@ -27,3 +27,21 @@ export const listOptionsError = (options: string[]): string | undefined => {
   }
   return undefined;
 };
+
+// How a cell holds several answers, as Ghost's own exports write lists such as labels.
+export const ANSWER_SEPARATOR = ',';
+
+/** Whether a column's cells read like several answers each, which decides the default. */
+export const holdsSeveralAnswers = (cells: string[]) =>
+  cells.some((cell) => cell.includes(ANSWER_SEPARATOR));
+
+/**
+ * The options a column's cells suggest: every different answer once, in the order they
+ * first appear, split into its answers when a cell holds several.
+ */
+export const optionsFromCells = (cells: string[], several: boolean): string[] =>
+  cells
+    .flatMap((cell) => (several ? cell.split(ANSWER_SEPARATOR) : [cell]))
+    .map((answer) => answer.trim())
+    .filter(Boolean)
+    .filter((answer, index, all) => all.findIndex((seen) => sameOption(seen, answer)) === index);

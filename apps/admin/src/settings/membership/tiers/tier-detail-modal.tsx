@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useCurrencyInput from '@/settings/hooks/use-currency-input';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
-import useSortableIndexedList from '@/settings/hooks/use-sortable-indexed-list';
+import useSortableIndexedList from '@/shared/use-sortable-indexed-list';
 import useUrlInput from '@/settings/hooks/use-url-input';
 import {
   Button,

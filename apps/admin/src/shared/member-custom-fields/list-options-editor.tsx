@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import useSortableIndexedList from '@/settings/hooks/use-sortable-indexed-list';
+import useSortableIndexedList from '@/shared/use-sortable-indexed-list';
 import {
   Field,
   FieldError,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import useSortableIndexedList from '@/settings/hooks/use-sortable-indexed-list';
+import useSortableIndexedList from '@/shared/use-sortable-indexed-list';
 import { act, renderHook } from '@testing-library/react';
 import { describe, it, vi } from 'vitest';
 
