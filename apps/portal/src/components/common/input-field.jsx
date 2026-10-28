@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import ChoicePicker from './choice-picker';
 import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
@@ -269,13 +270,28 @@ function InputField({
   return (
     <section className={sectionClasses}>
       <div className="gh-portal-input-labelcontainer">
-        <label htmlFor={id} className={labelClasses}>
+        <label htmlFor={id} id={`${id}-label`} className={labelClasses}>
           {' '}
           {label}{' '}
         </label>
         <InputError message={errorMessage} name={name} />
       </div>
-      {type === 'textarea' ? (
+      {type === 'choice' ? (
+        // One option picked from a list that opens below, in place of a native select. The
+        // field is still a .gh-portal-input, so it sits in an input group like the rest.
+        <ChoicePicker
+          describedBy={describedBy}
+          id={id}
+          invalid={Boolean(errorMessage || invalid)}
+          label={label}
+          labelId={`${id}-label`}
+          multiple={false}
+          options={options ?? []}
+          placeholder={placeholder}
+          value={value ? [value] : []}
+          onChange={(picked) => onChange({ target: { value: picked[0] ?? '' } }, name)}
+        />
+      ) : type === 'textarea' ? (
         // No onKeyDown: Enter adds a line here, where in an input it submits the form.
         <textarea {...fieldProps} className={`${inputClasses} gh-portal-input-textarea`} />
       ) : type === 'select' ? (

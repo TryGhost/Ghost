@@ -8,6 +8,9 @@ export interface MemberCustomField {
   name: string;
   type: string;
   access: { member: string };
+  /** Only a list has these: the options offered, in order, and whether several may be picked. */
+  options?: string[];
+  multiple?: boolean;
 }
 
 interface AskFor {
@@ -61,15 +64,19 @@ export function drawableCustomFields(
 /** What a composite holds: one string per part, and not every part need be filled in. */
 export type CompositeValue = Record<string, string | undefined>;
 
-/** A value as the member holds it: one string, or one per part of a composite. */
-export type CustomFieldValue = string | CompositeValue | undefined;
+/** A value as the member holds it: one string, the options picked from a list, or one per part of a composite. */
+export type CustomFieldValue = string | string[] | CompositeValue | undefined;
 
 /**
  * Narrowed rather than asserted. Which shape a value has follows from its field's type,
  * which the compiler cannot see, so the value itself is asked instead.
  */
 export const compositeValue = (value: CustomFieldValue): CompositeValue | undefined =>
-  typeof value === 'object' && value !== null ? value : undefined;
+  typeof value === 'object' && value !== null && !Array.isArray(value) ? value : undefined;
+
+/** The options picked from a list, as they read when picked. */
+export const listValue = (value: CustomFieldValue): string[] =>
+  Array.isArray(value) ? value.filter((answer) => typeof answer === 'string') : [];
 
 export const scalarValue = (value: CustomFieldValue): string =>
   typeof value === 'string' ? value : '';
@@ -95,6 +102,16 @@ export function changedCustomFields(
 
   for (const field of fields.filter((f) => f.access.member === 'write')) {
     const value = values[field.key];
+
+    // A list is written whole: the options picked now, or nothing to clear it.
+    if (field.type === 'list') {
+      const picked = listValue(value);
+      if (picked.join('\n') !== listValue(original[field.key]).join('\n')) {
+        custom[field.key] = picked.length ? picked : null;
+      }
+      continue;
+    }
+
     const parts = partsOf(field.type);
 
     if (!parts) {

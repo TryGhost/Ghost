@@ -1,3 +1,5 @@
+import ListOptionsEditor from './list-options-editor';
+import { cleanListOptions, listOptionsError } from './list-options';
 import React from 'react';
 import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-field-type-option';
 import {
@@ -59,6 +61,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       // type on save
       userTypeId: field ? userTypeForField(field).id : memberCustomFieldUserTypes[0].id,
       access: field ? field.access.member : 'none',
+      // Only read for a list.
+      options: field?.options ?? [],
+      multiple: field?.multiple ?? false,
     },
     savingDelay: 500,
     onValidate: (state) => {
@@ -69,18 +74,32 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       if (!state.name.trim()) {
         newErrors.name = 'Enter a name for the field';
       }
+      const optionsError =
+        userTypeById(state.userTypeId).input === 'list'
+          ? listOptionsError(state.options)
+          : undefined;
+      if (optionsError) {
+        newErrors.options = optionsError;
+      }
       return newErrors;
     },
     onSave: async (state) => {
+      const isList = userTypeById(state.userTypeId).input === 'list';
+      const options = cleanListOptions(state.options);
       if (field) {
         // Only the properties this form actually changed. Sending the whole field back
         // would carry whatever the list held when it was loaded, so saving a rename
         // would silently restore the access a colleague had changed in the meantime.
         const name = state.name.trim();
+        const optionsChanged =
+          isList && JSON.stringify(options) !== JSON.stringify(field.options ?? []);
+        const multipleChanged = isList && state.multiple !== Boolean(field.multiple);
         await editField({
           key: field.key,
           ...(name === field.name ? {} : { name }),
           ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
+          ...(optionsChanged ? { options } : {}),
+          ...(multipleChanged ? { multiple: state.multiple } : {}),
         });
       } else {
         // No key: the backend mints it from the name.
@@ -88,6 +107,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           name: state.name.trim(),
           type: userTypeById(state.userTypeId).id,
           access: { member: state.access },
+          ...(isList ? { options, multiple: state.multiple } : {}),
         });
       }
     },
@@ -332,6 +352,31 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           </Select>
           {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
         </Field>
+        {selectedType.input === 'list' && (
+          <>
+            {/* Answers are checked against the options when they are given, never after,
+                so an edit here only changes what is offered from now on. */}
+            <ListOptionsEditor
+              error={errors.options}
+              options={formState.options}
+              onChange={(options) => {
+                clearError('options');
+                updateForm((state) => ({ ...state, options }));
+              }}
+            />
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldLabel htmlFor="custom-field-multiple">Allow multiple answers</FieldLabel>
+                <FieldDescription>Members can choose more than one option</FieldDescription>
+              </FieldContent>
+              <Switch
+                checked={formState.multiple}
+                id="custom-field-multiple"
+                onCheckedChange={(multiple) => updateForm((state) => ({ ...state, multiple }))}
+              />
+            </Field>
+          </>
+        )}
         <Field data-disabled={isArchived || undefined} orientation="horizontal">
           <FieldContent>
             <FieldLabel htmlFor="custom-field-visible-to-members">Visible to members</FieldLabel>

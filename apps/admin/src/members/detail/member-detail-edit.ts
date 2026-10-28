@@ -26,7 +26,8 @@ export const ADDRESS_PARTS = memberCustomFieldParts('address') ?? [];
 // Partial because a draft mid-edit (or a normalized sparse value) may hold any subset; the
 // shared AddressValue schema — enforced by the server — decides completeness.
 export type EditableAddressValue = Partial<MemberCustomFieldAddress>;
-export type EditableCustomFieldValue = string | EditableAddressValue;
+// A list's answers are an array, the options chosen, as they read when chosen.
+export type EditableCustomFieldValue = string | string[] | EditableAddressValue;
 
 export interface MemberEditableLabel {
   name: string;
@@ -96,7 +97,12 @@ export function getEditableCustomFieldValues(
   for (const [key, value] of Object.entries(flattened)) {
     if (typeof value === 'string' && value.trim() !== '') {
       values[key] = value.trim();
-    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    } else if (Array.isArray(value)) {
+      const answers = answersToSave(value);
+      if (answers) {
+        values[key] = answers;
+      }
+    } else if (typeof value === 'object' && value !== null) {
       const address = normalizeAddressValue(value as Record<string, unknown>);
       if (address) {
         values[key] = address;
@@ -104,6 +110,15 @@ export function getEditableCustomFieldValues(
     }
   }
   return values;
+}
+
+/** A list's answers, trimmed and without blanks; undefined when none are left. */
+function answersToSave(value: unknown[]): string[] | undefined {
+  const answers = value
+    .filter((answer): answer is string => typeof answer === 'string')
+    .map((answer) => answer.trim())
+    .filter(Boolean);
+  return answers.length ? answers : undefined;
 }
 
 /**
@@ -300,7 +315,10 @@ export function buildMemberFieldEditPayload(
 function customFieldValueToSave(
   value: EditableCustomFieldValue,
 ): EditableCustomFieldValue | undefined {
-  return typeof value === 'string' ? value.trim() || undefined : addressToSave(value);
+  if (typeof value === 'string') {
+    return value.trim() || undefined;
+  }
+  return Array.isArray(value) ? answersToSave(value) : addressToSave(value);
 }
 
 /**

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
   LoadingIndicator,
   MultiSelectCombobox,
   Textarea,
+  tokenFieldClasses,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { dequal } from 'dequal';
@@ -37,6 +39,7 @@ import {
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
+import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { countryName, countryOptions } from '@tryghost/admin-x-framework/utils/countries';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
 import type { EditableAddressValue, EditableCustomFieldValue } from './member-detail-edit';
@@ -92,6 +95,77 @@ const CountryInput: React.FC<{
           values={value ? [value] : []}
           autoCloseOnSelect
           onChange={(values) => onChange(values[0] ?? '')}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
+};
+
+// A list's answers, picked from the field's options: one, like a country, or several as
+// chips, like a post's tiers. Options can change after answers are saved, so an answer
+// that is no longer an option is still listed, the way a stored country this build
+// doesn't know is, and shows as chosen until someone removes it.
+const ListInput: React.FC<{
+  id: string;
+  label: string;
+  field: MemberCustomField;
+  value: string[];
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (answers: string[]) => void;
+}> = ({ id, label, field, value, invalid, disabled, onChange }) => {
+  const [open, setOpen] = React.useState(false);
+  const offered = field.options ?? [];
+  const choices = [...offered, ...value.filter((answer) => !offered.includes(answer))];
+  // Kept in the order the options are offered, whatever order they were picked in.
+  const inOrder = (answers: string[]) => choices.filter((choice) => answers.includes(choice));
+
+  if (field.multiple) {
+    return (
+      <ChipPicker<string, string>
+        emptyMessage="No options found"
+        getKey={(choice) => choice}
+        getLabel={(choice) => choice}
+        inputId={id}
+        inputLabel={label}
+        invalid={invalid}
+        matches={(choice, term) => choice.toLowerCase().includes(term.toLowerCase())}
+        options={choices}
+        placeholder="Select..."
+        renderOption={(choice, { chosen }) => (
+          <>
+            <span className="truncate">{choice}</span>
+            {chosen && <LucideIcon.Check className="ms-auto size-4 shrink-0 text-primary" />}
+          </>
+        )}
+        selected={value}
+        onAdd={(choice) => onChange(inOrder([...value, choice]))}
+        onRemove={(choice) => onChange(value.filter((answer) => answer !== choice))}
+      />
+    );
+  }
+
+  return (
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      <ComboboxTrigger
+        aria-invalid={invalid || undefined}
+        aria-label={label}
+        disabled={disabled}
+        id={id}
+      >
+        <ComboboxValue placeholder={value.length === 0}>
+          {value.length ? value.join(', ') : 'Select...'}
+        </ComboboxValue>
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search options...' }}
+          isMultiSelect={false}
+          options={choices.map((choice) => ({ value: choice, label: choice }))}
+          values={value}
+          autoCloseOnSelect
+          onChange={(values) => onChange(inOrder(values))}
           onClose={() => setOpen(false)}
         />
       </ComboboxContent>
@@ -199,7 +273,19 @@ const CustomFieldInput: React.FC<{
           disabled={disabled}
           errors={errors}
           inputId={inputId}
-          value={typeof value === 'object' && value !== null ? value : {}}
+          value={typeof value === 'object' && value !== null && !Array.isArray(value) ? value : {}}
+          onChange={onChange}
+        />
+      );
+    case 'list':
+      return (
+        <ListInput
+          disabled={disabled}
+          field={field}
+          id={inputId}
+          invalid={Boolean(fieldError)}
+          label={field.name}
+          value={Array.isArray(value) ? value : []}
           onChange={onChange}
         />
       );
@@ -223,10 +309,17 @@ const MemberCustomFieldEditModal: React.FC<{
   initialValue: EditableCustomFieldValue | undefined;
   onClose: () => void;
 }> = ({ memberId, field, initialValue, onClose }) => {
-  const isAddressField = userTypeForField(field).input === 'address';
-  const [value, setValue] = React.useState<EditableCustomFieldValue>(
-    initialValue ?? (isAddressField ? {} : ''),
-  );
+  const { input } = userTypeForField(field);
+  const isAddressField = input === 'address';
+  const [value, setValue] = React.useState<EditableCustomFieldValue>(() => {
+    if (initialValue !== undefined) {
+      return initialValue;
+    }
+    if (isAddressField) {
+      return {};
+    }
+    return input === 'list' ? [] : '';
+  });
   const [saveAttempted, setSaveAttempted] = React.useState(false);
   const [serverErrors, setServerErrors] = React.useState<Record<string, string> | undefined>();
   const editMutation = useEditMember();
@@ -393,12 +486,13 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
         <CardContent className="px-6 py-4">
           <ul>
             {fields.map((field) => {
+              const value = values[memberCustomFieldIdentity(field)];
               // Null rather than an empty line, so an unset value shows its placeholder.
-              const display =
-                formatMemberCustomFieldValue(
-                  field.type,
-                  values[memberCustomFieldIdentity(field)],
-                ) || null;
+              const display = formatMemberCustomFieldValue(field.type, value) || null;
+              // A list's answers are drawn as the chips its editor shows, since an option
+              // can hold a comma and a comma-joined line would split it.
+              const answers =
+                userTypeForField(field).input === 'list' && Array.isArray(value) ? value : [];
               return (
                 // Dividers fade around the hovered row (its own border-b, and the
                 // previous row's via :has), so the hover tint floats free of the
@@ -435,11 +529,27 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                       <span className="block text-sm text-muted-foreground">{field.name}</span>
                       {/* select-text: button text is unselectable by default,
                                                 and values (addresses especially) get copied. */}
-                      {display ? (
-                        <span className="block break-words select-text">{display}</span>
-                      ) : (
-                        <span className="block text-muted-foreground">–</span>
+                      {answers.length > 0 && (
+                        <span className="mt-1 flex flex-wrap gap-1 select-text">
+                          {answers.map((answer) => (
+                            <Badge
+                              key={answer}
+                              className={cn(
+                                tokenFieldClasses.chip,
+                                'cursor-[inherit] bg-secondary pr-2',
+                              )}
+                              variant="outline"
+                              asChild
+                            >
+                              <span>{answer}</span>
+                            </Badge>
+                          ))}
+                        </span>
                       )}
+                      {answers.length === 0 && display && (
+                        <span className="block break-words select-text">{display}</span>
+                      )}
+                      {!display && <span className="block text-muted-foreground">–</span>}
                     </span>
                     <LucideIcon.Pen
                       aria-hidden="true"

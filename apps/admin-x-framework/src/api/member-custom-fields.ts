@@ -48,6 +48,11 @@ export type MemberCustomField = {
   access: { member: MemberCustomFieldAccess };
   created_at: string;
   updated_at: string | null;
+  // Only a list has these: the options a member picks from, in the order they are
+  // offered, and whether they may pick more than one. Both are checked when an answer is
+  // submitted and never after, so changing them leaves every saved answer as it was.
+  options?: string[];
+  multiple?: boolean;
 };
 
 /**
@@ -112,7 +117,7 @@ export type MemberCustomFieldUserType = {
   id: FieldType;
   label: string;
   // Which control collects/edits a value of this type
-  input: 'text' | 'textarea' | 'address';
+  input: 'text' | 'textarea' | 'address' | 'list';
 };
 
 /**
@@ -148,6 +153,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
       country: 'Country',
     },
   },
+  list: { label: 'List', input: 'list' },
 };
 
 /**
@@ -330,6 +336,15 @@ const partRuns = Object.fromEntries(
  * table cell than in a detail row.
  */
 export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): string => {
+  // A list's answers read as one line, in the order they were saved. Optional, because a
+  // type this build has never heard of has no entry.
+  const kind: FieldKind | undefined = FIELD_TYPES[type]?.kind;
+  if (kind === 'choice') {
+    return Array.isArray(value)
+      ? value.filter((answer): answer is string => typeof answer === 'string').join(', ')
+      : '';
+  }
+
   // Null for a scalar, and for a type this build has never heard of — both of which read
   // as text or as nothing.
   if (partsOf(type) === null) {
@@ -386,11 +401,15 @@ export const useBrowseMemberCustomFieldsIncludingArchived = (
   useBrowseMemberCustomFields({ ...options, searchParams: { filter: 'status:[active,archived]' } });
 
 /** Everything a new field is created from. The backend mints the key from the name. */
-export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'>;
+export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'> &
+  Partial<Pick<MemberCustomField, 'options' | 'multiple'>>;
 
-/** A change to one field, addressed by key. Anything omitted is left as it is. */
+/**
+ * A change to one field, addressed by key. Anything omitted is left as it is. A list's
+ * `options` are stated whole, in order.
+ */
 export type MemberCustomFieldEdit = Pick<MemberCustomField, 'key'> &
-  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>>;
+  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access' | 'options' | 'multiple'>>;
 
 export const useCreateMemberCustomField = createMutation<
   MemberCustomFieldsResponseType,

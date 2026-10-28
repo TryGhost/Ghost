@@ -19,6 +19,8 @@ export type SortableIndexedList<Item> = {
   /** Pass an updater when one event makes several updates, so each builds on the last */
   updateItem: (id: string, item: Item | ((current: Item) => Item)) => void;
   addItem: () => void;
+  /** Appends several items at once, as a paste of many lines does */
+  addItems: (items: Item[]) => void;
   removeItem: (id: string) => void;
   moveItem: (activeId: string, overId?: string) => void;
   newItem: Item;
@@ -89,6 +91,16 @@ const useSortableIndexedList = <Item>({
     }
   };
 
+  const addItems = (newItems: Item[]) => {
+    const currentItems = editableItemsRef.current;
+    const maxId = currentItems.reduce((max, current) => Math.max(max, parseInt(current.id)), 0);
+    const updatedItems = currentItems.concat(
+      newItems.map((item, index) => ({ item, id: (maxId + index + 1).toString() })),
+    );
+    setEditableItems(updatedItems);
+    setItems(updatedItems.map((updatedItem) => updatedItem.item));
+  };
+
   const removeItem = (id: string) => {
     const updatedItems = editableItemsRef.current.filter((item) => item.id !== id);
     setEditableItems(updatedItems);
@@ -111,6 +123,7 @@ const useSortableIndexedList = <Item>({
 
     updateItem,
     addItem,
+    addItems,
     removeItem,
     moveItem,
 

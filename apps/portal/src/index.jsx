@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './app';
+import { installListFieldFakeApi } from './poc/list-field/fake-api';
 
 const ROOT_DIV_ID = 'ghost-portal-root';
 
@@ -68,5 +69,9 @@ function init() {
     document.getElementById(ROOT_DIV_ID),
   );
 }
+
+// POC ONLY: answers list-field requests from localStorage until the backend serves them.
+// See src/poc/list-field/README.md; delete this and that folder to switch to the real API.
+installListFieldFakeApi();
 
 init();

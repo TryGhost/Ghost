@@ -283,6 +283,11 @@ export const FIELD_TYPES = defineFieldTypes({
   // deliveries, c/o. A site that needs one keeps it in a field of its own, which is
   // also how Stripe hands it back: beside the address rather than inside it.
   address: record('address', { error: 'Enter at least one part of the address.' }),
+  // The options a member chose, as they read when chosen. The field's options are checked
+  // when an answer is submitted and not after: a publisher can rename, remove or add
+  // options later, and an answer keeps what was picked. Always a list, whether the field
+  // takes one answer or several, since that too can change after answers exist.
+  list: { kind: 'choice', value: z.array(text().min(1)) },
 });
 
 /** Named for the admin types built on it, which speak of an address rather than a record. */

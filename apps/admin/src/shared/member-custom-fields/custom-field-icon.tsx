@@ -5,6 +5,7 @@ const icons: Record<MemberCustomField['type'], typeof LucideIcon.Type> = {
   short_text: LucideIcon.Type,
   long_text: LucideIcon.AlignLeft,
   address: LucideIcon.MapPin,
+  list: LucideIcon.List,
 };
 
 const CustomFieldIcon: React.FC<{ type: MemberCustomField['type']; className?: string }> = ({

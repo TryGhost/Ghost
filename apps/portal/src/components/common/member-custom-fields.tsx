@@ -3,13 +3,15 @@ import type { Address } from '@tryghost/metafield-types';
 import { FIELD_PARTS } from '@tryghost/metafield-types/structure';
 import type { FieldType } from '@tryghost/metafield-types/structure';
 
+import ChoicePicker, { ChoicePickerStyles } from './choice-picker';
 import InputForm from './input-form';
 import { countryOptions } from '../../utils/countries';
 import { t } from '../../utils/i18n';
-import { compositeValue, scalarValue } from '../../utils/custom-fields';
+import { compositeValue, listValue, scalarValue } from '../../utils/custom-fields';
 import type { CustomFieldValue, DrawableCustomField } from '../../utils/custom-fields';
 
-export const MemberCustomFieldsStyles = `
+export const MemberCustomFieldsStyles =
+  `
     .gh-portal-custom-field-errors {
         list-style: none;
         margin: 4px 0 0;
@@ -23,7 +25,14 @@ export const MemberCustomFieldsStyles = `
         line-height: 1.6em;
         margin: 0;
     }
-`;
+` + ChoicePickerStyles;
+
+/**
+ * POC: an address's country is picked with the same picker as a list field, to compare it
+ * with the native select it had. False puts the native select back. Whether to keep it is
+ * still to be decided.
+ */
+const COUNTRY_PICKER = true;
 
 /** Every part is named, and the compiler says so: a part added to the type wants one. */
 const addressLabels = (): Record<keyof Address, string> => ({
@@ -40,7 +49,7 @@ interface FieldProps {
   value: CustomFieldValue;
   /** What the site refused, keyed by the name of the input that holds it. */
   errors: Record<string, string | undefined>;
-  onChange: (field: DrawableCustomField, part: string | null, value: string) => void;
+  onChange: (field: DrawableCustomField, part: string | null, value: string | string[]) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
@@ -62,6 +71,51 @@ function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps) 
       onChange={(event: { target: { value: string } }) => onChange(field, null, event.target.value)}
       onKeyDown={onKeyDown}
     />
+  );
+}
+
+/**
+ * Options picked from a list, one or several, with the same picker either way. A member
+ * who may only read the field sees their answers as text.
+ */
+function ListField({ field, value, errors, onChange, onKeyDown }: FieldProps) {
+  const name = `custom:${field.key}`;
+  const answers = listValue(value);
+
+  if (field.access.member !== 'write') {
+    return (
+      <InputForm
+        fields={[
+          { type: 'text', value: answers.join(', '), label: field.name, name, readOnly: true },
+        ]}
+        onChange={() => {}}
+        onKeyDown={onKeyDown}
+      />
+    );
+  }
+
+  const id = `input-${name}`;
+  const labelId = `${id}-label`;
+  return (
+    <section className="gh-portal-input-section">
+      <div className="gh-portal-input-labelcontainer">
+        <label className="gh-portal-input-label" htmlFor={id} id={labelId}>
+          {field.name}
+        </label>
+        {errors[name] && <p>{errors[name]}</p>}
+      </div>
+      <ChoicePicker
+        id={id}
+        invalid={Boolean(errors[name])}
+        label={field.name}
+        labelId={labelId}
+        multiple={Boolean(field.multiple)}
+        options={(field.options ?? []).map((option) => ({ value: option, label: option }))}
+        placeholder={t('Choose')}
+        value={answers}
+        onChange={(picked) => onChange(field, null, picked)}
+      />
+    </section>
   );
 }
 
@@ -110,7 +164,9 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
   const input = (part: keyof Address) => {
     const isCountry = FIELD_PARTS.address[part] === 'country_code';
     return {
-      type: isCountry ? 'select' : 'text',
+      // The picker can't be read-only, so a country the member may not change keeps the
+      // disabled select.
+      type: isCountry ? (COUNTRY_PICKER && !readOnly ? 'choice' : 'select') : 'text',
       options: isCountry ? countryOptions(held?.[part]) : undefined,
       value: held?.[part] ?? '',
       // The part's label is read by assistive tech and shown as the placeholder; the
@@ -172,7 +228,7 @@ interface MemberCustomFieldsProps {
   fields: DrawableCustomField[];
   values: Record<string, CustomFieldValue>;
   errors: Record<string, string | undefined>;
-  onChange: (field: DrawableCustomField, part: string | null, value: string) => void;
+  onChange: (field: DrawableCustomField, part: string | null, value: string | string[]) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
@@ -185,6 +241,7 @@ const DRAWN_BY = {
   address: AddressField,
   short_text: ScalarField,
   long_text: ScalarField,
+  list: ListField,
 } satisfies Record<FieldType, React.ComponentType<FieldProps>>;
 
 /** The fields a publisher has opened to members, as the member fills them in. */

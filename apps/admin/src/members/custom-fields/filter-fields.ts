@@ -33,6 +33,7 @@ export const SCALAR_KIND_FILTER_TYPE: {
   text: 'text',
   date: 'plain_date',
   number: 'number',
+  choice: 'set',
 };
 
 // How each part of a composite filters. A typed part is text; a part picked from a
@@ -150,6 +151,9 @@ export function customFieldProvider(
   return {
     resolved: definitions !== undefined,
     claims: [CUSTOM_FIELD_CLAUSE],
-    fields: (definitions ?? []).map(customFieldDescriptor),
+    // A list field can't be filtered on yet, so it isn't offered.
+    fields: (definitions ?? [])
+      .filter((definition) => memberCustomFieldKind(definition.type) !== 'choice')
+      .map(customFieldDescriptor),
   };
 }

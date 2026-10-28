@@ -16,7 +16,7 @@
  */
 
 /** The source for the union type, the zod enum and the `FIELD_TYPES` keys alike. */
-export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'address'] as const;
+export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'list', 'address'] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 
 /**
@@ -29,8 +29,11 @@ export type FieldType = (typeof FIELD_TYPE_IDS)[number];
  *
  * Deliberately not presentation: it says a value is a date, not that its operator is
  * called "is before". Naming the operators stays with whoever renders them.
+ *
+ * A `choice` is one or more of the options its field declares, so it is matched by which
+ * options it holds rather than by what it says.
  */
-export const FIELD_KINDS = ['text', 'date', 'number', 'record'] as const;
+export const FIELD_KINDS = ['text', 'date', 'number', 'record', 'choice'] as const;
 export type FieldKind = (typeof FIELD_KINDS)[number];
 
 /**
@@ -62,6 +65,7 @@ export const FIELD_PARTS = {
     postal_code: 'postal_code',
     country: 'country_code',
   },
+  list: null,
 } as const satisfies Record<FieldType, Readonly<Record<string, PartType>> | null>;
 
 /**
