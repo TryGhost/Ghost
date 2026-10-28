@@ -744,8 +744,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [deleteConfirmationAction, emailModalAction, sidebar.open, setAutomationSidebarOpen]);
 
-  // The email editor clears the canvas: an open sidebar closes as it opens and reopens as it
-  // starts closing, and the flow and controls step aside meanwhile.
+  // While the email editor is open, hide the flow and controls and close the sidebar,
+  // restoring it as the editor starts to close.
   const isEmailModalOpen = Boolean(emailModalAction);
   const [isEmailModalClosing, setIsEmailModalClosing] = useState(false);
   const isCanvasCleared = isEmailModalOpen && !isEmailModalClosing;

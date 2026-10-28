@@ -112,7 +112,6 @@ export const EditableEmailCard: React.FC<
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
-  // The button's name says what it does; its subject and message describe it.
   const previewTextId = useId();
   return (
     <AutomationCard
@@ -157,17 +156,12 @@ export const EditableEmailCard: React.FC<
         <div ref={emailView.ref}>
           <EmailCardCollapse open={!showAnalytics}>
             <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
-              {/* A read-only panel that turns into an input on hover; an empty email shows as an
-                  input from the start, as there's something to fill in. */}
               <button
                 aria-describedby={previewTextId}
                 aria-label="Edit email content"
                 className={cn(
                   inputSurface('self'),
-                  'group/field flex w-full items-start justify-between gap-2 border-transparent bg-control-readonly-surface p-5 text-left hover:border-control-border hover:bg-control-surface',
-                  !email.subject.trim() &&
-                    isEmptyEmailLexical(email.lexical) &&
-                    'border-control-border bg-control-surface',
+                  'group/field flex w-full items-start justify-between gap-2 p-5 text-left',
                 )}
                 type="button"
                 onClick={email.onEditContent}

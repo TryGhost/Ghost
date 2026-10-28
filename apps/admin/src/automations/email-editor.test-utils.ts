@@ -7,7 +7,7 @@ import {
   fakePosts,
 } from '@test-utils/acceptance';
 
-// What the email editor reads as it opens.
+// Endpoints the email editor fetches on open.
 export const fakeEmailEditorData = () => {
   fakeAutomatedEmails([]);
   fakeNewsletters([]);

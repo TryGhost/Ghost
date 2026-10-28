@@ -212,7 +212,6 @@ export const AutomationSidebar: React.FC<{
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isRunSelectionDisabled: boolean;
-  // Slides the toggle off the canvas, as while the email editor is open.
   isToggleHidden?: boolean;
 }> = ({
   automationId,
