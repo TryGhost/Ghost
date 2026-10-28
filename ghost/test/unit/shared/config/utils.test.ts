@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-const path = require('node:path');
-const configUtils = require('../../../../core/shared/config/utils');
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import * as configUtils from '../../../../core/shared/config/utils';
 
 const packageRoot = path.resolve(__dirname, '../../../../');
 
