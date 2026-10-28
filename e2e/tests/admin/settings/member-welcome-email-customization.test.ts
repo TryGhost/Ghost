@@ -149,6 +149,12 @@ test.describe('Ghost Admin - Welcome Email Customize Button', () => {
     await page.keyboard.press('Escape');
 
     await expect(welcomeEmailsSection.customizeModalUnsavedChangesDialog).toBeVisible();
+    // Radix sends Escape to a newly opened dialog only after its effects have run, shortly after
+    // it appears. An Escape pressed sooner goes to the customize modal underneath instead, which
+    // asks again and leaves the confirmation open. Nothing on the page shows when that's done,
+    // so wait. A person can't press Escape twice that fast.
+    // https://github.com/radix-ui/primitives/issues/4143
+    await page.waitForTimeout(1000);
 
     await page.keyboard.press('Escape');
 
