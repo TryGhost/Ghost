@@ -2,6 +2,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Shown for a date that can't be parsed, so it can't be mistaken for a missing date
+const INVALID_DATE = 'Invalid date';
+
 interface DateTimeParts {
   year: number;
   month: number;
@@ -185,7 +188,7 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
 
   const timeZone = timezone || 'UTC';
   const date = parseDate(dateString, timeZone);
-  return date ? formatDate(getDateTimeParts(date, timeZone), timeZone) : '';
+  return date ? formatDate(getDateTimeParts(date, timeZone), timeZone) : INVALID_DATE;
 };
 
 /**
@@ -196,9 +199,13 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
  * // 7:09pm
  */
 export const formatDisplayTime = (dateString: string, timezone: string): string => {
+  if (!dateString) {
+    return '';
+  }
+
   const timeZone = timezone || 'UTC';
   const date = parseDate(dateString, timeZone);
-  return date ? formatTime(getDateTimeParts(date, timeZone)) : '';
+  return date ? formatTime(getDateTimeParts(date, timeZone)) : INVALID_DATE;
 };
 
 /**
@@ -213,9 +220,13 @@ export const formatDisplayDateWithRange = (
   showHours: boolean = false,
   hoursOnly: boolean = false,
 ): string => {
+  if (!date) {
+    return '';
+  }
+
   const parsed = parseDate(date);
   if (!parsed) {
-    return '';
+    return INVALID_DATE;
   }
   const parts = getDateTimeParts(parsed);
 

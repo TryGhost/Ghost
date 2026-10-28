@@ -77,20 +77,20 @@ describe('date utils', function () {
       }
     });
 
-    it('returns an empty string for an unparseable date when timezone is provided', function () {
+    it('returns "Invalid date" for an unparseable date when timezone is provided', function () {
       const formatted = formatDisplayDate('Tomorrow', 'Europe/Berlin');
-      assert.equal(formatted, '');
+      assert.equal(formatted, 'Invalid date');
     });
 
-    it('returns an empty string for an impossible date when timezone is provided', function () {
+    it('returns "Invalid date" for an impossible date when timezone is provided', function () {
       const formatted = formatDisplayDate('2025-02-30T10:00:00', 'Europe/Berlin');
-      assert.equal(formatted, '');
+      assert.equal(formatted, 'Invalid date');
     });
 
-    it('returns an empty string for an unparseable date', function () {
-      assert.equal(formatDisplayDate('yesterday'), '');
-      assert.equal(formatDisplayDate('yesterday', 'Europe/Berlin'), '');
-      assert.equal(formatDisplayDate('2025-13-01T00:00:00'), '');
+    it('returns "Invalid date" for an unparseable date', function () {
+      assert.equal(formatDisplayDate('yesterday'), 'Invalid date');
+      assert.equal(formatDisplayDate('yesterday', 'Europe/Berlin'), 'Invalid date');
+      assert.equal(formatDisplayDate('2025-13-01T00:00:00'), 'Invalid date');
     });
 
     it('reads a date-time without an offset as wall-clock time when no timezone is provided', function () {
@@ -154,16 +154,20 @@ describe('date utils', function () {
       assert.equal(formatted, '12:30am');
     });
 
-    it('returns an empty string for an unparseable date', function () {
-      const formatted = formatDisplayTime('not a date', 'Europe/Berlin');
-      assert.equal(formatted, '');
+    it('returns an empty string without a date', function () {
+      assert.equal(formatDisplayTime('', 'Europe/Berlin'), '');
     });
 
-    it('returns an empty string for an impossible date or time', function () {
-      assert.equal(formatDisplayTime('2025-02-30T10:00:00', 'Europe/Berlin'), '');
-      assert.equal(formatDisplayTime('2025-04-15T25:99:00', 'Europe/Berlin'), '');
-      assert.equal(formatDisplayTime('2025-04-15T23:59:60', 'Europe/Berlin'), '');
-      assert.equal(formatDisplayTime('2025-04-15T10:00:00+24:00', 'Europe/Berlin'), '');
+    it('returns "Invalid date" for an unparseable date', function () {
+      const formatted = formatDisplayTime('not a date', 'Europe/Berlin');
+      assert.equal(formatted, 'Invalid date');
+    });
+
+    it('returns "Invalid date" for an impossible date or time', function () {
+      assert.equal(formatDisplayTime('2025-02-30T10:00:00', 'Europe/Berlin'), 'Invalid date');
+      assert.equal(formatDisplayTime('2025-04-15T25:99:00', 'Europe/Berlin'), 'Invalid date');
+      assert.equal(formatDisplayTime('2025-04-15T23:59:60', 'Europe/Berlin'), 'Invalid date');
+      assert.equal(formatDisplayTime('2025-04-15T10:00:00+24:00', 'Europe/Berlin'), 'Invalid date');
     });
 
     it('reads the ISO 8601 forms moment reads', function () {
@@ -229,14 +233,24 @@ describe('date utils', function () {
       assert.equal(formatDisplayDateWithRange('2025-04-15', 1), '15 Apr 2025');
     });
 
-    it('returns an empty string for an unparseable date', function () {
-      assert.equal(formatDisplayDateWithRange('undefined', 366), '');
-      assert.equal(formatDisplayDateWithRange('undefined', 30), '');
+    it('returns an empty string without a date', function () {
+      assert.equal(formatDisplayDateWithRange('', 30), '');
+      // @ts-expect-error Chart data can be missing a date at runtime
+      assert.equal(formatDisplayDateWithRange(undefined, 366), '');
     });
 
-    it('returns an empty string for an impossible date or time', function () {
-      assert.equal(formatDisplayDateWithRange('2025-13-01', 366), '');
-      assert.equal(formatDisplayDateWithRange('2025-04-15 24:00:00', 1, true, true), '');
+    it('returns "Invalid date" for an unparseable date', function () {
+      assert.equal(formatDisplayDateWithRange('undefined', 366), 'Invalid date');
+      assert.equal(formatDisplayDateWithRange('undefined', 120), 'Invalid date');
+      assert.equal(formatDisplayDateWithRange('undefined', 30), 'Invalid date');
+    });
+
+    it('returns "Invalid date" for an impossible date or time', function () {
+      assert.equal(formatDisplayDateWithRange('2025-13-01', 366), 'Invalid date');
+      assert.equal(
+        formatDisplayDateWithRange('2025-04-15 24:00:00', 1, true, true),
+        'Invalid date',
+      );
     });
   });
 });
