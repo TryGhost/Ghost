@@ -127,10 +127,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     accessDescription = 'Only staff can see this field and what you record in it.';
   }
 
-  // The modal's third action mirrors the field's state: an active field can
-  // be archived, an archived one reactivated. Both confirm first (the
-  // newsletters pattern) — they change what every collection surface shows.
-  const archiveButton = (
+  // Archiving and reactivating both ask for confirmation first, because each changes what every
+  // surface that collects values shows.
+  const archiveButton = (existing: MemberCustomField) => (
     <Button
       size="sm"
       type="button"
@@ -142,7 +141,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           prompt: (
             <>
               <div className="mb-6">
-                Your custom field <strong>{field!.name}</strong> will no longer show up on your
+                Your custom field <strong>{existing.name}</strong> will no longer show up on your
                 members, collect new information, or appear in filters.
               </div>
               <div>Values already collected for this field will remain unchanged.</div>
@@ -155,7 +154,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
               // Archiving is a status change over the same PUT a rename
               // uses; DELETE is the permanent, values-destroying removal
               // and only valid on an already-archived field.
-              await editField({ key: field!.key, status: 'archived' });
+              await editField({ key: existing.key, status: 'archived' });
               archiveModal?.remove();
               toast.success('Custom field archived');
             } catch (e) {
@@ -170,7 +169,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     </Button>
   );
 
-  const reactivateButton = (
+  const reactivateButton = (existing: MemberCustomField) => (
     <Button
       className="text-green hover:text-green"
       size="sm"
@@ -183,11 +182,11 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           prompt: (
             <>
               <div className="mb-6">
-                Reactivating <strong>{field!.name}</strong> will immediately make it available again
-                on your members, for collecting, and in filters.
+                Reactivating <strong>{existing.name}</strong> will immediately make it available
+                again on your members, for collecting, and in filters.
               </div>
               <div>Values already collected for this field will remain unchanged.</div>
-              {field!.access.member !== 'none' && (
+              {existing.access.member !== 'none' && (
                 <div className="mt-6">
                   This field is open to members, so what you have already collected becomes visible
                   to each of them on their own record.
@@ -198,7 +197,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           okLabel: 'Reactivate',
           onOk: async (reactivateModal) => {
             try {
-              await editField({ key: field!.key, status: 'active' });
+              await editField({ key: existing.key, status: 'active' });
               reactivateModal?.remove();
               toast.success('Custom field reactivated');
             } catch (e) {
@@ -214,21 +213,21 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   );
 
   let leftButton;
-  if (isEdit) {
-    leftButton = isArchived ? reactivateButton : archiveButton;
+  if (field) {
+    leftButton = isArchived ? reactivateButton(field) : archiveButton(field);
   }
 
   // Permanent deletion hides behind the header menu — one deliberate click
   // away, mirroring the members page's actions menu and the API's own
   // two-step (only archived fields can be deleted). A visible red button
   // would put irreversible data loss on equal footing with Save.
-  const confirmDeleteField = () => {
+  const confirmDeleteField = (existing: MemberCustomField) => {
     onClose();
     confirm({
       title: 'Delete custom field',
       prompt: (
         <>
-          <strong>{field!.name}</strong> and every value collected from your members will be
+          <strong>{existing.name}</strong> and every value collected from your members will be
           permanently deleted from the database. This can&rsquo;t be undone.
         </>
       ),
@@ -236,7 +235,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       okVariant: 'destructive',
       onOk: async (deleteModal) => {
         try {
-          await deleteField(field!.key);
+          await deleteField(existing.key);
           deleteModal?.remove();
           toast.success('Custom field deleted');
         } catch (e) {
@@ -247,7 +246,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     });
   };
 
-  const archivedFieldMenu = (
+  const archivedFieldMenu = (existing: MemberCustomField) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button aria-label="Menu" size="icon" type="button" variant="ghost">
@@ -257,7 +256,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       <DropdownMenuContent align="end" className="z-[9999]">
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
-          onSelect={confirmDeleteField}
+          onSelect={() => confirmDeleteField(existing)}
         >
           <LucideIcon.Trash2 className="size-4" />
           Delete custom field
@@ -276,7 +275,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       size="sm"
       testId="custom-field-modal"
       title={isEdit ? 'Edit custom field' : 'Add custom field'}
-      topRightContent={isArchived ? archivedFieldMenu : undefined}
+      topRightContent={field && isArchived ? archivedFieldMenu(field) : undefined}
       onClose={onClose}
       onOk={async () => {
         try {

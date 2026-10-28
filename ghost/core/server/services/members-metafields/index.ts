@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
@@ -46,6 +47,22 @@ export let fields: FieldSource | undefined;
 export let definitions: MetafieldDefinitionsService | undefined;
 export let values: MetafieldValuesService | undefined;
 export let bindings: MetafieldBindingsService | undefined;
+
+/**
+ * Boot builds these before any request is served, so a call before then is a wiring fault and
+ * throws.
+ */
+export function booted(): {
+  namespaces: Namespaces;
+  definitions: MetafieldDefinitionsService;
+} {
+  if (!namespaces || !definitions) {
+    throw new errors.IncorrectUsageError({
+      message: 'Members metafields were used before boot initialised them.',
+    });
+  }
+  return { namespaces, definitions };
+}
 
 export function init(): void {
   // The five are constructed together below, so checking all of them keeps the "all or

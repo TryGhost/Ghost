@@ -318,7 +318,12 @@ function CreateFieldInline({
         <Select
           disabled={types.length === 1}
           value={typeId}
-          onValueChange={(value) => setTypeId(value as MemberCustomField['type'])}
+          onValueChange={(value) => {
+            const chosen = types.find((type) => type === value);
+            if (chosen) {
+              setTypeId(chosen);
+            }
+          }}
         >
           <SelectTrigger aria-label="Type" className="h-8 text-sm!">
             <SelectValue>
