@@ -3771,7 +3771,7 @@ services:
           - core/server/services/stats/mrr-stats-service.js
           - core/server/data/schema/default-settings/default-settings.json
         tests:
-          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/explore-ping-service.test.ts
       resources:
         summary: >-
           The owned posts helpers acquire no separate connections or listeners on construction;
@@ -3806,7 +3806,7 @@ services:
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
         tests:
-          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/explore-ping-service.test.ts
           - test/unit/server/services/explore-ping/index.test.ts
     unverified: []
     blockers:
@@ -13573,7 +13573,7 @@ services:
           - core/server/services/automations/automations-api.ts
         tests:
           - test/e2e-api/admin/stats.test.js
-          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/explore-ping-service.test.ts
           - test/e2e-api/admin/automations.test.ts
       startup:
         summary: >-
