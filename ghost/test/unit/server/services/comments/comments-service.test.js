@@ -889,7 +889,7 @@ describe('Comments Service: CommentsService', function () {
 
       await assert.rejects(
         () => instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', options),
-        failure,
+        (error) => error === failure,
       );
 
       sinon.assert.calledOnce(models.Comment.add);
