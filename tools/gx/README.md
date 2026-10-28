@@ -132,14 +132,13 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 
 ### Interpreting the reports
 
-Counts are calculated from the checkout, not stored in the inventory. The first
-table separates ownership from migration progress. Its three ownership rows
-(`retain`, `relocate`, `review`) sum to the catalogue total; migrated and
-unmigrated columns sum to each row's total. A migrated entry marked for relocation
-appears in both the migrated column and the relocation row. Migration does not
-complete its move. The `relocation` filter includes these migrated entries.
+Counts are calculated from the checkout, not stored in the inventory. The report
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Ownership and
+migration progress are counted independently: a migrated entry marked for
+relocation appears in both counts. Migration does not complete its move.
+The `relocation` filter includes these migrated entries.
 
-The retained-work table partitions **Staying in services/** into three groups:
+**Staying in services/** comprises three groups:
 
 - **Migrated:** marked `migrated: true`.
 - **Needs preparation:** not migrated, and either assessment is

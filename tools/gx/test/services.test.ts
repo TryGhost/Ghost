@@ -431,7 +431,11 @@ test('list filters match every report group, including unknown analysis and ever
   ];
   const report = f.run(['report']);
   assert.equal(report.status, 0, report.stderr);
-  assert.match(report.stdout, /^OWNERSHIP\s+MIGRATED\s+UNMIGRATED\s+TOTAL\s+GROUP/m);
+  const [reportTable, ...footer] = report.stdout.trimEnd().split('\n\n');
+  const [header, ...reportRows] = reportTable!.split('\n');
+  assert.match(header!, /^MIGRATION\s+COUNT\s+GROUP$/);
+  assert.equal(reportRows.length, groups.length);
+  assert.deepEqual(footer, ['List a group: pnpm gx services list --group <group>']);
   const summary = f.run(['report', '--json']);
   assert.equal(summary.status, 0, summary.stderr);
   const counts = JSON.parse(summary.stdout);
@@ -451,12 +455,6 @@ test('list filters match every report group, including unknown analysis and ever
     counts['Unmigrated — staying in services/'],
     counts['Needs preparation'] + counts['Straightforward migrations'],
   );
-  assert.match(report.stdout, /^Staying in services\/\s+2\s+6\s+8\s+retained$/m);
-  assert.match(report.stdout, /^Move or split planned\s+1\s+1\s+2\s+relocation$/m);
-  assert.match(report.stdout, /^Ownership undecided\s+0\s+2\s+2\s+ownership-undecided$/m);
-  assert.match(report.stdout, /^Total\s+3\s+9\s+12\s+catalogued$/m);
-  assert.match(report.stdout, /8 retained = 2 migrated \+ 6 unmigrated\./);
-  assert.match(report.stdout, /6 unmigrated = 1 needing preparation \+ 5 straightforward\./);
   const reviewDetails = f.run(['report', 'reviewRefactor']);
   assert.equal(reviewDetails.status, 0, reviewDetails.stderr);
   assert.match(reviewDetails.stdout, /Ownership undecided\s+Needs preparation/);
@@ -469,6 +467,11 @@ test('list filters match every report group, including unknown analysis and ever
       group,
     );
     assert.equal(counts[label], names.length, group);
+    const line = reportRows.find((row) => row.endsWith(`  ${group}`));
+    assert.ok(line, `${group} is discoverable next to its report count`);
+    assert.deepEqual(line.split(/ {2,}/), [label, String(names.length), group]);
+    assert.equal(line.indexOf(String(names.length), label.length), header!.indexOf('COUNT'));
+    assert.equal(line.lastIndexOf(group), header!.indexOf('GROUP'));
   }
   const clean = f.run(['list', '--group=straightforward-clear']);
   assert.equal(clean.status, 0, clean.stderr);

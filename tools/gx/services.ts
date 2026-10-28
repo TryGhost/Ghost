@@ -265,51 +265,6 @@ function summary(rows: Service[]) {
   );
 }
 
-function summaryText(rows: Service[], counts: ReturnType<typeof summary>) {
-  const ownershipRows = ['retained', 'relocation', 'ownership-undecided', 'catalogued'].map(
-    (name) => {
-      const group = groups.find((item) => item.name === name)!;
-      const entries = rows.filter(group.matches);
-      const migrated = entries.filter((row) => row.entry?.migrated).length;
-      return [
-        group.name === 'catalogued' ? 'Total' : group.label,
-        String(migrated),
-        String(entries.length - migrated),
-        String(entries.length),
-        group.name,
-      ];
-    },
-  );
-  const countTable = (names: string[]) =>
-    table(
-      ['MIGRATION', 'COUNT', 'GROUP'],
-      names.map((name) => {
-        const group = groups.find((item) => item.name === name)!;
-        return [group.label, String(counts[group.label]), group.name];
-      }),
-    );
-  return [
-    'Ownership and migration (all catalogued entries)',
-    table(['OWNERSHIP', 'MIGRATED', 'UNMIGRATED', 'TOTAL', 'GROUP'], ownershipRows),
-    '\nRetained migration work (rows sum to the retained total)',
-    countTable(['migrated-retained', 'needs-preparation', 'straightforward']),
-    `\n${counts['Staying in services/']} retained = ${counts['Migrated — staying in services/']} migrated + ${counts['Unmigrated — staying in services/']} unmigrated.`,
-    `${counts['Unmigrated — staying in services/']} unmigrated = ${counts['Needs preparation']} needing preparation + ${counts['Straightforward migrations']} straightforward. List: pnpm gx services list --group unmigrated-retained`,
-    '\nDependency audit (overlapping subsets, not additional services)',
-    countTable([
-      'straightforward-with-violations',
-      'straightforward-clear',
-      'unmigrated-with-violations',
-      'unmigrated-retained-with-violations',
-      'migrated-with-violations',
-      'not-analyzed',
-      'not-inventoried',
-    ]),
-    '\nMigration does not complete a planned relocation.',
-    'List a group: pnpm gx services list --group <group>. All filters: pnpm gx services list --help',
-  ].join('\n');
-}
-
 function details(row: Service) {
   const lines = [list([row])];
   if (row.entry) {
@@ -473,10 +428,14 @@ export function runServices(command: string, args: string[]) {
     } else {
       const counts = summary(rows);
       output = counts;
-      text = summaryText(rows, counts);
+      text = table(
+        ['MIGRATION', 'COUNT', 'GROUP'],
+        groups.map((item) => [item.label, String(counts[item.label]), item.name]),
+      );
+      text += '\n\nList a group: pnpm gx services list --group <group>';
     }
     process.stdout.write(`${values.json ? JSON.stringify(output, null, 2) : text}\n`);
-    if (!values.json && command !== 'dependencies') {
+    if (!values.json && (command === 'list' || selected)) {
       process.stdout.write(
         '\nDependency counts are distinct disallowed targets; ? means not analyzed. Assessments do not establish test coverage or migration readiness.\n',
       );
