@@ -106,10 +106,9 @@ Within Ghost(Pro), billing alerts only show to people who can manage billing
 ### Before testing with customers
 
 - [ ] **Measurement.** Use Admin's `trackEvent` for: panel opened, search
-      made, no results, article read, "Did this answer your question?" yes
-      and no, and contact support after reading. Without these the test can't
-      show whether tickets are deflected. Article feedback is only kept in
-      component state today (marked `PROTOTYPE:`).
+      made, no results, article read, and what's chosen at the end of an
+      article (back to results, new search, contact support). Without these
+      the test can't show whether tickets are deflected.
 - [ ] **Move the API URL and key into Ghost config** (`help-center.ts`), so
       they can change without an Admin release. Admin and Core deploy
       separately, so detect the config and keep working without it on older
@@ -182,16 +181,16 @@ around them are thin.
 
 **Views**
 
-| File                    | What it shows                                                                                                                     |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the three views (search, article, support)                                   |
-| `help-welcome.tsx`      | The greeting, and the FAQ questions to pick from (or an error with a link to the help center)                                     |
-| `help-search-field.tsx` | The search field at the top, and the completions under it                                                                         |
-| `help-results.tsx`      | A search's results: the first as a preview of the article, the rest with title and excerpt; the searching, empty and error states |
-| `help-article-view.tsx` | An article read in the panel, ending with "Did this answer your question?"                                                        |
-| `help-support.tsx`      | The message to support, which takes over the panel                                                                                |
-| `help-panel-size.tsx`   | The maximize button                                                                                                               |
-| `help-reveal.ts`        | The staggered entrance blocks use                                                                                                 |
+| File                    | What it shows                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the three views (search, article, support)                                       |
+| `help-welcome.tsx`      | The greeting, and the page's FAQ questions to pick from under a headline naming the page (or an error with a link to the help center) |
+| `help-search-field.tsx` | The search field at the top, and the completions under it                                                                             |
+| `help-results.tsx`      | A search's results: the first as a preview of the article, the rest with title and excerpt; the searching, empty and error states     |
+| `help-article-view.tsx` | An article read in the panel, ending with "Need something else?": back to results, a new search, or support                           |
+| `help-support.tsx`      | The message to support, which takes over the panel                                                                                    |
+| `help-panel-size.tsx`   | The maximize button                                                                                                                   |
+| `help-reveal.ts`        | The staggered entrance blocks use                                                                                                     |
 
 ## Where the content comes from
 
@@ -256,7 +255,8 @@ These live in `ACCOUNT_ALERTS` (`help-suggestions.ts`).
 ## Suggestions
 
 Before the user searches, up to three questions show for their page
-(`getSuggestedArticles`), under the search field. They come from the help
+(`getSuggestedArticles`), under the search field and a headline naming the
+page ("Frequently asked questions for Members", from `PAGE_LABELS`). They come from the help
 center's [FAQ](https://ghost.org/help/topic/faq/), the articles tagged `faq`
 whose titles are questions (`getFaqQuestions`; a few FAQ titles are topics,
 such as "Modifying robots.txt", and are left out). In order:
@@ -351,8 +351,10 @@ to read next: the article's own "Further reading" first (the docs team's
 bookmark cards, lifted out of the body by `splitFurtherReading` so they don't
 show twice; help articles open in the panel, other pages in a new tab), then
 the search's other results, each once (a placeholder while a picked
-question's search is still running). The article ends with "Did this answer
-your question?", whose "No" goes to the support form. Opened articles are marked "Read" in the
+question's search is still running). The article ends with "Need something
+else?": back to the results (when there are any), a new search, or the
+support form. An earlier "Did this answer your question?" with Yes and No
+went: Yes led nowhere, and the choices that matter are where to go next. Opened articles are marked "Read" in the
 results and listed in what the support form sends.
 
 `help-article-html.ts` prepares the HTML:
@@ -374,7 +376,7 @@ results and listed in what the support form sends.
 
 There's no "Contact support" button up front. The support team is offered
 where a search or an article didn't do it: no results, the error state, and
-"No" at the end of an article. The form (`help-support.tsx`) starts from the
+"Contact support" at the end of an article. The form (`help-support.tsx`) starts from the
 last search as the message (the subject is optional) and promises a reply
 from the Ghost(Pro) support team within 24 hours on working days. Only what
 the user writes is sent.
@@ -416,7 +418,6 @@ the user writes is sent.
 Search the code for `PROTOTYPE:`. In short:
 
 - Sending to support: nothing is sent. Attached files keep only their names.
-- Article feedback, kept in component state only.
 - The help center's API URL, hardcoded in `help-center.ts`, and its key,
   empty there until added locally.
 - The DocsBot team and bot ids, hardcoded in `help-docsbot-search.ts` (a test

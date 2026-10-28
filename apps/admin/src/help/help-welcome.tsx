@@ -7,8 +7,9 @@ import type { HelpSuggestion } from './use-help-suggestions';
 
 /*
  * What the panel shows before the user searches: a greeting above the search
- * field, and under it up to three numbered questions from the help center's
- * FAQ for the page they're on (use-help-suggestions.ts). The keys 1 to 3
+ * field, and under it, headed with the page's name, up to three numbered
+ * questions from the help center's FAQ for the page they're on
+ * (use-help-suggestions.ts). The keys 1 to 3
  * search for them (handled in help-panel.tsx). While they load, rows of the
  * same size stand in, and when they change (a new page) they cascade in
  * afresh. Completions as the user types take their place.
@@ -26,12 +27,14 @@ const SUGGESTION_ROW_CLASS_NAME = 'flex w-full items-center gap-3 rounded-lg p-2
 export function HelpGreeting({ firstName }: { firstName: string }) {
   return (
     <Text as="h3" className={REVEAL_CLASS_NAME} leading="heading" size="xl" weight="semibold">
-      {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
+      {firstName ? `Hi ${firstName}, what can we help you find?` : 'What can we help you find?'}
     </Text>
   );
 }
 
 interface HelpSuggestionsProps {
+  /** The page the questions are for, as the headline names it */
+  pageLabel: string;
   suggestions: HelpSuggestion[];
   loading: boolean;
   /** The help center couldn't be reached, so there's nothing to suggest */
@@ -39,9 +42,20 @@ interface HelpSuggestionsProps {
   onPick: (article: HelpArticle) => void;
 }
 
-export function HelpSuggestions({ suggestions, loading, failed, onPick }: HelpSuggestionsProps) {
+export function HelpSuggestions({
+  pageLabel,
+  suggestions,
+  loading,
+  failed,
+  onPick,
+}: HelpSuggestionsProps) {
   return (
     <Stack gap="sm">
+      {!failed && (
+        <Text className={REVEAL_CLASS_NAME} size="sm" tone="tertiary">
+          Frequently asked questions for {pageLabel}
+        </Text>
+      )}
       {failed && (
         <Text leading="snug" size="sm" tone="secondary">
           The help center couldn’t be reached just now.{' '}

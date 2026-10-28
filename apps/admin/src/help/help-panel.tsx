@@ -127,12 +127,13 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
     >
       {session.view === 'article' && session.reading && (
         <HelpArticleView
-          // A new article starts at the top, with its own feedback
+          // A new article starts at the top
           key={session.reading.id}
           article={session.reading}
           session={session}
           showClose={showClose}
           onClose={onClose}
+          onStartOver={startOver}
         />
       )}
       {session.view === 'support' && (
@@ -215,6 +216,7 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
               <HelpSuggestions
                 failed={suggestions.isError}
                 loading={suggestions.isLoading}
+                pageLabel={signals.pageLabel}
                 suggestions={suggestions.suggestions}
                 onPick={pick}
               />

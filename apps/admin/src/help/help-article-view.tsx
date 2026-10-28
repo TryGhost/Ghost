@@ -27,8 +27,8 @@ import { useHelpCenterIndex } from './use-help-center-index';
  * answer. It's where a search lands: its first result, or the FAQ question
  * picked. It takes over the panel like the message to support, with the
  * search kept behind it, lists the search's other results under "More from
- * the help center", and ends by asking whether it answered their question:
- * "No" goes straight to the support team.
+ * the help center", and ends by asking what's next: back to the results, a
+ * new search, or the support team.
  *
  * The article's HTML comes from the help center, made safe and readable by
  * help-article-html.ts. Its links to other help articles open in the panel
@@ -57,15 +57,20 @@ interface HelpArticleViewProps {
   session: HelpSession;
   showClose: boolean;
   onClose: () => void;
+  /** Clears the search and the field, back to the start */
+  onStartOver: () => void;
 }
 
-export function HelpArticleView({ article, session, showClose, onClose }: HelpArticleViewProps) {
+export function HelpArticleView({
+  article,
+  session,
+  showClose,
+  onClose,
+  onStartOver,
+}: HelpArticleViewProps) {
   const index = useHelpCenterIndex(true);
   const titleRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  // PROTOTYPE: kept in this component state only; record it (trackEvent) to
-  // learn which articles answer questions
-  const [answered, setAnswered] = useState(false);
   // An image opened large, as screenshots are hard to read at the panel's width
   const [zoomed, setZoomed] = useState<{ src: string; alt: string } | null>(null);
   const content = useQuery({
@@ -255,33 +260,32 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
               </Stack>
             )}
 
-            {/* The point of reading it here: did it answer their question? */}
+            {/* Where to next: the results they came from (when there are
+                any), a fresh search, or a person */}
             <Stack
               className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
               gap="sm"
               style={revealAt(3)}
             >
-              {answered ? (
-                <Text leading="snug" tone="secondary">
-                  Glad it helped.
-                </Text>
-              ) : (
-                <>
-                  <Text size="sm" weight="medium">
-                    Did this answer your question?
-                  </Text>
-                  <Inline gap="sm">
-                    <Button size="sm" variant="outline" onClick={() => setAnswered(true)}>
-                      <LucideIcon.ThumbsUp />
-                      Yes
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={session.contactSupport}>
-                      <LucideIcon.MessageCircle />
-                      No, contact support
-                    </Button>
-                  </Inline>
-                </>
-              )}
+              <Text size="sm" weight="medium">
+                Need something else?
+              </Text>
+              <Inline gap="sm" wrap>
+                {session.search && session.search.results.length > 0 && (
+                  <Button size="sm" variant="outline" onClick={session.leaveArticle}>
+                    <LucideIcon.ArrowLeft />
+                    Back to results
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={onStartOver}>
+                  <LucideIcon.Search />
+                  New search
+                </Button>
+                <Button size="sm" variant="outline" onClick={session.contactSupport}>
+                  <LucideIcon.MessageCircle />
+                  Contact support
+                </Button>
+              </Inline>
             </Stack>
           </>
         )}
