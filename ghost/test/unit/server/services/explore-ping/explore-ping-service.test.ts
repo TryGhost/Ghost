@@ -1,19 +1,36 @@
-const sinon = require('sinon');
-const assert = require('node:assert/strict');
-const {
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+
+import {
   ExplorePingService,
-} = require('../../../../../core/server/services/explore-ping/explore-ping-service');
+  type ExplorePingServiceDeps,
+} from '../../../../../core/server/services/explore-ping/explore-ping-service';
+
+type RequestFn = ExplorePingServiceDeps['request'];
+type StatsApi = NonNullable<NonNullable<ExplorePingServiceDeps['statsService']>['api']>;
+
+// Each method of a dependency as a stub typed with that method's signature.
+type StubbedMethods<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R ? sinon.SinonStub<A, R> : never;
+};
+
+type GetStub = sinon.SinonStub<[string], unknown>;
+type LogStub = sinon.SinonStub<unknown[], void>;
+type RequestStub = sinon.SinonStub<Parameters<RequestFn>, ReturnType<RequestFn>>;
+type PostsStub = { stats: StubbedMethods<ExplorePingServiceDeps['posts']['stats']> };
+type MembersStub = { stats: StubbedMethods<ExplorePingServiceDeps['members']['stats']> };
+type StatsServiceStub = { api: { mrr: StubbedMethods<NonNullable<StatsApi['mrr']>> } };
 
 describe('ExplorePingService', function () {
-  let explorePingService;
-  let settingsCacheStub;
-  let configStub;
-  let loggingStub;
-  let ghostVersionStub;
-  let requestStub;
-  let postsStub;
-  let membersStub;
-  let statsServiceStub;
+  let explorePingService: ExplorePingService;
+  let settingsCacheStub: { get: GetStub };
+  let configStub: { get: GetStub };
+  let loggingStub: { info: LogStub; warn: LogStub };
+  let ghostVersionStub: ExplorePingServiceDeps['ghostVersion'];
+  let requestStub: RequestStub;
+  let postsStub: PostsStub;
+  let membersStub: MembersStub;
+  let statsServiceStub: StatsServiceStub;
 
   beforeEach(function () {
     // Setup stubs
@@ -47,27 +64,38 @@ describe('ExplorePingService', function () {
 
     requestStub = sinon.stub();
 
+    // `sinon.stub()` infers each method's signature from the annotation on a
+    // plain assignment but not through a chained `.resolves()`, so these are
+    // configured after construction, like the settings and config stubs above.
     postsStub = {
       stats: {
-        getTotalPostsPublished: sinon.stub().resolves(100),
-        getMostRecentlyPublishedPostDate: sinon.stub().resolves(new Date('2023-01-01')),
-        getFirstPublishedPostDate: sinon.stub().resolves(new Date('2020-01-01')),
+        getTotalPostsPublished: sinon.stub(),
+        getMostRecentlyPublishedPostDate: sinon.stub(),
+        getFirstPublishedPostDate: sinon.stub(),
       },
     };
 
+    postsStub.stats.getTotalPostsPublished.resolves(100);
+    postsStub.stats.getMostRecentlyPublishedPostDate.resolves(new Date('2023-01-01'));
+    postsStub.stats.getFirstPublishedPostDate.resolves(new Date('2020-01-01'));
+
     membersStub = {
       stats: {
-        getTotalMembers: sinon.stub().resolves(50),
+        getTotalMembers: sinon.stub(),
       },
     };
+
+    membersStub.stats.getTotalMembers.resolves(50);
 
     statsServiceStub = {
       api: {
         mrr: {
-          getCurrentMrr: sinon.stub().resolves([{ currency: 'usd', mrr: 1000 }]),
+          getCurrentMrr: sinon.stub(),
         },
       },
     };
+
+    statsServiceStub.api.mrr.getCurrentMrr.resolves([{ currency: 'usd', mrr: 1000 }]);
 
     explorePingService = new ExplorePingService({
       settingsCache: settingsCacheStub,
