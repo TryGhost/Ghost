@@ -132,14 +132,15 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 
 ### Interpreting the reports
 
-Counts are calculated from the checkout, not stored in the inventory. The first
-table separates ownership from migration progress. Its three ownership rows
-(`retain`, `relocate`, `review`) sum to the catalogue total; migrated and
-unmigrated columns sum to each row's total. A migrated entry marked for relocation
-appears in both the migrated column and the relocation row. Migration does not
-complete its move. The `relocation` filter includes these migrated entries.
+Counts are calculated from the checkout, not stored in the inventory. The report
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Ownership and
+migration progress are counted independently: a migrated entry marked for
+relocation appears in both counts. Migration does not complete its move.
+The `relocation` filter includes these migrated entries.
+The `migrated-relocation` row and filter show just the migrated entries planned
+for a move or split.
 
-The retained-work table partitions **Staying in services/** into three groups:
+**Staying in services/** comprises three groups:
 
 - **Migrated:** marked `migrated: true`.
 - **Needs preparation:** not migrated, and either assessment is
@@ -168,6 +169,8 @@ also included in JSON output as `entry.notes`.
 Entries found by the audit but absent from the inventory are **Not inventoried**;
 entries absent from the dependency graph have unknown counts. Malformed or
 incomplete assessments fail the report.
+The `not-analyzed` and `not-inventoried` diagnostic counts are available in
+summary JSON and list filters, but omitted from the text summary.
 
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct
