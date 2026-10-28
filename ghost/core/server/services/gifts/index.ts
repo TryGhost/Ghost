@@ -61,7 +61,7 @@ export function init(options: GiftServiceInitOptions): void {
   const settingsHelpers = require('../settings-helpers');
   const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
   const { blogIcon } = require('../../../server/lib/image');
-  const { t } = require('../i18n');
+  const { t } = require('../../../shared/i18n');
 
   const repository = new GiftBookshelfRepository({
     GiftModel,

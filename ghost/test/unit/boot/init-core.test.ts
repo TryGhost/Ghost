@@ -26,7 +26,7 @@ function createCoreHarness() {
     './server/services/signing-keys': { default: signingKeys },
     './server/services/internal-keys': { default: { init() {} } },
     './server/lib/common/events': {},
-    './server/services/i18n': i18n,
+    './shared/i18n': i18n,
     './server/services/gift-links': { default: giftLinks },
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },

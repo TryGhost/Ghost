@@ -31,7 +31,7 @@ exports.init = ({ events } = {}) => {
   assert(events, 'Expected the events bus to initialize i18n');
 
   const i18n = require('@tryghost/i18n').default;
-  const settingsCache = require('../../../shared/settings-cache');
+  const settingsCache = require('../settings-cache');
 
   const locale = settingsCache.get('locale') || 'en';
 

@@ -8,7 +8,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 // Initialise i18n before requiring the controller so its destructured `t`
 // import resolves to the live i18next instance. The init helper falls back
 // to 'en' when the locale setting isn't set.
-require('../../../../../core/server/services/i18n').init({
+require('../../../../../core/shared/i18n').init({
   events: require('../../../../../core/server/lib/common/events'),
 });
 

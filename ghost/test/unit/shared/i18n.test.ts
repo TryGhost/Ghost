@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-const events = require('../../../../../core/server/lib/common/events');
-const settingsCache = require('../../../../../core/shared/settings-cache');
-const ROOT_PATH = require.resolve('../../../../../core/server/services/i18n');
+const events = require('../../../core/server/lib/common/events');
+const settingsCache = require('../../../core/shared/settings-cache');
+const ROOT_PATH = require.resolve('../../../core/shared/i18n');
 const LOCALE_EVENT = 'settings.locale.edited';
 const NOT_INITIALIZED = /Expected i18n instance to be initialized/;
 

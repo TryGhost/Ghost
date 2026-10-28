@@ -25,7 +25,7 @@ const giftService = require('../gifts');
 const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
-const { t } = require('../i18n');
+const { t } = require('../../../shared/i18n');
 const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;

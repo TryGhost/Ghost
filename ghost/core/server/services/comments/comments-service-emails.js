@@ -3,7 +3,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
 const { toPlain } = require('../../lib/common/to-plain');
-const { t } = require('../i18n');
+const { t } = require('../../../shared/i18n');
 
 class CommentsServiceEmails {
   constructor({

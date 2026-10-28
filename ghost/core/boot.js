@@ -157,7 +157,7 @@ async function initCore({ ghostServer, config }) {
   debug('End: Internal Keys Service');
 
   debug('Begin: i18n');
-  const i18n = require('./server/services/i18n');
+  const i18n = require('./shared/i18n');
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
 
