@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Stack, Text } from '@/components/primitives';
 import { PageMenu, PageMenuItem } from './pagemenu';
 
 const meta: Meta<typeof PageMenu> = {
@@ -9,7 +11,7 @@ const meta: Meta<typeof PageMenu> = {
     docs: {
       description: {
         component:
-          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. Perfect for horizontal navigation with many options.',
+          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
       },
     },
   },
@@ -21,7 +23,15 @@ const meta: Meta<typeof PageMenu> = {
     },
     value: {
       control: 'text',
-      description: 'Currently selected item value',
+      description: 'Active item value. Makes the menu controlled.',
+    },
+    defaultValue: {
+      control: 'text',
+      description: 'Initially active item value when the menu is uncontrolled.',
+    },
+    onValueChange: {
+      action: 'valueChanged',
+      description: 'Called with the item value when the user picks a different item.',
     },
   },
 };
@@ -45,6 +55,68 @@ export const Default: Story = {
     docs: {
       description: {
         story: 'Basic page menu with static items that always remain visible.',
+      },
+    },
+  },
+};
+
+export const Controlled: Story = {
+  render: function ControlledPageMenu(args) {
+    const [value, setValue] = useState('customers');
+
+    return (
+      <Stack gap="md">
+        <PageMenu
+          {...args}
+          value={value}
+          onValueChange={(nextValue) => {
+            setValue(nextValue);
+            args.onValueChange?.(nextValue);
+          }}
+        >
+          <PageMenuItem value="overview">Overview</PageMenuItem>
+          <PageMenuItem value="customers">Customers</PageMenuItem>
+          <PageMenuItem value="issues">Issues</PageMenuItem>
+          <PageMenuItem value="analytics">Analytics</PageMenuItem>
+        </PageMenu>
+        <Text size="sm" tone="secondary">
+          Active: {value}
+        </Text>
+      </Stack>
+    );
+  },
+  args: {
+    responsive: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The parent owns the active item through `value` and updates it in `onValueChange`. Use this when the active item comes from the route.',
+      },
+    },
+  },
+};
+
+export const Disabled: Story = {
+  render: (args) => (
+    <PageMenu {...args}>
+      <PageMenuItem value="overview">Overview</PageMenuItem>
+      <PageMenuItem value="customers">Customers</PageMenuItem>
+      <PageMenuItem value="issues" disabled>
+        Issues
+      </PageMenuItem>
+      <PageMenuItem value="analytics">Analytics</PageMenuItem>
+    </PageMenu>
+  ),
+  args: {
+    defaultValue: 'overview',
+    responsive: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'A disabled item is dimmed and can’t be selected.',
       },
     },
   },

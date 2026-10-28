@@ -370,7 +370,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           )}
         >
           {!isPostLoading && (
-            <PageMenu className="min-h-[34px]" defaultValue={currentTab} responsive>
+            <PageMenu className="min-h-[34px]" value={currentTab} responsive>
               {availableTabs.includes('Overview') && (
                 <PageMenuItem
                   value="Overview"
