@@ -11671,7 +11671,7 @@ services:
           - core/server/services/remote-flags/resolve.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/resolve.test.ts
+          - test/unit/server/services/remote-flags/resolve.test.js
       construction:
         summary: >-
           Import starts with a null instance but loads the shared request helper and override
@@ -11720,7 +11720,7 @@ services:
           - core/server/services/remote-flags/resolve.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/resolve.test.ts
+          - test/unit/server/services/remote-flags/resolve.test.js
       lifetime:
         summary: >-
           One loaded root retains the instance until stop clears it; disabling config does
@@ -11753,7 +11753,7 @@ services:
           - core/shared/config/defaults.json
         tests:
           - test/unit/server/services/remote-flags/index.test.js
-          - test/unit/server/services/remote-flags/resolve.test.ts
+          - test/unit/server/services/remote-flags/resolve.test.js
       resources:
         summary: >-
           Start refreshes immediately and schedules an unref'ed timeout after completion;
