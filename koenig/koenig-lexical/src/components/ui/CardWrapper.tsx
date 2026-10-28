@@ -120,7 +120,7 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
                 {...props}
             >
                 {showDeleteButton && (
-                    <div className="not-kg-prose absolute bottom-2 right-2 z-[1001]" data-kg-allow-clickthrough="false" data-kg-mobile-card-delete>
+                    <div className="not-kg-prose absolute left-2 top-2 z-[1001]" data-kg-allow-clickthrough="false" data-kg-mobile-card-delete>
                         <button
                             aria-label="Delete card"
                             className="group relative flex size-9 cursor-pointer items-center justify-center rounded-md bg-white/95 text-grey-900 shadow-md transition hover:bg-white hover:text-black dark:bg-grey-950 dark:text-white dark:hover:bg-grey-900"
