@@ -392,6 +392,9 @@ describe('Automation run history API', function () {
     const run = await addRun();
     const transaction = sinon.stub(db, 'transaction').rejects(new Error('History read failed'));
     await expectReadError(run, 500, 'InternalServerError');
-    assert.ok(transaction.calledOnce);
+    // The jobs outbox relay polls db.transaction on this same knex instance every
+    // second, so an exact call count races with it. The 500 above already shows
+    // the read went through the stubbed transaction.
+    assert.ok(transaction.called);
   });
 });
