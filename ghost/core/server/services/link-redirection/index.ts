@@ -34,6 +34,10 @@ export default defineService(
     const LinkRedirectRepository = require('./link-redirect-repository');
     const LinkRedirectsService = require('./link-redirects-service');
 
+    // Parse the site URL before the repository registers its cache listener, so an invalid URL
+    // fails init() without leaving a listener behind for the retry.
+    const baseURL = new URL(urlUtils.getSiteUrl());
+
     const repository: LinkRedirectRepository = new LinkRedirectRepository({
       LinkRedirect: models.Redirect,
       urlUtils,
@@ -47,7 +51,7 @@ export default defineService(
       linkRedirectRepository: repository,
       DomainEvents,
       config: {
-        baseURL: new URL(urlUtils.getSiteUrl()),
+        baseURL,
       },
     });
 
