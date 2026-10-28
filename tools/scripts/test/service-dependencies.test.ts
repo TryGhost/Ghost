@@ -294,6 +294,33 @@ it('allows the debug tracing library without allowing sibling packages', (t) => 
   );
 });
 
+it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('cheerio/slim');",
+    [`${alpha}/rejected.ts`]: "import 'cheerio';",
+  });
+  f.write(
+    'node_modules/cheerio/package.json',
+    JSON.stringify({
+      name: 'cheerio',
+      main: 'dist/commonjs/index.js',
+      exports: { '.': './dist/commonjs/index.js', './slim': './dist/commonjs/slim.js' },
+    }),
+  );
+  f.write('node_modules/cheerio/dist/commonjs/index.js', 'module.exports = {};');
+  f.write('node_modules/cheerio/dist/commonjs/slim.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(
+      ([from, , to]) =>
+        from === `${alpha}/approved.js` && to === 'node_modules/cheerio/dist/commonjs/slim.js',
+    ),
+  );
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.ts`, 'node_modules/cheerio/dist/commonjs/index.js'],
+  ]);
+});
+
 it('allows the magic-link constructor required by Newsletters without allowing its siblings', (t) => {
   const approved = 'ghost/core/server/lib/magic-link/magic-link.js';
   const rejected = 'ghost/core/server/lib/magic-link/other.js';

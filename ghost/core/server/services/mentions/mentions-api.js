@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const Mention = require('./mention');
 
 const MAX_REVALIDATION_FAILURES = 3;
@@ -101,6 +100,8 @@ module.exports = class MentionsAPI {
   #routingService;
   /** @type {IWebmentionMetadata} */
   #webmentionMetadata;
+  /** @type {import('@tryghost/logging')} */
+  #logging;
 
   /**
    * @param {object} deps
@@ -108,12 +109,14 @@ module.exports = class MentionsAPI {
    * @param {IResourceService} deps.resourceService
    * @param {IRoutingService} deps.routingService
    * @param {IWebmentionMetadata} deps.webmentionMetadata
+   * @param {import('@tryghost/logging')} deps.logging
    */
   constructor(deps) {
     this.#repository = deps.repository;
     this.#resourceService = deps.resourceService;
     this.#routingService = deps.routingService;
     this.#webmentionMetadata = deps.webmentionMetadata;
+    this.#logging = deps.logging;
   }
 
   /**
@@ -220,19 +223,19 @@ module.exports = class MentionsAPI {
         }
 
         if (err.transient) {
-          logging.warn(
+          this.#logging.warn(
             `[Webmention Revalidation] Transient error fetching ${webmention.source.href}: ${err.message} (status: ${err.statusCode || 'N/A'})`,
           );
           return mention;
         }
 
         const count = mention.recordRevalidationFailure();
-        logging.warn(
+        this.#logging.warn(
           `[Webmention Revalidation] Hard failure ${count}/${MAX_REVALIDATION_FAILURES} for ${webmention.source.href}: ${err.message} (status: ${err.statusCode || 'N/A'})`,
         );
 
         if (count >= MAX_REVALIDATION_FAILURES) {
-          logging.warn(
+          this.#logging.warn(
             `[Webmention Revalidation] Deleting mention after ${count} consecutive failures: ${webmention.source.href}`,
           );
           mention.delete();
@@ -264,7 +267,7 @@ module.exports = class MentionsAPI {
     await this.#repository.save(mention);
 
     if (isNew) {
-      logging.info(
+      this.#logging.info(
         '[Webmention] Created ' +
           webmention.source +
           ' to ' +
@@ -276,7 +279,7 @@ module.exports = class MentionsAPI {
       );
     } else {
       if (mention.deleted && !wasDeleted) {
-        logging.info(
+        this.#logging.info(
           '[Webmention] Deleted ' +
             webmention.source +
             ' to ' +
@@ -286,7 +289,7 @@ module.exports = class MentionsAPI {
         );
       } else {
         if (!mention.deleted && wasDeleted) {
-          logging.info(
+          this.#logging.info(
             '[Webmention] Restored ' +
               webmention.source +
               ' to ' +
@@ -295,7 +298,7 @@ module.exports = class MentionsAPI {
               mention.verified,
           );
         } else {
-          logging.info(
+          this.#logging.info(
             '[Webmention] Updated ' +
               webmention.source +
               ' to ' +

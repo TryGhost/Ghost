@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const Mention = require('../../../core/server/services/mentions/mention');
-const mentionsService = require('../../../core/server/services/mentions');
+const mentionsService = require('../../../core/server/services/mentions').default;
 const assert = require('node:assert/strict');
 const { startGhost, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const { AdminAPITestAgent, MembersAPITestAgent } = require('../../utils/agents');
@@ -39,7 +39,7 @@ async function sendRecommendationNotification() {
   assert.ok(webmention.verified);
 
   // Save to repository
-  await mentionsService.repository.save(webmention);
+  await mentionsService.service.repository.save(webmention);
   await DomainEvents.allSettled();
 }
 

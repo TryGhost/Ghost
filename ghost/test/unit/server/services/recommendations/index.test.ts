@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
+import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 import type { IncomingRecommendationService as IncomingService } from '../../../../../core/server/services/recommendations/service/incoming-recommendation-service';
 
@@ -23,7 +24,7 @@ const models = require('../../../../../core/server/models');
 const mail = require('../../../../../core/server/lib/mail');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const oembedService = require('../../../../../core/server/services/oembed');
-const mentions = require('../../../../../core/server/services/mentions');
+const mentionsRoot = require('../../../../../core/server/services/mentions').default;
 const staff = require('../../../../../core/server/services/staff');
 
 type Wrapper = InstanceType<typeof RecommendationServiceWrapper>;
@@ -53,6 +54,7 @@ describe('Recommendations service root', function () {
   let wrapper: Wrapper;
   let mentionsApi: { listMentions: sinon.SinonStub; refreshMentions: sinon.SinonStub };
   let sendingService: { sendAll: sinon.SinonStub };
+  let mentionsReady: boolean;
   let addMapper: sinon.SinonStub;
   let subscribe: sinon.SinonStub;
   let getConfig: sinon.SinonStub;
@@ -68,11 +70,19 @@ describe('Recommendations service root', function () {
       refreshMentions: sandbox.stub().resolves(),
     };
     sendingService = { sendAll: sandbox.stub().resolves() };
-    sandbox.stub(mentions, 'api').value(mentionsApi);
-    sandbox.stub(mentions, 'sendingService').value(sendingService);
     // Capture the mapper and subscriber instead of installing them into the shared
     // mentions metadata and event bus, which other files in this worker also use.
-    addMapper = sandbox.stub(mentions.metadata, 'addMapper');
+    addMapper = sandbox.stub();
+    mentionsReady = true;
+    // Boot awaits the Mentions root before this wrapper runs; reading it earlier throws.
+    sandbox.stub(mentionsRoot, 'service').get(() => {
+      if (!mentionsReady) {
+        throw new IncorrectUsageError({
+          message: 'Mentions used before init(). Call init() from boot first.',
+        });
+      }
+      return { api: mentionsApi, sendingService, metadata: { addMapper } };
+    });
     subscribe = sandbox.stub(DomainEvents, 'subscribe');
     getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('services:recommendations:enabled').returns(undefined);
@@ -155,29 +165,21 @@ describe('Recommendations service root', function () {
     );
   });
 
-  for (const missing of ['api', 'sendingService'] as const) {
-    it(`throws before publishing anything when the mentions ${missing} is missing, and initializes once it exists`, function () {
-      const present = mentions[missing];
-      sandbox.stub(mentions, missing).value(null);
+  it('throws before publishing anything while Mentions is not ready, and initializes once it is', function () {
+    mentionsReady = false;
 
-      assert.throws(
-        () => wrapper.init(),
-        (err: Error) =>
-          err.message ===
-          'MentionSendingService not intialized, but this is a dependency of RecommendationServiceWrapper. Check boot order.',
-      );
+    assert.throws(() => wrapper.init(), { errorType: 'IncorrectUsageError' });
 
-      assert.deepEqual(publishedFields(wrapper), new Array(8).fill(undefined));
-      sinon.assert.notCalled(addMapper);
-      sinon.assert.notCalled(subscribe);
-      sinon.assert.notCalled(outgoingInit);
-      sinon.assert.notCalled(incomingInit);
+    assert.deepEqual(publishedFields(wrapper), new Array(8).fill(undefined));
+    sinon.assert.notCalled(addMapper);
+    sinon.assert.notCalled(subscribe);
+    sinon.assert.notCalled(outgoingInit);
+    sinon.assert.notCalled(incomingInit);
 
-      sandbox.stub(mentions, missing).value(present);
-      assert.equal(typeof wrapper.init(), 'undefined');
-      assert.equal(wrapper.service.mentionSendingService, sendingService);
-    });
-  }
+    mentionsReady = true;
+    assert.equal(typeof wrapper.init(), 'undefined');
+    assert.equal(wrapper.service.mentionSendingService, sendingService);
+  });
 
   for (const enabled of [undefined, true] as const) {
     it(`starts both background initializers without awaiting them when the config value is ${enabled}`, async function () {

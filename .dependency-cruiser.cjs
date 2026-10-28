@@ -42,6 +42,7 @@ const serviceDependencyAllowlist = [
   '^@tryghost/mongo-utils$|(^|/)node_modules/@tryghost/mongo-utils/index\\.js$', // Pure helpers over a parsed NQL tree; no application instances or I/O.
   '^@tryghost/html-to-plaintext$|(^|/)node_modules/@tryghost/html-to-plaintext/index\\.js$', // Stateless HTML to plain-text conversion of supplied markup.
   '^handlebars$|(^|/)node_modules/handlebars/lib/index\\.js$', // Template compilation on a caller-created instance; no application instances.
+  '^cheerio/slim$|(^|/)node_modules/cheerio/dist/(esm|commonjs)/slim\\.js$', // HTML parsing and selection over supplied strings; only the slim entry, no application instances or I/O.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.

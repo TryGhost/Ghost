@@ -8713,19 +8713,21 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        A composite API/controller/sender must be published together and its six sender
-        listeners must unwind on failed startup. Recommendations currently reads
-        api/sendingService synchronously later in the same Promise.all expression, while
-        jobs retain the controller and sender. Explicit dependency ordering and owned
-        listener cleanup are required, but a single ready facade fits the helper.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root constructs the repository, metadata, discovery,
+        resource, routing, API and controller objects, awaits the controller wiring with the
+        jobs instance, builds the sender with per-call URL, privacy and post-URL callbacks,
+        registers its six listeners as the last step and returns one facade. initServices
+        awaits it after Newsletters and before the group containing Recommendations, which
+        reads the ready facade; jobs registration retains the ready controller and sender.
+      reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
       sources:
-        - core/server/services/mentions/service.js
+        - core/server/services/mentions/index.ts
         - core/server/services/mentions/mention-controller.js
         - core/server/services/mentions/mention-sending-service.js
         - core/server/services/recommendations/recommendation-service-wrapper.js
@@ -8733,50 +8735,45 @@ services:
       dependencies:
         complexity: complex
         reason: >-
-          The facade constructs controller and metadata objects at import time, and metadata
-          privately imports the oEmbed singleton. Recommendations later reads the facade
-          synchronously and mutates that same metadata object with a mapper; registered jobs retain
-          the controller and sender. Dependency injection must preserve these shared identities and
-          replace reliance on synchronous publication in parallel boot.
-        preparation:
-          - >-
-            Inject the oEmbed capability into metadata and wire logging/parser dependencies into the
-            controller, sender, discovery and repository implementations.
-          - >-
-            Make Mentions readiness an explicit prerequisite for Recommendations while preserving
-            one metadata instance and its mapper registration contract.
-          - >-
-            Keep URL-relation loading, current privacy checks and jobs access at their existing
-            operation boundaries when wiring the facade.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+          The root injects logging into the repository, controller, discovery, sender, API and
+          routing objects and the oEmbed service into metadata, keeps models, events, the request
+          client, URL helpers, the serializer URL helper, settings and DomainEvents in index.ts,
+          and constructs the post-URL helpers with the URL service and serializer. Recommendations
+          reads the same ready metadata object and adds its mapper; registered jobs retain the
+          controller and sender. Three implementation files require cheerio/slim lazily for HTML
+          parsing under its exact allowance.
+        preparation: []
+        reviewedAt: d90bf15bb1aa9b7c47ef2ff40e7d65b688ec22d3
         sources:
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
+          - core/server/services/mentions/post-urls.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/server/services/mentions/mention-sending-service.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/boot.js
     entryPoints:
-      - mentions/index.js
+      - mentions/index.ts
     notes: >-
-      Preserve controller and sending-service composition, retained jobs references,
-      metadata mappers, subscriptions and initialization failure state. Source and
-      assertion coverage are recorded separately; lifecycle gaps remain.
+      Migration inspected 8cba94a138a69cbb7e496424591575daab11a529 with the characterization from the
+      preceding tests commit. Boot owns the facade; the Admin endpoint, job registration and
+      Recommendations read the ready service. Logging and the oEmbed service are injected and
+      post-URL resolution is a helper built from the URL service and serializer; cheerio/slim
+      stays imported where used under its exact allowance. Listener/mapper ownership and
+      transaction gaps remain.
     contracts:
       exports:
         summary: >-
-          CommonJS index forwards a cached mutable object with receiver-dependent async
-          init, api, repository, controller, metadata, sendingService and didInit, plus
-          getPostData/getPostUrl helpers exposed for tests. API/repository/sender start
-          null; controller and metadata exist at import. Job registration deep-imports
-          ProcessWebmentionJob and SendWebmentionsJob; recommendations deep-imports
-          MentionCreatedEvent. Root units assert the import-time shape (controller and
-          metadata present; api, repository, sendingService null; didInit false) and that
-          browse/receive reject through the controller before init. Job units assert type
-          strings and manual JSON reconstruction, not backend persistence.
+          The TypeScript root default-exports a defineService initializer whose service is a
+          facade of api, repository, controller, metadata and sendingService; reading it before
+          init throws. There are no extras. Post-URL helpers are an implementation factory, not
+          a root export. Job registration deep-imports ProcessWebmentionJob and
+          SendWebmentionsJob; recommendations deep-imports MentionCreatedEvent. Root units
+          assert the pre-init throw and the facade published once init resolves. Job units
+          assert type strings and manual JSON reconstruction, not backend persistence.
         sources:
-          - core/server/services/mentions/index.js
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
+          - core/server/services/mentions/post-urls.ts
           - core/server/services/mentions/process-webmention-job.ts
           - core/server/services/mentions/send-webmentions-job.ts
           - core/server/services/mentions/mention-created-event.js
@@ -8788,14 +8785,13 @@ services:
           - test/unit/server/services/mentions/send-webmentions-job.test.ts
       construction:
         summary: >-
-          Source-checked: import creates controller/metadata and captures models,
-          URL/settings helpers, request client and oEmbed root; importing oEmbed also
-          acquires its image-storage adapter and provider instances. First init sets
-          didInit before constructing/publishing the Bookshelf repository, discovery,
-          resource, routing and API objects. It calls controller.init without awaiting
-          its promise, constructs the sender with retained jobs and helper callbacks,
-          registers listeners, then publishes sendingService. Both init bodies currently
-          perform their assignments without an await. Root units drive the real wiring:
+          The create callback requires models, events, the request client, URL helpers, the
+          serializer URL helper, settings, DomainEvents, logging and the oEmbed root (which
+          acquires its image-storage adapter and providers), reads the jobs instance, then
+          constructs the Bookshelf repository, metadata, discovery, resource, routing (site
+          URL captured here), API and controller, awaits controller.init, builds the sender
+          with per-call callbacks and the post-URL helpers, registers listeners last and
+          returns the facade. Root units drive the real wiring:
           receive dispatches ProcessWebmentionJob through the jobs service given to init,
           browse resolves resources through models.Post (null ids skipped, title and type
           mapped, resourceId removed), and processWebmention creates a mention through
@@ -8807,7 +8803,8 @@ services:
           URL. Direct implementation construction and InMemoryMentionRepository occur in
           tests, not another runtime root.
         sources:
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
+          - core/server/services/mentions/post-urls.ts
           - core/server/services/mentions/mention-controller.js
           - core/server/services/mentions/mention-sending-service.js
           - core/server/services/mentions/bookshelf-mention-repository.js
@@ -8819,8 +8816,8 @@ services:
           - test/unit/server/services/mentions/webmention-metadata.test.js
       consumers:
         summary: >-
-          Source-checked: Admin browse and public webmention receive retain the wrapper
-          and read controller per call. Browse adds a source exclusion, normalizes
+          Source-checked: Admin browse and public webmention receive retain the root and
+          read the ready service's controller per call. Browse adds a source exclusion, normalizes
           options and maps mentions/resources to the HTTP shape; receive awaits job
           dispatch and returns 202 without awaiting processing. Boot passes concrete
           controller/sender objects to job handlers on the webmentions queue with
@@ -8832,9 +8829,11 @@ services:
           assertion expects 413 for an oversized body, not exact-boundary acceptance coverage.
           Direct-dispatch integrations assert saved incoming
           fields and outgoing source/target form fields. Recommendation email tests
-          save a real mention then use test event settlement and mocked mail delivery.
+          save a real mention through the ready repository then use test event settlement
+          and mocked mail delivery.
         sources:
           - core/boot.js
+          - core/server/services/mentions/index.ts
           - core/server/api/endpoints/mentions.js
           - core/server/api/endpoints/utils/serializers/input/mentions.js
           - core/server/api/endpoints/utils/serializers/output/mappers/mentions.js
@@ -8855,21 +8854,17 @@ services:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-
-          Boot awaits mentions in its required initialization group before registering
-          and starting jobs. VM boot units hold its initializer unresolved and assert
-          registration/start/automations/rescheduling stay pending; rejection propagates
-          the identical error without those dependent calls. Other services are fakes.
-          Source-only dependency: recommendations.init appears later in the same
-          Promise.all argument list and immediately requires mentions api/sender.
-          Today's mentions initializer publishes them synchronously despite its async
-          signature; root units pin that api, repository and sendingService are set
-          before init's promise settles, so a construction change that adds an await
-          fails there. Awaiting the group alone would not preserve that dependency if
-          construction gained asynchronous work. Real HTTP tests exercise successful
-          boot composition, not held or failing construction of the real root.
+          Boot awaits mentions after Newsletters and before the Promise.all group that
+          initializes Recommendations, and before registering and starting jobs. VM boot
+          units hold its initializer unresolved and assert that Recommendations is not
+          initialized and registration/start/automations/rescheduling stay pending;
+          rejection propagates the identical error without those dependent calls. Other
+          services are fakes. The facade is published only when init resolves; root units
+          assert the pre-init throw. Real HTTP tests exercise successful boot composition,
+          not held or failing construction of the real root.
         sources:
           - core/boot.js
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
           - core/server/services/mentions/mention-controller.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
@@ -8879,19 +8874,19 @@ services:
           - test/e2e-server/services/mentions.test.js
       lifetime:
         summary: >-
-          Source-checked: didInit makes later calls return without replacing dependencies;
-          there is no root reset/shutdown. Controller retains API/jobs/resource lookup,
+          Source-checked: defineService retains the first instance, so later init calls
+          return without replacing dependencies; there is no root reset/shutdown. Controller retains API/jobs/resource lookup,
           sender retains jobs/request/discovery/callbacks, API retains repository and
           helpers, and metadata retains all added mappers. Registered jobs and
           recommendations retain concrete objects if wrapper fields are later replaced.
           A jobs unit constructs a real controller with a fake API and real in-memory
           backend, retains it across jobs shutdown/restart, and asserts stable jobs
           identity plus exact first/second delivery to the current handler. Root units
-          assert that repeated init retains api, repository, sendingService, controller,
-          metadata and the first jobs service, with exactly one owned listener per event.
-          Nothing exercises sender restart or listener cleanup.
+          assert that repeated init retains api, repository, sendingService, controller and
+          metadata, with exactly one owned listener per event. Nothing exercises sender
+          restart or listener cleanup.
         sources:
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
           - core/server/services/mentions/mention-controller.js
           - core/server/services/mentions/mention-sending-service.js
           - core/server/services/mentions/mentions-api.js
@@ -8924,7 +8919,8 @@ services:
           the resolved source URL and changed links, and that routing compares targets
           against the site URL captured at init.
         sources:
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
+          - core/server/services/mentions/post-urls.ts
           - core/server/services/mentions/routing-service.js
           - core/server/services/mentions/resource-service.js
           - core/server/services/mentions/mention-sending-service.js
@@ -8952,9 +8948,10 @@ services:
           subscriber errors; its normal allSettled tracking is enabled only in tests.
           Registration units assert queue options; HTTP sender tests explicitly wrap
           raw listeners and job completion. Root units assert six owned listeners named
-          bound sendForPost (the name the HTTP tests wrap) and that a construction
-          failure before the sender registers none. These are test observation/drain
-          mechanisms, not evidence of production shutdown or provider resource disposal.
+          bound sendForPost (the name the HTTP tests wrap) and that a failed construction
+          registers none. Listening is the last step of create, so a failed attempt has
+          nothing to unwind. These are test observation/drain mechanisms, not evidence of
+          production shutdown or provider resource disposal.
         sources:
           - core/server/services/mentions/mention-sending-service.js
           - core/server/services/mentions/webmention-metadata.js
@@ -8975,9 +8972,9 @@ services:
           - test/e2e-server/services/recommendation-emails.test.js
       failures:
         summary: >-
-          Root units pin construction failure: init rejects, didInit stays true with the
-          repository published and api/sendingService null, no listeners are registered,
-          and a later init publishes nothing. A rejected controller.init promise is not joined. Receive dispatch errors
+          Root units pin construction failure: init rejects, the service stays unavailable,
+          no listeners are registered, and an explicit later init constructs again.
+          controller.init is awaited inside create. Receive dispatch errors
           propagate, whereas controller processing and sender event-preparation errors
           are logged/swallowed. Discovery fetch and parser failures warn and return null;
           individual POST failures are logged and later targets continue. Discovery units
@@ -8995,7 +8992,7 @@ services:
           repository, not persisted counters. Real HTTP covers target deletion and
           selected verification outcomes, not construction failure or atomic DB/event work.
         sources:
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
           - core/server/services/mentions/mention-controller.js
           - core/server/services/mentions/mention-sending-service.js
           - core/server/services/mentions/mention-discovery-service.js
@@ -9016,26 +9013,14 @@ services:
     unverified: []
     blockers:
       - >-
-        Root units now pin the import/pre-init shape, synchronous publication, repeated
-        init identity, the retained jobs reference and the non-retrying partial failure
-        state at the real wrapper boundary. controller.init is still unawaited and not
-        observable, and retained-controller jobs coverage does not cover this wrapper or
-        the sender through a jobs restart.
-      - >-
-        Preserve the real mentions-to-recommendations startup dependency when changing
-        construction timing. Root units pin that api and sendingService are published
-        before init's promise settles; the boot await/rejection units fake
-        recommendations and cannot detect it reading them before asynchronous
-        publication, so boot must order mentions ahead of recommendations explicitly
-        before construction gains an await.
-      - >-
         Cover listener/mapper ownership and overlapping work before introducing reset or
         shutdown. Raw event preparation and recommendation sendAll calls run outside the
         jobs backend's drain; queued processing can finish before domain subscribers.
         Root units pin one owned listener per event across repeated init and metadata
         units pin recursive mapper application, but repeated addMapper calls still
-        accumulate and an unconditional mapper recurses until the stack overflows. HTTP
-        tests supply their own observation/settlement mechanisms.
+        accumulate, an unconditional mapper recurses until the stack overflows, and
+        retained-controller jobs coverage does not cover the sender through a jobs restart.
+        HTTP tests supply their own observation/settlement mechanisms.
       - >-
         Root units characterize configuration timing through the real wrapper: current
         privacy at event time, the site URL read per use for link filtering, routing's
@@ -9890,8 +9875,8 @@ services:
       startup:
         summary: >-
           There is no init or readiness gate: importing consumers performs composition, and calls
-          can immediately fetch or write. Mentions imports its metadata implementation eagerly;
-          recommendations requires oembed during init. Boot validates adapters in initCore before
+          can immediately fetch or write. Mentions requires WebmentionMetadata and the oEmbed
+          service inside its defineService factory; recommendations requires oembed during init. Boot validates adapters in initCore before
           initServices but has no explicit oembed startup/drain registration. Missing provider
           config subtrees or adapter construction errors can reject the importing boot path.
           The Admin suite boots Ghost and exercises requests; it does not characterize early
@@ -9899,7 +9884,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/oembed/service.js
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
@@ -11377,8 +11362,8 @@ services:
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       construction:
         summary: >-
-          Import constructs only the root wrapper. Enabled init requires mentions API/sender,
-          captures model constructors and composes WellknownService, a fresh SettingsBREADService
+          Import constructs only the root wrapper. Enabled init reads the ready Mentions facade
+          for its API and sender, captures model constructors and composes WellknownService, a fresh SettingsBREADService
           and enabler, repositories, metadata/outgoing/incoming services and controllers. It
           uses BookshelfClickEventRepository for both click and subscription models. Two
           GhostMailers are constructed: one inside SettingsBREADService and one for incoming
@@ -11386,7 +11371,7 @@ services:
           renderer retains the staff wrapper. No other production root construction or deep
           composition was found. Service units use in-memory repositories and fake dependencies;
           booted API/email tests exercise normal composition. The root test runs the real init
-          with mentions fields replaced and asserts the repositories are bound to the three
+          with the Mentions facade replaced and asserts the repositories are bound to the three
           models and shared Sentry, the subscribe repository is the click class, the outgoing
           service holds the published repositories, the mentions sender and the shared URL
           helpers, controllers hold their services, metadata is fetched through the shared
@@ -11449,24 +11434,24 @@ services:
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       startup:
         summary: >-
-          Boot invokes mentions/staff earlier in the same Promise.all group; mentions publishes
-          its API/sender synchronously. Recommendations throws if those dependencies are absent,
-          publishes its graph, starts both async initializers without awaiting them, then installs
+          Boot awaits the Mentions root before the Promise.all group that initializes
+          recommendations and staff, so the Mentions facade is ready. Recommendations throws if
+          Mentions is read before it is ready, publishes its graph, starts both async initializers without awaiting them, then installs
           mapper/subscriber before returning. Outgoing init lists rows and writes the well-known
           file before checking recommendations_enabled and scheduling metadata refresh. Incoming
           init schedules revalidation. Direct inner-service units assert well-known invocation,
           refresh invocation after advancing a day, outgoing production/development enablement
           and test/disabled suppression. The root test asserts init throws before publishing
-          anything when either mentions field is missing and succeeds once present, starts both
+          anything while Mentions is not ready and succeeds once it is, starts both
           inner initializers on the published services without awaiting them unless config is
           explicitly false, logs the disabled case, and logs an inner initializer rejection
-          while still returning. The boot harness asserts recommendations init is called after
-          mentions init starts without waiting for it, and that its synchronous throw rejects
-          initServices before job registration. Exact jitter, completion before HTTP readiness
+          while still returning. The boot harness asserts recommendations init waits for mentions
+          init to finish, and that its synchronous throw rejects initServices before job
+          registration. Exact jitter, completion before HTTP readiness
           and behavior when startup file/DB work fails remain source-only.
         sources:
           - core/boot.js
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
           - core/server/services/recommendations/service/incoming-recommendation-service.ts
@@ -15966,7 +15951,7 @@ services:
           - core/server/services/machine-payments/index.js
           - core/server/services/member-attribution/index.ts
           - core/server/services/members/api.js
-          - core/server/services/mentions/service.js
+          - core/server/services/mentions/index.ts
           - core/server/services/slack-ping/index.ts
           - core/server/services/stats/service.js
           - core/server/services/webhooks/index.js

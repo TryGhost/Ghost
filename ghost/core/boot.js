@@ -394,7 +394,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
-  const mentionsService = require('./server/services/mentions');
+  const mentionsService = require('./server/services/mentions').default;
   const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
   const slackNotifications = require('./server/services/slack-notifications');
@@ -448,10 +448,11 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await audienceFeedback.init();
   // Members captures the ready Newsletters instance during initialization.
   await newsletters.init();
+  // Recommendations reads the ready Mentions instance during initialization.
+  await mentionsService.init();
 
   await Promise.all([
     identityTokens.init(),
-    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -499,8 +500,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
-  assert(mentionsService.controller, 'Mentions controller should be initialized');
-  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+  assert(mentionsService.service.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.service.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
@@ -511,8 +512,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     memberJobs,
     giftService: giftService.service,
     mediaInliner: mediaInliner.getInstance(),
-    mentionsController: mentionsService.controller,
-    mentionsSendingService: mentionsService.sendingService,
+    mentionsController: mentionsService.service.controller,
+    mentionsSendingService: mentionsService.service.sendingService,
     membersService,
     emailService: emailService.service,
     siteImporter,

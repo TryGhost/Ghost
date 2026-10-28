@@ -1,6 +1,6 @@
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
-const mentionsService = require('../../../core/server/services/mentions');
+const mentionsService = require('../../../core/server/services/mentions').default;
 const recommendationsService = require('../../../core/server/services/recommendations');
 
 let agent;
@@ -46,7 +46,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
@@ -100,7 +100,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
@@ -139,7 +139,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
@@ -167,7 +167,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(!webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
