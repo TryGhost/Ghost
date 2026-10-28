@@ -897,6 +897,28 @@ describe('Comments Service: CommentsService', function () {
       sinon.assert.notCalled(models.Comment.findOne);
     });
 
+    it('notifies the post authors and dispatches the member comment event for a member comment', async function () {
+      const { instance, models } = createClassInstance();
+      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      instance.emails.notifyPostAuthors = sinon.stub().resolves();
+
+      await instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', options);
+
+      sinon.assert.calledOnce(instance.emails.notifyPostAuthors);
+      assert.equal(instance.emails.notifyPostAuthors.firstCall.args[0].id, 'comment-id');
+      sinon.assert.calledOnce(dispatch);
+      assert.deepEqual(dispatch.firstCall.args[0].data, {
+        memberId: 'member-id',
+        postId: 'post-id',
+        commentId: 'comment-id',
+      });
+      sinon.assert.calledOnceWithExactly(
+        models.Comment.findOne,
+        { id: 'comment-id' },
+        { ...options, require: true },
+      );
+    });
+
     it('skips notifications for an internal context and still dispatches the member comment event', async function () {
       const { instance, models } = createClassInstance();
       const dispatch = sinon.stub(DomainEvents, 'dispatch');
