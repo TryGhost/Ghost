@@ -11,7 +11,7 @@ const controller = {
       docName: 'members',
       method: 'browse',
     },
-    options: ['date_from'],
+    options: ['date_from', 'date_to', 'interval', 'timezone'],
     cache: statsService.cache,
     generateCacheKeyData(frame) {
       return {
@@ -22,6 +22,9 @@ const controller = {
     async query(frame) {
       return await statsService.api.getMemberCountHistory({
         dateFrom: frame?.options?.date_from,
+        dateTo: frame?.options?.date_to,
+        interval: frame?.options?.interval,
+        timezone: frame?.options?.timezone,
       });
     },
   },
@@ -33,7 +36,7 @@ const controller = {
       docName: 'members',
       method: 'browse',
     },
-    options: ['date_from'],
+    options: ['date_from', 'date_to', 'interval', 'timezone'],
     cache: statsService.cache,
     generateCacheKeyData(frame) {
       return {
@@ -44,6 +47,9 @@ const controller = {
     async query(frame) {
       return await statsService.api.getMRRHistory({
         dateFrom: frame?.options?.date_from,
+        dateTo: frame?.options?.date_to,
+        interval: frame?.options?.interval,
+        timezone: frame?.options?.timezone,
       });
     },
   },
@@ -255,7 +261,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['date_from', 'date_to', 'newsletter_id'],
+    options: ['date_from', 'date_to', 'newsletter_id', 'interval', 'timezone'],
     permissions: {
       docName: 'posts',
       method: 'browse',
@@ -268,6 +274,8 @@ const controller = {
           date_from: frame.options.date_from,
           date_to: frame.options.date_to,
           newsletter_id: frame.options.newsletter_id,
+          interval: frame.options.interval,
+          timezone: frame.options.timezone,
         },
       };
     },

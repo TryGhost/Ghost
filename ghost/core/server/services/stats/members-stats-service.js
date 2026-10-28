@@ -1,4 +1,14 @@
 const moment = require('moment');
+const {
+  buildHourlyTotals,
+  dayStartUtc,
+  dayEndUtc,
+  hasDayEnded,
+  utcBucketExpression,
+  sumByLocalDay,
+  todayIn,
+  isKnownTimezone,
+} = require('./utils/hourly-history');
 
 class MembersStatsService {
   /**
@@ -36,17 +46,25 @@ class MembersStatsService {
    * Get the member deltas by status for all days, sorted ascending
    * @param {Object} options
    * @param {string|Date} [options.startDate] - Start date for fetching deltas (ISO format or Date object, defaults to 91 days ago)
+   * @param {string} [options.timezone] - Days in this timezone rather than UTC
    * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free, comped and gift users per day, sorted ascending
    */
   async fetchAllStatusDeltas(options = {}) {
     const knex = this.knex;
+    const local = isKnownTimezone(options.timezone);
     const startDate = options.startDate
       ? moment.utc(options.startDate).startOf('day')
       : moment.utc().subtract(91, 'days').startOf('day');
 
-    const formattedStartDate = startDate.format('YYYY-MM-DD HH:mm:ss');
+    const formattedStartDate = local
+      ? dayStartUtc(startDate.format('YYYY-MM-DD'), options.timezone)
+      : startDate.format('YYYY-MM-DD HH:mm:ss');
+    // Local days are added up from UTC hours, which every timezone's days are made of
+    const bucket = local
+      ? utcBucketExpression(knex, 'created_at', options.timezone)
+      : 'DATE(created_at)';
     const rows = await knex('members_status_events')
-      .select(knex.raw('DATE(created_at) as date'))
+      .select(knex.raw(`${bucket} as ${local ? 'hour' : 'date'}`))
       .select(
         knex.raw(`SUM(
                 CASE WHEN to_status='paid' THEN 1
@@ -81,8 +99,90 @@ class MembersStatsService {
             ) as gift_delta`),
       )
       .where('created_at', '>=', formattedStartDate)
-      .groupByRaw('DATE(created_at)');
+      .groupByRaw(bucket);
+    if (local) {
+      return /** @type {MemberStatusDelta[]} */ (
+        /** @type {unknown} */ (
+          sumByLocalDay(rows, options.timezone, [
+            'paid_subscribed',
+            'paid_canceled',
+            'comped_delta',
+            'free_delta',
+            'gift_delta',
+          ])
+        )
+      );
+    }
     return /** @type {MemberStatusDelta[]} */ (/** @type {unknown} */ (rows));
+  }
+
+  /**
+   * Returns the total members by status for each hour of a single day, so a
+   * day charts with the same hours as its visitors
+   * @param {Object} options
+   * @param {string} options.date - The day, YYYY-MM-DD in `timezone`
+   * @param {string} [options.timezone] - IANA timezone, defaults to UTC
+   */
+  async getHourlyCountHistory({ date, timezone }) {
+    const knex = this.knex;
+    const dayEnd = dayEndUtc(date, timezone);
+    // Only the day's own changes are loaded; everything since the day ended is
+    // added up by the database and taken off the current totals
+    const [now, events, [later]] = await Promise.all([
+      this.getCount(),
+      knex('members_status_events')
+        .select('created_at', 'from_status', 'to_status')
+        .where('created_at', '>=', dayStartUtc(date, timezone))
+        .where('created_at', '<', dayEnd),
+      hasDayEnded(date, timezone)
+        ? knex('members_status_events')
+            .select(
+              ...['paid', 'free', 'comped', 'gift'].map((status) =>
+                knex.raw(
+                  `SUM(CASE WHEN to_status='${status}' THEN 1 WHEN from_status='${status}' THEN -1 ELSE 0 END) as ${status}`,
+                ),
+              ),
+            )
+            .where('created_at', '>=', dayEnd)
+        : [],
+    ]);
+
+    const apply = (totals, event, direction) => {
+      const next = { ...totals };
+      for (const status of ['paid', 'free', 'comped', 'gift']) {
+        if (event.to_status === status) {
+          next[status] += direction;
+        }
+        if (event.from_status === status) {
+          next[status] -= direction;
+        }
+      }
+      return next;
+    };
+
+    const current = {
+      paid: now.paid - (Number(later?.paid) || 0),
+      free: now.free - (Number(later?.free) || 0),
+      comped: now.comped - (Number(later?.comped) || 0),
+      gift: now.gift - (Number(later?.gift) || 0),
+    };
+    const { hours, start } = buildHourlyTotals({ date, timezone, current, events, apply });
+
+    return {
+      data: hours.map(({ date: hour, totals, events: inHour }) => ({
+        date: hour,
+        ...totals,
+        paid_subscribed: inHour.filter((event) => event.to_status === 'paid').length,
+        paid_canceled: inHour.filter((event) => event.from_status === 'paid').length,
+      })),
+      meta: {
+        totals: now,
+        interval: 'hour',
+        // Where the day started: each hour holds the totals at its end, so
+        // the day's change is measured from here, not from the first hour
+        start,
+      },
+    };
   }
 
   /**
@@ -97,8 +197,8 @@ class MembersStatsService {
     // Fetch current total amounts and start counting from there
     const totals = await this.getCount();
 
-    // Get today in UTC (consistent with frontend)
-    const today = moment.utc().format('YYYY-MM-DD');
+    // Today in the viewer's timezone when asked for, UTC otherwise
+    const today = todayIn(options.timezone);
 
     // When startDate is provided, always return complete range
     if (options.startDate) {
@@ -160,7 +260,7 @@ class MembersStatsService {
 
     // Generate complete date range from startDate to today
     const results = [];
-    const currentDate = moment(startDateMoment);
+    let currentDate = moment(startDateMoment);
 
     // Track the last known values for forward-filling
     let lastKnownTotals = {
@@ -169,6 +269,17 @@ class MembersStatsService {
       comped: Math.max(0, runningComped),
       gift: Math.max(0, runningGift),
     };
+
+    // A range that starts long before the site had members (All time reaches
+    // back to 2013) begins the day before its first change instead of
+    // returning years of empty days
+    const hadNoMembers = Object.values(lastKnownTotals).every((total) => total === 0);
+    if (hadNoMembers && rows.length > 0) {
+      const firstChange = moment.utc(rows[0].date).subtract(1, 'day');
+      if (firstChange.isAfter(currentDate)) {
+        currentDate = firstChange;
+      }
+    }
 
     while (currentDate.isSameOrBefore(endDateMoment)) {
       const dateStr = currentDate.format('YYYY-MM-DD');

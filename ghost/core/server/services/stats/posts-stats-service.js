@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 
@@ -6,6 +7,29 @@ const urlUtils = require('../../../shared/url-utils').default;
 const { normalizeSource } = require('./referrers-stats-service');
 // Import centralized date utilities
 const { getDateBoundaries, applyDateFilter } = require('./utils/date-utils');
+const {
+  buildHourlyTotals,
+  dayStartUtc,
+  dayEndUtc,
+  utcBucketExpression,
+  sumByLocalDay,
+  isKnownTimezone,
+  hasDayEnded,
+} = require('./utils/hourly-history');
+
+/**
+ * A whereNotExists subquery for members with email disabled, who don't count
+ * as newsletter subscribers
+ * @param {string} memberIdColumn - The column holding the member id, e.g. 'mn.member_id'
+ */
+function emailDisabled(memberIdColumn) {
+  return function () {
+    this.select('*')
+      .from('members as m')
+      .whereRaw(`m.id = ${memberIdColumn}`)
+      .where('m.email_disabled', 1);
+  };
+}
 
 /**
  * @typedef {Object} StatsServiceOptions
@@ -986,6 +1010,55 @@ class PostsStatsService {
   }
 
   /**
+   * Returns a newsletter's subscriber total for each hour of a single day, so
+   * a day charts with the same hours as its visitors
+   * @param {string} newsletterId
+   * @param {Object} options
+   * @param {string} options.date - The day, YYYY-MM-DD in `timezone`
+   * @param {string} [options.timezone] - IANA timezone, defaults to UTC
+   */
+  async getHourlyNewsletterSubscriberStats(newsletterId, { date, timezone }) {
+    const dayEnd = dayEndUtc(date, timezone);
+    // Only the day's own changes are loaded; everything since the day ended is
+    // added up by the database and taken off the current total
+    const [totalResult, events, [later]] = await Promise.all([
+      this.knex('members_newsletters as mn')
+        .countDistinct('mn.member_id as total')
+        .where('mn.newsletter_id', newsletterId)
+        .whereNotExists(emailDisabled('mn.member_id')),
+      this.knex('members_subscribe_events as mse')
+        .select('mse.created_at', 'mse.subscribed')
+        .where('mse.newsletter_id', newsletterId)
+        .where('mse.created_at', '>=', dayStartUtc(date, timezone))
+        .where('mse.created_at', '<', dayEnd)
+        .whereNotExists(emailDisabled('mse.member_id')),
+      hasDayEnded(date, timezone)
+        ? this.knex('members_subscribe_events as mse')
+            .select(this.knex.raw('SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as delta'))
+            .where('mse.newsletter_id', newsletterId)
+            .where('mse.created_at', '>=', dayEnd)
+            .whereNotExists(emailDisabled('mse.member_id'))
+        : [],
+    ]);
+    const total = parseInt(String(totalResult[0] ? totalResult[0].total : 0), 10);
+
+    const { hours, start } = buildHourlyTotals({
+      date,
+      timezone,
+      current: total - (Number(later?.delta) || 0),
+      events,
+      apply: (value, event, direction) => value + direction * (event.subscribed ? 1 : -1),
+    });
+
+    return {
+      data: [{ total, values: hours.map((hour) => ({ date: hour.date, value: hour.totals })) }],
+      // Subscribers where the day started: each hour holds the total at its
+      // end, so the day's change is measured from here
+      meta: { interval: 'hour', start },
+    };
+  }
+
+  /**
    * Get newsletter subscriber statistics including total count and daily deltas for a specific newsletter
    *
    * @param {string} newsletterId - ID of the newsletter to get subscriber stats for
@@ -1006,12 +1079,7 @@ class PostsStatsService {
         this.knex('members_newsletters as mn')
           .countDistinct('mn.member_id as total')
           .where('mn.newsletter_id', newsletterId)
-          .whereNotExists(function () {
-            this.select('*')
-              .from('members as m')
-              .whereRaw('m.id = mn.member_id')
-              .where('m.email_disabled', 1);
-          }),
+          .whereNotExists(emailDisabled('mn.member_id')),
 
         // Get daily deltas (optimized query)
         this._getNewsletterSubscriberDeltas(newsletterId, options),
@@ -1053,10 +1121,24 @@ class PostsStatsService {
 
       // Fill in missing dates to ensure the frontend has a complete time series
       // This is critical for percent change calculations which need consecutive days
+      // In the viewer's timezone the range is its own local days; the UTC
+      // boundaries can fall on the day before
+      const local = isKnownTimezone(options.timezone);
+      let fillFrom = local ? (options.date_from ?? null) : dateFrom ? dateFrom.split('T')[0] : null;
+      const fillTo = local ? (options.date_to ?? null) : dateTo ? dateTo.split('T')[0] : null;
+      // A range that starts long before the newsletter had subscribers (All
+      // time reaches back to 2013) begins the day before its first change
+      // instead of returning years of empty days
+      if (fillFrom && startingTotal === 0 && values.length > 0) {
+        const firstChange = moment.utc(values[0].date).subtract(1, 'day').format('YYYY-MM-DD');
+        if (firstChange > fillFrom) {
+          fillFrom = firstChange;
+        }
+      }
       const completeValues = this._fillMissingDates(
         values,
-        dateFrom ? dateFrom.split('T')[0] : null,
-        dateTo ? dateTo.split('T')[0] : null,
+        fillFrom,
+        fillTo,
         timezone,
         startingTotal,
       );
@@ -1094,26 +1176,29 @@ class PostsStatsService {
   async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
     const { dateFrom, dateTo } = getDateBoundaries(options);
 
+    // Days in the viewer's timezone are added up from UTC hours, which every
+    // timezone's days are made of
+    const local = isKnownTimezone(options.timezone);
+    const bucket = local
+      ? utcBucketExpression(this.knex, 'mse.created_at', options.timezone)
+      : 'DATE(mse.created_at)';
+
     // Build optimized deltas query - avoid expensive JOIN
     const deltasQuery = this.knex('members_subscribe_events as mse')
       .select(
-        this.knex.raw(`DATE(mse.created_at) as date`),
+        this.knex.raw(`${bucket} as ${local ? 'hour' : 'date'}`),
         this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`),
       )
       .where('mse.newsletter_id', newsletterId)
-      .whereNotExists(function () {
-        this.select('*')
-          .from('members as m')
-          .whereRaw('m.id = mse.member_id')
-          .where('m.email_disabled', 1);
-      })
-      .groupByRaw('DATE(mse.created_at)')
-      .orderBy('date', 'asc');
+      .whereNotExists(emailDisabled('mse.member_id'))
+      .groupByRaw(bucket)
+      .orderBy(local ? 'hour' : 'date', 'asc');
 
     // Apply timezone-aware date filters
     applyDateFilter(deltasQuery, dateFrom, dateTo, 'mse.created_at');
 
-    return await deltasQuery;
+    const rows = await deltasQuery;
+    return local ? sumByLocalDay(rows, options.timezone, ['value']) : rows;
   }
 
   /**
@@ -1127,8 +1212,6 @@ class PostsStatsService {
    * @returns {Array<{date: string, value: number}>} Dense array with all dates filled
    */
   _fillMissingDates(values, startDate, endDate, timezone = 'UTC', startingValue = 0) {
-    const moment = require('moment-timezone');
-
     // If no date range provided, return as-is
     if (!startDate || !endDate) {
       return values || [];
