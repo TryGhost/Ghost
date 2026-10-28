@@ -555,8 +555,4 @@ export async function trackEmailDeliveredAndOpened(
   return await repository.trackEmailDeliveredAndOpened(...args);
 }
 
-export async function trackEmailClicked(
-  ...args: Parameters<AutomationsRepository['trackEmailClicked']>
-) {
-  await repository.trackEmailClicked(...args);
-}
+export const trackEmailClicked = automationsApi2.trackEmailClicked.bind(automationsApi2);

@@ -587,7 +587,7 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+        await repository2.lockActionRevisions(trx, revisionIds);
 
         const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
         const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
@@ -622,7 +622,7 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        for (const id of orderedRevisionIds) {
+        for (const id of revisionIds) {
           const opens = newOpensPerRevision.get(id);
           if (!opens) {
             continue;
@@ -634,43 +634,6 @@ export function createDatabaseAutomationsRepository({
             });
         }
       });
-    },
-
-    async trackEmailClicked(
-      { automationActionRevisionId, automationRunStepId, memberId, clickedAt },
-      { transacting: trx },
-    ) {
-      await lockActionRevisions(trx, [automationActionRevisionId]);
-
-      const recipient = await trx('automated_email_recipients')
-        .select('id', 'clicked_at')
-        .where({
-          automation_action_revision_id: automationActionRevisionId,
-          automation_run_step_id: automationRunStepId,
-          member_id: memberId,
-          track_clicks: true,
-        })
-        .forUpdate()
-        .first();
-
-      if (!recipient || recipient.clicked_at !== null) {
-        return;
-      }
-
-      const updated = await trx('automated_email_recipients')
-        .where({ id: recipient.id })
-        .whereNull('clicked_at')
-        .update({ clicked_at: clickedAt });
-
-      if (updated === 0) {
-        return;
-      }
-
-      await trx('automation_action_revisions')
-        .where({ id: automationActionRevisionId })
-        .update({
-          email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1'),
-        });
     },
   };
 }
@@ -833,30 +796,6 @@ function buildRunHistory(
     failed: status === 'exited_early' && steps.some((step) => step.status === 'failed'),
     steps,
   };
-}
-
-/**
- * Lock revisions before recipients because inserting a recipient takes a shared
- * foreign-key lock on its revision. Updating that revision later can deadlock
- * with another transaction that has already locked the revision and is waiting
- * for the recipient. Keep multi-revision lock acquisition deterministic.
- */
-async function lockActionRevisions(
-  trx: Knex.Transaction,
-  revisionIds: Iterable<string>,
-): Promise<string[]> {
-  const sortedRevisionIds = [...new Set(revisionIds)].sort((left, right) =>
-    left.localeCompare(right),
-  );
-
-  if (sortedRevisionIds.length > 0) {
-    await trx('automation_action_revisions')
-      .select('id')
-      .whereIn('id', sortedRevisionIds)
-      .forUpdate();
-  }
-
-  return sortedRevisionIds;
 }
 
 /**

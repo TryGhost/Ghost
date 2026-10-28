@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import type { ReadonlyDeep } from 'type-fest';
 import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
@@ -273,20 +272,5 @@ export type AutomationsRepository = {
    */
   trackEmailDeliveredAndOpened(
     eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
-  ): Promise<void>;
-  /**
-   * Record the first click timestamp for the automated email recipient identified by a run step.
-   *
-   */
-  trackEmailClicked(
-    options: {
-      automationActionRevisionId: string;
-      automationRunStepId: string;
-      memberId: string;
-      clickedAt: Readonly<Date>;
-    },
-    transactionOptions: {
-      transacting: Knex.Transaction;
-    },
   ): Promise<void>;
 };
