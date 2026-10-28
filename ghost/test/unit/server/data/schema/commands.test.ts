@@ -175,6 +175,23 @@ describe('schema commands', function () {
       }
     });
 
+    // MariaDB refuses a named check written inline on the column, so it is a table constraint.
+    it('is held as a table constraint on MySQL, not inline on the column', function () {
+      const knex = createKnex({ client: 'mysql2' });
+      try {
+        const ddl = commands
+          .createTable('posts_meta', knex, { slug: { ...slug, pattern: '^[a-z_]+$' } })
+          .toString();
+        assert.match(
+          ddl,
+          /`slug` varchar\(191\) not null, constraint posts_meta_slug_check check \(`slug` REGEXP '\(\?-i\)\^\[a-z_\]\+\\\\z'\)/,
+        );
+        assert.doesNotMatch(ddl, /not null constraint/);
+      } finally {
+        knex.destroy();
+      }
+    });
+
     it('is refused when it is not a regular expression', function () {
       const knex = createKnex({ client: 'mysql' });
 

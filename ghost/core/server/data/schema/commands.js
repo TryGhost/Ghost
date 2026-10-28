@@ -75,9 +75,14 @@ function addTableColumn(
 
   // Read on every database, so a pattern MySQL would refuse fails everywhere, but held only on
   // MySQL: SQLite is being removed, and its driver here has no regular expression function.
+  // Built as a table constraint, not `column.checkRegex`: that writes `not null constraint
+  // <name> check (...)` inline, which MySQL accepts and MariaDB refuses with a syntax error,
+  // while both take the table form.
   const checks = patternChecksOf(tableName, { [columnName]: columnSpec });
   if (DatabaseInfo.isMySQL(transaction)) {
-    checks.forEach((check) => column.checkRegex(check.pattern, check.constraintName));
+    checks.forEach((check) =>
+      tableBuilder.check('?? REGEXP ?', [check.column, check.pattern], check.constraintName),
+    );
   }
 }
 
