@@ -243,7 +243,7 @@ export class MetafieldValuesService {
     }
     const rows = await this.fields
       .definitions(this.knex, { audience, status: ACTIVE_ONLY })
-      .where((query) => {
+      .read.where((query) => {
         for (const [namespace, keys] of keysByNamespace) {
           query.orWhere((inNamespace) =>
             inNamespace.where('namespace', namespace).whereIn('key', keys),

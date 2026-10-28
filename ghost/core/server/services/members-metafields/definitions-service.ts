@@ -165,7 +165,7 @@ export class MetafieldDefinitionsService {
   }
 
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
-    const rows = await inFieldOrder(query).select('*');
+    const rows = await inFieldOrder(query.read).select('*');
     return rows.map((row) => z.decode(metafieldCodec, row));
   }
 
@@ -423,11 +423,11 @@ export class MetafieldDefinitionsService {
         // two concurrent reorders take their row locks in the same sequence and
         // cannot deadlock. `updated_at` is left alone — the definitions did not
         // change, the list around them did.
-        const ranks = new Map(keys.map((key, rank) => [key, rank]));
-        for (const key of [...keys].sort()) {
-          await trx(FIELDS_TABLE)
-            .where({ namespace, key })
-            .update({ sort_order: ranks.get(key)! });
+        const ranked = keys
+          .map((key, rank) => ({ key, rank }))
+          .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+        for (const { key, rank } of ranked) {
+          await trx(FIELDS_TABLE).where({ namespace, key }).update({ sort_order: rank });
         }
 
         // An order covers the whole list, archived definitions included.
@@ -491,7 +491,15 @@ export class MetafieldDefinitionsService {
       .whereIn('key', keys)
       .select('*');
     const byKey = new Map(rows.map((row) => [row.key, row]));
-    return keys.map((key) => z.decode(metafieldCodec, byKey.get(key)!));
+    return keys.map((key) => {
+      const row = byKey.get(key);
+      if (!row) {
+        throw new errors.InternalServerError({
+          message: 'A custom field could not be read back after it was written.',
+        });
+      }
+      return z.decode(metafieldCodec, row);
+    });
   }
 
   /**
@@ -739,10 +747,14 @@ function batchContext(index: PropertyKey | undefined, requestedCount: number): s
   return `Custom field ${index + 1} of ${requestedCount}.`;
 }
 
+const DriverError = z.object({ code: z.string() });
+
 function isUniqueConstraintViolation(error: unknown): boolean {
-  const code = (error as { code?: string })?.code;
+  const code = DriverError.safeParse(error).data?.code;
   return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
 }
+
+const MongoQuery = z.record(z.string(), z.unknown());
 
 // Parse a caller-supplied NQL filter, without applying it. A malformed filter is a
 // client error (400), not a 500. Whether the result widens the statuses is decided by
@@ -751,12 +763,12 @@ function isUniqueConstraintViolation(error: unknown): boolean {
 function parseFilter(filter: string): Record<string, unknown> {
   let mongoQuery: Record<string, unknown>;
   try {
-    mongoQuery = nql(filter).toJSON() as Record<string, unknown>;
+    mongoQuery = MongoQuery.parse(nql(filter).toJSON());
   } catch (err) {
     throw new errors.BadRequestError({
       message: 'Could not parse the filter parameter.',
       property: 'filter',
-      err: err as Error,
+      err: err instanceof Error ? err : undefined,
     });
   }
   return mongoQuery;
@@ -775,9 +787,10 @@ function filterReferencesAttribute(query: Record<string, unknown>, attribute: st
       return true;
     }
     if ((key === '$and' || key === '$or' || key === '$nor') && Array.isArray(value)) {
-      return value.some((sub) =>
-        filterReferencesAttribute(sub as Record<string, unknown>, attribute),
-      );
+      return value.some((sub) => {
+        const clause = MongoQuery.safeParse(sub);
+        return clause.success && filterReferencesAttribute(clause.data, attribute);
+      });
     }
     return false;
   });

@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-// @ts-expect-error This module currently lacks type definitions.
 import { slugify } from '@tryghost/string';
 import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';

@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import buildImportEmail, { type EmailLinks } from './completion-email';
 import { stripFormulaGuard } from '../csv';
 import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-csv';
+import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool } from './spool';
@@ -669,6 +670,8 @@ class MembersCSVImporter<Plan> {
   }
 }
 
+const ValueRefusal = z.object({ property: z.string(), message: z.string() });
+
 // A row error is read next to a spreadsheet, and a value rejection states only what the
 // value should be — the same sentence Admin shows under a single input, where the field is
 // already on screen. `property` is the dotted path a default export writes as its column
@@ -680,11 +683,11 @@ async function namingTheColumn<T>(plan: () => Promise<T>): Promise<T> {
   try {
     return await plan();
   } catch (error) {
-    const { property, message } = (error ?? {}) as { property?: unknown; message?: unknown };
-    const namesAField = typeof property === 'string' && property.includes('.');
-    if (!namesAField || typeof message !== 'string') {
+    const refusal = ValueRefusal.safeParse(error);
+    if (!refusal.success || !refusal.data.property.includes('.')) {
       throw error;
     }
+    const { property, message } = refusal.data;
     throw new errors.DataImportError({ message: `${property}: ${message}` });
   }
 }

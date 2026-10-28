@@ -13,6 +13,7 @@ import {
 import { settingsScreen } from '@/settings/settings.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
 
 const companyField: MemberCustomField = {
   namespace: CUSTOM_NAMESPACE,
@@ -37,6 +38,13 @@ const archivedField: MemberCustomField = {
 };
 
 const flagOn = { labs: { membersCustomFields: true } };
+
+const ReorderBody = z.object({ members_metafields: z.array(z.object({ key: z.string() })) });
+
+const reordered = (body: unknown, fields: MemberCustomField[]): MemberCustomField[] =>
+  ReorderBody.parse(body).members_metafields.flatMap(({ key }) =>
+    fields.filter((field) => field.key === key),
+  );
 
 /**
  * Drags a field by its handle onto `target`, travelling there as a hand does: dnd-kit
@@ -581,8 +589,7 @@ describe('Custom fields', () => {
     let currentFields = [companyField, shirtField, nicknameField];
     const browseApi = fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
-      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
-      currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
+      currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
@@ -631,8 +638,7 @@ describe('Custom fields', () => {
     });
     fakeAdminEndpoint('PUT', '/members/metafields/custom/', async (request) => {
       await putHeld;
-      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
-      currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
+      currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
@@ -702,8 +708,7 @@ describe('Custom fields', () => {
     let currentFields = [companyField, archivedField, shirtField];
     fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
-      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
-      currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
+      currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
@@ -731,8 +736,7 @@ describe('Custom fields', () => {
     }));
     fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
-      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
-      currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
+      currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);

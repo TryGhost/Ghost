@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { z } from 'zod';
 
 const {
   agentProvider,
@@ -577,11 +578,7 @@ describe('Member Custom Fields Members API', function () {
 
       const stored = await readMemberAsStaff();
       assert.deepEqual(stored.metafields.custom, { [fieldKey]: '9' }, 'nothing else was written');
-      assert.equal(
-        ({} as Record<string, unknown>).anything,
-        undefined,
-        'and nothing leaked onto Object',
-      );
+      assert.equal('anything' in {}, false, 'and nothing leaked onto Object');
     });
 
     // A write names several values, and a composite is several again. Refusing at the
@@ -609,9 +606,10 @@ describe('Member Custom Fields Members API', function () {
       assert.equal(error.property, `metafields.custom.${addressKey}.line1`);
 
       // And the whole set rides alongside, each naming the value it belongs to.
-      const refused = (error.details as Array<{ property: string }>).map(
-        (detail) => detail.property,
-      );
+      const refused = z
+        .array(z.object({ property: z.string() }))
+        .parse(error.details)
+        .map((detail) => detail.property);
       assert.deepEqual(refused.sort(), [
         `metafields.custom.${addressKey}.country`,
         `metafields.custom.${addressKey}.line1`,
