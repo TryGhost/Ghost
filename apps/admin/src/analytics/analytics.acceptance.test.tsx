@@ -289,11 +289,16 @@ describe('Analytics overview', () => {
     await expect
       .element(analyticsScreen.rangeOption('Last 7 days'))
       .toHaveAttribute('aria-keyshortcuts', 'w');
-    await userEvent.keyboard('{Escape}');
 
+    // Pressed while the picker is open, it closes like clicking the preset
     await userEvent.keyboard('w');
+    await expect.element(analyticsScreen.customRangePicker()).not.toBeInTheDocument();
     await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).toBe(localDaysAgo(6));
+
+    // And with the picker closed, it works from anywhere on the page
+    await userEvent.keyboard('t');
+    await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 30 days');
   });
 
   it('lets a custom range reach back exactly as far as All time', async () => {

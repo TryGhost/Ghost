@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import moment from 'moment-timezone';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -119,7 +119,10 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
     }
   }, [isExcluded, presets, onRangeChange]);
 
-  // Preset keys work anywhere on the page, like F for the filter
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Preset keys work anywhere on the page, like F for the filter, and close
+  // the picker like clicking a preset does
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isShortcutKey(event)) {
@@ -129,6 +132,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
       if (preset) {
         event.preventDefault();
         onRangeChange(Number(preset.id));
+        setIsOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -152,7 +156,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
     : (presets.find((preset) => preset.id === String(range))?.label ?? '');
 
   return (
-    <DateRangePicker>
+    <DateRangePicker open={isOpen} onOpenChange={setIsOpen}>
       <DateRangePickerTrigger asChild>
         <PageHeader.Action label="Date range" tooltip={false}>
           <LucideIcon.Calendar />
