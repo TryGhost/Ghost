@@ -7,10 +7,8 @@ import {
   ActionListItem,
   ActionListItemActions,
   ActionListItemContent,
-  Banner,
   Button,
   DragIndicator,
-  Link,
   NoValueLabel,
   NoValueLabelIcon,
   type SortableItemContainerProps,
@@ -37,8 +35,7 @@ import { useQueryClient } from '@tryghost/admin-x-framework';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { DialogPortal } from '@/settings/providers/dialog-portal';
-import { navigateTo } from '@/utils/navigation';
-import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { UpgradeNotice } from '@/settings/components/upgrade-notice';
 
 // How many fields render before the list collapses behind "Show all" — the
 // recommendations list's preview size.
@@ -298,33 +295,15 @@ const FieldLists: React.FC<{ openModal: (field?: MemberCustomField) => void }> =
 };
 
 /**
- * What the section offers in place of the fields while the host switches custom fields off,
- * in the host's own words where it gives some.
- */
-const UpgradeNotice: React.FC = () => {
-  const upgradeRoute = useUpgradeRoute();
-  const hostMessage = useHostLimits()?.[CUSTOM_FIELDS_LIMIT]?.error;
-
-  return (
-    <Banner size="sm" variant="default">
-      {hostMessage || "Custom fields aren't available on this site."}{' '}
-      <Link asChild>
-        <button type="button" onClick={() => navigateTo(upgradeRoute)}>
-          Upgrade now
-        </button>
-      </Link>
-    </Banner>
-  );
-};
-
-/**
  * While the host switches custom fields off, the section keeps its title and description, so
  * it still says what custom fields are, while the fields and the way to add one give way to
- * the upgrade: the server reads every field as archived and refuses every change.
+ * the upgrade: the server reads every field as archived and refuses every change. The upgrade
+ * is offered in the host's own words where it gives some.
  */
 const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [editingField, setEditingField] = useState<{ field?: MemberCustomField } | null>(null);
   const openModal = (field?: MemberCustomField) => setEditingField({ field });
+  const hostMessage = useHostLimits()?.[CUSTOM_FIELDS_LIMIT]?.error;
 
   return (
     <TopLevelGroup
@@ -341,7 +320,14 @@ const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       testId="custom-fields"
       title="Custom fields"
     >
-      <HostLimitGate limit={CUSTOM_FIELDS_LIMIT} limited={<UpgradeNotice />}>
+      <HostLimitGate
+        limit={CUSTOM_FIELDS_LIMIT}
+        limited={
+          <UpgradeNotice>
+            {hostMessage || "Custom fields aren't available on this site."}
+          </UpgradeNotice>
+        }
+      >
         <FieldLists openModal={openModal} />
         {editingField && (
           <DialogPortal>
