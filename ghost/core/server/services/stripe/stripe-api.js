@@ -5,7 +5,11 @@ const stripe = require('stripe');
 const i18n = require('../i18n');
 const logging = require('@tryghost/logging');
 const { z } = require('zod');
-const { checkoutSessionParts, taxSessionParams } = require('./checkout-session-params');
+const {
+  checkoutSessionParts,
+  sessionCreateParams,
+  taxSessionParams,
+} = require('./checkout-session-params');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 /** @import { CheckoutSessionParts } from './checkout-session-params' */
@@ -156,7 +160,7 @@ module.exports = class StripeAPI {
   async _createWithFallback(params, requestOptions, parts, onDesignRefused) {
     try {
       return await this._stripe.checkout.sessions.create(
-        Object.assign({}, ...Object.values(parts), params),
+        sessionCreateParams(params, parts),
         requestOptions,
       );
     } catch (err) {
@@ -764,10 +768,7 @@ module.exports = class StripeAPI {
       success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
       cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
       allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
-      ...taxSessionParams({
-        automaticTax: this._config.enableAutomaticTax,
-        hasCustomer: Boolean(customerId),
-      }),
+      ...taxSessionParams({ automaticTax: this._config.enableAutomaticTax }),
       metadata,
       discounts,
       /*
@@ -835,10 +836,7 @@ module.exports = class StripeAPI {
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl || this._config.checkoutSessionSuccessUrl,
       cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
-      ...taxSessionParams({
-        automaticTax: this._config.enableAutomaticTax,
-        hasCustomer: Boolean(customer),
-      }),
+      ...taxSessionParams({ automaticTax: this._config.enableAutomaticTax }),
       metadata,
       customer: customer ? customer.id : undefined,
       customer_email: !customer && customerEmail ? customerEmail : undefined,
@@ -919,10 +917,7 @@ module.exports = class StripeAPI {
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       success_url: successUrl,
       cancel_url: cancelUrl,
-      ...taxSessionParams({
-        automaticTax: this._config.enableAutomaticTax,
-        hasCustomer: Boolean(customer),
-      }),
+      ...taxSessionParams({ automaticTax: this._config.enableAutomaticTax }),
       metadata,
       customer: customer ? customer.id : undefined,
       customer_email: !customer && customerEmail ? customerEmail : undefined,

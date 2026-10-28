@@ -442,7 +442,7 @@ describe('StripeAPI', function () {
       sinon.assert.calledOnce(logged);
     });
 
-    it('creates the session again without the tax ID, or saving the business name, when Stripe refuses it', async function () {
+    it('creates the session again without the tax ID, or saving onto the customer for it, when Stripe refuses it', async function () {
       const logged = sinon.stub(logging, 'error');
       const refusal = Object.assign(new Error('Invalid tax_id_collection'), {
         type: 'StripeInvalidRequestError',
@@ -459,7 +459,7 @@ describe('StripeAPI', function () {
       assert.equal(session.id, 'cs_no_tax_id');
       const [asking, plain] = mockStripe.checkout.sessions.create.getCalls();
       assert.deepEqual(asking.firstArg.tax_id_collection, { enabled: true });
-      assert.deepEqual(asking.firstArg.customer_update, { name: 'auto' });
+      assert.deepEqual(asking.firstArg.customer_update, { address: 'auto', name: 'auto' });
       assert.equal(plain.firstArg.tax_id_collection, undefined);
       assert.equal(plain.firstArg.customer_update, undefined);
       sinon.assert.calledOnce(logged);
