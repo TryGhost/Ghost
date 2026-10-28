@@ -80,7 +80,11 @@ describe('Link redirection service root', function () {
   async function request() {
     const res = { setHeader: sandbox.stub(), redirect: sandbox.stub() };
     const next = sandbox.stub();
-    await root.service.handleRequest({ originalUrl: '/blog/r/link?m=member' }, res, next);
+    await root.service.handleRequest(
+      { method: 'GET', originalUrl: '/blog/r/link?m=member' },
+      res,
+      next,
+    );
     return { res, next };
   }
 
