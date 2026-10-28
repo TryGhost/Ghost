@@ -30,8 +30,7 @@ export function parseCSV(text: string): Record<string, string>[] {
 // {name} objects and field names are internal (subscribed, not subscribed_to_emails).
 // Downloaded as-is they render as [object Object] and cannot be fixed and re-uploaded,
 // so rows are shaped into the members export vocabulary first, matching the emailed
-// error report. The newsletters column only appears when the submitted file carried
-// one: an empty cell in that column reads back as an explicit "no newsletters".
+// error report. The newsletters column only appears when the submitted file carried one.
 const nameEntrySchema = z.union([z.string(), z.object({ name: z.string() })]);
 
 const rawErrorRowSchema = z.object({ error: z.string().catch('') }).catchall(z.unknown());

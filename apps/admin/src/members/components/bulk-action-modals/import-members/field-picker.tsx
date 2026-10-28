@@ -31,6 +31,7 @@ const MEMBERSHIP_ICONS: Record<string, typeof LucideIcon.Type> = {
   // A comp, as a venue means it: gift_id is an actual gift someone sent.
   complimentary_plan: LucideIcon.Ticket,
   labels: LucideIcon.Tag,
+  newsletters: LucideIcon.Newspaper,
   created_at: LucideIcon.Calendar,
   gift_id: LucideIcon.Gift,
   import_tier: LucideIcon.Star,

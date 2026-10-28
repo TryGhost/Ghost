@@ -126,6 +126,20 @@ describe('mapping helpers', () => {
     expect(mapping.gift_id).toBe('gift_id');
   });
 
+  it('offers Newsletters and maps a newsletters column onto it', () => {
+    expect(getFieldMappings().find((m) => m.value === 'newsletters')).toEqual({
+      label: 'Newsletters',
+      value: 'newsletters',
+    });
+
+    const mapping = detectFieldTypes([
+      { email: 'user@example.com', newsletters: 'Daily News,Weekly Digest' },
+      { email: 'other@example.com', newsletters: '' },
+    ]);
+
+    expect(mapping.newsletters).toBe('newsletters');
+  });
+
   const customFieldColumns: MemberCustomFieldCsvColumn[] = [
     {
       label: 'Nickname',
