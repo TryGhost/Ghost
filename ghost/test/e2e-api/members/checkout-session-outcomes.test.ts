@@ -32,6 +32,16 @@ describe('Checkout session outcomes', function () {
       .expectStatus(200);
   }
 
+  // A tax ID needs no custom field, so it's the collected part that takes no setting up.
+  async function offerTaxId() {
+    mockManager.mockLabsEnabled('stripeCheckoutCollection');
+    mockManager.mockLabsDisabled('stripeAutomaticTax');
+    await adminAgent
+      .put('/stripe/checkout/config/')
+      .body({ checkout_config: [{ tax_number: { collect: true } }] })
+      .expectStatus(200);
+  }
+
   function startCheckout(status = 200) {
     return membersAgent
       .post('/api/create-stripe-checkout-session/')
@@ -60,6 +70,7 @@ describe('Checkout session outcomes', function () {
 
   afterEach(async function () {
     mockManager.restore();
+    await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
   });
 
@@ -88,6 +99,67 @@ describe('Checkout session outcomes', function () {
     assert.equal(stripeMocker.checkoutSessions.at(-1).branding_settings, undefined);
     expect(sessions()).toMatchObject([
       { event: { outcome: 'success' }, labels: { design: 'refused' } },
+    ]);
+  });
+
+  it('records each part of the checkout a session was sent with', async function () {
+    await offerTaxId();
+    await startCheckout();
+
+    expect(sessions()).toMatchObject([
+      {
+        event: { outcome: 'success' },
+        labels: { design: 'none', shipping: 'none', phone: 'none', tax_number: 'applied' },
+      },
+    ]);
+  });
+
+  it('records a collected part Stripe refused by name, as the session went ahead without it', async function () {
+    await offerTaxId();
+    stripeMocker.checkoutParamRefusal = {
+      param: 'tax_id_collection',
+      error: {
+        type: 'invalid_request_error',
+        param: 'tax_id_collection[enabled]',
+        message: 'Tax ID collection is not available.',
+      },
+    };
+    await startCheckout();
+
+    assert.equal(stripeMocker.checkoutSessions.at(-1).tax_id_collection, undefined);
+    expect(sessions()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { tax_number: 'refused' } },
+    ]);
+  });
+
+  // Stripe refuses some sessions without naming a parameter, so any part could be why.
+  it('records every part as dropped when Stripe refused the session without naming why, and it went ahead without them', async function () {
+    await setDesign();
+    await offerTaxId();
+    stripeMocker.checkoutParamRefusal = {
+      param: 'tax_id_collection',
+      error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
+    };
+    await startCheckout();
+
+    const session = stripeMocker.checkoutSessions.at(-1);
+    assert.equal(session.tax_id_collection, undefined);
+    assert.equal(session.branding_settings, undefined);
+    expect(sessions()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { design: 'dropped', tax_number: 'dropped' } },
+    ]);
+  });
+
+  it('records a session Stripe failed without naming why, even sent without the checkout’s parts', async function () {
+    await setDesign();
+    stripeMocker.checkoutSessionError = {
+      type: 'invalid_request_error',
+      message: 'Your account cannot currently make live charges.',
+    };
+    await startCheckout(400);
+
+    expect(sessions()).toMatchObject([
+      { event: { outcome: 'failure' }, labels: { design: 'dropped' } },
     ]);
   });
 

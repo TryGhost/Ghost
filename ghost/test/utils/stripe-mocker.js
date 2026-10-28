@@ -112,6 +112,12 @@ class StripeMocker {
   failCheckoutExpiry = false;
   /** Makes Stripe refuse checkout sessions sent with a design. */
   refuseCheckoutDesign = false;
+  /**
+   * Makes Stripe refuse checkout sessions sent with this parameter, with this error in Stripe's
+   * API shape, and take them once it's left out. The error names the parameter only if given one.
+   * @type {{param: string, error: object} | null}
+   */
+  checkoutParamRefusal = null;
   /** Makes Stripe fail every new checkout session with this error, in Stripe's API shape. */
   checkoutSessionError = null;
 
@@ -151,6 +157,7 @@ class StripeMocker {
     this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
     this.failCheckoutExpiry = false;
     this.refuseCheckoutDesign = false;
+    this.checkoutParamRefusal = null;
     this.checkoutSessionError = null;
 
     // Fix for now, because of importing order breaking some things when they are not initialized
@@ -590,6 +597,9 @@ class StripeMocker {
         );
         if (refusal) {
           return [400, { error: { type: 'invalid_request_error', message: refusal } }];
+        }
+        if (this.checkoutParamRefusal && this.checkoutParamRefusal.param in session) {
+          return [400, { error: this.checkoutParamRefusal.error }];
         }
         if (this.refuseCheckoutDesign && session.branding_settings) {
           return [
