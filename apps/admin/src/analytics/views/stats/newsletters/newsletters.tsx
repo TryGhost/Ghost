@@ -36,7 +36,13 @@ import {
   useEmailTrackOpens,
   useNewslettersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  formatQueryDate,
+  getPeriodText,
+  getRangeDates,
+  hasHourlyInterval,
+} from '@/shared/analytics/chart-helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
@@ -60,7 +66,7 @@ export type AvgsDataItem = {
 
 // Separate component for just the table rows that handles data fetching
 const NewsletterTableRows: React.FC<{
-  range: number;
+  range: StatsRange;
   selectedNewsletterId: string | null | undefined;
   shouldFetchStats: boolean;
   sortBy: TopNewslettersOrder;
@@ -203,7 +209,7 @@ NewsletterTableRows.displayName = 'NewsletterTableRows';
 const NewsletterTableHeader: React.FC<{
   sortBy: TopNewslettersOrder;
   setSortBy: (sort: TopNewslettersOrder) => void;
-  range: number;
+  range: StatsRange;
 }> = React.memo(({ sortBy, setSortBy, range }) => {
   // Memoize the card header content since it only depends on range
   const cardHeaderContent = useMemo(
@@ -257,7 +263,7 @@ NewsletterTableHeader.displayName = 'NewsletterTableHeader';
 
 // Optimized table component that only re-renders rows when data changes
 const TopNewslettersTable: React.FC<{
-  range: number;
+  range: StatsRange;
   selectedNewsletterId: string | null | undefined;
   shouldFetchStats: boolean;
 }> = React.memo(({ range, selectedNewsletterId, shouldFetchStats }) => {
@@ -447,7 +453,7 @@ const Newsletters: React.FC = () => {
       <StatsHeader>
         <NavbarActions>
           <NewsletterSelect newsletters={newslettersData?.newsletters} />
-          <DateRangeSelect />
+          <DateRangeSelect chartsDailyTotals />
         </NavbarActions>
       </StatsHeader>
       <StatsView isLoading={false} loadingComponent={<></>}>
@@ -456,8 +462,15 @@ const Newsletters: React.FC = () => {
             <CardContent>
               <NewsletterKPIs
                 avgsData={avgsData}
+                dayStart={
+                  hasHourlyInterval(subscriberStatsData)
+                    ? (subscriberStatsData as { meta?: { start?: number } } | undefined)?.meta
+                        ?.start
+                    : undefined
+                }
                 initialTab={initialTab}
                 isAvgsLoading={false}
+                isHourly={hasHourlyInterval(subscriberStatsData)}
                 isLoading={isKPIsLoading}
                 subscribersData={subscribersData}
                 totals={totals}

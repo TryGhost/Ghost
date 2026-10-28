@@ -7,12 +7,20 @@ import {
   useSubscriptionStats,
 } from '@tryghost/admin-x-framework/api/stats';
 import { formatNumber, formatPercentage } from '@tryghost/shade/utils';
-import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  formatQueryDate,
+  getRangeDates,
+  getSingleDay,
+  hasHourlyInterval,
+} from '@/shared/analytics/chart-helpers';
 import { getSymbol } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
 
 // Type for direction values
 export type DiffDirection = 'up' | 'down' | 'same';
+
+type MemberCountTotals = { paid: number; free: number; comped: number; gift: number };
 
 // Calculate totals from member data
 const calculateTotals = (
@@ -20,6 +28,9 @@ const calculateTotals = (
   mrrData: MrrHistoryItem[],
   dateFrom: string,
   memberCountTotals?: { paid: number; free: number; comped: number; gift: number },
+  // Where a single day started, when it came back hour by hour: each hour holds
+  // the totals at its end, so the day's change is measured from here
+  dayStart?: { members?: MemberCountTotals; mrr?: number },
 ) => {
   if (!memberData.length) {
     return {
@@ -72,9 +83,9 @@ const calculateTotals = (
     mrr: 'same' as DiffDirection,
   };
 
-  if (memberData.length > 1) {
-    // Get first day in range
-    const first = memberData[0];
+  if (dayStart?.members || memberData.length > 1) {
+    // Where the range started: the day's opening totals, or the first day
+    const first = dayStart?.members ?? memberData[0];
     const firstTotal = first.free + first.paid + first.comped + (first.gift ?? 0);
 
     if (firstTotal > 0) {
@@ -99,7 +110,16 @@ const calculateTotals = (
     }
   }
 
-  if (mrrData.length > 1) {
+  if (dayStart?.mrr !== undefined) {
+    const mrrChange =
+      dayStart.mrr === 0
+        ? totalMrr > 0
+          ? 100
+          : 0
+        : ((totalMrr - dayStart.mrr) / dayStart.mrr) * 100;
+    percentChanges.mrr = formatPercentage(mrrChange / 100);
+    directions.mrr = mrrChange > 0 ? 'up' : mrrChange < 0 ? 'down' : 'same';
+  } else if (mrrData.length > 1) {
     // Find the first ACTUAL data point within the selected date range (not synthetic boundary points)
     const actualStartDate = moment(dateFrom).format('YYYY-MM-DD');
     const firstActualPoint = mrrData.find((point) =>
@@ -220,27 +240,40 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
   });
 };
 
-export const useGrowthStats = (range: number) => {
+export const useGrowthStats = (range: StatsRange) => {
   // Calculate date range using Shade's timezone-aware getRangeDates
-  const { startDate, endDate } = useMemo(() => getRangeDates(range), [range]);
+  const { startDate, endDate, timezone } = useMemo(() => getRangeDates(range), [range]);
   const dateFrom = formatQueryDate(startDate);
+  const dateTo = formatQueryDate(endDate);
+  const singleDay = getSingleDay(range);
+  const isSingleDay = singleDay !== null;
+  // The history endpoints always run up to today, so a custom range that
+  // ends earlier has to be trimmed to its end date
+  const endsBeforeToday = endDate.isBefore(moment(), 'day');
 
   // Fetch member count history from API
   // For single day ranges, we need at least 2 days of data to show a proper delta
-  const memberDataStartDate =
-    range === 1 ? moment(dateFrom).subtract(1, 'day').format('YYYY-MM-DD') : dateFrom;
+  const memberDataStartDate = isSingleDay
+    ? moment(dateFrom).subtract(1, 'day').format('YYYY-MM-DD')
+    : dateFrom;
+
+  // Days follow the viewer's timezone, like visitors, and a single day also
+  // asks for its totals by the hour (date_to's day). Older servers ignore
+  // both and answer by UTC day
+  const historyParams: Record<string, string> = singleDay
+    ? { date_from: memberDataStartDate, date_to: singleDay, interval: 'hour', timezone }
+    : { date_from: memberDataStartDate, timezone };
 
   const { data: memberCountResponse, isLoading: isMemberCountLoading } = useMemberCountHistory({
-    searchParams: {
-      date_from: memberDataStartDate,
-    },
+    searchParams: historyParams,
   });
 
   const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
-    searchParams: {
-      date_from: memberDataStartDate,
-    },
+    searchParams: historyParams,
   });
+
+  const isHourly = isSingleDay && hasHourlyInterval(memberCountResponse);
+  const isMrrHourly = isSingleDay && hasHourlyInterval(mrrHistoryResponse);
 
   // Fetch subscription stats for real subscription events
   const { data: subscriptionStatsResponse, isLoading: isSubscriptionLoading } =
@@ -258,11 +291,21 @@ export const useGrowthStats = (range: number) => {
       rawData = memberCountResponse;
     }
 
-    // For single day (Today), ensure we have two data points for a proper line
-    if (range === 1 && rawData.length >= 2) {
-      // We should have yesterday's data and today's data
-      const yesterdayData = rawData[rawData.length - 2]; // Yesterday's EOD counts
-      const todayData = rawData[rawData.length - 1]; // Today's EOD counts
+    // Hourly history is already the day's hours, start to end
+    if (isHourly) {
+      return rawData;
+    }
+
+    if (endsBeforeToday) {
+      rawData = rawData.filter((item) => item.date <= dateTo);
+    }
+
+    // Older servers answer a single day with two daily totals: chart them at
+    // the start of the day and the next
+    if (isSingleDay && rawData.length >= 2) {
+      // We should have the previous day's data and the selected day's data
+      const yesterdayData = rawData[rawData.length - 2]; // Previous day's EOD counts
+      const todayData = rawData[rawData.length - 1]; // Selected day's EOD counts
 
       const startOfToday = moment(dateFrom).format('YYYY-MM-DD'); // 6/26
       const startOfTomorrow = moment(dateFrom).add(1, 'day').format('YYYY-MM-DD'); // 6/27
@@ -284,12 +327,11 @@ export const useGrowthStats = (range: number) => {
     }
 
     return rawData;
-  }, [memberCountResponse, range, dateFrom]);
+  }, [memberCountResponse, isHourly, isSingleDay, endsBeforeToday, dateFrom, dateTo]);
 
   const { mrrData, selectedCurrency } = useMemo(() => {
     const dateFromMoment = moment(dateFrom);
-    // For "Today" range (1 day), use end of today to match visitor data behavior
-    const dateToMoment = range === 1 ? moment().endOf('day') : moment().startOf('day');
+    const rangeEnd = moment(dateTo);
 
     if (mrrHistoryResponse?.stats && mrrHistoryResponse?.meta?.totals) {
       // Select the currency with the highest total MRR value (same logic as Dashboard)
@@ -312,8 +354,18 @@ export const useGrowthStats = (range: number) => {
         (d) => d.currency === useCurrency,
       );
 
+      // Hourly history already covers every hour of the day
+      if (isMrrHourly) {
+        return { mrrData: currencyFilteredData, selectedCurrency: useCurrency };
+      }
+
+      // MRR rows are dated by UTC day, so a range ending today keeps rows
+      // dated after the viewer's local today (evening west of UTC)
       const filteredData = currencyFilteredData.filter((item) => {
-        return moment(item.date).isSameOrAfter(dateFromMoment);
+        return (
+          moment(item.date).isSameOrAfter(dateFromMoment) &&
+          (!endsBeforeToday || moment(item.date).isSameOrBefore(rangeEnd, 'day'))
+        );
       });
 
       const allData = [...currencyFilteredData].sort(
@@ -347,8 +399,7 @@ export const useGrowthStats = (range: number) => {
       }
 
       // Always ensure we have a data point at the end of the range
-      const endDateToCheck = range === 1 ? moment().startOf('day') : dateToMoment;
-      const hasEndPoint = result.some((item) => moment(item.date).isSame(endDateToCheck, 'day'));
+      const hasEndPoint = result.some((item) => moment(item.date).isSame(rangeEnd, 'day'));
       if (!hasEndPoint && result.length > 0) {
         // Use the most recent value in our result set
         const sortedResult = [...result].sort(
@@ -358,7 +409,7 @@ export const useGrowthStats = (range: number) => {
 
         result.push({
           ...mostRecentValue,
-          date: endDateToCheck.format('YYYY-MM-DD'),
+          date: rangeEnd.format('YYYY-MM-DD'),
         });
       }
 
@@ -369,12 +420,33 @@ export const useGrowthStats = (range: number) => {
       return { mrrData: finalResult, selectedCurrency: useCurrency };
     }
     return { mrrData: [], selectedCurrency: 'usd' };
-  }, [mrrHistoryResponse, dateFrom, range]);
+  }, [mrrHistoryResponse, isMrrHourly, dateFrom, dateTo, endsBeforeToday]);
+
+  // Current totals only describe a range that ends today; earlier ranges use
+  // the counts on their last day
+  const currentTotals = endsBeforeToday ? undefined : memberCountResponse?.meta?.totals;
+
+  // Where a single day started, from hourly history
+  const dayStart = useMemo(() => {
+    const members = isHourly
+      ? (memberCountResponse as { meta?: { start?: MemberCountTotals } } | undefined)?.meta?.start
+      : undefined;
+    const mrrStarts = isMrrHourly
+      ? (
+          mrrHistoryResponse as
+            | { meta?: { start?: { currency: string; mrr: number }[] } }
+            | undefined
+        )?.meta?.start
+      : undefined;
+    const mrr = mrrStarts?.find((start) => start.currency === selectedCurrency)?.mrr;
+    // MRR stays in cents, like the totals it's compared with
+    return { members, mrr };
+  }, [isHourly, isMrrHourly, memberCountResponse, mrrHistoryResponse, selectedCurrency]);
 
   // Calculate totals
   const totalsData = useMemo(
-    () => calculateTotals(memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals),
-    [memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals],
+    () => calculateTotals(memberData, mrrData, dateFrom, currentTotals, dayStart),
+    [memberData, mrrData, dateFrom, currentTotals],
   );
 
   // Format chart data
@@ -433,6 +505,8 @@ export const useGrowthStats = (range: number) => {
 
   return {
     isLoading,
+    // A single day came back hour by hour, so it charts with times
+    isHourly,
     memberData,
     mrrData,
     dateFrom,

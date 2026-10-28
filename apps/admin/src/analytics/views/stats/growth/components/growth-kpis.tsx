@@ -83,12 +83,14 @@ const PaidMembersTooltipContent = ({
   range,
   color,
   showBreakdown,
+  showHours,
 }: {
   active?: boolean;
   payload?: Array<{ value: number; payload: PaidMembersChartDataItem }>;
   range?: number;
   color?: string;
   showBreakdown?: boolean;
+  showHours?: boolean;
 }) => {
   if (!active || !payload?.length) {
     return null;
@@ -102,7 +104,7 @@ const PaidMembersTooltipContent = ({
     <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
       {date && (
         <div className="mb-1 text-sm text-foreground">
-          {formatDisplayDateWithRange(date, range || 0)}
+          {formatDisplayDateWithRange(date, range || 0, showHours)}
         </div>
       )}
       <div className="flex flex-col gap-1">
@@ -154,8 +156,18 @@ const GrowthKPIs: React.FC<{
   initialTab?: string;
   currencySymbol: string;
   isLoading: boolean;
+  // A single day came back hour by hour, so it charts with times
+  isHourly?: boolean;
   onTabChange?: (tab: KpiTab) => void;
-}> = ({ chartData: allChartData, totals, initialTab, currencySymbol, isLoading, onTabChange }) => {
+}> = ({
+  chartData: allChartData,
+  totals,
+  initialTab,
+  currencySymbol,
+  isLoading,
+  isHourly = false,
+  onTabChange,
+}) => {
   const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
   const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
   const { range } = useAnalytics();
@@ -185,7 +197,7 @@ const GrowthKPIs: React.FC<{
   // Create chart data based on selected tab
   const { chartData, chartRange } = useMemo(() => {
     if (!allChartData || allChartData.length === 0) {
-      return { chartData: [], chartRange: range };
+      return { chartData: [], chartRange: getEffectiveChartRange(range) };
     }
 
     // First sanitize the data based on the selected field
@@ -429,12 +441,14 @@ const GrowthKPIs: React.FC<{
           }
           id={currentTab}
           range={chartRange}
+          showHours={isHourly}
           tooltipContent={
             currentTab === 'paid-members' ? (
               <PaidMembersTooltipContent
                 color={tabConfig['paid-members'].color}
                 range={chartRange}
                 showBreakdown={true}
+                showHours={isHourly}
               />
             ) : undefined
           }

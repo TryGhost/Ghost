@@ -1,4 +1,5 @@
 import { type Post as PostBase } from '@tryghost/admin-x-framework/api/posts';
+import { type StatsRange } from '@/shared/analytics/chart-helpers';
 import { createContext, useContext } from 'react';
 
 // Comprehensive Post type with all the includes we fetch in PostAnalytics
@@ -30,8 +31,8 @@ export type PostAnalyticsContextType = {
   post: Post | undefined;
   isPostLoading: boolean;
   refetchPost: () => Promise<void>;
-  range: number;
-  setRange: (value: number) => void;
+  range: StatsRange;
+  setRange: (value: StatsRange) => void;
 };
 
 export const PostAnalyticsContext = createContext<PostAnalyticsContextType | undefined>(undefined);

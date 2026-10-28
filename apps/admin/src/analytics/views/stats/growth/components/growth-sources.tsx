@@ -26,7 +26,7 @@ import {
   useMembersTrackSources,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
+import { type StatsRange, getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMrrHistory } from '@tryghost/admin-x-framework/api/stats';
 import { useTopSourcesGrowth } from '@/analytics/hooks/use-top-sources-growth';
@@ -101,7 +101,7 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({
 };
 
 interface GrowthSourcesProps {
-  range: number;
+  range: StatsRange;
   limit?: number;
   showViewAll?: boolean;
   sortBy?: SourcesOrder;

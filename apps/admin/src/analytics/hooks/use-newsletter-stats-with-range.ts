@@ -5,7 +5,12 @@ import {
   useNewsletterStats,
   useSubscriberCount,
 } from '@tryghost/admin-x-framework/api/stats';
-import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import {
+  type StatsRange,
+  formatQueryDate,
+  getRangeDates,
+  getSingleDay,
+} from '@/shared/analytics/chart-helpers';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useMemo } from 'react';
 
@@ -20,16 +25,16 @@ export type TopNewslettersOrder =
   | 'sent_to desc';
 
 /**
- * Hook to fetch Newsletter Stats, handling the conversion from a numeric range
+ * Hook to fetch Newsletter Stats, handling the conversion from a date range
  * and an optional order parameter to API query parameters.
  *
- * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
+ * @param range - The date range: a number of days (e.g., 7, 30, 90) or a custom range. Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'open_rate desc'). Defaults to 'date desc'.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
 export const useNewsletterStatsWithRange = (
-  range?: number,
+  range?: StatsRange,
   order?: TopNewslettersOrder,
   newsletterId?: string,
   shouldFetch = true,
@@ -73,15 +78,15 @@ export const useNewsletterStatsWithRange = (
 };
 
 /**
- * Hook to fetch Subscriber Count stats, handling the conversion from a numeric range
+ * Hook to fetch Subscriber Count stats, handling the conversion from a date range
  * to API query parameters.
  *
- * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
+ * @param range - The date range: a number of days (e.g., 7, 30, 90) or a custom range. Defaults to 30.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
 export const useSubscriberCountWithRange = (
-  range?: number,
+  range?: StatsRange,
   newsletterId?: string,
   shouldFetch = true,
 ) => {
@@ -89,21 +94,33 @@ export const useSubscriberCountWithRange = (
   const currentRange = range ?? 30;
 
   // Calculate date strings using the helper, memoize for stability
-  const { startDate, endDate } = useMemo(() => getRangeDates(currentRange), [currentRange]);
+  const { startDate, endDate, timezone } = useMemo(
+    () => getRangeDates(currentRange),
+    [currentRange],
+  );
+  const singleDay = getSingleDay(currentRange);
 
-  // Build search params
+  // Days follow the viewer's timezone, like visitors. A single day also asks
+  // for the day before, whose closing total is where the day started, and for
+  // its totals by the hour, which servers that can answer send for date_to's
+  // day; older servers ignore both and answer by UTC day
   const searchParams = useMemo(() => {
     const params: Record<string, string> = {
-      date_from: formatQueryDate(startDate),
+      date_from: formatQueryDate(singleDay ? startDate.clone().subtract(1, 'day') : startDate),
       date_to: formatQueryDate(endDate),
+      timezone,
     };
+
+    if (singleDay) {
+      params.interval = 'hour';
+    }
 
     if (newsletterId) {
       params.newsletter_id = newsletterId;
     }
 
     return params;
-  }, [startDate, endDate, newsletterId]);
+  }, [singleDay, startDate, endDate, timezone, newsletterId]);
 
   // Conditionally call the hook or return empty state
   const realResult = useSubscriberCount({ searchParams, enabled: shouldFetch });
@@ -130,16 +147,16 @@ export const useNewslettersList = () => {
 };
 
 /**
- * Hook to fetch Newsletter Basic Stats (without click data), handling the conversion from a numeric range
+ * Hook to fetch Newsletter Basic Stats (without click data), handling the conversion from a date range
  * and an optional order parameter to API query parameters.
  *
- * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
+ * @param range - The date range: a number of days (e.g., 7, 30, 90) or a custom range. Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'open_rate desc'). Defaults to 'date desc'.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
 export const useNewsletterBasicStatsWithRange = (
-  range?: number,
+  range?: StatsRange,
   order?: TopNewslettersOrder,
   newsletterId?: string,
   shouldFetch = true,
@@ -229,13 +246,13 @@ export const useNewsletterClickStatsWithRange = (
  * Combined hook to fetch Newsletter Stats using split endpoints for better performance
  * This fetches basic stats immediately and click stats in parallel
  *
- * @param range - The number of days for the date range (e.g., 7, 30, 90). Defaults to 30.
+ * @param range - The date range: a number of days (e.g., 7, 30, 90) or a custom range. Defaults to 30.
  * @param order - The field and direction to order by (e.g., 'open_rate desc'). Defaults to 'date desc'.
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
 export const useNewsletterStatsWithRangeSplit = (
-  range?: number,
+  range?: StatsRange,
   order?: TopNewslettersOrder,
   newsletterId?: string,
   shouldFetch = true,

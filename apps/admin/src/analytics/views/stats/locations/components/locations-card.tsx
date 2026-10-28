@@ -37,7 +37,7 @@ import {
 } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from '@/shared/analytics/constants';
 import { SVGMap } from 'react-svg-map';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { type StatsRange, getPeriodText } from '@/shared/analytics/chart-helpers';
 
 // `@svg-maps/world` is a CJS-only data package shaped `{__esModule, default}` with no ESM build; Rolldown returns the wrapper object, so interop-unwrap the default to get the actual map data (Rollup returns the data object unchanged).
 const worldMap = (World as { default?: typeof World }).default ?? World;
@@ -89,7 +89,7 @@ interface LocationsCardProps {
     | null
     | undefined;
   isLoading: boolean;
-  range: number;
+  range: StatsRange;
   onLocationClick?: (location: string) => void;
 }
 

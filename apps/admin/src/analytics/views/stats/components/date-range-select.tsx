@@ -5,14 +5,22 @@ import { useAnalytics } from '@/analytics/providers/analytics-context';
 
 interface StatsDateRangeSelectProps {
   excludeRanges?: (keyof typeof STATS_RANGES)[];
+  // The view charts members, revenue or subscribers, which need hourly
+  // history for a single day; without it, single days aren't offered
+  chartsDailyTotals?: boolean;
 }
 
 // Thin binding of the shared DateRangeSelect to the site-wide analytics
 // view-state, so the many call sites don't each have to read the context.
-const StatsDateRangeSelect: React.FC<StatsDateRangeSelectProps> = ({ excludeRanges }) => {
-  const { range, setRange } = useAnalytics();
+const StatsDateRangeSelect: React.FC<StatsDateRangeSelectProps> = ({
+  excludeRanges = [],
+  chartsDailyTotals = false,
+}) => {
+  const { range, setRange, supportsHourly } = useAnalytics();
+  const excluded =
+    chartsDailyTotals && !supportsHourly ? [...excludeRanges, 'today' as const] : excludeRanges;
 
-  return <DateRangeSelect excludeRanges={excludeRanges} range={range} onRangeChange={setRange} />;
+  return <DateRangeSelect excludeRanges={excluded} range={range} onRangeChange={setRange} />;
 };
 
 export default StatsDateRangeSelect;

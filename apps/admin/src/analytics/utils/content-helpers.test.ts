@@ -5,6 +5,7 @@ import {
   getContentTitle,
   getGrowthContentDescription,
 } from '@/analytics/utils/content-helpers';
+import { type StatsRange } from '@/shared/analytics/chart-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('content-helpers', () => {
@@ -53,10 +54,10 @@ describe('content-helpers', () => {
   });
 
   describe('getContentDescription', () => {
-    let mockGetPeriodText: ReturnType<typeof vi.fn<(range: number) => string>>;
+    let mockGetPeriodText: ReturnType<typeof vi.fn<(range: StatsRange) => string>>;
 
     beforeEach(function () {
-      mockGetPeriodText = vi.fn<(range: number) => string>();
+      mockGetPeriodText = vi.fn<(range: StatsRange) => string>();
     });
 
     it('returns correct description for posts', () => {
@@ -109,10 +110,10 @@ describe('content-helpers', () => {
   });
 
   describe('getGrowthContentDescription', () => {
-    let mockGetPeriodText: ReturnType<typeof vi.fn<(range: number) => string>>;
+    let mockGetPeriodText: ReturnType<typeof vi.fn<(range: StatsRange) => string>>;
 
     beforeEach(function () {
-      mockGetPeriodText = vi.fn<(range: number) => string>();
+      mockGetPeriodText = vi.fn<(range: StatsRange) => string>();
     });
 
     it('returns correct growth description for posts', () => {

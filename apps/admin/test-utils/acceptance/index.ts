@@ -1,6 +1,6 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
-export { fakeAnalyticsOverview, fakeSiteHistoryStart } from './analytics';
+export { fakeAnalyticsOverview, fakeHourlyHistory, fakeSiteHistoryStart } from './analytics';
 export {
   UNSPLASH_PICKED,
   editorReadLanded,

@@ -28,6 +28,7 @@ import {
   formatPercentage,
 } from '@tryghost/shade/utils';
 import {
+  type StatsRange,
   getEffectiveChartRange,
   getPeriodText,
   sanitizeChartData,
@@ -44,7 +45,7 @@ interface BarTooltipPayload {
 interface BarTooltipProps {
   active?: boolean;
   payload?: BarTooltipPayload[];
-  range?: number;
+  range?: StatsRange;
 }
 
 const BarTooltipContent = ({ active, payload }: BarTooltipProps) => {
@@ -107,6 +108,11 @@ const NewsletterKPIs: React.FC<{
   isLoading: boolean;
   isAvgsLoading: boolean;
   initialTab?: string;
+  // A single day came back hour by hour, so it charts with times
+  isHourly?: boolean;
+  // Subscribers where that day started: each hour holds the total at its end,
+  // so the day's change is measured from here
+  dayStart?: number;
 }> = ({
   subscribersData: allSubscribersData,
   avgsData,
@@ -114,6 +120,8 @@ const NewsletterKPIs: React.FC<{
   isLoading,
   isAvgsLoading,
   initialTab = 'total-subscribers',
+  isHourly = false,
+  dayStart,
 }) => {
   const [currentTab, setCurrentTab] = useState(initialTab);
   const [isHoveringClickable, setIsHoveringClickable] = useState(false);
@@ -151,14 +159,14 @@ const NewsletterKPIs: React.FC<{
   }, [allSubscribersData, range]);
 
   const subscribersDiff = useMemo(() => {
-    if (!subscribersData || subscribersData.length <= 1) {
+    if (!subscribersData || (dayStart === undefined && subscribersData.length <= 1)) {
       return {
         direction: 'same' as const,
         value: '0%',
       };
     }
 
-    const prev = subscribersData[0]?.value ?? 0;
+    const prev = dayStart ?? subscribersData[0]?.value ?? 0;
     const curr = subscribersData[subscribersData.length - 1]?.value ?? 0;
 
     // Calculate direction
@@ -180,7 +188,7 @@ const NewsletterKPIs: React.FC<{
     }
 
     return { direction, value };
-  }, [subscribersData]);
+  }, [subscribersData, dayStart]);
 
   // Update current tab if initialTab changes
   useEffect(() => {
@@ -391,6 +399,7 @@ const NewsletterKPIs: React.FC<{
             data={subscribersData}
             id="mrr"
             range={chartRange}
+            showHours={isHourly}
           />
         )}
 

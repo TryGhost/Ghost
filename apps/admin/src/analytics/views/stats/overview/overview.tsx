@@ -16,6 +16,7 @@ import {
   formatQueryDate,
   getEffectiveChartRange,
   getRangeDates,
+  getSingleDay,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
 import { getAudienceQueryParam } from '@/shared/analytics/audience';
@@ -245,7 +246,7 @@ const Overview: React.FC = () => {
     <StatsLayout>
       <StatsHeader>
         <NavbarActions>
-          <DateRangeSelect excludeRanges={['today']} />
+          <DateRangeSelect chartsDailyTotals />
         </NavbarActions>
       </StatsHeader>
       <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
@@ -257,6 +258,7 @@ const Overview: React.FC = () => {
           kpiValues={kpiValues}
           membersChartData={membersChartData}
           mrrChartData={mrrChartData}
+          showHours={getSingleDay(range) !== null}
           visitorsChartData={visitorsChartData}
           visitorsChartRange={visitorsChartRange}
           visitorsYRange={visitorsYRange}

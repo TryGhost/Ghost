@@ -1,3 +1,5 @@
+import { type StatsRange } from '@/shared/analytics/chart-helpers';
+
 // Shared content type definitions
 export const CONTENT_TYPES = {
   POSTS: 'posts',
@@ -24,8 +26,8 @@ export const getContentTitle = (selectedContentType: ContentType) => {
 
 export const getContentDescription = (
   selectedContentType: ContentType,
-  rangeValue: number,
-  getPeriodText: (range: number) => string,
+  rangeValue: StatsRange,
+  getPeriodText: (range: StatsRange) => string,
 ) => {
   switch (selectedContentType) {
     case CONTENT_TYPES.POSTS:
@@ -43,8 +45,8 @@ export const getContentDescription = (
 
 export const getGrowthContentDescription = (
   selectedContentType: ContentType,
-  rangeValue: number,
-  getPeriodText: (range: number) => string,
+  rangeValue: StatsRange,
+  getPeriodText: (range: StatsRange) => string,
 ) => {
   switch (selectedContentType) {
     case CONTENT_TYPES.POSTS:
