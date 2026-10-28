@@ -184,8 +184,8 @@ export class CheckoutSettingsModal {
     await this.page
       .getByRole('textbox', { name: `New custom field for ${label}` })
       .fill(field.create);
-    // The new field's Save is in the picker's popover, which opens after the modal's own Save.
-    await this.page.getByRole('button', { name: 'Save', exact: true }).last().click();
+    // The open picker hides the rest of the page, so its Save is the only one to be found.
+    await this.page.getByRole('button', { name: 'Save', exact: true }).click();
     await picker.filter({ hasText: field.create }).waitFor();
   }
 
