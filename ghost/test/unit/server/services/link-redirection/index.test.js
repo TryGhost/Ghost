@@ -57,7 +57,7 @@ describe('Link redirection service root', function () {
       get: (property) => values[property],
     });
     dispatch = sandbox.stub(DomainEvents, 'dispatch');
-    root = require('../../../../../core/server/services/link-redirection');
+    root = require('../../../../../core/server/services/link-redirection').default;
   });
 
   afterEach(function () {
@@ -88,19 +88,20 @@ describe('Link redirection service root', function () {
     return { res, next };
   }
 
-  it('publishes no service or repository before init', function () {
-    assert.equal(root.service, undefined);
-    assert.equal(root.linkRedirectRepository, undefined);
+  it('rejects service and repository access before init', function () {
+    assert.throws(() => root.service, /Link redirection used before init/);
+    assert.throws(() => root.extras.linkRedirectRepository(), /Link redirection used before init/);
   });
 
   it('retains the first service and repository across repeated init', async function () {
     await root.init();
-    const { service, linkRedirectRepository } = root;
+    const service = root.service;
+    const linkRedirectRepository = root.extras.linkRedirectRepository();
 
     await root.init();
 
     assert.equal(root.service, service);
-    assert.equal(root.linkRedirectRepository, linkRedirectRepository);
+    assert.equal(root.extras.linkRedirectRepository(), linkRedirectRepository);
   });
 
   it('does not resolve a cache adapter or listen for site changes when caching is disabled', async function () {
@@ -184,8 +185,8 @@ describe('Link redirection service root', function () {
 
     await assert.rejects(root.init(), (error) => error === failure);
 
-    assert.equal(root.service, undefined);
-    assert.equal(root.linkRedirectRepository, undefined);
+    assert.throws(() => root.service, /Link redirection used before init/);
+    assert.throws(() => root.extras.linkRedirectRepository(), /Link redirection used before init/);
     assert.equal(ownedListeners().length, 0);
 
     getAdapter.returns(cache);
