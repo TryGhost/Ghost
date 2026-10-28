@@ -220,8 +220,9 @@ const DateRangePickerContent = React.forwardRef<
             className={cn(
               // Arrows that lead nowhere are hidden rather than disabled
               String.raw`[&_.rdp-button\_next[aria-disabled=true]]:invisible [&_.rdp-button\_previous[aria-disabled=true]]:invisible`,
-              // A lone start date has the same shape as the ends of a range
-              '[&_[data-selected-single=true]]:rounded-md',
+              // Days are rounded squares, hovered or picked, like the ends of a
+              // range; a range's own rounding still applies to its days
+              '[&_td_button]:rounded-md',
             )}
             defaultMonth={defaultMonth}
             disabled={[...(minDate ? [{ before: minDate }] : []), { after: lastDay }]}
