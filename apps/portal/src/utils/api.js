@@ -1,6 +1,7 @@
 import { HumanReadableError } from './errors';
 import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
+import { readMemberCustomFields } from './custom-fields';
 
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   const apiPath = 'members/api';
@@ -302,18 +303,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
             if (!Array.isArray(fields)) {
               return [];
             }
-            // Every part a field is drawn from, not just enough to recognise one: a name
-            // that is not text is rendered as a child and takes the page down with it,
-            // and a type nothing can draw is no more useful than a field that is absent.
-            return fields.filter(
-              (field) =>
-                field &&
-                typeof field.key === 'string' &&
-                field.key.length > 0 &&
-                typeof field.name === 'string' &&
-                typeof field.type === 'string' &&
-                ['read', 'write'].includes(field.access?.member),
-            );
+            return readMemberCustomFields(fields);
           })
           .catch(() => []);
       });

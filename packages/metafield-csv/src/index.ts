@@ -1,5 +1,5 @@
 import * as z from 'zod/mini';
-import { partsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import { isRecordValue, matchShape, type FieldType } from '@tryghost/metafield-types/structure';
 import {
   IdentityTextSchema,
   type Key,
@@ -77,10 +77,11 @@ export interface CsvFieldColumn {
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  const parts = partsOf(field.type);
-  return parts
-    ? parts.map((part) => ({ column: columnOf(field, part), part }))
-    : [{ column: columnOf(field), part: null }];
+  return matchShape<CsvFieldColumn[]>(field.type, {
+    scalar: () => [{ column: columnOf(field), part: null }],
+    record: ({ parts }) =>
+      Object.keys(parts).map((part) => ({ column: columnOf(field, part), part })),
+  });
 }
 
 export function isMetafieldColumn(column: string): boolean {
@@ -111,17 +112,17 @@ export function csvCellsForFields(
 
   for (const field of fields) {
     const value = values[field.namespace]?.[field.key];
-    const parts = partsOf(field.type);
-
-    if (!parts) {
-      cells[columnOf(field)] = toCell(value);
-      continue;
-    }
-
-    const composite = (value ?? {}) as Record<string, unknown>;
-    for (const part of parts) {
-      cells[columnOf(field, part)] = toCell(composite[part]);
-    }
+    matchShape(field.type, {
+      scalar: () => {
+        cells[columnOf(field)] = toCell(value);
+      },
+      record: ({ parts }) => {
+        const composite = isRecordValue(value) ? value : {};
+        for (const part of Object.keys(parts)) {
+          cells[columnOf(field, part)] = toCell(composite[part]);
+        }
+      },
+    });
   }
 
   return cells;
@@ -170,35 +171,27 @@ export function fieldValuesFromCsvRow(
   const values: Record<string, unknown> = {};
 
   for (const field of fields) {
-    const parts = partsOf(field.type);
-
-    if (!parts) {
-      const cell = cellFor(row, field, null);
-      if (cell !== undefined) {
-        const decoded = decodeCell(cell);
-        if (!isBlank(decoded)) {
-          values[identityOf(field)] = decoded;
+    const value = matchShape<unknown>(field.type, {
+      scalar: () => {
+        const cell = cellFor(row, field, null);
+        const decoded = cell === undefined ? '' : decodeCell(cell);
+        return isBlank(decoded) ? undefined : decoded;
+      },
+      record: ({ parts }) => {
+        const composite: Record<string, string> = {};
+        for (const part of Object.keys(parts)) {
+          const cell = cellFor(row, field, part);
+          const decoded = cell === undefined ? '' : decodeCell(cell);
+          if (!isBlank(decoded)) {
+            composite[part] = decoded;
+          }
         }
-      }
-      continue;
-    }
+        return Object.keys(composite).length > 0 ? composite : undefined;
+      },
+    });
 
-    let anyColumnPresent = false;
-    const composite: Record<string, string> = {};
-    for (const part of parts) {
-      const cell = cellFor(row, field, part);
-      if (cell === undefined) {
-        continue;
-      }
-      anyColumnPresent = true;
-      const decoded = decodeCell(cell);
-      if (!isBlank(decoded)) {
-        composite[part] = decoded;
-      }
-    }
-
-    if (anyColumnPresent && Object.keys(composite).length > 0) {
-      values[identityOf(field)] = composite;
+    if (value !== undefined) {
+      values[identityOf(field)] = value;
     }
   }
 
