@@ -1,4 +1,3 @@
-import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import type { ConfigInstance } from '../../../../shared/config/loader';
 
@@ -18,6 +17,10 @@ type SettingsCache = {
 
 type TinybirdService = {
   getToken(): { token?: string } | null | undefined;
+};
+
+type Logging = {
+  error(...args: unknown[]): void;
 };
 
 type QueryValue =
@@ -65,6 +68,7 @@ type TinybirdDependencies = {
   request: RequestClient;
   settingsCache: SettingsCache;
   tinybirdService: TinybirdService;
+  logging: Logging;
 };
 
 type TinybirdResponse = {
@@ -112,7 +116,13 @@ function isTinybirdResponse(value: unknown): value is TinybirdResponse {
 }
 
 /** Creates a configured Tinybird client. */
-export function create({ config, request, settingsCache, tinybirdService }: TinybirdDependencies) {
+export function create({
+  config,
+  request,
+  settingsCache,
+  tinybirdService,
+  logging,
+}: TinybirdDependencies) {
   /** Builds a Tinybird API request. */
   const buildRequest = (pipeName: string, options: TinybirdOptions = {}) => {
     const rawStatsConfig: unknown = config.get('tinybird:stats');

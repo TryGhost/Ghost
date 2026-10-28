@@ -1,4 +1,5 @@
-const moment = require('moment');
+const { moment } = require('../../../kernel/clock');
+const { startOfUtcDayAgo, utcToday } = require('./utils/date-utils');
 
 class MembersStatsService {
   /**
@@ -40,11 +41,9 @@ class MembersStatsService {
    */
   async fetchAllStatusDeltas(options = {}) {
     const knex = this.knex;
-    const startDate = options.startDate
-      ? moment.utc(options.startDate).startOf('day')
-      : moment.utc().subtract(91, 'days').startOf('day');
-
-    const formattedStartDate = startDate.format('YYYY-MM-DD HH:mm:ss');
+    const formattedStartDate = options.startDate
+      ? moment.utc(options.startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss')
+      : startOfUtcDayAgo(91);
     const rows = await knex('members_status_events')
       .select(knex.raw('DATE(created_at) as date'))
       .select(
@@ -98,7 +97,7 @@ class MembersStatsService {
     const totals = await this.getCount();
 
     // Get today in UTC (consistent with frontend)
-    const today = moment.utc().format('YYYY-MM-DD');
+    const today = utcToday();
 
     // When startDate is provided, always return complete range
     if (options.startDate) {

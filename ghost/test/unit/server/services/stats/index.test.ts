@@ -12,7 +12,6 @@ const requestExternal = require('../../../../../core/server/lib/request-external
 const StatsService = require('../../../../../core/server/services/stats/stats-service');
 
 const ROOT_PATH = require.resolve('../../../../../core/server/services/stats');
-const WRAPPER_PATH = require.resolve('../../../../../core/server/services/stats/service');
 const ENDPOINT_PATH = require.resolve('../../../../../core/server/api/endpoints/stats');
 const QUERY_SERVICES = ['mrr', 'members', 'subscriptions', 'referrers', 'posts', 'content'];
 
@@ -30,7 +29,7 @@ type TinybirdClient = {
 
 describe('Stats service root', function () {
   const sandbox = sinon.createSandbox();
-  const modulePaths = [ROOT_PATH, WRAPPER_PATH, ENDPOINT_PATH];
+  const modulePaths = [ROOT_PATH, ENDPOINT_PATH];
   let savedModules: Map<string, NodeJS.Module | undefined>;
   let savedTinybirdInstance: unknown;
   let getConfig: sinon.SinonStub;
