@@ -97,7 +97,7 @@ const preview: Preview = {
         method: 'alphabetical',
         order: [
           'Overview',
-          ['Introduction', 'Ghost Apps', 'Design System Landscape'],
+          ['Introduction', 'Ghost Apps'],
           'Tokens',
           [
             'Tokens Guide',

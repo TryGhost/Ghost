@@ -1888,9 +1888,6 @@ importers:
       tsc-alias:
         specifier: 1.8.17
         version: 1.8.17
-      tsx:
-        specifier: 'catalog:'
-        version: 4.23.15
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
