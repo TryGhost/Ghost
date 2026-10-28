@@ -2608,7 +2608,7 @@ services:
           - core/server/services/email-service/sending-service.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/services/settings/settings-service.js
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/api/endpoints/utils/serializers/output/mappers/newsletters.js
           - core/server/services/member-welcome-emails/service.js
           - core/server/api/endpoints/automated-emails.js
@@ -6292,7 +6292,7 @@ services:
           - core/server/auth/api-key/content.js
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-service.js
@@ -6344,7 +6344,7 @@ services:
           references, concurrent checks/reloads and restart identity are source-only findings.
         sources:
           - core/server/services/limits.ts
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/settings-helpers/index.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/themes/installer.js
@@ -8077,7 +8077,7 @@ services:
           - core/server/services/members/single-use-token-provider.js
           - core/server/services/verification-trigger.js
           - core/server/services/settings/settings-service.js
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/member-welcome-emails/service.js
           - core/server/lib/mail/ghost-mailer.js
         tests:
@@ -9338,18 +9338,21 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        The root already exports one composition-only instance with no startup subscriptions
-        or query. Move its token/mailer/MagicLink wiring into the factory and initialize it
-        before Members captures it, preserving the email-address wrapper and current mail
-        configuration timing. No different instance lifetime is needed.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root constructs the token provider and the existing
+        implementation with the shared models, mail module, URL facade, limits, labs, the
+        email-address wrapper, logging and Sentry. initServices awaits it after Email Address,
+        Member Attribution and Audience Feedback and before the group containing Members, which
+        reads the ready instance while composing its API. The implementation keeps constructing
+        GhostMailer and MagicLink; no extras or different instance lifetime are needed.
+      reviewedAt: 0780d0a76e340fd2d131e782a164633c4d389084
       sources:
-        - core/server/services/newsletters/index.js
+        - core/server/services/newsletters/index.ts
         - core/server/services/newsletters/newsletters-service.js
         - core/server/services/members/api.js
         - core/boot.js
@@ -9370,47 +9373,54 @@ services:
             policy/settings reads rather than caching their values during construction.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/members/single-use-token-provider.js
           - core/server/services/members/api.js
           - core/boot.js
     entryPoints:
-      - newsletters/index.js
+      - newsletters/index.ts
     notes: >-
-      Preserve the eager shared instance and its retained member/API consumers, while
-      assigning explicit ownership to its mail transport and verification tokens. Audit
-      completion records existing behavior and coverage gaps; it does not make the root
-      ready for lifecycle migration.
+      Migration inspected 0780d0a76e340fd2d131e782a164633c4d389084 with the verification
+      characterization from the preceding tests bundle. Boot owns the instance; Members and the
+      Admin endpoint read the ready service. Logging and Sentry are injected, lodash is replaced
+      with plain copies, and the magic-link constructor is an exact-file allowance, so mailer and
+      MagicLink construction stays in the implementation rather than moving to the root as the
+      earlier preparation note proposed. auditedAt and the dependency assessment retain
+      historical provenance. Mail transport ownership/drain and retained-consumer lifetime
+      through reboot remain outside this bounded change.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one mutable NewslettersService instance. Its unbound async
-          read/edit/add/verifyPropertyUpdate methods return models, browse returns the
-          model's page result, and getAll returns a JSON array. Constructor dependencies,
-          ghostMailer and magicLinkService remain accessible properties; internal methods
-          are only documented private. The index test checks four truthy API properties,
-          not their type, complete surface or identity. Class tests pin read/model option
-          forwarding, add/edit metadata and verification-property allowlisting with fakes.
+          The TypeScript root default-exports defineService with init and guarded service and
+          no extras. service is the retained mutable NewslettersService; its unbound async
+          read/edit/add/verifyPropertyUpdate methods return models, browse returns the model's
+          page result, and getAll returns a JSON array. Constructor dependencies, ghostMailer
+          and magicLinkService remain accessible properties; internal methods are only
+          documented private. The root unit checks four truthy API properties on the ready
+          service, not their type, complete surface or identity. Class tests pin read/model
+          option forwarding, add/edit metadata and verification-property allowlisting with fakes.
         sources:
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
         tests:
           - test/unit/server/services/newsletters/index.test.ts
           - test/unit/server/services/newsletters/service.test.js
       construction:
         summary: >-
-          Import eagerly constructs a SingleUseTokenProvider, NewslettersService,
-          GhostMailer and MagicLink. Shared models, URL facade, limits and email-address
-          wrapper are retained; the captured labs object is unused by current methods.
-          Constructor mail configuration/transport failure can reject the import. There is
-          no init hook or lazy factory. Members init requires its API factory, whose
-          module requires this root; the Admin endpoint can also require it through the
-          lazy API getter. Class units construct injected instances; root units drive the
-          actual eager instance, MagicLink and token provider with stubbed model and mail I/O.
-          Import ordering, constructor failure and retained graph identity remain source-only.
+          The root factory constructs a SingleUseTokenProvider and NewslettersService at init
+          with the shared models, mail module, URL facade, limits, labs, email-address wrapper,
+          logging and Sentry; the implementation constructor still creates GhostMailer and
+          MagicLink. The captured labs object is unused by current methods. Mail
+          configuration/transport failure now rejects init rather than import; nothing is
+          acquired, so there is no cleanup. Members requires the root at import and reads its
+          service inside createApiInstance; the Admin endpoint reads the service per query.
+          Class units construct injected instances; root units initialize the real root and
+          drive the actual instance, MagicLink and token provider with stubbed model and mail
+          I/O. Constructor failure and retained graph identity remain source-only.
         sources:
-          - core/server/services/newsletters/index.js
+          - core/boot.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/services/members/service.js
@@ -9421,15 +9431,20 @@ services:
           - test/unit/server/services/newsletters/index.test.ts
       startup:
         summary: >-
-          Boot initializes email-address before the group containing members.init. The
-          newsletter constructor retains the wrapper without reading its service; address
+          initServices initializes email-address, then awaits Member Attribution, Audience
+          Feedback and this root before the group containing members.init, so Members composes
+          with the ready instance. The guarded getter rejects earlier reads under the kernel
+          contract; importing the endpoint or the Members API module reads no service. The
+          constructor retains the email-address wrapper without reading its service; address
           validation and sending access emailAddressService.service later and have no
-          readiness guard. Models/database, settings used by mail, and limits must be
-          ready when operations run. There is no explicit newsletter start or stop step.
-          Successful booted HTTP cases exercise usable composition, but no focused test
-          proves constructor ordering, early-call failure or stop/reboot behavior.
+          readiness guard. Models/database, settings used by mail, and limits must be ready
+          when operations run. There is no explicit newsletter start or stop step. Successful
+          booted HTTP cases exercise usable composition; the initServices harness answers this
+          root with a generic initializer, so no focused test proves its ordering, early-call
+          failure or stop/reboot behavior.
         sources:
           - core/boot.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/members/service.js
           - core/server/lib/mail/ghost-mailer.js
@@ -9437,8 +9452,9 @@ services:
           - test/e2e-api/admin/newsletters.test.js
       consumers:
         summary: >-
-          Admin controllers retain the singleton and call methods as receivers. Members
-          composition retains it in both MemberRepository (default active, auto-opt-in,
+          Admin controllers retain the root and call methods on its service as receivers.
+          Members composition reads the ready service when its API is created and retains it
+          in both MemberRepository (default active, auto-opt-in,
           members-visible subscriptions) and RouterController (requested name lookup and
           active/archive validation). Welcome emails deep-imports only the verification
           template. The Content API reads Newsletter models directly, so its tests are
@@ -9464,7 +9480,8 @@ services:
           - test/unit/server/services/newsletters/index.test.ts
       lifetime:
         summary: >-
-          CommonJS caching retains the same graph with no reset/replacement/disposal API.
+          The root retains one instance after successful init; repeated init does not replace
+          it, and there is no reset/replacement/disposal API.
           Add deep-clones attributes, overwrites sort_order, and mutates caller options
           with a new transaction only when opt_in_existing is true and none is supplied;
           edit forwards a supplied transaction but does not open its own. Neither limit
@@ -9474,6 +9491,7 @@ services:
           forwarding; HTTP pins six persisted opt-in relations. These do not prove
           concurrency isolation, failure rollback or retained graph identity.
         sources:
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/models/newsletter.js
           - core/server/lib/magic-link/magic-link.js
@@ -9496,7 +9514,7 @@ services:
           sender passed to the mailer and, with a fake clock and token model, the configured
           24-hour lifetime, ten-minute after-use limit and seventh/eighth-use boundary.
         sources:
-          - core/server/services/newsletters/index.js
+          - core/server/services/newsletters/index.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/email-address/index.js
           - core/server/services/email-address/email-address-service.ts
@@ -9534,6 +9552,7 @@ services:
           - test/unit/server/services/newsletters/index.test.ts
       failures:
         summary: >-
+          Mail transport construction failure rejects init and leaves the service unavailable.
           Read maps a missing model to NotFound; limit and ordinary model errors propagate;
           coded errors mentioning unique become the duplicate-name validation error.
           Add/edit persist before verification messages, and opt-in creation sends before
@@ -9560,9 +9579,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Protect root identity, exact public surface, construction/readiness ordering and
-        retained Admin/member consumers through stop/reboot and dependency failure before
-        replacing eager composition. Define ownership/drain of the mail transport.
+        Boot now owns construction, but the initServices harness does not pin this root's
+        ordering. Still protect the exact public surface and retained Admin/member consumers
+        through stop/reboot and dependency failure, and define ownership/drain of the mail
+        transport.
       - >-
         Root units now cover issuance through the mailer to token verification, the configured
         expiry/reuse limits and property-update rejection after token usage. Still cover the

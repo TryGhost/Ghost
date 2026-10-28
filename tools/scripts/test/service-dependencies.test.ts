@@ -294,6 +294,22 @@ it('allows the debug tracing library without allowing sibling packages', (t) => 
   );
 });
 
+it('allows the magic-link constructor required by Newsletters without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/magic-link/magic-link.js';
+  const rejected = 'ghost/core/server/lib/magic-link/other.js';
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('../../lib/magic-link/magic-link');",
+    [`${alpha}/rejected.ts`]: "import '../../lib/magic-link/other';",
+    [approved]: 'module.exports = class MagicLink {};',
+    [rejected]: 'module.exports = {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.js` && to === approved),
+  );
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",

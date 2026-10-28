@@ -1,11 +1,8 @@
-const _ = require('lodash');
-const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
 const debug = require('@tryghost/debug')('services:newsletters');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
-const sentry = require('../../../shared/sentry');
 const MagicLink = require('../../lib/magic-link/magic-link');
 
 const messages = {
@@ -32,6 +29,8 @@ class NewslettersService {
    * @param {ILimitService} options.limitService
    * @param {Object} options.emailAddressService
    * @param {Object} options.labs
+   * @param {Object} options.logging
+   * @param {Object} options.sentry
    */
   constructor({
     NewsletterModel,
@@ -42,6 +41,8 @@ class NewslettersService {
     limitService,
     labs,
     emailAddressService,
+    logging,
+    sentry,
   }) {
     this.NewsletterModel = NewsletterModel;
     this.MemberModel = MemberModel;
@@ -52,6 +53,8 @@ class NewslettersService {
     this.labs = labs;
     /** @private */
     this.emailAddressService = emailAddressService;
+    /** @private */
+    this.logging = logging;
 
     /* email verification setup */
 
@@ -189,7 +192,9 @@ class NewslettersService {
       debug(`Subscribing members to newsletter '${newsletter.get('name')}'`);
 
       // subscribe members that have an existing subscription to an active newsletter
-      const memberIds = await this.MemberModel.fetchAllSubscribed(_.pick(options, 'transacting'));
+      const memberIds = await this.MemberModel.fetchAllSubscribed(
+        options.transacting ? { transacting: options.transacting } : {},
+      );
 
       optedInMemberCount = memberIds.length;
 
@@ -224,7 +229,7 @@ class NewslettersService {
    * @returns {Promise<{object}>} Newsetter Model with verification metadata
    */
   async edit(attrs, options) {
-    const sharedOptions = _.pick(options, 'transacting');
+    const sharedOptions = options.transacting ? { transacting: options.transacting } : {};
 
     // fetch newsletter first so we can compare changed emails
     const originalNewsletter = await this.NewsletterModel.findOne(
@@ -298,7 +303,8 @@ class NewslettersService {
    * @private
    */
   async prepAttrsForEmailVerification(attrs, newsletter) {
-    const cleanedAttrs = _.cloneDeep(attrs);
+    // Only top-level properties are removed or reset below.
+    const cleanedAttrs = { ...attrs };
     const emailsToVerify = [];
     const emailProperties = [
       {
@@ -364,7 +370,7 @@ class NewslettersService {
         'from',
       );
       if (!validated.allowed) {
-        logging.info(
+        this.logging.info(
           `Resetting sender_email for newsletter ${newsletter.id} because it became invalid`,
         );
         cleanedAttrs.sender_email = null;
@@ -395,7 +401,7 @@ class NewslettersService {
    */
   async sendEmailVerificationMagicLink({ id, email, property = 'sender_from' }) {
     const fromEmail = this.emailAddressService.service.defaultFromAddress;
-    const { ghostMailer } = this;
+    const { ghostMailer, logging } = this;
 
     this.magicLinkService.transporter = {
       sendMail(message) {
