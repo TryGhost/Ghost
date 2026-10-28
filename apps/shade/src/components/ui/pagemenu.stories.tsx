@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { Stack, Text } from '@/components/primitives';
 import { PageMenu, PageMenuItem } from './pagemenu';
 
@@ -27,7 +27,8 @@ const meta: Meta<typeof PageMenu> = {
     },
     defaultValue: {
       control: 'text',
-      description: 'Initially active item value when the menu is uncontrolled.',
+      description:
+        'Initially active item value when the menu is uncontrolled. Only read on first render; use `value` to change the active item.',
     },
     onValueChange: {
       action: 'valueChanged',
@@ -62,15 +63,14 @@ export const Default: Story = {
 
 export const Controlled: Story = {
   render: function ControlledPageMenu(args) {
-    const [value, setValue] = useState('customers');
+    const [, updateArgs] = useArgs();
 
     return (
       <Stack gap="md">
         <PageMenu
           {...args}
-          value={value}
           onValueChange={(nextValue) => {
-            setValue(nextValue);
+            updateArgs({ value: nextValue });
             args.onValueChange?.(nextValue);
           }}
         >
@@ -80,13 +80,14 @@ export const Controlled: Story = {
           <PageMenuItem value="analytics">Analytics</PageMenuItem>
         </PageMenu>
         <Text size="sm" tone="secondary">
-          Active: {value}
+          Active: {args.value}
         </Text>
       </Stack>
     );
   },
   args: {
     responsive: false,
+    value: 'customers',
   },
   parameters: {
     docs: {
@@ -126,7 +127,7 @@ export const Responsive: Story = {
   render: (args) => (
     <div className="w-full rounded-lg border border-border p-4">
       <h3 className="mb-3 text-sm font-medium">Resize this container</h3>
-      <PageMenu {...args} defaultValue="overview">
+      <PageMenu {...args}>
         <PageMenuItem value="overview">Overview</PageMenuItem>
         <PageMenuItem value="web">Web traffic</PageMenuItem>
         <PageMenuItem value="newsletters">Newsletters</PageMenuItem>
@@ -136,6 +137,7 @@ export const Responsive: Story = {
     </div>
   ),
   args: {
+    defaultValue: 'overview',
     responsive: true,
   },
   parameters: {
@@ -152,7 +154,7 @@ export const SmallContainer: Story = {
   render: (args) => (
     <div className="w-64 rounded-lg border border-border p-4">
       <h3 className="mb-3 text-sm font-medium">Small container</h3>
-      <PageMenu {...args} value="analytics">
+      <PageMenu {...args}>
         <PageMenuItem value="overview">Overview</PageMenuItem>
         <PageMenuItem value="customers">Customers</PageMenuItem>
         <PageMenuItem value="issues">Issues</PageMenuItem>
@@ -162,6 +164,7 @@ export const SmallContainer: Story = {
     </div>
   ),
   args: {
+    value: 'analytics',
     responsive: true,
   },
   parameters: {
@@ -177,7 +180,7 @@ export const ManyItems: Story = {
   render: (args) => (
     <div className="w-full max-w-2xl rounded-lg border border-border p-4">
       <h3 className="mb-3 text-sm font-medium">Many items</h3>
-      <PageMenu {...args} value="item-5">
+      <PageMenu {...args}>
         <PageMenuItem value="item-1">Menu Item 1</PageMenuItem>
         <PageMenuItem value="item-2">Menu Item 2</PageMenuItem>
         <PageMenuItem value="item-3">Menu Item 3</PageMenuItem>
@@ -192,6 +195,7 @@ export const ManyItems: Story = {
     </div>
   ),
   args: {
+    value: 'item-5',
     responsive: true,
   },
   parameters: {
