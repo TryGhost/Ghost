@@ -363,8 +363,12 @@ describe('Automated Emails API', function () {
 
       const automation = await models.Base.knex('automations')
         .where('slug', 'member-welcome-email-free')
-        .first('trigger_tier_scope', 'description');
-      assert.equal(automation.trigger_tier_scope, 'free');
+        .first('id', 'description');
+      const rules = await models.Base.knex('automation_trigger_rules')
+        .where('automation_id', automation.id)
+        .select('trigger_type', 'scope', 'product_id');
+      assert.deepEqual(rules, [{ trigger_type: 'free_signup', scope: null, product_id: null }]);
+
       assert.equal(automation.description, 'Welcome new free members after they sign up.');
     });
 
@@ -376,8 +380,14 @@ describe('Automated Emails API', function () {
 
       const automation = await models.Base.knex('automations')
         .where('id', automatedEmail.id)
-        .first('trigger_tier_scope', 'description');
-      assert.equal(automation.trigger_tier_scope, 'all_paid');
+        .first('description');
+      const rules = await models.Base.knex('automation_trigger_rules')
+        .where('automation_id', automatedEmail.id)
+        .select('trigger_type', 'scope', 'product_id');
+      assert.deepEqual(rules, [
+        { trigger_type: 'paid_subscription_started', scope: 'any_paid_tier', product_id: null },
+      ]);
+
       assert.equal(
         automation.description,
         'Welcome new paid members after they start their subscription.',

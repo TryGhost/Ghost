@@ -1,6 +1,7 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
-import type { AddAutomationData, AutomationTriggerTierScope } from './automations-repository-2';
+import type { AddAutomationData } from './automations-repository-2';
+import type { AutomationTriggerRule } from './trigger-rules';
 
 export type Pagination = {
   page: number;
@@ -77,19 +78,20 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
+export type AutomationTriggerTierData =
+  | {
+      trigger_tier_scope: null | 'free' | 'all_paid';
+      trigger_tier_ids: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    };
+
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & (
-    | {
-        trigger_tier_scope: null | 'free' | 'all_paid';
-        trigger_tier_ids: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+} & AutomationTriggerTierData;
 
 export type EditAutomationData = {
   name?: string;
@@ -139,8 +141,7 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
-  automation_trigger_tier_ids: string[];
+  automation_trigger_rules: AutomationTriggerRule[];
   automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;

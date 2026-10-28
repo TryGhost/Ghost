@@ -14,7 +14,6 @@ type Automation = {
   slug: string;
   description: string;
   trigger_type: 'membership_started';
-  trigger_tier_scope: 'free' | 'all_paid';
   created_at: string;
   updated_at: string;
 };
@@ -24,13 +23,11 @@ const defaultAutomations = [
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
     description: 'Welcome new free members after they sign up.',
-    trigger_tier_scope: 'free',
   },
   {
     name: 'Paid member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
     description: 'Welcome new paid members after they start their subscription.',
-    trigger_tier_scope: 'all_paid',
   },
 ] as const;
 
@@ -44,6 +41,25 @@ export class AutomationsImporter extends TableImporter<Automation> {
 
   constructor(knex: Knex, transaction: Knex.Transaction) {
     super(AutomationsImporter.table, knex, transaction);
+  }
+
+  async batchInsert(data: Automation[]): Promise<void> {
+    await super.batchInsert(data);
+
+    const rules = data.map((automation) => {
+      const isFreeSignup = automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free;
+      return {
+        id: this.fastFakeObjectId(),
+        automation_id: automation.id,
+        trigger_type: isFreeSignup ? 'free_signup' : 'paid_subscription_started',
+        scope: isFreeSignup ? null : 'any_paid_tier',
+        product_id: null,
+        created_at: automation.created_at,
+      };
+    });
+    if (rules.length > 0) {
+      await this.knex.batchInsert('automation_trigger_rules', rules).transacting(this.transaction);
+    }
   }
 
   generate(): Automation {
@@ -63,7 +79,6 @@ export class AutomationsImporter extends TableImporter<Automation> {
       description: defaultAutomation?.description ?? '',
       slug,
       trigger_type: 'membership_started',
-      trigger_tier_scope: defaultAutomation?.trigger_tier_scope ?? 'all_paid',
       created_at: toDatabaseDate(createdAt),
       updated_at: toDatabaseDate(createdAt),
     };

@@ -94,8 +94,16 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
     locked_by: 'lock-id',
     automation_run_id: 'run-id',
     automation_id: 'automation-id',
-    automation_trigger_tier_scope: 'free',
-    automation_trigger_tier_ids: [],
+    automation_trigger_rules: [
+      {
+        id: 'trigger-rule-1',
+        automation_id: 'automation-id',
+        created_at: new Date('2026-01-01T00:00:00Z'),
+        trigger_type: 'free_signup',
+        scope: null,
+        product_id: null,
+      },
+    ],
     automation_status: 'active',
     member_id: 'member-id',
     member_email: 'member@example.com',
@@ -288,7 +296,18 @@ describe('automations poll', function () {
   });
 
   it('bails if the member status changed paid to free', async function () {
-    const step = buildEmailStep({ automation_trigger_tier_scope: 'all_paid' });
+    const step = buildEmailStep({
+      automation_trigger_rules: [
+        {
+          id: 'trigger-rule-2',
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started',
+          scope: 'any_paid_tier',
+          product_id: null,
+        },
+      ],
+    });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ status: 'free' }));
 
@@ -304,8 +323,24 @@ describe('automations poll', function () {
 
   it('stays in the automation if tier still matches', async function () {
     const step = buildWaitStep({
-      automation_trigger_tier_scope: 'selected_paid',
-      automation_trigger_tier_ids: ['bronze', 'silver'],
+      automation_trigger_rules: [
+        {
+          id: 'trigger-rule-3',
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: 'bronze',
+        },
+        {
+          id: 'trigger-rule-4',
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: 'silver',
+        },
+      ],
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     (Member.findOne as sinon.SinonStub).resolves(
@@ -320,8 +355,24 @@ describe('automations poll', function () {
 
   it('does not restart the automation if the tier has changed, but still matches', async function () {
     const attrs = {
-      automation_trigger_tier_scope: 'selected_paid' as const,
-      automation_trigger_tier_ids: ['silver', 'gold'],
+      automation_trigger_rules: [
+        {
+          id: 'trigger-rule-5',
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: 'silver',
+        },
+        {
+          id: 'trigger-rule-6',
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: 'gold',
+        },
+      ],
     };
     const waitStep = buildWaitStep({ ...attrs, id: 'wait-step' });
     const emailStep = buildEmailStep({ ...attrs, id: 'email-step' });
@@ -361,12 +412,6 @@ describe('automations poll', function () {
       automationTiers: ['bronze', 'silver'],
     },
     {
-      specName: 'automation has no tiers',
-      status: 'paid',
-      products: [{ id: 'bronze' }],
-      automationTiers: [],
-    },
-    {
       specName: 'member has matching tiers, but is now free somehow',
       status: 'free',
       products: [{ id: 'bronze' }],
@@ -376,8 +421,14 @@ describe('automations poll', function () {
     'bails out of a per-tier automation when $specName',
     async ({ status, products, automationTiers }) => {
       const step = buildEmailStep({
-        automation_trigger_tier_scope: 'selected_paid',
-        automation_trigger_tier_ids: automationTiers,
+        automation_trigger_rules: automationTiers.map((productId) => ({
+          id: `trigger-rule-${productId}`,
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: productId,
+        })),
       });
       automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
       (Member.findOne as sinon.SinonStub).resolves(buildMember({ status, products }));
@@ -456,7 +507,16 @@ describe('automations poll', function () {
 
   it('gift members run through paid automations', async function () {
     const step = buildEmailStep({
-      automation_trigger_tier_scope: 'all_paid',
+      automation_trigger_rules: [
+        {
+          id: 'trigger-rule-8',
+          automation_id: 'automation-id',
+          created_at: new Date('2026-01-01T00:00:00Z'),
+          trigger_type: 'paid_subscription_started',
+          scope: 'any_paid_tier',
+          product_id: null,
+        },
+      ],
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ status: 'gift' }));

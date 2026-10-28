@@ -1,10 +1,9 @@
+import type { AutomationTriggerRuleDefinition } from './trigger-rules';
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
-import type { AutomationTriggerTierScope } from './automations-repository-2';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
-import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
@@ -60,11 +59,60 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-const MEMBER_STATUS_BY_TRIGGER_TIER_SCOPE = new Map<AutomationTriggerTierScope, 'free' | 'paid'>([
-  ['free', 'free'],
-  ['all_paid', 'paid'],
-  ['selected_paid', 'paid'],
-]);
+const getFreeOrPaidForTriggerType = (
+  triggerType: AutomationTriggerRuleDefinition['trigger_type'],
+): 'free' | 'paid' => {
+  switch (triggerType) {
+    case 'free_signup':
+      return 'free';
+    case 'paid_subscription_started':
+      return 'paid';
+    default: {
+      const _exhaustive: never = triggerType;
+      throw new errors.InternalServerError({
+        message: `Unexpected automation trigger type: ${_exhaustive}`,
+      });
+    }
+  }
+};
+
+const doesMemberMatchTriggerRule = (
+  member: MemberModel,
+  rule: Readonly<AutomationTriggerRuleDefinition>,
+): boolean => {
+  const expectedFreeOrPaid = getFreeOrPaidForTriggerType(rule.trigger_type);
+  const actualMemberStatus = member.get('status');
+  switch (expectedFreeOrPaid) {
+    case 'free':
+      if (actualMemberStatus !== 'free') {
+        return false;
+      }
+      break;
+    case 'paid':
+      if (actualMemberStatus !== 'paid' && actualMemberStatus !== 'gift') {
+        return false;
+      }
+      break;
+    default: {
+      const _exhaustive: never = expectedFreeOrPaid;
+      throw new errors.InternalServerError({
+        message: `Unexpected expected member status: ${_exhaustive}`,
+      });
+    }
+  }
+
+  switch (rule.scope) {
+    case null:
+    case 'any_paid_tier':
+      return true;
+    case 'specific_paid_tier':
+      return member.related('products').models.some((tier) => tier.id === rule.product_id);
+    default: {
+      const _exhaustive: never = rule;
+      throw new errors.InternalServerError({ message: `Unexpected rule: ${_exhaustive}` });
+    }
+  }
+};
 
 const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
   const preference = member.get('enable_updates_and_announcements');
@@ -149,45 +197,15 @@ const processStep = async ({
     return null;
   }
 
-  // NOTE: This will change once we support additional automation triggers.
-  const triggerTierScope = step.automation_trigger_tier_scope;
-  if (!triggerTierScope) {
-    logging.error(
-      {
-        system: {
-          event: 'automations.poll.missing_trigger_tier_scope',
-          step_id: step.id,
-        },
-      },
-      `[AUTOMATIONS] Trigger tier scope is missing for step ${step.id}. Currently, this is unexpected`,
-    );
-    await automationsApi.markStepTerminal(step, 'failed');
-    return null;
-  }
-
-  const memberStatus = MEMBER_STATUS_BY_TRIGGER_TIER_SCOPE.get(triggerTierScope);
-  if (!memberStatus) {
-    logging.error(
-      {
-        system: {
-          event: 'automations.poll.unsupported_trigger_tier_scope',
-          trigger_tier_scope: triggerTierScope,
-          step_id: step.id,
-        },
-      },
-      `[AUTOMATIONS] Unsupported trigger tier scope for step ${step.id}: ${triggerTierScope}`,
-    );
-    await automationsApi.markStepTerminal(step, 'failed');
-    return null;
-  }
-
   if (!step.member_id) {
     await automationsApi.markStepTerminal(step, 'member unsubscribed');
     return null;
   }
 
+  const rules = step.automation_trigger_rules;
+
   const memberRelationsToLoad = ['newsletters'];
-  if (triggerTierScope === 'selected_paid') {
+  if (rules.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
   }
   const member = (await Member.findOne(
@@ -212,20 +230,13 @@ const processStep = async ({
     return null;
   }
 
-  const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[
-    memberStatus
-  ] as readonly string[];
-  const doesMemberStatusStillMatchAutomation =
-    eligibleStatuses.includes(member.get('status') ?? '') &&
-    (triggerTierScope !== 'selected_paid' ||
-      member
-        .related('products')
-        .models.some((tier) => step.automation_trigger_tier_ids.includes(tier.id)));
-  if (!doesMemberStatusStillMatchAutomation) {
+  const matchingRule = rules.find((rule) => doesMemberMatchTriggerRule(member, rule));
+  if (!matchingRule) {
     await automationsApi.markStepTerminal(step, 'member changed status');
     return null;
   }
 
+  const memberStatus = getFreeOrPaidForTriggerType(matchingRule.trigger_type);
   let nextReadyAt: Date | null = null;
 
   try {
