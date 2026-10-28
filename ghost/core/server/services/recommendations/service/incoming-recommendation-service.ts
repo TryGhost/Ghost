@@ -1,6 +1,5 @@
 import { IncomingRecommendationEmailRenderer } from './incoming-recommendation-email-renderer';
 import { RecommendationService } from './recommendation-service';
-import logging from '@tryghost/logging';
 
 export type IncomingRecommendation = {
   id: string;
@@ -57,6 +56,11 @@ type EmailService = {
   send(to: string, subject: string, html: string, text: string): Promise<void>;
 };
 
+type Logging = {
+  info(...args: unknown[]): void;
+  error(...args: unknown[]): void;
+};
+
 export class IncomingRecommendationService {
   #mentionsApi: MentionsAPI;
   #recommendationService: RecommendationService;
@@ -64,6 +68,7 @@ export class IncomingRecommendationService {
   #emailService: EmailService;
   #emailRenderer: IncomingRecommendationEmailRenderer;
   #getEmailRecipients: () => Promise<EmailRecipient[]>;
+  #logging: Logging;
 
   constructor(deps: {
     recommendationService: RecommendationService;
@@ -71,8 +76,10 @@ export class IncomingRecommendationService {
     emailService: EmailService;
     emailRenderer: IncomingRecommendationEmailRenderer;
     getEmailRecipients: () => Promise<EmailRecipient[]>;
+    logging: Logging;
   }) {
     this.#recommendationService = deps.recommendationService;
+    this.#logging = deps.logging;
     this.#mentionsApi = deps.mentionsApi;
     this.#emailService = deps.emailService;
     this.#emailRenderer = deps.emailRenderer;
@@ -87,9 +94,9 @@ export class IncomingRecommendationService {
     if (!process.env.NODE_ENV?.startsWith('test') && process.env.NODE_ENV !== 'development') {
       setTimeout(
         () => {
-          logging.info('Updating incoming recommendations on boot');
+          this.#logging.info('Updating incoming recommendations on boot');
           this.#updateIncomingRecommendations().catch((err) => {
-            logging.error('Failed to update incoming recommendations on boot', err);
+            this.#logging.error('Failed to update incoming recommendations on boot', err);
           });
         },
         15 * 1000 + Math.random() * 5 * 60 * 1000,
@@ -129,7 +136,7 @@ export class IncomingRecommendationService {
         recommendingBack,
       };
     } catch (e) {
-      logging.error('Failed to parse mention to incoming recommendation data type', e);
+      this.#logging.error('Failed to parse mention to incoming recommendation data type', e);
     }
     return null;
   }

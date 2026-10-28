@@ -1,7 +1,7 @@
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const mentionsService = require('../../../core/server/services/mentions').default;
-const recommendationsService = require('../../../core/server/services/recommendations');
+const recommendationsService = require('../../../core/server/services/recommendations').default;
 
 let agent;
 const DomainEvents = require('@tryghost/domain-events');

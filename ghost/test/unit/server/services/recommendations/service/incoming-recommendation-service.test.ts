@@ -39,6 +39,7 @@ describe('IncomingRecommendationService', function () {
             email: 'example@example.com',
           },
         ]),
+      logging: { info() {}, error() {} },
     });
     clock = sinon.useFakeTimers();
   });
@@ -164,6 +165,7 @@ describe('IncomingRecommendationService', function () {
               email: 'example@example.com',
             },
           ]),
+        logging: { info() {}, error() {} },
       });
     });
 

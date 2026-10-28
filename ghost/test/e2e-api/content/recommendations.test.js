@@ -1,5 +1,5 @@
 const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
-const recommendationsService = require('../../../core/server/services/recommendations');
+const recommendationsService = require('../../../core/server/services/recommendations').default;
 const { Recommendation } = require('../../../core/server/services/recommendations/service');
 const { anyObjectId, anyISODateTime } = matchers;
 const assert = require('node:assert/strict');

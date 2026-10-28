@@ -26,6 +26,7 @@ const externalRequest = require('../../../../../core/server/lib/request-external
 const oembedService = require('../../../../../core/server/services/oembed');
 const mentionsRoot = require('../../../../../core/server/services/mentions').default;
 const staff = require('../../../../../core/server/services/staff');
+const ROOT_PATH = require.resolve('../../../../../core/server/services/recommendations');
 
 type Wrapper = InstanceType<typeof RecommendationServiceWrapper>;
 type Mention = Parameters<IncomingService['sendRecommendationEmail']>[0];
@@ -51,6 +52,7 @@ function mention(source: string, verified = true): Mention & { verified: boolean
 
 describe('Recommendations service root', function () {
   const sandbox = sinon.createSandbox();
+  let originalRoot: NodeJS.Module | undefined;
   let wrapper: Wrapper;
   let mentionsApi: { listMentions: sinon.SinonStub; refreshMentions: sinon.SinonStub };
   let sendingService: { sendAll: sinon.SinonStub };
@@ -65,6 +67,10 @@ describe('Recommendations service root', function () {
   let incomingInit: sinon.SinonStub;
 
   beforeEach(function () {
+    // Load a fresh root per test so each case initializes the index's own wiring, then
+    // restore the original entry for the consumers that captured it at import.
+    originalRoot = require.cache[ROOT_PATH];
+    delete require.cache[ROOT_PATH];
     mentionsApi = {
       listMentions: sandbox.stub().resolves({ data: [] }),
       refreshMentions: sandbox.stub().resolves(),
@@ -94,11 +100,16 @@ describe('Recommendations service root', function () {
     error = sandbox.stub(logging, 'error');
     outgoingInit = sandbox.stub(RecommendationService.prototype, 'init').resolves();
     incomingInit = sandbox.stub(IncomingRecommendationService.prototype, 'init').resolves();
-    wrapper = new RecommendationServiceWrapper();
+    wrapper = require(ROOT_PATH).default;
   });
 
   afterEach(function () {
     sandbox.restore();
+    if (originalRoot) {
+      require.cache[ROOT_PATH] = originalRoot;
+    } else {
+      delete require.cache[ROOT_PATH];
+    }
   });
 
   function publishedFields(target: Wrapper) {
@@ -126,11 +137,8 @@ describe('Recommendations service root', function () {
   }
 
   it('exports one wrapper instance that publishes nothing before init', function () {
-    const root = require('../../../../../core/server/services/recommendations');
-
-    assert.ok(root instanceof RecommendationServiceWrapper);
-    assert.equal(require('../../../../../core/server/services/recommendations'), root);
-    assert.deepEqual(publishedFields(root), new Array(8).fill(undefined));
+    assert.ok(wrapper instanceof RecommendationServiceWrapper);
+    assert.equal(require(ROOT_PATH).default, wrapper);
     assert.deepEqual(publishedFields(wrapper), new Array(8).fill(undefined));
   });
 

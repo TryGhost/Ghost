@@ -1,6 +1,4 @@
 import errors from '@tryghost/errors';
-import { InMemoryRepository } from '../../../lib/in-memory-repository';
-import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 
 import { IncludeOption, OrderOption } from './bookshelf-repository';
@@ -20,30 +18,42 @@ type RecommendationEnablerService = {
   setSetting(value: string): Promise<void>;
 };
 
+type EventRepository<T> = {
+  save(entity: T): Promise<void>;
+};
+
+type Logging = {
+  info(...args: unknown[]): void;
+  error(...args: unknown[]): void;
+};
+
 const messages = {
   notFound: 'Recommendation with id {id} not found',
 };
 
 export class RecommendationService {
   repository: RecommendationRepository;
-  clickEventRepository: InMemoryRepository<string, ClickEvent>;
-  subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>;
+  clickEventRepository: EventRepository<ClickEvent>;
+  subscribeEventRepository: EventRepository<SubscribeEvent>;
 
   wellknownService: WellknownService;
   mentionSendingService: MentionSendingService;
   recommendationEnablerService: RecommendationEnablerService;
   recommendationMetadataService: RecommendationMetadataService;
+  logging: Logging;
 
   constructor(deps: {
     repository: RecommendationRepository;
-    clickEventRepository: InMemoryRepository<string, ClickEvent>;
-    subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>;
+    clickEventRepository: EventRepository<ClickEvent>;
+    subscribeEventRepository: EventRepository<SubscribeEvent>;
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
     recommendationEnablerService: RecommendationEnablerService;
     recommendationMetadataService: RecommendationMetadataService;
+    logging: Logging;
   }) {
     this.repository = deps.repository;
+    this.logging = deps.logging;
     this.wellknownService = deps.wellknownService;
     this.mentionSendingService = deps.mentionSendingService;
     this.recommendationEnablerService = deps.recommendationEnablerService;
@@ -65,7 +75,7 @@ export class RecommendationService {
           try {
             await this.updateAllRecommendationsMetadata();
           } catch (e) {
-            logging.error(
+            this.logging.error(
               '[Recommendations] Failed to update all recommendations metadata on boot',
               e,
             );
@@ -78,13 +88,13 @@ export class RecommendationService {
 
   async updateAllRecommendationsMetadata() {
     const recommendations = await this.#listRecommendations();
-    logging.info('[Recommendations] Updating recommendations metadata');
+    this.logging.info('[Recommendations] Updating recommendations metadata');
     for (const recommendation of recommendations) {
       try {
         await this._updateRecommendationMetadata(recommendation);
         await this.repository.save(recommendation);
       } catch (e) {
-        logging.error(
+        this.logging.error(
           '[Recommendations] Failed to save updated metadata for recommendation ' +
             recommendation.url.toString(),
           e,
@@ -115,7 +125,7 @@ export class RecommendationService {
         links: [recommendation.url],
       })
       .catch((err) => {
-        logging.error('Failed to send mention to recommendation', err);
+        this.logging.error('Failed to send mention to recommendation', err);
       });
   }
 
@@ -165,7 +175,7 @@ export class RecommendationService {
     try {
       metadata = await this.recommendationMetadataService.fetch(url);
     } catch (e) {
-      logging.error('[Recommendations] Failed to fetch metadata for url ' + url, e);
+      this.logging.error('[Recommendations] Failed to fetch metadata for url ' + url, e);
 
       return {
         url: url,
@@ -202,7 +212,7 @@ export class RecommendationService {
         oneClickSubscribe: !!metadata.oneClickSubscribe,
       });
     } catch (e) {
-      logging.error(
+      this.logging.error(
         '[Recommendations] Failed to update metadata for recommendation ' +
           recommendation.url.toString(),
         e,

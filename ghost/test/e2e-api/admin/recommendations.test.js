@@ -7,7 +7,7 @@ const {
 const { anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag } =
   matchers;
 const assert = require('node:assert/strict');
-const recommendationsService = require('../../../core/server/services/recommendations');
+const recommendationsService = require('../../../core/server/services/recommendations').default;
 const {
   Recommendation,
   ClickEvent,

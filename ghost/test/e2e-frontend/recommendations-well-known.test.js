@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
-const recommendationsService = require('../../core/server/services/recommendations');
+const recommendationsService = require('../../core/server/services/recommendations').default;
 const { Recommendation } = require('../../core/server/services/recommendations/service');
 
 describe('Recommendations well-known file', function () {

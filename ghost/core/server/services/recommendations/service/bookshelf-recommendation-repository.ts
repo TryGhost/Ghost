@@ -1,11 +1,15 @@
 import { AllOptions, BookshelfRepository, ModelClass, ModelInstance } from './bookshelf-repository';
-import logger from '@tryghost/logging';
 import { Knex } from 'knex';
 import { Recommendation } from './recommendation';
 import { RecommendationRepository } from './recommendation-repository';
 
 type Sentry = {
   captureException(err: unknown): void;
+};
+
+type Logging = {
+  info(...args: unknown[]): void;
+  error(...args: unknown[]): void;
 };
 
 type RecommendationFindOneData<T> = {
@@ -25,10 +29,15 @@ export class BookshelfRecommendationRepository
   implements RecommendationRepository
 {
   sentry?: Sentry;
+  logging: Logging;
 
-  constructor(Model: RecommendationModelClass<string>, deps: { sentry?: Sentry } = {}) {
+  constructor(
+    Model: RecommendationModelClass<string>,
+    deps: { sentry?: Sentry; logging: Logging },
+  ) {
     super(Model);
     this.sentry = deps.sentry;
+    this.logging = deps.logging;
   }
 
   applyCustomQuery(query: Knex.QueryBuilder, options: AllOptions<Recommendation>) {
@@ -100,7 +109,7 @@ export class BookshelfRecommendationRepository
         subscriberCount: (model.get('count__subscribers') ?? undefined) as number | undefined,
       });
     } catch (err) {
-      logger.error(err);
+      this.logging.error(err);
       this.sentry?.captureException(err);
       return null;
     }

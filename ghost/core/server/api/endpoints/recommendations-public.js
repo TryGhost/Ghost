@@ -1,4 +1,4 @@
-const recommendations = require('../../services/recommendations');
+const recommendations = require('../../services/recommendations').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

@@ -11364,32 +11364,37 @@ services:
       dependencies:
         complexity: complex
         reason: >-
-          The wrapper shares Mentions API, sender and mutable metadata, creates its own mailer and
-          repositories, and launches asynchronous initialization after publishing fields. It also
-          depends on oEmbed and Settings and imports filesystem/logging helpers below the root.
-          Preserving shared mapper identity and service readiness requires coordinated wiring with
-          Mentions rather than independent import moves.
+          The root index.ts now constructs the wrapper with config, logging, Sentry, URL helpers,
+          models, mail, the external request client, DomainEvents, the mention event class and the
+          mentions, oEmbed, settings and staff roots, and the wrapper and its inner services and
+          repositories receive logging through their constructors; the test-only in-memory
+          repository moved to test support. The wrapper still shares the Mentions API, sender and
+          mutable metadata, creates its own mailer and settings BREAD service at init, and launches
+          asynchronous initialization after publishing fields. The one remaining implementation
+          import is the mongo-utils key mapping in the base repository, a pure query transformer
+          that needs an exact library allowance rather than injection. Preserving shared mapper
+          identity and service readiness still requires coordinated wiring with Mentions.
         preparation:
           - >-
             Await Mentions and oEmbed readiness before constructing the aggregate, and specify
             ownership of the mapper installed into Mentions metadata.
           - >-
-            Inject logging, filesystem and repository transformation operations through the local
-            classes; move genuinely test-only in-memory repositories to test support after checking
-            callers.
+            Decide the mongo-utils treatment for bookshelf-repository.ts: an exact allowance for
+            mapKeys and chainTransformers, or a local key-mapping helper.
           - >-
             Keep Settings reads, staff-recipient lookup and mail delivery as explicit collaborators,
             separating the ready graph from asynchronous publication/metadata refresh.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
         sources:
+          - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
+          - core/server/services/recommendations/service/bookshelf-repository.ts
           - core/server/services/recommendations/service/well-known-service.ts
-          - core/server/services/recommendations/service/in-memory-recommendation-repository.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/boot.js
     entryPoints:
-      - recommendations/index.js
+      - recommendations/index.ts
     notes: >-
       Preserve optional composition, database repositories, mentions integration and HTTP
       callers. Record detached startup, settings writes and notification work before changing
@@ -11397,11 +11402,12 @@ services:
     contracts:
       exports:
         summary: >-
-          CommonJS exports one mutable RecommendationServiceWrapper with receiver-dependent,
-          synchronous init returning undefined and public repositories, services and controllers.
-          Fields are undefined before the first init; when services:recommendations:enabled is
-          false, init still publishes them and skips only the two background initializers. The
-          service barrel exports constructors and entities, not another application instance. Inner
+          The TypeScript root default-exports one mutable RecommendationServiceWrapper, read
+          through `.default` by its CommonJS consumers, with receiver-dependent, synchronous init
+          returning undefined and public repositories, services and controllers. Fields are
+          undefined before the first init; when services:recommendations:enabled is false, init
+          still publishes them and skips only the two background initializers. The service
+          barrel exports constructors and entities, not another application instance. Inner
           methods return promises; controllers serialize plain recommendation values into
           data/meta responses. Controller units with fake services assert selected serialized
           fields, pagination and validation. The root test loads the index and asserts it is one
@@ -11409,7 +11415,7 @@ services:
           undefined, and that the three endpoint modules read the controller fields per request,
           rejecting with a TypeError before publication.
         sources:
-          - core/server/services/recommendations/index.js
+          - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/index.ts
           - core/server/services/recommendations/service/recommendation-controller.ts
@@ -11421,9 +11427,13 @@ services:
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       construction:
         summary: >-
-          Import constructs only the root wrapper. Enabled init reads the ready Mentions facade
-          for its API and sender, captures model constructors and composes WellknownService, a fresh SettingsBREADService
-          and enabler, repositories, metadata/outgoing/incoming services and controllers. It
+          Import constructs only the root wrapper, holding the shared config, logging, Sentry,
+          URL helpers, models, mail, external request, DomainEvents, mention event class and the
+          mentions, oEmbed, settings and staff roots passed in by index.ts. Enabled init reads
+          the ready Mentions facade for its API and sender, reads model constructors and composes
+          WellknownService, a fresh SettingsBREADService and enabler, repositories,
+          metadata/outgoing/incoming services and controllers, passing logging to the inner
+          services and repositories. It
           uses BookshelfClickEventRepository for both click and subscription models. Two
           GhostMailers are constructed: one inside SettingsBREADService and one for incoming
           notifications. Metadata borrows the shared oEmbed and external-request objects; the
@@ -11438,6 +11448,7 @@ services:
           to the alert users mapped to email and slug, and the renderer reads the staff API at
           send time. Failure of a model lookup after the repository is published is asserted.
         sources:
+          - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
           - core/server/services/recommendations/service/incoming-recommendation-service.ts
@@ -11544,9 +11555,10 @@ services:
           - test/unit/server/services/recommendations/index.test.ts
       configuration:
         summary: >-
-          Explicit false for services:recommendations:enabled skips only the two background
-          initializers; repositories, services and controllers are still published.
-          Public-directory path, model/service references and both mail transports are captured;
+          Explicit false for services:recommendations:enabled, read from the injected config
+          during init, skips only the two background initializers; repositories, services and
+          controllers are still published. Model/service references and both mail transports
+          are captured at init;
           settings BREAD reads current cache synchronously, URL generation uses retained helpers,
           and notification recipients/settings/sender are read during work. Outgoing refresh is
           enabled by setting string true outside test environments after a 2–7 minute delay;

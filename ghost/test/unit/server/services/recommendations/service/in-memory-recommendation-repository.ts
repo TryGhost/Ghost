@@ -1,6 +1,8 @@
-import { Recommendation } from './recommendation';
-import { RecommendationRepository } from './recommendation-repository';
-import { InMemoryRepository } from '../../../lib/in-memory-repository';
+import { InMemoryRepository } from '../../../../../../core/server/lib/in-memory-repository';
+import {
+  Recommendation,
+  RecommendationRepository,
+} from '../../../../../../core/server/services/recommendations/service';
 
 export class InMemoryRecommendationRepository
   extends InMemoryRepository<string, Recommendation>
