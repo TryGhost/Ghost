@@ -3,62 +3,58 @@ import EmailPreviewFrame from './preview-frame';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import TestEmailDropdown from './test-email-dropdown';
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Button,
   Dialog,
   DialogContent,
   DialogTitle,
-  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
   Popover,
   PopoverTrigger,
-  Tabs,
-  TabsList,
-  TabsTrigger,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getEmailValidationErrors } from './validation';
 import { useBrowseAutomatedEmails } from '@tryghost/admin-x-framework/api/automated-emails';
 import { useEmailPreview } from './use-email-preview';
 import { useEmailSenderDetails } from './use-sender-details';
-import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useExpandFromCard } from './use-expand-from-card';
 import { usePreviewAutomationEmail } from '@tryghost/admin-x-framework/api/automations';
 import type { EmailModalMode } from '@/automations/components/types';
 
 interface EmailPreviewModalContentProps {
-  title: string;
-  centeredHeaderContent?: React.ReactNode;
+  title: React.ReactNode;
   headerActions?: React.ReactNode;
+  headerBelow?: React.ReactNode;
   children: React.ReactNode;
-  className?: string;
   isEditMode?: boolean;
 }
 
+// Nothing is clipped at the panel's edges, so Koenig's + button can sit out past the left one;
+// min-h-0 keeps the panel to the dialog's height so its body scrolls.
 const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewModalContentProps>(
-  (
-    { title, centeredHeaderContent, headerActions, children, className, isEditMode = false },
-    ref,
-  ) => (
+  ({ title, headerActions, headerBelow, children, isEditMode = false }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'flex size-full flex-col gap-0 overflow-hidden p-0',
+        'relative mx-auto flex size-full min-h-0 max-w-[664px] flex-col gap-0 rounded-xl border border-border-default p-0 shadow-sm',
         isEditMode ? 'bg-white' : 'bg-gray-100',
         'dark:bg-[#151719]',
-        className,
       )}
     >
-      <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-950">
-        <h3 className="justify-self-start text-xl font-semibold">{title}</h3>
-        <div className="justify-self-center">{centeredHeaderContent}</div>
-        <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
+      <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto] items-center rounded-t-xl bg-white p-8 dark:bg-gray-950">
+        <h3 className="min-w-0 pr-4 text-md font-medium">{title}</h3>
+        <div className="flex items-center gap-2">{headerActions}</div>
+        {headerBelow && <div className="col-span-2 mt-6">{headerBelow}</div>}
       </div>
-      <div className="flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
+      <div className="-ml-[72px] flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto pl-[72px]">
         {children}
       </div>
     </div>
@@ -77,7 +73,7 @@ const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({
 }) => (
   <div
     className={cn(
-      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-[#2E3338]',
+      'relative isolate z-20 mx-auto w-full max-w-[600px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-[#2E3338]',
       className,
     )}
   >
@@ -93,7 +89,7 @@ interface EmailPreviewBodyProps {
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({ children, className }) => (
   <div
     className={cn(
-      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:shadow-none',
+      'mx-auto flex w-full max-w-[600px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:shadow-none',
       className,
     )}
   >
@@ -101,17 +97,29 @@ const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({ children, className
   </div>
 );
 
+const HeaderTooltip: React.FC<{ label: string; children: React.ReactElement }> = ({
+  label,
+  children,
+}) => (
+  <Tooltip>
+    <TooltipTrigger asChild>{children}</TooltipTrigger>
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
+);
+
 export interface EmailContentModalProps {
   automationId: string;
   initialLexical: string;
   initialMode?: EmailModalMode;
   initialSubject: string;
-  isDiscardNavigationBlocked?: boolean;
+  // The email step whose card the editor grows out of.
+  originStepId: string;
   onClose: () => void;
-  onDirtyChange?: (isDirty: boolean) => void;
-  onDiscardBlockedNavigation?: () => void;
-  onKeepEditingAfterBlockedNavigation?: () => void;
-  onSave: (data: { subject: string; lexical: string }) => void;
+  // As the editor starts shrinking back into its card.
+  onCloseStart?: () => void;
+  // Edits apply to the automation as they're made, like edits on the canvas; the automation's
+  // own Save / Publish changes is what keeps them.
+  onChange: (data: { subject: string; lexical: string }) => void;
 }
 
 // Koenig popups (link input, emoji picker, card settings) handle Escape
@@ -126,59 +134,53 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   initialMode = 'edit',
   initialSubject,
   initialLexical,
-  isDiscardNavigationBlocked = false,
+  originStepId,
   onClose,
-  onDirtyChange,
-  onDiscardBlockedNavigation,
-  onKeepEditingAfterBlockedNavigation,
-  onSave,
+  onCloseStart,
+  onChange,
 }) => {
+  // The automation header stays usable while the editor is open, so the editor's layer starts
+  // below it and leaves it out of the inert treatment below.
+  const [headerBottom] = useState(() => {
+    const header = document.querySelector('[data-testid="automation-editor"] > header');
+    return header ? header.getBoundingClientRect().bottom : 0;
+  });
+  const [panelGap] = useState(() => (window.matchMedia('(min-width: 640px)').matches ? 24 : 16));
+  const { panelRef, close: closeIntoCard } = useExpandFromCard(originStepId);
+  const closeEditor = useCallback(() => {
+    onCloseStart?.();
+    closeIntoCard(onClose);
+  }, [closeIntoCard, onClose, onCloseStart]);
+  // Edits flow back in through initialLexical, so keep the content as it was on open.
+  const [lexicalAtOpen] = useState(initialLexical || '');
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
   const { data: automatedEmailsData } = useBrowseAutomatedEmails();
   const [showTestDropdown, setShowTestDropdown] = useState(false);
   const [mode, setMode] = useState<EmailModalMode>(automationId ? initialMode : 'edit');
-  const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
-  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+  const [formState, setFormState] = useState({
+    subject: initialSubject || '',
+    lexical: initialLexical || '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const hasEnteredInitialPreview = useRef(false);
   const normalizedLexical = useRef<string>(initialLexical || '');
   const hasEditorBeenFocused = useRef(false);
-  const allowDirtyCloseRef = useRef(false);
-  const handleError = useHandleError();
+  const editorColumnRef = useRef<HTMLDivElement>(null);
   const automatedEmails = automatedEmailsData?.automated_emails || [];
   const { resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo } =
     useEmailSenderDetails(automatedEmails);
 
-  // Saving commits whatever the user has — including an empty subject or body — to the
-  // automation draft. Completeness is only enforced when publishing the automation or
-  // sending a test email (see validateForTest below), not when saving a draft.
-  const {
-    formState,
-    saveState,
-    updateForm,
-    setFormState,
-    setErrors,
-    handleSave,
-    okProps,
-    errors,
-    clearError,
-  } = useForm({
-    initialState: {
-      subject: initialSubject || '',
-      lexical: initialLexical || '',
-    },
-    savingDelay: 500,
-    onSave: (state) => {
-      onSave({ subject: state.subject, lexical: state.lexical });
-    },
-    onSaveError: handleError,
-  });
+  const formStateRef = useRef(formState);
+  useEffect(() => {
+    formStateRef.current = formState;
+  }, [formState]);
 
+  // Completeness is only enforced when publishing the automation or sending a test email.
   const validateForTest = useCallback((): boolean => {
     const newErrors = getEmailValidationErrors(formState);
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => !error);
-  }, [formState, setErrors]);
-  const saveButtonLabel = okProps.label || 'Save';
+  }, [formState]);
   const { previewFrameState, enterPreview, exitPreview } = useEmailPreview({
     automationId,
     previewAutomationEmail,
@@ -193,56 +195,15 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     void enterPreview(formState);
   }, [automationId, enterPreview, formState, initialMode]);
 
-  const isDirty = saveState === 'unsaved';
-
-  useEffect(() => {
-    onDirtyChange?.(isDirty && !allowDirtyCloseRef.current);
-    return () => {
-      onDirtyChange?.(false);
-    };
-  }, [isDirty, onDirtyChange]);
-
-  // Single close funnel: Esc, overlay click, and the Close button all route here.
-  const attemptClose = useCallback(() => {
-    if (isDirty) {
-      setConfirmDiscardOpen(true);
-    } else {
-      onClose();
-    }
-  }, [isDirty, onClose]);
-
-  // Commit to the automation draft. The Close button is the only way out of the modal.
-  const handleSaveClick = useCallback(async () => {
-    await handleSave({ fakeWhenUnchanged: true });
-  }, [handleSave]);
-
-  const handleSaveClickRef = useRef(handleSaveClick);
-  useEffect(() => {
-    handleSaveClickRef.current = handleSaveClick;
-  }, [handleSaveClick]);
-
-  useEffect(() => {
-    const handleCMDS = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        void handleSaveClickRef.current();
-      }
-    };
-    window.addEventListener('keydown', handleCMDS);
-    return () => {
-      window.removeEventListener('keydown', handleCMDS);
-    };
-  }, []);
-
   const [dialogContentNode, setDialogContentNode] = useState<HTMLDivElement | null>(null);
 
   // The dialog is non-modal so Radix's focus trap can't fight Koenig's
   // body-level portals (link input, toolbar, emoji picker), which means
   // nothing stops focus from reaching the admin UI behind the editor. Make
-  // everything else at body level inert while the editor is open —
-  // unfocusable, unclickable, and hidden from screen readers. Koenig
-  // portals and stacked dialogs mount after this runs, so they stay
-  // interactive.
+  // everything else inert while the editor is open — unfocusable,
+  // unclickable, and hidden from screen readers — except the automation
+  // header. Koenig portals and stacked dialogs mount after this runs, so
+  // they stay interactive.
   useEffect(() => {
     const dialogPortalWrapper = dialogContentNode?.closest('body > *');
     if (!dialogPortalWrapper) {
@@ -250,8 +211,20 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     }
 
     const madeInert: HTMLElement[] = [];
+    const editorRoot = document.querySelector<HTMLElement>('[data-testid="automation-editor"]');
     for (const el of document.body.children) {
-      if (el !== dialogPortalWrapper && el instanceof HTMLElement && !el.inert) {
+      if (
+        el !== dialogPortalWrapper &&
+        el instanceof HTMLElement &&
+        !el.inert &&
+        !(editorRoot && el.contains(editorRoot))
+      ) {
+        el.inert = true;
+        madeInert.push(el);
+      }
+    }
+    for (const el of editorRoot?.children ?? []) {
+      if (el instanceof HTMLElement && el.tagName !== 'HEADER' && !el.inert) {
         el.inert = true;
         madeInert.push(el);
       }
@@ -272,11 +245,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
       setMode(nextMode);
 
       if (nextMode === 'preview') {
-        setPreviewSubjectOverride(null);
         void enterPreview(formState);
       } else {
         setShowTestDropdown(false);
-        setPreviewSubjectOverride(null);
         exitPreview();
       }
     },
@@ -287,246 +258,298 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   // which triggers onChange even without user edits. We track whether the editor
   // has ever been focused - normalization happens before focus is possible, so any
   // onChange before first focus is normalization. After focus, we compare against
-  // the normalized baseline to determine dirty state.
+  // the normalized baseline to tell an edit from a no-op.
+  // An unedited body hands back what was there on open, so the automation compares clean.
+  const bodyToApply = useCallback(
+    (lexical: string) => (lexical === normalizedLexical.current ? lexicalAtOpen : lexical),
+    [lexicalAtOpen],
+  );
   const handleEditorChange = useCallback(
     (lexical: string) => {
+      setFormState((state) => ({ ...state, lexical }));
       if (!hasEditorBeenFocused.current) {
-        // Editor hasn't been focused yet = must be normalization
         normalizedLexical.current = lexical;
-        setFormState((state) => ({ ...state, lexical }));
         return;
       }
-
-      // Editor has been focused = compare to baseline
-      if (lexical !== normalizedLexical.current) {
-        updateForm((state) => ({ ...state, lexical }));
-      } else {
-        // Content reverted to normalized state - don't mark dirty
-        setFormState((state) => ({ ...state, lexical }));
-      }
+      onChange({ subject: formStateRef.current.subject, lexical: bodyToApply(lexical) });
     },
-    [setFormState, updateForm],
+    [bodyToApply, onChange],
+  );
+
+  const subjectField = (
+    <div>
+      <InputGroup>
+        <InputGroupAddon>
+          <InputGroupText>Subject</InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput
+          aria-describedby={errors.subject ? 'email-subject-error' : undefined}
+          aria-invalid={Boolean(errors.subject)}
+          aria-label="Subject line"
+          data-testid="email-editor-subject"
+          value={formState.subject}
+          onChange={(e) => {
+            const subject = e.target.value;
+            setFormState((state) => ({ ...state, subject }));
+            setErrors(({ subject: _cleared, ...rest }) => rest);
+            onChange({ subject, lexical: bodyToApply(formStateRef.current.lexical) });
+          }}
+          onKeyDown={(event) => {
+            // Tab carries on into the body, as from a post's title to its content.
+            if (event.key !== 'Tab' || event.shiftKey) {
+              return;
+            }
+            const editable = editorColumnRef.current?.querySelector<HTMLElement>(
+              '[contenteditable="true"]',
+            );
+            if (!editable) {
+              return;
+            }
+            event.preventDefault();
+            editable.focus();
+            const range = document.createRange();
+            range.selectNodeContents(editable);
+            range.collapse(true);
+            window.getSelection()?.removeAllRanges();
+            window.getSelection()?.addRange(range);
+          }}
+        />
+      </InputGroup>
+      {errors.subject && (
+        <span className="mt-2 block text-xs text-destructive" id="email-subject-error">
+          {errors.subject}
+        </span>
+      )}
+    </div>
   );
 
   return (
-    <>
-      <Dialog
-        modal={false}
-        open
-        onOpenChange={(next) => {
-          if (!next) {
-            attemptClose();
+    <Dialog
+      modal={false}
+      open
+      onOpenChange={(next) => {
+        if (!next) {
+          closeEditor();
+        }
+      }}
+    >
+      <DialogContent
+        ref={setDialogContentNode}
+        aria-describedby={undefined}
+        className="left-0 w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 bg-transparent px-4 pb-4 shadow-none outline-hidden data-[state=open]:animate-none sm:rounded-none sm:px-6 sm:pb-6 dark:bg-transparent"
+        data-sentry-mask="true"
+        style={{
+          top: headerBottom,
+          height: `calc(100dvh - ${headerBottom}px)`,
+          paddingTop: panelGap,
+        }}
+        onClick={(event) => {
+          // A click on the canvas around the panel minimizes the editor.
+          if (event.target === event.currentTarget) {
+            closeEditor();
           }
         }}
-      >
-        <DialogContent
-          ref={setDialogContentNode}
-          aria-describedby={undefined}
-          className="top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]"
-          data-sentry-mask="true"
-          onEscapeKeyDown={(event) => {
-            if (isKoenigPortalFocused()) {
-              // prevent Radix dismissing the dialog but let the
-              // event through so Koenig can close its popup
-              event.preventDefault();
-              return;
-            }
-
+        onEscapeKeyDown={(event) => {
+          if (isKoenigPortalFocused()) {
+            // prevent Radix dismissing the dialog but let the
+            // event through so Koenig can close its popup
             event.preventDefault();
-            event.stopPropagation();
-            attemptClose();
-          }}
-          onInteractOutside={(event) => {
-            // never auto-dismiss on pointer/focus outside — this is a
-            // full-screen editor whose only exits are the Close button
-            // and Escape. Without this, a non-modal dialog dismisses
-            // when Tab lands focus on anything outside it (e.g. Radix's
-            // focus-guard spans), which re-triggers attemptClose
-            event.preventDefault();
-          }}
-        >
-          <DialogTitle className="sr-only">Edit email</DialogTitle>
-          <EmailPreviewModalContent
-            centeredHeaderContent={
-              <Tabs
-                data-testid="email-mode-toggle"
-                value={mode}
-                variant="segmented-sm"
-                onValueChange={(value) => value && handleModeChange(value as EmailModalMode)}
-              >
-                <TabsList className="grid w-[240px] grid-cols-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-                  <TabsTrigger
-                    className="w-full justify-center"
-                    data-testid="email-mode-edit"
-                    value="edit"
-                  >
-                    Email content
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="w-full justify-center"
-                    data-testid="email-mode-preview"
-                    disabled={!automationId}
-                    title={!automationId ? 'Save automation to preview or send a test' : undefined}
-                    value="preview"
-                  >
-                    Preview
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            }
-            headerActions={
-              <>
-                <Button variant="outline" onClick={attemptClose}>
-                  Close
-                </Button>
-                <Button disabled={okProps.disabled} onClick={() => void handleSaveClick()}>
-                  {saveButtonLabel}
-                </Button>
-              </>
-            }
-            isEditMode={mode === 'edit'}
-            title="Edit email"
-          >
-            <div className="flex grow flex-col items-center p-6">
-              {mode === 'preview' && (
-                <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center py-1">
-                      <div className="w-20 shrink-0 text-sm font-semibold">From:</div>
-                      <div className="min-w-0 grow pr-4 text-sm">
-                        <span className="flex gap-1 truncate whitespace-nowrap">
-                          <span>{resolvedSenderName}</span>
-                          <span className="text-gray-500 dark:text-gray-400">{`<${resolvedSenderEmail}>`}</span>
-                        </span>
-                      </div>
-                      <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline">
-                            <LucideIcon.Send className="size-4" />
-                            Test
-                          </Button>
-                        </PopoverTrigger>
-                        {showTestDropdown && (
-                          <TestEmailDropdown
-                            automationId={automationId}
-                            lexical={formState.lexical}
-                            subject={formState.subject}
-                            validateForm={validateForTest}
-                          />
-                        )}
-                      </Popover>
-                    </div>
-                    {hasDistinctReplyTo && (
-                      <div className="flex items-center">
-                        <div className="w-20 shrink-0 text-sm font-semibold">Reply-to:</div>
-                        <div className="grow text-sm text-gray-500 dark:text-gray-400">
-                          {resolvedReplyToEmail}
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center">
-                      <div className="w-20 shrink-0 text-sm font-semibold">Subject:</div>
-                      <div className="grow">
-                        <Input
-                          className="w-full"
-                          data-testid="email-preview-subject"
-                          value={previewSubjectOverride ?? formState.subject}
-                          onChange={(e) => {
-                            const nextSubject = e.target.value;
-                            setPreviewSubjectOverride(nextSubject);
-                            updateForm((state) => ({ ...state, subject: nextSubject }));
-                            clearError('subject');
-                          }}
-                        />
-                        {errors.subject && (
-                          <span className="mt-2 block text-xs text-destructive">
-                            {errors.subject}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </EmailPreviewEmailHeader>
-              )}
-              <EmailPreviewBody
-                className={cn(
-                  mode === 'preview' && 'bg-white shadow-sm dark:bg-[#151719]',
-                  mode === 'edit' && 'px-6',
-                  mode === 'edit' && 'rounded-lg',
-                  mode === 'edit' && errors.lexical && 'border border-red-500',
-                )}
-              >
-                <div
-                  className={cn(
-                    'mx-auto w-full max-w-[600px] pt-10 pb-8 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
-                    mode === 'preview' && 'hidden',
-                  )}
-                  data-testid="email-editor"
-                  onFocus={() => {
-                    hasEditorBeenFocused.current = true;
-                  }}
-                >
-                  <EmailEditor
-                    className="automation-email-editor"
-                    placeholder="Begin writing your email..."
-                    value={formState.lexical}
-                    onChange={handleEditorChange}
-                  />
-                </div>
-                {mode === 'preview' && <EmailPreviewFrame previewState={previewFrameState} />}
-              </EmailPreviewBody>
-              {mode === 'edit' && errors.lexical && (
-                <span className="mt-2 block max-w-[740px] text-xs text-destructive">
-                  {errors.lexical}
-                </span>
-              )}
-            </div>
-          </EmailPreviewModalContent>
-        </DialogContent>
-      </Dialog>
-      <AlertDialog
-        open={confirmDiscardOpen || isDiscardNavigationBlocked}
-        onOpenChange={(open) => {
-          if (open) {
-            setConfirmDiscardOpen(true);
             return;
           }
 
-          setConfirmDiscardOpen(false);
-          if (isDiscardNavigationBlocked) {
-            onKeepEditingAfterBlockedNavigation?.();
+          event.preventDefault();
+          event.stopPropagation();
+          closeEditor();
+        }}
+        onInteractOutside={(event) => {
+          // Never auto-dismiss on pointer/focus outside. Without this, a non-modal
+          // dialog dismisses when Tab lands focus on anything outside it (e.g. Radix's
+          // focus-guard spans, or the automation header).
+          event.preventDefault();
+        }}
+        onOpenAutoFocus={(event) => {
+          // Focus lands in the subject, caret at the end, rather than on a header button,
+          // whose tooltip would show straight away.
+          event.preventDefault();
+          if (!(event.currentTarget instanceof HTMLElement)) {
+            return;
           }
+          const subject = event.currentTarget.querySelector<HTMLInputElement>(
+            '[data-testid="email-editor-subject"]',
+          );
+          subject?.focus({ preventScroll: true });
+          subject?.setSelectionRange(subject.value.length, subject.value.length);
         }}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your changes to this email haven&apos;t been saved.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                setConfirmDiscardOpen(false);
-                if (isDiscardNavigationBlocked) {
-                  onDiscardBlockedNavigation?.();
-                  return;
-                }
-
-                allowDirtyCloseRef.current = true;
-                onDirtyChange?.(false);
-                onClose();
-              }}
+        <DialogTitle className="sr-only">Edit email</DialogTitle>
+        <EmailPreviewModalContent
+          ref={panelRef}
+          headerActions={
+            <TooltipProvider delayDuration={150}>
+              <ToggleGroup
+                aria-label="Editor view"
+                data-testid="email-mode-toggle"
+                type="single"
+                value={mode}
+                onValueChange={(value) => value && handleModeChange(value as EmailModalMode)}
+              >
+                <HeaderTooltip label="Content">
+                  {/* The tooltip wraps the item, whose own data-state it would otherwise replace. */}
+                  <span className="inline-flex">
+                    <ToggleGroupItem
+                      aria-label="Content"
+                      data-testid="email-mode-edit"
+                      value="edit"
+                    >
+                      <LucideIcon.PenLine className="size-3.5!" />
+                    </ToggleGroupItem>
+                  </span>
+                </HeaderTooltip>
+                <HeaderTooltip
+                  label={automationId ? 'Preview' : 'Save automation to preview or send a test'}
+                >
+                  <span className="inline-flex">
+                    <ToggleGroupItem
+                      aria-label="Preview"
+                      data-testid="email-mode-preview"
+                      disabled={!automationId}
+                      value="preview"
+                    >
+                      <LucideIcon.Eye className="size-3.5!" />
+                    </ToggleGroupItem>
+                  </span>
+                </HeaderTooltip>
+              </ToggleGroup>
+              <HeaderTooltip label="Minimize">
+                <Button
+                  aria-label="Minimize editor"
+                  size="icon"
+                  variant="ghost"
+                  onClick={closeEditor}
+                >
+                  <LucideIcon.Minimize2 />
+                </Button>
+              </HeaderTooltip>
+            </TooltipProvider>
+          }
+          headerBelow={mode === 'edit' ? subjectField : undefined}
+          isEditMode={mode === 'edit'}
+          title={
+            <span className="flex min-w-0 items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="shrink-0 rounded-md bg-muted p-2.5 text-foreground"
+              >
+                <LucideIcon.Mail className="size-4" />
+              </span>
+              <span className="truncate">Edit email</span>
+            </span>
+          }
+        >
+          <div
+            className={cn(
+              'flex grow flex-col items-center',
+              mode === 'edit' ? 'px-8 pb-8' : 'p-6 pt-12',
+            )}
+          >
+            {mode === 'preview' && (
+              <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center py-1">
+                    <div className="w-20 shrink-0 text-sm font-semibold">From:</div>
+                    <div className="min-w-0 grow pr-4 text-sm">
+                      <span className="flex gap-1 truncate whitespace-nowrap">
+                        <span>{resolvedSenderName}</span>
+                        <span className="text-gray-500 dark:text-gray-400">{`<${resolvedSenderEmail}>`}</span>
+                      </span>
+                    </div>
+                    <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline">
+                          <LucideIcon.Send className="size-4" />
+                          Test
+                        </Button>
+                      </PopoverTrigger>
+                      {showTestDropdown && (
+                        <TestEmailDropdown
+                          automationId={automationId}
+                          lexical={formState.lexical}
+                          subject={formState.subject}
+                          validateForm={validateForTest}
+                        />
+                      )}
+                    </Popover>
+                  </div>
+                  {hasDistinctReplyTo && (
+                    <div className="flex items-center">
+                      <div className="w-20 shrink-0 text-sm font-semibold">Reply-to:</div>
+                      <div className="grow text-sm text-gray-500 dark:text-gray-400">
+                        {resolvedReplyToEmail}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center">
+                    <div className="w-20 shrink-0 text-sm font-semibold">Subject:</div>
+                    <div className="grow">
+                      <span
+                        className={cn(
+                          'block truncate text-sm',
+                          !formState.subject.trim() && 'text-gray-500 dark:text-gray-400',
+                        )}
+                        data-testid="email-preview-subject"
+                      >
+                        {formState.subject.trim() || 'No subject'}
+                      </span>
+                      {errors.subject && (
+                        <span className="mt-2 block text-xs text-destructive">
+                          {errors.subject}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </EmailPreviewEmailHeader>
+            )}
+            <EmailPreviewBody
+              className={cn(
+                mode === 'preview' && 'bg-white shadow-sm dark:bg-[#151719]',
+                mode === 'edit' && 'rounded-lg',
+                mode === 'edit' && errors.lexical && 'border border-red-500',
+              )}
             >
-              Discard
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+              <div
+                ref={editorColumnRef}
+                className={cn(
+                  // Koenig's + button sits 24px out past the panel's left edge, measured from its
+                  // own right edge so it holds at every breakpoint, on the panel's fill.
+                  'mx-auto w-full max-w-[600px] [&_[data-kg-plus-button]]:right-[calc(100%+56px)]! [&_[data-kg-plus-button]]:left-auto! [&_[data-kg-plus-button]>button]:bg-surface-elevated',
+                  mode === 'preview' && 'hidden',
+                )}
+                data-testid="email-editor"
+                onFocus={() => {
+                  hasEditorBeenFocused.current = true;
+                }}
+              >
+                {/* Room below the last line, so a new line near the bottom, and the + menu
+                    that opens from it, can scroll into view. */}
+                <EmailEditor
+                  className="automation-email-editor pb-[30vh]"
+                  placeholder="Begin writing your email..."
+                  value={formState.lexical}
+                  onChange={handleEditorChange}
+                />
+              </div>
+              {mode === 'preview' && <EmailPreviewFrame previewState={previewFrameState} />}
+            </EmailPreviewBody>
+            {mode === 'edit' && errors.lexical && (
+              <span className="mt-2 block max-w-[740px] text-xs text-destructive">
+                {errors.lexical}
+              </span>
+            )}
+          </div>
+        </EmailPreviewModalContent>
+      </DialogContent>
+    </Dialog>
   );
 };
 

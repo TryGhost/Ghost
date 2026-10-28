@@ -284,16 +284,13 @@ describe('New automation', () => {
       .click();
     await button('Edit email content').click();
     const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeDisabled();
-    await expect
-      .element(dialog.getByRole('tab', { name: 'Preview' }))
-      .toHaveAttribute('title', 'Save automation to preview or send a test');
-    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Minimize editor' }).click();
     await expect.element(dialog).not.toBeInTheDocument();
     await button('Save').click();
     await expect.poll(currentRoute).toBe('/automations/created');
     await button('Edit email content').click();
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeEnabled();
   });
 
   it('plays the header entrance once, not again after a trigger is picked', async () => {
