@@ -1,0 +1,10 @@
+email,subscribed_to_emails,newsletters
+member+nlcol_listed@example.com,true,"Daily newsletter, New Newsletter"
+member+nlcol_none@example.com,true,Daily newsletter
+member+nlcol_archived_only@example.com,true,Daily newsletter
+member+nlcol_archived_kept@example.com,true,Daily newsletter
+member+nlcol_blank@example.com,true,
+member+nlcol_unknown@example.com,true,"Renamed newsletter,Old newsletter"
+member+nlcol_off@example.com,false,Daily newsletter
+member+nlcol_new@example.com,true,Daily newsletter
+member+nlcol_new_blank@example.com,true,

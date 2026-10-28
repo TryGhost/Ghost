@@ -12,4 +12,14 @@ describe('member import reader', function () {
     assert.deepEqual(rows[0].newsletters, [{ name: 'Daily News' }, { name: 'Weekly Digest' }]);
     assert.deepEqual(rows[1].newsletters, [], 'an empty cell reads as an explicit empty list');
   });
+
+  it('reads the column when a mapping targets it, and drops it when a mapping empties it', async function () {
+    const file = path.join(fixturesPath, 'members-with-newsletters.csv');
+
+    const mapped = await readMemberRows(file, { email: 'email', newsletters: 'newsletters' });
+    assert.deepEqual(mapped[0].newsletters, [{ name: 'Daily News' }, { name: 'Weekly Digest' }]);
+
+    const emptied = await readMemberRows(file, { email: 'email', newsletters: '' });
+    assert.equal(emptied[0].newsletters, undefined);
+  });
 });

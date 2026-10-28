@@ -9,10 +9,8 @@ function splitLabels(cell: string): Label[] {
   return cell ? cell.split(',').map((name) => ({ name })) : [];
 }
 
-// Newsletter names are matched against existing newsletters rather than created, so
-// the space after a comma a person types in a cell must not become part of the name,
-// and a name repeated in the cell must resolve to one subscription, not a duplicate
-// row the unique constraint would reject.
+// Names are matched, never created, so padding is not part of one. A repeat would be a
+// duplicate member-newsletter pair, which the unique constraint rejects.
 function splitNewsletterNames(cell: string): Label[] {
   if (!cell) {
     return [];

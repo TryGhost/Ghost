@@ -394,6 +394,72 @@ describe('Members import', function () {
     );
   });
 
+  // A newsletters column sets which active newsletters a subscribed member gets. It never
+  // subscribes a member with no active newsletter, and archived subscriptions survive.
+  it('applies a newsletters column by the subscription rules', async function () {
+    const all = (await models.Newsletter.findAll()).models;
+    const byName = (name) => {
+      const newsletter = all.find((n) => n.get('name') === name);
+      assertExists(newsletter);
+      return { id: newsletter.id };
+    };
+    const weekly = byName('Weekly newsletter');
+    const old = byName('Old newsletter');
+    const existing = {
+      listed: [weekly],
+      none: [],
+      archived_only: [old],
+      archived_kept: [weekly, old],
+      blank: [weekly],
+      unknown: [weekly],
+      off: [weekly],
+    };
+    for (const [key, newsletters] of Object.entries(existing)) {
+      await models.Member.add({
+        email: `member+nlcol_${key}@example.com`,
+        email_disabled: false,
+        newsletters,
+      });
+    }
+    const signupDefaults = all
+      .filter(
+        (n) =>
+          n.get('status') === 'active' &&
+          n.get('subscribe_on_signup') &&
+          n.get('visibility') === 'members',
+      )
+      .map((n) => n.get('name'))
+      .sort();
+
+    const res = await upload('members-newsletters-column.csv');
+    assert.equal(res.status, 201);
+    assert.equal(res.body.meta.stats.imported, 9);
+
+    const expected = {
+      listed: ['Daily newsletter', 'New Newsletter'],
+      none: [],
+      archived_only: ['Old newsletter'],
+      archived_kept: ['Daily newsletter', 'Old newsletter'],
+      blank: ['Weekly newsletter'],
+      unknown: ['Weekly newsletter'],
+      off: [],
+      new: ['Daily newsletter'],
+      new_blank: signupDefaults,
+    };
+    for (const [key, names] of Object.entries(expected)) {
+      const member = await models.Member.findOne(
+        { email: `member+nlcol_${key}@example.com` },
+        { withRelated: ['newsletters'] },
+      );
+      assertExists(member);
+      const subscribed = member
+        .related('newsletters')
+        .models.map((n) => n.get('name'))
+        .sort();
+      assert.deepEqual(subscribed, names, key);
+    }
+  });
+
   // Over the threshold the import is deferred to a background job, which imports the
   // rows and emails the caller a completion report.
   it('defers over the threshold and emails a completion report', async function () {
