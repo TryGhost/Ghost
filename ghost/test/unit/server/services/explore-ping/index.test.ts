@@ -87,11 +87,13 @@ describe('explore-ping root', function () {
   });
 
   for (const env of ['testing', 'testing-mysql', 'test', 'staging']) {
-    it(`does not ping in the ${env} environment`, async function () {
+    it(`constructs with a fresh Posts service but does not ping in the ${env} environment`, async function () {
       getConfig.withArgs('env').returns(env);
 
       assert.equal(await root.init(), undefined);
 
+      sinon.assert.calledOnce(createPosts);
+      assert.equal(root.service.posts, createPosts.firstCall.returnValue);
       sinon.assert.notCalled(ping);
       sinon.assert.notCalled(totalPosts);
       sinon.assert.notCalled(info);
