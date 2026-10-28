@@ -406,7 +406,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const recommendationsService = require('./server/services/recommendations');
   const emailAddressService = require('./server/services/email-address');
   const statsService = require('./server/services/stats');
-  const explorePingService = require('./server/services/explore-ping');
+  const explorePingService = require('./server/services/explore-ping').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
