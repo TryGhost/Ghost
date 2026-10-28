@@ -47,6 +47,12 @@ permissions:
 jobs:
   job_setup:
     name: Setup
+    # Skip sync-fork.yml pushes to main in TryGhost copies: upstream already ran these commits.
+    if: >-
+      !(github.event_name == 'push'
+        && github.ref == 'refs/heads/main'
+        && github.repository_owner == 'TryGhost'
+        && github.repository != 'TryGhost/Ghost')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
