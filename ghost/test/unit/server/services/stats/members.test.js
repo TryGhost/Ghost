@@ -598,5 +598,115 @@ describe('MembersStatsService', function () {
       assert.equal(byDate[today].gift, 4);
       assert.equal(meta.totals.gift, 4);
     });
+
+    it('Includes events from exactly 91 days ago and excludes older ones by default', async function () {
+      const ninetyOneDaysAgo = moment.utc(today).subtract(91, 'days');
+      const ninetyTwoDaysAgo = moment.utc(today).subtract(92, 'days');
+      events = [
+        {
+          date: ninetyTwoDaysAgo.toDate(),
+          paid_subscribed: 1,
+          paid_canceled: 0,
+          free_delta: 0,
+          comped_delta: 0,
+          gift_delta: 0,
+        },
+        {
+          date: ninetyOneDaysAgo.toDate(),
+          paid_subscribed: 0,
+          paid_canceled: 0,
+          free_delta: 1,
+          comped_delta: 0,
+          gift_delta: 0,
+        },
+        {
+          date: todayDate,
+          paid_subscribed: 0,
+          paid_canceled: 0,
+          free_delta: 1,
+          comped_delta: 0,
+          gift_delta: 0,
+        },
+      ];
+      currentCounts.paid = 1;
+      currentCounts.free = 2;
+
+      await setupDB();
+
+      const { data: results } = await membersStatsService.getCountHistory();
+
+      // The window opens at the start of the UTC day 91 days ago, so the
+      // older paid signup is never replayed and the baseline keeps paid at 1.
+      assert.deepEqual(results, [
+        {
+          date: ninetyTwoDaysAgo.format('YYYY-MM-DD'),
+          paid: 1,
+          free: 0,
+          comped: 0,
+          gift: 0,
+          paid_subscribed: 0,
+          paid_canceled: 0,
+        },
+        {
+          date: ninetyOneDaysAgo.format('YYYY-MM-DD'),
+          paid: 1,
+          free: 1,
+          comped: 0,
+          gift: 0,
+          paid_subscribed: 0,
+          paid_canceled: 0,
+        },
+        {
+          date: today,
+          paid: 1,
+          free: 2,
+          comped: 0,
+          gift: 0,
+          paid_subscribed: 0,
+          paid_canceled: 0,
+        },
+      ]);
+    });
+
+    it('Opens a custom start date at the start of its UTC day', async function () {
+      events = [];
+      currentCounts.paid = 2;
+      currentCounts.free = 1;
+
+      await setupDB();
+      // Stored in the database's own datetime format so the comparison with
+      // the window's start is exact rather than lexical across formats.
+      await db('members_status_events').insert([
+        { from_status: null, to_status: 'paid', created_at: `${yesterday} 00:00:00` },
+        { from_status: null, to_status: 'free', created_at: `${yesterday} 00:00:00` },
+        { from_status: null, to_status: 'paid', created_at: `${today} 00:00:00` },
+      ]);
+
+      // Yesterday's events happened at midnight, before this instant.
+      const { data: results } = await membersStatsService.getCountHistory({
+        startDate: `${yesterday}T15:00:00.000Z`,
+      });
+
+      assert.deepEqual(results, [
+        {
+          date: yesterday,
+          paid: 1,
+          free: 1,
+          comped: 0,
+          gift: 0,
+          paid_subscribed: 1,
+          paid_canceled: 0,
+        },
+        {
+          date: today,
+          paid: 2,
+          free: 1,
+          comped: 0,
+          gift: 0,
+          paid_subscribed: 1,
+          paid_canceled: 0,
+        },
+      ]);
+    });
   });
 });

@@ -13729,8 +13729,9 @@ services:
           six mutable collaborators and async forwarding methods; Explore reaches api.mrr directly.
           The separate deep Tinybird module exports create returning receiver-independent
           buildRequest/parseResponse/fetch closures. Factory units assert class identity/client
-          presence; selected HTTP responses pin data/meta serialization. Exact wrapper/barrel
-          shape, init result and receiver behavior remain source-only.
+          presence; selected HTTP responses pin data/meta serialization. The root unit pins null
+          api/cache before init, the undefined init result and the Admin endpoint calling the
+          published api as receiver; the barrel shape remains source-only.
         sources:
           - core/server/services/stats/index.js
           - core/server/services/stats/service.js
@@ -13739,6 +13740,7 @@ services:
           - core/server/services/explore-ping/explore-ping-service.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
           - test/unit/server/services/stats/utils/tinybird.test.js
           - test/e2e-api/admin/stats.test.js
       construction:
@@ -13748,8 +13750,11 @@ services:
           Although init is async, it contains no await; later calls return when api is truthy.
           StatsService.create conditionally initializes Tinybird and creates a query client for
           web analytics, without running a statistics query. Three factory tests stub Tinybird
-          init and assert its gate and client presence; no focused real wrapper construction,
-          optional-cache failure or retry test was found.
+          init and assert its gate and client presence. The root unit builds the real wrapper
+          over the shared connection and URL service and pins synchronous api publication,
+          cache:stats acquisition after it, Tinybird gating through the root, one query client
+          shared by posts and content, a connection failure leaving nothing published before a
+          successful retry, and a cache failure leaving api published.
         sources:
           - core/server/services/stats/service.js
           - core/server/services/stats/stats-service.js
@@ -13762,6 +13767,7 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
       consumers:
         summary: >-
           Boot initializes the wrapper; lazy Admin stats endpoint construction captures cache,
@@ -13772,7 +13778,9 @@ services:
           subscription tests compare before/after results. Several top-post/referrer/growth
           tests assert only array shape, and invalid-ID cases do not assert empty counts.
           Explore units inject the stats graph; automation composition is separately recorded
-          under Tinybird. Configured stats-cache hits/identity/keys are not covered here.
+          under Tinybird. The root unit pins the Admin endpoint capturing the wrapper's cache at
+          load and reading api per query, rejecting with TypeError before init. Configured
+          stats-cache hits/identity/keys are not covered here.
         sources:
           - core/boot.js
           - core/server/api/endpoints/stats.js
@@ -13783,6 +13791,7 @@ services:
           - core/server/services/automations/automations-api.ts
         tests:
           - test/e2e-api/admin/stats.test.js
+          - test/unit/server/services/stats/index.test.ts
           - test/unit/server/services/explore-ping/explore-ping-service.test.ts
           - test/e2e-api/admin/automations.test.ts
       startup:
@@ -13792,8 +13801,9 @@ services:
           Captured knex and settings must be usable before queries; API construction before
           stats init captures a null cache even if api later becomes available. Factory errors
           reject boot; cache acquisition can fail after api publication. Existing HTTP suites
-          exercise successful real boot and queries, not deferred readiness, early endpoint
-          import, repeated boot or failure of either initialization stage.
+          exercise successful real boot and queries; the root unit covers early endpoint import,
+          repeated init and failure of either initialization stage with injected failures, not
+          real deferred readiness or reboot.
         sources:
           - core/boot.js
           - core/server/services/stats/service.js
@@ -13803,6 +13813,7 @@ services:
           - core/shared/express.js
         tests:
           - test/e2e-api/admin/stats.test.js
+          - test/unit/server/services/stats/index.test.ts
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       lifetime:
         summary: >-
@@ -13812,7 +13823,10 @@ services:
           consumer units assert old token identity with new endpoint/site values and a new
           client's replacement token. Endpoint/pipeline retains the captured cache object;
           stats installs no invalidation listener. Adapter-manager clearCache does not update
-          retained references. Pending query, cache refresh and stop/reboot behavior is source-only.
+          retained references. The root unit pins the retained api across repeated init with no
+          later cache acquisition, and the query client keeping its Tinybird instance while
+          rereading endpoint and site settings. Pending query, cache refresh and stop/reboot
+          behavior is source-only.
         sources:
           - core/server/services/stats/service.js
           - core/server/services/stats/stats-service.js
@@ -13822,6 +13836,7 @@ services:
           - package.json
         tests:
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
+          - test/unit/server/services/stats/index.test.ts
       configuration:
         summary: >-
           Initialization captures cache enablement and web-analytics client presence; the factory
@@ -13831,7 +13846,10 @@ services:
           to startDate; missing newsletter IDs return method-specific empty values. Real SQLite
           class tests pin selected MRR history/currency, member/gift deltas, custom-start output,
           subscription tier/cadence and referrer totals. Posts tests pin selected attribution,
-          view fallback/backfill, page exclusion and UTC subscriber values. They use simplified
+          view fallback/backfill, page exclusion and UTC subscriber values. Units pin the 91-day
+          member and 90-day MRR/referrer default windows at their UTC day boundaries, UTC day
+          truncation of custom start dates, timezone day boundaries across a DST transition,
+          inclusive date filters and timezone keying of event instants. They use simplified
           schema and injected provider/URL collaborators, not complete root/MySQL composition.
         sources:
           - core/server/services/stats/stats-service.js
@@ -13847,11 +13865,13 @@ services:
           - core/shared/config/loader.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
           - test/unit/server/services/stats/mrr.test.js
           - test/unit/server/services/stats/members.test.js
           - test/unit/server/services/stats/subscriptions.test.js
           - test/unit/server/services/stats/referrers.test.js
           - test/unit/server/services/stats/posts.test.js
+          - test/unit/server/services/stats/utils/date-utils.test.js
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       resources:
         summary: >-
@@ -13886,8 +13906,9 @@ services:
           its fetch catch; caught transport/parse errors return null. Posts view queries backfill
           on absent/empty provider data but return empty data on rejected fetch. Selected units
           pin fake provider/URL failure and fallback results. The first two content client tests
-          invoke only stubs; they prove no production transport behavior. Root partial-failure
-          recovery, real cache errors and many nested query failure channels lack assertions.
+          invoke only stubs; they prove no production transport behavior. The root unit pins the
+          failed-cache guard and the connection-failure retry with injected failures; real cache
+          errors and many nested query failure channels lack assertions.
         sources:
           - core/server/services/stats/service.js
           - core/server/services/stats/utils/tinybird.ts
@@ -13899,15 +13920,17 @@ services:
           - core/server/services/stats/content-stats-service.js
         tests:
           - test/unit/server/services/stats/utils/tinybird.test.js
+          - test/unit/server/services/stats/index.test.ts
           - test/unit/server/services/stats/posts.test.js
           - test/unit/server/services/stats/content.test.js
     unverified: []
     blockers:
       - >-
-        Pin root identity, return/receiver behavior, synchronous publication and optional-cache
-        acquisition across first/repeated/failed init and stop/reboot. The published-api guard
-        currently prevents recovery after a cache failure; define that lifecycle explicitly
-        before changing initialization or retaining old database/provider references.
+        Root identity, return/receiver behavior, synchronous publication and optional-cache
+        acquisition across first, repeated and failed init are pinned in the root unit;
+        stop/reboot is not. The published-api guard currently prevents recovery after a cache
+        failure and is pinned as-is; define that lifecycle explicitly before changing
+        initialization or retaining old database/provider references.
       - >-
         Add real configured-cache consumer tests for early/later endpoint construction, shared
         identity, hits, invalidation/expiry, authorization and option isolation. The API pipeline
@@ -13916,8 +13939,9 @@ services:
         allows date/order/limit/timezone options but its key contains only method and post ID;
         no existing stats HTTP assertion establishes correct distinct cached responses.
       - >-
-        Protect captured web-analytics gates/token identity versus reread request configuration,
-        and actual URL readiness/error behavior. Preserve method-specific empty/error/fallback
+        The captured web-analytics gate and token identity versus reread endpoint and site
+        settings are pinned through the root; protect actual URL readiness/error behavior.
+        Preserve method-specific empty/error/fallback
         distinctions, including rejected versus empty provider results, through real consumers
         rather than only injected collaborators or stub-self-asserting client tests.
       - >-
