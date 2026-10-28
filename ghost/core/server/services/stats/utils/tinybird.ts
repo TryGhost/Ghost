@@ -71,6 +71,12 @@ type TinybirdDependencies = {
   logging: Logging;
 };
 
+type TinybirdGateDependencies = {
+  config: Pick<ConfigInstance, 'get'>;
+  settingsCache: SettingsCache;
+  tinybirdWrapper: { init(): void };
+};
+
 type TinybirdResponse = {
   body?: unknown;
   data?: unknown;
@@ -113,6 +119,22 @@ function errorMessage(error: unknown): string {
 
 function isTinybirdResponse(value: unknown): value is TinybirdResponse {
   return isRecord(value);
+}
+
+/**
+ * Initializes the shared Tinybird service when web analytics is enabled or
+ * stats are configured, and reports whether web analytics is enabled.
+ */
+export function initializeTinybirdForStats({
+  config,
+  settingsCache,
+  tinybirdWrapper,
+}: TinybirdGateDependencies): boolean {
+  const webAnalyticsEnabled = Boolean(settingsCache.get('web_analytics_enabled'));
+  if (webAnalyticsEnabled || config.get('tinybird:stats')) {
+    tinybirdWrapper.init();
+  }
+  return webAnalyticsEnabled;
 }
 
 /** Creates a configured Tinybird client. */

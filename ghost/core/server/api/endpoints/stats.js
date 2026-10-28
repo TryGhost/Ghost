@@ -1,4 +1,18 @@
-const statsService = require('../../services/stats');
+const statsService = require('../../services/stats').default;
+
+// The API pipeline keeps each method's cache by reference when it builds the
+// controller, before boot initializes Stats. Resolve the optional stats cache
+// per request instead: without one, the query runs uncached.
+const statsCache = {
+  get(key, fetchData) {
+    const adapter = statsService.service.cache;
+    return adapter ? adapter.get(key, fetchData) : fetchData();
+  },
+  set(key, value) {
+    const adapter = statsService.service.cache;
+    return adapter ? adapter.set(key, value) : undefined;
+  },
+};
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -12,7 +26,7 @@ const controller = {
       method: 'browse',
     },
     options: ['date_from'],
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'memberCountHistory',
@@ -20,7 +34,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getMemberCountHistory({
+      return await statsService.service.api.getMemberCountHistory({
         dateFrom: frame?.options?.date_from,
       });
     },
@@ -34,7 +48,7 @@ const controller = {
       method: 'browse',
     },
     options: ['date_from'],
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'mrr',
@@ -42,7 +56,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getMRRHistory({
+      return await statsService.service.api.getMRRHistory({
         dateFrom: frame?.options?.date_from,
       });
     },
@@ -55,14 +69,14 @@ const controller = {
       docName: 'members',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData() {
       return {
         method: 'subscriptions',
       };
     },
     async query() {
-      return await statsService.api.getSubscriptionCountHistory();
+      return await statsService.service.api.getSubscriptionCountHistory();
     },
   },
   referrersHistory: {
@@ -74,14 +88,14 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData() {
       return {
         method: 'referrersHistory',
       };
     },
     async query() {
-      return await statsService.api.getReferrersHistory();
+      return await statsService.service.api.getReferrersHistory();
     },
   },
   topContent: {
@@ -110,7 +124,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'topContent',
@@ -118,7 +132,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getTopContent(frame.options);
+      return await statsService.service.api.getTopContent(frame.options);
     },
   },
   topPosts: {
@@ -130,7 +144,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'topPosts',
@@ -145,7 +159,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getTopPosts(frame.options);
+      return await statsService.service.api.getTopPosts(frame.options);
     },
   },
   topPostsViews: {
@@ -157,7 +171,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'topPostsViews',
@@ -171,7 +185,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getTopPostsViews(frame.options);
+      return await statsService.service.api.getTopPostsViews(frame.options);
     },
   },
   newsletterStats: {
@@ -183,7 +197,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getNewsletterStats',
@@ -198,7 +212,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getNewsletterStats(frame.options);
+      return await statsService.service.api.getNewsletterStats(frame.options);
     },
   },
   newsletterBasicStats: {
@@ -210,7 +224,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getNewsletterBasicStats',
@@ -225,7 +239,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getNewsletterBasicStats(frame.options);
+      return await statsService.service.api.getNewsletterBasicStats(frame.options);
     },
   },
   newsletterClickStats: {
@@ -237,7 +251,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getNewsletterClickStats',
@@ -248,7 +262,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getNewsletterClickStats(frame.options);
+      return await statsService.service.api.getNewsletterClickStats(frame.options);
     },
   },
   subscriberCount: {
@@ -260,7 +274,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getNewsletterSubscriberStats',
@@ -272,7 +286,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getNewsletterSubscriberStats(frame.options);
+      return await statsService.service.api.getNewsletterSubscriberStats(frame.options);
     },
   },
   postReferrers: {
@@ -293,7 +307,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'postReferrers',
@@ -303,7 +317,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getReferrersForPost(frame.data.id, frame.options);
+      return await statsService.service.api.getReferrersForPost(frame.data.id, frame.options);
     },
   },
   postGrowthStats: {
@@ -323,7 +337,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'postGrowthStats',
@@ -333,7 +347,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getGrowthStatsForPost(frame.data.id);
+      return await statsService.service.api.getGrowthStatsForPost(frame.data.id);
     },
   },
   postStats: {
@@ -353,7 +367,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getPostStats',
@@ -363,7 +377,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getPostStats(frame.data.id);
+      return await statsService.service.api.getPostStats(frame.data.id);
     },
   },
   postsVisitorCounts: {
@@ -383,7 +397,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getPostsVisitorCounts',
@@ -393,7 +407,9 @@ const controller = {
       };
     },
     async query(frame) {
-      const visitorCounts = await statsService.api.getPostsVisitorCounts(frame.data.postUuids);
+      const visitorCounts = await statsService.service.api.getPostsVisitorCounts(
+        frame.data.postUuids,
+      );
 
       // Return in format expected by serializer
       return {
@@ -418,7 +434,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getPostsMemberCounts',
@@ -428,7 +444,7 @@ const controller = {
       };
     },
     async query(frame) {
-      const memberCounts = await statsService.api.getPostsMemberCounts(frame.data.postIds);
+      const memberCounts = await statsService.service.api.getPostsMemberCounts(frame.data.postIds);
 
       // Return in format expected by serializer
       return {
@@ -445,7 +461,7 @@ const controller = {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: statsCache,
     generateCacheKeyData(frame) {
       return {
         method: 'topSourcesGrowth',
@@ -460,7 +476,7 @@ const controller = {
       };
     },
     async query(frame) {
-      return await statsService.api.getTopSourcesWithRange(frame.options);
+      return await statsService.service.api.getTopSourcesWithRange(frame.options);
     },
   },
 };

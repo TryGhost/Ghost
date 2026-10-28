@@ -11,7 +11,7 @@ export default defineService('Explore ping', () => {
     request: require('@tryghost/request'),
     posts: require('../posts/posts-service-instance')(),
     members: require('../members'),
-    statsService: require('../stats'),
+    statsService: require('../stats').default.service,
   });
 
   // The explore ping is a background "phone home" request. It should not run

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { IncorrectUsageError } from '@tryghost/errors';
 
 const config = require('../../../../../core/shared/config');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -15,13 +16,12 @@ const ROOT_PATH = require.resolve('../../../../../core/server/services/stats');
 const ENDPOINT_PATH = require.resolve('../../../../../core/server/api/endpoints/stats');
 const QUERY_SERVICES = ['mrr', 'members', 'subscriptions', 'referrers', 'posts', 'content'];
 
-type Root = {
-  // The stats service is untyped JavaScript.
-  api: any;
-  cache: object | null;
-  init(): Promise<void>;
+type Root = (typeof import('../../../../../core/server/services/stats'))['default'];
+type EndpointCache = {
+  get(key: string, fetchData: () => Promise<unknown>): Promise<unknown>;
+  set(key: string, value: unknown): Promise<unknown>;
 };
-type EndpointMethod = { cache: object | null; query(frame?: object): Promise<unknown> };
+type EndpointMethod = { cache: EndpointCache; query(frame?: object): Promise<unknown> };
 type TinybirdClient = {
   buildRequest(pipe: string): { url: string; options: { headers: { Authorization: string } } };
   fetch(pipe: string): Promise<unknown>;
@@ -40,7 +40,7 @@ describe('Stats service root', function () {
   let tinybirdInstance: { getToken: sinon.SinonStub };
 
   function loadRoot(): Root {
-    return require(ROOT_PATH);
+    return require(ROOT_PATH).default;
   }
 
   function loadEndpoint(): Record<string, EndpointMethod> {
@@ -51,7 +51,7 @@ describe('Stats service root', function () {
   }
 
   beforeEach(function () {
-    // The unit project shares one module registry: load a fresh wrapper per
+    // The unit project shares one module registry: load a fresh root per
     // test and restore the original for the files that captured it.
     savedModules = new Map(modulePaths.map((path) => [path, require.cache[path]]));
     for (const path of modulePaths) {
@@ -83,24 +83,26 @@ describe('Stats service root', function () {
     }
   });
 
-  it('publishes neither an API nor a cache before init', function () {
+  it('guards the service until init has resolved', async function () {
     const root = loadRoot();
-
-    assert.equal(root.api, null);
-    assert.equal(root.cache, null);
-  });
-
-  it('publishes one Stats API over the shared database and URL service as soon as init is called', async function () {
-    const root = loadRoot();
+    assert.throws(() => root.service, IncorrectUsageError);
 
     const pending = root.init();
 
-    // Published synchronously: init contains no await before the assignment,
-    // so a consumer may read api before init has resolved.
-    assert.ok(root.api instanceof StatsService);
-    const api = root.api;
+    // Nothing is published while init is in flight, unlike the former wrapper.
+    assert.throws(() => root.service, IncorrectUsageError);
     assert.equal(await pending, undefined);
-    assert.equal(root.api, api);
+    assert.ok(root.service.api instanceof StatsService);
+  });
+
+  it('publishes one Stats API over the shared database and URL service', async function () {
+    const root = loadRoot();
+
+    await root.init();
+
+    const { api, cache: published } = root.service;
+    assert.ok(api instanceof StatsService);
+    assert.equal(published, null);
     for (const name of QUERY_SERVICES) {
       assert.equal(api[name].knex, db.knex, `${name} queries the shared connection`);
     }
@@ -116,36 +118,30 @@ describe('Stats service root', function () {
     await root.init();
 
     sinon.assert.notCalled(getAdapter);
-    assert.equal(root.cache, null);
+    assert.equal(root.service.cache, null);
   });
 
-  it('obtains the cache:stats adapter after publishing the API when the host stats cache is enabled', async function () {
+  it('publishes the cache:stats adapter with the API when the host stats cache is enabled', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
-    let apiWhenAcquired: unknown = 'not acquired';
-    getAdapter.callsFake(() => {
-      apiWhenAcquired = root.api;
-      return cache;
-    });
 
     await root.init();
 
     sinon.assert.calledOnceWithExactly(getAdapter, 'cache:stats');
-    assert.equal(root.cache, cache);
-    assert.ok(root.api instanceof StatsService);
-    assert.equal(apiWhenAcquired, root.api);
+    assert.equal(root.service.cache, cache);
+    assert.ok(root.service.api instanceof StatsService);
   });
 
-  it('retains the first API and acquires no cache on repeated init, even once the cache is enabled', async function () {
+  it('retains the first aggregate on repeated init, even once the cache is enabled', async function () {
     const root = loadRoot();
     await root.init();
-    const api = root.api;
+    const aggregate = root.service;
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
 
     assert.equal(await root.init(), undefined);
 
-    assert.equal(root.api, api);
-    assert.equal(root.cache, null);
+    assert.equal(root.service, aggregate);
+    assert.equal(root.service.cache, null);
     sinon.assert.notCalled(getAdapter);
   });
 
@@ -164,17 +160,17 @@ describe('Stats service root', function () {
 
     try {
       await assert.rejects(root.init(), (error: unknown) => error === failure);
-      assert.deepEqual({ api: root.api, cache: root.cache }, { api: null, cache: null });
+      assert.throws(() => root.service, IncorrectUsageError);
     } finally {
       Object.defineProperty(db, 'knex', connection);
     }
 
     assert.equal(await root.init(), undefined);
-    assert.ok(root.api instanceof StatsService);
-    assert.equal(root.api.mrr.knex, db.knex);
+    assert.ok(root.service.api instanceof StatsService);
+    assert.equal(root.service.api.mrr.knex, db.knex);
   });
 
-  it('rejects init after publishing the API when the cache adapter fails, and does not retry the cache', async function () {
+  it('rejects init without publishing when the cache adapter fails, then retries the whole aggregate', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const failure = new Error('Cache unavailable');
     getAdapter.onFirstCall().throws(failure);
@@ -182,47 +178,63 @@ describe('Stats service root', function () {
 
     await assert.rejects(root.init(), (error: unknown) => error === failure);
 
-    assert.ok(root.api instanceof StatsService);
-    assert.equal(root.cache, null);
-    const api = root.api;
+    // The former wrapper kept a cacheless API after this failure; the
+    // aggregate is now published atomically or not at all.
+    assert.throws(() => root.service, IncorrectUsageError);
 
-    // The published api short-circuits later init calls, so the cache is
-    // never acquired for this process.
     assert.equal(await root.init(), undefined);
-    assert.equal(root.api, api);
-    assert.equal(root.cache, null);
-    sinon.assert.calledOnce(getAdapter);
+    assert.ok(root.service.api instanceof StatsService);
+    assert.equal(root.service.cache, cache);
+    sinon.assert.calledTwice(getAdapter);
   });
 
-  it('gives the Admin stats endpoint the cache present at load time and the API per request', async function () {
+  it('lets the Admin stats endpoint load before init and resolves the cache and API per request', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
-    const early = loadEndpoint();
-    const names = Object.keys(early);
-    assert.ok(names.includes('subscriptions'));
 
-    await assert.rejects(early.subscriptions.query(), TypeError);
+    // The Admin routes load the endpoint before boot initializes Stats.
+    const endpoint = loadEndpoint();
+    const names = Object.keys(endpoint);
+    assert.ok(names.includes('subscriptions'));
+    const statsCache = endpoint.subscriptions.cache;
+    assert.ok(statsCache);
+    for (const name of names) {
+      assert.equal(endpoint[name].cache, statsCache, `${name} uses the shared stats cache`);
+    }
+    await assert.rejects(endpoint.subscriptions.query(), IncorrectUsageError);
 
     await root.init();
-    assert.ok(root.api);
-    assert.equal(root.cache, cache);
-    for (const name of names) {
-      assert.equal(early[name].cache, null, `${name} captured the cache at load, before init`);
-    }
     const history = { data: [] };
-    const getSubscriptionCountHistory = sandbox
-      .stub(root.api, 'getSubscriptionCountHistory')
-      .resolves(history);
-    assert.equal(await early.subscriptions.query(), history);
-    sinon.assert.calledOnce(getSubscriptionCountHistory);
-    assert.equal(getSubscriptionCountHistory.firstCall.thisValue, root.api);
+    const fetchData = sandbox.stub().resolves(history);
+    const adapter = root.service.cache as { get: sinon.SinonStub; set: sinon.SinonStub };
+    adapter.get.resolves(history);
+    assert.equal(await statsCache.get('key', fetchData), history);
+    sinon.assert.calledOnceWithExactly(adapter.get, 'key', fetchData);
+    sinon.assert.notCalled(fetchData);
+    await statsCache.set('key', history);
+    sinon.assert.calledOnceWithExactly(adapter.set, 'key', history);
 
-    delete require.cache[ENDPOINT_PATH];
-    const late = loadEndpoint();
-    assert.deepEqual(Object.keys(late), names);
-    for (const name of names) {
-      assert.equal(late[name].cache, cache, `${name} captured the published cache`);
-    }
+    const getSubscriptionCountHistory = sandbox
+      .stub(root.service.api, 'getSubscriptionCountHistory')
+      .resolves(history);
+    assert.equal(await endpoint.subscriptions.query(), history);
+    sinon.assert.calledOnce(getSubscriptionCountHistory);
+    assert.equal(getSubscriptionCountHistory.firstCall.thisValue, root.service.api);
+
+    // Each request reads the API and the cache from the aggregate.
+    const replacement = { getSubscriptionCountHistory: sandbox.stub().resolves(history) };
+    root.service.api = replacement;
+    assert.equal(await endpoint.subscriptions.query(), history);
+    sinon.assert.calledOnce(replacement.getSubscriptionCountHistory);
+    sinon.assert.calledOnce(getSubscriptionCountHistory);
+
+    // Without a cache the request runs its query and stores nothing.
+    root.service.cache = null;
+    assert.equal(await statsCache.get('key', fetchData), history);
+    sinon.assert.calledOnce(fetchData);
+    assert.equal(await statsCache.set('key', history), undefined);
+    sinon.assert.calledOnce(adapter.get);
+    sinon.assert.calledOnce(adapter.set);
   });
 
   it.each([
@@ -241,9 +253,8 @@ describe('Stats service root', function () {
       await root.init();
 
       sinon.assert.callCount(tinybirdInit, initialized ? 1 : 0);
-      assert.ok(root.api);
-      assert.equal(Boolean(root.api.posts.tinybirdClient), webAnalytics);
-      assert.equal(Boolean(root.api.content.tinybirdClient), webAnalytics);
+      assert.equal(Boolean(root.service.api.posts.tinybirdClient), webAnalytics);
+      assert.equal(Boolean(root.service.api.content.tinybirdClient), webAnalytics);
     },
   );
 
@@ -255,10 +266,9 @@ describe('Stats service root', function () {
     await root.init();
 
     sinon.assert.calledOnce(tinybirdInit);
-    assert.ok(root.api);
-    const client: TinybirdClient = root.api.posts.tinybirdClient;
+    const client: TinybirdClient = root.service.api.posts.tinybirdClient;
     assert.ok(client);
-    assert.equal(root.api.content.tinybirdClient, client);
+    assert.equal(root.service.api.content.tinybirdClient, client);
     const first = client.buildRequest('api_kpis');
     assert.equal(
       first.url,
@@ -286,8 +296,7 @@ describe('Stats service root', function () {
 
     await root.init();
 
-    assert.ok(root.api);
-    const client: TinybirdClient = root.api.posts.tinybirdClient;
+    const client: TinybirdClient = root.service.api.posts.tinybirdClient;
     assert.deepEqual(await client.fetch('api_kpis'), [{ visits: 3 }]);
     sinon.assert.calledOnce(get);
     const [url, options] = get.firstCall.args;
