@@ -186,6 +186,36 @@ test.describe('Gallery card', async () => {
         }
     });
 
+    test('can remove an image without removing the gallery card on mobile', async function ({browser}) {
+        const context = await browser.newContext({
+            hasTouch: true,
+            isMobile: true,
+            viewport: {
+                width: 390,
+                height: 844
+            }
+        });
+        const mobilePage = await context.newPage();
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
+
+        try {
+            await initialize({page: mobilePage});
+            await mobilePage.setViewportSize({width: 390, height: 844});
+            await focusEditor(mobilePage);
+            await insertCard(mobilePage, {cardName: 'gallery'});
+            await mobilePage.locator('input[name="image-input"]').setInputFiles(filePath);
+
+            await expect(mobilePage.getByTestId('gallery-image')).toHaveCount(1);
+
+            await mobilePage.getByTestId('gallery-image').getByRole('button', {name: 'Delete'}).tap();
+
+            await expect(mobilePage.getByTestId('gallery-image')).toHaveCount(0);
+            await expect(mobilePage.locator('[data-kg-card="gallery"]')).toBeVisible();
+        } finally {
+            await context.close();
+        }
+    });
+
     test('can upload images', async function () {
         const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
