@@ -47,7 +47,9 @@
   overflow-y: auto;
 }
 
-.dark .shade {
+/* No specificity, so a scope that is also a component's own element, such as a popover's
+   content, keeps its text colour utility. */
+:where(.dark .shade) {
   color: var(--foreground);
 }
 

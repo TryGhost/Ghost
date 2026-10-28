@@ -16,8 +16,10 @@ const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = 'center', onEscapeKeyDown, sideOffset = 4, ...props }, ref) => (
+  // The content is the portal's own child, so the portal waits for its fade before
+  // unmounting; inside a plain wrapper it vanished the instant it closed.
   <PopoverPrimitive.Portal>
-    <ShadeScope>
+    <ShadeScope asChild>
       <PopoverPrimitive.Content
         ref={ref}
         align={align}
