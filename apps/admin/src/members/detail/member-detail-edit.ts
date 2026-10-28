@@ -343,13 +343,7 @@ export function getCustomFieldValidationErrors(
     if (value === undefined) {
       continue;
     }
-    // Runtime guard for a future type this build doesn't know; the server
-    // remains authoritative for those.
-    const definition = MEMBER_CUSTOM_FIELD_TYPES[field.type];
-    if (!definition) {
-      continue;
-    }
-    const result = definition.value.safeParse(value);
+    const result = MEMBER_CUSTOM_FIELD_TYPES[field.type].value.safeParse(value);
     if (!result.success) {
       for (const issue of result.error.issues) {
         const parts = z.array(PartSchema).safeParse(issue.path);

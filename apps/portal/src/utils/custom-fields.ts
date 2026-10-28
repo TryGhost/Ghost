@@ -1,14 +1,18 @@
-import { FIELD_TYPE_IDS, partsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import type { MetafieldDefinition } from '@tryghost/metafield-types';
+import { FIELD_TYPE_IDS, partsOf } from '@tryghost/metafield-types/structure';
 import { isPreviewMode } from './check-mode';
 import { hasCustomFieldsEnabled } from './helpers';
 
-/** A field the publisher has opened to members, as the members API describes it. */
-export interface MemberCustomField {
+/**
+ * A field the publisher has opened to members: the parts of Ghost's definition that the
+ * members API client checks before handing one over, since Portal also runs beside older
+ * Ghost sites. The key and type are any string here: the client checks only that they are
+ * text, and a newer site may offer a type this build has never heard of.
+ */
+export type MemberCustomField = Pick<MetafieldDefinition, 'name' | 'access'> & {
   key: string;
-  name: string;
   type: string;
-  access: { member: string };
-}
+};
 
 interface AskFor {
   api: { member: { customFields: () => Promise<MemberCustomField[]> } };
@@ -47,7 +51,9 @@ export async function fetchMemberCustomFields({
  */
 const DRAWABLE_TYPES = new Set<string>(FIELD_TYPE_IDS);
 
-export type DrawableCustomField = Omit<MemberCustomField, 'type'> & { type: FieldType };
+export type DrawableCustomField = Pick<MetafieldDefinition, 'name' | 'type' | 'access'> & {
+  key: string;
+};
 
 export function drawableCustomFields(
   fields: MemberCustomField[] | null | undefined,

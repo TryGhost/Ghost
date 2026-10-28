@@ -165,25 +165,6 @@ describe('member custom fields api helpers', () => {
     it('returns no targets for an empty field set', () => {
       expect(memberCustomFieldCsvColumns([])).toEqual([]);
     });
-
-    // An admin build older than the server it talks to is handed a type it has no
-    // presentation for. The mapping picker offering one fewer column beats it throwing.
-    it('offers a whole-column target for a type it has never heard of', () => {
-      const future = field({
-        key: 'mystery',
-        name: 'Mystery',
-        type: 'a_type_from_the_future' as MemberCustomField['type'],
-      });
-
-      expect(memberCustomFieldCsvColumns([future])).toEqual([
-        {
-          label: 'Mystery',
-          fieldName: 'Mystery',
-          value: 'metafields.custom.mystery',
-          type: 'a_type_from_the_future',
-        },
-      ]);
-    });
   });
 
   describe('memberCustomFieldParts', () => {
@@ -268,12 +249,6 @@ describe('member custom fields api helpers', () => {
       expect(formatMemberCustomFieldValue('address', null)).toBe('');
       expect(formatMemberCustomFieldValue('address', undefined)).toBe('');
       expect(formatMemberCustomFieldValue('address', ['a', 'b'])).toBe('');
-      // A composite type from a later build: no formatter, so no line.
-      expect(
-        formatMemberCustomFieldValue('unheard_of' as MemberCustomField['type'], {
-          line1: '1 Main St',
-        }),
-      ).toBe('');
     });
 
     // The type decides which shape is readable, so a value of the other shape is not

@@ -1,8 +1,11 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import {
+  FIELD_STATUS,
+  FieldStatusSchema,
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
+  type FieldStatus,
   type MetafieldChangeEntry,
   type MetafieldChangeSource,
 } from '@tryghost/metafield-types';
@@ -11,12 +14,9 @@ import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
-// `archived` is soft: the field drops out of the values path but stays in the definition
-// list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
-// column, which is static config and cannot import this.
-export const FIELD_STATUS = { active: 'active', archived: 'archived' } as const;
-export type FieldStatus = (typeof FIELD_STATUS)[keyof typeof FIELD_STATUS];
-export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archived]);
+// schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
+// Re-exported so the service reads every column's vocabulary from this module.
+export { FIELD_STATUS, FieldStatusSchema, type FieldStatus };
 
 // The single source for the read projection and the knex table type below. `type` parses
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.

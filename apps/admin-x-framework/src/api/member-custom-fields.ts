@@ -1,7 +1,9 @@
 import {
   FIELD_TYPES,
   FIELD_TYPE_IDS,
+  MetafieldDefinitionSchema,
   type MemberAccess,
+  type MetafieldDefinition,
   partTypesOf,
   partsOf,
   type FieldKind,
@@ -10,14 +12,9 @@ import {
   type PartsOf,
 } from '@tryghost/metafield-types';
 import { z } from 'zod';
-import {
-  IdentityTextSchema,
-  type Key,
-  type Namespace,
-  type Part,
-} from '@tryghost/metafield-types/identity';
+import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
-import { Meta, createMutation, createQuery } from '../utils/api/hooks';
+import { createMutation, createQuery } from '../utils/api/hooks';
 import { countryName } from '../utils/countries';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
@@ -32,23 +29,11 @@ export { FIELD_TYPES as MEMBER_CUSTOM_FIELD_TYPES } from '@tryghost/metafield-ty
 export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/metafield-types';
 export type { FieldKind as MemberCustomFieldKind } from '@tryghost/metafield-types';
 
-export type MemberCustomField = {
-  namespace: Namespace;
-  // The Admin API never serializes a database id for these records, so there is no `id` to
-  // key off. A field is addressed by its namespace and key, and neither is reissued once
-  // minted.
-  key: Key;
-  name: string;
-  // The same field-type enum the backend validates against, so admin and
-  // server never drift on the set.
-  type: FieldType;
-  // Browse hides archived fields by default (most surfaces only want active
-  // ones); Settings opts in via filter and splits on this.
-  status: 'active' | 'archived';
-  access: { member: MemberCustomFieldAccess };
-  created_at: string;
-  updated_at: string | null;
-};
+/**
+ * A field definition. It has no `id`: a field is addressed by its namespace and key, and a key is
+ * never reissued once minted. Browsing leaves out archived fields unless they are asked for.
+ */
+export type MemberCustomField = MetafieldDefinition;
 
 /**
  * A field's identity as text, or the identity of one part of its value when parts are given.
@@ -151,14 +136,11 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
 };
 
 /**
- * A type's part labels, keyed by part; empty for a type with no parts, and for one this
- * build has never heard of.
- *
- * Total for every key the value schema declares, which is the only kind of key that
- * reaches it: `FieldTypePresentation` refuses to compile a catalog missing one.
+ * A type's part labels, keyed by part, and empty for a type with none. Every part the type declares
+ * has a label, because `FieldTypePresentation` won't compile an entry that misses one.
  */
 const partLabelsFor = (type: FieldType): Record<string, string> => {
-  const labels: Record<string, string> | undefined = fieldTypePresentation[type]?.partLabels;
+  const labels: Record<string, string> | undefined = fieldTypePresentation[type].partLabels;
   return labels ?? {};
 };
 
@@ -169,14 +151,10 @@ export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYP
   ...fieldTypePresentation[id],
 }));
 
-// Resolve the presentation for a field type. Falls back to the first entry so an unknown
-// future type degrades to a rendered row, not a crash.
-export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => {
-  return (
-    memberCustomFieldUserTypes.find((userType) => userType.id === type) ||
-    memberCustomFieldUserTypes[0]
-  );
-};
+export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => ({
+  id: type,
+  ...fieldTypePresentation[type],
+});
 
 // As above, for a field loaded from the API.
 export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType =>
@@ -330,8 +308,7 @@ const partRuns = Object.fromEntries(
  * table cell than in a detail row.
  */
 export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): string => {
-  // Null for a scalar, and for a type this build has never heard of — both of which read
-  // as text or as nothing.
+  // Null for a scalar, which reads as text or as nothing.
   if (partsOf(type) === null) {
     return typeof value === 'string' ? value : '';
   }
@@ -348,7 +325,7 @@ export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): s
     return partTypes[part] === 'country_code' && typeof raw === 'string' ? countryName(raw) : raw;
   };
 
-  return (partRuns[type] ?? [])
+  return partRuns[type]
     .map((run) =>
       run
         .map(readPart)
@@ -361,20 +338,26 @@ export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): s
 
 export const memberCustomFieldKind = (type: FieldType): FieldKind => FIELD_TYPES[type].kind;
 
-export interface MemberCustomFieldsResponseType {
-  meta?: Meta;
-  members_metafields: MemberCustomField[];
-}
+const MemberCustomFieldList = z.array(MetafieldDefinitionSchema);
+const MemberCustomFieldsResponse = z.object({ members_metafields: MemberCustomFieldList });
+
+export type MemberCustomFieldsResponseType = z.output<typeof MemberCustomFieldsResponse>;
+const readMemberCustomFieldsResponse = (raw: unknown) => MemberCustomFieldsResponse.parse(raw);
 
 const dataType = 'MemberCustomFieldsResponseType';
 // Exported so a screen can move the list in its own cache before the request lands —
 // a drag that waits for a round-trip snaps back under the cursor.
 export const memberCustomFieldsDataType = dataType;
 
+/**
+ * A response this build can't read, such as one naming a type added after it shipped, fails the
+ * request rather than leaving the field out. Settings has to show every field to reorder the list,
+ * and a hidden field still holds its name and a place under the site's limit.
+ */
 export const useBrowseMemberCustomFields = createQuery<MemberCustomField[]>({
   dataType,
   path: '/members/metafields/custom/',
-  returnData: (raw) => (raw as MemberCustomFieldsResponseType).members_metafields,
+  parseResponse: (raw) => readMemberCustomFieldsResponse(raw).members_metafields,
 });
 
 // Browse hides archived fields by default. Settings is the one surface that
@@ -399,6 +382,7 @@ export const useCreateMemberCustomField = createMutation<
   method: 'POST',
   path: () => '/members/metafields/custom/',
   body: (field) => ({ members_metafields: [field] }),
+  parseResponse: readMemberCustomFieldsResponse,
   invalidateQueries: { dataType },
   // The created field is put into the cached lists as well as refetched, so a screen that
   // has just made one can use it in the same breath instead of waiting for a round trip or
@@ -412,14 +396,14 @@ export const useCreateMemberCustomField = createMutation<
   updateQueries: {
     dataType,
     update: (newData, currentData) => {
-      const current = currentData as MemberCustomFieldsResponseType | undefined;
-      if (!current?.members_metafields) {
+      const current = MemberCustomFieldList.safeParse(currentData);
+      if (!current.success) {
         return currentData;
       }
       const created = newData.members_metafields.filter(
-        (field) => !current.members_metafields.some((existing) => existing.key === field.key),
+        (field) => !current.data.some((existing) => existing.key === field.key),
       );
-      return { ...current, members_metafields: [...current.members_metafields, ...created] };
+      return [...current.data, ...created];
     },
   },
 });
@@ -433,6 +417,7 @@ export const useEditMemberCustomField = createMutation<
 >({
   method: 'PUT',
   path: (field) => `/members/metafields/custom/${field.key}/`,
+  parseResponse: readMemberCustomFieldsResponse,
   body: ({ key: _key, ...patch }) => ({ members_metafields: [patch] }),
   invalidateQueries: { dataType },
 });
@@ -453,6 +438,7 @@ export const useReorderMemberCustomFields = createMutation<
   method: 'PUT',
   path: () => '/members/metafields/custom/',
   body: (fields) => ({ members_metafields: fields.map(({ key }) => ({ key })) }),
+  parseResponse: readMemberCustomFieldsResponse,
   // The response is the settled order, so it is written straight to the cached lists
   // rather than refetched. A reorder only succeeds when it named exactly the fields the
   // site has, so a success carries no news about the set — only about its order — and
@@ -466,15 +452,12 @@ export const useReorderMemberCustomFields = createMutation<
   updateQueries: {
     dataType,
     update: (newData, currentData) => {
-      const current = currentData as MemberCustomFieldsResponseType | undefined;
-      if (!current?.members_metafields) {
+      const current = MemberCustomFieldList.safeParse(currentData);
+      if (!current.success) {
         return currentData;
       }
       const settledOrder = newData.members_metafields.map(({ key }) => key);
-      return {
-        ...current,
-        members_metafields: inOrderOf(settledOrder, current.members_metafields),
-      };
+      return inOrderOf(settledOrder, current.data);
     },
   },
 });
