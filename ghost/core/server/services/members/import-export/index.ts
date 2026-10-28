@@ -1,9 +1,9 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { INTERNAL, type Audience } from '../../members-metafields';
+import { INTERNAL } from '../../members-metafields';
 import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
-import type { MetafieldValuesService } from '../../members-metafields/values-service';
+import type { MetafieldValuesService, PlannedWrite } from '../../members-metafields/values-service';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -50,14 +50,7 @@ interface ImporterServices {
   // The metafields services the members service hands the import composition root.
   metafields: {
     definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-    values: {
-      planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
-      applyImportedWrite(
-        memberId: string,
-        plan: unknown[],
-        executor: Knex.Transaction,
-      ): Promise<void>;
-    };
+    values: Pick<MetafieldValuesService, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
@@ -116,7 +109,7 @@ export function makeImporter(deps: ImporterServices) {
       }),
   };
 
-  const metafields: MetafieldsImport = {
+  const metafields: MetafieldsImport<PlannedWrite> = {
     // Only the publisher's own fields: a file exported and imported again must not rewrite
     // the values another namespace's owner keeps.
     activeFields: async () =>

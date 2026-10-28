@@ -106,21 +106,20 @@ export interface EmailNotifications {
 // escaping.
 export type FailureReporter = (error: unknown) => void;
 
-// Opaque to the import: planWrite produces it, applyWrite consumes it.
-type MetafieldPlan = unknown;
-
 // The metafields collaborator as the import needs it. activeFields is the field set a
 // metafields.* column is read against, empty when the feature is off; planWrite
 // validates a row's values (throwing so the row fails whole) and applyWrite persists
-// them, touching only the parts the row named, both on the row's transaction.
-export interface MetafieldsImport {
+// them, touching only the parts the row named, both on the row's transaction. A plan is
+// opaque to the import, which only hands what planWrite made to applyWrite, so its type is
+// whatever the collaborator's is.
+export interface MetafieldsImport<Plan> {
   activeFields(): Promise<CsvField[]>;
-  planWrite(values: Record<string, unknown>): Promise<MetafieldPlan[]>;
-  applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex.Transaction): Promise<void>;
+  planWrite(values: Record<string, unknown>): Promise<Plan[]>;
+  applyWrite(memberId: string, plan: Plan[], executor: Knex.Transaction): Promise<void>;
 }
 
 // The collaborators the import depends on, one per concern.
-interface ImporterDeps {
+interface ImporterDeps<Plan> {
   knex: Knex;
   readRows: ReadRows;
   spool: RowSpool;
@@ -128,7 +127,7 @@ interface ImporterDeps {
   tiers: TiersRepository;
   stripe: StripeSubscriptions;
   gifts: GiftService;
-  metafields: MetafieldsImport;
+  metafields: MetafieldsImport<Plan>;
   email: EmailNotifications;
   report: FailureReporter;
   dispatchJob: (job: MembersImportJob) => Promise<void>;
@@ -216,7 +215,7 @@ function canImportInline(rowCount: number, expensive: boolean, inlineThreshold: 
   return rowCount <= inlineThreshold && !expensive;
 }
 
-class MembersCSVImporter {
+class MembersCSVImporter<Plan> {
   private _knex: Knex;
   private _readRows: ReadRows;
   private _spool: RowSpool;
@@ -224,7 +223,7 @@ class MembersCSVImporter {
   private _tiers: TiersRepository;
   private _stripe: StripeSubscriptions;
   private _gifts: GiftService;
-  private _metafields: MetafieldsImport;
+  private _metafields: MetafieldsImport<Plan>;
   private _email: EmailNotifications;
   private _report: FailureReporter;
   private _dispatchJob: (job: MembersImportJob) => Promise<void>;
@@ -247,7 +246,7 @@ class MembersCSVImporter {
     getTimezone,
     getInlineThreshold,
     tracking,
-  }: ImporterDeps) {
+  }: ImporterDeps<Plan>) {
     this._knex = knex;
     this._readRows = readRows;
     this._spool = spool;

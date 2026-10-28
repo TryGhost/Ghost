@@ -13,7 +13,7 @@ import {
   removePortalLinkFromUrl,
   getRefDomain,
 } from './utils/helpers';
-import { partsOf } from '@tryghost/metafield-types/structure';
+import { refusedInput } from './utils/custom-fields';
 import { t } from './utils/i18n';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
@@ -916,25 +916,12 @@ function placeRefusal({ property, message }, state) {
     return { sentence: said };
   }
 
-  const part = parts.join('.');
-
-  // A refusal of the whole of a composite — the field archived, or closed to members,
-  // while the page was open — belongs to no one box, and there is no box named for the
-  // field itself to put it in. It stays in the notification, with the field named:
-  // nothing the member retypes would fix it anyway.
-  if (!part && partsOf(field.type)) {
+  const input = refusedInput(field, parts.join('.'));
+  if (!input) {
     return { sentence: t('{field}: {message}', { field: field.name, message: said }) };
   }
 
-  // A part the field does not declare has no box on the page, and marking a box that is
-  // not there would say nothing while still counting as something said, leaving the save
-  // to fail in silence. The rows drawn cannot drift from what the field declares: they
-  // are typed to its parts, and every one of them must be given words.
-  if (part && !(partsOf(field.type) ?? []).includes(part)) {
-    return { sentence: t('{field}: {message}', { field: field.name, message: said }) };
-  }
-
-  return { input: part ? `custom:${field.key}:${part}` : `custom:${field.key}`, message: said };
+  return { input, message: said };
 }
 
 /**

@@ -1,33 +1,32 @@
 import {
-  FIELD_TYPES,
+  FIELD_STRUCTURES,
   FIELD_TYPE_IDS,
+  MEMBER_ACCESS_LEVELS,
   MetafieldDefinitionSchema,
+  isRecordValue,
+  matchLeaf,
+  matchShape,
   type MemberAccess,
   type MetafieldDefinition,
-  partTypesOf,
   partsOf,
-  type FieldKind,
   type FieldType,
-  type PartType,
+  type Leaf,
+  type ListSource,
   type PartsOf,
 } from '@tryghost/metafield-types';
 import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { createMutation, createQuery } from '../utils/api/hooks';
-import { countryName } from '../utils/countries';
+import { countryName, countryOptions } from '../utils/countries';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
 export { isMetafieldColumn } from '@tryghost/metafield-csv';
 
-// Re-exported so admin apps can type address values and validate against the
-// same schemas the server enforces, without a direct dependency on the shared
-// catalog package — the framework is their surface for everything custom-fields.
 export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
-export { FIELD_TYPES as MEMBER_CUSTOM_FIELD_TYPES } from '@tryghost/metafield-types';
-export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/metafield-types';
-export type { FieldKind as MemberCustomFieldKind } from '@tryghost/metafield-types';
+export { valueSchemaFor as memberCustomFieldValueSchema } from '@tryghost/metafield-types';
 
 /**
  * A field definition. It has no `id`: a field is addressed by its namespace and key, and a key is
@@ -49,81 +48,61 @@ export const memberCustomFieldIdentity = (
 // is presentation, and stays below.
 export type MemberCustomFieldAccess = MemberAccess;
 
-export const MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS: {
-  value: MemberCustomFieldAccess;
-  label: string;
-  description: string;
-}[] = [
-  {
-    value: 'none',
+const ACCESS_PRESENTATION: {
+  [A in MemberCustomFieldAccess]: { label: string; description: string };
+} = {
+  none: {
     label: 'Only staff',
     description: 'Members never see this field or what you record in it',
   },
-  {
-    value: 'read',
+  read: {
     label: 'Members can view',
     description: 'Shown in their account, but only staff can change it',
   },
-  {
-    value: 'write',
+  write: {
     label: 'Members can edit',
     description: 'Members fill this in and keep it up to date themselves',
   },
-];
+};
 
-/**
- * The words a publisher reads for a level.
- *
- * A level this build does not know shows as itself rather than falling back to the
- * closed label: the fallback would tell a publisher a field is staff-only when the
- * server may be treating it as open, and a label that reassures is worse than one
- * that reads oddly. Reachable only from a Core newer than this Admin.
- */
+export const MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS = MEMBER_ACCESS_LEVELS.map((value) => ({
+  value,
+  ...ACCESS_PRESENTATION[value],
+}));
+
 export const memberAccessLabel = (access: MemberCustomFieldAccess): string =>
-  MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS.find((option) => option.value === access)?.label ?? access;
+  ACCESS_PRESENTATION[access].label;
 
 /**
- * The user-type catalog: the presentation layer over the shared field types.
- *
- * The shared catalog (@tryghost/metafield-types) owns what a field type *is*
- * - its storage and validation. This catalog owns what a publisher is told it is:
- * its name, and which control collects a value. Admin surfaces (settings
- * list/modal, member detail) render from here so every surface presents fields
- * identically. The backend never sees any of this.
- *
- * The icon is not here: it is a component, so it sits with admin's, under the same type ids.
+ * How each field type is presented to a publisher: its name and its icon. The shared catalog says
+ * what a type is; this says what a publisher is told it is. How a value is edited and shown comes
+ * from the leaves the type is composed of, so every type made of the same leaves is edited alike.
  */
 export type MemberCustomFieldUserType = {
   id: FieldType;
   label: string;
-  // Which control collects/edits a value of this type
-  input: 'text' | 'textarea' | 'address';
+  icon: typeof LucideIcon.Type;
 };
 
 /**
- * How one field type is presented, constrained by what its value is: a composite names
- * every part its schema declares and no others, a scalar names none.
- *
- * The shared catalog owns which parts exist; this one owns what they are called, so adding,
- * removing or renaming a part upstream fails the build here rather than reaching a publisher
- * as a raw key. Enforced against a literal, which is how the catalog below is written; a
- * pre-widened `Record<string, string>` would satisfy it.
+ * A record type also names each part, and says which parts take a full row in a form. Both are
+ * typed against the parts the shared catalog declares, so adding, removing or renaming a part
+ * fails the build here rather than reaching a publisher as a raw key.
  */
 export type FieldTypePresentation<T extends FieldType> = {
   label: string;
-  input: MemberCustomFieldUserType['input'];
+  icon: MemberCustomFieldUserType['icon'];
 } & ([PartsOf<T>] extends [never]
-  ? { partLabels?: never }
-  : { partLabels: Record<PartsOf<T>, string> });
+  ? { partLabels?: never; fullRowParts?: never }
+  : { partLabels: Record<PartsOf<T>, string>; fullRowParts: readonly PartsOf<T>[] });
 
-// Presentation for every field type in the shared catalog. The mapped type keeps this
-// exhaustive: adding a field type upstream fails to compile here until it has one.
 const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
-  short_text: { label: 'Short text', input: 'text' },
-  long_text: { label: 'Long text', input: 'textarea' },
+  short_text: { label: 'Short text', icon: LucideIcon.Type },
+  long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
   address: {
     label: 'Address',
-    input: 'address',
+    icon: LucideIcon.MapPin,
+    fullRowParts: ['line1', 'line2'],
     partLabels: {
       line1: 'Address line 1',
       line2: 'Address line 2',
@@ -201,13 +180,35 @@ export const memberCustomFieldCsvColumns = (
   });
 };
 
-export type { PartType as MemberCustomFieldPartType } from '@tryghost/metafield-types';
+/** How a list a choice picks from is offered in Admin, and how one of its keys reads. */
+export interface MemberCustomFieldChoiceList {
+  options: (held?: string | readonly string[]) => { value: string; label: string }[];
+  label: (key: string) => string;
+  placeholder: string;
+  searchPlaceholder: string;
+}
 
-/** One part of a composite field type: the key the value schema declares, its label, and its declared type. */
-export type MemberCustomFieldPart<T extends FieldType = FieldType> = {
-  key: PartsOf<T>;
+export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFieldChoiceList } = {
+  countries: {
+    options: (held) => countryOptions(held),
+    label: countryName,
+    placeholder: 'Select countries...',
+    searchPlaceholder: 'Search countries...',
+  },
+};
+
+/** A leaf's value as a publisher reads it: text as written, and a choice by its name. */
+export const memberCustomFieldLeafText = (leaf: Leaf, value: string): string =>
+  matchLeaf(leaf, {
+    text: () => value,
+    choice: ({ from }) => memberCustomFieldChoiceLists[from].label(value),
+  });
+
+export type MemberCustomFieldPart = {
+  key: string;
   label: string;
-  type: PartType;
+  leaf: Leaf;
+  fullRow: boolean;
 };
 
 /**
@@ -216,27 +217,21 @@ export type MemberCustomFieldPart<T extends FieldType = FieldType> = {
  * Which parts exist, and in what order, comes from the value schema; naming them is this
  * catalog's job.
  */
-export const memberCustomFieldParts = <T extends FieldType>(
-  type: T,
-): MemberCustomFieldPart<T>[] | null => {
-  const partKeys = partsOf(type);
-  const partTypes = partTypesOf(type);
-  if (!partKeys || !partTypes) {
-    return null;
-  }
-  const labels = partLabelsFor(type);
-  return partKeys.map((key) => ({ key, label: labels[key], type: partTypes[key] }));
-};
-
-/**
- * A value as the record of parts a composite reads from, and nothing otherwise.
- *
- * A predicate rather than an assertion: the same checks either way, but this one hands
- * the narrowing to the compiler rather than overriding it, so a formatter below cannot be
- * reached by a value nobody looked at.
- */
-const isPartRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+export const memberCustomFieldParts = (type: FieldType): MemberCustomFieldPart[] | null =>
+  matchShape<MemberCustomFieldPart[] | null>(type, {
+    scalar: () => null,
+    record: (_structure, recordType) => {
+      const { partLabels, fullRowParts } = fieldTypePresentation[recordType];
+      const fullRow: readonly string[] = fullRowParts;
+      const labels: Record<string, string> = partLabels;
+      return Object.entries(FIELD_STRUCTURES[recordType].parts).map(([key, leaf]) => ({
+        key,
+        label: labels[key],
+        leaf,
+        fullRow: fullRow.includes(key),
+      }));
+    },
+  });
 
 /**
  * Parts that read as one run rather than as separate items — "NY 00001", not "NY, 00001".
@@ -273,7 +268,8 @@ function partRunsFor(type: FieldType): string[][] {
   }
 
   const runOf = new Map<string, number>();
-  ((fusedParts[type] ?? []) as ReadonlyArray<readonly string[]>).forEach((group, index) => {
+  const fused: ReadonlyArray<readonly string[]> = fusedParts[type] ?? [];
+  fused.forEach((group, index) => {
     group.forEach((part) => runOf.set(part, index));
   });
 
@@ -292,9 +288,7 @@ function partRunsFor(type: FieldType): string[][] {
 }
 
 // Resolved once: the catalog is static, and this is read for every row of a member list.
-const partRuns = Object.fromEntries(
-  FIELD_TYPE_IDS.map((type) => [type, partRunsFor(type)]),
-) as Record<FieldType, string[][]>;
+const partRuns = new Map(FIELD_TYPE_IDS.map((type) => [type, partRunsFor(type)]));
 
 /**
  * A member's value for one field as a single readable line: the string itself for a
@@ -307,36 +301,35 @@ const partRuns = Object.fromEntries(
  * from text. Callers own their own placeholder, since "no value" reads differently in a
  * table cell than in a detail row.
  */
-export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): string => {
-  // Null for a scalar, which reads as text or as nothing.
-  if (partsOf(type) === null) {
-    return typeof value === 'string' ? value : '';
-  }
+export const formatMemberCustomFieldValue = (
+  field: Pick<MemberCustomField, 'type'>,
+  value: unknown,
+): string =>
+  matchShape(field.type, {
+    scalar: ({ leaf }) => (typeof value === 'string' ? memberCustomFieldLeafText(leaf, value) : ''),
+    record: ({ parts }, type) => {
+      if (!isRecordValue(value)) {
+        return '';
+      }
 
-  if (!isPartRecord(value)) {
-    return '';
-  }
+      const leaves: Record<string, Leaf | undefined> = parts;
+      const readPart = (part: string): unknown => {
+        const raw = value[part];
+        const leaf = leaves[part];
+        return leaf && typeof raw === 'string' ? memberCustomFieldLeafText(leaf, raw) : raw;
+      };
 
-  // A country is stored as its code and read as its name: "US" is for machines to
-  // compare, "United States" is what a person expects on a record.
-  const partTypes: Record<string, PartType | undefined> = partTypesOf(type) ?? {};
-  const readPart = (part: string): unknown => {
-    const raw = value[part];
-    return partTypes[part] === 'country_code' && typeof raw === 'string' ? countryName(raw) : raw;
-  };
-
-  return partRuns[type]
-    .map((run) =>
-      run
-        .map(readPart)
-        .filter((part): part is string => typeof part === 'string' && part !== '')
-        .join(' '),
-    )
-    .filter(Boolean)
-    .join(', ');
-};
-
-export const memberCustomFieldKind = (type: FieldType): FieldKind => FIELD_TYPES[type].kind;
+      return (partRuns.get(type) ?? [])
+        .map((run) =>
+          run
+            .map(readPart)
+            .filter((part): part is string => typeof part === 'string' && part !== '')
+            .join(' '),
+        )
+        .filter(Boolean)
+        .join(', ');
+    },
+  });
 
 const MemberCustomFieldList = z.array(MetafieldDefinitionSchema);
 const MemberCustomFieldsResponse = z.object({ members_metafields: MemberCustomFieldList });

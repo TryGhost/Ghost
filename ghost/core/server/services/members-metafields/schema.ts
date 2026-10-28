@@ -74,12 +74,8 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's namespace and key travel with the row so a value assembles without a second
-// lookup.
-//
-// `type` takes no part in the assembly and is here as a gate: a value whose type has left
-// the catalog is one the definitions list no longer returns either, so failing to parse
-// is what drops it.
+// `type` says what shape a field's rows add up to, and also drops a value whose type has left the
+// catalog: its definition is no longer listed either, and the row fails to parse.
 export const DbStoredValueRow = z.object({
   member_id: z.string(),
   namespace: NamespaceSchema,

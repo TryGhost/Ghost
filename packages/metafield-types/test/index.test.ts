@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
-  FIELD_TYPES,
-  FIELD_TYPE_IDS,
+  FIELD_STRUCTURES,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
-  partTypesOf,
+  isFieldType,
+  isRecordValue,
+  matchShape,
   partsOf,
+  valueSchemaFor,
   type Address,
   type FieldType,
 } from '../src/index.ts';
@@ -18,35 +20,95 @@ import {
 // the backend storage and the wire format.
 describe('metafield-types catalog', function () {
   // Integrations depend on a published version of this package and talk to sites on
-  // other Ghost versions, so a type that has shipped keeps its parts and their types
+  // other Ghost versions, so a type that has shipped keeps its parts and what each holds
   // for good: an integration with a newer package would otherwise send a part an older
   // site refuses. New structure is a new type. Add a type here once it has shipped.
   it('never changes a type once it has shipped', function () {
+    const line = { leaf: 'text', size: 'line' };
     const shipped = {
-      short_text: null,
-      long_text: null,
+      short_text: { shape: 'scalar', leaf: line },
+      long_text: { shape: 'scalar', leaf: { leaf: 'text', size: 'long' } },
       address: {
-        line1: 'short_text',
-        line2: 'short_text',
-        city: 'short_text',
-        state: 'short_text',
-        postal_code: 'postal_code',
-        country: 'country_code',
+        shape: 'record',
+        parts: {
+          line1: line,
+          line2: line,
+          city: line,
+          state: line,
+          postal_code: { leaf: 'text', size: 'code' },
+          country: { leaf: 'choice', from: 'countries' },
+        },
       },
     };
 
-    for (const [type, parts] of Object.entries(shipped)) {
-      assert.ok(FIELD_TYPE_IDS.includes(type as FieldType), `${type} still exists`);
-      assert.deepEqual(partTypesOf(type as FieldType), parts, `${type} keeps its parts`);
+    for (const [type, structure] of Object.entries(shipped)) {
+      assert.ok(isFieldType(type), `${type} still exists`);
+      assert.deepEqual(FIELD_STRUCTURES[type], structure, `${type} keeps its structure`);
     }
   });
 
+  it('answers for each type by the shape it declares', function () {
+    const layout = (type: FieldType) =>
+      matchShape(type, {
+        scalar: ({ leaf }) => `one ${leaf.leaf} value`,
+        record: ({ parts }) => `parts ${Object.keys(parts).join(', ')}`,
+      });
+
+    assert.equal(layout('long_text'), 'one text value');
+    assert.equal(layout('address'), 'parts line1, line2, city, state, postal_code, country');
+  });
+
+  it('knows its own types, and nothing else as one', function () {
+    assert.equal(isFieldType('address'), true);
+    for (const value of ['a_type_from_the_future', 'constructor', 'toString', 42, null]) {
+      assert.equal(isFieldType(value), false, String(value));
+    }
+  });
+
+  it('refuses to answer for a type it has never heard of, naming it', function () {
+    // A plain JavaScript caller can pass any string as a type, including a name every object has.
+    for (const type of ['a_type_from_the_future', 'constructor']) {
+      assert.throws(
+        // @ts-expect-error a type this build doesn't know
+        () => matchShape(type, { scalar: () => 1, record: () => 2 }),
+        new RegExp(`Unknown field type: ${type}`),
+      );
+    }
+  });
+
+  it('refuses a rule for a type it has never heard of, naming it', function () {
+    for (const type of ['a_type_from_the_future', 'constructor']) {
+      assert.throws(
+        // @ts-expect-error a type this build doesn't know
+        () => valueSchemaFor({ type }),
+        new RegExp(`Unknown field type: ${type}`),
+      );
+    }
+  });
+
+  it('tells a record value by its layout, so a list or nothing is not one', function () {
+    assert.equal(isRecordValue({ city: 'London' }), true);
+    assert.equal(isRecordValue(['London']), false);
+    assert.equal(isRecordValue(null), false);
+    assert.equal(isRecordValue('London'), false);
+  });
+
+  it('names each part in declaration order, and none for a type without parts', function () {
+    assert.deepEqual(partsOf('address'), [
+      'line1',
+      'line2',
+      'city',
+      'state',
+      'postal_code',
+      'country',
+    ]);
+    assert.equal(partsOf('short_text'), null);
+  });
+
   it('reads a type it has never heard of as having no parts', function () {
-    // Only reachable by lying about the type, which is what an admin build older than
-    // the server it talks to does: the type is a string off the wire, asserted not
-    // checked. Failing here would take the surface down over a field it merely cannot
-    // render, so it degrades and the server stays authoritative.
-    assert.equal(partsOf('a_type_from_the_future' as FieldType), null);
+    // A plain JavaScript caller can pass any string as a type.
+    // @ts-expect-error a type this build doesn't know
+    assert.equal(partsOf('a_type_from_the_future'), null);
   });
 
   describe('text is trimmed, whatever type it belongs to', function () {
@@ -55,17 +117,23 @@ describe('metafield-types catalog', function () {
     // keystrokes emptying one field and filling another.
     it('trims every text type alike', function () {
       for (const type of ['short_text', 'long_text'] as const) {
-        const padded = FIELD_TYPES[type].value.safeParse('  Ghosts  ');
+        const padded = valueSchemaFor({ type }).safeParse('  Ghosts  ');
         assert.equal(padded.success && padded.data, 'Ghosts', type);
 
-        const blank = FIELD_TYPES[type].value.safeParse('   ');
+        const blank = valueSchemaFor({ type }).safeParse('   ');
         assert.equal(blank.success && blank.data, '', type);
       }
     });
 
     it('measures a bound against the value rather than its padding', function () {
-      assert.equal(FIELD_TYPES.short_text.value.safeParse(`  ${'x'.repeat(255)}  `).success, true);
-      assert.equal(FIELD_TYPES.short_text.value.safeParse('x'.repeat(256)).success, false);
+      assert.equal(
+        valueSchemaFor({ type: 'short_text' }).safeParse(`  ${'x'.repeat(255)}  `).success,
+        true,
+      );
+      assert.equal(
+        valueSchemaFor({ type: 'short_text' }).safeParse('x'.repeat(256)).success,
+        false,
+      );
     });
   });
 
@@ -74,7 +142,7 @@ describe('metafield-types catalog', function () {
   // to is sized in bytes. A character-based bound would accept a multibyte
   // value that the column can't hold.
   describe('long_text is bounded in bytes, not characters', function () {
-    const parse = (value: string) => FIELD_TYPES.long_text.value.safeParse(value).success;
+    const parse = (value: string) => valueSchemaFor({ type: 'long_text' }).safeParse(value).success;
 
     it('accepts a value of exactly the limit', function () {
       assert.equal(parse('a'.repeat(MAX_LONG_TEXT_BYTES)), true);
@@ -101,7 +169,7 @@ describe('metafield-types catalog', function () {
   // pin it: the CSV and admin paths both strip blank parts before a value
   // reaches the catalog, so neither ever presents the empty case this rejects.
   describe('an address must name at least one part', function () {
-    const parse = (value: unknown) => FIELD_TYPES.address.value.safeParse(value).success;
+    const parse = (value: unknown) => valueSchemaFor({ type: 'address' }).safeParse(value).success;
 
     it('accepts a partial address', function () {
       // There is no postal code in Hong Kong and no city in an Irish
@@ -158,18 +226,20 @@ describe('metafield-types catalog', function () {
     });
 
     it('normalises the case of a country code, so one country is one value', function () {
-      const parsed = FIELD_TYPES.address.value.safeParse({ country: 'gb' });
-      assert.equal(parsed.success && parsed.data.country, 'GB');
+      const countryOf = (written: string) => {
+        const parsed = valueSchemaFor({ type: 'address' }).safeParse({ country: written });
+        if (!parsed.success || !isRecordValue(parsed.data)) {
+          return undefined;
+        }
+        const { country } = parsed.data;
+        return country;
+      };
+      assert.equal(countryOf('gb'), 'GB');
 
       // Whichever way it arrives, it is stored the same way, so a filter for one
       // form cannot miss members holding another.
       for (const written of ['GB', 'gb', 'Gb', ' gB ']) {
-        const result = FIELD_TYPES.address.value.safeParse({ country: written });
-        assert.equal(
-          result.success && result.data.country,
-          'GB',
-          `expected ${JSON.stringify(written)} to normalise`,
-        );
+        assert.equal(countryOf(written), 'GB', `expected ${JSON.stringify(written)} to normalise`);
       }
     });
 
@@ -177,12 +247,17 @@ describe('metafield-types catalog', function () {
       // XK is not an ISO-assigned code, and it is what Kosovo is written as. Ghost
       // stores it rather than refusing a member's own country.
       for (const code of ['XK', 'TW', 'PS', 'EH']) {
-        assert.equal(FIELD_TYPES.address.value.safeParse({ country: code }).success, true, code);
+        assert.equal(
+          valueSchemaFor({ type: 'address' }).safeParse({ country: code }).success,
+          true,
+          code,
+        );
       }
     });
 
     it('takes two ASCII letters as a country code and nothing else', function () {
-      const parseCountry = (country: string) => FIELD_TYPES.address.value.safeParse({ country });
+      const parseCountry = (country: string) =>
+        valueSchemaFor({ type: 'address' }).safeParse({ country });
 
       // Uppercasing is not length-preserving, so a rule counting the characters of
       // the result is wrong both ways: one character can become two, and two can
@@ -197,7 +272,7 @@ describe('metafield-types catalog', function () {
     });
 
     it('trims a part, so its bound measures the value and not the padding', function () {
-      const result = FIELD_TYPES.address.value.safeParse({
+      const result = valueSchemaFor({ type: 'address' }).safeParse({
         line1: '  1 Main St  ',
         country: ' GB ',
       });
@@ -206,7 +281,7 @@ describe('metafield-types catalog', function () {
 
       // A value that reaches the limit exactly still fits once its padding is gone.
       assert.equal(
-        FIELD_TYPES.address.value.safeParse({ line1: `  ${'x'.repeat(255)}  ` }).success,
+        valueSchemaFor({ type: 'address' }).safeParse({ line1: `  ${'x'.repeat(255)}  ` }).success,
         true,
       );
     });
@@ -232,7 +307,7 @@ describe('metafield-types catalog', function () {
     it('reads a part of nothing but whitespace as empty, so it clears', function () {
       // Trimming happens per part above, so whitespace has already become the empty
       // string by the time the rule runs — and empty is an instruction, not a value.
-      const result = FIELD_TYPES.address.value.safeParse({ line1: '   ', city: '\t' });
+      const result = valueSchemaFor({ type: 'address' }).safeParse({ line1: '   ', city: '\t' });
       assert.equal(result.success, true);
       assert.deepEqual(result.data, { line1: '', city: '' });
     });
@@ -240,7 +315,7 @@ describe('metafield-types catalog', function () {
 
   describe('what a broken rule says', function () {
     const reasonFor = (type: FieldType, value: unknown): string | null => {
-      const result = FIELD_TYPES[type].value.safeParse(value);
+      const result = valueSchemaFor({ type }).safeParse(value);
       return result.success ? null : (result.error.issues[0]?.message ?? null);
     };
 
@@ -282,9 +357,10 @@ describe('metafield-types catalog', function () {
         ['long_text', 'x'.repeat(MAX_LONG_TEXT_BYTES + 1)],
         ['address', {}],
         ['address', { city: 42 }],
-        ...partsOf('address')!.map(
-          (part) => ['address', { [part]: 'x'.repeat(256) }] as [FieldType, unknown],
-        ),
+        ...Object.keys(FIELD_STRUCTURES.address.parts).map((part): [FieldType, unknown] => [
+          'address',
+          { [part]: 'x'.repeat(256) },
+        ]),
       ];
 
       for (const [type, value] of brokenValues) {
