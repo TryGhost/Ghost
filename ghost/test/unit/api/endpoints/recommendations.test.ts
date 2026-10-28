@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+
 const recommendations = require('../../../../core/server/services/recommendations');
 const adminEndpoint = require('../../../../core/server/api/endpoints/recommendations');
 const contentEndpoint = require('../../../../core/server/api/endpoints/recommendations-public');
@@ -7,7 +8,10 @@ const incomingEndpoint = require('../../../../core/server/api/endpoints/incoming
 
 // Each endpoint reads the wrapper field when a request arrives, so it sees whatever the root
 // has published by then.
-const forwarded = [
+type Endpoint = Record<string, { query(frame: object): Promise<unknown> }>;
+type Forwarded = [name: string, endpoint: Endpoint, field: string, methods: string[]];
+
+const forwarded: Forwarded[] = [
   ['admin', adminEndpoint, 'controller', ['browse', 'read', 'add', 'check', 'edit', 'destroy']],
   ['content', contentEndpoint, 'controller', ['browse']],
   ['incoming', incomingEndpoint, 'incomingRecommendationController', ['browse']],

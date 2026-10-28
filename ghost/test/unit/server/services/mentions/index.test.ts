@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
-const path = require('node:path');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import sinon from 'sinon';
+
 const ObjectID = require('bson-objectid').default;
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
@@ -36,21 +37,25 @@ describe('Mentions service root', function () {
   // The root is a CommonJS facade behind index.js; both entries must reload
   // together so each test starts from the import-time shape.
   const rootModules = [require.resolve(rootDirectory), path.join(rootDirectory, 'service.js')];
-  let savedModules;
-  let previousListeners;
-  let root;
-  let jobsService;
-  let getSiteUrl;
-  let urlFor;
-  let getSetting;
-  let mentionFindOne;
-  let mentionAdd;
-  let fetchOembedData;
-  let dispatch;
+  let savedModules: (NodeJS.Module | undefined)[];
+  let previousListeners: Record<string, Function[]>;
+  let root: ReturnType<typeof loadRoot>;
+  let jobsService: { dispatch: sinon.SinonStub };
+  let getSiteUrl: sinon.SinonStub;
+  let urlFor: sinon.SinonStub;
+  let getSetting: sinon.SinonStub;
+  let mentionFindOne: sinon.SinonStub;
+  let mentionAdd: sinon.SinonStub;
+  let fetchOembedData: sinon.SinonStub;
+  let dispatch: sinon.SinonStub;
 
   const sourceUrl = new URL('https://source.example/a-post-that-links-here/');
   const targetUrl = new URL('https://publication.example/target-post/');
   const targetPostId = '6400000000000000000000a1';
+
+  function loadRoot() {
+    return require(rootDirectory);
+  }
 
   beforeEach(function () {
     // The unit project shares one module registry, so each test loads a fresh
@@ -69,7 +74,7 @@ describe('Mentions service root', function () {
     urlFor.withArgs('home', true).returns('https://publication.example/');
     sandbox
       .stub(urlUtils, 'absoluteToRelative')
-      .callsFake((absoluteUrl) => new URL(absoluteUrl).pathname);
+      .callsFake((absoluteUrl) => new URL(absoluteUrl as string).pathname);
     getSetting = sandbox.stub(settingsCache, 'get');
     getSetting.withArgs('is_private').returns(false);
     sandbox.stub(urlService, 'getRequiredRelations').returns([]);
@@ -95,7 +100,7 @@ describe('Mentions service root', function () {
       contentType: 'text/html',
     });
     dispatch = sandbox.stub(DomainEvents, 'dispatch');
-    root = require(rootDirectory);
+    root = loadRoot();
   });
 
   afterEach(function () {
@@ -113,29 +118,47 @@ describe('Mentions service root', function () {
     });
   });
 
-  function ownedListeners(eventName) {
+  function ownedListeners(eventName: string) {
     return events
       .listeners(eventName)
-      .filter((listener) => !previousListeners[eventName].includes(listener));
+      .filter((listener: Function) => !previousListeners[eventName].includes(listener));
   }
 
   function ownedListenerCount() {
     return POST_EVENTS.reduce((count, eventName) => count + ownedListeners(eventName).length, 0);
   }
 
-  function fakePost({ html, previousHtml = null, status = 'published', previousStatus = 'draft' }) {
-    const attributes = { id: 'post-id', status, html, type: 'post', slug: 'source-post' };
-    const previous = { status: previousStatus, html: previousHtml };
+  type FakePost = ReturnType<typeof fakePost>;
+
+  function fakePost({
+    html,
+    previousHtml = null,
+    status = 'published',
+    previousStatus = 'draft',
+  }: {
+    html: string;
+    previousHtml?: string | null;
+    status?: string;
+    previousStatus?: string;
+  }) {
+    const attributes: Record<string, string> = {
+      id: 'post-id',
+      status,
+      html,
+      type: 'post',
+      slug: 'source-post',
+    };
+    const previous: Record<string, string | null> = { status: previousStatus, html: previousHtml };
     return {
       id: attributes.id,
       relations: {},
-      get: (property) => attributes[property],
-      previous: (property) => previous[property],
+      get: (property: string) => attributes[property],
+      previous: (property: string) => previous[property],
       toJSON: () => ({ ...attributes }),
     };
   }
 
-  async function firePostPublished(post) {
+  async function firePostPublished(post: FakePost) {
     const [listener] = ownedListeners('post.published');
     assert.ok(listener, 'init must register a post.published listener');
     await listener(post, {});
@@ -221,8 +244,9 @@ describe('Mentions service root', function () {
       data: [withResource, withoutResource],
       meta: { pagination: { page: 1, pages: 1, limit: 15, total: 2, prev: null, next: null } },
     });
+    const targetPost: Record<string, string> = { title: 'Target Post', type: 'post' };
     const findPost = sandbox.stub(models.Post, 'findOne').resolves({
-      get: (property) => ({ title: 'Target Post', type: 'post' })[property],
+      get: (property: string) => targetPost[property],
     });
 
     const result = await root.controller.browse({ options: {} });
@@ -348,8 +372,8 @@ describe('Mentions service root', function () {
     assert.equal(ownedListenerCount(), 0);
   });
 
-  function fakeMentionModel({ resource_id }) {
-    const row = {
+  function fakeMentionModel({ resource_id }: { resource_id: string | null }) {
+    const row: Record<string, unknown> = {
       id: new ObjectID().toHexString(),
       source: sourceUrl.href,
       target: targetUrl.href,
@@ -367,6 +391,6 @@ describe('Mentions service root', function () {
       deleted: false,
       revalidation_failure_count: 0,
     };
-    return { get: (property) => row[property] };
+    return { get: (property: string) => row[property] };
   }
 });

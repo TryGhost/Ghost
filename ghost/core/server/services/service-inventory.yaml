@@ -8980,7 +8980,7 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
           - test/unit/server/services/mentions/process-webmention-job.test.ts
           - test/unit/server/services/mentions/send-webmentions-job.test.ts
       construction:
@@ -9012,7 +9012,7 @@ services:
           - core/server/services/mentions/in-memory-mention-repository.js
           - core/server/services/oembed/service.js
         tests:
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
           - test/unit/server/services/mentions/webmention-metadata.test.js
       consumers:
         summary: >-
@@ -9071,7 +9071,7 @@ services:
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
           - test/unit/boot/init-services.test.ts
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
           - test/e2e-api/webmentions/webmentions.test.js
           - test/e2e-server/services/mentions.test.js
       lifetime:
@@ -9098,7 +9098,7 @@ services:
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
           - test/unit/server/services/jobs-service/retained-consumer.test.ts
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
       configuration:
         summary: >-
           Source-checked: routing captures a site URL at init. Sender calls URL helpers
@@ -9130,7 +9130,7 @@ services:
           - core/shared/url-utils.ts
           - core/server/lib/request-external.js
         tests:
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
           - test/unit/server/services/mentions/service.test.js
           - test/unit/server/services/mentions/mention-sending-service.test.js
           - test/unit/server/services/mentions/routing-service.test.ts
@@ -9167,7 +9167,7 @@ services:
           - package.json
         tests:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
           - test/e2e-server/services/mentions.test.js
           - test/e2e-server/services/recommendation-emails.test.js
       failures:
@@ -9202,7 +9202,7 @@ services:
           - core/server/services/mentions/bookshelf-mention-repository.js
           - core/server/services/mentions/mention.js
         tests:
-          - test/unit/server/services/mentions/index.test.js
+          - test/unit/server/services/mentions/index.test.ts
           - test/unit/server/services/mentions/mention-controller.test.ts
           - test/unit/server/services/mentions/mention-sending-service.test.js
           - test/unit/server/services/mentions/mention-discovery-service.test.ts
@@ -11568,7 +11568,7 @@ services:
           - core/server/services/recommendations/service/incoming-recommendation-controller.ts
         tests:
           - test/unit/server/services/recommendations/index.test.ts
-          - test/unit/api/endpoints/recommendations.test.js
+          - test/unit/api/endpoints/recommendations.test.ts
           - test/unit/server/services/recommendations/service/recommendation-controller.test.ts
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       construction:
@@ -11639,7 +11639,7 @@ services:
           - test/e2e-api/members/recommendations.test.js
           - test/e2e-frontend/recommendations-well-known.test.js
           - test/e2e-server/services/recommendation-emails.test.js
-          - test/unit/api/endpoints/recommendations.test.js
+          - test/unit/api/endpoints/recommendations.test.ts
           - test/unit/server/services/recommendations/index.test.ts
           - test/unit/frontend/helpers/recommendations.test.ts
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
@@ -13871,7 +13871,7 @@ services:
           - test/unit/server/services/stats/subscriptions.test.js
           - test/unit/server/services/stats/referrers.test.js
           - test/unit/server/services/stats/posts.test.js
-          - test/unit/server/services/stats/utils/date-utils.test.js
+          - test/unit/server/services/stats/utils/date-utils.test.ts
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       resources:
         summary: >-

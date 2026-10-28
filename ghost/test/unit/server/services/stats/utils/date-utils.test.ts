@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const knex = require('knex').default;
+import assert from 'node:assert/strict';
+import knex, { type Knex } from 'knex';
+
 const {
   getDateBoundaries,
   applyDateFilter,
@@ -41,7 +42,7 @@ describe('Stats date utils', function () {
   });
 
   describe('applyDateFilter', function () {
-    let db;
+    let db: Knex;
 
     beforeEach(function () {
       db = knex({
