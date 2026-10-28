@@ -37,7 +37,9 @@ Ghost than the package the integration was built with.
 
 ## Develop
 
-This is a workspace package in the Ghost monorepo. From the repo root:
+This is a workspace package in the Ghost monorepo. Adding a field type to Ghost is
+covered in [`docs/adding-a-field-type.md`](docs/adding-a-field-type.md). From the repo
+root:
 
 ```bash
 pnpm --filter @tryghost/metafield-types build   # compile to build/ with tsc (ESM)
