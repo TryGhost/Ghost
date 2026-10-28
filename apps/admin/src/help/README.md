@@ -375,8 +375,10 @@ results and listed in what the support form sends.
 There's no "Contact support" button up front. The support team is offered
 where a search or an article didn't do it: no results, the error state, and
 "No" at the end of an article. The form (`help-support.tsx`) starts from the
-last search as the message (the subject is optional) and promises a reply
-from the Ghost(Pro) support team within 24 hours on working days. Only what
+last search typed into the field as the message (picked questions aren't
+the user's own words, so they don't count; the subject is optional) and
+promises a reply from the Ghost(Pro) support team within 24 hours on working
+days. Only what
 the user writes is sent.
 
 ## Decisions and trade-offs
