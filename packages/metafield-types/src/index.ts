@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { KeySchema, NamespaceSchema } from './identity.js';
 import { FIELD_PARTS, FIELD_TYPE_IDS, type FieldType, type PartType } from './structure.js';
 
 // Re-exported so a caller that needs both halves still has one import. The split is
@@ -90,6 +91,36 @@ export const MEMBER_ACCESS = {
   read: 'read',
   write: 'write',
 } as const satisfies Record<MemberAccess, MemberAccess>;
+
+/**
+ * Whether a field is in use. An archived field keeps its definition and the values members
+ * hold for it, so it can be restored, but it takes no new values and members no longer see it.
+ */
+export const FIELD_STATUSES = ['active', 'archived'] as const;
+export type FieldStatus = (typeof FIELD_STATUSES)[number];
+export const FieldStatusSchema = z.enum(FIELD_STATUSES);
+export const FIELD_STATUS = {
+  active: 'active',
+  archived: 'archived',
+} as const satisfies Record<FieldStatus, FieldStatus>;
+
+/**
+ * A field definition as the Admin and Members APIs return it. Ghost writes every definition through
+ * this and Admin reads every one through it, so both ends are checked against one shape. Portal
+ * uses the type without the check, because zod would add to every page view on every site. Dates
+ * are ISO strings, as JSON carries them.
+ */
+export const MetafieldDefinitionSchema = z.object({
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  name: z.string(),
+  type: FieldTypeSchema,
+  status: FieldStatusSchema,
+  access: z.object({ member: MemberAccessSchema }),
+  created_at: z.iso.datetime(),
+  updated_at: z.iso.datetime().nullable(),
+});
+export type MetafieldDefinition = z.output<typeof MetafieldDefinitionSchema>;
 
 /**
  * Where a change to a member's values was made, as a member's activity feed names it.

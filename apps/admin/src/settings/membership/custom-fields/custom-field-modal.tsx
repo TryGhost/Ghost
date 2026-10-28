@@ -29,16 +29,12 @@ import {
   useCreateMemberCustomField,
   useDeleteMemberCustomField,
   useEditMemberCustomField,
-  userTypeForField,
+  userTypeForFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
-
-const userTypeById = (id: string) =>
-  memberCustomFieldUserTypes.find((userType) => userType.id === id) ||
-  memberCustomFieldUserTypes[0];
 
 const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => void }> = ({
   field,
@@ -57,7 +53,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       name: field?.name || '',
       // Form state tracks the user-type id; it maps to the API storage
       // type on save
-      userTypeId: field ? userTypeForField(field).id : memberCustomFieldUserTypes[0].id,
+      userTypeId: field ? field.type : memberCustomFieldUserTypes[0].id,
       access: field ? field.access.member : 'none',
     },
     savingDelay: 500,
@@ -86,7 +82,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
         // No key: the backend mints it from the name.
         await createField({
           name: state.name.trim(),
-          type: userTypeById(state.userTypeId).id,
+          type: state.userTypeId,
           access: { member: state.access },
         });
       }
@@ -105,7 +101,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   });
 
   const isArchived = field?.status === 'archived';
-  const selectedType = userTypeById(formState.userTypeId);
+  const selectedType = userTypeForFieldType(formState.userTypeId);
 
   // The API keeps a third access level, `read`, that the switch doesn't offer. A field
   // already set to it reads as open and is described as such; saving without touching
@@ -314,7 +310,10 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
             disabled={isEdit}
             value={formState.userTypeId}
             onValueChange={(value) => {
-              updateForm((state) => ({ ...state, userTypeId: userTypeById(value).id }));
+              const chosen = memberCustomFieldUserTypes.find((userType) => userType.id === value);
+              if (chosen) {
+                updateForm((state) => ({ ...state, userTypeId: chosen.id }));
+              }
             }}
           >
             <SelectTrigger aria-label="Type" data-testid="custom-field-type">

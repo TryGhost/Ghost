@@ -179,6 +179,26 @@ describe('Custom fields', () => {
     await expect.element(row).not.toHaveTextContent('Visible to members');
   });
 
+  it('says something went wrong rather than listing fields it cannot read', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([
+      companyField,
+      {
+        ...companyField,
+        key: KeySchema.parse('mood'),
+        name: 'Mood',
+        // @ts-expect-error a type this build doesn't know
+        type: 'a_type_from_the_future',
+      },
+    ]);
+    await renderAdminApp('/settings', flagOn);
+
+    await expect.element(page.getByText('Something went wrong, please try again.')).toBeVisible();
+    await expect(settingsScreen.customFields().getByTestId('custom-field-list-item')).toHaveCount(
+      0,
+    );
+  });
+
   it('validates and creates a short-text field without sending a key', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
