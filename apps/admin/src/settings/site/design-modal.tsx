@@ -1,5 +1,5 @@
 import DesignSidebar from './design-and-branding/design-sidebar';
-import React, { useState } from 'react';
+import React from 'react';
 import ThemePreview from './design-and-branding/theme-preview';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { Laptop, Smartphone } from 'lucide-react';
@@ -34,7 +34,7 @@ const DesignModal: React.FC = () => {
   const routeState: unknown = location.state;
   const selectedPreviewTab =
     searchParams.get('preview') === 'post' && latestPost ? 'post' : 'homepage';
-  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const previewDevice = searchParams.get('device') === 'mobile' ? 'mobile' : 'desktop';
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
 
@@ -100,7 +100,13 @@ const DesignModal: React.FC = () => {
       value={previewDevice}
       onValueChange={(value) => {
         if (value === 'desktop' || value === 'mobile') {
-          setPreviewDevice(value);
+          const params = new URLSearchParams(searchParams);
+          if (value === 'mobile') {
+            params.set('device', 'mobile');
+          } else {
+            params.delete('device');
+          }
+          setSearchParams(params, { replace: true, state: routeState });
         }
       }}
     >
