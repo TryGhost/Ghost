@@ -163,6 +163,12 @@ describe('automations API', function () {
       });
 
       await api.trigger(trigger);
+      await api.trigger({
+        ...trigger,
+        event: 'paid_subscription_changed',
+        previousMemberStatus: 'paid',
+        previousMemberTierIds: ['basic'],
+      });
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
@@ -175,6 +181,13 @@ describe('automations API', function () {
         const api = createApi({ repository: { ...repository, withTransaction } });
 
         await api.trigger({ ...trigger, source });
+        await api.trigger({
+          ...trigger,
+          event: 'paid_subscription_changed',
+          source,
+          previousMemberStatus: 'paid',
+          previousMemberTierIds: ['basic'],
+        });
 
         expect(withTransaction).not.toHaveBeenCalled();
         expect(domainEvents.dispatch).not.toHaveBeenCalled();
@@ -192,15 +205,66 @@ describe('automations API', function () {
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
+    it('does not start tier-change automations for unchanged tiers, free memberships, or changes to or from complimentary memberships', async function () {
+      const withTransaction = vi.fn();
+      const api = createApi({ repository: { ...repository, withTransaction } });
+
+      const changed = {
+        ...trigger,
+        event: 'paid_subscription_changed' as const,
+        previousMemberStatus: 'paid' as const,
+        previousMemberTierIds: ['basic'],
+      };
+      await api.trigger({ ...changed, memberTierIds: ['basic'] });
+      await api.trigger({ ...changed, previousMemberStatus: 'free' });
+      await api.trigger({ ...changed, previousMemberStatus: 'comped' });
+      await api.trigger({ ...changed, memberStatus: 'comped' });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
     it('matches gift signups against paid automations', async function () {
       const findFirstActionRevisions = vi.fn().mockReturnValue([]);
       const api = createApi({ repository: { ...repository, findFirstActionRevisions } });
 
       await api.trigger({ ...trigger, memberStatus: 'gift', memberTierIds: ['tier'] });
 
-      expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), 'paid', [
-        'tier',
-      ]);
+      expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
+        event: 'membership_started',
+        memberStatus: 'paid',
+        memberTierIds: ['tier'],
+      });
+    });
+
+    it('treats gift memberships like paid memberships when signing up or changing tiers', async function () {
+      const findFirstActionRevisions = vi.fn(() => []);
+      const api = createApi({ repository: { ...repository, findFirstActionRevisions } });
+      await api.trigger({
+        ...trigger,
+        event: 'membership_started',
+        memberStatus: 'gift',
+        previousMemberStatus: null,
+      });
+      expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
+        event: 'membership_started',
+        memberStatus: 'paid',
+        memberTierIds: [],
+      });
+      await api.trigger({
+        ...trigger,
+        event: 'paid_subscription_changed',
+        memberStatus: 'gift',
+        previousMemberStatus: 'gift',
+        previousMemberTierIds: ['basic'],
+        memberTierIds: ['premium'],
+      });
+      expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
+        event: 'paid_subscription_changed',
+        memberStatus: 'paid',
+        previousMemberTierIds: ['basic'],
+        memberTierIds: ['premium'],
+      });
     });
 
     it('locks the member before any other repository operation', async function () {
@@ -283,15 +347,15 @@ describe('automations API', function () {
 
         await api.trigger({ ...trigger, memberStatus, memberTierIds });
 
-        expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(
-          expect.anything(),
+        expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
+          event: 'membership_started',
           memberStatus,
           memberTierIds,
-        );
+        });
       },
     );
 
-    it('skips automations the member has already entered while enrolling in new ones', async function () {
+    it('skips signup automations the member has already entered while enrolling in new ones', async function () {
       const entered = createFirstAction();
       const available = createFirstAction();
       firstActions = [entered, available];
@@ -314,6 +378,34 @@ describe('automations API', function () {
       expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
         expect.any(StartAutomationsPollEvent),
       );
+    });
+
+    it('skips "paid subscription changed" automations when the member has already entered that automation', async function () {
+      firstActions.push(createFirstAction());
+      const findFirstActionRevisions = vi.fn(() => firstActions);
+      const api = createApi({
+        repository: { ...repository, findFirstActionRevisions },
+        domainEvents,
+        labs: { isSet: (flag: string) => flag === 'automations' },
+      });
+      const changed = {
+        ...trigger,
+        event: 'paid_subscription_changed' as const,
+        previousMemberStatus: 'paid' as const,
+        previousMemberTierIds: ['basic'],
+        memberTierIds: ['premium'],
+        memberStatus: 'paid' as const,
+      };
+      await api.trigger(changed);
+      await api.trigger(changed);
+      expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
+        event: changed.event,
+        memberStatus: changed.memberStatus,
+        memberTierIds: changed.memberTierIds,
+        previousMemberTierIds: changed.previousMemberTierIds,
+      });
+      expect(runs).toHaveLength(1);
+      expect(steps).toHaveLength(1);
     });
 
     it('inserts no runs or steps when there are no matching automations', async function () {
