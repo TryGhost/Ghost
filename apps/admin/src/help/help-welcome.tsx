@@ -27,7 +27,7 @@ const SUGGESTION_ROW_CLASS_NAME = 'flex w-full items-center gap-3 rounded-lg p-2
 export function HelpGreeting({ firstName }: { firstName: string }) {
   return (
     <Text as="h3" className={REVEAL_CLASS_NAME} leading="heading" size="xl" weight="semibold">
-      {firstName ? `Hi ${firstName}, what can we help you find?` : 'What can we help you find?'}
+      {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
     </Text>
   );
 }
@@ -52,7 +52,7 @@ export function HelpSuggestions({
   return (
     <Stack gap="sm">
       {!failed && (
-        <Text className={REVEAL_CLASS_NAME} size="sm" tone="tertiary">
+        <Text as="h4" className={REVEAL_CLASS_NAME} size="sm" weight="semibold">
           Frequently asked questions for {pageLabel}
         </Text>
       )}
