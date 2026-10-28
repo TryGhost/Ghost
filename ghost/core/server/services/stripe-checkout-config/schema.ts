@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { DbDate } from '../../lib/db-types/date';
-import { COLLECTED_SECTIONS, SECTION_NAMES, type CollectedSection } from './models';
+import { COLLECTED_SECTIONS, SECTION_NAMES, SECTION_OF } from './models';
 
 export const CONFIG_TABLE = 'stripe_checkout_config';
 
@@ -33,18 +33,9 @@ export type DbConfigParts = z.infer<typeof DbConfigParts>;
 
 export const CONFIG_TIERS_TABLE = 'stripe_checkout_config_tiers';
 
-/** Each collected part by the name it is stored under. */
-const SECTIONS_BY_NAME = {
-  shipping: 'shipping',
-  phone: 'phone',
-  tax_number: 'taxNumber',
-} as const satisfies {
-  [Section in CollectedSection as (typeof SECTION_NAMES)[Section]]: Section;
-};
-
 /** A collected part as the tiers table names it, read as its name in code. */
 export const DbSection = z.codec(z.enum(SECTION_NAMES), z.enum(COLLECTED_SECTIONS), {
-  decode: (name) => SECTIONS_BY_NAME[name],
+  decode: (name) => SECTION_OF[name],
   encode: (section) => SECTION_NAMES[section],
 });
 

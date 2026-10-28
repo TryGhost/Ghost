@@ -5,7 +5,12 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
 import type { FieldStatus } from '../members-metafields/schema';
-import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
+import {
+  CUSTOM_NAMESPACE,
+  type Identity,
+  type Key,
+  KeySchema,
+} from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordCheckoutConfigAction, RequestContext } from './actions';
@@ -25,6 +30,8 @@ import { CONFIG_SLUG, CONFIG_TABLE, CONFIG_TIERS_TABLE, DbConfigParts, DbSection
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutConfigInput } from './serializers';
 
+// A `custom_field_key` is a key in the publisher's `custom` namespace, so the config reads and
+// checks only the bindings and fields there.
 const BINDINGS_TABLE = 'members_metafield_bindings';
 const FIELDS_TABLE = 'members_metafields';
 /** A custom field that can take a value: not archived. */
@@ -131,7 +138,7 @@ function tierScopeOf({ tierIds }: { tierIds: string[] | null }): TierScope {
 }
 
 /** The collected parts a request includes, each with its settings, or null to switch it off. */
-type RequestedParts = { [Section in CollectedSection]?: CollectedSettings[Section] | null };
+export type RequestedParts = { [Section in CollectedSection]?: CollectedSettings[Section] | null };
 
 /**
  * What saving a collected part settles: the tiers it is limited to, or null for every paid tier,
@@ -143,6 +150,14 @@ interface Change {
     tierIds: string[] | null;
     destinations: Destination[];
   } | null;
+}
+
+/** What saving the parts in a request settles, for the parts it includes. */
+function changesOf(requested: RequestedParts): Change[] {
+  return COLLECTED_SECTIONS.flatMap((section) => {
+    const settings = requested[section];
+    return settings === undefined ? [] : [changeOf(section, settings)];
+  });
 }
 
 function changeOf<Section extends CollectedSection>(
@@ -222,9 +237,14 @@ const LockedTier = z.object({ id: z.string(), type: z.string() });
 const LockedField = z.object({ key: KeySchema, type: z.string(), status: z.string() });
 const LockedBinding = z.object({ port: z.enum(STRIPE_PORTS), metafield_key: KeySchema });
 
-/** Points a port at a custom field, or stops it writing anywhere. */
+/** Points a port at a field, or stops it writing anywhere. */
 export interface PortBinder {
-  bind(db: Knex, port: string, customFieldKey: Key, now: Date): Promise<string>;
+  bind(
+    db: Knex,
+    port: string,
+    field: Pick<Identity, 'namespace' | 'key'>,
+    now: Date,
+  ): Promise<string>;
   remove(db: Knex, port: string): Promise<void>;
 }
 
@@ -267,9 +287,21 @@ export class StripeCheckoutConfigService {
   /**
    * Reads the config as checkouts use it: the design, and for each collected part the tiers it
    * asks on and whether it can ask right now.
+   *
+   * Parts given unsaved take the place of the saved ones, refused as saving them would be, so a
+   * preview asks for each part exactly as checkouts would once it was saved. Nothing is written.
    */
-  async readForCheckout(): Promise<CheckoutSessionConfig> {
-    const { config, bound } = await this.readSaved();
+  async readForCheckout(unsaved: RequestedParts = {}): Promise<CheckoutSessionConfig> {
+    const changes = changesOf(unsaved);
+    // Checked in the same transaction as the read, so both see the same tiers and fields.
+    const { named, saved } = changes.length
+      ? await this.knex.transaction(async (trx) => ({
+          named: await assertTargets(trx, changes),
+          saved: await this.readSaved(trx),
+        }))
+      : { named: new Map<StripePort, Bound>(), saved: await this.readSaved() };
+    const config = { ...saved.config, ...unsaved };
+    const bound = new Map([...saved.bound, ...named]);
     return {
       design: config.design,
       shipping: config.shipping && {
@@ -289,12 +321,12 @@ export class StripeCheckoutConfigService {
   }
 
   /** The config as saved, and the custom field each port is bound to. */
-  private async readSaved(): Promise<{
+  private async readSaved(db: Knex = this.knex): Promise<{
     config: StripeCheckoutConfig;
     bound: Map<StripePort, Bound>;
   }> {
     const rows = z.array(ReadRow).parse(
-      await this.knex(`${CONFIG_TABLE} as config`)
+      await db(`${CONFIG_TABLE} as config`)
         // Every part's tiers in one join and every port in another, so the rows grow with the
         // tiers times the ports, rather than with a join per part and per port multiplied
         // together.
@@ -308,10 +340,15 @@ export class StripeCheckoutConfigService {
           join.on('tier.id', '=', 'named.product_id').andOnVal('tier.type', '=', 'paid'),
         )
         .leftJoin(`${BINDINGS_TABLE} as binding`, (join) =>
-          join.onIn('binding.port', COLLECTED_PORTS),
+          join
+            .onIn('binding.port', COLLECTED_PORTS)
+            .andOnVal('binding.metafield_namespace', '=', CUSTOM_NAMESPACE),
         )
         .leftJoin(`${FIELDS_TABLE} as field`, (join) =>
-          join.on('field.key', '=', 'binding.metafield_key').andOnVal('field.status', '=', ACTIVE),
+          join
+            .on('field.namespace', '=', 'binding.metafield_namespace')
+            .andOn('field.key', '=', 'binding.metafield_key')
+            .andOnVal('field.status', '=', ACTIVE),
         )
         .where('config.slug', CONFIG_SLUG)
         .select(
@@ -352,10 +389,7 @@ export class StripeCheckoutConfigService {
   async edit(context: RequestContext, input: unknown): Promise<void> {
     const { design, ...requested } = parseRequest(CheckoutConfigInput, input, 'checkout_config');
     // Only the parts in the request are written, so saving one part never overwrites another.
-    const changes = COLLECTED_SECTIONS.flatMap((section) => {
-      const settings = requested[section];
-      return settings === undefined ? [] : [changeOf(section, settings)];
-    });
+    const changes = changesOf(requested);
     const columns = z.encode(this.configRow.partial(), {
       ...(design === undefined ? {} : { design }),
       ...snakeKeys(storedColumns(requested)),
@@ -411,7 +445,12 @@ export class StripeCheckoutConfigService {
 
     if (targets) {
       for (const { port, customFieldKey } of targets.destinations) {
-        await this.bindings.bind(trx, port, customFieldKey, now);
+        await this.bindings.bind(
+          trx,
+          port,
+          { namespace: CUSTOM_NAMESPACE, key: customFieldKey },
+          now,
+        );
       }
     } else {
       for (const { port } of PARTS[section].destinations) {
@@ -494,13 +533,18 @@ function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound
  * its port supplies. A publisher who named a field meant that field, so being told now beats
  * finding out later that nothing was saved. Each port needs a field of its own, as two ports
  * writing one field would overwrite each other on every checkout.
+ *
+ * Returns the custom field each port the parts name would be bound to once saved.
  */
-async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
+async function assertTargets(
+  trx: Knex.Transaction,
+  changes: Change[],
+): Promise<Map<StripePort, Bound>> {
   const switchedOn = changes.flatMap(({ section, targets }) =>
     targets ? [{ section, ...targets }] : [],
   );
   if (!switchedOn.length) {
-    return;
+    return new Map();
   }
 
   const tierIds = [...new Set(switchedOn.flatMap((part) => part.tierIds ?? []))];
@@ -525,6 +569,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
   const destinations = switchedOn.flatMap((part) => part.destinations);
   const fields = z.array(LockedField).parse(
     await trx(FIELDS_TABLE)
+      .where('namespace', CUSTOM_NAMESPACE)
       .whereIn(
         'key',
         destinations.map((destination) => destination.customFieldKey),
@@ -537,6 +582,7 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
     .parse(
       await trx(BINDINGS_TABLE)
         .whereIn('port', COLLECTED_PORTS)
+        .where('metafield_namespace', CUSTOM_NAMESPACE)
         .select('port', 'metafield_key')
         .forUpdate(),
     );
@@ -585,4 +631,16 @@ async function assertTargets(trx: Knex.Transaction, changes: Change[]) {
       });
     }
   }
+
+  return new Map(
+    destinations.map(({ port, customFieldKey }): [StripePort, Bound] => [
+      port,
+      {
+        customFieldKey,
+        // Each field was checked to be the type its port supplies, so only an archived one
+        // kept from before can't take a value.
+        ready: fields.some((field) => field.key === customFieldKey && field.status === ACTIVE),
+      },
+    ]),
+  );
 }

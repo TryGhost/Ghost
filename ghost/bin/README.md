@@ -45,6 +45,9 @@ environment gate and writes into whatever database the tree is configured for,
 so never point it at a site with data you need to keep. Outside `development`, MySQL needs
 `ALLOW_INFILE_STREAM=1` to permit the infile streaming the generator uses.
 Contributors in a checkout use the gx command instead.
+Both commands share [Core's option validation and normalization](../core/server/data/seeders/schema.ts),
+including zero quantities and rejection of invalid quantities/seeds before database
+setup. See the [shared-tool pattern](../../tools/README.md#tools-needed-in-a-checkout-and-an-installed-release).
 
 Hosting and image tooling outside this repository runs it to seed installed
 images, where there is no gx and Core internals should not be required directly.
