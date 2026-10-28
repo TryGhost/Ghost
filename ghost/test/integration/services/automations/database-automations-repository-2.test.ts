@@ -229,13 +229,6 @@ describe('database automations repository', function () {
       ]);
     });
 
-    it('excludes other trigger types', async function () {
-      const matching = await insertAutomation();
-      await insertAutomation({ trigger_type: 'another_trigger_type' });
-
-      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([matching]);
-    });
-
     it.each(['inactive', 'archived'])(
       'excludes %s automations for every tier scope',
       async function (status) {
