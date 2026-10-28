@@ -764,6 +764,44 @@ describe('automations repository', function () {
       await knex('products').insert(tierIds.map((id) => ({ id, type: 'paid', active: true })));
     });
 
+    it('preserves changed trigger directions through add, edit, and read', async function () {
+      const trigger_rules = [
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'any_paid_tier' as const,
+          direction: 'from' as const,
+          product_id: null,
+        },
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'free' as const,
+          direction: 'to' as const,
+          product_id: null,
+        },
+      ];
+      const added = await repo.add({ ...data, trigger_rules });
+      assert.deepEqual(added.trigger_rules, trigger_rules);
+      assert.deepEqual((await repo.getById(added.id))?.trigger_rules, trigger_rules);
+
+      const editedRules = [
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'specific_paid_tier' as const,
+          direction: 'from' as const,
+          product_id: tierIds[0],
+        },
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'specific_paid_tier' as const,
+          direction: 'to' as const,
+          product_id: tierIds[0],
+        },
+      ];
+      const edited = await repo.edit(added.id, { ...data, trigger_rules: editedRules });
+      assert.deepEqual(edited?.trigger_rules, editedRules);
+      assert.deepEqual((await repo.getById(added.id))?.trigger_rules, editedRules);
+    });
+
     it.each([
       { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
       {

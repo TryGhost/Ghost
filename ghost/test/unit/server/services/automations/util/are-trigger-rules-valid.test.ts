@@ -21,6 +21,16 @@ const specificPaidRule = (productId: string): AutomationTriggerRuleDefinition =>
 });
 const firstTier = '64b6f7b7c8f1a2b3c4d5e6f7';
 const secondTier = '64b6f7b7c8f1a2b3c4d5e6f8';
+const thirdTier = '64b6f7b7c8f1a2b3c4d5e6f9';
+const changedPaidRule = (
+  direction: 'from' | 'to',
+  productId: string,
+): AutomationTriggerRuleDefinition => ({
+  trigger_type: 'paid_subscription_changed',
+  scope: 'specific_paid_tier',
+  product_id: productId,
+  direction,
+});
 
 const validCases = [
   { name: 'one free signup', rules: [freeRule] },
@@ -85,6 +95,89 @@ describe('areTriggerRulesValid', () => {
     },
   ])('rejects $name', ({ rules }) => {
     expect(areTriggerRulesValid(rules)).toBe(false);
+  });
+
+  describe('paid_subscription_changed', () => {
+    it.each([
+      { name: 'same product on both sides', from: [firstTier], to: [firstTier], valid: false },
+      {
+        name: 'partially overlapping products',
+        from: [firstTier, secondTier],
+        to: [secondTier, thirdTier],
+        valid: false,
+      },
+      {
+        name: 'overlap at the end of the to products',
+        from: [firstTier, secondTier],
+        to: [thirdTier, firstTier],
+        valid: false,
+      },
+      {
+        name: 'duplicate from products',
+        from: [firstTier, firstTier],
+        to: [secondTier],
+        valid: false,
+      },
+      {
+        name: 'duplicate to products',
+        from: [firstTier],
+        to: [secondTier, secondTier],
+        valid: false,
+      },
+      { name: 'distinct products', from: [firstTier], to: [secondTier, thirdTier], valid: true },
+      {
+        name: 'distinct products in reverse',
+        from: [secondTier, thirdTier],
+        to: [firstTier],
+        valid: true,
+      },
+    ])('validates $name', ({ from, to, valid }) => {
+      const rules = [
+        ...from.map((id) => changedPaidRule('from', id)),
+        ...to.map((id) => changedPaidRule('to', id)),
+      ];
+      expect(areTriggerRulesValid(rules)).toBe(valid);
+      expect(areTriggerRulesValid([...rules].reverse())).toBe(valid);
+    });
+
+    it.each([
+      [
+        {
+          trigger_type: 'paid_subscription_changed',
+          scope: 'any_paid_tier',
+          product_id: null,
+          direction: 'from',
+        },
+        {
+          trigger_type: 'paid_subscription_changed',
+          scope: 'free',
+          product_id: null,
+          direction: 'to',
+        },
+      ],
+      [
+        {
+          trigger_type: 'paid_subscription_changed',
+          scope: 'any_paid_tier',
+          product_id: null,
+          direction: 'from',
+        },
+        changedPaidRule('to', firstTier),
+        changedPaidRule('to', secondTier),
+      ],
+      [
+        changedPaidRule('from', firstTier),
+        changedPaidRule('from', secondTier),
+        {
+          trigger_type: 'paid_subscription_changed',
+          scope: 'free',
+          product_id: null,
+          direction: 'to',
+        },
+      ],
+    ] satisfies AutomationTriggerRuleDefinition[][])('accepts valid scopes: %j', (...rules) => {
+      expect(areTriggerRulesValid(rules)).toBe(true);
+    });
   });
 
   it.each(validCases)('does not mutate frozen inputs: $name', ({ rules }) => {

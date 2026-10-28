@@ -1,5 +1,7 @@
 import type { Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../../../../shared/labs';
 import {
   type AddAutomationData,
   addAutomationDataSchema,
@@ -59,12 +61,29 @@ function parseEditAutomation(data: unknown): EditAutomationData {
   return result.data;
 }
 
+function validateLifecycleTriggers(data: Pick<EditAutomationData, 'trigger_rules'>) {
+  if (
+    !labs.isSet('automationsLifecycleTriggers') &&
+    data.trigger_rules?.some((rule) => rule.trigger_type === 'paid_subscription_changed')
+  ) {
+    throw new errors.ValidationError({
+      message:
+        'Paid subscription changed triggers require automationsLifecycleTriggers to be enabled.',
+      property: 'trigger_rules',
+    });
+  }
+}
+
 export function add(_apiConfig: unknown, frame: Frame) {
   const automations = frame.data.automations;
-  frame.data = parseAddAutomation(Array.isArray(automations) ? automations[0] : undefined);
+  const data = parseAddAutomation(Array.isArray(automations) ? automations[0] : undefined);
+  validateLifecycleTriggers(data);
+  frame.data = data;
 }
 
 export function edit(_apiConfig: unknown, frame: Frame) {
   const automations = frame.data.automations;
-  frame.data = parseEditAutomation(Array.isArray(automations) ? automations[0] : undefined);
+  const data = parseEditAutomation(Array.isArray(automations) ? automations[0] : undefined);
+  validateLifecycleTriggers(data);
+  frame.data = data;
 }

@@ -51,6 +51,9 @@ export function rulesToLegacyTrigger(
     throw new errors.InternalServerError({
       message: 'Cannot translate automation trigger rules: no rules provided.',
     });
+  } else if (rules.every((rule) => rule.trigger_type === 'paid_subscription_changed')) {
+    // Legacy tier selection cannot represent a transition between tiers.
+    return { trigger_tier_scope: null, trigger_tier_ids: null };
   } else if (rules.every((rule) => rule.trigger_type === 'free_signup')) {
     return { trigger_tier_scope: 'free', trigger_tier_ids: null };
   } else if (rules.every((rule) => rule.scope === 'any_paid_tier')) {
