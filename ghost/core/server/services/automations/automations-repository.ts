@@ -1,7 +1,7 @@
-import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
-import type { AddAutomationData } from './automations-repository-2';
-import type { AutomationTriggerRule } from './trigger-rules';
+import type { ReadonlyDeep } from 'type-fest';
+import type { AddAutomationData, EditAutomationData } from './automations-schemas';
+import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
 
 export type Pagination = {
   page: number;
@@ -78,6 +78,7 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
+// This is deprecated and will be removed soon. See NY-1746.
 export type AutomationTriggerTierData =
   | {
       trigger_tier_scope: null | 'free' | 'all_paid';
@@ -91,26 +92,8 @@ export type AutomationTriggerTierData =
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & AutomationTriggerTierData;
-
-export type EditAutomationData = {
-  name?: string;
-  description?: string;
-  status: AutomationStatus;
-} & (
-  | { actions: AutomationAction[]; edges: AutomationEdge[] }
-  | { actions?: never; edges?: never }
-) &
-  (
-    | {
-        trigger_tier_scope?: 'free' | 'all_paid';
-        trigger_tier_ids?: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+  trigger_rules: AutomationTriggerRuleDefinition[];
+};
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;

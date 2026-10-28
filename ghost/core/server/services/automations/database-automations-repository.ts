@@ -1,5 +1,4 @@
 import {
-  buildTriggerRuleRows,
   automationTriggerRuleSchema,
   automationTriggerRuleDefinitionSchema,
   type AutomationTriggerRule,
@@ -36,11 +35,10 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
-  AutomationTriggerTierData,
-  EditAutomationData,
   Page,
 } from './automations-repository';
 import type { ActionToInsert, EdgeRow, AutomationsRepository2 } from './automations-repository-2';
+import type { EditAutomationData } from './automations-schemas';
 import {
   DbDate,
   fromDatabaseDate,
@@ -76,7 +74,7 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
     name: 'Free member welcome flow',
     description: 'Welcome new free members after they sign up.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-    triggerRule: { trigger_type: 'free_signup', scope: null, product_id: null },
+    triggerRule: { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
   },
   {
     name: 'Paid member welcome flow',
@@ -86,6 +84,7 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
       trigger_type: 'paid_subscription_started',
       scope: 'any_paid_tier',
       product_id: null,
+      direction: null,
     },
   },
 ] as const;
@@ -374,7 +373,9 @@ export function createDatabaseAutomationsRepository({
             });
           }
         }
-        const tierIds = data.trigger_tier_ids ?? [];
+        const tierIds = data.trigger_rules.flatMap((rule) =>
+          rule.product_id ? [rule.product_id] : [],
+        );
         if (tierIds.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
           const tiers = await trx('products')
@@ -386,7 +387,7 @@ export function createDatabaseAutomationsRepository({
           if (tiers.length !== tierIds.length) {
             throw new errors.ValidationError({
               message: 'Trigger tiers must all be active paid tiers.',
-              property: 'trigger_tier_ids',
+              property: 'trigger_rules',
             });
           }
         }
@@ -404,12 +405,12 @@ export function createDatabaseAutomationsRepository({
 
         await trx('automations').insert(automation);
 
-        const rules = buildTriggerRuleRows({
-          automationId: automation.id,
-          scope: data.trigger_tier_scope,
-          tierIds,
-          createdAt: now,
-        });
+        const rules = data.trigger_rules.map((rule) => ({
+          ...rule,
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: now,
+        }));
         await repository2.insertTriggerRules(trx, rules);
 
         await replaceAutomationGraph(repository2, trx, automation.id, data.actions, data.edges);
@@ -445,18 +446,20 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
-        if (data.trigger_tier_scope === 'selected_paid') {
+        const triggerRules = data.trigger_rules ?? [];
+        const tierIds = triggerRules.flatMap((rule) => (rule.product_id ? [rule.product_id] : []));
+        if (tierIds.length > 0) {
           // Lock the products so they aren't deleted while we're editing.
           const tiers = await trx('products')
             .select('id')
-            .whereIn('id', data.trigger_tier_ids)
+            .whereIn('id', tierIds)
             .where('type', 'paid')
             .orderBy('id')
             .forUpdate();
-          if (tiers.length !== new Set(data.trigger_tier_ids).size) {
+          if (tiers.length !== new Set(tierIds).size) {
             throw new errors.ValidationError({
               message: 'Trigger tiers must all be paid tiers.',
-              property: 'trigger_tier_ids',
+              property: 'trigger_rules',
             });
           }
         }
@@ -469,14 +472,14 @@ export function createDatabaseAutomationsRepository({
           updated_at: toDatabaseDate(now),
         });
 
-        if (data.trigger_tier_scope !== undefined) {
+        if (data.trigger_rules !== undefined) {
           await repository2.deleteTriggerRules(trx, id);
-          const rules = buildTriggerRuleRows({
-            automationId: id,
-            scope: data.trigger_tier_scope,
-            tierIds: data.trigger_tier_ids ?? [],
-            createdAt: now,
-          });
+          const rules = triggerRules.map((rule) => ({
+            ...rule,
+            id: ObjectId().toHexString(),
+            automation_id: id,
+            created_at: now,
+          }));
           await repository2.insertTriggerRules(trx, rules);
         }
 
@@ -1188,7 +1191,7 @@ async function getRulesByAutomation(
   }
 
   const rules = await trx('automation_trigger_rules')
-    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id')
+    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id', 'direction')
     .whereIn('automation_id', automationIds);
   for (const rule of rules) {
     result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
@@ -1842,46 +1845,22 @@ async function buildAutomation(
     actionRows.map((row) => row.id),
   );
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
-
   const rules = (
     await trx('automation_trigger_rules')
-      .select('trigger_type', 'scope', 'product_id')
+      .select('trigger_type', 'scope', 'product_id', 'direction')
       .where('automation_id', automation.id)
       .orderBy('product_id')
   ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
 
-  // This translates the new schema into the format the API endpoint expects.
-  // This will be updated soon (see NY-1746).
-  let triggerData: AutomationTriggerTierData;
   if (rules.length === 0) {
     throw new errors.InternalServerError({
       message: `No trigger rules for automation ${automation.id}`,
-    });
-  } else if (rules.every((rule) => rule.trigger_type === 'free_signup')) {
-    triggerData = { trigger_tier_scope: 'free', trigger_tier_ids: null };
-  } else if (rules.every((rule) => rule.scope === 'any_paid_tier')) {
-    triggerData = { trigger_tier_scope: 'all_paid', trigger_tier_ids: null };
-  } else if (rules.every((rule) => rule.scope === 'specific_paid_tier')) {
-    triggerData = {
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: rules.map((rule) => {
-        if (!rule.product_id) {
-          throw new errors.InternalServerError({
-            message: `Missing product_id in trigger rule for automation ${automation.id}`,
-          });
-        }
-        return rule.product_id;
-      }),
-    };
-  } else {
-    throw new errors.InternalServerError({
-      message: `Unsupported trigger rules for automation ${automation.id}`,
     });
   }
 
   return {
     ...buildAutomationSummary(automation),
-    ...triggerData,
+    trigger_rules: rules,
     actions: actionRows.map((row) => buildActionPayload(row, actionStats.get(row.id) ?? null)),
     edges: edgeRows.map((row) => buildEdgePayload(row)),
   };

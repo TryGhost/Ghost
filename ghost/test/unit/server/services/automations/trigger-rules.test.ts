@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { buildTriggerRuleRows } from '../../../../../core/server/services/automations/trigger-rules';
+import {
+  automationTriggerRuleDefinitionSchema,
+  buildTriggerRuleRows,
+} from '../../../../../core/server/services/automations/trigger-rules';
 
 const automationId = '64b6f7b7c8f1a2b3c4d5e6f7';
 const createdAt = new Date('2026-01-02T03:04:05.678Z');
@@ -23,6 +26,7 @@ describe('buildTriggerRuleRows', function () {
       trigger_type: triggerType,
       scope: ruleScope,
       product_id: null,
+      direction: null,
     });
     assert(rules[0].created_at instanceof Date);
     assert.equal(rules[0].created_at.toISOString(), '2026-01-02T03:04:05.678Z');
@@ -48,6 +52,7 @@ describe('buildTriggerRuleRows', function () {
         trigger_type: 'paid_subscription_started',
         scope: 'specific_paid_tier',
         product_id: productId,
+        direction: null,
       })),
     );
     rules.forEach((rule) => assertGeneratedId(rule.id));
@@ -89,4 +94,38 @@ describe('buildTriggerRuleRows', function () {
       },
     );
   });
+});
+
+describe('automationTriggerRuleDefinitionSchema', () => {
+  it.each(['free', 'all_paid', 'selected_paid'] as const)('accepts built %s rules', (scope) => {
+    const rules = buildTriggerRuleRows({ automationId, scope, tierIds, createdAt });
+    for (const rule of rules) {
+      expect(automationTriggerRuleDefinitionSchema.safeParse(rule).success).toBe(true);
+    }
+  });
+
+  it.each([undefined, 'from', 'to'])('requires null direction, rejecting %j', (direction) => {
+    expect(
+      automationTriggerRuleDefinitionSchema.safeParse({
+        trigger_type: 'free_signup',
+        scope: null,
+        product_id: null,
+        direction,
+      }).success,
+    ).toBe(false);
+  });
+
+  it.each([undefined, null, '', 'invalid'])(
+    'rejects invalid specific-tier product ID %j',
+    (product_id) => {
+      expect(
+        automationTriggerRuleDefinitionSchema.safeParse({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+          direction: null,
+        }).success,
+      ).toBe(false);
+    },
+  );
 });

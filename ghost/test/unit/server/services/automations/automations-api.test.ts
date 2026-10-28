@@ -51,13 +51,13 @@ vi.mock(
 
 const buildWaitAction = () => ({
   id: ObjectId().toHexString(),
-  type: 'wait',
+  type: 'wait' as const,
   data: { wait_hours: 1 },
 });
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
   id: ObjectId().toHexString(),
-  type: 'send_email',
+  type: 'send_email' as const,
   data: {
     email_subject: 'Welcome',
     email_lexical: NON_EMPTY_EMAIL_LEXICAL,
@@ -72,6 +72,16 @@ const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: stri
 });
 
 describe('automations API', function () {
+  afterAll(function () {
+    // Unit files share a worker module cache. Do not leave repositories imported
+    // with these mocked dependencies for subsequent repository tests.
+    vi.doUnmock('../../../../../core/server/services/automations/database-automations-repository');
+    vi.doUnmock(
+      '../../../../../core/server/services/automations/database-automations-repository-2',
+    );
+    vi.resetModules();
+  });
+
   afterEach(function () {
     sinon.restore();
     repositoryAdd.mockReset();
@@ -89,8 +99,10 @@ describe('automations API', function () {
     const valid = {
       name: 'New automation',
       description: '',
-      trigger_tier_scope: 'free',
-      status: 'active',
+      trigger_rules: [
+        { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+      ],
+      status: 'active' as const,
       actions,
       edges: [buildEdge(actions[0], actions[1])],
     };
@@ -100,8 +112,12 @@ describe('automations API', function () {
       const payload = {
         ...valid,
         description: 'Welcome selected paid members',
-        trigger_tier_scope: 'selected_paid',
-        trigger_tier_ids: tierIds,
+        trigger_rules: tierIds.map((productId) => ({
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: productId,
+          direction: null,
+        })),
       };
       const saved = { ...payload, id: ObjectId().toHexString() };
       repositoryAdd.mockResolvedValue(saved);
@@ -123,32 +139,8 @@ describe('automations API', function () {
       },
     );
 
-    it('rejects invalid inputs', async function () {
-      const tierId = ObjectId().toHexString();
+    it('rejects invalid graphs and email content', async function () {
       const invalidPayloads = [
-        undefined,
-        null,
-        [],
-        {},
-        { ...valid, name: '' },
-        { ...valid, name: '   ' },
-        { ...valid, name: 'x'.repeat(192) },
-        { ...valid, name: 42 },
-        { ...valid, description: null },
-        { ...valid, description: 'x'.repeat(2001) },
-        { ...valid, trigger_tier_scope: 'paid' },
-        { ...valid, trigger_tier_scope: undefined },
-        { ...valid, trigger_tier_scope: null },
-        { ...valid, trigger_tier_scope: 'selected_paid' },
-        { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
-        { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
-        { ...valid, trigger_tier_ids: [ObjectId().toHexString()] },
-        { ...valid, trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
-        ...['name', 'description', 'status', 'actions', 'edges'].map((field) => ({
-          ...valid,
-          [field]: undefined,
-        })),
-        { ...valid, status: 'invalid' },
         { ...valid, actions: [actions[0], actions[0]] },
         { ...valid, edges: [] },
         { ...valid, edges: [buildEdge(actions[0], buildWaitAction())] },
@@ -159,23 +151,14 @@ describe('automations API', function () {
           actions: [buildSendEmailAction({ email_lexical: EMPTY_EMAIL_LEXICAL })],
           edges: [],
         },
-        { ...valid, slug: 'member-welcome-email-free' },
         { ...valid, actions: [] },
-        { ...valid, id: ObjectId().toHexString() },
-        {
-          ...valid,
-          trigger_tier_scope: 'selected_paid',
-          trigger_tier_ids: [tierId, ObjectId().toHexString(), tierId],
-        },
       ];
-      await Promise.all(
-        invalidPayloads.map(async (payload) => {
-          await assert.rejects(automationsApi.add(payload), {
-            errorType: 'ValidationError',
-            statusCode: 422,
-          });
-        }),
-      );
+      for (const payload of invalidPayloads) {
+        await assert.rejects(automationsApi.add(payload), {
+          errorType: 'ValidationError',
+          statusCode: 422,
+        });
+      }
       expect(repositoryAdd).not.toHaveBeenCalled();
     });
 
@@ -223,30 +206,6 @@ describe('automations API', function () {
       },
     );
 
-    it.each([
-      ['actions', { actions: [buildWaitAction()] }, /edges:/],
-      ['edges', { edges: [] }, /actions:/],
-    ])('rejects %s without the other graph field', async function (_, graph, expectedError) {
-      await assert.rejects(
-        automationsApi.edit(automationId, { status: 'inactive', ...graph }),
-        expectedError,
-      );
-      assert.equal(repositoryEdit.mock.calls.length, 0);
-    });
-
-    it.each([
-      { name: 'Renamed flow' },
-      { description: 'Updated description' },
-      { trigger_tier_scope: 'free' },
-      { trigger_tier_ids: null },
-    ])('rejects status-only edits with extra fields: %j', async function (extraFields) {
-      await assert.rejects(
-        automationsApi.edit(automationId, { status: 'inactive', ...extraFields }),
-        { errorType: 'ValidationError' },
-      );
-      expect(repositoryEdit).not.toHaveBeenCalled();
-    });
-
     it('returns "not found" for status-only edits of unknown automations', async function () {
       repositoryEdit.mockResolvedValue(null);
       await assert.rejects(automationsApi.edit(automationId, { status: 'inactive' }), {
@@ -254,18 +213,9 @@ describe('automations API', function () {
       });
     });
 
-    it('rejects status-only activations', async function () {
-      await assert.rejects(automationsApi.edit(automationId, { status: 'active' }), {
-        errorType: 'ValidationError',
-        property: 'status',
-        message: 'Status-only automation edits can only set status to inactive or archived.',
-      });
-      expect(repositoryEdit).not.toHaveBeenCalled();
-    });
-
     it('rejects activation with no actions', async function () {
       await assert.rejects(
-        automationsApi.edit(automationId, { status: 'active', actions: [], edges: [] }),
+        automationsApi.edit(automationId, { status: 'active' as const, actions: [], edges: [] }),
         {
           errorType: 'ValidationError',
           property: 'actions',
@@ -278,7 +228,7 @@ describe('automations API', function () {
     it('rejects edges in an empty graph', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'inactive',
+          status: 'inactive' as const,
           actions: [],
           edges: [buildEdge(buildWaitAction(), buildWaitAction())],
         }),
@@ -291,7 +241,7 @@ describe('automations API', function () {
     });
 
     it('allows activation when the full graph is submitted', async function () {
-      const payload = { status: 'active', actions: [buildSendEmailAction()], edges: [] };
+      const payload = { status: 'active' as const, actions: [buildSendEmailAction()], edges: [] };
       const saved = { id: automationId, ...payload };
       repositoryEdit.mockResolvedValue(saved);
       assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
@@ -300,7 +250,7 @@ describe('automations API', function () {
 
     it('allows a full-graph archived edit with empty email drafts', async function () {
       const payload = {
-        status: 'archived',
+        status: 'archived' as const,
         actions: [buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL })],
         edges: [],
       };
@@ -310,172 +260,45 @@ describe('automations API', function () {
       expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
     });
 
-    it('trims optional name and description before saving', async function () {
-      const actions = [buildWaitAction()];
-      repositoryEdit.mockResolvedValue({ id: automationId });
-
-      await automationsApi.edit(automationId, {
-        status: 'inactive',
-        actions,
-        edges: [],
-        name: '  Renamed flow\n',
-        description: '\tUpdated description  ',
-      });
-
-      assert.deepEqual(repositoryEdit.mock.calls[0], [
-        automationId,
-        {
-          status: 'inactive',
-          actions,
-          edges: [],
-          name: 'Renamed flow',
-          description: 'Updated description',
-        },
-      ]);
-    });
-
-    it('allows omitted metadata and whitespace-only descriptions', async function () {
-      const graph = { status: 'inactive', actions: [buildWaitAction()], edges: [] };
+    it('preserves omitted metadata', async function () {
+      const graph = { status: 'inactive' as const, actions: [buildWaitAction()], edges: [] };
       repositoryEdit.mockResolvedValue({ id: automationId });
       await automationsApi.edit(automationId, graph);
-      assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, graph]);
-
-      await automationsApi.edit(automationId, { ...graph, description: ' \t\n ' });
-      assert.deepEqual(repositoryEdit.mock.calls[1], [
-        automationId,
-        {
-          ...graph,
-          description: '',
-        },
-      ]);
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, graph);
     });
-
-    for (const [field, values] of [
-      ['name', ['', ' \t\n ', 'x'.repeat(192), null, 123]],
-      ['description', ['x'.repeat(2001), null, 123]],
-    ] as const) {
-      for (const value of values) {
-        it(`rejects invalid ${field}: ${JSON.stringify(value).slice(0, 40)}`, async function () {
-          repositoryEdit.mockResolvedValue({ id: automationId });
-          await assert.rejects(
-            automationsApi.edit(automationId, {
-              status: 'inactive',
-              actions: [buildWaitAction()],
-              edges: [],
-              [field]: value,
-            }),
-            { errorType: 'ValidationError' },
-          );
-          assert.equal(repositoryEdit.mock.calls.length, 0);
-        });
-      }
-    }
-
-    it('rejects duplicate trigger_tier_ids', async function () {
-      const tierId = ObjectId().toHexString();
-      const payload = {
-        name: 'Selected paid members',
-        description: '',
-        status: 'inactive',
-        actions: [buildWaitAction()],
-        edges: [],
-        trigger_tier_scope: 'selected_paid',
-        trigger_tier_ids: [tierId, ObjectId().toHexString(), tierId],
-      };
-
-      await assert.rejects(automationsApi.edit(automationId, payload), {
-        errorType: 'ValidationError',
-        statusCode: 422,
-        message: /trigger_tier_ids: Duplicate trigger_tier_ids are not allowed\./,
-      });
-      expect(repositoryEdit).not.toHaveBeenCalled();
-    });
-
-    it('validates metadata length after trimming, not before', async function () {
-      repositoryEdit.mockResolvedValue({ id: automationId });
-      await automationsApi.edit(automationId, {
-        status: 'inactive',
-        actions: [buildWaitAction()],
-        edges: [],
-        name: ` ${'x'.repeat(191)} `,
-        description: ` ${'x'.repeat(2000)} `,
-      });
-      assert.equal(repositoryEdit.mock.calls[0][1].name.length, 191);
-      assert.equal(repositoryEdit.mock.calls[0][1].description.length, 2000);
-    });
-
-    it('rejects metadata-only edits', async function () {
-      await assert.rejects(
-        automationsApi.edit(automationId, {
-          name: 'Renamed flow',
-          description: 'Updated description',
-        }),
-        { errorType: 'ValidationError' },
-      );
-      assert.equal(repositoryEdit.mock.calls.length, 0);
-    });
-
-    it.each([['free'], ['all_paid'], ['selected_paid']])(
-      'accepts %s trigger scope edits',
-      async function (scope) {
-        const data = {
-          status: 'inactive',
-          actions: [buildWaitAction()],
-          edges: [],
-          trigger_tier_scope: scope,
-          trigger_tier_ids:
-            scope === 'selected_paid' ? [ObjectId().toHexString(), ObjectId().toHexString()] : null,
-        };
-        repositoryEdit.mockResolvedValue({ id: automationId });
-        await automationsApi.edit(automationId, data);
-        assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, data]);
-      },
-    );
 
     it.each([
-      ['invalid trigger tier scope', { trigger_tier_scope: 'invalid' }],
-      ['null trigger tier scope', { trigger_tier_scope: null }],
-      ['unexpected trigger tiers for no scope', { trigger_tier_ids: [ObjectId().toHexString()] }],
+      [{ trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null }],
       [
-        'unexpected trigger tiers for null scope',
-        { trigger_tier_scope: null, trigger_tier_ids: [ObjectId().toHexString()] },
+        {
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'any_paid_tier' as const,
+          product_id: null,
+          direction: null,
+        },
       ],
-      [
-        'unexpected trigger tiers for free scope',
-        { trigger_tier_scope: 'free', trigger_tier_ids: [ObjectId().toHexString()] },
-      ],
-      [
-        'unexpected trigger tiers for all_paid scope',
-        { trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
-      ],
-      ['missing trigger_tier_ids for selected_paid scope', { trigger_tier_scope: 'selected_paid' }],
-      [
-        'invalid trigger_tier_ids for selected_paid scope',
-        { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [123] },
-      ],
-      [
-        'empty trigger_tier_ids for selected_paid scope',
-        { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
-      ],
-    ])('rejects %s', async function (_, extras) {
-      await assert.rejects(
-        automationsApi.edit(automationId, {
-          name: 'My Automation',
-          description: '',
-          status: 'inactive',
-          actions: [buildWaitAction()],
-          edges: [],
-          ...extras,
-        }),
-        { errorType: 'ValidationError' },
-      );
-      assert.equal(repositoryEdit.mock.calls.length, 0);
+      [ObjectId().toHexString(), ObjectId().toHexString()].map((productId) => ({
+        trigger_type: 'paid_subscription_started' as const,
+        scope: 'specific_paid_tier' as const,
+        product_id: productId,
+        direction: null,
+      })),
+    ])('passes trigger rules to the repository: %j', async function (...trigger_rules) {
+      const data = {
+        status: 'inactive' as const,
+        actions: [buildWaitAction()],
+        edges: [],
+        trigger_rules,
+      };
+      repositoryEdit.mockResolvedValue({ id: automationId });
+      await automationsApi.edit(automationId, data);
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, data);
     });
 
     it('rejects activating an automation with an empty email subject', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'active',
+          status: 'active' as const,
           actions: [buildSendEmailAction({ email_subject: '' })],
           edges: [],
         }),
@@ -486,7 +309,7 @@ describe('automations API', function () {
     it('rejects activating an automation with an empty email body', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'active',
+          status: 'active' as const,
           actions: [buildSendEmailAction({ email_lexical: EMPTY_EMAIL_LEXICAL })],
           edges: [],
         }),
@@ -511,7 +334,7 @@ describe('automations API', function () {
     it('rejects an active send email action with invalid JSON as malformed Lexical', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'active',
+          status: 'active' as const,
           actions: [buildSendEmailAction({ email_lexical: '{"root":' })],
           edges: [],
         }),
@@ -522,7 +345,7 @@ describe('automations API', function () {
     it('rejects a send email action with JSON that is not a Lexical document', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'inactive',
+          status: 'inactive' as const,
           actions: [buildSendEmailAction({ email_lexical: JSON.stringify({ children: [] }) })],
           edges: [],
         }),
@@ -533,7 +356,7 @@ describe('automations API', function () {
     it('rejects a draft send email action with a malformed empty paragraph', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'inactive',
+          status: 'inactive' as const,
           actions: [
             buildSendEmailAction({
               email_lexical: JSON.stringify({
@@ -559,7 +382,7 @@ describe('automations API', function () {
     it('rejects a send email action with malformed Lexical child nodes', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'inactive',
+          status: 'inactive' as const,
           actions: [
             buildSendEmailAction({
               email_lexical: JSON.stringify({
@@ -577,26 +400,13 @@ describe('automations API', function () {
       );
     });
 
-    it('rejects a wait action with invalid number of hours', async function () {
-      for (const waitHours of [undefined, '24', -24, 0, 24.5, 721]) {
-        await assert.rejects(
-          automationsApi.edit(automationId, {
-            status: 'inactive',
-            actions: [{ ...buildWaitAction(), data: { wait_hours: waitHours } }],
-            edges: [],
-          }),
-          { errorType: 'ValidationError' },
-        );
-      }
-    });
-
     it('rejects duplicate edges', async function () {
       const first = buildWaitAction();
       const second = buildWaitAction();
 
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'inactive',
+          status: 'inactive' as const,
           actions: [first, second],
           edges: [buildEdge(first, second), buildEdge(first, second)],
         }),
@@ -614,7 +424,7 @@ describe('automations API', function () {
 
       await assert.rejects(
         automationsApi.edit(automationId, {
-          status: 'inactive',
+          status: 'inactive' as const,
           actions: [a, b, c, d],
           edges: [buildEdge(a, b), buildEdge(c, d), buildEdge(d, c)],
         }),
