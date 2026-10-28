@@ -45,11 +45,10 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
       ref={ref}
       className={cn(
         'relative mx-auto flex size-full min-h-0 max-w-[664px] flex-col gap-0 rounded-xl border border-border-default p-0 shadow-sm',
-        isEditMode ? 'bg-white' : 'bg-gray-100',
-        'dark:bg-[#151719]',
+        isEditMode ? 'bg-surface-elevated' : 'bg-muted',
       )}
     >
-      <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto] items-center rounded-t-xl bg-white p-8 dark:bg-gray-950">
+      <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto] items-center rounded-t-xl bg-surface-elevated p-8">
         <h3 className="min-w-0 pr-4 text-md font-medium">{title}</h3>
         <div className="flex items-center gap-2">{headerActions}</div>
         {headerBelow && <div className="col-span-2 mt-6">{headerBelow}</div>}
@@ -73,7 +72,7 @@ const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({
 }) => (
   <div
     className={cn(
-      'relative isolate z-20 mx-auto w-full max-w-[600px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-[#2E3338]',
+      'relative isolate z-20 mx-auto w-full max-w-[600px] rounded-t-lg border border-b-0 border-border-default bg-surface-elevated px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none',
       className,
     )}
   >
@@ -89,7 +88,7 @@ interface EmailPreviewBodyProps {
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({ children, className }) => (
   <div
     className={cn(
-      'mx-auto flex w-full max-w-[600px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:shadow-none',
+      'mx-auto flex w-full max-w-[600px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none',
       className,
     )}
   >
@@ -139,14 +138,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   onCloseStart,
   onChange,
 }) => {
-  // The automation header stays usable while the editor is open, so the editor's layer starts
-  // below it and leaves it out of the inert treatment below.
-  const [headerBottom] = useState(() => {
-    const header = document.querySelector('[data-testid="automation-editor"] > header');
-    return header ? header.getBoundingClientRect().bottom : 0;
-  });
-  const [panelGap] = useState(() => (window.matchMedia('(min-width: 640px)').matches ? 24 : 16));
   const { panelRef, close: closeIntoCard } = useExpandFromCard(originStepId);
+  const subjectRef = useRef<HTMLInputElement>(null);
   const closeEditor = useCallback(() => {
     onCloseStart?.();
     closeIntoCard(onClose);
@@ -283,6 +276,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           <InputGroupText>Subject</InputGroupText>
         </InputGroupAddon>
         <InputGroupInput
+          ref={subjectRef}
           aria-describedby={errors.subject ? 'email-subject-error' : undefined}
           aria-invalid={Boolean(errors.subject)}
           aria-label="Subject line"
@@ -333,16 +327,13 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         }
       }}
     >
+      {/* The automation header (h-14) stays usable while the editor is open, so the editor's
+          layer starts below it and the inert treatment above leaves it out. */}
       <DialogContent
         ref={setDialogContentNode}
         aria-describedby={undefined}
-        className="left-0 w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 bg-transparent px-4 pb-4 shadow-none outline-hidden data-[state=open]:animate-none sm:rounded-none sm:px-6 sm:pb-6 dark:bg-transparent"
+        className="top-14 left-0 h-[calc(100dvh-3.5rem)] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 bg-transparent p-4 shadow-none outline-hidden data-[state=open]:animate-none sm:rounded-none sm:p-6"
         data-sentry-mask="true"
-        style={{
-          top: headerBottom,
-          height: `calc(100dvh - ${headerBottom}px)`,
-          paddingTop: panelGap,
-        }}
         onClick={(event) => {
           // A click on the canvas around the panel minimizes the editor.
           if (event.target === event.currentTarget) {
@@ -371,12 +362,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           // Focus lands in the subject, caret at the end, rather than on a header button,
           // whose tooltip would show straight away.
           event.preventDefault();
-          if (!(event.currentTarget instanceof HTMLElement)) {
-            return;
-          }
-          const subject = event.currentTarget.querySelector<HTMLInputElement>(
-            '[data-testid="email-editor-subject"]',
-          );
+          const subject = subjectRef.current;
           subject?.focus({ preventScroll: true });
           subject?.setSelectionRange(subject.value.length, subject.value.length);
         }}
@@ -460,7 +446,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     <div className="min-w-0 grow pr-4 text-sm">
                       <span className="flex gap-1 truncate whitespace-nowrap">
                         <span>{resolvedSenderName}</span>
-                        <span className="text-gray-500 dark:text-gray-400">{`<${resolvedSenderEmail}>`}</span>
+                        <span className="text-muted-foreground">{`<${resolvedSenderEmail}>`}</span>
                       </span>
                     </div>
                     <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
@@ -483,7 +469,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                   {hasDistinctReplyTo && (
                     <div className="flex items-center">
                       <div className="w-20 shrink-0 text-sm font-semibold">Reply-to:</div>
-                      <div className="grow text-sm text-gray-500 dark:text-gray-400">
+                      <div className="grow text-sm text-muted-foreground">
                         {resolvedReplyToEmail}
                       </div>
                     </div>
@@ -494,7 +480,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                       <span
                         className={cn(
                           'block truncate text-sm',
-                          !formState.subject.trim() && 'text-gray-500 dark:text-gray-400',
+                          !formState.subject.trim() && 'text-muted-foreground',
                         )}
                         data-testid="email-preview-subject"
                       >
@@ -512,9 +498,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             )}
             <EmailPreviewBody
               className={cn(
-                mode === 'preview' && 'bg-white shadow-sm dark:bg-[#151719]',
+                mode === 'preview' && 'bg-surface-elevated shadow-sm',
                 mode === 'edit' && 'rounded-lg',
-                mode === 'edit' && errors.lexical && 'border border-red-500',
+                mode === 'edit' && errors.lexical && 'border border-destructive',
               )}
             >
               <div

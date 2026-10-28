@@ -19,6 +19,7 @@ import {
   fakeEmailEditorData,
   minimizeEmailEditor,
 } from './email-editor.test-utils';
+import { openAutomationSidebar } from './run-list.test-utils';
 
 const lexical = (text: string) =>
   JSON.stringify({
@@ -309,6 +310,34 @@ describe('Editable email cards', () => {
       await expect(nextWarning).toHaveCount(0);
       await page.getByRole('button', { name: 'Publish', exact: true }).click();
       await expect.element(nextWarning).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('clears the canvas around the editor and brings it back on close', async () => {
+    serve();
+    await page.viewport(1600, 900);
+    try {
+      await renderAdminApp('/automations/first', flags);
+      await openAutomationSidebar();
+      const sidebarToggle = page.getByRole('button', {
+        name: /^(Show|Hide) automation sidebar$/,
+      });
+      const edit = () => emailCards().nth(0).getByRole('button', { name: 'Edit email content' });
+
+      await edit().click();
+      await expect.element(emailEditor()).toBeVisible();
+      await expect.element(sidebarToggle).toHaveAttribute('aria-expanded', 'false');
+      await userEvent.keyboard('{Escape}');
+      await expect(emailEditor()).toHaveCount(0);
+      await expect.element(sidebarToggle).toHaveAttribute('aria-expanded', 'true');
+
+      // A click on the canvas around the panel minimizes it too.
+      await edit().click();
+      await expect.element(emailEditor()).toBeVisible();
+      await emailEditor().click({ position: { x: 8, y: 8 } });
+      await expect(emailEditor()).toHaveCount(0);
     } finally {
       await page.viewport(1280, 800);
     }
