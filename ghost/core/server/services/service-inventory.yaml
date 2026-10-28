@@ -6498,7 +6498,10 @@ services:
         callers:
           - core/server/services/link-tracking/index.js
           - test/integration/services/email-service/batch-sending.test.js
-        timing: After init resolves; before that the accessor throws the same readiness error as the service getter.
+        timing: >-
+          Available once the factory has run, which happens synchronously inside the first
+          init() call and so before init resolves; until then it throws the same readiness
+          error as the service getter. Boot awaits init before link tracking's init reads it.
         dependencies:
           - The repository constructed by the factory, including its optional cache adapter and site.changed listener.
         failurePolicy: Throws IncorrectUsageError before initialization; after init it only returns the retained instance and never constructs.
