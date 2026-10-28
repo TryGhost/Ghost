@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
@@ -54,6 +54,10 @@ const emailCard = () => page.getByRole('article', { name: /^Send email/ });
 const clearSubject = () => editEmailSubject(emailCard(), '');
 
 describe('Automation action validation feedback', () => {
+  // Keep the wait card's field in view below the email card.
+  beforeEach(() => page.viewport(1280, 1600));
+  afterEach(() => page.viewport(1280, 800));
+
   it('dismisses a card warning when clicking another canvas card', async () => {
     serve();
     await boot();
