@@ -18,6 +18,63 @@ async function openInviteModal() {
 }
 
 describe('Staff invitations', () => {
+  it.each(['Editor', 'Super Editor'] as const)(
+    'lets %ss type in and close the invitation dialog',
+    async (staffRole) => {
+      const editor = user(staffRole);
+      const { boot } = fakeStaffWorld({
+        currentUser: editor,
+        users: [user('Owner'), editor],
+        roles: [role('Author'), role('Contributor')],
+      });
+      await renderAdminApp('/settings/staff', { boot });
+
+      const modal = await openInviteModal();
+      await expect(modal.getByRole('radio')).toHaveCount(2);
+      const emailInput = modal.getByLabelText('Email address');
+      await emailInput.click();
+      await userEvent.keyboard('newuser@test.com');
+      await expect.element(emailInput).toHaveValue('newuser@test.com');
+      await modal.getByRole('button', { name: 'Close', exact: true }).click();
+      await expect(modal).toHaveCount(0);
+
+      await openInviteModal();
+      await userEvent.keyboard('{Escape}');
+      await expect(modal).toHaveCount(0);
+      await expect.element(settingsScreen.users()).toBeVisible();
+    },
+  );
+
+  it.each(['Editor', 'Super Editor'] as const)(
+    'lets %ss send an Author invitation',
+    async (staffRole) => {
+      const editor = user(staffRole);
+      const { boot } = fakeStaffWorld({
+        currentUser: editor,
+        users: [user('Owner'), editor],
+        roles: [role('Author'), role('Contributor')],
+      });
+      const created = invite({ id: 'newinvite', email: 'newuser@test.com' });
+      const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [created] });
+      const config = configResponse();
+      config.config.hostSettings = { limits: { staff: { max: 5 } } };
+      await renderAdminApp('/settings/staff', {
+        boot: { ...boot, browseConfig: { response: config } },
+      });
+
+      const modal = await openInviteModal();
+      await modal.getByLabelText('Email address').fill(created.email);
+      await modal.getByRole('radio', { name: /^Author\b/ }).click();
+      await modal.getByRole('button', { name: 'Send invitation' }).click();
+
+      await expect.element(settingsScreen.successToast()).toHaveTextContent('Invitation sent');
+      await expect(modal).toHaveCount(0);
+      expect(addApi.lastRequest?.body).toMatchObject({
+        invites: [{ email: created.email, role_id: role('Author').id }],
+      });
+    },
+  );
+
   it('sends an invitation with Enter', async () => {
     const { boot } = fakeStaffWorld();
     const created = invite({ id: 'newinvite', email: 'newuser@test.com' });
