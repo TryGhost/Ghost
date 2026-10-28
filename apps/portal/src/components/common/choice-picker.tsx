@@ -696,7 +696,8 @@ export default function ChoicePicker({
     </ul>
   );
 
-  // Named by the field it searches, so it needs no wording of its own.
+  // Named and labelled with the field it searches, such as "Country", so it needs no
+  // wording of its own.
   const search = searchable && (
     <div className="gh-portal-choice-search">
       <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16">
@@ -711,6 +712,7 @@ export default function ChoicePicker({
         aria-expanded="true"
         aria-labelledby={labelId}
         autoComplete="off"
+        placeholder={label}
         role="combobox"
         spellCheck={false}
         type="text"
