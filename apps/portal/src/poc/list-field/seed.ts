@@ -1,8 +1,8 @@
 /**
  * POC ONLY. What the fake starts with in a browser that has never seen it, such as a phone
- * opening the site through a tunnel: a snapshot of the store taken on 2026-10-28, with Noah
- * Bennet's answers keyed by his uuid in the local dev database. A browser that already has
- * a store keeps its own.
+ * opening the dev site over the local network: a snapshot of the store taken on 2026-10-28,
+ * with the test member Noah Bennet's answers keyed by the member's uuid in the local dev
+ * database. A browser that already has a store keeps its own.
  */
 export const SEED = {
   version: 1,

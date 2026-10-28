@@ -19,7 +19,7 @@ Handled:
   save goes to Ghost.
 
 `seed.ts` is a snapshot of the store. A browser with no store yet, such as a
-phone opening the site through a tunnel, starts from it.
+phone opening the dev site over the local network, starts from it.
 
 ## Switching to the real API
 
