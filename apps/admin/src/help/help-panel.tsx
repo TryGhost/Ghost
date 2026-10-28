@@ -142,6 +142,7 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
           showClose={showClose}
           signals={signals}
           onClose={onClose}
+          onStartOver={startOver}
         />
       )}
       {/* Hidden rather than unmounted, so it keeps its place while the user

@@ -10,7 +10,7 @@ import {
   Textarea,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { getInitials } from './help-format';
 import { HelpPanelSizeButton } from './help-panel-size';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
@@ -31,10 +31,18 @@ interface HelpSupportViewProps {
   signals: HelpSignals;
   showClose: boolean;
   onClose: () => void;
+  /** Once sent: clears the search and the field, back to the start */
+  onStartOver: () => void;
 }
 
 /** A message to the support team, in place of the conversation it came from. */
-export function HelpSupportView({ session, signals, showClose, onClose }: HelpSupportViewProps) {
+export function HelpSupportView({
+  session,
+  signals,
+  showClose,
+  onClose,
+  onStartOver,
+}: HelpSupportViewProps) {
   const id = useId();
   const fileInput = useRef<HTMLInputElement>(null);
   const { support, editSupport, sendToSupport, leaveSupport } = session;
@@ -88,13 +96,14 @@ export function HelpSupportView({ session, signals, showClose, onClose }: HelpSu
             We’ll reply to {user.email} within 24h during working days.
           </Text>
           <Button
-            className={REVEAL_CLASS_NAME}
+            className={cn('mt-6', REVEAL_CLASS_NAME)}
             size="sm"
             style={revealAt(3)}
             variant="outline"
-            onClick={leaveSupport}
+            onClick={onStartOver}
           >
-            Back to help
+            <LucideIcon.Search />
+            New search
           </Button>
         </Stack>
       ) : (
