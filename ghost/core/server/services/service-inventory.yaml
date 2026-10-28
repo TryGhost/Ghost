@@ -316,7 +316,7 @@ services:
           - core/server/services/themes/validate.js
           - core/server/services/stats/service.js
           - core/server/services/posts-public/index.ts
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/server/services/link-redirection/index.js
           - core/server/services/post-scheduling/index.ts
           - core/server/auth/session/index.js
@@ -3640,6 +3640,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:
       complexity: straightforward
@@ -3686,34 +3687,46 @@ services:
     entryPoints:
       - explore-ping/index.ts
     notes: >-
-      Preserve the environment gate, payload and nonblocking boot ping. Decide how the common
-      pattern represents a fresh instance per eligible init and owns unfinished outbound work.
+      Initializer adoption was rechecked against e716eb07c8c48a4dd8df0a45c6063e6a620c3157;
+      auditedAt and the migration assessments retain their historical provenance. The prior
+      root is recorded at https://github.com/TryGhost/Ghost/blob/c2999f4e13da6360bceced808bb52c4a04b5ad03/ghost/core/core/server/services/explore-ping/index.ts.
+      Boot now awaits one retained instance. The factory constructs in every environment and
+      starts the detached ping only in production and development, replacing the historical
+      fresh instance per eligible init. The payload and nonblocking boot ping are unchanged;
+      ownership of unfinished outbound work remains open.
     contracts:
       exports:
         summary: >-
-          The TypeScript root exposes named createService and async init exports, consumed by
-          CommonJS boot. Neither exposes a retained service instance or a stop/reset method.
-          The implementation class and dependency type are deep exports; only tests construct
-          that class directly outside the factory in the searched repository. Root units pin
-          init resolving undefined on every call and the ping starting on the factory's instance.
+          The TypeScript root default-exports a defineService root exposing init(): Promise<void>
+          and a guarded service getter; CommonJS boot uses .default. The historical named
+          createService and init exports are removed; no other consumer used them. There is no
+          stop/reset method or extras. The implementation class and dependency type remain deep
+          exports; only tests construct that class directly. Root units pin init resolving
+          undefined on every call and the ping starting on the retained instance; reading
+          service before init throws through the kernel helper.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
+          - core/kernel/define-service.ts
           - core/boot.js
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
-          Every createService call constructs ExplorePingService and a fresh posts service,
-          including PostStats, PostsExporter and PostEmailHandler. Posts composition captures
-          emailService.service, though this consumer only uses stats. Other dependencies are
-          shared module objects. Every eligible init calls the factory, even when ping is disabled or
-          its URL is absent. The environment guard does not prevent module-scope imports.
-          Root units pin that test and staging environments construct neither the Posts graph
-          nor an instance, that each eligible init constructs a fresh instance with its own Posts
-          service, and that a synchronous Posts construction error rejects init unchanged.
+          Import declares only the initializer. The first init loads shared config, settings,
+          logging, version and request helpers, constructs a fresh posts service, including
+          PostStats, PostsExporter and PostEmailHandler, and one ExplorePingService, then retains
+          it; concurrent calls share initialization. Posts composition captures
+          emailService.service, though this consumer only uses stats. Construction happens in
+          every environment, even when ping is disabled or its URL is absent; only the ping is
+          gated. Root units pin that test and staging environments do not ping, that eligible
+          environments construct with a fresh Posts service and ping once, that repeated init
+          retains one instance, and that a synchronous Posts construction error rejects init
+          unchanged.
         sources:
           - core/server/services/explore-ping/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/posts/posts-service-instance.js
           - core/server/services/posts/posts-service.js
           - core/server/services/posts/posts-exporter.js
@@ -3721,9 +3734,11 @@ services:
           - core/server/services/posts/stats/post-stats.js
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       consumers:
         summary: >-
-          Boot is the only production root caller found; no request, job or CLI consumer or
+          Boot awaits the initializer and is the only production root caller found; no request,
+          job or CLI consumer or
           second composition path was found. Payload collection consumes posts.stats,
           members.stats and statsService.api.mrr. Missing MRR availability silently produces
           an empty array. Implementation tests inject these shapes. Root units wire the shared
@@ -3742,11 +3757,12 @@ services:
           - test/e2e-server/boot-explore-ping.isolated.test.ts
       startup:
         summary: >-
-          Foreground boot calls init after database/settings setup, before app mounting and
-          readiness. Only production/development proceed. Member stats already exists at import;
-          stats init appears earlier in the same Promise.all list and currently sets api without
-          awaiting. Explore init launches ping and resolves without awaiting payload collection
-          or HTTP completion; direct factory use has no environment or readiness guard. Root
+          Boot awaits init in its required service Promise.all after database/settings setup,
+          before app mounting and readiness, including backend-only boot. The factory constructs
+          in every environment and starts the ping only in production/development. Member stats
+          already exists at import; stats init appears earlier in the same Promise.all list and
+          currently sets api without awaiting. Init launches the ping synchronously and resolves
+          without awaiting payload collection or HTTP completion. Root
           units apply the real configuration policy per environment, including development, and
           show init resolving while post statistics and the request are held pending. The
           isolated boot case opens the gate for this initializer only during a real boot:
@@ -3764,19 +3780,23 @@ services:
           - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
-          No instance, completion promise, success state or deduplication guard is retained by
-          the root. Repeated eligible init creates independent pings that can overlap; there is
-          no implemented schedule or retry at this layer. An instance retains dependency
-          references but reads their mutable properties during each ping. Server stop neither
-          drains these pings nor prevents later calls. Root units pin that repeated eligible init
-          constructs separate instances and Posts services.
+          Successful init retains one instance; repeated init reuses it without a second ping,
+          replacing the historical fresh instance and independent overlapping pings per eligible
+          init. No completion promise, success state or deduplication guard for the boot ping
+          is retained; there is no implemented schedule or retry at this layer. The instance
+          retains dependency references but reads their mutable properties during each ping.
+          Server stop neither drains the ping nor prevents later calls. Root units pin that
+          repeated init retains one instance and pings once; retained identity itself is covered
+          by the kernel's initializer tests.
         sources:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
+          - core/kernel/define-service.ts
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       configuration:
         summary: >-
           Ping reads URL then enabled state once; payload reads version/site metadata before
@@ -3792,7 +3812,7 @@ services:
           - core/server/services/stats/mrr-stats-service.js
           - core/server/data/schema/default-settings/default-settings.json
         tests:
-          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/explore-ping-service.test.ts
       resources:
         summary: >-
           The owned posts helpers acquire no separate connections or listeners on construction;
@@ -3813,7 +3833,8 @@ services:
         tests: []
       failures:
         summary: >-
-          Factory failure rejects awaited init and can fail boot; ping rejection is detached.
+          Factory failure rejects awaited init and can fail boot, leaving service unavailable
+          until a later explicit init; ping rejection is detached.
           Missing URL warns, disabled ping skips. Any post-query/date failure nulls all post
           fields; member or MRR failure nulls both growth fields. Request rejection warns and
           fulfills, while payload setup or serialization errors can reject ping outside these
@@ -3827,16 +3848,16 @@ services:
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/boot.js
         tests:
-          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/explore-ping-service.test.ts
           - test/unit/server/services/explore-ping/index.test.ts
     unverified: []
     blockers:
       - >-
-        Root units now pin environment gating through the real configuration policy, fresh
-        construction per eligible init, construction failure rejecting init and init resolving
-        before payload and request completion; the isolated boot case runs the real boot.
-        Adoption must decide how one retained initializer instance replaces fresh construction
-        per init.
+        Root units pin environment gating through the real configuration policy, construction
+        with a fresh Posts service in eligible environments, one retained instance across
+        repeated init, construction failure rejecting init and init resolving before payload
+        and request completion; the isolated boot case runs the real boot. Adoption constructs
+        in every environment and gates only the ping, replacing fresh construction per init.
       - >-
         The isolated boot case now collects the payload through the real Posts, Members and
         Stats roots and database, including the Stats API's zero-MRR entry, and root units read
@@ -13653,7 +13674,7 @@ services:
           - core/server/services/automations/automations-api.ts
         tests:
           - test/e2e-api/admin/stats.test.js
-          - test/unit/server/services/explore-ping/explore-ping-service.test.js
+          - test/unit/server/services/explore-ping/explore-ping-service.test.ts
           - test/e2e-api/admin/automations.test.ts
       startup:
         summary: >-
@@ -14282,75 +14303,81 @@ services:
     kind: directory
     disposition: relocate
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        A small factory can return the optional cache facade after acquiring the borrowed
-        adapter and registering cache invalidation. Retain a removable site.changed callback
-        for failed-start cleanup, and preserve endpoint access after boot plus the no-cache
-        case. There is no worker or replacement lifecycle to add to the helper.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned default root returns one facade with an optional cache. Disabled
+        caching still yields a ready instance. The endpoint captures service.cache after
+        initialization, preserving adapter identity and the single site.changed listener.
+        Registration remains the final resource acquisition; no new lifecycle hook is needed.
+      reviewedAt: 0780d0a76e340fd2d131e782a164633c4d389084
       sources:
-        - core/server/services/tags-public/service.js
+        - core/server/services/tags-public/index.ts
         - core/server/api/endpoints/tags-public.js
         - core/boot.js
       dependencies:
         complexity: straightforward
         reason: >-
-          The service has one optional adapter cache and one site-change subscription, with all
-          external dependencies acquired in service.js. The Content API reads that cache facade.
-          Root wiring is bounded and independent of the larger post and URL service migrations.
-        preparation:
-          - >-
-            Wire cache enablement, the adapter and event bus in index.ts while preserving the
-            Content API cache facade and invalidation behavior.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+          The migrated root wires the cache adapter, its enablement config and the site-change
+          event bus in index.ts. The Content API captures the ready cache facade; this
+          composition is independent of the larger post and URL service migrations.
+        preparation: []
+        reviewedAt: 0780d0a76e340fd2d131e782a164633c4d389084
         sources:
-          - core/server/services/tags-public/index.js
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/server/api/endpoints/tags-public.js
+          - core/boot.js
     entryPoints:
-      - tags-public/index.js
+      - tags-public/index.ts
     notes: >-
       Planned relocation to API-owned public-response-cache support alongside the posts cache.
       This root only selects the tags cache and subscribes to site invalidation; tag querying is
       endpoint-owned. Boot still owns configured cache readiness, and generic adapter mechanics
-      retain their own owner. No source has moved. Preserve the optional tags browse cache and its
-      endpoint/invalidation identity. Existing cold-boot coverage does not establish restart or
-      asynchronous adapter ownership.
+      retain their own owner. No source has moved. The prior auditedAt records the pre-migration
+      baseline. The bounded migration was inspected on main 0780d0a76e340fd2d131e782a164633c4d389084;
+      its root/binding units, isolated cold-boot HTTP tests including the Admin tag-edit
+      invalidation case, and tag query privacy HTTP passed before production changes. The
+      default initializer replaces the wrapper without extras, exactly as posts-public. Cache
+      configuration, identity and invalidation are unchanged; early controller imports now fail
+      through the readiness guard. Feature-local boolean parsing preserves legacy truthiness
+      without tightening accepted configuration. Restart, adapter failures and asynchronous
+      invalidation remain separate obligations below.
     contracts:
       exports:
         summary: >-
-          CommonJS index forwards one TagsPublicServiceWrapper. Before init it has no api;
-          receiver-dependent async init resolves undefined and publishes a mutable api object
+          The TypeScript root default-exports a defineService initializer with init and a
+          guarded service getter; there are no extras. The ready service is one facade
           containing cache, including undefined when disabled. It exposes no tag query, reset,
-          stop or disposer. Units assert enabled/disabled cache identity and endpoint bindings,
-          not exact module shape, method receiver or returned values.
+          stop or disposer. Units assert enabled/disabled cache identity and endpoint bindings;
+          generic readiness, shared initialization and retry belong to kernel tests.
         sources:
-          - core/server/services/tags-public/index.js
-          - core/server/services/tags-public/service.js
+          - core/kernel/define-service.ts
+          - core/server/services/tags-public/index.ts
+          - core/server/api/endpoints/tags-public.js
         tests:
           - test/unit/server/services/public-response-caches.test.ts
       construction:
         summary: >-
-          Import constructs only the wrapper. First init requires the shared config, adapter
-          manager and common event bus; a truthy tagsPublicCache flag obtains cache:tagsPublic
-          and registers an anonymous reset callback before api publication. There is no await
-          in init, so publication is synchronous before the returned promise settles. Manager
-          identity is requested name plus selected class. No other production constructor or
-          deep consumer was found. Units stub config/adapter lookup and assert the exact adapter
-          name and identity, with the posts flag opposite to catch cross-wiring.
+          Import declares the root without resolving runtime collaborators. First init requires
+          the shared adapter manager, config facade and common event bus; a truthy
+          tagsPublicCache flag obtains cache:tagsPublic and registers its reset listener as the
+          final resource acquisition before returning the facade. Boot awaits init before the
+          guarded service is ready. Manager identity is requested name plus selected class. No
+          other production constructor or deep consumer was found. Units stub config/adapter
+          lookup and assert the exact adapter name and identity, with the posts flag opposite to
+          catch cross-wiring.
         sources:
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/server/services/adapter-manager/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/public-response-caches.test.ts
       consumers:
         summary: >-
-          Boot initializes the root; tags browse captures api.cache when its endpoint loads.
+          Boot initializes the root; tags browse captures service.cache when its endpoint loads.
           The shared pipeline preserves the adapter identity and memoizes the controller wrapper.
           Tags read is uncached. Content routes and frontend get/routing-data calls reach these
           public methods through API getters; query implementation belongs to TagPublic/model
@@ -14384,12 +14411,13 @@ services:
           Boot validates adapters and prepares models/config before awaiting tags init in its
           service group, before the full app mounts. Content router/API construction is lazy,
           normally loading this endpoint after initialization. The isolated HTTP suite drives
-          that cold boot with MemoryCache enabled. Source-only: early endpoint import captures
-          undefined for the retained descriptor/pipeline and later init cannot repair it. Init
-          does not await external cache readiness or register rollback after later boot failure.
+          that cold boot with MemoryCache enabled. Reading service while importing the
+          controller before readiness now throws rather than silently binding no cache. The
+          root does not initialize on a request, await external cache readiness or register
+          rollback after later boot failure.
         sources:
           - core/boot.js
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/server/api/endpoints/index.js
           - core/server/api/endpoints/tags-public.js
           - core/server/web/api/app.js
@@ -14399,15 +14427,16 @@ services:
           - test/e2e-server/public-response-caches.isolated.test.ts
       lifetime:
         summary: >-
-          Any truthy api stops repeated init, including a disabled first initialization. The
-          same module retains its adapter, entries and listener without stop/reset support.
-          Clearing the manager cache does not replace root, listener or endpoint references.
-          MemoryCache stores response references and swaps its backing object on reset. Units
-          assert repeated enabled init preserves adapter/data with one new listener and directly
-          invoke that callback; HTTP also emits on the real bus. Same-module reboot, forced
-          api mutation, response-reference mutation and concurrent fill/reset remain source-only.
+          Successful init retains the same facade, adapter, entries and listener, including a
+          facade with no cache when disabled. There is no listener disposer or supported
+          service reset. Clearing the manager cache does not replace root, listener or endpoint
+          references. MemoryCache stores response references and swaps its backing object on
+          reset. Units assert repeated enabled init preserves adapter/data with one new listener
+          and directly invoke that callback; HTTP also emits on the real bus. Same-module
+          reboot, forced re-init, response-reference mutation and concurrent fill/reset remain
+          source-only.
         sources:
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/api/endpoints/tags-public.js
@@ -14418,7 +14447,8 @@ services:
           - test/e2e-server/public-response-caches.isolated.test.ts
       configuration:
         summary: >-
-          hostSettings:tagsPublicCache:enabled is read once using truthiness; missing/falsy
+          The root reads hostSettings:tagsPublicCache:enabled only on first init through a
+          feature-local coercing boolean schema. It preserves legacy truthiness; missing/falsy
           disables. Feature-specific adapter options fall back to the shared MemoryCache
           default. Production config is frozen; test overrides do not imply hot reload. Tags
           has no custom cache key: the pipeline serializes configured frame.options, including
@@ -14427,7 +14457,7 @@ services:
           privacy HTTP asserts hidden filter/order/selectors are ignored and public identifiers,
           visibility, slug order and post counts remain; it does not enable this response cache.
         sources:
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/kernel/adapter-manager/options.ts
           - core/shared/config/defaults.json
           - core/shared/config/SCHEMA.md
@@ -14448,7 +14478,7 @@ services:
           these resources. Adapter units assert selected memory operations and fake-store Redis
           timeout/reset/refresh results, not a real tags request with those adapters or shutdown.
         sources:
-          - core/server/services/tags-public/service.js
+          - core/server/services/tags-public/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
@@ -14462,8 +14492,9 @@ services:
           - test/unit/server/adapters/lib/redis/adapter-cache-redis.test.js
       failures:
         summary: >-
-          Source-only: dependency/adapter/listener errors reject init before api, without
-          disposing acquired shared resources. Reset is called without return/await/catch;
+          Source-only: dependency/adapter/listener errors reject init before service
+          publication; defineService allows a later explicit retry and no rollback disposes the
+          borrowed adapter. Reset is called without return/await/catch;
           synchronous throws escape emit and asynchronous rejection is unobserved. Built-in
           Redis reset instead catches/logs, so failure may retain stale entries. Pipeline hits
           return before validation/serialization/permissions; misses propagate query/cache
@@ -14472,7 +14503,8 @@ services:
           not cover that combined path. Tag HTTP tests assert missing identifier 400 and internal
           visibility 404, without injecting root/cache failures or proving cached authorization.
         sources:
-          - core/server/services/tags-public/service.js
+          - core/kernel/define-service.ts
+          - core/server/services/tags-public/index.ts
           - core/server/api/endpoints/tags-public.js
           - core/server/adapters/lib/redis/AdapterCacheRedis.js
           - core/server/lib/common/events.js
@@ -14488,9 +14520,10 @@ services:
         subsequent cached response; relevant frontend composition, early endpoint import and
         cached permission/context behavior remain untested.
       - >-
-        Define same-process restart and rollback ownership: disabled init also sets the guard,
-        manager reset leaves retained references, and listeners/cache resources have no disposer.
-        Current tests manually restore global state rather than exercise production restart.
+        Establish lifecycle ownership before adding reset/re-init: disabled first init is
+        permanent, listeners are never removed, manager cache clearing leaves retained users,
+        and no root cleanup runs after boot failure or shutdown. Current tests manually restore
+        global state rather than exercise production restart.
       - >-
         Cover asynchronous invalidation, in-flight fills and background refresh across reset.
         An older MemoryCache response can be stored after reset; Redis background refresh can

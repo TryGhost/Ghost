@@ -4615,6 +4615,21 @@ describe('Members API', function () {
       });
     });
 
+    it('records what it saved as written in Stripe Checkout', async function () {
+      const metrics = mockManager.mockMetrics();
+      await completeCheckout('shipping-metric@example.com');
+
+      const writes = metrics.tracked('members.metafields.values');
+      assert.deepEqual(
+        new Set(writes.map(({ event, labels }) => `${event.outcome} ${labels.source}`)),
+        new Set(['success checkout']),
+      );
+      assert.deepEqual(
+        new Set(writes.flatMap(({ labels }) => labels.field_types)),
+        new Set(['address', 'short_text']),
+      );
+    });
+
     it('keeps the address but not the name while the name field is archived', async function () {
       await adminAgent
         .put('/members/metafields/custom/recipient_name/')

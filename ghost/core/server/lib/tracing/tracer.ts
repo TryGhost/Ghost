@@ -1,10 +1,17 @@
 /**
+ * What an attribute can hold: the values OpenTelemetry's attributes take, except that a list
+ * can't hold `null` or `undefined`, which OpenTelemetry allows so a list can keep the place of a
+ * missing value and no span here needs.
+ */
+export type AttributeValue = string | number | boolean | string[] | number[] | boolean[];
+
+/**
  * Must stay a subset of OpenTelemetry's `Span`, so that an OpenTelemetry span can be passed in
  * its place.
  */
 export interface Span {
   /** Setting a key that is already set replaces its value. */
-  setAttribute(key: string, value: string): void;
+  setAttribute(key: string, value: AttributeValue): void;
 }
 
 /**
@@ -14,8 +21,6 @@ export interface Span {
  * - `track` ends the span and sets its status itself: success when the operation returns, and
  *   failure when it throws. OpenTelemetry leaves both to the operation, so each operation would
  *   repeat the same `try`, `catch` and `finally`.
- * - Attribute values are strings only. Attributes are for filtering and grouping spans, and the
- *   Elastic Common Schema labels that store them hold only strings.
  * - A failure records the error's type, never the message and stack that OpenTelemetry's
  *   `recordException` records, because error messages can hold personal data such as a buyer's
  *   email address.

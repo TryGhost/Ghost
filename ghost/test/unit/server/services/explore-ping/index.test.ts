@@ -25,7 +25,7 @@ const postsFactory = require(POSTS_PATH);
 const ROOT_PATH = require.resolve('../../../../../core/server/services/explore-ping');
 const EXPLORE_URL = 'https://explore.example/update';
 
-type Root = typeof import('../../../../../core/server/services/explore-ping');
+type Root = (typeof import('../../../../../core/server/services/explore-ping'))['default'];
 type Response = Awaited<ReturnType<ExplorePingServiceDeps['request']>>;
 
 describe('explore-ping root', function () {
@@ -68,7 +68,7 @@ describe('explore-ping root', function () {
     sandbox.stub(statsService, 'api').value(null);
     info = sandbox.stub(logging, 'info');
     warn = sandbox.stub(logging, 'warn');
-    root = require(ROOT_PATH);
+    root = require(ROOT_PATH).default;
   });
 
   afterEach(async function () {
@@ -87,12 +87,13 @@ describe('explore-ping root', function () {
   });
 
   for (const env of ['testing', 'testing-mysql', 'test', 'staging']) {
-    it(`does not construct or ping in the ${env} environment`, async function () {
+    it(`constructs with a fresh Posts service but does not ping in the ${env} environment`, async function () {
       getConfig.withArgs('env').returns(env);
 
       assert.equal(await root.init(), undefined);
 
-      sinon.assert.notCalled(createPosts);
+      sinon.assert.calledOnce(createPosts);
+      assert.equal(root.service.posts, createPosts.firstCall.returnValue);
       sinon.assert.notCalled(ping);
       sinon.assert.notCalled(totalPosts);
       sinon.assert.notCalled(info);
@@ -117,16 +118,14 @@ describe('explore-ping root', function () {
     });
   }
 
-  it('constructs a separate instance and Posts service for each eligible init', async function () {
+  it('retains one instance and pings once across repeated init', async function () {
     assert.equal(await root.init(), undefined);
     assert.equal(await root.init(), undefined);
 
-    sinon.assert.calledTwice(createPosts);
-    sinon.assert.calledTwice(ping);
-    assert.notEqual(ping.firstCall.thisValue, ping.secondCall.thisValue);
-    assert.notEqual(createPosts.firstCall.returnValue, createPosts.secondCall.returnValue);
-    assert.equal(ping.firstCall.thisValue.posts, createPosts.firstCall.returnValue);
-    assert.equal(ping.secondCall.thisValue.posts, createPosts.secondCall.returnValue);
+    sinon.assert.calledOnce(createPosts);
+    sinon.assert.calledOnce(ping);
+    assert.equal(root.service, ping.firstCall.thisValue);
+    assert.equal(root.service.posts, createPosts.firstCall.returnValue);
   });
 
   it('finishes init before payload and request completion, reading the shared Stats API when ready', async function () {
