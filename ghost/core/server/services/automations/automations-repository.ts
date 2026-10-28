@@ -301,8 +301,8 @@ export type AutomationsRepository = {
       memberId: string;
       clickedAt: Readonly<Date>;
     },
-    transactionOptions?: {
-      transacting?: Knex.Transaction;
+    transactionOptions: {
+      transacting: Knex.Transaction;
     },
   ): Promise<void>;
 };
