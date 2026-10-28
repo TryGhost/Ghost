@@ -22,6 +22,7 @@ const CORE_COLUMNS = [
   'labels',
   'tiers',
   'gift_id',
+  'newsletters',
 ];
 
 const ADDRESS_PARTS = ['line1', 'line2', 'city', 'state', 'postal_code', 'country'];

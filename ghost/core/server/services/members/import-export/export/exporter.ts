@@ -107,8 +107,8 @@ type ExportCsvRow = {
   deleted_at: null;
   labels: string;
   tiers: string;
-  newsletters: string;
   gift_id: string;
+  newsletters: string;
 } & Record<string, unknown>;
 
 function namesToCsv(items: Array<{ name: string }>): string {
@@ -131,8 +131,8 @@ export function toExportCsvRow(row: MemberExportRow): ExportCsvRow {
     deleted_at: null,
     labels: namesToCsv(row.labels),
     tiers: namesToCsv(row.tiers),
-    newsletters: namesToCsv(row.newsletters),
     gift_id: row.gift_id || '',
+    newsletters: namesToCsv(row.newsletters),
     ...row.metafield_cells,
   };
 }

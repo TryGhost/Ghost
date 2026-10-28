@@ -78,11 +78,9 @@ type ErrorReportRow = {
   deleted_at: undefined;
   labels: string;
   tiers: '';
-  // Present only when the submitted file carried a newsletters column: an empty cell
-  // in that column reads back as an explicit "no newsletters" on re-upload, so a file
-  // that never spoke about newsletters must produce a report that stays silent too.
-  newsletters?: string;
   gift_id: string | null;
+  // Only when the submitted file had the column, so a re-upload says no more than it did.
+  newsletters?: string;
   error: string;
 };
 
@@ -110,8 +108,8 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
     deleted_at: undefined,
     labels: stringifyLabels(row.labels),
     tiers: '',
-    ...(row.newsletters === undefined ? {} : { newsletters: stringifyLabels(row.newsletters) }),
     gift_id: row.gift_id || null,
+    ...(row.newsletters === undefined ? {} : { newsletters: stringifyLabels(row.newsletters) }),
     error: humaniseError(row),
   };
 }
