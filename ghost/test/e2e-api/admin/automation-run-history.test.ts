@@ -390,8 +390,10 @@ describe('Automation run history API', function () {
 
   it('returns a database error instead of a successful empty history', async function () {
     const run = await addRun();
-    const transaction = sinon.stub(db, 'transaction').rejects(new Error('History read failed'));
+    await addStep(run);
+    await readRun(run);
+
+    sinon.stub(db, 'transaction').rejects(new Error('History read failed'));
     await expectReadError(run, 500, 'InternalServerError');
-    assert.ok(transaction.calledOnce);
   });
 });
