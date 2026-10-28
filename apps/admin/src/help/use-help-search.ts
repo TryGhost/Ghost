@@ -56,7 +56,9 @@ const SEND_DURATION = 1200;
 export function useHelpSearch() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState<HelpSearch | null>(null);
-  // Every query searched for, for the support team's context
+  // Every query typed into the field, latest last: the message to support
+  // starts from the last one. Picked questions aren't the user's own words,
+  // so they're left out.
   const [searches, setSearches] = useState<string[]>([]);
   const [openedArticles, setOpenedArticles] = useState<HelpArticle[]>([]);
   // Kept while the user goes back to the search, so nothing they typed is lost
@@ -131,9 +133,10 @@ export function useHelpSearch() {
       if (!query) {
         return;
       }
-      setSearches((current) => [...current, query]);
       if (picked) {
         readArticle(picked);
+      } else {
+        setSearches((current) => [...current, query]);
       }
       void run(query, origin);
     },
@@ -146,7 +149,7 @@ export function useHelpSearch() {
     }
   }, [run, search]);
 
-  /** Opens the message to support, started from the last search if nothing's written yet. */
+  /** Opens the message to support, started from the last typed search if nothing's written yet. */
   const contactSupport = useCallback(() => {
     setSupport((current) => (current.body ? current : { ...current, body: searches.at(-1) ?? '' }));
     setView('support');
