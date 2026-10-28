@@ -200,8 +200,10 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
             />
             {/* Under the field, one of: the completions of what's being
                 typed, the results (only while the field still holds the
-                query they came from; typing something else, or clearing it,
-                shows the questions to pick from instead), or those questions */}
+                query they came from), the questions to pick from (only while
+                the field is empty), or nothing: typing past the last
+                completion leaves it quiet rather than snapping the questions
+                back */}
             {typeahead.showMatches ? (
               <HelpCompletions typeahead={typeahead} />
             ) : session.search && typeahead.draft.trim() === session.search.query ? (
@@ -212,7 +214,7 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
                 onRead={session.readArticle}
                 onRetry={session.retry}
               />
-            ) : (
+            ) : typeahead.draft.trim() === '' ? (
               <HelpSuggestions
                 failed={suggestions.isError}
                 loading={suggestions.isLoading}
@@ -220,7 +222,7 @@ function HelpPanelContent({ session, signals, open, showClose, onClose }: HelpPa
                 suggestions={suggestions.suggestions}
                 onPick={pick}
               />
-            )}
+            ) : null}
           </Stack>
         </div>
 

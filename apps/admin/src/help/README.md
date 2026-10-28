@@ -287,8 +287,12 @@ it.
 
 From 3 characters, the FAQ questions that continue what's typed show under
 the field in place of the suggestions or results (`matchQuestions` in
-`help-questions.ts`): every typed word has to start a word in the question,
-the last one usually half-typed. Questions about the page the user is on come
+`help-questions.ts`). The words that carry meaning (not "how do I", a stop
+word list) each have to start a word in the question, the last one usually
+half-typed, and more than half of them must, so from three words on one
+that isn't in a question doesn't lose it and completions stay as the user
+types on. The
+questions more of the words matched come first. Questions about the page the user is on come
 first (`getPageRelevance`): the page's own questions (tagged `#admin-<page>`,
 or its `PAGE_QUESTIONS` fallback), then questions whose title has one of the
 page's words (`PAGE_WORDS` in `help-pages.ts`: "member" and "subscription"
@@ -332,9 +336,10 @@ in a glance. The other results follow under "More from the help center". The
 preview loads the article through the same query the article view uses, so
 opening it is instant. No results, or DocsBot out of reach, offers the
 Ghost(Pro) support team; the error state also offers a retry. The results
-show only while the field still holds the query they came from: typing
-something else, or clearing the field, puts the page's questions back under
-it, so a stale preview never sits under a new question. Searching again
+show only while the field still holds the query they came from, and the
+page's questions only while the field is empty: typing something else
+leaves the space under the field quiet once the completions run out, rather
+than snapping the questions back, and clearing the field brings them back. Searching again
 replaces the results, and "Start over" in the header clears everything.
 
 Nothing about the user or page goes with the query. The page only decides
@@ -404,7 +409,9 @@ the user writes is sent.
   questions, so picking one reads as searching for it, and a completion is a
   question the help center can answer.
 - **Completions replace what's under the field** rather than floating over
-  it, so they never cover the suggestions or results.
+  it, so they never cover the suggestions or results. Once they run out,
+  nothing takes their place until the field is cleared: the questions
+  snapping back mid-typing read as the panel changing its mind.
 - **Straight from the browser, with no key.** The simplest thing that works for
   a prototype; a key, or a hop through Ghost(Pro), would hide the bot ids.
 - **Number keys pick suggestions** while nothing is typed: quick, but a

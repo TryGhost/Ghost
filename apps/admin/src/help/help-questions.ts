@@ -64,12 +64,72 @@ export function getPageRelevance(question: HelpArticle, page: HelpPageKey | null
   return PAGE_WORDS[page].some((word) => titleHas(question.title, word)) ? 1 : 0;
 }
 
+// Words that say nothing about which question is meant; only the others
+// have to match, so a question keeps completing as the user types around it
+const STOP_WORDS = new Set([
+  'a',
+  'an',
+  'the',
+  'this',
+  'that',
+  'my',
+  'our',
+  'your',
+  'me',
+  'i',
+  'we',
+  'you',
+  'it',
+  'how',
+  'what',
+  'why',
+  'where',
+  'when',
+  'which',
+  'who',
+  'do',
+  'does',
+  'did',
+  'is',
+  'are',
+  'be',
+  'can',
+  'could',
+  'should',
+  'would',
+  'will',
+  'to',
+  'of',
+  'in',
+  'on',
+  'for',
+  'with',
+  'from',
+  'at',
+  'by',
+  'and',
+  'or',
+  'not',
+  'there',
+  'any',
+  'some',
+  'please',
+  'want',
+  'need',
+  'get',
+  'set',
+  'up',
+]);
+
 /**
- * The FAQ questions that complete what the user has typed so far: every typed
- * word starts a word in the question (the last one is usually half-typed).
- * Questions about the page the user is on come first (getPageRelevance),
- * then questions that start the way the user did, then the ones whose
- * matching words come earliest.
+ * The FAQ questions that complete what the user has typed so far. The words
+ * that carry meaning (not "how do I") each have to start a word in the
+ * question, the last one usually half-typed, and more than half of them
+ * must: from three words on, one that isn't in a question doesn't lose it,
+ * so completions stay as the user types on. Questions about the page the user is on come first
+ * (getPageRelevance), then the ones more of the words matched, then those
+ * that start the way the user did, then the ones whose matching words come
+ * earliest.
  */
 export function matchQuestions(
   questions: HelpArticle[],
@@ -80,18 +140,26 @@ export function matchQuestions(
   if (draft.trim().length < MIN_LENGTH || !typed.length) {
     return [];
   }
+  const meaningful = typed.filter((word) => !STOP_WORDS.has(word));
+  // "how do i" is all stop words, and should still complete
+  const terms = meaningful.length ? meaningful : typed;
+
   const scored = questions.flatMap((question) => {
     const words = wordsOf(question.title);
-    const positions = typed.map((term) => words.findIndex((word) => word.startsWith(term)));
-    if (positions.includes(-1)) {
+    const positions = terms.map((term) => words.findIndex((word) => word.startsWith(term)));
+    const matched = positions.filter((position) => position !== -1);
+    // More than half: with two words both must match, with three one may miss
+    if (matched.length < Math.ceil((terms.length + 1) / 2)) {
       return [];
     }
+    const fromStart = typed.every((term, index) => words[index]?.startsWith(term));
     return [
       {
         question,
         relevance: getPageRelevance(question, page),
-        fromStart: positions.every((position, index) => position === index),
-        score: positions.reduce((sum, position) => sum + position, 0),
+        matched: matched.length,
+        fromStart,
+        score: matched.reduce((sum, position) => sum + position, 0),
       },
     ];
   });
@@ -99,6 +167,7 @@ export function matchQuestions(
     .sort(
       (a, b) =>
         b.relevance - a.relevance ||
+        b.matched - a.matched ||
         Number(b.fromStart) - Number(a.fromStart) ||
         a.score - b.score ||
         a.question.title.length - b.question.title.length,

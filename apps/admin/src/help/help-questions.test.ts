@@ -42,9 +42,17 @@ describe('matchQuestions', () => {
     expect(slugs('fees')).toEqual(['fees']);
   });
 
-  it('needs a few characters and every word to match', () => {
+  it('needs a few characters and more than half of the meaningful words to match', () => {
     expect(slugs('ho')).toEqual([]);
     expect(slugs('cancel stripe')).toEqual([]);
+    // From three words on, one that isn't in a question doesn't lose it
+    expect(slugs('cancel member stripe')).toEqual(['cancel']);
+    expect(slugs('cancel stripe payments now')).toEqual([]);
+  });
+
+  it('keeps completing as the user types around the words that matter', () => {
+    expect(slugs('how do i cancel a member')).toEqual(['cancel']);
+    expect(slugs('how can i get my members to sign in')).toEqual(['sign-in']);
   });
 
   it('puts questions about the page first', () => {
