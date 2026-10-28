@@ -250,11 +250,11 @@ catalog:
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
-  '@secretlint/secretlint-rule-pattern': 13.0.4
-  '@secretlint/secretlint-rule-preset-recommend': 13.0.4
+  '@secretlint/secretlint-rule-pattern': 13.0.7
+  '@secretlint/secretlint-rule-preset-recommend': 13.0.7
   knip: 6.32.1
   lint-staged: 17.3.0
-  secretlint: 13.0.4
+  secretlint: 13.0.7
   '@pnpm/releasing.versioning': 1100.2.4
   '@pnpm/workspace.workspace-manifest-reader': 1100.1.5
   execa: 10.0.1
