@@ -8,6 +8,9 @@ import {
   Input,
   LoadingIndicator,
   Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -69,6 +72,22 @@ export function HelpSupportView({
           </Text>
         </Inline>
         <Inline className="shrink-0" gap="xs">
+          {/* Once sent, a fresh start from here too */}
+          {sent && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label="Start over"
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={onStartOver}
+                >
+                  <LucideIcon.RotateCcw />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Start over</TooltipContent>
+            </Tooltip>
+          )}
           <HelpPanelSizeButton />
           {showClose && (
             <Button aria-label="Close help" size="icon-sm" variant="ghost" onClick={onClose}>
@@ -102,8 +121,7 @@ export function HelpSupportView({
             variant="outline"
             onClick={onStartOver}
           >
-            <LucideIcon.Search />
-            New search
+            Done
           </Button>
         </Stack>
       ) : (
