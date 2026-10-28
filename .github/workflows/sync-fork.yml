@@ -13,10 +13,13 @@ name: Sync Fork
 # other than `main`.
 #
 # Auth: requires the `SYNC_FORK_TOKEN` secret — a PAT or GitHub App token with
-# contents write + workflows write. GITHUB_TOKEN can't stand in: its pushes
-# don't trigger workflows, and GitHub rejects any push from it that touches
-# `.github/workflows/` (there's no `workflows` scope in `permissions:` to grant
-# — PATs and Apps only), which upstream changes regularly.
+# contents write + workflows write. GITHUB_TOKEN can't stand in: GitHub rejects
+# any push from it that touches `.github/workflows/` (there's no `workflows`
+# scope in `permissions:` to grant — PATs and Apps only), which upstream changes
+# regularly.
+#
+# The push does trigger workflows, but CI jobs skip pushes to `main` in TryGhost
+# copies — upstream already tested these exact commits.
 #
 # If `main` is a protected branch, the token's identity needs permission to push
 # to it (bypass list / "Allow specified actors").
@@ -64,7 +67,7 @@ jobs:
               echo
               echo "This workflow needs a PAT or GitHub App token with contents write + workflows write, stored as the \`SYNC_FORK_TOKEN\` secret."
               echo
-              echo "\`GITHUB_TOKEN\` can't be used instead: pushes made with it don't trigger CI, and GitHub rejects them outright whenever upstream has changed a file under \`.github/workflows/\`."
+              echo "\`GITHUB_TOKEN\` can't be used instead: GitHub rejects its pushes whenever upstream has changed a file under \`.github/workflows/\`."
             } >> "$GITHUB_STEP_SUMMARY"
             echo "::error::SYNC_FORK_TOKEN is not set — see job summary"
             exit 1
