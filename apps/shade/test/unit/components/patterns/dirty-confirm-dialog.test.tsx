@@ -7,7 +7,8 @@ import { DirtyConfirmDialog } from '../../../../src/components/patterns/dirty-co
 import { useDirtyConfirmation } from '../../../../src/components/patterns/use-dirty-confirmation';
 import { render } from '../../utils/test-utils';
 
-// A dialog that asks before Escape closes it, as Admin's email design modal does.
+// A dialog that asks for confirmation instead of closing on Escape, like Admin's email design
+// modal. It's where a quick second Escape can reach the wrong dialog (see useDirtyConfirmation).
 const DialogHarness = ({ onLeave }: { onLeave: () => void }) => {
   const { confirm, dialogProps } = useDirtyConfirmation();
 
@@ -27,8 +28,10 @@ const DialogHarness = ({ onLeave }: { onLeave: () => void }) => {
   );
 };
 
-// Escape as a browser delivers it: outside act(), so React schedules work as it does on a page
-// rather than flushing everything before the next line runs.
+// Presses Escape the way a browser delivers it. Testing Library's fireEvent wraps the event in
+// act(), which runs every pending render and effect before it returns. By the next line, Radix
+// would already route Escape to the confirmation, so the bug could never show. Outside act(),
+// React defers effects as it does in a browser, and a second press can land before they run.
 const pressEscapeOutsideAct = () => {
   const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
   const wasActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
@@ -96,11 +99,13 @@ describe('DirtyConfirmDialog', () => {
   it('closes without leaving when asked again while open', () => {
     const onLeave = vi.fn();
     render(<TestHarness dirty={true} onLeave={onLeave} />);
-    // Held on to, as the open confirmation hides everything behind it from role queries.
+    // Found before the confirmation opens: once it's open, everything behind it is aria-hidden,
+    // so getByRole can no longer find the button.
     const navigateAway = screen.getByRole('button', { name: 'Navigate away' });
 
     fireEvent.click(navigateAway);
     assert.ok(screen.queryByRole('alertdialog'), 'the confirmation did not open');
+    // Stands in for a dismissal that reaches the page behind the open confirmation.
     fireEvent.click(navigateAway);
 
     assert.equal(onLeave.mock.calls.length, 0);
@@ -112,12 +117,16 @@ describe('DirtyConfirmDialog', () => {
     render(<DialogHarness onLeave={onLeave} />);
 
     pressEscapeOutsideAct();
-    // The confirmation is on screen once React has committed, a microtask later; press again
-    // straight away, before anything React schedules for later has run.
+    // Wait only until the confirmation is on screen, which takes a few microtasks, then press
+    // again at once. Waiting longer, with waitFor for example, would let Radix's effects run.
+    // The second press would then go straight to the confirmation, and the test would pass
+    // without the fix.
     for (let i = 0; i < 10 && !screen.queryByRole('alertdialog'); i++) {
       await Promise.resolve();
     }
-    // Messages keep a failure from formatting the whole element, which outlasts the test.
+    // These assertions all carry a message. Without one, a failing assert formats the jsdom
+    // element for its error. That's slow enough to crash the Vitest worker, which hides the
+    // actual failure.
     assert.ok(screen.queryByRole('alertdialog'), 'the confirmation did not open');
     pressEscapeOutsideAct();
 
