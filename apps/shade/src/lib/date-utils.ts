@@ -196,8 +196,9 @@ export const formatDisplayDate = (dateString: string, timezone?: string): string
  * // 7:09pm
  */
 export const formatDisplayTime = (dateString: string, timezone: string): string => {
-  const date = parseDate(dateString, timezone);
-  return date ? formatTime(getDateTimeParts(date, timezone)) : '';
+  const timeZone = timezone || 'UTC';
+  const date = parseDate(dateString, timeZone);
+  return date ? formatTime(getDateTimeParts(date, timeZone)) : '';
 };
 
 /**

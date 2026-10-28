@@ -120,6 +120,15 @@ describe('date utils', function () {
       assert.equal(formatted, '7:09pm');
     });
 
+    it('formats time in UTC without a timezone, matching formatDisplayDate', function () {
+      vi.stubEnv('TZ', 'America/New_York');
+      try {
+        assert.equal(formatDisplayTime('2020-04-20T18:09:12.345Z', ''), '6:09pm');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('handles timezones with negative offsets', function () {
       const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'America/New_York');
       assert.equal(formatted, '2:09pm');
