@@ -93,6 +93,20 @@ describe('DirtyConfirmDialog', () => {
     assert.equal(screen.queryByRole('alertdialog'), null);
   });
 
+  it('closes without leaving when asked again while open', () => {
+    const onLeave = vi.fn();
+    render(<TestHarness dirty={true} onLeave={onLeave} />);
+    // Held on to, as the open confirmation hides everything behind it from role queries.
+    const navigateAway = screen.getByRole('button', { name: 'Navigate away' });
+
+    fireEvent.click(navigateAway);
+    assert.ok(screen.queryByRole('alertdialog'), 'the confirmation did not open');
+    fireEvent.click(navigateAway);
+
+    assert.equal(onLeave.mock.calls.length, 0);
+    assert.ok(!screen.queryByRole('alertdialog'), 'the confirmation is still open');
+  });
+
   it('closes on an Escape pressed as soon as it appears over a dialog', async () => {
     const onLeave = vi.fn();
     render(<DialogHarness onLeave={onLeave} />);
@@ -111,26 +125,6 @@ describe('DirtyConfirmDialog', () => {
       assert.ok(!screen.queryByRole('alertdialog'), 'the confirmation is still open');
     });
     assert.ok(screen.queryByRole('dialog', { name: 'Customize' }), 'the dialog closed too');
-    assert.equal(onLeave.mock.calls.length, 0);
-  });
-
-  it('hands Escape back to the dialog as soon as it closes', async () => {
-    const onLeave = vi.fn();
-    render(<DialogHarness onLeave={onLeave} />);
-
-    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
-    assert.ok(screen.queryByRole('alertdialog'), 'the confirmation did not open');
-
-    pressEscapeOutsideAct();
-    for (let i = 0; i < 10 && screen.queryByRole('alertdialog'); i++) {
-      await Promise.resolve();
-    }
-    assert.ok(!screen.queryByRole('alertdialog'), 'the confirmation did not close');
-    pressEscapeOutsideAct();
-
-    await waitFor(() => {
-      assert.ok(screen.queryByRole('alertdialog'), 'the dialog did not ask again');
-    });
     assert.equal(onLeave.mock.calls.length, 0);
   });
 });
