@@ -137,6 +137,8 @@ shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Ownership and
 migration progress are counted independently: a migrated entry marked for
 relocation appears in both counts. Migration does not complete its move.
 The `relocation` filter includes these migrated entries.
+The `migrated-relocation` row and filter show just the migrated entries planned
+for a move or split.
 
 **Staying in services/** comprises three groups:
 
@@ -167,6 +169,8 @@ also included in JSON output as `entry.notes`.
 Entries found by the audit but absent from the inventory are **Not inventoried**;
 entries absent from the dependency graph have unknown counts. Malformed or
 incomplete assessments fail the report.
+The `not-analyzed` and `not-inventoried` diagnostic counts are available in
+summary JSON and list filters, but omitted from the text summary.
 
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct

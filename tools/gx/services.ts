@@ -207,6 +207,11 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
     matches: (row) => row.entry?.disposition === 'retain' && !!row.entry.migrated,
   },
   {
+    name: 'migrated-relocation',
+    label: 'Migrated — Move or split planned',
+    matches: (row) => row.entry?.disposition === 'relocate' && !!row.entry.migrated,
+  },
+  {
     name: 'needs-preparation',
     label: 'Needs preparation',
     matches: (row) =>
@@ -430,7 +435,9 @@ export function runServices(command: string, args: string[]) {
       output = counts;
       text = table(
         ['MIGRATION', 'COUNT', 'GROUP'],
-        groups.map((item) => [item.label, String(counts[item.label]), item.name]),
+        groups
+          .filter((item) => !['not-analyzed', 'not-inventoried'].includes(item.name))
+          .map((item) => [item.label, String(counts[item.label]), item.name]),
       );
       text += '\n\nList a group: pnpm gx services list --group <group>';
     }
