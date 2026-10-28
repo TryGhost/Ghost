@@ -127,4 +127,45 @@ test.describe('Smart quotes', async () => {
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">say "hi" and “bye”</span></p>`);
         });
     });
+
+    test.describe('publication language', () => {
+        test('uses German quotes', async function () {
+            await initialize({page, uri: '/#/?content=false&locale=de'});
+            await focusEditor(page);
+            await page.keyboard.type('"Hallo," sagte sie. Wie geht\'s? \'Gut\'');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">„Hallo,“ sagte sie. Wie geht’s? ‚Gut‘</span></p>`);
+        });
+
+        test('uses guillemets with narrow no-break spaces in French', async function () {
+            await initialize({page, uri: '/#/?content=false&locale=fr'});
+            await focusEditor(page);
+            // the plain spaces typed inside the quotes make way for the narrow no-break spaces
+            await page.keyboard.type('" Bonjour ", dit-elle');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">«\u202FBonjour\u202F», dit-elle</span></p>`);
+        });
+
+        test('converts pasted text to French quotes', async function () {
+            await initialize({page, uri: '/#/?content=false&locale=fr'});
+            await focusEditor(page);
+            await pasteText(page, '"Bonjour"');
+            await page.keyboard.type('!');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">«\u202FBonjour\u202F»!</span></p>`);
+        });
+
+        test('matches the language when the region has no style of its own', async function () {
+            await initialize({page, uri: '/#/?content=false&locale=pt-BR'});
+            await focusEditor(page);
+            await page.keyboard.type('"Olá"');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">“Olá”</span></p>`);
+        });
+    });
+
+    test.describe('disabled', () => {
+        test('leaves quotes alone when the feature is off', async function () {
+            await initialize({page, uri: '/#/?content=false&smartQuotes=false'});
+            await focusEditor(page);
+            await page.keyboard.type('"It\'s fine," she said');
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">"It's fine," she said</span></p>`);
+        });
+    });
 });

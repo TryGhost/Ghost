@@ -60,7 +60,8 @@ const defaultCardConfig = {
     membersEnabled: true,
     stripeEnabled: true,
     feature: {
-        transistor: false
+        transistor: false,
+        smartQuotes: true
     },
     // this enables the internal linking feature, can be disabled with `/#/?searchLinks=false`
     searchLinks: async (term) => {
@@ -317,9 +318,13 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         deleteSnippet,
         feature: {
             ...defaultCardConfig.feature,
-            transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor
+            transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor,
+            // smart quotes are on by default, can be disabled with `/#/?smartQuotes=false`
+            smartQuotes: searchParams.get('smartQuotes') === 'false' ? false : defaultCardConfig.feature.smartQuotes
         },
         embedPreviewUrl: searchParams.get('embedPreviewUrl') || undefined,
+        // the publication language, e.g. `/#/?locale=de`, which decides the quotation marks used
+        locale: searchParams.get('locale') || undefined,
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
         deprecated: {

@@ -72,6 +72,7 @@ export interface CardConfigPost {
 export interface CardConfigFeature {
     transistor?: boolean;
     paywallImprovements?: boolean;
+    smartQuotes?: boolean;
 }
 
 export interface CardConfig {
@@ -90,6 +91,8 @@ export interface CardConfig {
     renderLabels?: boolean;
     image?: {allowedWidths?: string[]};
     feature?: CardConfigFeature;
+    // the publication language, e.g. `de` or `pt-BR`, which decides the quotation marks SmartQuotesPlugin uses
+    locale?: string;
     post?: CardConfigPost;
     snippets?: Snippet[];
     [key: string]: unknown;

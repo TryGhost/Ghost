@@ -74,6 +74,7 @@ const EDITABLE_SETTINGS = [
   'accent_color',
   'editor_default_email_recipients',
   'editor_default_email_recipients_filter',
+  'editor_smart_quotes',
   'labs',
   'comments_enabled',
   'outbound_link_tagging',

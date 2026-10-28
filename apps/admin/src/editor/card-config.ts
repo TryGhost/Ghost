@@ -63,7 +63,9 @@ export interface PostCardConfig extends PostCardConfigPorts {
   pinturaConfig: { jsUrl: string; cssUrl: string } | null;
   embedPreviewUrl: string | undefined;
   renderLabels: boolean;
-  feature: { transistor: boolean; paywallImprovements: boolean };
+  feature: { transistor: boolean; paywallImprovements: boolean; smartQuotes: boolean };
+  /** The publication language, which decides the quotation marks smart quotes use. */
+  locale: string;
   deprecated: { headerV1: boolean };
   membersEnabled: boolean;
   siteTitle: string;
@@ -127,7 +129,9 @@ export function buildPostCardConfig(
     feature: {
       transistor: getSettingValue<boolean>(settings, 'transistor') === true,
       paywallImprovements: config.labs?.paywallImprovements === true,
+      smartQuotes: getSettingValue<boolean>(settings, 'editor_smart_quotes') === true,
     },
+    locale: getSettingValue<string>(settings, 'locale') ?? 'en',
     deprecated: {
       headerV1: true,
     },
