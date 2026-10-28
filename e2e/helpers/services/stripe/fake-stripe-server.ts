@@ -29,6 +29,14 @@ import {
   renderFakeCheckoutPage,
   renderFakeDonationCheckoutPage,
 } from './fake-checkout-page-renderer';
+import { z } from 'zod';
+
+/** What Stripe decides an existing customer's tax rules from, as a session request gives it. */
+const CustomerTaxRequest = z.object({
+  tax_id_collection: z.object({ enabled: z.unknown() }).partial().optional(),
+  automatic_tax: z.object({ enabled: z.unknown() }).partial().optional(),
+  customer_update: z.record(z.string(), z.unknown()).optional(),
+});
 
 // Measured against Stripe test mode; re-measure with `pnpm stripe:probe`.
 const MAX_CUSTOM_FIELDS = 3;
@@ -38,6 +46,12 @@ const MAX_CUSTOM_FIELD_LABEL_LENGTH = 50;
 // configuration saved before the rule existed, say — which would fail the session create
 // and take the sale with it.
 const ALLOWED_COUNTRIES = new Set<string>(STRIPE_ALLOWED_COUNTRIES);
+
+/** Why Stripe refuses a checkout session, and the parameter it names, when it names one. */
+interface CheckoutRefusal {
+  message: string;
+  param?: string;
+}
 
 // Stripe names the offending element and then lists every code it will take.
 function allowedCountriesMessage(index: number): string {
@@ -499,10 +513,10 @@ export class FakeStripeServer extends FakeServer {
     });
 
     this.app.post('/v1/checkout/sessions', (req, res) => {
-      const invalid = this.validateCheckoutSessionRequest(req.body);
-      if (invalid) {
-        this.debug(`Rejecting checkout session: ${invalid}`);
-        res.status(400).json({ error: { type: 'invalid_request_error', message: invalid } });
+      const refusal = this.validateCheckoutSessionRequest(req.body);
+      if (refusal) {
+        this.debug(`Rejecting checkout session: ${refusal.message}`);
+        res.status(400).json({ error: { type: 'invalid_request_error', ...refusal } });
         return;
       }
 
@@ -737,9 +751,10 @@ export class FakeStripeServer extends FakeServer {
    * Messages are Stripe's own, so a test asserting on a rejection asserts on the
    * string production would see.
    *
-   * Returns an error message, or null when the request is one Stripe would accept.
+   * Returns why Stripe would refuse the request, with the parameter it names when it names one,
+   * or null when Stripe would accept it.
    */
-  private validateCheckoutSessionRequest(body: Record<string, unknown>): string | null {
+  private validateCheckoutSessionRequest(body: Record<string, unknown>): CheckoutRefusal | null {
     const rawFields = body.custom_fields;
     const fields = Array.isArray(rawFields)
       ? rawFields
@@ -748,13 +763,18 @@ export class FakeStripeServer extends FakeServer {
         : [];
 
     if (fields.length > MAX_CUSTOM_FIELDS) {
-      return `Array custom_fields exceeded maximum ${MAX_CUSTOM_FIELDS} allowed elements.`;
+      return {
+        message: `Array custom_fields exceeded maximum ${MAX_CUSTOM_FIELDS} allowed elements.`,
+        param: 'custom_fields',
+      };
     }
 
     for (const field of fields) {
       const label = (field as { label?: { custom?: unknown } })?.label?.custom;
       if (typeof label === 'string' && label.length > MAX_CUSTOM_FIELD_LABEL_LENGTH) {
-        return `Invalid string: ${label}; must be at most ${MAX_CUSTOM_FIELD_LABEL_LENGTH} characters`;
+        return {
+          message: `Invalid string: ${label}; must be at most ${MAX_CUSTOM_FIELD_LABEL_LENGTH} characters`,
+        };
       }
     }
 
@@ -762,24 +782,19 @@ export class FakeStripeServer extends FakeServer {
     // string, which Stripe treats as an attempt to unset the parameter and refuses.
     if ('customer_update' in body) {
       if (body.customer_update === '') {
-        return (
-          "You passed an empty string for 'customer_update'. We assume empty values are an " +
-          "attempt to unset a parameter; however 'customer_update' cannot be unset. You should " +
-          "remove 'customer_update' from your request or supply a non-empty value."
-        );
+        return {
+          message:
+            "You passed an empty string for 'customer_update'. We assume empty values are an " +
+            "attempt to unset a parameter; however 'customer_update' cannot be unset. You should " +
+            "remove 'customer_update' from your request or supply a non-empty value.",
+        };
       }
 
       if (!body.customer) {
-        return '`customer_update` can only be used with `customer`.';
+        return { message: '`customer_update` can only be used with `customer`.' };
       }
     }
 
-    // Stripe will not collect a tax id for a customer it may not rename. Measured, like
-    // everything else here: shipping and phone collection carry no such requirement, so
-    // this is specific to tax rather than a rule about collecting from a customer at all.
-    // Read against `true` rather than for truthiness: form decoding delivers the flag as
-    // the string `"false"`, which is truthy, and refusing on that would refuse a checkout
-    // that had switched tax collection off.
     const rawCountries = (body.shipping_address_collection as { allowed_countries?: unknown })
       ?.allowed_countries;
     const countries = Array.isArray(rawCountries)
@@ -791,17 +806,67 @@ export class FakeStripeServer extends FakeServer {
       (code) => typeof code !== 'string' || !ALLOWED_COUNTRIES.has(code),
     );
     if (refused !== -1) {
-      return allowedCountriesMessage(refused);
+      return {
+        message: allowedCountriesMessage(refused),
+        param: `shipping_address_collection[allowed_countries][${refused}]`,
+      };
     }
 
-    const taxIdFlag = (body.tax_id_collection as { enabled?: unknown })?.enabled;
-    const collectsTaxId = taxIdFlag === true || taxIdFlag === 'true';
-    const mayRename = (body.customer_update as { name?: unknown })?.name === 'auto';
-    if (collectsTaxId && body.customer && !mayRename) {
-      return (
-        'Tax ID collection requires updating business name on the customer. To enable tax ID ' +
-        'collection for an existing customer, please set `customer_update[name]` to `auto`.'
-      );
+    // Stripe checks a tax ID and works out tax against what the customer holds, so it refuses
+    // either for an existing customer unless the checkout may save what they depend on. The
+    // fake's customers hold no address, like every customer Ghost makes, so the address is
+    // always needed. Stripe checks the name first, then the address, then the shipping address.
+    // Shipping and phone collection on their own need nothing saved, so these are rules about
+    // tax rather than about collecting from a customer at all. Flags are read against `true`
+    // rather than for truthiness: form decoding delivers them as the string `"false"`, which is
+    // truthy, and refusing on that would refuse a checkout that had switched tax off.
+    const isOn = (flag: unknown) => flag === true || flag === 'true';
+    const parsed = CustomerTaxRequest.safeParse(body);
+    const taxRequest = parsed.success ? parsed.data : {};
+    const collectsTaxId = isOn(taxRequest.tax_id_collection?.enabled);
+    const automaticTax = isOn(taxRequest.automatic_tax?.enabled);
+    const mayUpdate = (field: string) => taxRequest.customer_update?.[field] === 'auto';
+    const collectsShipping = countries.length > 0;
+    if (body.customer && collectsTaxId) {
+      if (!mayUpdate('name')) {
+        return {
+          message:
+            'Tax ID collection requires updating business name on the customer. To enable tax ID ' +
+            'collection for an existing customer, please set `customer_update[name]` to `auto`.',
+        };
+      }
+      if (!mayUpdate('address')) {
+        return {
+          message:
+            'We could not find a valid address on the provided customer. To enable tax ID ' +
+            'collection, please set `customer_update[address]` to `auto`.',
+        };
+      }
+      if (collectsShipping && !mayUpdate('shipping')) {
+        return {
+          message:
+            'Tax ID collection requires updating the shipping address on the provided customer. ' +
+            'To enable tax ID collection, please set `customer_update[shipping]` to `auto`.',
+        };
+      }
+    }
+    if (body.customer && automaticTax) {
+      if (!mayUpdate('address')) {
+        return {
+          message:
+            'Automatic tax calculation in Checkout requires a valid address on the Customer. Add a ' +
+            "valid address to the Customer or set `customer_update[address]` to 'auto' to save the " +
+            'billing address entered in Checkout to the Customer.',
+        };
+      }
+      if (collectsShipping && !mayUpdate('shipping')) {
+        return {
+          message:
+            'Automatic tax calculation uses fields saved on the Customer. To collect a shipping ' +
+            "address with `automatic_tax` enabled, set `customer_update[shipping]` to 'auto' to " +
+            'save the shipping address back to the Customer.',
+        };
+      }
     }
 
     return null;
