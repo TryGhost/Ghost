@@ -52,12 +52,13 @@
     "pretest": "pnpm build:assets",
     "test": "pnpm test:unit",
     "test:watch": "vitest --reporter=default",
-    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
+    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts --project '!bullmq-*' \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts --project '!bullmq-*' \"$1\" ;; esac; }; f",
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:types && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
     "test:unit": "vitest run",
     "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
+    "test:bullmq": "vitest run -c vitest.config.db.ts --project bullmq-newsletters",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
@@ -338,6 +339,12 @@
         ]
       },
       "test:e2e": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ]
+      },
+      "test:bullmq": {
         "dependsOn": [
           "build:assets",
           "^build"

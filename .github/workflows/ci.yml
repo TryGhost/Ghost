@@ -969,6 +969,11 @@ jobs:
             pnpm nx run ghost:test:e2e
           fi
 
+      # The newsletter suites on the BullMQ jobs backend, against the redis
+      # service above. The full e2e suite does not run on BullMQ yet.
+      - name: Newsletter tests (BullMQ jobs backend)
+        run: pnpm nx run ghost:test:bullmq
+
       - name: Start VersityGW for integration tests
         run: |
           docker run -d --rm --name versitygw \

@@ -11,10 +11,10 @@ const boot = require('../../core/boot');
 const models = require('../../core/server/models');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
-const jobsService = require('../../core/server/services/jobs-service');
 
 // Other Test Utilities
 const configUtils = require('./config-utils');
+const { resetJobsBackend } = require('./jobs-backend-utils');
 const dbUtils = require('./db-utils');
 const urlServiceUtils = require('./url-service-utils');
 const redirects = require('./redirects');
@@ -109,7 +109,7 @@ const prepareContentFolder = async (options) => {
 const _startGhost = async (options) => {
   // Stop the server -- noops if it's not running
   await stopGhost();
-  await jobsService.shutdown();
+  await resetJobsBackend();
 
   urlServiceUtils.resetRouters();
 

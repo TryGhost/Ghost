@@ -5,6 +5,7 @@ const models = require('../../core/server/models');
 const sinon = require('sinon');
 const escapeRegExp = require('lodash/escapeRegExp');
 const assert = require('node:assert/strict');
+const _ = require('lodash');
 const { assertMatchSnapshot } = require('./assertions');
 
 const getDefaultNewsletter = async function () {
@@ -89,6 +90,74 @@ async function waitForNoActiveSends() {
   } catch (err) {
     const stuck = active.map((email) => `${email.id}=${email.get('status')}`).join(', ');
     throw new Error(`Timed out waiting for newsletter sends to finish: ${stuck} (${err.message})`);
+  }
+}
+
+const accepted = { id: 'stubbed-email-id' };
+
+/**
+ * Records every Mailgun call with its recipients and how it ended. A test sets
+ * `respond` to make the stub slow, hang or fail.
+ */
+function mockRecordingMailgun() {
+  const mailgun = {
+    calls: [],
+    respond: async () => accepted,
+  };
+  mockManager.mockMailgun(async function (...args) {
+    const messageData = args[args.length - 1];
+    const call = {
+      recipients: Object.keys(JSON.parse(messageData['recipient-variables'])),
+      outcome: 'pending',
+    };
+    mailgun.calls.push(call);
+    try {
+      const response = await mailgun.respond(call);
+      call.outcome = 'accepted';
+      return response;
+    } catch (err) {
+      call.outcome = 'rejected';
+      throw err;
+    }
+  });
+  return mailgun;
+}
+
+/**
+ * The invariant every failure scenario ends on. Each recipient was sent the
+ * email at most once, counting every call Mailgun did not reject. A batch is
+ * `submitted` if and only if Mailgun accepted it, and a batch whose call never
+ * returned is left `submitting`, as an orphan.
+ */
+async function assertSendInvariant(emailId, mailgun) {
+  const sent = _.countBy(
+    mailgun.calls.filter((call) => call.outcome !== 'rejected').flatMap((call) => call.recipients),
+  );
+  for (const [recipient, count] of Object.entries(sent)) {
+    assert.equal(count, 1, `${recipient} was sent the email ${count} times`);
+  }
+
+  const batches = await models.EmailBatch.findAll({ filter: `email_id:'${emailId}'` });
+  for (const batch of batches.models) {
+    const recipients = await models.EmailRecipient.findAll({ filter: `batch_id:'${batch.id}'` });
+    const addresses = recipients.models.map((recipient) => recipient.get('member_email')).sort();
+    const outcomes = mailgun.calls
+      .filter((call) => _.isEqual([...call.recipients].sort(), addresses))
+      .map((call) => call.outcome);
+    const status = batch.get('status');
+
+    if (status === 'submitted') {
+      assert.ok(
+        outcomes.includes('accepted'),
+        `batch ${batch.id} is submitted but was never accepted`,
+      );
+    }
+    if (outcomes.includes('accepted')) {
+      assert.equal(status, 'submitted', `batch ${batch.id} was accepted but is ${status}`);
+    }
+    if (outcomes.includes('pending')) {
+      assert.equal(status, 'submitting', `batch ${batch.id} is an orphan but is ${status}`);
+    }
   }
 }
 
@@ -298,6 +367,9 @@ async function matchEmailSnapshot() {
 }
 
 module.exports = {
+  accepted,
+  mockRecordingMailgun,
+  assertSendInvariant,
   getDefaultNewsletter,
   createPublishedPostEmail,
   sendEmail,
