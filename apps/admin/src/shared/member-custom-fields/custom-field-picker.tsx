@@ -46,7 +46,6 @@ function scoreByLabel(_value: string, query: string, keywords?: string[]): numbe
 }
 
 export interface CustomFieldPickerProps {
-  id?: string;
   /** Accessible name for the control; also labels the create form. */
   label: string;
   /** The fields on offer. Callers filter to the types their context can accept. */
@@ -81,7 +80,6 @@ export interface CustomFieldPickerProps {
  * problem lands below the form and stops inviting retries.
  */
 export function CustomFieldPicker({
-  id,
   label,
   fields,
   value,
@@ -108,6 +106,9 @@ export function CustomFieldPicker({
   return (
     <Combobox
       open={open}
+      // Modal, like a select, so clicking away only closes it rather than also acting on
+      // whatever the click lands on.
+      modal
       onOpenChange={(next) => {
         // Clicking away mid-create abandons it, same as Escape below.
         if (next) {
@@ -117,7 +118,7 @@ export function CustomFieldPicker({
         }
       }}
     >
-      <ComboboxTrigger aria-invalid={invalid || undefined} aria-label={label} id={id}>
+      <ComboboxTrigger aria-invalid={invalid || undefined} aria-label={label}>
         <ComboboxValue placeholder={!selected}>
           {selected ? (
             <span className="flex items-center gap-2">

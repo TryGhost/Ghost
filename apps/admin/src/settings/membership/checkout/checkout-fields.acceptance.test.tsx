@@ -302,6 +302,84 @@ describe('Checkout settings', () => {
     await expect(page.getByRole('option', { name: 'Recipient name' })).toHaveCount(0);
   });
 
+  // No setting's name opens its dropdown, and clicking away from an open dropdown only closes it,
+  // so a click aimed between the close-set rows never acts on another one.
+  describe('with every setting showing', () => {
+    async function openEverySetting() {
+      return openCheckoutFields(
+        {
+          design: { customize: false },
+          shipping: {
+            collect: true,
+            allowed_countries: ['GB'],
+            address: { custom_field_key: 'delivery_address' },
+            name: { custom_field_key: 'recipient_name' },
+          },
+          phone: { collect: true, custom_field_key: 'contact_phone' },
+        },
+        [
+          phoneField,
+          { ...phoneField, key: KeySchema.parse('recipient_name'), name: 'Recipient name' },
+          {
+            ...phoneField,
+            key: KeySchema.parse('delivery_address'),
+            name: 'Delivery address',
+            type: 'address',
+          },
+        ],
+      );
+    }
+
+    it("opens a setting's dropdown from the dropdown only, never from its name", async () => {
+      const { modal } = await openEverySetting();
+
+      for (const setting of [
+        'Collect for',
+        'Ships to',
+        'Countries',
+        'Save address as',
+        'Save name as',
+        'Save phone as',
+      ]) {
+        await expect.element(modal.getByText(setting, { exact: true }).first()).toBeVisible();
+        const names = modal.getByText(setting, { exact: true }).all();
+        const controls = modal.getByRole('combobox', { name: setting }).all();
+        expect(names.length).toBeGreaterThan(0);
+        expect(controls).toHaveLength(names.length);
+        for (const [index, name] of names.entries()) {
+          await name.click();
+          await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+          await controls[index].click();
+          await expect.element(page.getByRole('listbox')).toBeVisible();
+          await userEvent.keyboard('{Escape}');
+          await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+        }
+      }
+    });
+
+    // Clicking away from an open dropdown only closes it, so the click can't switch on or off
+    // the part whose name it lands on.
+    it('closes an open dropdown without acting on what the click lands on', async () => {
+      const { modal } = await openEverySetting();
+      const shipping = modal.getByRole('switch', { name: 'Shipping address' });
+      // Found before a dropdown opens, which hides the rest of the page from role queries.
+      const shippingName = modal
+        .getByRole('group', { name: 'Shipping address' })
+        .getByText('Shipping address', { exact: true })
+        .element();
+
+      // Both kinds of picker: the tiers a part is collected for, and the field it's saved into.
+      for (const picker of ['Collect for', 'Save name as']) {
+        await modal.getByRole('combobox', { name: picker }).first().click();
+        await expect.element(page.getByRole('listbox')).toBeVisible();
+        await page.elementLocator(shippingName).click({ force: true });
+
+        await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+        await expect.element(shipping).toBeChecked();
+      }
+    });
+  });
+
   it('lets business buyers give a tax ID on every paid tier, with no field to choose', async () => {
     const { modal, saveApi } = await openCheckoutFields({
       design: { customize: false },
