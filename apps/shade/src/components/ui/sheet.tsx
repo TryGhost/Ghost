@@ -60,9 +60,11 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = 'right', className, children, ...props }, ref) => (
+  // The overlay and the panel are the portal's own children, so it waits for their slide and
+  // fade before unmounting; inside a plain wrapper they vanished the instant they closed.
   <SheetPortal>
-    <ShadeScope>
-      <SheetOverlay />
+    <SheetOverlay />
+    <ShadeScope asChild>
       <SheetPrimitive.Content
         ref={ref}
         className={cn(sheetVariants({ side }), className)}

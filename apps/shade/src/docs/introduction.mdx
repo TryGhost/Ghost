@@ -91,7 +91,8 @@ Pure appearance differences belong in shared recipes and scoped tokens.
 `isAdmin7` enabled, outline chrome otherwise. Avoid using control shape as a
 proxy for behavior.
 
-Portals carry `data-admin7` through Shade's internal scope wrapper. Keep
+Portals carry `data-admin7` through Shade's internal scope, a wrapper or, for
+an animated layer such as a popover or sheet, the layer itself. Keep
 scope attributes off `document.body`: independently mounted surfaces must not
 change one another's menus or dialogs. Shade previews and standalone ActivityPub
 default to the new appearance. Embedded ActivityPub inherits Admin's computed
