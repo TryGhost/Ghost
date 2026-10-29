@@ -59,18 +59,17 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-const getFreeOrPaidForTriggerType = (
-  triggerType: AutomationTriggerRuleDefinition['trigger_type'],
+const getFreeOrPaidForTriggerRule = (
+  rule: Readonly<AutomationTriggerRuleDefinition>,
 ): 'free' | 'paid' => {
+  const triggerType = rule.trigger_type;
   switch (triggerType) {
     case 'free_signup':
       return 'free';
     case 'paid_subscription_started':
       return 'paid';
     case 'paid_subscription_changed':
-      throw new errors.InternalServerError({
-        message: `Unexpected automation trigger type: ${triggerType}`,
-      });
+      return rule.scope === 'free' ? 'free' : 'paid';
     default: {
       const _exhaustive: never = triggerType;
       throw new errors.InternalServerError({
@@ -84,7 +83,7 @@ const doesMemberMatchTriggerRuleStatus = (
   member: MemberModel,
   rule: Readonly<AutomationTriggerRuleDefinition>,
 ): boolean => {
-  const expectedFreeOrPaid = getFreeOrPaidForTriggerType(rule.trigger_type);
+  const expectedFreeOrPaid = getFreeOrPaidForTriggerRule(rule);
   const actualMemberStatus = member.get('status');
   switch (expectedFreeOrPaid) {
     case 'free':
@@ -115,11 +114,10 @@ const doesMemberMatchTriggerRuleScope = (
   switch (rule.scope) {
     case null:
     case 'any_paid_tier':
+    case 'free':
       return true;
     case 'specific_paid_tier':
       return member.related('products').models.some((tier) => tier.id === rule.product_id);
-    case 'free':
-      throw new errors.InternalServerError({ message: `Unexpected rule: ${rule}` });
     default: {
       const _exhaustive: never = rule;
       throw new errors.InternalServerError({ message: `Unexpected rule: ${_exhaustive}` });
@@ -215,10 +213,12 @@ const processStep = async ({
     return null;
   }
 
-  const rules = step.automation_trigger_rules;
+  // For paid_subscription_changed triggers, only the destination rules determine whether the run continues.
+  // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
+  const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
 
   const memberRelationsToLoad = ['newsletters'];
-  if (rules.some((rule) => rule.scope === 'specific_paid_tier')) {
+  if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
   }
   const member = (await Member.findOne(
@@ -244,9 +244,9 @@ const processStep = async ({
   }
 
   // The member exists, but do they still match the trigger rules for this automation?
-  let matchingRule: (typeof rules)[number] | undefined;
+  let matchingRule: (typeof rulesToCheck)[number] | undefined;
   let stillMatchesStatus = false;
-  for (const rule of rules) {
+  for (const rule of rulesToCheck) {
     if (!doesMemberMatchTriggerRuleStatus(member, rule)) {
       continue;
     }
@@ -264,7 +264,7 @@ const processStep = async ({
     return null;
   }
 
-  const memberStatus = getFreeOrPaidForTriggerType(matchingRule.trigger_type);
+  const memberStatus = getFreeOrPaidForTriggerRule(matchingRule);
   let nextReadyAt: Date | null = null;
 
   try {
