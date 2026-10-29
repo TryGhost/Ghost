@@ -59,6 +59,7 @@
     "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
     "test:bullmq": "vitest run -c vitest.config.db.ts --project bullmq-newsletters",
+    "test:bullmq:scenarios": "vitest run -c vitest.config.db.ts --project bullmq-scenarios && vitest run -c vitest.config.db.ts --project bullmq-scenarios-outbox-off",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
@@ -345,6 +346,12 @@
         ]
       },
       "test:bullmq": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ]
+      },
+      "test:bullmq:scenarios": {
         "dependsOn": [
           "build:assets",
           "^build"
