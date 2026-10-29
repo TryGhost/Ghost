@@ -7,7 +7,6 @@ import {
   getErrorMessage,
 } from '@tryghost/admin-x-framework/errors';
 import {
-  Button,
   Combobox,
   ComboboxContent,
   ComboboxTrigger,
@@ -18,26 +17,19 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   commandDefaultFilter,
 } from '@tryghost/shade/components';
-import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-field-type-option';
+import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   type MemberCustomField,
-  type PlainFieldType,
+  type NewMemberCustomField,
   useCreateMemberCustomField,
+  userTypeForFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { FieldType } from '@tryghost/metafield-types/structure';
+import { useRef, useState } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useState } from 'react';
 
 // cmdk scores an item's value and keywords as one joined string, and a match may run from
 // one into the other. Identity here is the field key; the name is the keyword, and only the
@@ -47,7 +39,7 @@ function scoreByLabel(_value: string, query: string, keywords?: string[]): numbe
 }
 
 export interface CustomFieldPickerProps {
-  /** Accessible name for the control; also labels the create form. */
+  /** Accessible name for the control. */
   label: string;
   /** The fields on offer. Callers filter to the types their context can accept. */
   fields: MemberCustomField[];
@@ -56,12 +48,12 @@ export interface CustomFieldPickerProps {
   invalid?: boolean;
   onChange: (key: string) => void;
   /**
-   * The types a field created from this picker may have: one entry pins the type and the
-   * create form asks only for a name; several show a type choice among exactly these.
+   * The types a field created from this picker may have: one entry pins the type, which the
+   * create form still shows, disabled; several offer a choice among exactly these.
    * Keep it within the types `fields` is filtered by — a creation outside that range
    * would make a field this picker then refuses to list. Omit to hide the create action.
    */
-  createTypes?: PlainFieldType[];
+  createTypes?: FieldType[];
 }
 
 /**
@@ -73,12 +65,10 @@ export interface CustomFieldPickerProps {
  * which also stands in for the empty state, since a search finding nothing is the strongest
  * signal the field does not exist yet.
  *
- * Creation swaps the popover's content from the list to a small form, seeded from the
- * search text. The same floating surface, so the page never grows or reflows under it —
- * and the popover's focus handling carries over instead of being fought (the import's
- * picker mounts its form outside and pays for it in focus juggling). The refusal handling
- * follows the import mapping's: a name problem lands on the input, a ceiling or permission
- * problem lands below the form and stops inviting retries.
+ * Creation opens the popover the CSV import opens, anchored to this picker and seeded from the
+ * search text, with the types this place can use. The refusal handling follows the import
+ * mapping's: a name problem lands on the input, a ceiling or permission problem lands below the
+ * form and stops inviting retries.
  */
 export function CustomFieldPicker({
   label,
@@ -89,7 +79,14 @@ export function CustomFieldPicker({
   createTypes,
 }: CustomFieldPickerProps) {
   const [open, setOpen] = useState(false);
-  const [creating, setCreating] = useState<{ initialName: string } | null>(null);
+  // What the create popover hangs from.
+  const pickerRef = useRef<HTMLDivElement>(null);
+  // Set while the list closes to open the create popover, so it leaves focus to the popover.
+  const openingCreate = useRef(false);
+  // The create popover stays mounted and only opens and closes. Each opening is a new session,
+  // which starts its form afresh.
+  const [creating, setCreating] = useState(false);
+  const [createSession, setCreateSession] = useState({ id: 0, initialName: '' });
   const [search, setSearch] = useState('');
 
   const selected = fields.find((field) => field.key === value);
@@ -100,7 +97,6 @@ export function CustomFieldPicker({
   // the reopened list — down to just the create action when nothing matches it.
   const close = () => {
     setOpen(false);
-    setCreating(null);
     setSearch('');
   };
 
@@ -122,51 +118,30 @@ export function CustomFieldPicker({
     setCanRetry(true);
   };
 
-  // The last form's refusal was about a name that has gone with it.
-  const startCreating = (initialName: string) => {
-    clearCreateErrors();
-    setCreating({ initialName });
-  };
-
-  // The ways out of the form: back to the list, or out of the popover. Neither while its save
-  // is under way, as in the CSV import: the save chooses the field it makes, so leaving first
-  // would let it replace whatever is picked in the meantime.
+  // Not while its save is under way, as in the CSV import: the save chooses the field it makes,
+  // so leaving first would let it replace whatever is picked in the meantime.
   const leaveForm = () => {
     if (!isCreating) {
-      setCreating(null);
-    }
-  };
-  const dismiss = () => {
-    if (!isCreating) {
-      close();
+      setCreating(false);
     }
   };
 
-  const createNewField = async (name: string, type: PlainFieldType) => {
+  // The ordinary closed default. This picker only renders where the setting for opening a field
+  // to members is also available, so a publisher who wants members to fill this in can say so;
+  // nothing here has to guess on their behalf.
+  const createNewField = async (newField: NewMemberCustomField) => {
+    // Each save gets its own answer: the last attempt's refusal goes as the next one starts.
     clearCreateErrors();
-    if (!name.trim()) {
-      setNameError('Enter a name for the field');
-      return;
-    }
-
     setIsCreating(true);
     try {
-      // The ordinary closed default. This picker only renders where the setting for
-      // opening a field to members is also available, so a publisher who wants members
-      // to fill this in can say so; nothing here has to guess on their behalf.
-      const response = await createField({
-        name: name.trim(),
-        type,
-        settings: null,
-        access: { member: 'none' },
-      });
+      const response = await createField(newField);
       const field = response.members_metafields?.[0];
       if (!field) {
         setSaveError('The field was created but could not be selected. Choose it from the list.');
         setCanRetry(false);
         return;
       }
-      close();
+      setCreating(false);
       onChange(field.key);
     } catch (error) {
       const apiError = error instanceof JSONError ? error.data?.errors?.[0] : null;
@@ -194,226 +169,127 @@ export function CustomFieldPicker({
   };
 
   return (
-    <Combobox
-      open={open}
-      // Modal, like a select, so clicking away only closes it rather than also acting on
-      // whatever the click lands on.
-      modal
-      onOpenChange={(next) => {
-        // Clicking away mid-create abandons it, same as Escape below, once it isn't saving.
-        if (next) {
-          setOpen(true);
-        } else {
-          dismiss();
-        }
-      }}
-    >
-      <ComboboxTrigger aria-invalid={invalid || undefined} aria-label={label}>
-        <ComboboxValue placeholder={!selected}>
-          {selected ? (
-            <span className="flex items-center gap-2">
-              <CustomFieldIcon className="size-4 shrink-0" type={selected.type} />
-              <span className="truncate">{selected.name}</span>
-            </span>
-          ) : (
-            'Select...'
-          )}
-        </ComboboxValue>
-      </ComboboxTrigger>
-      {/* No CommandEmpty is rendered on purpose: when a search matches nothing, the
+    <>
+      <div ref={pickerRef}>
+        <Combobox
+          open={open}
+          // Modal, like a select, so clicking away only closes it rather than also acting on
+          // whatever the click lands on.
+          modal
+          onOpenChange={(next) => {
+            if (next) {
+              setOpen(true);
+            } else {
+              close();
+            }
+          }}
+        >
+          <ComboboxTrigger aria-invalid={invalid || undefined} aria-label={label}>
+            <ComboboxValue placeholder={!selected}>
+              {selected ? (
+                <span className="flex items-center gap-2">
+                  <CustomFieldIcon className="size-4 shrink-0" type={selected.type} />
+                  <span className="truncate">{selected.name}</span>
+                </span>
+              ) : (
+                'Select...'
+              )}
+            </ComboboxValue>
+          </ComboboxTrigger>
+          {/* No CommandEmpty is rendered on purpose: when a search matches nothing, the
           forceMounted create action below is the answer, and an empty-state block would
           just push it down (the CSV import's picker behaves the same way). */}
-      <ComboboxContent
-        onEscapeKeyDown={(event) => {
-          // Escape steps back: out of the form to the list, then out of the
-          // popover. Otherwise it would tear down both at once — and, worse,
-          // keep travelling to close whatever modal this sits in. Mid-save it
-          // stays put, like Cancel.
-          if (creating) {
-            event.preventDefault();
-            leaveForm();
-          }
-        }}
-      >
-        {creating && createTypes?.length ? (
-          <CreateFieldInline
-            canRetry={canRetry}
-            initialName={creating.initialName}
-            isSaving={isCreating}
-            label={label}
-            nameError={nameError}
-            saveError={saveError}
-            types={createTypes}
-            onCancel={leaveForm}
-            onEdit={clearCreateErrors}
-            onSubmit={(name, type) => void createNewField(name, type)}
-          />
-        ) : (
-          <Command filter={scoreByLabel}>
-            <CommandInput placeholder="Search fields..." value={search} onValueChange={setSearch} />
-            <CommandList>
-              {/* Not rendered at all when there are no fields: an itemless
+          <ComboboxContent
+            onCloseAutoFocus={(event) => {
+              if (openingCreate.current) {
+                openingCreate.current = false;
+                event.preventDefault();
+              }
+            }}
+          >
+            <Command filter={scoreByLabel}>
+              <CommandInput
+                placeholder="Search fields..."
+                value={search}
+                onValueChange={setSearch}
+              />
+              <CommandList>
+                {/* Not rendered at all when there are no fields: an itemless
                                 group still paints its padding, which stood as a blank band
                                 between the search box and the create action. cmdk hides
                                 the group by itself in the other empty case, a search that
                                 filters every field out. */}
-              {fields.length > 0 && (
-                <CommandGroup className="p-0">
-                  {fields.map((field) => (
-                    <CommandItem
-                      key={field.key}
-                      keywords={[field.name]}
-                      value={field.key}
-                      onSelect={() => {
-                        close();
-                        onChange(field.key);
-                      }}
-                    >
-                      <CustomFieldIcon className="size-4" type={field.type} />
-                      <span className="truncate">{field.name}</span>
-                      {value === field.key && <CommandCheck />}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-              {/* A row of the list rather than a footer, exactly as the CSV
+                {fields.length > 0 && (
+                  <CommandGroup className="p-0">
+                    {fields.map((field) => (
+                      <CommandItem
+                        key={field.key}
+                        keywords={[field.name]}
+                        value={field.key}
+                        onSelect={() => {
+                          close();
+                          onChange(field.key);
+                        }}
+                      >
+                        <CustomFieldIcon className="size-4" type={field.type} />
+                        <span className="truncate">{field.name}</span>
+                        {value === field.key && <CommandCheck />}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+                {/* A row of the list rather than a footer, exactly as the CSV
                                 import draws it: it scrolls with the fields, the arrow keys
                                 reach it, and when a search matches nothing it is the one
                                 item left — cmdk highlights it and Enter creates. Its own
                                 group because forceMount on a group pins every item in it. */}
-              {canCreate && (
-                <CommandGroup className="p-0" forceMount>
-                  <CommandItem
-                    className="font-semibold text-green"
-                    value="__create-custom-field__"
-                    forceMount
-                    onSelect={() => startCreating(search.trim())}
-                  >
-                    <LucideIcon.Plus className="size-4" />
-                    <span>Add custom field</span>
-                  </CommandItem>
-                </CommandGroup>
-              )}
-            </CommandList>
-          </Command>
-        )}
-      </ComboboxContent>
-    </Combobox>
-  );
-}
-
-/**
- * The create form the popover swaps to. One offered type pins it and the form is name-only;
- * several show a choice among exactly those. Like the import mapping's, it holds only what is
- * being typed: the picker runs the create and tells it how that went.
- */
-function CreateFieldInline({
-  canRetry,
-  initialName,
-  isSaving,
-  label,
-  nameError,
-  saveError,
-  types,
-  onCancel,
-  onEdit,
-  onSubmit,
-}: {
-  /** False once a refusal can't be argued with, so Save stops inviting the same request. */
-  canRetry: boolean;
-  initialName: string;
-  isSaving: boolean;
-  label: string;
-  /** On the name input, for a refusal the publisher can fix by typing. */
-  nameError: string | null;
-  /** Below the form, for one they can't. */
-  saveError: string | null;
-  types: PlainFieldType[];
-  onCancel: () => void;
-  /** Editing answers the last refusal, which was about what was there before. */
-  onEdit: () => void;
-  onSubmit: (name: string, type: PlainFieldType) => void;
-}) {
-  const [name, setName] = useState(initialName);
-  const [typeId, setTypeId] = useState<PlainFieldType>(types[0]);
-
-  return (
-    <div
-      className="flex flex-col gap-3 p-3"
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' && !isSaving && canRetry) {
-          event.preventDefault();
-          onSubmit(name, typeId);
-        }
-      }}
-    >
-      <Field data-invalid={Boolean(nameError) || undefined}>
-        <FieldLabel className="text-sm!" htmlFor="custom-field-picker-create-name">
-          New custom field
-        </FieldLabel>
-        <Input
-          aria-invalid={Boolean(nameError) || undefined}
-          aria-label={`New custom field for ${label}`}
-          autoComplete="off"
-          className="h-8 text-sm!"
-          id="custom-field-picker-create-name"
-          placeholder="Enter custom field name"
-          value={name}
-          autoFocus
-          onChange={(event) => {
-            setName(event.target.value);
-            onEdit();
-          }}
-        />
-        {nameError && <FieldError>{nameError}</FieldError>}
-      </Field>
-      {/* Always shown so what is being created is never a surprise; with one offered
-                type it is disabled and pre-selected, the same way the field edit modal
-                states an unchangeable type. */}
-      <Field>
-        <FieldLabel className="text-sm!">Type</FieldLabel>
-        <Select
-          disabled={types.length === 1}
-          value={typeId}
-          onValueChange={(value) => {
-            const chosen = types.find((type) => type === value);
-            if (chosen) {
-              setTypeId(chosen);
-            }
-          }}
-        >
-          <SelectTrigger aria-label="Type" className="h-8 text-sm!">
-            <SelectValue>
-              <CustomFieldTypeOption type={typeId} />
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {types.map((type) => (
-              <SelectItem key={type} value={type}>
-                <CustomFieldTypeOption type={type} />
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      <div className="flex items-center justify-end gap-2">
-        <Button disabled={isSaving} size="sm" type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          disabled={isSaving || !canRetry}
-          size="sm"
-          type="button"
-          onClick={() => onSubmit(name, typeId)}
-        >
-          {isSaving ? 'Saving' : 'Save'}
-        </Button>
+                {canCreate && (
+                  <CommandGroup className="p-0" forceMount>
+                    <CommandItem
+                      className="font-semibold text-green"
+                      value="__create-custom-field__"
+                      forceMount
+                      onSelect={() => {
+                        // The create popover takes over from the list, keeping what was
+                        // searched for.
+                        setCreateSession((session) => ({
+                          id: session.id + 1,
+                          initialName: search.trim(),
+                        }));
+                        // The last form's refusal was about a name that has gone with it.
+                        clearCreateErrors();
+                        openingCreate.current = true;
+                        setCreating(true);
+                        close();
+                      }}
+                    >
+                      <LucideIcon.Plus className="size-4" />
+                      <span>Add custom field</span>
+                    </CommandItem>
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
+          </ComboboxContent>
+        </Combobox>
       </div>
-      {saveError && (
-        <p className="text-sm text-destructive" role="alert">
-          {saveError}
-        </p>
-      )}
-    </div>
+      {createTypes?.length ? (
+        <CreateCustomFieldPopover
+          key={createSession.id}
+          anchorRef={pickerRef}
+          canRetry={canRetry}
+          initialName={createSession.initialName}
+          isSaving={isCreating}
+          nameError={nameError}
+          open={creating}
+          saveError={saveError}
+          testId="custom-field-picker-create"
+          types={createTypes.map(userTypeForFieldType)}
+          onCancel={leaveForm}
+          onEdit={clearCreateErrors}
+          onSubmit={(newField) => void createNewField(newField)}
+        />
+      ) : null}
+    </>
   );
 }

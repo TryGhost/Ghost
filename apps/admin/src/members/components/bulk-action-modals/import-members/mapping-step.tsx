@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { CreateFieldForm } from '@/members/components/bulk-action-modals/import-members/create-field-form';
+import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
   APIError,
   HostLimitError,
@@ -19,9 +19,10 @@ import {
   getErrorMessage,
 } from '@tryghost/admin-x-framework/errors';
 import {
+  type NewMemberCustomField,
   memberCustomFieldCsvColumns,
+  memberCustomFieldPlainUserTypes,
   useCreateMemberCustomField,
-  type PlainFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { matchShape } from '@tryghost/metafield-types/structure';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -31,8 +32,9 @@ import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
   MembersFieldMapping,
   columnsOf,
+  suggestedFieldName,
 } from '@/members/components/bulk-action-modals/import-members/mapping';
-import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
@@ -154,19 +156,36 @@ export function MappingStep({
     });
   }, [incomplete]);
 
-  // The column whose create form is open, shown as a row beneath that column's own. Held
-  // here rather than by the modal, which only ever forwarded it, so it clears with the
-  // table on Start over instead of outliving the file it belonged to.
-  const [createFieldForColumn, setCreateFieldForColumn] = useState<string | null>(null);
+  // The create popover: the column a field is being made for, and whether it is open. Kept once
+  // it closes, so it fades out showing that column's form, and each opening is a new session that
+  // starts its form afresh. Held here rather than by the modal, which only ever forwarded it, so
+  // it clears with the table on Start over instead of outliving the file it belonged to.
+  const [creating, setCreating] = useState<{
+    column: string;
+    session: number;
+    open: boolean;
+  } | null>(null);
+  const createFieldForColumn = creating?.open ? creating.column : null;
+  const closeCreateForm = () => setCreating((current) => current && { ...current, open: false });
+  // What the popover hangs from: the column's field button, looked up whenever the popover asks,
+  // so a button drawn afresh is the one it finds.
+  const createColumn = creating?.column;
+  const createAnchor = useMemo(
+    () => ({
+      get current() {
+        return createColumn === undefined
+          ? null
+          : (fieldTriggers.current.get(createColumn) ?? null);
+      },
+    }),
+    [createColumn],
+  );
 
   // Which row's field picker is open, and what it is filtered by. Held here rather than in
   // each picker because creating a composite has to reopen the picker it was launched from,
   // filtered to the field just made — and only one can be open at a time regardless.
   const [openPicker, setOpenPicker] = useState<{ columnKey: string; search: string } | null>(null);
 
-  // A row other than the one being answered is faded out, and is inert to match: reading as
-  // disabled while still taking clicks is a mixed signal, and it is also what kept the create
-  // form reachable for unmounting while its own request was still in flight.
   // The create lives here rather than in the form because its outcome is this step's
   // business: a scalar finishes a row's mapping, a composite reopens the picker, and a
   // refusal has to keep the form on screen to be shown in. The form asks; this answers.
@@ -215,17 +234,12 @@ export function MappingStep({
 
   // The whole create, from asking to what its answer means for the row. Named rather than
   // inlined into the form's prop: it is the step's business end, not markup.
-  const createFieldForRow = async (rowKey: string, name: string, type: PlainFieldType) => {
+  const createFieldForRow = async (rowKey: string, newField: NewMemberCustomField) => {
     clearCreateErrors();
 
     let field;
     try {
-      const response = await createField({
-        name,
-        type,
-        settings: null,
-        access: { member: 'none' },
-      });
+      const response = await createField(newField);
       field = response.members_metafields?.[0];
     } catch (error) {
       reportCreateFailure(error);
@@ -246,7 +260,7 @@ export function MappingStep({
 
     const column = columnFor(field);
     onFieldCreated(rowKey, column);
-    setCreateFieldForColumn(null);
+    closeCreateForm();
     // Creating a field for a column the import was refused over is an answer to that
     // refusal, so it clears with the others. A composite is not answered yet — its part is
     // still to choose — but the message named a column, not a part, and leaving it up would
@@ -254,9 +268,8 @@ export function MappingStep({
     setIncomplete(null);
 
     if (column) {
-      // A scalar is fully mapped now, so the form just goes; focus returns to the row
-      // rather than to the body.
-      fieldTriggers.current.get(rowKey)?.focus();
+      // A scalar is fully mapped now, so the popover just closes, and hands focus back to the
+      // row's field button.
       return;
     }
     // A composite spans several columns, so which of them this one holds is still open.
@@ -265,28 +278,29 @@ export function MappingStep({
     showPicker(rowKey, field.name);
   };
 
-  const isDimmed = (row: MappingPreviewRow) =>
-    Boolean(createFieldForColumn) && createFieldForColumn !== row.key;
-  // Locked only while a create is actually in flight — long enough that the form cannot be
-  // taken away before its own request settles, and no longer, so moving on to another column
-  // still puts a form the publisher has finished with away.
+  // Locked while the file uploads. A create in flight keeps its modal popover open, so the rows
+  // can't be reached then anyway; the check stays as a guard.
   const isRowLocked = (_row: MappingPreviewRow) => status === 'UPLOADING' || isCreating;
 
-  // Opening a row's picker puts the create form away: the publisher has moved on to another
-  // decision, and leaving it open would strand a half-filled form under someone else's
-  // dropdown. The form's own selects live inside it and are unaffected.
+  // Opening a row's picker drops whatever the last create left behind. The create popover is
+  // modal, so this only runs once it has closed, as when a composite reopens its row's picker to
+  // choose the part the new field holds.
   const showPicker = (columnKey: string, search: string) => {
-    // The refusal belonged to the form being put away. Left standing it would greet the
-    // next form, under an input nobody has touched, and a ceiling refusal would arrive
-    // with its Save already disabled.
+    // A refusal belonged to the form that was open. Left standing it would greet the next one,
+    // under an input nobody has touched, and a ceiling refusal would arrive with its Save
+    // already disabled.
     clearCreateErrors();
-    setCreateFieldForColumn(null);
+    closeCreateForm();
     setOpenPicker({ columnKey, search });
   };
 
   const showCreateForm = (columnKey: string) => {
     clearCreateErrors();
-    setCreateFieldForColumn(columnKey);
+    setCreating((current) => ({
+      column: columnKey,
+      session: (current?.session ?? 0) + 1,
+      open: true,
+    }));
   };
 
   // A target belongs to one column, so mapping it here takes it from whichever column held
@@ -312,7 +326,7 @@ export function MappingStep({
     setExcludedColumns((previous) => toggled(previous, row.key, !imported));
     setPendingColumns((previous) => toggled(previous, row.key, imported && !row.mapTo));
     if (!imported && createFieldForColumn === row.key) {
-      setCreateFieldForColumn(null);
+      closeCreateForm();
     }
   };
 
@@ -346,7 +360,7 @@ export function MappingStep({
   const hasNextRecord = Boolean(fileData[dataPreviewIndex + 1]);
 
   const columnKeys = useMemo(() => columnsOf(fileData), [fileData]);
-
+  // What the column a field is being created for holds, read once rather than on every keystroke.
   const currentlyDisplayedData: MappingPreviewRow[] = mapping
     ? columnKeys.map((key) => ({
         key,
@@ -469,57 +483,51 @@ export function MappingStep({
                   <TableBody>
                     {currentlyDisplayedData.length > 0 ? (
                       currentlyDisplayedData.map((row) => (
-                        <Fragment key={row.key}>
-                          {/* While a create form is open, the rows it doesn't concern step back, so
-                                                    the pair being worked on reads as the foreground without anything being
-                                                    covered. Opacity on the rows themselves, not a layer over them. */}
-                          {/* A row that is out of the import is tinted rather than
+                        /* A row that is out of the import is tinted rather than
                                                     faded. Alpha on the token, not opacity on the row: at
                                                     full strength it read as heavier than the rows that
                                                     matter, and fading the row instead took the field
-                                                    control's border down with it. Fading is left for the
-                                                    create form, where dropping everything back is the
-                                                    point.
+                                                    control's border down with it.
 
                                                     No row hover: Shade paints it onto each cell through
                                                     group-hover, so it is turned off there. Nothing here
                                                     responds to a row being pointed at — the controls in
                                                     it have their own hover — and the hover token is
                                                     lighter than the tint above, so on a row out of the
-                                                    import it read as the row coming back to life. */}
-                          <TableRow
+                                                    import it read as the row coming back to life. */
+                        <TableRow
+                          key={row.key}
+                          className={cn(
+                            '[&>td]:group-hover:bg-transparent',
+                            !isImported(row) && 'bg-muted/50',
+                          )}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              aria-label={`Import ${row.key}`}
+                              checked={isImported(row)}
+                              disabled={isRowLocked(row)}
+                              onCheckedChange={(checked) => setImported(row, checked === true)}
+                            />
+                          </TableCell>
+                          <TableCell
                             className={cn(
-                              'transition-opacity [&>td]:group-hover:bg-transparent',
-                              !isImported(row) && 'bg-muted/50',
-                              isDimmed(row) && 'opacity-40',
+                              'text-sm font-medium break-all',
+                              !isImported(row) && 'text-muted-foreground',
                             )}
                           >
-                            <TableCell>
-                              <Checkbox
-                                aria-label={`Import ${row.key}`}
-                                checked={isImported(row)}
-                                disabled={isRowLocked(row)}
-                                onCheckedChange={(checked) => setImported(row, checked === true)}
-                              />
-                            </TableCell>
-                            <TableCell
-                              className={cn(
-                                'text-sm font-medium break-all',
-                                !isImported(row) && 'text-muted-foreground',
-                              )}
-                            >
-                              {row.key}
-                            </TableCell>
-                            <TableCell
-                              className={cn(
-                                'text-sm break-all',
-                                (!row.value || !isImported(row)) && 'text-muted-foreground',
-                              )}
-                            >
-                              {row.value || '\u00A0'}
-                            </TableCell>
-                            <TableCell>
-                              {/* Hidden rather than unmounted for a column out of the
+                            {row.key}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              'text-sm break-all',
+                              (!row.value || !isImported(row)) && 'text-muted-foreground',
+                            )}
+                          >
+                            {row.value || '\u00A0'}
+                          </TableCell>
+                          <TableCell>
+                            {/* Hidden rather than unmounted for a column out of the
                                                         import: the control it would offer cannot be used, and a
                                                         disabled one has to be styled, faded and explained.
                                                         visibility keeps its box, so the row does not change
@@ -527,71 +535,37 @@ export function MappingStep({
                                                         tab order and out of reach of the pointer without a
                                                         second mechanism. The mapping is not lost either way —
                                                         it comes back with the row when it is selected again. */}
-                              <FieldPicker
-                                canCreateField={canCreateCustomFields}
-                                className={cn(!isImported(row) && 'invisible')}
-                                columnKey={row.key}
-                                disabled={isRowLocked(row)}
-                                invalid={incomplete?.columns.has(row.key)}
-                                open={openPicker?.columnKey === row.key}
-                                search={openPicker?.columnKey === row.key ? openPicker.search : ''}
-                                targetGroups={targetGroups}
-                                triggerRef={(node) => {
-                                  if (node) {
-                                    fieldTriggers.current.set(row.key, node);
-                                  } else {
-                                    fieldTriggers.current.delete(row.key);
-                                  }
-                                }}
-                                value={row.mapTo}
-                                onCreateField={() => showCreateForm(row.key)}
-                                onOpenChange={(next) =>
-                                  next ? showPicker(row.key, '') : setOpenPicker(null)
+                            <FieldPicker
+                              canCreateField={canCreateCustomFields}
+                              className={cn(!isImported(row) && 'invisible')}
+                              columnKey={row.key}
+                              disabled={isRowLocked(row)}
+                              invalid={incomplete?.columns.has(row.key)}
+                              open={openPicker?.columnKey === row.key}
+                              search={openPicker?.columnKey === row.key ? openPicker.search : ''}
+                              targetGroups={targetGroups}
+                              triggerRef={(node) => {
+                                if (node) {
+                                  fieldTriggers.current.set(row.key, node);
+                                } else {
+                                  fieldTriggers.current.delete(row.key);
                                 }
-                                onSearchChange={(search) =>
-                                  setOpenPicker({ columnKey: row.key, search })
-                                }
-                                onSelect={(target) => {
-                                  setIncomplete(null);
-                                  claimTarget(row, target);
-                                }}
-                              />
-                            </TableCell>
-                          </TableRow>
-                          {/* The create form is a row of the table rather than a layer over it, so it
-                                                    scrolls with the rows, needs no anchoring or collision handling, and can't
-                                                    be scrolled out from under itself. It follows the row it belongs to, which
-                                                    keeps that column's name and sample value in view while deciding. */}
-                          {createFieldForColumn === row.key && (
-                            <TableRow className="bg-transparent hover:bg-transparent">
-                              <TableCell className="p-2" colSpan={columnCount}>
-                                {/* Raised rather than floating: it reads as a surface above the table
-                                                                while remaining a row of it, so nothing has to be anchored to the
-                                                                row or repositioned when the table scrolls. */}
-                                <div className="rounded-lg border bg-surface-elevated-2 p-3 shadow-lg">
-                                  <CreateFieldForm
-                                    canRetry={canRetry}
-                                    columnKey={row.key}
-                                    isSaving={isCreating}
-                                    nameError={nameError}
-                                    saveError={saveError}
-                                    onCancel={() => {
-                                      clearCreateErrors();
-                                      setCreateFieldForColumn(null);
-                                      // Unmounting the form drops focus to the body, leaving a
-                                      // keyboard publisher to tab back from the top of the table.
-                                      fieldTriggers.current.get(row.key)?.focus();
-                                    }}
-                                    onEdit={clearCreateErrors}
-                                    onSubmit={(name, type) =>
-                                      void createFieldForRow(row.key, name, type)
-                                    }
-                                  />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </Fragment>
+                              }}
+                              value={row.mapTo}
+                              onCreateField={() => showCreateForm(row.key)}
+                              onOpenChange={(next) =>
+                                next ? showPicker(row.key, '') : setOpenPicker(null)
+                              }
+                              onSearchChange={(search) =>
+                                setOpenPicker({ columnKey: row.key, search })
+                              }
+                              onSelect={(target) => {
+                                setIncomplete(null);
+                                claimTarget(row, target);
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
                       ))
                     ) : (
                       <TableRow>
@@ -602,6 +576,29 @@ export function MappingStep({
                     )}
                   </TableBody>
                 </Table>
+                <CreateCustomFieldPopover
+                  key={creating?.session ?? 0}
+                  anchorRef={createAnchor}
+                  canRetry={canRetry}
+                  initialName={creating ? suggestedFieldName(creating.column) : ''}
+                  isSaving={isCreating}
+                  nameError={nameError}
+                  open={createFieldForColumn !== null}
+                  saveError={saveError}
+                  testId="import-create-custom-field"
+                  types={memberCustomFieldPlainUserTypes}
+                  // Focus goes back to the column's field button as the popover closes.
+                  onCancel={() => {
+                    clearCreateErrors();
+                    closeCreateForm();
+                  }}
+                  onEdit={clearCreateErrors}
+                  onSubmit={(newField) => {
+                    if (createFieldForColumn) {
+                      void createFieldForRow(createFieldForColumn, newField);
+                    }
+                  }}
+                />
               </div>
             </div>
 

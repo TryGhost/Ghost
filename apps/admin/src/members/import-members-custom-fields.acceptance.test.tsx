@@ -251,20 +251,19 @@ describe('Import members custom fields', () => {
     await expect.element(importMembersScreen.option('Nickname')).toBeVisible();
   });
 
-  it('puts the create form away when another picker is opened', async () => {
+  it('puts the create form away on Escape, leaving the import open', async () => {
     fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);
     await openMappingStep();
 
     await openCreateForm('nickname');
-    await expect.element(createForm()).toBeVisible();
+    await expect.element(createForm().getByLabelText('Name')).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
 
-    // The publisher has moved on to another decision, and a half-filled form stranded
-    // under someone else's dropdown helps nobody. `email` because a column out of the
-    // import has no control to open.
-    await fieldSelect('email').click();
-
+    // Back on the column it was opened for, which is still to answer.
     await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveFocus();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
   it('keeps its field when a column is deselected', async () => {
@@ -324,6 +323,23 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('city')).toHaveTextContent('Shipping address (City)');
   });
 
+  it('keeps a changed form on a stray Escape, and Cancel puts it away', async () => {
+    fakeCustomFieldsWorld();
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await userEvent.fill(createForm().getByLabelText('Name'), 'Nick');
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(createForm().getByLabelText('Name')).toHaveValue('Nick');
+    await expect.element(importMembersScreen.leaveConfirmationText()).not.toBeInTheDocument();
+
+    await createForm().getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+  });
+
   it('pins a name the site already uses to the name input', async () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
@@ -351,6 +367,7 @@ describe('Import members custom fields', () => {
     await expect
       .element(createForm().getByText('A custom field with this name already exists.'))
       .toBeVisible();
+    await createForm().getByRole('button', { name: 'Cancel' }).click();
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
@@ -402,6 +419,7 @@ describe('Import members custom fields', () => {
     await expect
       .element(createForm().getByText(/was created, but this column could not be mapped/))
       .toBeVisible();
+    await createForm().getByRole('button', { name: 'Cancel' }).click();
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 

@@ -136,8 +136,8 @@ export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYP
 }));
 
 /**
- * A type whose fields are set up with nothing but a name, so any form that names a field can
- * create one. A list also needs its options, which only a form that asks for them can give.
+ * A type whose fields are set up with nothing but a name and the type: no settings to give, so a
+ * value from somewhere else, such as Stripe Checkout, can be saved into one as it comes.
  */
 export type PlainFieldType = FieldTypeOfShape<'scalar' | 'record'>;
 

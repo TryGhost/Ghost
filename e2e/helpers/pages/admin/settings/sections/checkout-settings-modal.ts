@@ -129,8 +129,8 @@ export class CheckoutSettingsModal {
       await this.chooseOption(this.shipsToSelect, 'Specific countries');
       await this.pickMany(this.countriesPicker, choice.countries);
     }
-    await this.setDestination(this.addressFieldPicker, 'Save address as', choice.addressField);
-    await this.setDestination(this.nameFieldPicker, 'Save name as', choice.nameField);
+    await this.setDestination(this.addressFieldPicker, choice.addressField);
+    await this.setDestination(this.nameFieldPicker, choice.nameField);
   }
 
   async collectPhone(choice: PhoneChoice): Promise<void> {
@@ -138,7 +138,7 @@ export class CheckoutSettingsModal {
     if (choice.tiers) {
       await this.limitTiers(this.phoneTiersPicker, choice.tiers);
     }
-    await this.setDestination(this.phoneFieldPicker, 'Save phone as', choice.field);
+    await this.setDestination(this.phoneFieldPicker, choice.field);
   }
 
   /** Lets business buyers give a tax ID on these tiers or, left out, on every paid tier. */
@@ -174,18 +174,16 @@ export class CheckoutSettingsModal {
     await this.page.keyboard.press('Escape');
   }
 
-  private async setDestination(picker: Locator, label: string, field: FieldChoice): Promise<void> {
+  private async setDestination(picker: Locator, field: FieldChoice): Promise<void> {
     await picker.click();
     if ('choose' in field) {
       await this.page.getByRole('option', { name: field.choose, exact: true }).click();
       return;
     }
     await this.page.getByRole('option', { name: 'Add custom field' }).click();
-    await this.page
-      .getByRole('textbox', { name: `New custom field for ${label}` })
-      .fill(field.create);
-    // The open picker hides the rest of the page, so its Save is the only one to be found.
-    await this.page.getByRole('button', { name: 'Save', exact: true }).click();
+    const form = this.page.getByRole('dialog', { name: 'New custom field' });
+    await form.getByLabel('Name').fill(field.create);
+    await form.getByRole('button', { name: 'Save', exact: true }).click();
     await picker.filter({ hasText: field.create }).waitFor();
   }
 

@@ -1,10 +1,6 @@
 import { matchShape, optionText } from '@tryghost/metafield-types/structure';
 import type { FieldType, TypedSettings } from '@tryghost/metafield-types';
 
-/** Whether a type's fields are set up with options a form has to ask for. */
-export const isListType = (type: FieldType): boolean =>
-  matchShape(type, { scalar: () => false, record: () => false, set: () => true });
-
 /** A list's options as a form holds them, with what is typed but not yet added among them. */
 export const listSettings = (state: {
   options: string[];
