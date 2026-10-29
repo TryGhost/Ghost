@@ -51,7 +51,8 @@ const serving =
   (url) => ({
     success: true,
     url: finalUrl ?? url,
-    text: typeof body === 'string' ? body : JSON.stringify(body),
+    body: Buffer.from(typeof body === 'string' ? body : JSON.stringify(body)),
+    contentType: 'application/json',
   });
 
 const failing =

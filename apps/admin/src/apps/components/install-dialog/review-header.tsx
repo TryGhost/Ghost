@@ -56,7 +56,7 @@ export const ReviewHeader: React.FC<{
       {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
           overlaps the band; its ring matches the dialog to cut out the band. */}
       <DialogHeader className="-mt-14 items-start">
-        <AppIcon className="ring-4 ring-surface-elevated-2" manifest={manifest} size="xl" />
+        <AppIcon app={preview} className="ring-4 ring-surface-elevated-2" size="xl" />
         <DialogTitle className="mt-3">{title}</DialogTitle>
         <AppIdentity preview={preview} />
         <DialogDescription className="mt-2">{description}</DialogDescription>

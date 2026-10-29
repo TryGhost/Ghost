@@ -76,7 +76,6 @@ export function createManifestFetcher({
   logging: Pick<GhostLogger, 'warn'>;
 }): FetchManifest {
   return async function fetchManifest(manifestUrl) {
-    // The text is decoded as UTF-8, which is what JSON should use.
     const fetched = await fetchFromApp(manifestUrl, {
       accept: 'application/json',
       maxBytes: MANIFEST_MAX_BYTES,
@@ -85,8 +84,9 @@ export function createManifestFetcher({
       throw manifestError(manifestUrl, fetched.failure, logging);
     }
 
-    // A byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
-    const { text } = fetched;
+    // Decoded as UTF-8, which is what JSON should use, whatever charset the app names. A
+    // byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
+    const text = fetched.body.toString('utf8');
     try {
       return {
         url: fetched.url,

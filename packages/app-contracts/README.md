@@ -50,9 +50,12 @@ An app describes itself to Ghost in a JSON manifest served next to the app:
   ever linked to.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
-  `{ "url": "/icon.svg" }`, an SVG the app serves, which Ghost shows as an image
-  and never inlines. A name Admin does not know is not rejected here; Admin falls
-  back to a default icon.
+  `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG, JPEG, GIF or
+  WebP, at most 16 KB. Ghost keeps a copy of the image with each manifest
+  version it stores, and only shows that copy, as an image. An image replaced at
+  the same URL shows the next time the manifest changes, even by a field that
+  needs no approval. A name Admin does not know is not rejected here;
+  Admin falls back to a default icon.
 - URLs may be relative. They resolve against the URL the manifest was fetched
   from, so one manifest works on `localhost`, behind a tunnel and in production.
 - `surfaces` lists what the app asks for. Only `admin_page` exists today, at
@@ -101,8 +104,8 @@ const manifest = AppManifestSchema.parse(JSON.parse(stored));
 
 `ghostUrls` is required and cannot be empty. Nothing Ghost loads from a manifest
 may point at the site's own origin or Admin's: a surface there would not be
-contained by its sandbox, and an icon there would make Admin request a Ghost URL
-of the app's choosing. The author's link is exempt, since Ghost never loads it.
+contained by its sandbox, and an icon there would let the app make Ghost request
+any of the site's own URLs. The author's link is exempt, since Ghost never loads it.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;

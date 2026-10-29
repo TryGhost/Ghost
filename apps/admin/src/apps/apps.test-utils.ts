@@ -27,6 +27,16 @@ export const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => (
   ...overrides,
 });
 
+export const ICON_URL = 'https://podcast.example.com/icon.svg';
+const ICON_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 2h20v20H2z"></path></svg>';
+/** The copy of an app's icon that Ghost stores. */
+export const ICON_DATA_URL = `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
+
+/** The `src` of every image in `container`. */
+export const imageSources = (container: Element) =>
+  [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'));
+
 export const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation => ({
   id: 'installation-1',
   app_id: 'com.example.podcast',
@@ -34,6 +44,7 @@ export const installation = (overrides: Partial<AppInstallation> = {}): AppInsta
   revision: 0,
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
+  icon_data_url: null,
   created_at: '2026-10-01T10:00:00.000Z',
   updated_at: '2026-10-01T10:00:00.000Z',
   ...overrides,
