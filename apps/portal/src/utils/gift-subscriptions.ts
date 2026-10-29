@@ -1,3 +1,5 @@
+import { isInviteOnly } from './helpers';
+
 // Must match the server-owned catalogue in
 // ghost/core/server/services/members/members-api/utils/gift-checkout-offer.js
 // until later customization work makes durations server-provided
@@ -44,6 +46,7 @@ export interface Site {
   icon?: string;
   timezone?: string;
   paid_members_enabled?: boolean;
+  members_signup_access?: string;
   portal_plans?: PortalPlan[];
   portal_default_plan?: PortalDefaultPlan;
   portal_products?: string[];
@@ -135,8 +138,14 @@ export function getAvailableGiftDurations({ site }: { site: Site | null }): Gift
   );
 }
 
+// Invite-only sites block new members, so a gift recipient who isn't already a member couldn't
+// join to redeem. They get the invite-only message instead of gifts.
+export function signupAccessAllowsGifts({ site }: { site: Site | null }): boolean {
+  return !isInviteOnly({ site: site ?? undefined });
+}
+
 function canShowGiftPromotion({ site }: { site: Site | null }): boolean {
-  return getAvailableGiftDurations({ site }).length > 0;
+  return signupAccessAllowsGifts({ site }) && getAvailableGiftDurations({ site }).length > 0;
 }
 
 export function canShowSignupGiftPromotion({ site }: { site: Site | null }): boolean {
