@@ -46,7 +46,11 @@ describe('WebhookController', function () {
 
     await controller.handle(req, res);
 
-    sinon.assert.calledWithMatch(logging.error, /2025-08-27\.basil.*expects 2020-08-27/);
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'stripe.webhook.api_version_mismatch' },
+      api_version: '2025-08-27.basil',
+      expected_api_version: '2020-08-27',
+    });
     sinon.assert.calledOnce(deps.chargeRefundedEventService.handleEvent);
     sinon.assert.calledWith(res.writeHead, 200);
   });
