@@ -19,21 +19,22 @@ const serialize = createSerialize({
 });
 
 // Mocked internals
-const tiersService = require('../../../../../core/server/services/tiers');
+const tiersService = require('../../../../../core/server/services/tiers').default;
 
 const { fixtureManager } = require('../../../../utils/e2e-framework');
 
 describe('WebhookService - Serialize', function () {
   beforeEach(function () {
-    tiersService.api = {
-      browse() {
-        return {};
+    sinon.stub(tiersService, 'service').get(() => ({
+      api: {
+        browse() {
+          return {};
+        },
       },
-    };
+    }));
   });
 
   afterEach(function () {
-    tiersService.api = null;
     sinon.restore();
   });
 

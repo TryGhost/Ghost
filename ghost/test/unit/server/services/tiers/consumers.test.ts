@@ -5,7 +5,7 @@ const DomainEvents = require('@tryghost/domain-events');
 // Load the real model registry before substituting the database connection.
 require('../../../../../core/server/models');
 const db = require('../../../../../core/server/data/db');
-const tiers = require('../../../../../core/server/services/tiers');
+const tiers = require('../../../../../core/server/services/tiers').default;
 const adminTiers = require('../../../../../core/server/api/endpoints/tiers');
 const contentTiers = require('../../../../../core/server/api/endpoints/tiers-public');
 const postsSerializer = require('../../../../../core/server/api/endpoints/utils/serializers/output/posts');
@@ -44,22 +44,19 @@ function fakeTiersApi(name: string): FakeTiersApi & { failure: Error } {
 
 describe('Tiers consumers', function () {
   const sandbox = sinon.createSandbox();
-  const restores: Array<() => void> = [];
   const cached = new Map<string, NodeJS.Module | undefined>();
+
+  let publishedApi: FakeTiersApi | undefined;
 
   /** Publishes an API on the shared root, as init does, until the case ends. */
   function useTiersApi(api: FakeTiersApi) {
-    const had = Object.prototype.hasOwnProperty.call(tiers, 'api');
-    const previous = tiers.api;
-    tiers.api = api;
-    restores.push(() => {
-      if (had) {
-        tiers.api = previous;
-      } else {
-        delete tiers.api;
-      }
-    });
+    publishedApi = api;
   }
+
+  beforeEach(function () {
+    publishedApi = undefined;
+    sandbox.stub(tiers, 'service').get(() => ({ api: publishedApi }));
+  });
 
   /** Drops a module from the registry for this case, putting the original back afterwards. */
   function forget(path: string) {
@@ -71,9 +68,6 @@ describe('Tiers consumers', function () {
 
   afterEach(function () {
     sandbox.restore();
-    while (restores.length) {
-      restores.pop()!();
-    }
     for (const [path, module] of cached) {
       delete require.cache[path];
       if (module) {

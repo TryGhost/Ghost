@@ -3,13 +3,13 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 
 const DomainEvents = require('@tryghost/domain-events');
+const { IncorrectUsageError } = require('@tryghost/errors');
 const models = require('../../../../../core/server/models');
 const TierRepository = require('../../../../../core/server/services/tiers/tier-repository');
 const TiersAPI = require('../../../../../core/server/services/tiers/tiers-api');
 const TierCreatedEvent = require('../../../../../core/server/services/tiers/tier-created-event');
 
 const rootPath = require.resolve('../../../../../core/server/services/tiers');
-const servicePath = require.resolve('../../../../../core/server/services/tiers/service');
 const tiersApiPath = require.resolve('../../../../../core/server/services/tiers/tiers-api');
 
 const FREE_ID = '0000000000000000000000a1';
@@ -79,17 +79,14 @@ describe('Tiers root', function () {
   let Product: ReturnType<typeof fakeProductModel>;
   let dispatch: sinon.SinonStub;
 
-  /** A fresh root, so each case starts from an uninitialized wrapper. */
+  /** A fresh root, so each case starts uninitialized. */
   function loadRoot() {
     delete require.cache[rootPath];
-    delete require.cache[servicePath];
-    return require(rootPath);
+    return require(rootPath).default;
   }
 
   beforeEach(function () {
-    for (const path of [rootPath, servicePath]) {
-      cached.set(path, require.cache[path]);
-    }
+    cached.set(rootPath, require.cache[rootPath]);
     Product = fakeProductModel();
     sandbox.replace(models, 'Product', Product);
     dispatch = sandbox.stub(DomainEvents, 'dispatch');
@@ -106,13 +103,11 @@ describe('Tiers root', function () {
     cached.clear();
   });
 
-  it('exports one wrapper from the root and the deep service module, with nothing published or loaded before init', function () {
+  it('exports one root, with nothing published or loaded before init', function () {
     const root = loadRoot();
 
-    assert.equal(root, require(servicePath));
     assert.equal(typeof root.init, 'function');
-    assert.equal(root.repository, undefined);
-    assert.equal(root.api, undefined);
+    assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(Product.findAll);
   });
 
@@ -122,10 +117,10 @@ describe('Tiers root', function () {
     await root.init();
 
     sinon.assert.calledOnceWithExactly(Product.findAll, { withRelated: ['benefits'] });
-    assert.ok(root.repository instanceof TierRepository);
-    assert.ok(root.api instanceof TiersAPI);
+    assert.ok(root.service.repository instanceof TierRepository);
+    assert.ok(root.service.api instanceof TiersAPI);
 
-    const page = await root.api.browse();
+    const page = await root.service.api.browse();
     assert.deepEqual(
       page.data.map((tier: { name: string; benefits: string[] }) => [tier.name, tier.benefits]),
       [
@@ -136,8 +131,8 @@ describe('Tiers root', function () {
 
     // The API reads through the published repository, not a separate instance.
     const sentinel = { id: 'sentinel' };
-    const getById = sandbox.stub(root.repository, 'getById').resolves(sentinel);
-    assert.equal(await root.api.read(PAID_ID), sentinel);
+    const getById = sandbox.stub(root.service.repository, 'getById').resolves(sentinel);
+    assert.equal(await root.service.api.read(PAID_ID), sentinel);
     sinon.assert.calledOnce(getById);
     assert.equal(getById.firstCall.args[0].toHexString(), PAID_ID);
   });
@@ -152,14 +147,13 @@ describe('Tiers root', function () {
     await setImmediate();
 
     sinon.assert.calledOnce(Product.findAll);
-    assert.equal(root.repository, undefined);
-    assert.equal(root.api, undefined);
+    assert.throws(() => root.service, IncorrectUsageError);
 
     loading.resolve([paidRow]);
     await initialization;
 
-    assert.ok(root.repository);
-    const page = await root.api.browse();
+    assert.ok(root.service.repository);
+    const page = await root.service.api.browse();
     assert.deepEqual(
       page.data.map((tier: { name: string }) => tier.name),
       ['Gold'],
@@ -173,14 +167,13 @@ describe('Tiers root', function () {
 
     await assert.rejects(root.init(), (error) => error === failure);
 
-    assert.equal(root.repository, undefined);
-    assert.equal(root.api, undefined);
+    assert.throws(() => root.service, IncorrectUsageError);
 
     await root.init();
 
     sinon.assert.calledTwice(Product.findAll);
-    assert.ok(root.repository instanceof TierRepository);
-    const page = await root.api.browse();
+    assert.ok(root.service.repository instanceof TierRepository);
+    const page = await root.service.api.browse();
     assert.equal(page.data.length, 2);
   });
 
@@ -203,30 +196,30 @@ describe('Tiers root', function () {
     const root = loadRoot();
 
     await assert.rejects(root.init(), (error) => error === failure);
-    assert.equal(root.api, undefined);
+    assert.throws(() => root.service, IncorrectUsageError);
 
     await root.init();
 
     sinon.assert.calledTwice(construct);
-    assert.ok(root.api instanceof RealTiersAPI);
-    assert.equal(construct.secondCall.args[0].repository, root.repository);
+    assert.ok(root.service.api instanceof RealTiersAPI);
+    assert.equal(construct.secondCall.args[0].repository, root.service.repository);
   });
 
   it('keeps the same repository and API across later init calls without loading again', async function () {
     const root = loadRoot();
     await root.init();
-    const { repository, api } = root;
+    const { repository, api } = root.service;
 
     await root.init();
 
-    assert.equal(root.repository, repository);
-    assert.equal(root.api, api);
+    assert.equal(root.service.repository, repository);
+    assert.equal(root.service.api, api);
     sinon.assert.calledOnce(Product.findAll);
   });
 
   it('settles overlapping init calls with an API reading through the published repository', async function () {
-    // Overlapping calls are not deduplicated today: each one loads and publishes its own
-    // graph. Boot calls init once, so only the settled state is pinned here.
+    // defineService shares one pending initialization between overlapping calls; its own
+    // tests cover that. Boot calls init once, so only the settled state is pinned here.
     const loading = deferred<unknown[]>();
     Product.findAll.returns(loading.promise);
     const root = loadRoot();
@@ -237,8 +230,8 @@ describe('Tiers root', function () {
     await Promise.all([first, second]);
 
     const sentinel = { id: 'sentinel' };
-    sandbox.stub(root.repository, 'getById').resolves(sentinel);
-    assert.equal(await root.api.read(PAID_ID), sentinel);
+    sandbox.stub(root.service.repository, 'getById').resolves(sentinel);
+    assert.equal(await root.service.api.read(PAID_ID), sentinel);
   });
 
   it('generates slugs through the current Product model and saves through the one loaded at init', async function () {
@@ -252,7 +245,7 @@ describe('Tiers root', function () {
       yearlyPrice: 3000,
     };
 
-    const tier = await root.api.add(tierData);
+    const tier = await root.service.api.add(tierData);
 
     sinon.assert.calledOnceWithExactly(Product.generateSlug, Product, 'Silver', {});
     assert.equal(tier.slug, 'generated-slug');
@@ -268,7 +261,7 @@ describe('Tiers root', function () {
     // Restored with the sandbox's replacement in afterEach.
     models.Product = replacement;
 
-    const second = await root.api.add({ ...tierData, slug: 'requested' });
+    const second = await root.service.api.add({ ...tierData, slug: 'requested' });
 
     sinon.assert.calledOnceWithExactly(replacement.generateSlug, replacement, 'requested', {});
     assert.equal(second.slug, 'replacement-slug');
@@ -279,7 +272,7 @@ describe('Tiers root', function () {
   it('needs the API as the receiver of its operations', async function () {
     const root = loadRoot();
     await root.init();
-    const { browse, read } = root.api;
+    const { browse, read } = root.service.api;
 
     await assert.rejects(browse(), TypeError);
     await assert.rejects(read(PAID_ID), TypeError);

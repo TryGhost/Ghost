@@ -60,7 +60,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       },
       './server/services/email-service': { init: email, service: {} },
       './server/services/donations': { default: { init: donations } },
-      './server/services/tiers': { init: tiers },
+      './server/services/tiers': { default: { init: tiers } },
       './server/services/media-inliner': {
         init: media,
         getInstance: () => ({}),

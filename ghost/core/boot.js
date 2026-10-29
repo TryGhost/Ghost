@@ -378,7 +378,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const identityTokens = require('./server/services/identity-tokens');
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers');
+  const tiers = require('./server/services/tiers').default;
   const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;
