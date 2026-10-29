@@ -856,4 +856,279 @@ describe('Custom fields', () => {
     // moving back under Active) is server behavior, owned by the API suite.
     await expect.poll(() => customFieldsApi.requests.length).toBeGreaterThan(fetchesBeforeConfirm);
   });
+  describe('list fields', () => {
+    const animalsField: MemberCustomField = {
+      ...companyField,
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list',
+      settings: { options: ['Dog', 'Cat'], multiple: true },
+    };
+
+    // The fields the site lists, filtered or not.
+    const fakeListedFields = (fields: MemberCustomField[] = [companyField]) =>
+      fakeAdminEndpoint('GET', new RegExp('^/members/metafields/custom/(\\?|$)'), {
+        members_metafields: fields,
+      });
+
+    const openNewField = async () => {
+      await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Type').click();
+      return modal;
+    };
+
+    it('creates a list with the options typed in, in their order, taking several answers', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      // Typed but not added: saved with the rest.
+      await modal.getByLabelText('New option').fill(' Cat ');
+      await modal.getByLabelText('Allow multiple answers').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(createApi.lastRequest?.body).toEqual({
+        members_metafields: [
+          {
+            name: 'Favourite animals',
+            type: 'list',
+            settings: { options: ['Dog', 'Cat'], multiple: true },
+            access: { member: 'none' },
+          },
+        ],
+      });
+    });
+
+    it('asks for a second option before saving a list', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Dog');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(modal.getByText('Give the list at least 2 options.')).toBeVisible();
+      await expect
+        .element(modal.getByLabelText('New option'))
+        .toHaveAccessibleDescription('Give the list at least 2 options.');
+      expect(createApi.lastRequest).toBeUndefined();
+    });
+
+    it('shows a problem with one option on its row', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      await modal.getByLabelText('New option').fill('Cat | Mouse');
+      await userEvent.keyboard('{Enter}');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(modal.getByText("Options can't contain |.")).toBeVisible();
+      await expect
+        .element(modal.getByText('Cat | Mouse', { exact: true }))
+        .toHaveAttribute('aria-invalid', 'true');
+      await expect
+        .element(modal.getByRole('button', { name: 'Remove Cat | Mouse' }))
+        .toHaveAccessibleDescription("Options can't contain |.");
+      await expect
+        .element(modal.getByText('Dog', { exact: true }))
+        .not.toHaveAttribute('aria-invalid');
+      expect(createApi.lastRequest).toBeUndefined();
+    });
+
+    it('leaves text an input method is still composing in the input on Enter', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      const input = modal.getByLabelText('New option');
+      await input.fill('ねこ');
+      input
+        .element()
+        .dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true }),
+        );
+
+      await expect.element(input).toHaveValue('ねこ');
+      await expect(modal.getByRole('button', { name: /^Remove / })).toHaveCount(0);
+    });
+
+    it('shows Ghost refusing one option on that option’s row', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      fakeAdminEndpoint(
+        'POST',
+        '/members/metafields/custom/',
+        {
+          errors: [
+            {
+              type: 'ValidationError',
+              message: 'Validation error, cannot save members_metafield.',
+              context: 'Ghost refused this option.',
+              property: 'settings.options.1',
+            },
+          ],
+        },
+        { status: 422 },
+      );
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      await modal.getByLabelText('New option').fill('Cat');
+      await userEvent.keyboard('{Enter}');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(modal.getByText('Ghost refused this option.')).toBeVisible();
+      await expect
+        .element(modal.getByText('Cat', { exact: true }))
+        .toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('takes a pasted list as one option per line, skipping repeats', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      const input = modal.getByLabelText('New option');
+      await input.click();
+      const pasted = new DataTransfer();
+      pasted.setData('text/plain', 'Dog\nCat\n\nDog\nFish');
+      input
+        .element()
+        .dispatchEvent(
+          new ClipboardEvent('paste', { clipboardData: pasted, bubbles: true, cancelable: true }),
+        );
+
+      await expect.element(modal.getByRole('button', { name: 'Remove Fish' })).toBeVisible();
+      await expect(modal.getByRole('button', { name: /^Remove / })).toHaveCount(3);
+    });
+
+    it('changes the options of a list, sending them whole', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByRole('button', { name: 'Remove Dog' }).click();
+      await modal.getByLabelText('New option').fill('Fish');
+      await modal.getByRole('button', { name: 'Add option' }).click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({
+        members_metafields: [{ settings: { options: ['Cat', 'Fish'], multiple: true } }],
+      });
+    });
+
+    it('renames a list without sending its options', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [{ ...animalsField, name: 'Pets' }],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Name').fill('Pets');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Pets' }] });
+    });
+
+    // Settings saved under an older rule are kept, so an edit that leaves them alone doesn't
+    // check them against today's.
+    it('renames a list whose saved options a new list couldn’t have', async () => {
+      const oneOption: MemberCustomField = {
+        ...animalsField,
+        settings: { options: ['Dog'], multiple: true },
+      };
+      fakeSettingsScreens();
+      fakeListedFields([oneOption]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [{ ...oneOption, name: 'Pets' }],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Name').fill('Pets');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Pets' }] });
+    });
+
+    it('keeps text already typed when several lines are pasted after it', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      const input = modal.getByLabelText('New option');
+      await input.fill('Do');
+      const pasted = new DataTransfer();
+      pasted.setData('text/plain', 'g\nCat');
+      input
+        .element()
+        .dispatchEvent(
+          new ClipboardEvent('paste', { clipboardData: pasted, bubbles: true, cancelable: true }),
+        );
+
+      await expect.element(modal.getByRole('button', { name: 'Remove Dog' })).toBeVisible();
+      await expect.element(modal.getByRole('button', { name: 'Remove Cat' })).toBeVisible();
+    });
+
+    it('lists an archived list’s options with nothing to change them', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([{ ...animalsField, status: 'archived' }]);
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+
+      await expect.element(modal.getByText('Dog', { exact: true })).toBeVisible();
+      await expect(modal.getByRole('button', { name: /^(Reorder|Remove) / })).toHaveCount(0);
+      await expect(modal.getByLabelText('New option')).toHaveCount(0);
+    });
+  });
 });
