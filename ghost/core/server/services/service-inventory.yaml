@@ -9884,8 +9884,10 @@ services:
           properties; synchronous registerProvider appends without validation or deduplication.
           Custom providers run before card-type dispatch and the first result other than null
           wins. Mention results skip thumbnail storage. Class tests pin selected metadata,
-          provider lookup, YouTube rewriting, image behavior and custom-provider mention handling,
-          not the complete root shape or return contracts across all custom providers/types.
+          provider lookup, YouTube rewriting, image behavior and custom-provider mention handling.
+          Root units pin the exported OEmbedService instance, operations that reject without it
+          as their receiver, and each registered provider's result returned unchanged for every
+          card type.
         sources:
           - core/server/services/oembed/index.js
           - core/server/services/oembed/service.js
@@ -9894,6 +9896,7 @@ services:
           - core/server/services/oembed/twitter-oembed-provider.js
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
+          - test/unit/server/services/oembed/index.test.ts
       construction:
         summary: >-
           The service module is the only production constructor site found. Import obtains
@@ -9901,8 +9904,10 @@ services:
           NFT followed by Twitter with copied credentials. Construction stores dependencies;
           provider HTTP and image writes happen on calls. Dependency imports create shared request
           agents, and adapter lookup may construct a configured storage client. Deep-class tests
-          inject dependencies; the Admin HTTP suite uses the real root but does not assert this
-          construction graph, provider order, captured credentials or import-failure recovery.
+          inject dependencies. Root units pin adapter acquisition during require, the shared
+          config, request client and images adapter, NFT-then-Twitter registration, a missing
+          provider config subtree or adapter error rejecting the import with nothing cached, and
+          a later import composing afresh.
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
@@ -9912,6 +9917,7 @@ services:
           - core/server/lib/request-external.js
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
+          - test/unit/server/services/oembed/index.test.ts
           - test/e2e-api/admin/oembed.test.js
       consumers:
         summary: >-
@@ -9925,7 +9931,11 @@ services:
           Webmention tests stub root fetching to assert transient-error tagging. Recommendation
           tests inject a fake oembed service and pin fallback mapping, not the real root's mention
           payload or timeout propagation. Custom-provider results need not contain their expected
-          metadata/body; WebmentionMetadata dereferences metadata without a guard.
+          metadata/body; WebmentionMetadata dereferences metadata without a guard. Root units call
+          the Admin endpoint, real WebmentionMetadata and real recommendation fallback against
+          the shared instance as receiver. For a custom provider result WebmentionMetadata throws
+          a TypeError, pinned as current behaviour, while recommendations falls back to null
+          fields; a JSON mention page yields null metadata with its body and content type.
         sources:
           - core/server/api/endpoints/oembed.js
           - core/server/api/endpoints/utils/validators/input/oembed.js
@@ -9939,6 +9949,7 @@ services:
           - test/e2e-api/admin/oembed.test.js
           - test/unit/server/services/mentions/webmention-metadata.test.js
           - test/unit/server/services/recommendations/service/recommendation-metadata-service.test.ts
+          - test/unit/server/services/oembed/index.test.ts
       startup:
         summary: >-
           There is no init or readiness gate: importing consumers performs composition, and calls
@@ -9946,8 +9957,9 @@ services:
           service inside its defineService factory; recommendations requires oembed during init. Boot validates adapters in initCore before
           initServices but has no explicit oembed startup/drain registration. Missing provider
           config subtrees or adapter construction errors can reject the importing boot path.
-          The Admin suite boots Ghost and exercises requests; it does not characterize early
-          import, partial construction or repeat boot in the same module graph.
+          The Admin suite boots Ghost and exercises requests. Root units pin composition while
+          the module is required, import failure leaving no cached root, and repeated imports
+          returning one instance without composing again.
         sources:
           - core/boot.js
           - core/server/services/oembed/service.js
@@ -9955,6 +9967,7 @@ services:
           - core/server/services/mentions/webmention-metadata.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
+          - test/unit/server/services/oembed/index.test.ts
           - test/e2e-api/admin/oembed.test.js
       lifetime:
         summary: >-
@@ -9964,8 +9977,10 @@ services:
           concurrent calls share providers/dependencies. Bookmark page fetch and optional
           enrichment run together and allSettled waits for both; enrichment has its own abort
           deadline. Image writes get fresh UUID names rather than reuse existing files. Units
-          assert distinct keys for repeated identical bytes and fallback after slow enrichment,
-          not concurrent registration, repeated root imports or retained callers after replacement.
+          assert distinct keys for repeated identical bytes and fallback after slow enrichment.
+          Root units pin repeated imports returning one instance and image writes using the
+          import-time adapter after the adapter manager returns another; concurrent registration
+          and retained callers after replacement remain untested.
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/service.js
@@ -9974,6 +9989,7 @@ services:
           - core/server/services/recommendations/service/recommendation-metadata-service.ts
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
+          - test/unit/server/services/oembed/index.test.ts
       configuration:
         summary: >-
           Provider credentials are copied at import, while image allowlists are read per
@@ -9985,7 +10001,10 @@ services:
           Test-mode request hooks force zero retries and a 5s request timeout; production keeps
           dependency defaults unless overridden. Units pin selected timeout arguments, enrichment
           abort/fallback and configurable image extensions; they do not prove an overall deadline
-          or production retry policy. Provider tests do not assert root credential wiring.
+          or production retry policy. Root units pin credentials copied at import: a later
+          config value is not sent. Provider units pin the NFT asset request with its optional
+          key header, and the Twitter API request, query fields, bearer header, tweet_data and
+          x.com rewrite, with the provider endpoint fetched through the injected client.
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
@@ -10000,6 +10019,7 @@ services:
           - test/unit/server/services/oembed/oembed-service.test.js
           - test/unit/server/services/oembed/twitter-embed.test.js
           - test/unit/server/services/oembed/nft-oembed.test.ts
+          - test/unit/server/services/oembed/index.test.ts
       resources:
         summary: >-
           This root owns no subscription or recurring timer. Calls borrow shared HTTP/HTTPS agents,
@@ -10035,8 +10055,10 @@ services:
           its base embed. No rollback removes earlier saved files. Units pin selected rethrows,
           invalid schema/images and fallback behavior; several known-provider rejection tests use
           catch-only assertions. HTTP assertions strongly pin selected 422/error and private-address
-          failures. Missing mention contentType, custom-provider shape mismatches and NFT parsed
-          response assumptions remain source risks without reproductions in this audit.
+          failures. Root units pin a mention page without a content type becoming an
+          unknown-provider rejection with the TypeError logged, and a plain-text mention page
+          failing for insufficient metadata. NFT units pin API failure propagation; its parsed
+          response assumption remains a source risk without a reproduction.
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/extract-oembed.ts
@@ -10047,24 +10069,19 @@ services:
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
           - test/unit/server/services/oembed/twitter-embed.test.js
+          - test/unit/server/services/oembed/index.test.ts
+          - test/unit/server/services/oembed/nft-oembed.test.ts
           - test/e2e-api/admin/oembed.test.js
     unverified: []
     blockers:
       - >-
-        Pin root shape, receiver requirements, single-instance identity, provider ordering and
-        captured storage/credentials across early import, import failure and repeated boot.
-        Existing class assertions and booted requests do not protect this composition contract.
+        Custom providers bypass mention and bookmark dispatch, so WebmentionMetadata throws on
+        their results while recommendation fallback reads null fields. Root units pin this as
+        current behaviour; whether mention requests should skip custom providers is undecided.
       - >-
-        Exercise real WebmentionMetadata and recommendation fallback with every custom provider
-        and card type, missing contentType and JSON/non-HTML pages. Custom providers currently
-        bypass mention/bookmark dispatch; the custom-mention unit only asserts no thumbnail
-        processing. Characterize metadata/body compatibility before preserving or changing it.
-      - >-
-        Add provider transport/payload contracts: NFT calls Got json() then reads result.body,
-        although the installed client's shortcut returns the parsed body; its sole unit only
-        checks URL support. Twitter's success test checks fields already in the base embed, not
-        tweet_data, the optional API request or bearer header. These are source/coverage risks,
-        not demonstrated live-provider failures.
+        NFT calls Got json() then reads result.body, although the installed client's shortcut
+        returns the parsed body. Units pin its request and failure propagation, not a
+        successful payload.
       - >-
         Pin branch-specific option forwarding, rethrow classification, retries and cancellation
         across page/enrichment, known/custom providers, discovery, probes, images and storage.
