@@ -18,9 +18,7 @@ describe('shape', () => {
     expect(
       errorsOf(
         manifest({
-          surfaces: [
-            { type: 'admin_page', url: 'https://podcast.example.com/admin', label: 'Podcast' },
-          ],
+          surfaces: [{ type: 'admin_page', url: '/admin', label: 'Podcast' }],
         }),
       ),
     ).toEqual([{ path: 'surfaces[0]', message: expect.stringContaining('label') }]);
@@ -177,9 +175,9 @@ describe('manifest_url', () => {
   });
 
   it('leaves fragments in other URLs alone', () => {
-    const url = 'https://podcast.example.com/admin#/episodes';
+    const url = '/admin#/episodes';
     expect(manifestOf(manifest({ surfaces: [{ type: 'admin_page', url }] })).surfaces[0]?.url).toBe(
-      url,
+      `https://podcast.example.com${url}`,
     );
   });
 });
@@ -189,8 +187,6 @@ describe('development on localhost', () => {
 
   it.each([
     { author: { name: 'Example Audio', url: 'http://localhost:8787/about' } },
-    { icon: { url: 'http://localhost:8787/icon.svg' } },
-    { surfaces: [{ type: 'admin_page', url: 'http://localhost:8787/admin' }] },
     { manifest_url: 'http://localhost:8787/ghost-app.json' },
   ])('is required when a URL is on localhost: %o', (overrides) => {
     const input = manifest(overrides);

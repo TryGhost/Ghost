@@ -70,23 +70,25 @@ describe('compareManifests', function () {
   it('needs approval for any change to a URL, even its path', function () {
     assert.deepEqual(
       compareWith({
-        surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/dashboard' }],
+        surfaces: [{ type: 'admin_page', url: '/dashboard' }],
       }),
       {
         changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
         requiresApproval: true,
       },
     );
-    assert.equal(
-      compareWith({ icon: { url: 'https://podcast.example.com/icon-2.svg' } }).requiresApproval,
-      true,
-    );
+    assert.equal(compareWith({ icon: { url: '/icon-2.svg' } }).requiresApproval, true);
   });
 
   it('needs approval for a move even when nothing else in the manifest changes', function () {
     const manifestUrl = 'https://new.example.com/app.json';
+    // Every path resolves against the manifest's address, so they all move with it.
     assert.deepEqual(compareWith({ manifest_url: manifestUrl }, { ...options, manifestUrl }), {
-      changes: [{ path: 'manifest_url', requiresApproval: true }],
+      changes: [
+        { path: 'icon.url', requiresApproval: true },
+        { path: 'manifest_url', requiresApproval: true },
+        { path: 'surfaces[0].url', requiresApproval: true },
+      ],
       requiresApproval: true,
     });
   });

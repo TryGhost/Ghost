@@ -4,7 +4,7 @@ import { checkResolvedUrl, FRAGMENT_PROBLEM, hasFragment } from './url.ts';
 export interface ParseManifestOptions {
   /**
    * The address Ghost was asked to fetch the manifest from, before any redirects. The
-   * manifest must name exactly this as its `manifest_url`.
+   * manifest must name exactly this as its `manifest_url`, and its paths resolve against it.
    */
   manifestUrl: string;
   /**
@@ -102,7 +102,9 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     return invalid([{ path: '', message: address.error }]);
   }
 
-  const result = manifestSchema({ ghostUrls, allowLocalhost }).safeParse(input);
+  const result = manifestSchema({ ghostUrls, allowLocalhost, base: address.manifestUrl }).safeParse(
+    input,
+  );
   if (!result.success) {
     return invalid(
       result.error.issues.map((issue) => ({

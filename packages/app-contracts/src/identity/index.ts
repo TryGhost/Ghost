@@ -17,6 +17,7 @@ export {
   type Challenge,
   type ChallengeAnswer,
 } from './challenge.ts';
+export { UNCONFIRMED_APP_CODES, isUnconfirmedAppCode, type UnconfirmedAppCode } from './codes.ts';
 export { thumbprintOf, type PrivateKey } from './keys.ts';
 export {
   SIGNED_MANIFEST_TYPE,

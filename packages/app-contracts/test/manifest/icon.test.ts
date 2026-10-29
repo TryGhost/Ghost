@@ -10,9 +10,9 @@ describe('icon', () => {
   });
 
   it('or an SVG the app serves', () => {
-    expect(
-      manifestOf(manifest({ icon: { url: 'https://podcast.example.com/icons/app.svg' } })).icon,
-    ).toEqual({ url: 'https://podcast.example.com/icons/app.svg' });
+    expect(manifestOf(manifest({ icon: { url: '/icons/app.svg' } })).icon).toEqual({
+      url: 'https://podcast.example.com/icons/app.svg',
+    });
   });
 
   it('rejects names that are not in icon-name form', () => {
@@ -23,11 +23,7 @@ describe('icon', () => {
 
   it('rejects an icon with both, neither, or anything else', () => {
     const expected = [{ path: 'icon', message: 'Expected an icon with either a name or a url' }];
-    expect(
-      errorsOf(
-        manifest({ icon: { name: 'podcast', url: 'https://podcast.example.com/icon.svg' } }),
-      ),
-    ).toEqual(expected);
+    expect(errorsOf(manifest({ icon: { name: 'podcast', url: '/icon.svg' } }))).toEqual(expected);
     expect(errorsOf(manifest({ icon: {} }))).toEqual(expected);
     expect(errorsOf(manifest({ icon: '/icon.png' }))).toEqual(expected);
     expect(errorsOf(manifest({ icon: undefined }))).toEqual(expected);

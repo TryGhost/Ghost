@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import { describe, expect, it } from 'vitest';
 
-import { parseManifest, parseManifestUrl } from '../../src/manifest/index.ts';
+import { AppManifestSchema, parseManifest, parseManifestUrl } from '../../src/manifest/index.ts';
 import { BACKEND_KEY, IDENTITY_KEY, errorsOf, manifest, manifestOf, options } from './helpers.ts';
 
 describe('parseManifest', () => {
@@ -22,20 +22,11 @@ describe('parseManifest', () => {
     });
   });
 
-  it('accepts a manifest it has already parsed, unchanged', () => {
+  // What's stored holds the resolved URLs, so it's read back with the stored manifest's
+  // schema, not parsed again.
+  it('hands back a manifest the stored manifest’s schema reads unchanged', () => {
     const parsed = manifestOf(manifest({ name: ' Podcast ' }));
-    expect(manifestOf(parsed)).toEqual(parsed);
-  });
-
-  it('accepts absolute URLs on another host', () => {
-    const parsed = manifestOf(
-      manifest({
-        icon: { url: 'https://cdn.example.net/icon.svg' },
-        surfaces: [{ type: 'admin_page', url: 'https://app.example.net/ghost' }],
-      }),
-    );
-    expect(parsed.icon).toEqual({ url: 'https://cdn.example.net/icon.svg' });
-    expect(parsed.surfaces[0]?.url).toBe('https://app.example.net/ghost');
+    expect(AppManifestSchema.parse(parsed)).toEqual(parsed);
   });
 
   it('trims the name and description', () => {

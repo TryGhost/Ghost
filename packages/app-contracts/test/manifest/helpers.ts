@@ -32,8 +32,8 @@ export function manifest(overrides: Record<string, unknown> = {}) {
     description: 'Publish episodes.',
     author: { name: 'Example Audio', url: 'https://example.com' },
     accent_color: '#FF5500',
-    icon: { url: 'https://podcast.example.com/icon.svg' },
-    surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+    icon: { url: '/icon.svg' },
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
     manifest_url: 'https://podcast.example.com/ghost-app.json',
     identity_key: IDENTITY_KEY,
     backend_key: BACKEND_KEY,
@@ -44,8 +44,6 @@ export function manifest(overrides: Record<string, unknown> = {}) {
 
 export function devManifest(overrides: Record<string, unknown> = {}) {
   return manifest({
-    icon: { url: 'http://localhost:8787/icon.svg' },
-    surfaces: [{ type: 'admin_page', url: 'http://localhost:8787/admin' }],
     manifest_url: 'http://localhost:8787/ghost-app.json',
     development: true,
     ...overrides,

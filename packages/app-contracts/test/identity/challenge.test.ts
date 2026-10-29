@@ -25,7 +25,7 @@ beforeAll(async () => {
 async function answerOf(challenge: string, key = backend) {
   const result = await answerChallenge(challenge, {
     backendKey: key.privateKey,
-    origins: [ORIGIN],
+    requestUrl: `${ORIGIN}/.well-known/ghost-app/challenge`,
   });
   assert(result.success, `Expected the challenge to be answered: ${JSON.stringify(result)}`);
   return JSON.stringify(result.answer);
@@ -68,15 +68,45 @@ describe('answerChallenge', () => {
     expect(Buffer.from(payload, 'base64url').toString()).toBe(challenge);
   });
 
-  // Otherwise anyone could relay a challenge for their own origin to the real backend.
-  it('refuses a challenge for another origin', async () => {
+  // Otherwise whoever took over a name the app used to serve could relay Ghost's challenge
+  // for it to the real backend.
+  it('refuses a challenge for another origin than the one it arrived at', async () => {
     const result = await answerChallenge(createChallenge('https://evil.example'), {
       backendKey: backend.privateKey,
-      origins: [ORIGIN],
+      requestUrl: `${ORIGIN}/.well-known/ghost-app/challenge`,
     });
     expect(result).toEqual({
       success: false,
-      error: 'https://evil.example is not this backend’s origin',
+      error: `The challenge is for https://evil.example, but arrived at ${ORIGIN}`,
+    });
+  });
+
+  it('compares origins, so the port and scheme count', async () => {
+    for (const requestUrl of [
+      'https://podcast.example.com:8443/.well-known/ghost-app/challenge',
+      'http://podcast.example.com/.well-known/ghost-app/challenge',
+      new URL('https://audio.example.org/.well-known/ghost-app/challenge'),
+    ]) {
+      expect(
+        (
+          await answerChallenge(createChallenge(ORIGIN), {
+            backendKey: backend.privateKey,
+            requestUrl,
+          })
+        ).success,
+      ).toBe(false);
+    }
+  });
+
+  it('refuses when it can’t tell where the request arrived', async () => {
+    expect(
+      await answerChallenge(createChallenge(ORIGIN), {
+        backendKey: backend.privateKey,
+        requestUrl: '/.well-known/ghost-app/challenge',
+      }),
+    ).toEqual({
+      success: false,
+      error: `The challenge is for ${ORIGIN}, but arrived at an unknown origin`,
     });
   });
 
@@ -87,7 +117,7 @@ describe('answerChallenge', () => {
       JSON.stringify({ purpose: 'login', origin: ORIGIN, nonce: 'a' }),
     ]) {
       expect(
-        await answerChallenge(body, { backendKey: backend.privateKey, origins: [ORIGIN] }),
+        await answerChallenge(body, { backendKey: backend.privateKey, requestUrl: ORIGIN }),
       ).toEqual({ success: false, error: 'Expected a challenge of {purpose, origin, nonce}' });
     }
   });
