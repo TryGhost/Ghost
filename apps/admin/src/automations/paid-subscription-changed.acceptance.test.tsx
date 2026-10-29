@@ -94,7 +94,7 @@ describe('Paid subscription changed trigger', () => {
     await expect
       .element(triggerCard())
       .toHaveTextContent(
-        'Members start this automation when their subscription expires, not when they cancel.',
+        "Starts when a canceled subscription expires and the member's status changes to free.",
       );
   });
 
