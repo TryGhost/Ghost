@@ -333,6 +333,21 @@ test.describe('Content Visibility', async () => {
             expect(indicatorBox.y - videoBox.y).toBeLessThan(24);
         });
 
+        test('the visibility indicator can follow every row of a gallery', async function () {
+            const galleryImage = row => ({row, src: '/Koenig-editor-1.png', width: 1600, height: 900, fileName: 'image.png'});
+            const gallery = {type: 'gallery', version: 1, images: [0, 0, 0, 1, 1, 1].map(galleryImage), caption: '', visibility: hidden};
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), gallery)}`});
+            const card = page.locator('[data-kg-card="gallery"]');
+            await expect(card.getByTestId('visibility-indicator')).toBeVisible();
+            await expectImageLoaded(card);
+
+            // the indicator can stick anywhere within this area while the page scrolls
+            const area = await card.getByTestId('visibility-indicator').locator('xpath=../..').boundingBox();
+            const lastImage = await card.locator('figure img').last().boundingBox();
+
+            expect(area.y + area.height).toBeGreaterThanOrEqual(lastImage.y + lastImage.height - 1);
+        });
+
         test('keeps the panel inside the viewport', async function () {
             const card = page.locator('[data-kg-card="image"]');
             await card.getByTestId('visibility-indicator').click();

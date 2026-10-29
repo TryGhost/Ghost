@@ -93,7 +93,8 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
                 return;
             }
             const cardRect = card.getBoundingClientRect();
-            const mediaBottom = figure.querySelector('figcaption')?.getBoundingClientRect().top ?? media.getBoundingClientRect().bottom;
+            // the figure's first child holds all the media, e.g. every row of a gallery
+            const mediaBottom = figure.querySelector('figcaption')?.getBoundingClientRect().top ?? (figure.firstElementChild ?? media).getBoundingClientRect().bottom;
             // insets are measured inside the card's border, where the indicator is positioned
             const border = card.clientTop;
             setMediaInsets({top: media.getBoundingClientRect().top - cardRect.top - border, bottom: cardRect.bottom - mediaBottom - border});

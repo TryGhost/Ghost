@@ -1516,8 +1516,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 ({cardKey}) => {
                     // visibility lives in the card's settings panel, which is only
                     // shown in edit mode, so open the panel on its Visibility tab
-                    setShowVisibilitySettings(true);
-                    editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
+                    if (cardHasEditMode($getNodeByKey(cardKey), cardConfig)) {
+                        setShowVisibilitySettings(true);
+                        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
+                    }
                     return true;
                 },
                 COMMAND_PRIORITY_LOW
