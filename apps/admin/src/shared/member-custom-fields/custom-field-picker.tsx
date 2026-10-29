@@ -103,6 +103,73 @@ export function CustomFieldPicker({
     setSearch('');
   };
 
+  // The create lives here rather than in the form, as the CSV import's does: what its answer
+  // means, choosing the new field or showing a refusal, is the picker's business. The form asks;
+  // this answers.
+  const { mutateAsync: createField, isPending: isCreating } = useCreateMemberCustomField();
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [canRetry, setCanRetry] = useState(true);
+  const handleError = useHandleError();
+
+  const clearCreateErrors = () => {
+    setNameError(null);
+    setSaveError(null);
+    setCanRetry(true);
+  };
+
+  // The last form's refusal was about a name that has gone with it.
+  const startCreating = (initialName: string) => {
+    clearCreateErrors();
+    setCreating({ initialName });
+  };
+
+  const createNewField = async (name: string, type: MemberCustomField['type']) => {
+    if (!name.trim()) {
+      setNameError('Enter a name for the field');
+      return;
+    }
+
+    try {
+      // The ordinary closed default. This picker only renders where the setting for
+      // opening a field to members is also available, so a publisher who wants members
+      // to fill this in can say so; nothing here has to guess on their behalf.
+      const response = await createField({
+        name: name.trim(),
+        type,
+        access: { member: 'none' },
+      });
+      const field = response.members_metafields?.[0];
+      if (!field) {
+        setSaveError('The field was created but could not be selected. Choose it from the list.');
+        setCanRetry(false);
+        return;
+      }
+      close();
+      onChange(field.key);
+    } catch (error) {
+      const apiError = error instanceof JSONError ? error.data?.errors?.[0] : null;
+      if (error instanceof ValidationError && apiError?.property === 'name') {
+        setNameError(getErrorMessage(error, 'Invalid name'));
+        return;
+      }
+      // Shown inline below, so no toast — but still reported, the way the CSV import's
+      // picker does it, or unexpected failures on this path never reach error tracking.
+      if (!(error instanceof HostLimitError)) {
+        handleError(error, { withToast: false });
+      }
+      setSaveError(
+        getErrorMessage(
+          error,
+          error instanceof APIError
+            ? error.message
+            : 'Could not create the custom field, please try again.',
+        ),
+      );
+      setCanRetry(!(error instanceof HostLimitError) && apiError?.type !== 'NoPermissionError');
+    }
+  };
+
   return (
     <Combobox
       open={open}
@@ -146,14 +213,16 @@ export function CustomFieldPicker({
       >
         {creating && createTypes?.length ? (
           <CreateFieldInline
+            canRetry={canRetry}
             initialName={creating.initialName}
+            isSaving={isCreating}
             label={label}
+            nameError={nameError}
+            saveError={saveError}
             types={createTypes}
             onCancel={() => setCreating(null)}
-            onCreated={(key) => {
-              close();
-              onChange(key);
-            }}
+            onEdit={clearCreateErrors}
+            onSubmit={(name, type) => void createNewField(name, type)}
           />
         ) : (
           <Command filter={scoreByLabel}>
@@ -194,7 +263,7 @@ export function CustomFieldPicker({
                     className="font-semibold text-green"
                     value="__create-custom-field__"
                     forceMount
-                    onSelect={() => setCreating({ initialName: search.trim() })}
+                    onSelect={() => startCreating(search.trim())}
                   >
                     <LucideIcon.Plus className="size-4" />
                     <span>Add custom field</span>
@@ -211,81 +280,46 @@ export function CustomFieldPicker({
 
 /**
  * The create form the popover swaps to. One offered type pins it and the form is name-only;
- * several show a choice among exactly those. Refusal handling mirrors the import mapping.
+ * several show a choice among exactly those. Like the import mapping's, it holds only what is
+ * being typed: the picker runs the create and tells it how that went.
  */
 function CreateFieldInline({
+  canRetry,
   initialName,
+  isSaving,
   label,
+  nameError,
+  saveError,
   types,
   onCancel,
-  onCreated,
+  onEdit,
+  onSubmit,
 }: {
+  /** False once a refusal can't be argued with, so Save stops inviting the same request. */
+  canRetry: boolean;
   initialName: string;
+  isSaving: boolean;
   label: string;
+  /** On the name input, for a refusal the publisher can fix by typing. */
+  nameError: string | null;
+  /** Below the form, for one they can't. */
+  saveError: string | null;
   types: MemberCustomField['type'][];
   onCancel: () => void;
-  onCreated: (key: string) => void;
+  /** Editing answers the last refusal, which was about what was there before. */
+  onEdit: () => void;
+  onSubmit: (name: string, type: MemberCustomField['type']) => void;
 }) {
   const [name, setName] = useState(initialName);
   const [typeId, setTypeId] = useState<MemberCustomField['type']>(types[0]);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [canRetry, setCanRetry] = useState(true);
-  const { mutateAsync: createField, isPending: isCreating } = useCreateMemberCustomField();
-  const handleError = useHandleError();
-
-  const submit = async () => {
-    if (!name.trim()) {
-      setNameError('Enter a name for the field');
-      return;
-    }
-
-    try {
-      // The ordinary closed default. This picker only renders where the setting for
-      // opening a field to members is also available, so a publisher who wants members
-      // to fill this in can say so; nothing here has to guess on their behalf.
-      const response = await createField({
-        name: name.trim(),
-        type: typeId,
-        access: { member: 'none' },
-      });
-      const field = response.members_metafields?.[0];
-      if (!field) {
-        setSaveError('The field was created but could not be selected. Choose it from the list.');
-        setCanRetry(false);
-        return;
-      }
-      onCreated(field.key);
-    } catch (error) {
-      const apiError = error instanceof JSONError ? error.data?.errors?.[0] : null;
-      if (error instanceof ValidationError && apiError?.property === 'name') {
-        setNameError(getErrorMessage(error, 'Invalid name'));
-        return;
-      }
-      // Shown inline below, so no toast — but still reported, the way the CSV import's
-      // picker does it, or unexpected failures on this path never reach error tracking.
-      if (!(error instanceof HostLimitError)) {
-        handleError(error, { withToast: false });
-      }
-      setSaveError(
-        getErrorMessage(
-          error,
-          error instanceof APIError
-            ? error.message
-            : 'Could not create the custom field, please try again.',
-        ),
-      );
-      setCanRetry(!(error instanceof HostLimitError) && apiError?.type !== 'NoPermissionError');
-    }
-  };
 
   return (
     <div
       className="flex flex-col gap-3 p-3"
       onKeyDown={(event) => {
-        if (event.key === 'Enter' && !isCreating && canRetry) {
+        if (event.key === 'Enter' && !isSaving && canRetry) {
           event.preventDefault();
-          void submit();
+          onSubmit(name, typeId);
         }
       }}
     >
@@ -304,9 +338,7 @@ function CreateFieldInline({
           autoFocus
           onChange={(event) => {
             setName(event.target.value);
-            setNameError(null);
-            setSaveError(null);
-            setCanRetry(true);
+            onEdit();
           }}
         />
         {nameError && <FieldError>{nameError}</FieldError>}
@@ -341,16 +373,16 @@ function CreateFieldInline({
         </Select>
       </Field>
       <div className="flex items-center justify-end gap-2">
-        <Button disabled={isCreating} size="sm" type="button" variant="outline" onClick={onCancel}>
+        <Button disabled={isSaving} size="sm" type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
         <Button
-          disabled={isCreating || !canRetry}
+          disabled={isSaving || !canRetry}
           size="sm"
           type="button"
-          onClick={() => void submit()}
+          onClick={() => onSubmit(name, typeId)}
         >
-          {isCreating ? 'Saving' : 'Save'}
+          {isSaving ? 'Saving' : 'Save'}
         </Button>
       </div>
       {saveError && (
