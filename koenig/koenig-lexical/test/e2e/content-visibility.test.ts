@@ -204,6 +204,25 @@ test.describe('Content Visibility', async () => {
         });
     });
 
+    test.describe('Empty image placeholder', async function () {
+        test.beforeEach(async () => {
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), {...image(), src: ''})}`});
+            await focusEditor(page);
+        });
+
+        test('double-click and Cmd+Enter do not open the panel', async function () {
+            const card = page.locator('[data-kg-card="image"]');
+            await card.dblclick();
+            await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
+
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+            await expect(page.getByTestId('settings-panel')).toHaveCount(0);
+        });
+    });
+
     test.describe('Card with design and visibility settings (video)', async function () {
         test.beforeEach(async () => {
             await initialize({page, uri: `/#/?content=${content(paragraph('some text'), video({visibility: hidden}))}`});
