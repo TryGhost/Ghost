@@ -2772,8 +2772,8 @@ jobs:
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
       # which degrades to a warning if it can't confirm visibility. --tag is
-      # always passed: a prerelease must never land on `latest`, and OIDC
-      # trusted publishing can't retag afterwards.
+      # always passed: a prerelease lands on `latest` only when its manifest
+      # entry names it, and OIDC trusted publishing can't retag afterwards.
       - name: Publish to npm
         if: steps.compare.outputs.changed == 'true'
         working-directory: ${{ matrix.package_path }}
