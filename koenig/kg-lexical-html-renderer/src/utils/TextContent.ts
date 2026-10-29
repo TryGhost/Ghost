@@ -125,13 +125,17 @@ export default class TextContent {
 
                 // close tags in correct order if next node doesn't have the format
                 // links are their own formatting islands so all formats need to close before a link
+                // closing a format also closes every format nested inside it, the next node
+                // re-opens any of those it still has
                 const nextNode = remainingNodes.find(n => $isTextNode(n) || $isLinkNode(n));
-                [...openFormats].forEach((format) => {
-                    if (!nextNode || $isLinkNode(nextNode) || (nextNode instanceof TextNode && !nextNode.hasFormat(format))) {
-                        currentNode = currentNode.parentNode as HTMLElement;
-                        openFormats.pop();
-                    }
+                const firstFormatToClose = openFormats.findIndex((format) => {
+                    return !nextNode || $isLinkNode(nextNode) || (nextNode instanceof TextNode && !nextNode.hasFormat(format));
                 });
+                if (firstFormatToClose !== -1) {
+                    openFormats.splice(firstFormatToClose).forEach(() => {
+                        currentNode = currentNode.parentNode as HTMLElement;
+                    });
+                }
 
                 continue;
             }

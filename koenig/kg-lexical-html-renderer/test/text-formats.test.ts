@@ -86,6 +86,23 @@ describe('Format combinations', function () {
         input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"(","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"italic+bold","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" italic","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":")","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p>(<em><strong>italic+bold</strong> italic</em>)</p>`
     }));
+
+    // an outer format ending before an inner one used to close the inner tag and leave the outer one open
+    // previous output: <p><strong>Strong <em>Both</em><em> Italic</em></strong></p>
+    it('bold ending before italic', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Strong ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" Italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>Strong <em>Both</em></strong><em> Italic</em></p>`
+    }));
+
+    it('italic ending before bold', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"Italic ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":" Strong","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><em>Italic <strong>Both</strong></em><strong> Strong</strong></p>`
+    }));
+
+    it('middle format ending before inner format', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"A","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"B","type":"text","version":1},{"detail":0,"format":11,"mode":"normal","style":"","text":"C","type":"text","version":1},{"detail":0,"format":9,"mode":"normal","style":"","text":"D","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>A<em>B<u>C</u></em><u>D</u></strong></p>`
+    }));
 });
 
 describe('Formats with linebreaks', function () {
