@@ -12,6 +12,7 @@ import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard'
 import { ScreenTransitionProvider } from './layout/screen-transition-provider';
 import { RouteError } from './route-error';
 import { routes } from './routes.tsx';
+import { SiteTimezoneSync } from './shared/analytics/site-timezone-sync';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
@@ -61,6 +62,7 @@ export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps 
   return (
     <StrictMode>
       <FrameworkProvider {...framework}>
+        <SiteTimezoneSync />
         <RouterProvider
           errorElement={routeErrorElement}
           prefix={'/'}
