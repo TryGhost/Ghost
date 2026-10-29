@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Toast notifications powered by `sonner`. Shade mounts a `Toaster` via `ShadeProvider`, so you only call `toast(...)` where needed.',
+          'Toast notifications powered by `sonner`. Shade mounts a `Toaster` via `ShadeProvider`, so you only call `toast(...)` where needed. Import `toast` from `@tryghost/shade/components`, not from `sonner`.',
       },
     },
   },
