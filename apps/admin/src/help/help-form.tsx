@@ -58,6 +58,7 @@ export function HelpFormView({
   const { message, canSend, editMessage, send, reset } = session;
   const sending = message.status === 'sending';
   const sent = message.status === 'sent';
+  const firstName = signals.user.name.split(' ')[0] ?? '';
 
   // Opening the panel, or coming back from an article, lands in the message
   useEffect(() => {
@@ -114,7 +115,7 @@ export function HelpFormView({
                 size="lg"
                 weight="semibold"
               >
-                Tell us what you need help with
+                {firstName ? `Hi ${firstName}, how can we help?` : 'How can we help?'}
               </Text>
 
               {/* The message, with what might answer it right under it, where
