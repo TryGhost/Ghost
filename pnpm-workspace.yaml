@@ -449,6 +449,7 @@ versioning:
     - ghost
     # continuous-lane packages are versioned from npm by the publish job
     - '@tryghost/adapter-base-upgrade'
+    - '@tryghost/app-sdk'
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'

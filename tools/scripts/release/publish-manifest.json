@@ -47,5 +47,11 @@
     "path": "packages/adapters/upgrade-base",
     "versioning": "prerelease",
     "distTag": "alpha"
+  },
+  {
+    "name": "@tryghost/app-sdk",
+    "path": "packages/app-sdk",
+    "versioning": "prerelease",
+    "distTag": "alpha"
   }
 ]
