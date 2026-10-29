@@ -27,7 +27,7 @@ import { countryName, countryOptions } from '../utils/countries';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isMetafieldColumn } from '@tryghost/metafield-csv';
+export { isMetafieldColumn, splitOptions as splitListCell } from '@tryghost/metafield-csv';
 
 export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
 export { valueSchemaFor as memberCustomFieldValueSchema } from '@tryghost/metafield-types';
@@ -140,12 +140,6 @@ export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYP
  * value from somewhere else, such as Stripe Checkout, can be saved into one as it comes.
  */
 export type PlainFieldType = FieldTypeOfShape<'scalar' | 'record'>;
-
-const isPlainFieldType = (type: FieldType): type is PlainFieldType =>
-  matchShape(type, { scalar: () => true, record: () => true, set: () => false });
-
-export const memberCustomFieldPlainUserTypes: MemberCustomFieldUserType<PlainFieldType>[] =
-  FIELD_TYPE_IDS.filter(isPlainFieldType).map((id) => ({ id, ...fieldTypePresentation[id] }));
 
 export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => ({
   id: type,

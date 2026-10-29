@@ -21,7 +21,7 @@ import {
 import {
   type NewMemberCustomField,
   memberCustomFieldCsvColumns,
-  memberCustomFieldPlainUserTypes,
+  memberCustomFieldUserTypes,
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { matchShape } from '@tryghost/metafield-types/structure';
@@ -361,6 +361,15 @@ export function MappingStep({
 
   const columnKeys = useMemo(() => columnsOf(fileData), [fileData]);
   // What the column a field is being created for holds, read once rather than on every keystroke.
+  // Only while the popover is open.
+  const createColumnValues = useMemo(
+    () =>
+      createFieldForColumn === null
+        ? []
+        : fileData.map((record) => record[createFieldForColumn] ?? ''),
+    [fileData, createFieldForColumn],
+  );
+
   const currentlyDisplayedData: MappingPreviewRow[] = mapping
     ? columnKeys.map((key) => ({
         key,
@@ -580,13 +589,14 @@ export function MappingStep({
                   key={creating?.session ?? 0}
                   anchorRef={createAnchor}
                   canRetry={canRetry}
+                  cells={createColumnValues}
                   initialName={creating ? suggestedFieldName(creating.column) : ''}
                   isSaving={isCreating}
                   nameError={nameError}
                   open={createFieldForColumn !== null}
                   saveError={saveError}
                   testId="import-create-custom-field"
-                  types={memberCustomFieldPlainUserTypes}
+                  types={memberCustomFieldUserTypes}
                   // Focus goes back to the column's field button as the popover closes.
                   onCancel={() => {
                     clearCreateErrors();

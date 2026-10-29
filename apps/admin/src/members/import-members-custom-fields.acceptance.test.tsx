@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   configResponse,
@@ -130,6 +130,59 @@ async function openCreateForm(column: string) {
 }
 
 describe('Import members custom fields', () => {
+  describe('a list made from a column', () => {
+    const TOPICS_CSV =
+      'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,Cooking\n';
+
+    // A site that creates the list it is sent.
+    function fakeSiteCreatingLists() {
+      const topics: MemberCustomField = {
+        ...NICKNAME_FIELD,
+        key: KeySchema.parse('topics'),
+        name: 'Topics',
+        type: 'list',
+        settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true },
+      };
+      const fields: MemberCustomField[] = [];
+      fakeMembers([member({ name: 'Ada Lovelace' })]);
+      fakeAdminEndpoint('GET', customFieldsBrowsePath, () => ({
+        members_metafields: fields,
+      }));
+      return fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
+        fields.push(topics);
+        return { members_metafields: [topics] };
+      });
+    }
+
+    it('suggests the column’s answers as the options, and takes several when a cell has them', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+      await expect.element(form.getByRole('button', { name: 'Remove Cooking' })).toBeVisible();
+      await expect.element(form.getByLabelText('Allow multiple answers')).toBeChecked();
+      await form.getByRole('button', { name: 'Save' }).click();
+
+      await expect
+        .poll(() => createApi.lastRequest?.body)
+        .toEqual({
+          members_metafields: [
+            {
+              name: 'Topics',
+              type: 'list',
+              settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true },
+              access: { member: 'none' },
+            },
+          ],
+        });
+      await expect.element(fieldSelect('topics')).toHaveTextContent('Topics');
+    });
+  });
+
   it('creates a custom field for an unmatched column and maps the column onto it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);

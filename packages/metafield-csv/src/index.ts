@@ -96,7 +96,8 @@ export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
 const joinOptions = (options: readonly unknown[]): string =>
   options.map(toCell).join(` ${OPTION_SEPARATOR} `);
 
-const splitOptions = (cell: string): string[] =>
+/** The options a list's cell names, the way an import reads it. */
+export const splitOptions = (cell: string): string[] =>
   cell
     .split(OPTION_SEPARATOR)
     .map((option) => option.trim())

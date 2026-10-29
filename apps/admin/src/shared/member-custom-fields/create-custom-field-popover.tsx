@@ -8,6 +8,8 @@ import {
 } from '@/shared/member-custom-fields/custom-field-draft';
 import { CustomFieldForm } from '@/shared/member-custom-fields/custom-field-form';
 import { dequal } from 'dequal';
+import { matchField } from '@tryghost/metafield-types/structure';
+import { suggestedListSettings } from '@/shared/member-custom-fields/list-settings';
 import { type RefObject, useState } from 'react';
 import type {
   MemberCustomFieldUserType,
@@ -20,6 +22,9 @@ interface CreateCustomFieldPopoverProps {
   anchorRef: RefObject<HTMLElement>;
   // Where the name starts: an import's column header, or what was typed into a search.
   initialName: string;
+  // Answers already held somewhere, such as an import column's cells, which a list takes its
+  // options from.
+  cells?: readonly string[];
   // The types this place can use; one pins it.
   types: MemberCustomFieldUserType[];
   // The request in flight and what came back of it. Owned by the place, which runs the create:
@@ -40,9 +45,26 @@ interface CreateCustomFieldPopoverProps {
 }
 
 /**
+ * Suggests a list's options from the cells when a draft becomes a list with none of its own yet,
+ * and leaves every other draft as it is. A list the publisher has already set up, and switched
+ * back to, keeps what they gave it. The cells are read only then: an import column can hold
+ * thousands of rows, and most fields made from one are not lists.
+ */
+const suggestedFrom = (cells: readonly string[], draft: CustomFieldDraft): CustomFieldDraft =>
+  matchField<CustomFieldDraft, CustomFieldDraft>(draft, {
+    scalar: () => draft,
+    record: () => draft,
+    set: (list) =>
+      cells.length > 0 && list.settings.options.length === 0 && list.newOption === ''
+        ? { ...list, settings: suggestedListSettings(cells) }
+        : list,
+  });
+
+/**
  * Where a field is made from anywhere outside Settings: a popover under the control it is for,
  * with Settings' form and buttons of its own. A field made in passing starts staff-only, and is
- * opened to members in Settings.
+ * opened to members in Settings. Given cells, a list starts from the answers they hold, so a
+ * publisher reviews what is already there rather than typing it out again.
  *
  * Opens leftward from the control, which sits in the right-hand column wherever it is used, and is
  * as tall as the room below or above allows, with the form scrolling inside it once a list's
@@ -53,6 +75,7 @@ export function CreateCustomFieldPopover({
   open,
   anchorRef,
   initialName,
+  cells = [],
   types,
   isSaving,
   nameError,
@@ -63,18 +86,21 @@ export function CreateCustomFieldPopover({
   onCancel,
   testId,
 }: CreateCustomFieldPopoverProps) {
-  const [initial] = useState<CustomFieldDraft>(() => ({
-    ...newDraft(types[0].id),
-    name: initialName,
-  }));
+  const [initial] = useState<CustomFieldDraft>(() =>
+    suggestedFrom(cells, { ...newDraft(types[0].id), name: initialName }),
+  );
   const [draft, setDraft] = useState(initial);
   // The draft's own problems, found on Save. A refusal from the server comes in as nameError.
   const [errors, setErrors] = useState<CustomFieldDraftErrors>({});
   const isDirty = !dequal(draft, initial);
 
+  // A field that becomes a list with nothing set up yet is suggested its options from the cells.
   const change = (update: (current: CustomFieldDraft) => CustomFieldDraft) => {
     onEdit();
-    setDraft(update);
+    setDraft((current) => {
+      const next = update(current);
+      return next.type === current.type ? next : suggestedFrom(cells, next);
+    });
   };
 
   const submit = () => {
