@@ -7628,6 +7628,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/member-welcome-emails/service.js
+        - core/server/services/member-welcome-emails/member-welcome-email-service.js
         - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         - core/server/services/automations/welcome-email-automation-poll.ts
         - core/server/api/endpoints/automated-emails.js
@@ -7635,26 +7636,29 @@ services:
       dependencies:
         complexity: complex
         reason: >-
-          The implementation constructs mail, token, locale and rendering collaborators and reads
-          models/settings directly; the renderer also reaches into Email's helpers/templates and
-          Link Tracking. Stripe, automation pollers and API endpoints initialize it on demand.
-          Moving those dependencies to the root therefore changes when policy, templates, transport
-          and locale are acquired, and needs an explicit ready graph before callers run.
+          The implementation class and renderer now receive logging, config, labs, sentry,
+          settings, URL utils, models, the ready email-address policy, settings helpers, both
+          mailers, the verify-email template, the token provider, helper registration and a
+          link-tracking adapter through their constructors; the deep wrapper composes them on
+          first use and still initializes link tracking on demand for tracked renders. The
+          renderer keeps handlebars, fs, path, Lexical, the Koenig replacement helper and the
+          shared email-design and finalize files; the implementation keeps the delivery address
+          formatter. Stripe, automation pollers and API endpoints still initialize the wrapper
+          on demand, so the ready graph is not boot-owned yet.
         preparation:
           - >-
-            Separate construction of mailers, token/MagicLink, models and the locale binding from
-            the implementation; keep live settings and cached sender/content refresh behavior
-            distinct.
+            Move the wrapper's composition into a boot-owned root, pass link tracking's ready
+            instance instead of the on-demand adapter, and adapt Stripe, both automation pollers
+            and the endpoints to read the ready instance; preserve their explicit content-loading
+            operations rather than treating readiness as content refresh.
           - >-
-            Inject rendering, tracking and template-loading capabilities, and settle the shared
-            email parser/helper boundaries without requiring Email's ready renderer prematurely.
-          - >-
-            Add boot-owned initialization and adapt Stripe, both automation pollers and endpoints to
-            use it; preserve their explicit content-loading operations rather than treating
-            readiness as content refresh.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Settle the renderer's remaining library and shared-file imports (handlebars, fs, path,
+            Lexical, Koenig replacement strings, email-design, finalize) and the delivery address
+            formatter as exact allowances or injected capabilities.
+        reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
         sources:
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/stripe/stripe-service.js
           - core/server/services/automations/poll.ts
@@ -7687,6 +7691,7 @@ services:
         sources:
           - core/server/services/member-welcome-emails/index.js
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/constants.ts
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
@@ -7697,18 +7702,21 @@ services:
       construction:
         summary: >-
           First init creates ghost-namespace i18n, subscribes to settings.locale.edited,
-          constructs a model-backed SingleUseTokenProvider, then constructs the private
-          implementation. That initializes email-address and constructs GhostMailer,
-          MailgunClient, renderer and MagicLink. The renderer creates isolated Handlebars,
-          registers shared email helpers, synchronously reads partials/wrapper and compiles
-          the template. These implementation/renderer production constructors are reached
-          only here; tests construct the renderer directly. Lexical rendering additionally
+          initializes email-address, constructs GhostMailer, MailgunClient, a model-backed
+          SingleUseTokenProvider and the renderer, then passes them with logging, config,
+          labs, sentry, settings, URL utils, models, settings helpers and the verify-email
+          template into the implementation, which constructs only MagicLink itself. The
+          renderer creates isolated Handlebars, registers the injected email helpers,
+          synchronously reads partials/wrapper and compiles the template. These production
+          constructors are reached only in the wrapper; tests construct the renderer directly
+          with the same collaborators. Lexical rendering additionally
           initializes a shared renderer and retains a separate PostsService graph through
           its deep factory. The root unit test asserts one api across repeated init, one
           translator and one locale listener across api resets, and that the renderer uses
           the translator the wrapper built. No partial-failure test exists.
         sources:
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/members/single-use-token-provider.js
           - core/server/lib/mail/ghost-mailer.js
@@ -7798,6 +7806,7 @@ services:
           failed refresh remains unasserted.
         sources:
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
           - test/unit/server/services/member-welcome-emails/index.test.ts
@@ -7819,6 +7828,7 @@ services:
           each send. Token-limit wiring remains unasserted here.
         sources:
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/member-welcome-emails/constants.ts
           - core/server/services/email-address/email-address-service-wrapper.js
@@ -7834,9 +7844,9 @@ services:
         summary: >-
           The wrapper owns its locale subscription, i18n, implementation, cached content,
           sender options, mail transport, MagicLink and renderer/templates. Models/database,
-          email-address, settings, URL, Lexical and link-tracking are borrowed. Rendering
-          tracked content awaits link-tracking init and can persist automation redirect rows
-          before mail acceptance. Mailgun creates an SDK client per use with a 60-second
+          email-address, settings, URL, Lexical and link-tracking are borrowed. The wrapper's
+          link-tracking adapter awaits link-tracking init before tracked renders, which can
+          persist automation redirect rows before mail acceptance. Mailgun creates an SDK client per use with a 60-second
           timeout. Verification tokens are persisted in the shared token table; members
           cleanup jobs own age-based deletion. The root owns no timer/job and registers no
           mail drain, transport close or listener removal with GhostServer. Renderer unit
@@ -7844,6 +7854,7 @@ services:
           cover selected content, not tracking persistence or resource cleanup.
         sources:
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/email-service/helpers/register-helpers.js
           - core/server/lib/email-rendering/finalize.ts
@@ -7882,6 +7893,7 @@ services:
           Construction and refresh failure paths remain source-only.
         sources:
           - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/lib/mailgun/mailgun-client.js
           - core/server/lib/magic-link/magic-link.js
