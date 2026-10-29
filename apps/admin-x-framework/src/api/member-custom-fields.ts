@@ -13,6 +13,7 @@ import {
   type Leaf,
   type ListSource,
   type PartsOf,
+  type SettingsOf,
 } from '@tryghost/metafield-types';
 import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
@@ -20,6 +21,7 @@ import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { createMutation, createQuery } from '../utils/api/hooks';
 import { countryName, countryOptions } from '../utils/countries';
+import { ValidationError } from '../utils/errors';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
@@ -368,12 +370,50 @@ export const useBrowseMemberCustomFieldsIncludingArchived = (
 ) =>
   useBrowseMemberCustomFields({ ...options, searchParams: { filter: 'status:[active,archived]' } });
 
-/** Everything a new field is created from. The backend mints the key from the name. */
-export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'>;
+/** What a field of a type that takes settings is set up with, as a create or an edit sends it. */
+type SentSettings = { settings?: NonNullable<SettingsOf<FieldType>> };
 
-/** A change to one field, addressed by key. Anything omitted is left as it is. */
+/**
+ * Everything a new field is created from, with the settings its type takes, if any. The server
+ * checks the two together. The backend mints the key from the name.
+ */
+export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'> &
+  SentSettings;
+
+/**
+ * A change to one field, addressed by key. Anything omitted is left as it is. A list's settings
+ * are stated whole, its options in order.
+ */
 export type MemberCustomFieldEdit = Pick<MemberCustomField, 'key'> &
-  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>>;
+  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>> &
+  SentSettings;
+
+/**
+ * How Ghost refuses a custom field it was sent: each problem by the path of what was refused, such
+ * as `name` or `settings.options.2` for a list's third option, with its reason, which Ghost moves
+ * into `context`. It names one problem today. It's a list so that a refusal naming every problem
+ * at once needs nothing new here.
+ */
+const FieldRefusalSchema = z.object({
+  errors: z.array(z.object({ property: z.string(), context: z.string() })).min(1),
+});
+
+/** One problem with a field that was sent: where it is, by its path, and what to say about it. */
+export interface MemberCustomFieldProblem {
+  property: string;
+  message: string;
+}
+
+/** The problems a refusal names, or null for an error that isn't Ghost refusing what was sent. */
+export function memberCustomFieldProblemsOf(error: unknown): MemberCustomFieldProblem[] | null {
+  if (!(error instanceof ValidationError)) {
+    return null;
+  }
+  const refusal = FieldRefusalSchema.safeParse(error.data);
+  return refusal.success
+    ? refusal.data.errors.map(({ property, context }) => ({ property, message: context }))
+    : null;
+}
 
 export const useCreateMemberCustomField = createMutation<
   MemberCustomFieldsResponseType,
