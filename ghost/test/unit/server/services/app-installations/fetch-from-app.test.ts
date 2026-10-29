@@ -8,7 +8,7 @@ import {
 } from '../../../../../core/server/services/app-installations/fetch-from-app';
 
 const APP_URL = 'https://podcast.example.com/ghost-app.json';
-const OPTIONS = { accept: 'text/plain', maxBytes: 1024 };
+const OPTIONS = { maxBytes: 1024, headers: { accept: 'text/plain' } };
 
 function read(result: AppFetchResult) {
   if (!result.success) {
@@ -370,6 +370,129 @@ describe('createAppFetcher', function () {
       const failure = unreachable(await fetcher()(APP_URL, OPTIONS));
 
       assert.equal(failure.status, 404);
+    });
+  });
+
+  describe('posting', function () {
+    const POST = {
+      maxBytes: 1024,
+      method: 'POST' as const,
+      body: '{"nonce":"abc"}',
+      headers: { accept: 'text/plain', 'content-type': 'application/json' },
+    };
+
+    it('posts the body with its content type, and reads the answer', async function () {
+      nock('https://podcast.example.com', {
+        reqheaders: { accept: 'text/plain', 'content-type': 'application/json' },
+      })
+        .post('/challenge', '{"nonce":"abc"}')
+        .reply(200, 'Signed');
+
+      const result = await fetcher()('https://podcast.example.com/challenge', POST);
+
+      assert.deepEqual(result, {
+        success: true,
+        url: 'https://podcast.example.com/challenge',
+        text: 'Signed',
+      });
+    });
+
+    it('holds the answer to the size limit', async function () {
+      nock('https://podcast.example.com').post('/challenge').reply(200, 'x'.repeat(1025));
+
+      const result = await fetcher()('https://podcast.example.com/challenge', POST);
+
+      assert.deepEqual(result, { success: false, failure: { reason: 'too_large' } });
+    });
+  });
+
+  describe('refusing redirects', function () {
+    const NO_REDIRECTS = { ...OPTIONS, redirect: 'error' as const };
+
+    function refused(result: AppFetchResult) {
+      if (result.success || result.failure.reason !== 'redirect_refused') {
+        assert.fail(`Expected the redirect to be refused, not ${JSON.stringify(result)}`);
+      }
+      return result.failure;
+    }
+
+    it('reads a URL that doesn’t redirect', async function () {
+      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, 'Hello');
+
+      const result = await fetcher()(APP_URL, NO_REDIRECTS);
+
+      assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+    });
+
+    it.each([301, 302, 303, 307, 308])(
+      'refuses a %i, with its status, without following it',
+      async function (status) {
+        nock('https://podcast.example.com')
+          .get('/ghost-app.json')
+          .reply(status, '', { location: '/v2/ghost-app.json' });
+        const target = nock('https://podcast.example.com')
+          .get('/v2/ghost-app.json')
+          .reply(200, 'Hello');
+
+        const failure = refused(await fetcher()(APP_URL, NO_REDIRECTS));
+
+        assert.deepEqual(failure, { reason: 'redirect_refused', status });
+        assert.equal(target.isDone(), false);
+      },
+    );
+
+    it('refuses a redirect to another host without following it', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
+      const target = nock('https://elsewhere.example.net').get('/ghost-app.json').reply(200);
+
+      const failure = refused(await fetcher()(APP_URL, NO_REDIRECTS));
+
+      assert.deepEqual(failure, { reason: 'redirect_refused', status: 302 });
+      assert.equal(target.isDone(), false);
+    });
+
+    it('refuses a redirect whose Location isn’t a URL', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location: 'http://[' });
+
+      const failure = refused(await fetcher()(APP_URL, NO_REDIRECTS));
+
+      assert.deepEqual(failure, { reason: 'redirect_refused', status: 302 });
+    });
+
+    it('refuses a redirect larger than the size limit, with its status', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, 'x'.repeat(1025), { location: '/v2/ghost-app.json' });
+
+      const failure = refused(await fetcher()(APP_URL, NO_REDIRECTS));
+
+      assert.deepEqual(failure, { reason: 'redirect_refused', status: 302 });
+    });
+
+    it('posts without following a redirect, as a challenge does', async function () {
+      nock('https://podcast.example.com', {
+        reqheaders: { accept: 'text/plain', 'content-type': 'application/json' },
+      })
+        .post('/challenge', '{"nonce":"abc"}')
+        .reply(307, '', { location: '/v2/challenge' });
+      const target = nock('https://podcast.example.com').post('/v2/challenge').reply(200);
+
+      const failure = refused(
+        await fetcher()('https://podcast.example.com/challenge', {
+          maxBytes: 1024,
+          method: 'POST',
+          body: '{"nonce":"abc"}',
+          headers: { accept: 'text/plain', 'content-type': 'application/json' },
+          redirect: 'error',
+        }),
+      );
+
+      assert.deepEqual(failure, { reason: 'redirect_refused', status: 307 });
+      assert.equal(target.isDone(), false);
     });
   });
 
