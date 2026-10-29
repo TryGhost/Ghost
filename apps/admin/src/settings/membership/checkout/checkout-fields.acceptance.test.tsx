@@ -232,6 +232,68 @@ describe('Checkout settings', () => {
     await expect.element(form.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  // Each save gets its own answer: the last attempt's refusal goes as the next save starts, rather
+  // than sitting under "Saving" or beside the new answer.
+  it('shows only the latest refusal when a new field is saved again', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      { errors: [{ message: 'Internal server error', type: 'InternalServerError' }] },
+      { status: 500 },
+    );
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(
+      page.getByRole('textbox', { name: 'New custom field for Save phone as' }),
+      'Contact phone',
+    );
+    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    await form.getByRole('button', { name: 'Save' }).click();
+    // Any refusal will do, so the test doesn't depend on the server's wording.
+    await expect.element(form.getByRole('alert')).toBeVisible();
+
+    let finishSaving = () => {};
+    const saving = new Promise<void>((resolve) => {
+      finishSaving = resolve;
+    });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => finishSaving());
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      async () => {
+        await saving;
+        return {
+          errors: [
+            {
+              message: 'Validation error, cannot save members_metafield.',
+              context: 'A custom field with this name already exists.',
+              type: 'ValidationError',
+              property: 'name',
+            },
+          ],
+        };
+      },
+      { status: 422 },
+    );
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect.element(form.getByRole('button', { name: 'Saving' })).toBeDisabled();
+    await expect.element(form.getByRole('alert')).not.toBeInTheDocument();
+
+    finishSaving();
+    await expect
+      .element(form.getByText('A custom field with this name already exists.'))
+      .toBeVisible();
+    expect(form.getByRole('alert').all()).toHaveLength(1);
+  });
+
   // Like the CSV import's, a new field's form stays open until its save settles, as its Cancel
   // does. Put away any other way, the save would choose the field over whatever was picked since.
   it("keeps a new field's form open until it has saved, then chooses the field", async () => {

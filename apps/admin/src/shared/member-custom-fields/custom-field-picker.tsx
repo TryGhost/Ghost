@@ -142,6 +142,7 @@ export function CustomFieldPicker({
   };
 
   const createNewField = async (name: string, type: MemberCustomField['type']) => {
+    clearCreateErrors();
     if (!name.trim()) {
       setNameError('Enter a name for the field');
       return;
