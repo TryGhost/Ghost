@@ -32,60 +32,34 @@ describe('api.member', () => {
   });
 
   describe('customFields', () => {
-    test('asks the members API and keeps the fields open to members', async () => {
-      const fetchSpy = respond(200, {
-        members_metafields: [
-          { key: 'nickname', name: 'Nickname', type: 'short_text', access: { member: 'write' } },
-          {
-            key: 'shipping_address',
-            name: 'Shipping address',
-            type: 'address',
-            access: { member: 'read' },
-          },
-          { key: 'notes', name: 'Notes', type: 'short_text', access: { member: 'none' } },
-          { key: 'legacy', name: 'Legacy', type: 'short_text' },
-        ],
-      });
+    test('asks the members API for the fields open to members', async () => {
+      const listed = [
+        {
+          key: 'nickname',
+          name: 'Nickname',
+          type: 'short_text',
+          settings: null,
+          access: { member: 'write' },
+        },
+        {
+          key: 'shipping_address',
+          name: 'Shipping address',
+          type: 'address',
+          settings: null,
+          access: { member: 'read' },
+        },
+      ];
+      const fetchSpy = respond(200, { members_metafields: listed });
 
-      const fields = await api.member.customFields();
-
+      expect(await api.member.customFields()).toEqual(listed);
       expect(fetchSpy.mock.calls[0]?.[0]).toBe(
         'https://example.com/members/api/member/metafields/custom/',
       );
-      expect(fields.map((field) => field.key)).toEqual(['nickname', 'shipping_address']);
     });
 
     test('is empty when the site cannot answer', async () => {
       respond(404, {});
       expect(await api.member.customFields()).toEqual([]);
-    });
-
-    // Portal and the site it talks to are deployed apart, so it can be answered by a
-    // version that shapes this differently, or by something that is not this endpoint at
-    // all. None of it should cost a member the page these fields are drawn on.
-    test('is empty when the site answers with something else entirely', async () => {
-      for (const body of [
-        {},
-        { members_metafields: null },
-        { members_metafields: 'nonsense' },
-        { members_metafields: [null, 'nope', { access: { member: 'write' } }] },
-        // A name that is not text would be rendered as a child and take the page with it.
-        {
-          members_metafields: [
-            { key: 'k', name: {}, type: 'short_text', access: { member: 'write' } },
-          ],
-        },
-        { members_metafields: [{ key: 'k', name: 'Fine', type: 42, access: { member: 'write' } }] },
-        {
-          members_metafields: [
-            { key: '', name: 'Fine', type: 'short_text', access: { member: 'write' } },
-          ],
-        },
-        null,
-      ]) {
-        respond(200, body);
-        expect(await api.member.customFields()).toEqual([]);
-      }
     });
 
     test('is empty when the answer is not readable at all', async () => {

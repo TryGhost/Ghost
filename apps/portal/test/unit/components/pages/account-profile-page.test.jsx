@@ -101,13 +101,6 @@ describe('Account Profile Page', () => {
       expect(getByLabelText('Postal code')).toHaveAttribute('placeholder', 'Postal code');
     });
 
-    test('leaves out a field of a type this build cannot draw', () => {
-      const customFields = [nickname, { ...nickname, key: 'when', name: 'When', type: 'date' }];
-      const { queryByLabelText } = setup({ site, member, customFields });
-
-      expect(queryByLabelText('When')).not.toBeInTheDocument();
-    });
-
     test('saves only the writable fields the member changed', () => {
       const customFields = [nickname, address];
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({ site, member, customFields });
@@ -313,6 +306,235 @@ describe('Account Profile Page', () => {
         'updateProfile',
         expect.objectContaining({ metafields: { custom: { shipping_address: { city: '' } } } }),
       );
+    });
+
+    describe('a list', () => {
+      const animals = {
+        key: 'favourite_animals',
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+        access: { member: 'write' },
+      };
+      const animal = {
+        ...animals,
+        key: 'favourite_animal',
+        name: 'Favourite animal',
+        settings: { ...animals.settings, multiple: false },
+      };
+      const holding = (custom) => ({ ...member, metafields: { custom } });
+
+      // jsdom has neither, and the picker asks both: whether the screen is a phone's, and to
+      // bring the highlighted option into view.
+      beforeEach(() => {
+        window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+        Element.prototype.scrollIntoView = vi.fn();
+      });
+
+      const picker = (utils, name) => utils.getByRole('button', { name: new RegExp(`^${name}`) });
+
+      test('shows the options a member picked as chips, and saves every option picked', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Fish'] }),
+          customFields: [animals],
+        });
+
+        expect(utils.getByRole('button', { name: 'Remove Fish' })).toBeInTheDocument();
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        expect(utils.getByRole('option', { name: 'Fish' })).toHaveAttribute(
+          'aria-selected',
+          'true',
+        );
+        fireEvent.click(utils.getByRole('option', { name: 'Dog' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({
+            metafields: { custom: { favourite_animals: ['Dog', 'Fish'] } },
+          }),
+        );
+      });
+
+      test('clears an answer whose last chip is removed', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Fish'] }),
+          customFields: [animals],
+        });
+
+        fireEvent.click(utils.getByRole('button', { name: 'Remove Fish' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animals: [] } } }),
+        );
+      });
+
+      test('picks one option where the field takes one, and closes the list', () => {
+        const utils = setup({ site, member, customFields: [animal] });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.click(utils.getByRole('option', { name: 'Cat' }));
+
+        expect(utils.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Cat');
+        fireEvent.click(utils.saveBtn);
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: ['Cat'] } } }),
+        );
+      });
+
+      test('picks from the keyboard', () => {
+        const utils = setup({ site, member, customFields: [animal] });
+
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'c' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: ['Cat'] } } }),
+        );
+      });
+
+      // The field took several answers when they gave them. Picking one for them would lose the
+      // rest on a save they never meant to change it with.
+      test('shows several answers to a field that now takes one as unanswered, and keeps them', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Dog', 'Cat'] }),
+          customFields: [animal],
+        });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Choose an option');
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+          email: member.email,
+          name: member.name,
+        });
+      });
+
+      test('offers only the options the field still offers, and replaces the rest', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Dolphin', 'Dog'] }),
+          customFields: [animals],
+        });
+
+        expect(utils.queryByText('Dolphin')).not.toBeInTheDocument();
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        expect(utils.queryByRole('option', { name: 'Dolphin' })).not.toBeInTheDocument();
+        fireEvent.click(utils.getByRole('option', { name: 'Cat' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({
+            metafields: { custom: { favourite_animals: ['Dog', 'Cat'] } },
+          }),
+        );
+      });
+
+      test('finds an option by its text in a long list, searching by the field name', () => {
+        const long = {
+          ...animals,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: true,
+          },
+        };
+        const utils = setup({ site, member, customFields: [long] });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        const search = utils.getByRole('combobox', { name: 'Favourite animals' });
+        expect(search).toHaveAttribute('placeholder', 'Favourite animals');
+        fireEvent.change(search, { target: { value: 'animal 1' } });
+
+        expect(utils.getByRole('option', { name: 'Animal 10' })).toBeInTheDocument();
+        expect(utils.queryByRole('option', { name: 'Animal 2' })).not.toBeInTheDocument();
+      });
+
+      test('shows a view-only list as chips the member cannot change', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Dog', 'Cat'] }),
+          customFields: [{ ...animal, access: { member: 'read' } }],
+        });
+
+        // Every answer the field still offers, even one that now takes a single answer.
+        const answers = within(utils.getByRole('list', { name: 'Favourite animal' }));
+        expect(answers.getAllByRole('listitem').map((chip) => chip.textContent)).toEqual([
+          'Dog',
+          'Cat',
+        ]);
+        expect(utils.queryByRole('button', { name: /^Favourite animal/ })).not.toBeInTheDocument();
+        expect(utils.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
+      });
+
+      test('keeps the one answer when it is picked again, and clears it with (None)', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Cat'] }),
+          customFields: [animal],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Cat');
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.click(utils.getByRole('option', { name: '(None)' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: [] } } }),
+        );
+      });
+
+      test('opens on the answer held, whatever was searched for last time', () => {
+        const long = {
+          ...animal,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: false,
+          },
+        };
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Animal 3'] }),
+          customFields: [long],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.change(utils.getByRole('combobox', { name: 'Favourite animal' }), {
+          target: { value: 'animal 1' },
+        });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Tab' });
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Animal 3');
+      });
+
+      test('keeps the keyboard in the open list after a chip is removed', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Dog', 'Cat'] }),
+          customFields: [animals],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        fireEvent.click(utils.getByRole('button', { name: 'Remove Dog' }));
+
+        expect(utils.getByRole('listbox')).toHaveFocus();
+      });
     });
 
     test('leaves custom fields out of the save when nothing changed', () => {

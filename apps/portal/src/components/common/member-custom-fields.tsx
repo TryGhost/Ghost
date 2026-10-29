@@ -1,22 +1,29 @@
 import React from 'react';
 import {
   FIELD_STRUCTURES,
+  editableAnswers,
+  inOptionOrder,
+  matchField,
   matchLeaf,
-  matchShape,
   type FieldTypeOfShape,
   type Leaf,
   type ListSource,
   type PartsOf,
+  type SetSettings,
   type TextSize,
 } from '@tryghost/metafield-types/structure';
 
+import ChoicePicker, { ChoicePickerStyles } from './choice-picker';
 import InputForm from './input-form';
 import { countryOptions } from '../../utils/countries';
+import { hasMode } from '../../utils/check-mode';
+import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
-import { compositeValue, scalarValue } from '../../utils/custom-fields';
-import type { CustomFieldValue, DrawableCustomField } from '../../utils/custom-fields';
+import { compositeValue, listValue, scalarValue } from '../../utils/custom-fields';
+import type { CustomFieldValue, MemberCustomField } from '../../utils/custom-fields';
 
-export const MemberCustomFieldsStyles = `
+export const MemberCustomFieldsStyles =
+  `
     .gh-portal-custom-field-errors {
         list-style: none;
         margin: 4px 0 0;
@@ -30,7 +37,7 @@ export const MemberCustomFieldsStyles = `
         line-height: 1.6em;
         margin: 0;
     }
-`;
+` + ChoicePickerStyles;
 
 type RecordFieldType = FieldTypeOfShape<'record'>;
 
@@ -83,11 +90,12 @@ const RECORD_FORMS: {
 };
 
 interface FieldProps {
-  field: DrawableCustomField;
+  field: MemberCustomField;
   value: CustomFieldValue;
   /** What the site refused, keyed by the name of the input that holds it. */
   errors: Record<string, string | undefined>;
-  onChange: (field: DrawableCustomField, part: string | null, value: string) => void;
+  /** The field's whole value once a member changes it, in the shape its type keeps. */
+  onChange: (field: MemberCustomField, value: CustomFieldValue) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
@@ -114,7 +122,7 @@ function ScalarField({
           readOnly: field.access.member !== 'write',
         },
       ]}
-      onChange={(event: { target: { value: string } }) => onChange(field, null, event.target.value)}
+      onChange={(event: { target: { value: string } }) => onChange(field, event.target.value)}
       onKeyDown={onKeyDown}
     />
   );
@@ -215,7 +223,9 @@ function RecordField({
             key={parts.join(':')}
             input={input}
             parts={parts}
-            onChange={(part, changed) => onChange(field, part, changed)}
+            onChange={(part, changed) =>
+              part !== null && onChange(field, { ...held, [part]: changed })
+            }
             onKeyDown={onKeyDown}
           />
         ))}
@@ -231,21 +241,77 @@ function RecordField({
   );
 }
 
+/**
+ * A list: one option or several, picked from a list that opens under the field. Only the options
+ * the field offers now are drawn, so an answer to one it no longer offers is replaced by the
+ * member's next. A field that has gone from several answers to one reads as unanswered while the
+ * member holds several, and nothing is sent for it until they pick one. A member who may only
+ * read the field sees every answer they hold that it still offers.
+ */
+function ListField({
+  field,
+  value,
+  errors,
+  onChange,
+  settings,
+}: FieldProps & { settings: SetSettings }) {
+  const name = `custom:${field.key}`;
+  const held = listValue(value);
+  const readOnly = field.access.member !== 'write';
+  // A member who may only read the field sees every answer it still offers; one who may change it
+  // starts from what a form edits.
+  const picked = readOnly ? inOptionOrder(settings, held) : editableAnswers(settings, held);
+  const error = errors[name];
+  const id = `input-${name}`;
+  const labelId = `${id}-label`;
+  const errorId = `${id}-error`;
+  return (
+    <section className="gh-portal-input-section">
+      <div className="gh-portal-input-labelcontainer">
+        {readOnly ? (
+          <div className="gh-portal-input-label" id={labelId}>
+            {field.name}
+          </div>
+        ) : (
+          <label className="gh-portal-input-label" htmlFor={id} id={labelId}>
+            {field.name}
+          </label>
+        )}
+        {error && <p id={errorId}>{error}</p>}
+      </div>
+      <ChoicePicker
+        describedBy={error ? errorId : undefined}
+        disabled={hasMode(['preview']) || isCookiesDisabled()}
+        id={id}
+        invalid={Boolean(error)}
+        label={field.name}
+        labelId={labelId}
+        multiple={settings.multiple}
+        options={settings.options}
+        placeholder={t('Choose an option')}
+        readOnly={readOnly}
+        value={picked}
+        onChange={(next) => onChange(field, next)}
+      />
+    </section>
+  );
+}
+
 interface MemberCustomFieldsProps {
-  fields: DrawableCustomField[];
+  fields: MemberCustomField[];
   values: Record<string, CustomFieldValue>;
   errors: Record<string, string | undefined>;
-  onChange: (field: DrawableCustomField, part: string | null, value: string) => void;
+  /** The field's whole value once a member changes it, in the shape its type keeps. */
+  onChange: (field: MemberCustomField, value: CustomFieldValue) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
 /** A field drawn from the blocks its type is composed of. */
 function DrawnField(props: FieldProps) {
-  return matchShape(props.field.type, {
-    scalar: ({ leaf }) => <ScalarField {...props} leaf={leaf} />,
-    record: (_structure, type) => <RecordField {...props} type={type} />,
-    // Not drawn yet: `drawableCustomFields` leaves list fields out.
-    set: () => null,
+  return matchField<MemberCustomField, React.ReactElement>(props.field, {
+    scalar: ({ type }) => <ScalarField {...props} leaf={FIELD_STRUCTURES[type].leaf} />,
+    record: ({ type }) => <RecordField {...props} type={type} />,
+    set: ({ settings }) => <ListField {...props} settings={settings} />,
   });
 }
 

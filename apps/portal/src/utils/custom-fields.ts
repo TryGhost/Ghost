@@ -1,71 +1,15 @@
-import type { MemberAccess, MetafieldDefinition, TypedSettings } from '@tryghost/metafield-types';
-import { isFieldType, isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
+import type { MetafieldDefinition, TypedSettings } from '@tryghost/metafield-types';
+import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { isPreviewMode } from './check-mode';
 import { hasCustomFieldsEnabled } from './helpers';
 
 /**
  * A field the publisher has opened to members, as the members API lists it: Ghost's definition
- * without what only says where and when it is stored. The key and type are plain strings, because
- * Portal also runs beside newer Ghost sites, which can send a type this build doesn't know.
+ * without what only says where and when it is stored. Read as the site's own Ghost sends it.
  */
 export type MemberCustomField = Pick<MetafieldDefinition, 'name' | 'access'> & {
   key: string;
-  type: string;
-  /** What the field is set up with, checked against its type once the type is known. */
-  settings: unknown;
-};
-
-/**
- * Requires every property of `T`, optional ones included, so a reader that leaves one out fails to
- * compile.
- */
-type EveryProperty<T> = { [K in keyof T]-?: T[K] | undefined };
-
-/**
- * The levels at which a member is shown a field. Listed here rather than imported, because
- * importing from the package's main entry would bundle zod into Portal.
- */
-const SHOWN_TO_MEMBERS = ['read', 'write'] as const satisfies readonly MemberAccess[];
-
-const isShownToMembers = (level: unknown): level is (typeof SHOWN_TO_MEMBERS)[number] =>
-  SHOWN_TO_MEMBERS.some((shown) => shown === level);
-
-/**
- * A field as the members API lists it, or null for one that can't be drawn. Every property is
- * checked, not only enough to recognise a field: a name that isn't text would be rendered as a
- * React child and take the page down.
- */
-function readMemberCustomField(raw: unknown): MemberCustomField | null {
-  if (!isRecordValue(raw)) {
-    return null;
-  }
-  const { key, name, type, settings, access } = raw;
-  const { member } = isRecordValue(access) ? access : { member: undefined };
-  if (
-    typeof key !== 'string' ||
-    key.length === 0 ||
-    typeof name !== 'string' ||
-    typeof type !== 'string' ||
-    !isShownToMembers(member)
-  ) {
-    return null;
-  }
-  const field = {
-    key,
-    name,
-    type,
-    settings,
-    access: { member },
-  } satisfies EveryProperty<MemberCustomField>;
-  return field;
-}
-
-export function readMemberCustomFields(listed: unknown[]): MemberCustomField[] {
-  return listed.flatMap((raw) => {
-    const field = readMemberCustomField(raw);
-    return field ? [field] : [];
-  });
-}
+} & TypedSettings;
 
 interface AskFor {
   api: { member: { customFields: () => Promise<MemberCustomField[]> } };
@@ -95,35 +39,6 @@ export async function fetchMemberCustomFields({
   } catch (err) {
     return [];
   }
-}
-
-export type DrawableCustomField = Pick<MemberCustomField, 'key' | 'name' | 'access'> &
-  TypedSettings;
-
-/**
- * The field, or null when its type is one this build doesn't know. A site can offer a type added
- * after this bundle shipped, and there is nothing sensible to draw for one. A list isn't drawn
- * yet, so it is left out the same way.
- */
-function drawable(field: MemberCustomField): DrawableCustomField | null {
-  const { key, name, access, type } = field;
-  if (!isFieldType(type)) {
-    return null;
-  }
-  return matchShape<DrawableCustomField | null>(type, {
-    scalar: (_structure, scalarType) => ({ key, name, access, type: scalarType, settings: null }),
-    record: (_structure, recordType) => ({ key, name, access, type: recordType, settings: null }),
-    set: () => null,
-  });
-}
-
-export function drawableCustomFields(
-  fields: MemberCustomField[] | null | undefined,
-): DrawableCustomField[] {
-  if (!Array.isArray(fields)) {
-    return [];
-  }
-  return fields.flatMap((field) => drawable(field) ?? []);
 }
 
 /** What a composite holds: one string per part, and not every part need be filled in. */
@@ -157,7 +72,7 @@ const changedParts = (
  * of a composite they touched, since each part records who last wrote it.
  */
 export function changedCustomFields(
-  fields: DrawableCustomField[],
+  fields: MemberCustomField[],
   values: Record<string, CustomFieldValue>,
   original: Record<string, CustomFieldValue>,
 ): { custom: Record<string, unknown> } | undefined {
@@ -194,36 +109,18 @@ export function changedCustomFields(
   return Object.keys(custom).length > 0 ? { custom } : undefined;
 }
 
-export function withChange(
-  field: DrawableCustomField,
-  held: CustomFieldValue,
-  part: string | null,
-  value: string,
-): CustomFieldValue {
-  return matchShape<CustomFieldValue>(field.type, {
-    scalar: () => value,
-    record: () => (part === null ? held : { ...compositeValue(held), [part]: value }),
-    // A list's options are changed as a whole by its own picker rather than one input at a time.
-    set: () => held,
-  });
-}
-
 /**
  * The name of the input a refusal belongs on, or null when no single input holds what was refused.
  * That covers a refusal of a whole record (the field was archived or closed to members while the
- * page was open), of a part the field doesn't declare, and of a field this build can't draw.
+ * page was open) and of a part the field doesn't declare.
  * Marking an input that isn't on the page would hide the refusal, so the caller shows these in the
  * notification instead.
  */
 export function refusedInput(field: MemberCustomField, part: string): string | null {
-  const drawn = drawable(field);
-  if (!drawn) {
-    return null;
-  }
-  return matchShape<string | null>(drawn.type, {
-    scalar: () => (part === '' ? `custom:${drawn.key}` : null),
+  return matchShape<string | null>(field.type, {
+    scalar: () => (part === '' ? `custom:${field.key}` : null),
     record: ({ parts }) =>
-      part !== '' && Object.keys(parts).includes(part) ? `custom:${drawn.key}:${part}` : null,
-    set: () => (part === '' ? `custom:${drawn.key}` : null),
+      part !== '' && Object.keys(parts).includes(part) ? `custom:${field.key}:${part}` : null,
+    set: () => (part === '' ? `custom:${field.key}` : null),
   });
 }
