@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio/slim';
-import juice from 'juice';
 // @ts-expect-error This module currently lacks type definitions.
 import htmlToPlaintext from '@tryghost/html-to-plaintext';
+import { inlineCss } from './inline-css';
 
 const finalizeHtml = (html: string): string => {
   // Add a class to each figcaption so we can style them in the email.
@@ -9,12 +9,7 @@ const finalizeHtml = (html: string): string => {
   $('figcaption').addClass('kg-card-figcaption');
   html = $.html();
 
-  // resolveCSSVariables crashes on nameless declarations in user-authored style attributes
-  const juicedHtml = juice(html, {
-    inlinePseudoElements: true,
-    removeStyleTags: true,
-    resolveCSSVariables: false,
-  });
+  const juicedHtml = inlineCss(html);
 
   // Many email clients, like Outlook and Yahoo, [lack support for <figure>
   // and <figcaption>][0]. To work around this, change the tags to <div>s.

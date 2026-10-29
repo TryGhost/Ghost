@@ -373,6 +373,30 @@ it('allows the exact libraries required by Comments without allowing siblings', 
   );
 });
 
+it('allows the CSS inlining helper required by Staff without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/email-rendering/inline-css.ts';
+  const rejected = [
+    'ghost/core/server/lib/email-rendering/finalize.ts',
+    'ghost/core/server/lib/email-rendering/inline-css-extra.ts',
+  ] as const;
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('../../lib/email-rendering/inline-css');",
+    [`${alpha}/rejected.ts`]:
+      "import '../../lib/email-rendering/finalize'; import '../../lib/email-rendering/inline-css-extra';",
+    [approved]: 'export const inlineCss = (html: string) => html;',
+    [rejected[0]]: 'export {};',
+    [rejected[1]]: 'export {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.js` && to === approved),
+  );
+  assert.deepEqual(
+    violations(graph),
+    rejected.map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to]).sort(),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",
