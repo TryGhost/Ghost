@@ -106,7 +106,10 @@ export function CustomFieldPicker({
   // The create lives here rather than in the form, as the CSV import's does: what its answer
   // means, choosing the new field or showing a refusal, is the picker's business. The form asks;
   // this answers.
-  const { mutateAsync: createField, isPending: isCreating } = useCreateMemberCustomField();
+  const { mutateAsync: createField } = useCreateMemberCustomField();
+  // Set as Save is pressed rather than read from the request, which reports itself pending only
+  // a moment later. Until then Escape, a click away or a second Save would still get through.
+  const [isCreating, setIsCreating] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [canRetry, setCanRetry] = useState(true);
@@ -124,12 +127,27 @@ export function CustomFieldPicker({
     setCreating({ initialName });
   };
 
+  // The ways out of the form: back to the list, or out of the popover. Neither while its save
+  // is under way, as in the CSV import: the save chooses the field it makes, so leaving first
+  // would let it replace whatever is picked in the meantime.
+  const leaveForm = () => {
+    if (!isCreating) {
+      setCreating(null);
+    }
+  };
+  const dismiss = () => {
+    if (!isCreating) {
+      close();
+    }
+  };
+
   const createNewField = async (name: string, type: MemberCustomField['type']) => {
     if (!name.trim()) {
       setNameError('Enter a name for the field');
       return;
     }
 
+    setIsCreating(true);
     try {
       // The ordinary closed default. This picker only renders where the setting for
       // opening a field to members is also available, so a publisher who wants members
@@ -167,6 +185,8 @@ export function CustomFieldPicker({
         ),
       );
       setCanRetry(!(error instanceof HostLimitError) && apiError?.type !== 'NoPermissionError');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -177,11 +197,11 @@ export function CustomFieldPicker({
       // whatever the click lands on.
       modal
       onOpenChange={(next) => {
-        // Clicking away mid-create abandons it, same as Escape below.
+        // Clicking away mid-create abandons it, same as Escape below, once it isn't saving.
         if (next) {
           setOpen(true);
         } else {
-          close();
+          dismiss();
         }
       }}
     >
@@ -204,10 +224,11 @@ export function CustomFieldPicker({
         onEscapeKeyDown={(event) => {
           // Escape steps back: out of the form to the list, then out of the
           // popover. Otherwise it would tear down both at once — and, worse,
-          // keep travelling to close whatever modal this sits in.
+          // keep travelling to close whatever modal this sits in. Mid-save it
+          // stays put, like Cancel.
           if (creating) {
             event.preventDefault();
-            setCreating(null);
+            leaveForm();
           }
         }}
       >
@@ -220,7 +241,7 @@ export function CustomFieldPicker({
             nameError={nameError}
             saveError={saveError}
             types={createTypes}
-            onCancel={() => setCreating(null)}
+            onCancel={leaveForm}
             onEdit={clearCreateErrors}
             onSubmit={(name, type) => void createNewField(name, type)}
           />
