@@ -58,7 +58,6 @@ export function HelpFormView({
   const { message, canSend, editMessage, send, reset } = session;
   const sending = message.status === 'sending';
   const sent = message.status === 'sent';
-  const firstName = signals.user.name.split(' ')[0] ?? '';
 
   // Opening the panel, or coming back from an article, lands in the message
   useEffect(() => {
@@ -71,7 +70,7 @@ export function HelpFormView({
     <div className={active ? 'flex h-full min-h-0 flex-col' : 'hidden'}>
       <header className="flex h-14 shrink-0 items-center justify-between gap-2 pr-3 pl-4">
         <Text as="h2" size="md" weight="semibold">
-          Support
+          Ghost(Pro) support
         </Text>
         <Inline gap="xs">
           {/* Once sent, a fresh start from here too */}
@@ -115,7 +114,7 @@ export function HelpFormView({
                 size="lg"
                 weight="semibold"
               >
-                {firstName ? `Hi ${firstName}, what can we help with?` : 'What can we help with?'}
+                Tell us what you need help with
               </Text>
 
               {/* The message, with what might answer it right under it, where

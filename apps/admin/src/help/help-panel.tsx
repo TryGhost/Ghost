@@ -107,7 +107,7 @@ export function HelpPanel() {
           aria-describedby={undefined}
           className="flex w-full flex-col p-0 sm:max-w-none"
         >
-          <SheetTitle className="sr-only">Support</SheetTitle>
+          <SheetTitle className="sr-only">Ghost(Pro) support</SheetTitle>
           <HelpPanelContent
             open={open}
             session={session}
@@ -129,7 +129,7 @@ export function HelpPanel() {
   return (
     <aside
       ref={asideRef}
-      aria-label="Support"
+      aria-label="Ghost(Pro) support"
       className="relative h-full shrink-0 overflow-hidden transition-[width] duration-300 ease-out motion-reduce:transition-none"
       style={{ width: open ? panelWidth : 0 }}
     >

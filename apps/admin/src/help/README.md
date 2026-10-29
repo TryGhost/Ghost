@@ -336,9 +336,9 @@ form, so the user sees what they're sending. Opened questions are marked
 
 ## Sending to support
 
-The form is one block: a greeting by first name asking what we can help
-with (the placeholder asks for what's happening and what was expected), the
-message, "You might be looking for" right under it where
+The form is one block, under a "Ghost(Pro) support" heading: a headline
+asking the user to tell us what they need help with (the placeholder asks for
+what's happening and what was expected), the message, "You might be looking for" right under it where
 the eye is while typing (rows new to it rise in as what it offers changes),
 then "Attach a file" and "Send to support" with a line naming the address the
 reply goes to. No subject: the account is the signed-in one. Sending shows a confirmation in the form's
