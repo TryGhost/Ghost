@@ -128,13 +128,19 @@ export const CollectRow: React.FC<{
    * further, linked after it.
    */
   description?: { text: string; learnMoreUrl?: string };
+  /**
+   * Whether every checkout asks for the part, whatever its setting says. The switch then shows
+   * it on and can't be changed, and the settings under it, which make no difference, are left
+   * out. What is saved stays as it was, for when the part is only asked as set again.
+   */
+  alwaysAsked: boolean;
   state: CollectFormState;
   /** Paid tiers, archived ones included. */
   tiers: Tier[];
   tiersError?: string;
   onChange: (next: CollectFormState) => void;
   children?: React.ReactNode;
-}> = ({ id, label, description, state, tiers, tiersError, onChange, children }) => {
+}> = ({ id, label, description, alwaysAsked, state, tiers, tiersError, onChange, children }) => {
   const set = (next: Partial<CollectFormState>) => onChange({ ...state, ...next });
   const activeTierIds = tiers.filter((tier) => tier.active).map((tier) => tier.id);
   const labelled = (
@@ -170,12 +176,13 @@ export const CollectRow: React.FC<{
         )}
         <Switch
           aria-describedby={description ? descriptionId : undefined}
-          checked={state.collect}
+          checked={alwaysAsked || state.collect}
+          disabled={alwaysAsked}
           id={id}
           onCheckedChange={(collect) => set({ collect })}
         />
       </Field>
-      {state.collect && (
+      {state.collect && !alwaysAsked && (
         <>
           <SubRow error={tiersError} label="Collect for">
             <MultiPicker

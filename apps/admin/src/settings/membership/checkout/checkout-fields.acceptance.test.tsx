@@ -544,39 +544,43 @@ describe('Checkout settings', () => {
     await expect.element(learnMore).toHaveAttribute('target', '_blank');
   });
 
-  it('shows a tax ID offered on every checkout while automatic tax is on', async () => {
-    const { modal } = await openCheckoutFields(
-      {
-        design: { customize: false },
-        shipping: { collect: false },
-        phone: { collect: false },
-        tax_number: { collect: false },
-      },
-      [phoneField],
-      { stripeAutomaticTax: true },
-    );
+  it.each<{ saved: string; taxNumber: StripeCheckoutConfig['tax_number'] }>([
+    { saved: 'off', taxNumber: { collect: false } },
+    { saved: 'on for one tier', taxNumber: { collect: true, tier_ids: [paidTier.id] } },
+  ])(
+    'shows a tax ID on and fixed while automatic tax asks for it on every checkout, with it saved $saved',
+    async ({ taxNumber }) => {
+      const { modal } = await openCheckoutFields(
+        {
+          design: { customize: false },
+          shipping: { collect: false },
+          phone: { collect: false },
+          tax_number: taxNumber,
+        },
+        [phoneField],
+        { stripeAutomaticTax: true },
+      );
 
-    await expect
-      .element(
-        modal
-          .getByRole('figure', { name: 'Checkout preview' })
-          .getByText("I'm purchasing as a business"),
-      )
-      .toBeVisible();
-    const description =
-      'Stripe Automatic Tax already asks for it on all paid tiers, in countries Stripe supports.';
-    await expect.element(modal.getByText(description)).toBeVisible();
-    await expect
-      .element(modal.getByRole('switch', { name: 'Tax ID or VAT' }))
-      .toHaveAccessibleDescription(description);
-    await expect
-      .element(
-        modal
-          .getByRole('group', { name: 'Tax ID or VAT' })
-          .getByRole('link', { name: 'Learn more' }),
-      )
-      .toBeVisible();
-  });
+      await expect
+        .element(
+          modal
+            .getByRole('figure', { name: 'Checkout preview' })
+            .getByText("I'm purchasing as a business"),
+        )
+        .toBeVisible();
+      const taxId = modal.getByRole('group', { name: 'Tax ID or VAT' });
+      const taxSwitch = taxId.getByRole('switch', { name: 'Tax ID or VAT' });
+      await expect.element(taxSwitch).toBeChecked();
+      await expect.element(taxSwitch).toBeDisabled();
+      // Every paid tier asks, so there are no tiers to choose.
+      await expect(taxId.getByRole('combobox', { name: 'Collect for' })).toHaveCount(0);
+      const description =
+        'Stripe Automatic Tax already asks for it on all paid tiers, in countries Stripe supports.';
+      await expect.element(modal.getByText(description)).toBeVisible();
+      await expect.element(taxSwitch).toHaveAccessibleDescription(description);
+      await expect.element(taxId.getByRole('link', { name: 'Learn more' })).toBeVisible();
+    },
+  );
 
   it('saves no tax ID setting that no tier offers', async () => {
     const { modal, saveApi } = await openCheckoutFields({
