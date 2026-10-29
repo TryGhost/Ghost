@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { HelpArticle } from './help-center';
 import { article } from './help-fixtures';
-import type { HelpPageKey } from './help-pages';
-import {
-  findRelatedArticles,
-  getFaqQuestions,
-  getPageRelevance,
-  isQuestion,
-} from './help-questions';
+import { getFaqQuestions, getPageRelevance, isQuestion, nudgeFaqForward } from './help-questions';
 
 const faq = (slug: string, title: string) => article(slug, title, '', ['FAQ']);
 
@@ -28,57 +23,23 @@ describe('getFaqQuestions', () => {
   });
 });
 
-describe('findRelatedArticles', () => {
-  const articles = [
-    faq('cancel', 'How do I cancel member subscriptions'),
-    faq('pause', 'How do I pause member subscriptions?'),
-    faq('sign-in', 'How do members sign in to my site?'),
-    faq('fees', 'Are there any transaction fees?'),
-    faq('welcome', 'How do I send a welcome email to new members?'),
-    article('stripe', 'Setting up Stripe payments', 'Connect Stripe to take member subscriptions', [
-      'Payments',
-    ]),
-    article('fees-guide', 'Understanding transaction fees', 'What Stripe charges per payment', [
-      'Payments',
-    ]),
-  ];
-  const slugs = (text: string, page: HelpPageKey | null = null) =>
-    findRelatedArticles(articles, text, page).map(({ slug }) => slug);
+describe('nudgeFaqForward', () => {
+  const stripe = article('stripe', 'Setting up Stripe payments', '', ['Payments']);
+  const tiers = article('tiers', 'Setting up tiers', '', ['Payments']);
+  const pause = faq('pause', 'How do I pause member subscriptions?');
+  const slugs = (articles: HelpArticle[]) => nudgeFaqForward(articles).map(({ slug }) => slug);
 
-  it('relates the articles sharing the most words that carry meaning', () => {
-    expect(slugs('I want to pause a subscription')).toEqual(['pause', 'cancel']);
-    expect(slugs('stripe payments')).toEqual(['stripe', 'fees-guide']);
+  it('moves an FAQ answer ahead of the one article above it', () => {
+    expect(slugs([stripe, pause, tiers])).toEqual(['pause', 'stripe', 'tiers']);
   });
 
-  it('puts FAQ answers before articles sharing as many words', () => {
-    expect(slugs('transaction fees')).toEqual(['fees', 'fees-guide']);
-    expect(slugs('stripe member subscriptions').slice(0, 3)).toEqual(['cancel', 'pause', 'stripe']);
+  it('does not move it past two', () => {
+    expect(slugs([stripe, tiers, pause])).toEqual(['stripe', 'pause', 'tiers']);
   });
 
-  it('finds a word in its other forms', () => {
-    expect(slugs('cancelling')).toEqual(['cancel']);
-    expect(slugs('members').sort()).toEqual(['cancel', 'pause', 'sign-in', 'welcome']);
-  });
-
-  it('counts a word found only in the excerpt as half of one', () => {
-    expect(slugs('charges')).toEqual([]);
-    expect(slugs('stripe charges')).toEqual(['stripe', 'fees-guide']);
-  });
-
-  it('relates nothing to words that say nothing about the question', () => {
-    expect(slugs('how do I')).toEqual([]);
-    expect(slugs('')).toEqual([]);
-  });
-
-  it('needs two shared words once the message is long', () => {
-    expect(slugs('the images in my newsletter do not load in gmail')).toEqual([]);
-    expect(slugs('members cannot sign in to my site since the move')).toEqual(['sign-in']);
-  });
-
-  it('puts articles about the page first among equals', () => {
-    const onMembers = article('import', 'How do I import members?', '', ['FAQ'], ['members']);
-    const related = findRelatedArticles([...articles, onMembers], 'members', 'members');
-    expect(related[0]?.slug).toBe('import');
+  it('keeps the order otherwise', () => {
+    expect(slugs([pause, stripe, tiers])).toEqual(['pause', 'stripe', 'tiers']);
+    expect(slugs([stripe, tiers])).toEqual(['stripe', 'tiers']);
   });
 });
 

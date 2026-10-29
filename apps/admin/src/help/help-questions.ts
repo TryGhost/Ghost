@@ -4,10 +4,10 @@ import { type HelpPageKey, PAGE_QUESTIONS, PAGE_WORDS } from './help-pages';
 /*
  * The help center's FAQ (ghost.org/help/topic/faq/): articles tagged `faq`,
  * most with a question for a title ("How do I cancel member subscriptions?").
- * The support form offers them before anything's written (help-suggestions.ts)
- * and, as the user writes, the help center articles related to their words,
- * FAQ first (findRelatedArticles), so they can read the answer instead of
- * sending the question. Both favor articles about the page the user is on.
+ * The support form offers them before anything's written (help-suggestions.ts,
+ * favoring the page the user is on) and, as the user writes, nudges the FAQ
+ * answers among DocsBot's results forward (nudgeFaqForward), so they can read
+ * the answer instead of sending the question.
  */
 
 /** The FAQ topic's tag slug in the help center. */
@@ -63,171 +63,18 @@ export function getPageRelevance(question: HelpArticle, page: HelpPageKey | null
   return PAGE_WORDS[page].some((word) => titleHas(question.title, word)) ? 1 : 0;
 }
 
-// Words that say nothing about which article is meant: only the others
-// are matched, so "how do I" relates to nothing and "pause" to pausing
-const STOP_WORDS = new Set([
-  'a',
-  'an',
-  'the',
-  'this',
-  'that',
-  'my',
-  'our',
-  'your',
-  'me',
-  'i',
-  'we',
-  'you',
-  'it',
-  'how',
-  'what',
-  'why',
-  'where',
-  'when',
-  'which',
-  'who',
-  'do',
-  'does',
-  'did',
-  'is',
-  'are',
-  'be',
-  'can',
-  'could',
-  'should',
-  'would',
-  'will',
-  'to',
-  'of',
-  'in',
-  'on',
-  'for',
-  'with',
-  'from',
-  'at',
-  'by',
-  'and',
-  'or',
-  'not',
-  'there',
-  'any',
-  'some',
-  'please',
-  'want',
-  'need',
-  'get',
-  'set',
-  'up',
-  // Said in almost every help center title or excerpt, so they tell nothing apart
-  'ghost',
-  'pro',
-  'site',
-  'use',
-  'using',
-  'help',
-  // How problems are described, rather than what they're about
-  'still',
-  'but',
-  'also',
-  'just',
-  'only',
-  'even',
-  'now',
-  'then',
-  'cant',
-  'dont',
-  'doesnt',
-  'isnt',
-  'wont',
-  'didnt',
-  'cannot',
-  'problem',
-  'issue',
-  'error',
-  'wrong',
-  'work',
-  'working',
-]);
-
-// Shorter than this, a word says little about what's meant
-const MIN_TERM_LENGTH = 3;
-const MAX_RELATED = 4;
-// From this many words that carry meaning, one shared word isn't enough:
-// every message mentioning members would relate to half the help center
-const LONG_MESSAGE_TERMS = 4;
-// A word found only in an article's excerpt counts this much of one in its title
-const EXCERPT_WEIGHT = 0.5;
-// An FAQ answer comes before an article sharing as many words, even one with
-// more in its excerpt, but not before one sharing a word more in its title
-const FAQ_BONUS = 0.5;
-
-/** A word without its ending, roughly: members and member, paused and pause. */
-function stem(word: string) {
-  return word.replace(/(ing|ed|es|s)$/, (ending, offset: number) => (offset >= 4 ? '' : ending));
-}
-
-/** Whether two stems are the same word, allowing for an ending the stem missed. */
-function sameWord(a: string, b: string) {
-  return a.startsWith(b) ? b.length >= MIN_TERM_LENGTH : b.startsWith(a) && a.length >= 4;
-}
+// How far forward an FAQ answer moves among DocsBot's results: past one
+// article, not two, so relevance still decides between clear winners
+const FAQ_NUDGE = 1.5;
 
 /**
- * The help center articles related to what the user is writing, most related
- * first: the ones sharing the most words that carry meaning (not "how do I",
- * and "members" finds "member") with their title, or at half weight their
- * excerpt. FAQ answers get a bonus, so they come before articles sharing as
- * many words, but not before one sharing a word more. Then the ones about the page
- * the user is on (getPageRelevance), then the shorter. A short message relates
- * by one shared word; a longer one needs two.
+ * DocsBot's results with the FAQ answers nudged forward: each moves ahead
+ * of the one article above it, since the FAQ is written to answer exactly
+ * these questions, but no further, so a clearly better article still leads.
  */
-export function findRelatedArticles(
-  articles: HelpArticle[],
-  text: string,
-  page: HelpPageKey | null = null,
-): HelpArticle[] {
-  const terms = [
-    ...new Set(
-      wordsOf(text)
-        .filter((word) => !STOP_WORDS.has(word) && word.length >= MIN_TERM_LENGTH)
-        .map(stem),
-    ),
-  ];
-  if (!terms.length) {
-    return [];
-  }
-  const needed = terms.length >= LONG_MESSAGE_TERMS ? 2 : 1;
-
-  const scored = articles.flatMap((article) => {
-    const inTitle = wordsOf(article.title).map(stem);
-    const inExcerpt = wordsOf(article.searchText).map(stem);
-    const has = (words: string[], term: string) => words.some((word) => sameWord(word, term));
-    const matched = terms.reduce((sum, term) => {
-      if (has(inTitle, term)) {
-        return sum + 1;
-      }
-      return has(inExcerpt, term) ? sum + EXCERPT_WEIGHT : sum;
-    }, 0);
-    if (matched < needed) {
-      return [];
-    }
-    const faq = isFaqArticle(article);
-    return [
-      {
-        article,
-        faq,
-        score: matched + (faq ? FAQ_BONUS : 0),
-        relevance: getPageRelevance(article, page),
-      },
-    ];
-  });
-  return scored
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        b.relevance - a.relevance ||
-        Number(b.faq) - Number(a.faq) ||
-        a.article.title.length - b.article.title.length,
-    )
-    .slice(0, MAX_RELATED)
+export function nudgeFaqForward(articles: HelpArticle[]): HelpArticle[] {
+  return articles
+    .map((article, index) => ({ article, rank: index - (isFaqArticle(article) ? FAQ_NUDGE : 0) }))
+    .sort((a, b) => a.rank - b.rank)
     .map(({ article }) => article);
 }

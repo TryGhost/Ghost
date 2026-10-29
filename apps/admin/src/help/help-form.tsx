@@ -105,8 +105,8 @@ export function HelpFormView({
             }
           }}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-5 pb-8">
-            <Stack gap="lg">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-7 pb-10">
+            <Stack gap="2xl">
               <Text
                 as="h3"
                 className={REVEAL_CLASS_NAME}
@@ -119,7 +119,7 @@ export function HelpFormView({
 
               {/* The message, with what might answer it right under it, where
                   the eye is while typing */}
-              <Stack className={REVEAL_CLASS_NAME} gap="sm" style={revealAt(1)}>
+              <Stack className={REVEAL_CLASS_NAME} gap="lg" style={revealAt(1)}>
                 <Textarea
                   ref={textareaRef}
                   aria-label="Your message"
@@ -140,14 +140,16 @@ export function HelpFormView({
                     ))}
                   </Inline>
                 )}
-                <HelpRelatedQuestionsList
-                  opened={session.openedArticles}
-                  related={related}
-                  onPick={session.readArticle}
-                />
+                <div className="-mx-2">
+                  <HelpRelatedQuestionsList
+                    opened={session.openedArticles}
+                    related={related}
+                    onPick={session.readArticle}
+                  />
+                </div>
               </Stack>
 
-              <Stack className={REVEAL_CLASS_NAME} gap="sm" style={revealAt(2)}>
+              <Stack className={REVEAL_CLASS_NAME} gap="md" style={revealAt(2)}>
                 <Inline align="center" gap="sm" justify="between">
                   <Button
                     disabled={sending}
@@ -225,11 +227,8 @@ function HelpSentView({ email, onDone }: { email: string; onDone: () => void }) 
   );
 }
 
-// The card comes in afresh whenever what it offers changes (keyed by its
-// articles), each row a moment after the one above, so a change catches the
-// eye without the rest of the form moving
-const CARD_ENTRANCE_CLASS_NAME =
-  'motion-safe:animate-in motion-safe:duration-300 motion-safe:ease-out motion-safe:fade-in';
+// Rows new to the list rise in (keyed by article), each a moment after the
+// one above, so a change catches the eye without the rest of the form moving
 const ROW_ENTRANCE_CLASS_NAME =
   'motion-safe:animate-in motion-safe:duration-200 motion-safe:ease-out motion-safe:fill-mode-both motion-safe:fade-in motion-safe:slide-in-from-bottom-1';
 const ROW_STAGGER = 40;
@@ -241,7 +240,7 @@ const QUESTION_SLOTS = [
   { key: 'third', placeholderWidth: 'w-1/2' },
 ];
 
-const ROW_CLASS_NAME = 'flex w-full items-center gap-3 px-3 py-2.5';
+const ROW_CLASS_NAME = 'flex w-full items-center gap-3 rounded-lg px-2 py-2.5';
 
 interface HelpRelatedQuestionsListProps {
   related: HelpRelatedQuestions;
@@ -269,25 +268,14 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
   }
 
   return (
-    <div
-      key={related.loading ? 'loading' : related.questions.map(({ id }) => id).join()}
-      className={cn(
-        'overflow-hidden rounded-xl border border-border-default bg-background',
-        CARD_ENTRANCE_CLASS_NAME,
-      )}
-      data-help-source={related.source}
-    >
-      <Inline
-        align="center"
-        className="border-b border-border-default bg-muted/50 px-3 py-2"
-        gap="sm"
-        justify="between"
-      >
+    <Stack data-help-source={related.source} gap="xs">
+      <Inline align="center" className="px-2" gap="sm" justify="between">
         <Inline align="center" gap="xs">
-          <LucideIcon.Lightbulb className="size-4 text-text-secondary" />
           <Text as="h3" size="sm" weight="semibold">
             You might be looking for
           </Text>
+          {/* A search for the message is on its way; the last answers stay meanwhile */}
+          {related.searching && <LoadingIndicator size="sm" />}
         </Inline>
         <a
           className="inline-flex shrink-0 items-center gap-1 rounded-sm text-xs text-text-secondary outline-hidden transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-focus-ring"
@@ -302,7 +290,7 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
       <ul
         aria-busy={related.loading}
         aria-label="Articles from the help center"
-        className="flex flex-col divide-y divide-border-default"
+        className="flex flex-col"
       >
         {related.loading
           ? QUESTION_SLOTS.map(({ key, placeholderWidth }) => (
@@ -327,7 +315,7 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
                 <button
                   className={cn(
                     ROW_CLASS_NAME,
-                    'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:bg-accent',
+                    'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring',
                   )}
                   type="button"
                   onClick={() => onPick(question)}
@@ -350,6 +338,6 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
               </li>
             ))}
       </ul>
-    </div>
+    </Stack>
   );
 }
