@@ -452,6 +452,31 @@ describe('Portal Data links:', () => {
       expect(giftSubtitle).toBeInTheDocument();
     });
 
+    test('opens the small invite-only popup without loading the gift card on invite-only sites', async () => {
+      window.location.hash = '#/portal/gift';
+      const loadedImages = [];
+      vi.spyOn(window, 'Image').mockImplementation(function () {
+        return {
+          set src(url) {
+            loadedImages.push(url);
+          },
+        };
+      });
+
+      const site = { ...FixtureSite.singleTier.basic, members_signup_access: 'invite' };
+      let { popupFrame, ...utils } = await setup({ site, showPopup: false });
+
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      const popup = within(popupFrame.contentDocument);
+      expect(
+        popup.getByText('This site is invite-only, contact the owner for access.'),
+      ).toBeInTheDocument();
+      expect(
+        popupFrame.contentDocument.querySelector('.gh-portal-popup-container.full-size'),
+      ).toBeNull();
+      expect(loadedImages.filter((url) => url.includes('/gift/assets/'))).toEqual([]);
+    });
+
     test('opens gift page when both promotion settings are disabled', async () => {
       window.location.hash = '#/portal/gift';
 
