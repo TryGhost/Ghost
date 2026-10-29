@@ -16163,25 +16163,29 @@ services:
           CommonJS exports the Users constructor, not an initialized instance. Instances expose
           lockAll, assignTagToUserPosts and destroyUser; only assignTagToUserPosts is bound in
           the constructor. lockAll resolves an object with count, while tagging and destruction resolve
-          without a result. Tests construct the class and cover locking/tagging calls, not
-          export shape or detached invocation.
+          without a result. Tests construct the class and cover locking/tagging calls and
+          detached invocation of the bound method, not export shape.
         sources:
           - core/server/services/users.js
         tests:
           - test/unit/server/services/users/users-service.test.js
+          - test/unit/server/services/users/index.test.ts
       construction:
         summary: >-
           Authentication and users endpoints each construct and retain a separate Users at
           module evaluation. The constructor captures mutable models, auth, apiMail and
           apiSettings references and binds one method; current methods only use models.
           destroyUser constructs a PostRevisions helper per call. No other runtime constructor
-          was found. These composition and identity boundaries have no direct assertions.
+          was found. Units pin each endpoint's retained instance, the models, auth, mail and
+          settings references it captures, the bound tagging method, the per-call PostRevisions
+          helper around the PostRevision model and that operations use only models.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/users.js
           - core/server/lib/post-revisions.ts
-        tests: []
+        tests:
+          - test/unit/server/services/users/index.test.ts
       consumers:
         summary: >-
           Admin user deletion calls the users endpoint's retained instance. Authentication
@@ -16190,6 +16194,9 @@ services:
           rescheduling happen afterward. assignTagToUserPosts has no external runtime caller
           found. HTTP tests prove deletion, owner reassignment, internal tagging and successful
           authentication reset; reset orchestration units inject lockAll rather than this class.
+          Units pin the users endpoint delegating frame options to its retained instance and
+          the reset endpoint passing its own instance, with the real lockAll, to
+          resetAuthentication on every call.
         sources:
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
@@ -16201,6 +16208,7 @@ services:
           - test/legacy/api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/auth/reset-authentication.test.ts
+          - test/unit/server/services/users/index.test.ts
       startup:
         summary: >-
           Users has no init or readiness guard and performs no I/O during construction. Endpoint
@@ -16210,8 +16218,9 @@ services:
           users endpoint and its otherwise-unused Users instance outside an Admin request. HTTP composition
           also resolves mail/settings API collaborators; the settings endpoint constructs its
           BREAD helper at import, and authentication resolves its scheduling adapter then. These
-          endpoint dependencies are not used by Users methods. HTTP tests use completed boot,
-          not premature endpoint import or composition failure.
+          endpoint dependencies are not used by Users methods. A unit evaluates the users
+          endpoint afresh through the API registry the update check uses, without an Admin
+          request or boot; HTTP tests use completed boot, not composition failure.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
@@ -16229,20 +16238,24 @@ services:
         tests:
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
+          - test/unit/server/services/users/index.test.ts
       lifetime:
         summary: >-
           Endpoint module caching retains two instances and their collaborators. No init/reset,
           pending-operation guard or instance-local result cache exists. lockAll clones options
           when opening its own transaction and otherwise uses the caller's transaction.
           destroyUser always opens a new transaction and overwrites the caller's transacting
-          field; it does not reuse an outer transaction. The lock unit proves no nested callback
-          when an outer transaction is supplied, not lifetime, concurrency or options isolation.
+          field; it does not reuse an outer transaction. Units pin the two separately retained
+          endpoint instances, lockAll's cloned options carrying its own transaction versus the
+          caller's options passed through unchanged, and destroyUser overwriting a supplied
+          transaction in every stage; concurrency stays unasserted.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
         tests:
           - test/unit/server/services/users/users-service.test.js
+          - test/unit/server/services/users/index.test.ts
       configuration:
         summary: >-
           This root reads no configuration or settings values. Operations use current model
@@ -16264,8 +16277,10 @@ services:
           removes the staff API key and destroys the user within its transaction. Tagging emits
           PostsBulkAddTagsEvent before that transaction commits; dispatch does not await handlers
           and has no compensation; no current Core subscriber was found despite the collection
-          update comment. Tests prove selected persisted outcomes and mocked helper
-          arguments, not full rollback, event settlement or shutdown drain.
+          update comment. Units pin the stage order inside the transaction, the per-call
+          revisions helper arguments and one event dispatched before the transaction settles
+          carrying only newly tagged ids; HTTP tests prove selected persisted outcomes. Full
+          rollback, event settlement and shutdown drain stay unasserted.
         sources:
           - core/server/services/users.js
           - core/server/lib/post-revisions.ts
@@ -16276,6 +16291,7 @@ services:
         tests:
           - test/unit/server/services/users/users-service.test.js
           - test/unit/server/lib/post-revisions.test.ts
+          - test/unit/server/services/users/index.test.ts
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
       failures:
@@ -16285,8 +16301,10 @@ services:
           but cannot undo an already-dispatched tag event. The users endpoint returns the async
           deletion promise inside try without awaiting it, so that catch does not remap its
           rejected promise. Authentication reset failures after commit can leave users locked
-          despite a failed response. Existing success tests and fake-transaction short-circuit
-          tests do not establish rollback or those partial-failure responses.
+          despite a failed response. Units pin the ignored NotFoundError, other key failures
+          rejecting before user deletion and the tag event staying dispatched after a later
+          stage fails; success tests and fake-transaction short-circuit tests do not establish
+          rollback or those partial-failure responses.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
@@ -16294,25 +16312,27 @@ services:
           - core/server/api/endpoints/authentication.js
         tests:
           - test/unit/server/auth/reset-authentication.test.ts
+          - test/unit/server/services/users/index.test.ts
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
     unverified: []
     blockers:
       - >-
-        Pin the two retained endpoint instances, bound tagging method and model-reference
-        behavior before sharing composition. Test repeated boot and import prerequisites;
-        moving construction must account for currently retained but unused API collaborators.
+        Test repeated boot and import prerequisites before sharing composition. Units pin the
+        two retained endpoint instances, the bound tagging method, model references and the
+        retained but unused API collaborators, not module reload or reboot.
       - >-
         Add real transaction failure tests across lockAll and each deletion stage, including
         revision authors, tags/actions, coauthors, API keys, roles and user deletion. Current
         unit transactions are callback fakes and the reset failure test proves short-circuiting,
-        not database rollback. Preserve caller transaction/options behavior explicitly.
+        not database rollback. Units pin caller transaction and options propagation against
+        those fakes only.
       - >-
-        Characterize tag-event delivery before commit and failed transactions. Existing units
-        replace dispatch; source search found no current Core subscriber, so collection updates
-        cannot be inferred from the producer comment. Record concurrent
-        deletion/tag creation and pending-operation shutdown rather than inferring safety from
-        the absence of owned timers.
+        Units characterize dispatch before the fake transaction settles and after a later stage
+        fails, not delivery against a real commit or rollback. Source search found no current
+        Core subscriber, so collection updates cannot be inferred from the producer comment.
+        Record concurrent deletion/tag creation and pending-operation shutdown rather than
+        inferring safety from the absence of owned timers.
       - >-
         Pin deletion error identity and HTTP status for failures inside the async service,
         optional missing API keys, and authentication reset failures after commit. Root lock
