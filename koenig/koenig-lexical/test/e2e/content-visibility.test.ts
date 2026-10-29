@@ -33,9 +33,10 @@ const image = ({cardWidth = 'regular', caption = '', visibility} = {}) => ({
     ...(visibility && {visibility})
 });
 
-const video = ({visibility} = {}) => ({
+const video = ({cardWidth = 'regular', visibility} = {}) => ({
     type: 'video',
     version: 1,
+    cardWidth,
     src: '/video.mp4',
     width: 1600,
     height: 900,
@@ -308,6 +309,21 @@ test.describe('Content Visibility', async () => {
 
             await indicator.click();
             await expectPanelOnTab(card, 'visibility');
+        });
+
+        test('the visibility indicator sits inside the top-left corner of a full-width video', async function () {
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), video({cardWidth: 'full', visibility: hidden}))}`});
+            const card = page.locator('[data-kg-card="video"]');
+            const indicator = card.getByTestId('visibility-indicator');
+            await expect(indicator).toBeVisible();
+
+            const videoBox = await card.locator('figure img').first().boundingBox();
+            const indicatorBox = await indicator.boundingBox();
+
+            expect(indicatorBox.x - videoBox.x).toBeGreaterThan(8);
+            expect(indicatorBox.x - videoBox.x).toBeLessThan(24);
+            expect(indicatorBox.y - videoBox.y).toBeGreaterThan(8);
+            expect(indicatorBox.y - videoBox.y).toBeLessThan(24);
         });
 
         test('keeps the panel inside the viewport', async function () {
