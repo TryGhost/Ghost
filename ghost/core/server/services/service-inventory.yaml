@@ -1285,6 +1285,7 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migrated: true
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -1296,7 +1297,7 @@ services:
         replacement; notification persistence and delivery remain operation-level behavior.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/comments/index.js
+        - core/server/services/comments/index.ts
         - core/server/services/comments/comments-service.js
         - core/server/services/comments/comments-service-emails.js
         - core/server/api/endpoints/comments.js
@@ -1321,7 +1322,7 @@ services:
             dependency.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/comments/comments-controller.js
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-service-emails.js
@@ -1329,25 +1330,31 @@ services:
           - core/server/services/members/api.js
           - core/server/services/members/content-gating.js
     entryPoints:
-      - comments/index.js
+      - comments/index.ts
     notes: >-
-      Preserve API/controller replacement, current-wrapper consumers and notification timing.
-      Account for the nested mail transport and external event subscribers. This background
-      audit is separate from the eight-service pilot; recorded does not mean fully tested.
+      Initializer adoption was rechecked against c17ae44b8f516ad5a1bd26d260bf55433c665396 on
+      top of the characterization at 15eba6d860604c73f7a74c5000d024d92bce88b8; the contracts
+      below describe the migrated root, while auditedAt and the migration assessments retain
+      their historical provenance. The prior wrapper is recorded at
+      https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/comments/index.js.
+      Both recorded dependency preparations were applied in the migration. Account for the
+      nested mail transport and external event subscribers. This background audit is separate
+      from the eight-service pilot; recorded does not mean fully tested.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper whose receiver-dependent synchronous init returns
-          undefined and adds api/controller. The API exposes comment/query/moderation/vote/report
-          methods plus a synchronous enabled getter and synchronous access checks. Domain
-          operations return promises. Controller request methods accept frames, return models,
-          pages, count maps or no result, and set
+          The TypeScript root default-exports defineService; its service is one object holding
+          the api and controller, read through the guarded getter after init. The API exposes
+          comment/query/moderation/vote/report methods plus a synchronous enabled getter and
+          synchronous access checks. Domain operations return promises. Controller request
+          methods accept frames, return models, pages, count maps or no result, and set
           invalidation headers; destroy rejects rather than deleting. The HTTP adapter owns
           serialization/status codes. Units assert selected controller arguments, errors and
-          headers with fake services. The real-root integration pins init returning undefined
-          and publishing a controller whose service is the published api.
+          headers with fake services. The real-root integration pins init resolving undefined
+          and the published controller's service being the published api.
         sources:
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-controller.js
           - core/server/services/comments/comments-stats-service.js
@@ -1356,19 +1363,22 @@ services:
         tests:
           - test/unit/server/services/comments/comments-controller.test.js
           - test/integration/services/comments-service.test.js
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
-          Every init constructs GhostMailer, CommentsService, CommentsStats and CommentsController.
-          The service constructs its email helper, which constructs an isolated Handlebars
-          renderer. API publication precedes stats/controller construction; there is no guard or
-          acquisition rollback. Models, settings/helper/URL facades and members.contentGating are
-          retained; stats retains the DB module, while reply mail reads emailService.renderer at
-          send time. No other production construction of these comments classes was found.
-          Units instantiate deep classes with fakes; the DB integration invokes the real root
-          and asserts pinned projections and that repeated init publishes a new api and
-          controller, not construction count or transport ownership.
+          The initializer constructs GhostMailer, CommentsService, CommentsStats and
+          CommentsController once and returns them together; the service constructs its email
+          helper, which constructs an isolated Handlebars renderer. The root injects models,
+          settings/helper/URL facades, members.contentGating, DomainEvents, the
+          MemberCommentEvent class, the byNQL query helper, i18n's t, a call-time
+          unsubscribe-link capability that reads Email's renderer when a reply notification is
+          sent, and a template reader limited to the service's own three email templates.
+          Stats retains the DB module. No other production construction of these comments
+          classes was found. Units instantiate deep classes with fakes; the DB integration
+          invokes the real root and asserts pinned projections and that repeated init retains
+          the api and controller, not transport ownership.
         sources:
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/comments/comments-service-email-renderer.js
@@ -1379,16 +1389,17 @@ services:
           - test/integration/services/comments-service.test.js
       consumers:
         summary: >-
-          Admin/member comment, reply, report and reaction endpoints retain the wrapper and
-          resolve its current controller/API per call. Members BREAD similarly uses current api
-          for bulk hiding; the Content post mapper reads api.enabled. Creation/replies dispatch
-          MemberCommentEvent to members-events after notifications; comments registers no event
-          subscriber. HTTP asserts selected CRUD/moderation, redaction, vote access, private-site
-          guards, headers and bulk-hide results. Mail-intercepted comment/reply tests await test
-          DomainEvents settlement and assert member timestamps; none pins wrapper replacement
-          through all consumers or production subscriber completion before the response. Mapper
-          units pin the Content post comments flag for off and paid and that a wrapper without a
-          published api reports comments on, the shape the mapper sees before init.
+          Admin/member comment, reply, report and reaction endpoints retain the root and read
+          its service's controller/api per call. Members BREAD similarly reads the service's api
+          for bulk hiding; the Content post mapper reads the service's api.enabled through the
+          guarded getter, which throws before init. Creation/replies dispatch MemberCommentEvent
+          to members-events after notifications; comments registers no event subscriber. HTTP
+          asserts selected CRUD/moderation, redaction, vote access, private-site guards, headers
+          and bulk-hide results. Mail-intercepted comment/reply tests await test DomainEvents
+          settlement and assert member timestamps; none pins production subscriber completion
+          before the response. Mapper units pin the Content post comments flag for off and paid
+          and that serialization rejects with IncorrectUsageError before init, which production
+          cannot reach because the Content API serves only after boot.
         sources:
           - core/server/api/endpoints/comments.js
           - core/server/api/endpoints/comments-members.js
@@ -1411,17 +1422,20 @@ services:
           - test/unit/api/canary/utils/serializers/output/mapper.test.js
       startup:
         summary: >-
-          Boot invokes synchronous comments.init in the service Promise.all array after invoking
-          members/email-service initialization; it does not separately await either there.
-          Content gating is already exported by the members module. Querying needs models/DB;
-          notification paths additionally need settings, URL helpers, email-address policy and
-          initialized i18n, with reply unsubscribe links requiring the email-service renderer.
-          Init has no feature gate or readiness assertion. HTTP exercises normal booted paths;
-          the integration calls the root and asserts pinned projections. Pre-init,
-          prerequisite failures and partially initialized dependencies are not characterized.
+          Boot awaits comments.init in the service Promise.all array alongside members and
+          email-service initialization. The factory requires members for content gating and
+          the Email root for a call-time unsubscribe-link capability, so neither needs to be
+          ready at construction. Querying needs models/DB; notification paths additionally need
+          settings, URL helpers, email-address policy and initialized i18n, with reply
+          unsubscribe links requiring the email-service renderer at send time. Init has no
+          feature gate; reading the service before init throws IncorrectUsageError. HTTP
+          exercises normal booted paths; the integration calls the root and asserts pinned
+          projections; mapper units pin the pre-init rejection. Prerequisite failures and
+          partially initialized dependencies are not characterized.
         sources:
           - core/boot.js
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/members/service.js
           - core/server/services/email-service/email-service-wrapper.js
@@ -1430,18 +1444,22 @@ services:
         tests:
           - test/integration/services/comments-service.test.js
           - test/e2e-api/members-comments/comments.test.js
+          - test/unit/api/canary/utils/serializers/output/mapper.test.js
+          - test/unit/kernel/define-service.test.ts
       lifetime:
         summary: >-
-          Wrapper identity survives re-init, but API/controller/stats/email helper/renderer/mailer
-          identities are replaced; retained old implementations and in-flight calls keep their
-          old graph. There is no reset/shutdown or old-transport disposal. Comment, vote and report
-          state lives in shared tables. Stats accesses db.knex when querying; notification helpers
-          call retained settings/URL facades and current email-service renderer. HTML templates
-          are read/compiled each render; text modules are require-cached. The real-root
-          integration pins that repeated init replaces the api and controller and that the
-          controller counts published comments through the wired stats; restart is untested.
+          One api, controller, stats, email helper, renderer and mailer are retained across
+          repeated init; there is no reset/shutdown or transport disposal. Comment, vote and
+          report state lives in shared tables. Stats accesses db.knex when querying;
+          notification helpers call retained settings/URL facades and read the current
+          email-service renderer through the injected capability. HTML templates are read
+          through the injected reader and compiled each render; text modules are
+          require-cached. The real-root integration pins that repeated init retains the api and
+          controller and that the controller counts published comments through the wired stats;
+          restart is untested.
         sources:
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/comments/comments-stats-service.js
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/comments/comments-service-email-renderer.js
@@ -1449,6 +1467,7 @@ services:
         tests:
           - test/integration/services/comments-service.test.js
           - test/unit/server/services/comments/comments-service-emails-renderer.test.ts
+          - test/unit/kernel/define-service.test.ts
       configuration:
         summary: >-
           enabled reads comments_enabled each time and treats unknown values as off. Most member
@@ -1490,12 +1509,12 @@ services:
           mail. Domain event subscribers run separately and test allSettled is not a production
           drain. Vote units assert arguments using fake transactions; HTTP mail replaces
           GhostMailer.sendMail, preserving normalization but bypassing transport/provider work.
-          Email units pin the reply notification reading the Email service renderer when
-          sending rather than at construction, its recipient, unsubscribe link, translated
-          subject and skip conditions, and the member and moderation timestamps as the
-          current time.
+          Email units pin the reply notification's recipient, injected unsubscribe link,
+          translated subject and skip conditions, and the member and moderation timestamps as
+          the current time; the root's capability reads Email's renderer at send time and the
+          intercepted reply e2e exercises it through the real Email root.
         sources:
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/comments/comments-service-email-renderer.js
@@ -1510,7 +1529,9 @@ services:
           - test/e2e-api/members-comments/comments.test.js
       failures:
         summary: >-
-          Construction errors throw synchronously without cleanup; operation errors reject.
+          Construction errors reject init, leave the service unavailable and allow a later
+          explicit init to retry; the factory acquires nothing that needs cleanup. Operation
+          errors reject.
           A comment/reply is saved before mail, domain dispatch and the final read, so later
           failure can reject after persistence; mail failure prevents that domain dispatch and
           remaining recipients. Reports also persist before mail; a later duplicate request
@@ -1522,7 +1543,7 @@ services:
           internal context skips notifications and still dispatches. Post-write read failures,
           retry effects and concurrent vote/report outcomes remain source-only.
         sources:
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service.js
           - core/server/services/comments/comments-controller.js
           - core/server/services/comments/comments-service-emails.js
@@ -1534,12 +1555,10 @@ services:
     unverified: []
     blockers:
       - >-
-        The real-root integration now pins synchronous init returning undefined, the published
-        controller bound to the published api, and repeated init replacing both; mapper units
-        pin the Content post mapper reporting comments on for a wrapper without a published api.
-        Adoption must decide how one retained initializer instance replaces replacement per
-        init and whether the mapper keeps reading a possibly unpublished api. Failed
-        construction and in-flight calls across replacement remain uncharacterized.
+        The real-root integration pins init resolving undefined, the published controller bound
+        to the published api and repeated init retaining both; mapper units pin the Content post
+        mapper rejecting before init. Failed construction and in-flight calls across a retried
+        init remain uncharacterized beyond the kernel's generic tests.
       - >-
         Units now pin that a failed author notification rejects comment creation after
         persistence without the member comment event or final read. Reply/report notification
@@ -7983,7 +8002,7 @@ services:
           - core/server/services/members-events/index.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/webhooks/index.js
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/explore-ping/index.ts
           - core/frontend/web/site.js
           - core/frontend/services/proxy.js
@@ -12472,7 +12491,7 @@ services:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
           - core/server/services/member-welcome-emails/service.js
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/staff/index.js
           - core/server/services/staff/staff-service-emails.js
@@ -15940,7 +15959,7 @@ services:
           - core/frontend/meta/url.js
           - core/frontend/meta/author-url.js
           - core/server/services/audience-feedback/index.ts
-          - core/server/services/comments/index.js
+          - core/server/services/comments/index.ts
           - core/server/services/content-import/index.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/indexnow-ping/index.ts

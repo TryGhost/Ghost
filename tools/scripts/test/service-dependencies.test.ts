@@ -310,6 +310,69 @@ it('allows the magic-link constructor required by Newsletters without allowing i
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
 });
 
+it('allows the exact libraries required by Comments without allowing siblings', (t) => {
+  const approved = [
+    '@tryghost/mongo-utils',
+    '@tryghost/mongo-utils/index.js',
+    '@tryghost/html-to-plaintext',
+    '@tryghost/html-to-plaintext/index.js',
+    'handlebars',
+    'handlebars/lib/index.js',
+  ];
+  const rejected = [
+    '@tryghost/mongo-utils/other',
+    '@tryghost/mongo-utils-extra',
+    '@tryghost/html-to-plaintext/other',
+    '@tryghost/html-to-plaintext-extra',
+    'handlebars/other',
+    'handlebars-extra',
+  ];
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
+  });
+  for (const [name, main] of [
+    ['@tryghost/mongo-utils', 'index.js'],
+    ['@tryghost/mongo-utils-extra', 'index.js'],
+    ['@tryghost/html-to-plaintext', 'index.js'],
+    ['@tryghost/html-to-plaintext-extra', 'index.js'],
+    ['handlebars', 'lib/index.js'],
+    ['handlebars-extra', 'index.js'],
+  ]) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main }));
+    f.write(`node_modules/${name}/${main}`, 'module.exports = {};');
+    f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
+  }
+  const graph = f.graph();
+  assert.deepEqual(
+    [
+      ...new Set(
+        edges(graph)
+          .filter(([from]) => from === `${alpha}/approved.js`)
+          .map(([, , to]) => to),
+      ),
+    ].sort(),
+    [
+      'node_modules/@tryghost/html-to-plaintext/index.js',
+      'node_modules/@tryghost/mongo-utils/index.js',
+      'node_modules/handlebars/lib/index.js',
+    ],
+  );
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/mongo-utils/other.js',
+      'node_modules/@tryghost/mongo-utils-extra/index.js',
+      'node_modules/@tryghost/html-to-plaintext/other.js',
+      'node_modules/@tryghost/html-to-plaintext-extra/index.js',
+      'node_modules/handlebars/other.js',
+      'node_modules/handlebars-extra/index.js',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",
