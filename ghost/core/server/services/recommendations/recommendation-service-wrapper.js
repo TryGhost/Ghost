@@ -68,14 +68,8 @@ class RecommendationServiceWrapper {
       RecommendationMetadataService,
     } = require('./service');
 
-    const mentions = require('../mentions');
-
-    if (!mentions.sendingService || !mentions.api) {
-      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
-      throw new Error(
-        'MentionSendingService not intialized, but this is a dependency of RecommendationServiceWrapper. Check boot order.',
-      );
-    }
+    // Boot awaits Mentions before this group; reading it earlier throws.
+    const mentions = require('../mentions').default.service;
 
     const wellknownService = new WellknownService({
       urlUtils,

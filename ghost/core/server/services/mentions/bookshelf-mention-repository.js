@@ -1,5 +1,4 @@
 const Mention = require('./mention');
-const logging = require('@tryghost/logging');
 
 /**
  * @typedef {import('./mentions-api').IMentionRepository} IMentionRepository
@@ -25,14 +24,19 @@ module.exports = class BookshelfMentionRepository {
   /** @type {import('@tryghost/domain-events')} */
   #DomainEvents;
 
+  /** @type {import('@tryghost/logging')} */
+  #logging;
+
   /**
    * @param {object} deps
    * @param {object} deps.MentionModel Bookshelf Model
    * @param {import('@tryghost/domain-events')} deps.DomainEvents
+   * @param {import('@tryghost/logging')} deps.logging
    */
   constructor(deps) {
     this.#MentionModel = deps.MentionModel;
     this.#DomainEvents = deps.DomainEvents;
+    this.#logging = deps.logging;
   }
 
   #modelToMention(model) {
@@ -40,7 +44,7 @@ module.exports = class BookshelfMentionRepository {
     try {
       payload = JSON.parse(model.get('payload'));
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       payload = {};
     }
     return Mention.create({

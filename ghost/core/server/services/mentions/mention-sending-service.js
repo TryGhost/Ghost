@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const SendWebmentionsJob = require('./send-webmentions-job').default;
 
 module.exports = class MentionSendingService {
@@ -10,10 +9,12 @@ module.exports = class MentionSendingService {
   #getPostUrl;
   #isEnabled;
   #jobsService;
+  #logging;
 
   /**
    * @param {object} deps
    * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
+   * @param {import('@tryghost/logging')} deps.logging
    */
   constructor({
     discoveryService,
@@ -23,6 +24,7 @@ module.exports = class MentionSendingService {
     getPostUrl,
     isEnabled,
     jobsService,
+    logging,
   }) {
     this.#discoveryService = discoveryService;
     this.#externalRequest = externalRequest;
@@ -31,6 +33,7 @@ module.exports = class MentionSendingService {
     this.#getPostUrl = getPostUrl;
     this.#isEnabled = isEnabled;
     this.#jobsService = jobsService;
+    this.#logging = logging;
   }
 
   get siteUrl() {
@@ -95,8 +98,8 @@ module.exports = class MentionSendingService {
         );
       }
     } catch (e) {
-      logging.error('Error in webmention sending service post update event handler:');
-      logging.error(e);
+      this.#logging.error('Error in webmention sending service post update event handler:');
+      this.#logging.error(e);
     }
   }
 
@@ -138,7 +141,7 @@ module.exports = class MentionSendingService {
    * @returns
    */
   async send({ source, target, endpoint }) {
-    logging.info(
+    this.#logging.info(
       '[Webmention] Sending webmention from ' +
         source.href +
         ' to ' +
@@ -181,7 +184,7 @@ module.exports = class MentionSendingService {
    * @param {import('./send-webmentions-job').default} job
    */
   async sendWebmentions(job) {
-    logging.info('[Webmention] Sending all webmentions for ' + job.sourceUrl);
+    this.#logging.info('[Webmention] Sending all webmentions for ' + job.sourceUrl);
     await this.sendAll({
       url: new URL(job.sourceUrl),
       links: job.links.map((link) => new URL(link)),
@@ -202,7 +205,9 @@ module.exports = class MentionSendingService {
         try {
           await this.send({ source: url, target, endpoint });
         } catch (e) {
-          logging.error('[Webmention] Failed sending via ' + endpoint.href + ': ' + e.message);
+          this.#logging.error(
+            '[Webmention] Failed sending via ' + endpoint.href + ': ' + e.message,
+          );
         }
       }
     }
