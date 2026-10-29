@@ -548,9 +548,9 @@ describe('Checkout settings', () => {
     { saved: 'off', taxNumber: { collect: false } },
     { saved: 'on for one tier', taxNumber: { collect: true, tier_ids: [paidTier.id] } },
   ])(
-    'shows a tax ID on and fixed while automatic tax asks for it on every checkout, with it saved $saved',
+    'shows a tax ID on and fixed while automatic tax asks for it on every checkout, keeping it saved $saved',
     async ({ taxNumber }) => {
-      const { modal } = await openCheckoutFields(
+      const { modal, saveApi } = await openCheckoutFields(
         {
           design: { customize: false },
           shipping: { collect: false },
@@ -579,6 +579,30 @@ describe('Checkout settings', () => {
       await expect.element(modal.getByText(description)).toBeVisible();
       await expect.element(taxSwitch).toHaveAccessibleDescription(description);
       await expect.element(taxId.getByRole('link', { name: 'Learn more' })).toBeVisible();
+
+      await modal.getByRole('tab', { name: 'Design' }).click();
+      await modal.getByRole('switch', { name: 'Customize checkout design' }).click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      // Kept as it was, so turning automatic tax off brings it back.
+      await expect
+        .poll(() => saveApi.lastRequest?.body)
+        .toEqual({
+          checkout_config: [
+            {
+              design: {
+                customize: true,
+                button_color: '#0074d4',
+                background_color: '#ffffff',
+                border_style: 'rounded',
+                font_family: 'default',
+              },
+              shipping: { collect: false },
+              phone: { collect: false },
+              tax_number: taxNumber,
+            },
+          ],
+        });
     },
   );
 
