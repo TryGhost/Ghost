@@ -99,8 +99,6 @@ const messages = {
   defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.',
 };
 
-const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
-
 type AutomationRow = {
   id: string;
   slug: null | string;
@@ -1592,7 +1590,7 @@ async function resolveEmailDesignSettingIds(
     !actions.some(
       (action) =>
         action.type === 'send_email' &&
-        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE,
+        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
     )
   ) {
     return [...actions];
@@ -1603,7 +1601,7 @@ async function resolveEmailDesignSettingIds(
   return actions.map((action) => {
     if (
       action.type !== 'send_email' ||
-      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE
+      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_SLUG
     ) {
       return action;
     }
