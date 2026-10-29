@@ -1284,7 +1284,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    auditedAt: b2716ee0e80e8320025cf0d1f028125f3205d08a
     migrated: true
     migration:
       complexity: straightforward
@@ -1332,10 +1332,9 @@ services:
     entryPoints:
       - comments/index.ts
     notes: >-
-      Initializer adoption was rechecked against c17ae44b8f516ad5a1bd26d260bf55433c665396 on
-      top of the characterization at 15eba6d860604c73f7a74c5000d024d92bce88b8; the contracts
-      below describe the migrated root, while auditedAt and the migration assessments retain
-      their historical provenance. The prior wrapper is recorded at
+      The migrated root and its contracts were re-audited at auditedAt, including the
+      restricted template reader and call-time unsubscribe-link capability. The migration
+      assessments retain their historical reviewedAt revisions. The prior wrapper is recorded at
       https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/comments/index.js.
       Both recorded dependency preparations were applied in the migration. Account for the
       nested mail transport and external event subscribers. This background audit is separate
@@ -1376,7 +1375,9 @@ services:
           Stats retains the DB module. No other production construction of these comments
           classes was found. Units instantiate deep classes with fakes; the DB integration
           invokes the real root and asserts pinned projections and that repeated init retains
-          the api and controller, not transport ownership.
+          the api and controller, not transport ownership. Root units assert UTF-8 strings from
+          all three templates and reject unknown, traversal and inherited-property names before
+          any file I/O.
         sources:
           - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service.js
@@ -1384,6 +1385,7 @@ services:
           - core/server/services/comments/comments-service-email-renderer.js
           - core/server/lib/mail/ghost-mailer.js
         tests:
+          - test/unit/server/services/comments/index.test.ts
           - test/unit/server/services/comments/comments-service.test.js
           - test/unit/server/services/comments/comments-service-emails.test.js
           - test/integration/services/comments-service.test.js
@@ -1430,8 +1432,9 @@ services:
           unsubscribe links requiring the email-service renderer at send time. Init has no
           feature gate; reading the service before init throws IncorrectUsageError. HTTP
           exercises normal booted paths; the integration calls the root and asserts pinned
-          projections; mapper units pin the pre-init rejection. Prerequisite failures and
-          partially initialized dependencies are not characterized.
+          projections; mapper units pin the pre-init rejection. Root units initialize while
+          Email's renderer is unavailable and assert that initialization never reads it.
+          Other prerequisite failures and partially initialized dependencies are not characterized.
         sources:
           - core/boot.js
           - core/server/services/comments/index.ts
@@ -1442,6 +1445,7 @@ services:
           - core/shared/i18n/index.js
           - core/server/lib/mail/ghost-mailer.js
         tests:
+          - test/unit/server/services/comments/index.test.ts
           - test/integration/services/comments-service.test.js
           - test/e2e-api/members-comments/comments.test.js
           - test/unit/api/canary/utils/serializers/output/mapper.test.js
@@ -1456,7 +1460,8 @@ services:
           through the injected reader and compiled each render; text modules are
           require-cached. The real-root integration pins that repeated init retains the api and
           controller and that the controller counts published comments through the wired stats;
-          restart is untested.
+          restart is untested. Root units replace Email's renderer between unsubscribe-link
+          calls and assert that the next call uses the replacement.
         sources:
           - core/server/services/comments/index.ts
           - core/kernel/define-service.ts
@@ -1465,6 +1470,7 @@ services:
           - core/server/services/comments/comments-service-email-renderer.js
           - core/server/data/schema/schema.js
         tests:
+          - test/unit/server/services/comments/index.test.ts
           - test/integration/services/comments-service.test.js
           - test/unit/server/services/comments/comments-service-emails-renderer.test.ts
           - test/unit/kernel/define-service.test.ts
@@ -1511,8 +1517,9 @@ services:
           GhostMailer.sendMail, preserving normalization but bypassing transport/provider work.
           Email units pin the reply notification's recipient, injected unsubscribe link,
           translated subject and skip conditions, and the member and moderation timestamps as
-          the current time; the root's capability reads Email's renderer at send time and the
-          intercepted reply e2e exercises it through the real Email root.
+          the current time. Root units assert call-time Email renderer lookup, the method
+          receiver and forwarding of the member UUID and comments option. The intercepted
+          reply e2e exercises the capability through the real Email root.
         sources:
           - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service.js
@@ -1524,6 +1531,7 @@ services:
           - core/server/ghost-server.ts
           - test/utils/e2e-framework-mock-manager.js
         tests:
+          - test/unit/server/services/comments/index.test.ts
           - test/unit/server/services/comments/comments-service-emails.test.js
           - test/unit/server/services/comments/comments-service.test.js
           - test/e2e-api/members-comments/comments.test.js
