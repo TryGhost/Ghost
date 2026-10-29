@@ -333,6 +333,29 @@ test.describe('Content Visibility', async () => {
             expect(indicatorBox.y - videoBox.y).toBeLessThan(24);
         });
 
+        test('the visibility indicator sits on an image that is narrower than the card', async function () {
+            // a small portrait image is centred in a wide card, with space either side
+            await page.route('**/test-portrait.svg', route => route.fulfill({
+                contentType: 'image/svg+xml',
+                body: '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect width="200" height="300" fill="#ccc"/></svg>'
+            }));
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), {...image({cardWidth: 'wide', visibility: hidden}), src: '/test-portrait.svg', width: 200, height: 300})}`});
+            const card = page.locator('[data-kg-card="image"]');
+            const indicator = card.getByTestId('visibility-indicator');
+            await expect(indicator).toBeVisible();
+            await expectImageLoaded(card);
+
+            const cardBox = await card.boundingBox();
+            const imageBox = await card.locator('figure img').first().boundingBox();
+            const indicatorBox = await indicator.boundingBox();
+
+            expect(imageBox.x - cardBox.x).toBeGreaterThan(100);
+            expect(indicatorBox.x - imageBox.x).toBeGreaterThan(8);
+            expect(indicatorBox.x - imageBox.x).toBeLessThan(24);
+            expect(indicatorBox.y - imageBox.y).toBeGreaterThan(8);
+            expect(indicatorBox.y - imageBox.y).toBeLessThan(24);
+        });
+
         test('the visibility indicator can follow every row of a gallery', async function () {
             const galleryImage = row => ({row, src: '/Koenig-editor-1.png', width: 1600, height: 900, fileName: 'image.png'});
             const gallery = {type: 'gallery', version: 1, images: [0, 0, 0, 1, 1, 1].map(galleryImage), caption: '', visibility: hidden};
