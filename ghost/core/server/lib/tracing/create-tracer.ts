@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+import { InternalServerError } from '@tryghost/errors';
 import { z } from 'zod';
 import type { GhostLogger } from '@tryghost/logging';
 import type { GhostMetrics } from '@tryghost/metrics';
@@ -5,8 +7,14 @@ import type { AttributeValue, Span, Tracer } from './tracer';
 
 type Exit = { outcome: 'success' } | { outcome: 'failure'; err: unknown };
 
+/** OpenTelemetry's span context, which the span's exception line also carries. */
+interface SpanContext {
+  trace: { id: string };
+  span: { id: string };
+}
+
 /** What each span ships as, in the Elastic Common Schema fields Elastic's APM stores spans in. */
-export interface SpanDocument {
+export interface SpanDocument extends SpanContext {
   '@timestamp': number;
   event: { name: string; outcome: Exit['outcome']; duration: number };
   error?: { type: string };
@@ -43,9 +51,17 @@ function errorTypeOf(err: unknown): string {
 }
 
 /**
+ * Ghost's logger takes the line's message and error fields from an `Error`, so anything else
+ * thrown is logged as one, with what was thrown as its message.
+ */
+function loggable(err: unknown): Error {
+  return err instanceof Error ? err : new InternalServerError({ message: String(err) });
+}
+
+/**
  * Ships each span as a `@tryghost/metrics` document in Elastic Common Schema fields, which
  * Elastic's APM also stores OpenTelemetry spans in. `event.name` holds the span's name, as it
- * holds the event's name in Ghost's logs.
+ * holds the event's name in Ghost's logs. A failure's exception is logged as `<name>.exception`.
  */
 export function createTracer({
   transport,
@@ -56,18 +72,25 @@ export function createTracer({
 }): Tracer {
   function record(
     name: string,
+    context: SpanContext,
     attributes: Pick<SpanDocument, 'labels' | 'numeric_labels'>,
     start: { timestamp: number; at: number },
     exit: Exit,
   ): void {
     const failed = (err: unknown) =>
       logging.error(
-        { event: { name: 'metrics.record.failed' }, err, span: name },
+        {
+          event: { name: 'metrics.record.failed' },
+          err,
+          trace: context.trace,
+          span: { ...context.span, name },
+        },
         'Recording a span failed',
       );
     try {
       const document: SpanDocument = {
         '@timestamp': start.timestamp,
+        ...context,
         event: {
           name,
           outcome: exit.outcome,
@@ -89,9 +112,33 @@ export function createTracer({
     }
   }
 
+  /** Logs a failure's exception beside its span, with the span's ids and attributes. */
+  function logException(
+    name: string,
+    context: SpanContext,
+    attributes: Pick<SpanDocument, 'labels' | 'numeric_labels'>,
+    err: unknown,
+  ): void {
+    // With no message of its own, Ghost's logger makes the error's message the line.
+    logging.error({
+      event: { name: `${name}.exception` },
+      err: loggable(err),
+      ...context,
+      error: { type: errorTypeOf(err) },
+      labels: attributes.labels,
+      numeric_labels: attributes.numeric_labels,
+    });
+  }
+
   return {
     async track(name, fn) {
       const start = { timestamp: Date.now(), at: performance.now() };
+      // In OpenTelemetry's formats. Each span is a trace of its own, as spans aren't linked to
+      // the span they run inside.
+      const context: SpanContext = {
+        trace: { id: randomBytes(16).toString('hex') },
+        span: { id: randomBytes(8).toString('hex') },
+      };
       const attributes: Pick<SpanDocument, 'labels' | 'numeric_labels'> = {
         labels: {},
         numeric_labels: {},
@@ -120,10 +167,11 @@ export function createTracer({
       };
       try {
         const result = await fn(span);
-        record(name, attributes, start, { outcome: 'success' });
+        record(name, context, attributes, start, { outcome: 'success' });
         return result;
       } catch (err) {
-        record(name, attributes, start, { outcome: 'failure', err });
+        record(name, context, attributes, start, { outcome: 'failure', err });
+        logException(name, context, attributes, err);
         throw err;
       }
     },
