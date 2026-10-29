@@ -33,6 +33,8 @@ export {
   TEXT_SIZES,
   choice,
   country,
+  editableAnswers,
+  inOptionOrder,
   isFieldType,
   isRecordValue,
   matchField,
