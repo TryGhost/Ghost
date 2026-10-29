@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import ObjectId from 'bson-objectid';
-import { lockStaffInvites } from '../../../core/server/lib/staff-invite-usage';
 import InvitationLimiter from '../../../core/server/services/invites/invitation-limiter';
 const { limitService, init: initLimits } = require('../../../core/server/services/limits');
 import { lastPeriodStart, type LimitConfig } from '@tryghost/limit-service';
@@ -16,7 +15,7 @@ const dependencies = {
   transaction: <T>(callback: (transaction: Knex.Transaction) => Promise<T>): Promise<T> =>
     models.Base.transaction(callback),
   limitService,
-  lockStaffInvites,
+  Settings: models.Settings,
   getPeriodStart: () =>
     config.get('hostSettings:limits:inviteEmails:maxPeriodic') !== undefined
       ? lastPeriodStart(config.get('hostSettings:subscription:start'), 'month')
@@ -144,7 +143,7 @@ describe('Trial invitation admission', function () {
     await assert.rejects(
       models.Base.transaction(async (transaction: Knex.Transaction) => {
         await transaction('settings').where({ key: 'staff_invitation_emails' }).delete();
-        await lockStaffInvites(transaction);
+        await limiter.lockStaffUsage(transaction);
       }),
       /Cannot lock the staff invitation email counter/,
     );
@@ -159,7 +158,7 @@ describe('Trial invitation admission', function () {
     let read: Promise<unknown> | undefined;
     try {
       await models.Base.transaction(async (transaction: Knex.Transaction) => {
-        await lockStaffInvites(transaction);
+        await limiter.lockStaffUsage(transaction);
         read = new Promise((resolve, reject) => {
           store.get('unrelated-login', (error: Error | null, value: unknown) =>
             error ? reject(error) : resolve(value),
