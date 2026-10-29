@@ -3,7 +3,7 @@ import { fetchAllHelpArticles } from './help-center';
 
 /*
  * The help center's article list, loaded once when the panel opens and shared
- * by suggestions, search and matches as the user types. Refreshed after 10
+ * by the questions under the message and the article reader. Refreshed after 10
  * minutes, which is how long a newly tagged article takes to show.
  */
 

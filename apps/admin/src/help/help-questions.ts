@@ -4,10 +4,10 @@ import { type HelpPageKey, PAGE_QUESTIONS, PAGE_WORDS } from './help-pages';
 /*
  * The help center's FAQ (ghost.org/help/topic/faq/): articles tagged `faq`,
  * most with a question for a title ("How do I cancel member subscriptions?").
- * The panel suggests them before the user searches (help-suggestions.ts) and
- * completes what the user types with them (use-help-typeahead.ts), so what's
- * offered reads as a question to search for. Both favor questions about the
- * page the user is on.
+ * The support form offers them before anything's written (help-suggestions.ts)
+ * and, as the user writes, the ones related to their words
+ * (findRelatedQuestions), so they can read the answer instead of sending the
+ * question. Both favor questions about the page the user is on.
  */
 
 /** The FAQ topic's tag slug in the help center. */
@@ -38,10 +38,6 @@ function wordsOf(text: string) {
     .filter(Boolean);
 }
 
-// Shorter than this, what's typed completes to too much to be useful
-const MIN_LENGTH = 3;
-const MAX_MATCHES = 4;
-
 /** Whether a title has the phrase, at the start of a word ("member" covers "members"). */
 function titleHas(title: string, phrase: string) {
   const words = wordsOf(title).join(' ');
@@ -64,8 +60,8 @@ export function getPageRelevance(question: HelpArticle, page: HelpPageKey | null
   return PAGE_WORDS[page].some((word) => titleHas(question.title, word)) ? 1 : 0;
 }
 
-// Words that say nothing about which question is meant; only the others
-// have to match, so a question keeps completing as the user types around it
+// Words that say nothing about which question is meant: only the others
+// are matched, so "how do I" relates to nothing and "pause" to pausing
 const STOP_WORDS = new Set([
   'a',
   'an',
@@ -121,57 +117,62 @@ const STOP_WORDS = new Set([
   'up',
 ]);
 
+// Shorter than this, a word says little about which question is meant
+const MIN_TERM_LENGTH = 3;
+const MAX_RELATED = 4;
+// From this many words that carry meaning, one shared word isn't enough:
+// every message mentioning members would relate to half the FAQ
+const LONG_MESSAGE_TERMS = 4;
+
+/** A word without its ending, roughly: members and member, paused and pause. */
+function stem(word: string) {
+  return word.replace(/(ing|ed|es|s)$/, (ending, offset: number) => (offset >= 4 ? '' : ending));
+}
+
+/** Whether two stems are the same word, allowing for an ending the stem missed. */
+function sameWord(a: string, b: string) {
+  return a.startsWith(b) ? b.length >= MIN_TERM_LENGTH : b.startsWith(a) && a.length >= 4;
+}
+
 /**
- * The FAQ questions that complete what the user has typed so far. The words
- * that carry meaning (not "how do I") each have to start a word in the
- * question, the last one usually half-typed, and more than half of them
- * must: from three words on, one that isn't in a question doesn't lose it,
- * so completions stay as the user types on. Questions about the page the user is on come first
- * (getPageRelevance), then the ones more of the words matched, then those
- * that start the way the user did, then the ones whose matching words come
- * earliest.
+ * The FAQ questions related to what the user is writing, most related first:
+ * the ones sharing the most words that carry meaning (not "how do I", and
+ * "members" finds "member"), then the ones about the page the user is on
+ * (getPageRelevance), then the shorter. A short message relates by one shared
+ * word; a longer one needs two.
  */
-export function matchQuestions(
+export function findRelatedQuestions(
   questions: HelpArticle[],
-  draft: string,
+  text: string,
   page: HelpPageKey | null = null,
 ): HelpArticle[] {
-  const typed = wordsOf(draft);
-  if (draft.trim().length < MIN_LENGTH || !typed.length) {
+  const terms = [
+    ...new Set(
+      wordsOf(text)
+        .filter((word) => !STOP_WORDS.has(word) && word.length >= MIN_TERM_LENGTH)
+        .map(stem),
+    ),
+  ];
+  if (!terms.length) {
     return [];
   }
-  const meaningful = typed.filter((word) => !STOP_WORDS.has(word));
-  // "how do i" is all stop words, and should still complete
-  const terms = meaningful.length ? meaningful : typed;
+  const needed = terms.length >= LONG_MESSAGE_TERMS ? 2 : 1;
 
   const scored = questions.flatMap((question) => {
-    const words = wordsOf(question.title);
-    const positions = terms.map((term) => words.findIndex((word) => word.startsWith(term)));
-    const matched = positions.filter((position) => position !== -1);
-    // More than half: with two words both must match, with three one may miss
-    if (matched.length < Math.ceil((terms.length + 1) / 2)) {
+    const words = wordsOf(question.title).map(stem);
+    const matched = terms.filter((term) => words.some((word) => sameWord(word, term))).length;
+    if (matched < needed) {
       return [];
     }
-    const fromStart = typed.every((term, index) => words[index]?.startsWith(term));
-    return [
-      {
-        question,
-        relevance: getPageRelevance(question, page),
-        matched: matched.length,
-        fromStart,
-        score: matched.reduce((sum, position) => sum + position, 0),
-      },
-    ];
+    return [{ question, matched, relevance: getPageRelevance(question, page) }];
   });
   return scored
     .sort(
       (a, b) =>
-        b.relevance - a.relevance ||
         b.matched - a.matched ||
-        Number(b.fromStart) - Number(a.fromStart) ||
-        a.score - b.score ||
+        b.relevance - a.relevance ||
         a.question.title.length - b.question.title.length,
     )
-    .slice(0, MAX_MATCHES)
+    .slice(0, MAX_RELATED)
     .map(({ question }) => question);
 }

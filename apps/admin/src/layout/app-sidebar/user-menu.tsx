@@ -76,8 +76,8 @@ function UserMenuHelp() {
             helpPanel.setOpen(true);
           }}
         >
-          <LucideIcon.HelpCircle />
-          <UserMenuItem.Label>Help</UserMenuItem.Label>
+          <LucideIcon.LifeBuoy />
+          <UserMenuItem.Label>Support</UserMenuItem.Label>
         </UserMenuItem>
       ) : (
         <UserMenuItem onSelect={closeMobileSidebar}>

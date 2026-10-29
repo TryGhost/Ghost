@@ -123,8 +123,8 @@ const FURTHER_READING = /^further reading$/i;
 /**
  * Takes an article's own "Further reading" section out of its prepared HTML
  * (the heading, and the bookmark cards after it up to the next heading), so
- * the panel can show those links once, merged with the search's other
- * results, rather than as a second list under the article.
+ * the panel can show those links as its own list of what to read next,
+ * rather than leaving them as a second list inside the article.
  */
 export function splitFurtherReading(preparedHtml: string): {
   html: string;

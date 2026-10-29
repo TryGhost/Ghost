@@ -17,26 +17,25 @@ import { prepareArticleHtml, splitFurtherReading } from './help-article-html';
 import { ARTICLE_CONTENT_CLASS_NAME } from './help-article-styles';
 import { fetchHelpArticleContent, type HelpArticle } from './help-center';
 import { HelpPanelSizeButton } from './help-panel-size';
-import { HelpLinkCard, HelpResult } from './help-results';
+import { HelpLinkCard, HelpResult } from './help-cards';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
-import type { HelpSession } from './use-help-search';
+import type { HelpSession } from './use-help-session';
 import { useHelpCenterIndex } from './use-help-center-index';
 
 /*
  * An article read in the panel, so the user doesn't leave Admin for the
- * answer. It's where a search lands: its first result, or the FAQ question
- * picked. It takes over the panel like the message to support, with the
- * search kept behind it, lists the search's other results under "More from
- * the help center", and ends by asking whether it was what they were looking
- * for, with a new search or the support team if not.
+ * answer: one of the FAQ questions offered under their message
+ * (help-form.tsx). It takes over the panel with the message kept behind it,
+ * lists the article's own further reading under "More from the help center",
+ * and ends by asking whether it answered the question, with the message to
+ * send or go back to if not.
  *
  * The article's HTML comes from the help center, made safe and readable by
  * help-article-html.ts. Its links to other help articles open in the panel
  * too, its in-article anchors scroll within it, and its images zoom.
  */
 
-// How many things to read next: the article's own further reading is usually
-// two, the search adds up to two more
+// How many things to read next: the article's own further reading is usually two
 const MORE_LIMIT = 4;
 
 function prefersReducedMotion() {
@@ -57,17 +56,9 @@ interface HelpArticleViewProps {
   session: HelpSession;
   showClose: boolean;
   onClose: () => void;
-  /** Clears the search and the field, back to the start */
-  onStartOver: () => void;
 }
 
-export function HelpArticleView({
-  article,
-  session,
-  showClose,
-  onClose,
-  onStartOver,
-}: HelpArticleViewProps) {
+export function HelpArticleView({ article, session, showClose, onClose }: HelpArticleViewProps) {
   const index = useHelpCenterIndex(true);
   const titleRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -89,9 +80,8 @@ export function HelpArticleView({
   );
   const topic = article.tags[0]?.name;
   const readingTime = content.data?.readingTime;
-  // What to read next: the article's own further reading first (help
-  // articles as articles, other pages as links), then the search's other
-  // results, each once and never this article
+  // What to read next: the article's own further reading (help articles as
+  // articles, other pages as links), each once and never this article
   const more = useMemo(() => {
     const articles: HelpArticle[] = [];
     const elsewhere: { title: string; url: string }[] = [];
@@ -103,15 +93,13 @@ export function HelpArticleView({
         elsewhere.push(link);
       }
     }
-    articles.push(...(session.search?.results ?? []));
     const seen = new Set([article.id]);
     return {
       articles: articles.filter(({ id }) => !seen.has(id) && seen.add(id)).slice(0, MORE_LIMIT),
       elsewhere: elsewhere.slice(0, MORE_LIMIT),
     };
-  }, [links, index.data, session.search, article.id]);
+  }, [links, index.data, article.id]);
   const moreCount = more.articles.length + more.elsewhere.length;
-  const findingMore = session.searching;
 
   // Focus moves into the article, so keyboard and screen reader users land in it
   useEffect(() => {
@@ -147,7 +135,7 @@ export function HelpArticleView({
       <header className="flex h-14 shrink-0 items-center justify-between gap-2 pr-3 pl-2">
         <Inline align="center" className="min-w-0" gap="xs">
           <Button
-            aria-label="Back to help"
+            aria-label="Back to your message"
             className="shrink-0"
             size="icon-sm"
             variant="ghost"
@@ -180,7 +168,7 @@ export function HelpArticleView({
           </Tooltip>
           <HelpPanelSizeButton />
           {showClose && (
-            <Button aria-label="Close help" size="icon-sm" variant="ghost" onClick={onClose}>
+            <Button aria-label="Close support" size="icon-sm" variant="ghost" onClick={onClose}>
               <LucideIcon.X />
             </Button>
           )}
@@ -228,7 +216,7 @@ export function HelpArticleView({
               onClick={onContentClick}
             />
 
-            {(moreCount > 0 || findingMore) && (
+            {moreCount > 0 && (
               <Stack
                 className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
                 gap="sm"
@@ -237,9 +225,6 @@ export function HelpArticleView({
                 <Text size="sm" tone="tertiary">
                   More from the help center
                 </Text>
-                {findingMore && !moreCount && (
-                  <Skeleton className="h-3.5 w-1/2" containerClassName="flex" />
-                )}
                 {more.articles.map((result, position) => (
                   <HelpResult
                     key={result.id}
@@ -260,25 +245,34 @@ export function HelpArticleView({
               </Stack>
             )}
 
-            {/* Where to next when the article didn't do it: a fresh search,
-                or a person. Back is in the header for the results. */}
+            {/* When the article didn't answer it, the message is still there,
+                kept as it was left: send it from here, or go on writing it */}
             <Stack
               className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
               gap="sm"
               style={revealAt(3)}
             >
               <Text size="sm" weight="medium">
-                Not what you were looking for?
+                Didn’t answer your question?
               </Text>
               <Inline gap="sm" wrap>
-                <Button size="sm" variant="outline" onClick={onStartOver}>
-                  <LucideIcon.Search />
-                  New search
-                </Button>
-                <Button size="sm" variant="outline" onClick={session.contactSupport}>
-                  <LucideIcon.MessageCircle />
-                  Contact support
-                </Button>
+                {session.canSend ? (
+                  <>
+                    <Button size="sm" variant="outline" onClick={session.leaveArticle}>
+                      <LucideIcon.PenLine />
+                      Keep writing
+                    </Button>
+                    <Button size="sm" onClick={session.send}>
+                      <LucideIcon.Send />
+                      Send your message
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={session.leaveArticle}>
+                    <LucideIcon.PenLine />
+                    Write to support
+                  </Button>
+                )}
               </Inline>
             </Stack>
           </>

@@ -41,8 +41,8 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
                   isActive={helpPanel.open}
                   onClick={() => helpPanel.setOpen(!helpPanel.open)}
                 >
-                  <LucideIcon.HelpCircle />
-                  <NavMenuItem.Label>Help</NavMenuItem.Label>
+                  <LucideIcon.LifeBuoy />
+                  <NavMenuItem.Label>Support</NavMenuItem.Label>
                 </NavMenuItem.Button>
               ) : (
                 <NavMenuItem.Link

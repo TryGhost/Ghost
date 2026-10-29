@@ -1,8 +1,8 @@
-# Help panel agent guidance
+# Support panel agent guidance
 
 Read [`README.md`](./README.md) first: it explains the principle, the contract
-with the help center, how a search works, the trade-offs and the production
-checklist.
+with the help center, how the questions under the message are chosen, the
+trade-offs and the production checklist.
 
 ## Important warnings
 
@@ -13,17 +13,17 @@ checklist.
   `#admin-<key>` in the help center would silently stop showing. When adding
   a key, slug or topic, keep `help-contract.ts` and the README tables in step.
 - Keep the rules in the pure modules (`help-pages.ts`, `help-suggestions.ts`,
-  `help-questions.ts`, `help-docsbot-search.ts`, `help-article-html.ts`) and
-  cover changes in their tests. Hooks and components should stay thin.
-- This is a search, not a chat: one search replaces the last, there's no
-  thread and no follow-up. Don't add conversation state; the chat version
-  lives on the `poc-help-chat` branch for comparison.
-- Searches go to DocsBot's semantic search API (`help-docsbot-search.ts`) from
-  the browser, with nothing but the query. Don't add anything about the user
-  or site to what's sent without a privacy review. The team and bot ids there
-  are a test bot's.
-- Don't add a "Contact support" entry point up front. Support is offered only
-  where a search or an article didn't do it.
+  `help-questions.ts`, `help-article-html.ts`) and cover changes in their
+  tests. Hooks and components should stay thin.
+- This is a support form first: the message is always there to send, and the
+  help center is offered beside it, never as a step before it. Don't add a
+  search field, a chat or any gate in front of sending; the search and chat
+  versions live on `poc-help-search` and `poc-help-chat` for comparison.
+- Reading an article must never change the draft. The message lives in the
+  session (`use-help-session.ts`); keep it there, not in a view.
+- The message never leaves the browser until it's sent: the questions under
+  it are matched locally from the FAQ titles. Don't send what's being typed
+  to any service (DocsBot included) without a privacy review.
 - Mocked behaviour is marked `PROTOTYPE:`. Keep the marker on anything new
   that's mocked, and remove it with the mock.
 - The panel is Ghost(Pro) only (`HelpPanelProvider`). Self-hosted sites must

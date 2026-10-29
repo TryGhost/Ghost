@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { article } from './help-fixtures';
-import { getFaqQuestions, getPageRelevance, isQuestion, matchQuestions } from './help-questions';
+import type { HelpPageKey } from './help-pages';
+import {
+  findRelatedQuestions,
+  getFaqQuestions,
+  getPageRelevance,
+  isQuestion,
+} from './help-questions';
 
 const faq = (slug: string, title: string) => article(slug, title, '', ['FAQ']);
 
@@ -22,7 +28,7 @@ describe('getFaqQuestions', () => {
   });
 });
 
-describe('matchQuestions', () => {
+describe('findRelatedQuestions', () => {
   const questions = [
     faq('cancel', 'How do I cancel member subscriptions'),
     faq('pause', 'How do I pause member subscriptions?'),
@@ -30,38 +36,33 @@ describe('matchQuestions', () => {
     faq('fees', 'Are there any transaction fees?'),
     faq('welcome', 'How do I send a welcome email to new members?'),
   ];
-  const slugs = (draft: string) => matchQuestions(questions, draft).map(({ slug }) => slug);
+  const slugs = (text: string, page: HelpPageKey | null = null) =>
+    findRelatedQuestions(questions, text, page).map(({ slug }) => slug);
 
-  it('completes what was typed, word by word, with half-typed words', () => {
-    expect(slugs('how do i canc')).toEqual(['cancel']);
-    expect(slugs('member sub')).toEqual(['cancel', 'pause']);
+  it('relates the questions sharing the most words that carry meaning', () => {
+    expect(slugs('I want to pause a subscription')).toEqual(['pause', 'cancel']);
+    expect(slugs('transaction fees')).toEqual(['fees']);
   });
 
-  it('puts questions that start the same way first', () => {
-    expect(slugs('how do i')).toEqual(['cancel', 'pause', 'welcome', 'sign-in']);
-    expect(slugs('fees')).toEqual(['fees']);
+  it('finds a word in its other forms', () => {
+    expect(slugs('cancelling')).toEqual(['cancel']);
+    expect(slugs('members').sort()).toEqual(['cancel', 'pause', 'sign-in', 'welcome']);
   });
 
-  it('needs a few characters and more than half of the meaningful words to match', () => {
-    expect(slugs('ho')).toEqual([]);
-    expect(slugs('cancel stripe')).toEqual([]);
-    // From three words on, one that isn't in a question doesn't lose it
-    expect(slugs('cancel member stripe')).toEqual(['cancel']);
-    expect(slugs('cancel stripe payments now')).toEqual([]);
+  it('relates nothing to words that say nothing about the question', () => {
+    expect(slugs('how do I')).toEqual([]);
+    expect(slugs('')).toEqual([]);
   });
 
-  it('keeps completing as the user types around the words that matter', () => {
-    expect(slugs('how do i cancel a member')).toEqual(['cancel']);
-    expect(slugs('how can i get my members to sign in')).toEqual(['sign-in']);
+  it('needs two shared words once the message is long', () => {
+    expect(slugs('the images in my newsletter do not load in gmail')).toEqual([]);
+    expect(slugs('members cannot sign in to my site since the move')).toEqual(['sign-in']);
   });
 
-  it('puts questions about the page first', () => {
-    // On Automations, the welcome email leads; on Members, the member ones do
-    const onPage = (draft: string, page: 'automations' | 'members') =>
-      matchQuestions(questions, draft, page).map(({ slug }) => slug);
-    expect(onPage('how do i', 'automations')).toEqual(['welcome', 'cancel', 'pause', 'sign-in']);
-    expect(onPage('how do i', 'members')[0]).toBe('cancel');
-    expect(onPage('how do i', 'members')).not.toContain('fees');
+  it('puts questions about the page first among equals', () => {
+    const onMembers = article('import', 'How do I import members?', '', ['FAQ'], ['members']);
+    const related = findRelatedQuestions([...questions, onMembers], 'members', 'members');
+    expect(related[0]?.slug).toBe('import');
   });
 });
 

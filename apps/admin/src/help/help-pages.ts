@@ -35,7 +35,7 @@ export type HelpPageKey =
  */
 export const GENERAL_KEY = 'general';
 
-/** How each page is named in the panel (the chip beside the composer). */
+/** How each page is named in the panel. */
 export const PAGE_LABELS: Record<HelpPageKey, string> = {
   home: 'Dashboard',
   analytics: 'Analytics',
@@ -203,7 +203,7 @@ export const PAGE_QUESTIONS: Record<HelpPageKey, string[]> = {
 
 /**
  * Words that mark an FAQ question as being about a page, for ranking the
- * completions as the user types (help-questions.ts): a question whose title
+ * questions related to a message (help-questions.ts): a question whose title
  * has one of them comes before one that doesn't, after the page's own
  * questions. Matched at the start of a word, so "member" covers "members"
  * and "membership". Like PAGE_QUESTIONS, a fallback for tagging.

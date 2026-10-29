@@ -1,38 +1,41 @@
-# Help panel (prototype, search)
+# Support panel (prototype, form)
 
-The Help panel tries to answer questions from the
-[help center](https://ghost.org/help/) before they turn into support tickets.
-It docks beside the page, greets the user with a search field and three FAQ
-questions for the page they're on, completes what they type with more FAQ
-questions, searches the help center through DocsBot, previews the best
-article with up to two more beneath it, opens articles inside Admin, and
-hands off to a support form when none of that did it.
+The Support panel is where a Ghost(Pro) user writes to the support team, and
+it tries to answer them from the [help center](https://ghost.org/help/) while
+they write. It docks beside the page, opens on a message box, offers the FAQ
+questions for the page they're on under it ("You might be looking for"),
+swaps them for the questions related to their words as they type, opens any
+of them inside Admin with the message kept as it was, and sends the message
+from the form or from the article.
 
-This is the **search** prototype. It's one of two built to compare:
+This is the **form** prototype, the third of three built to compare:
 
-- `poc-help-search` (this branch): a search. Each search stands alone, the
-  results are help center articles, and the user reads them in the panel.
+- `poc-help-form` (this branch): a support form first. The help center is
+  offered beside the message, never instead of it.
+- `poc-help-search`: a search. The user searches the help center through
+  DocsBot and reads articles in the panel; support is where a search didn't
+  do it.
 - `poc-help-chat`: a chat. DocsBot's agent writes an answer, streamed into a
   thread, with follow-ups.
 
-Both share the shell, the article reader, the FAQ suggestions and the support
-form; they differ in what happens when the user asks.
+All three share the shell, the article reader and the FAQ suggestions; they
+differ in what the panel opens on and what happens when the user asks.
 
 ## Start here
 
-- **Status:** a working prototype. It runs end to end against the live help
-  center and DocsBot, but some parts are mocked (search the code for
-  `PROTOTYPE:`), it has no feature flag, and its strings aren't translated.
-  The [production checklist](#production-checklist) lists what's left.
+- **Status:** a working prototype. It runs against the live help center, but
+  some parts are mocked (search the code for `PROTOTYPE:`), it has no feature
+  flag, and its strings aren't translated. The
+  [production checklist](#production-checklist) lists what's left.
 - **Who sees it:** Ghost(Pro) sites only. Self-hosted sites keep the old Help
   link to the help center ([Who sees it](#who-sees-it)).
 - **The one idea to keep:** Admin is only the experience layer. The help
   center owns the content, including which questions show on which Admin page
   ([The principle](#the-principle-admin-is-the-harness-the-help-center-owns-the-content)).
 - **Reading order for the code:** `help-panel-provider.tsx` (the gate),
-  `help-panel.tsx` (the shell), `use-help-search.ts` (what happens when
-  someone searches), `help-docsbot-search.ts` (the DocsBot client),
-  `help-questions.ts` (the FAQ: suggestions and completions), then
+  `help-panel.tsx` (the shell), `use-help-session.ts` (the message and what's
+  being read), `help-form.tsx` (the form), `use-help-related-questions.ts`
+  and `help-questions.ts` (which questions show under the message), then
   `help-suggestions.ts` and `help-pages.ts` (what's suggested where).
 - **Try it:** add the help center's API key locally first (it isn't in the
   repository), then see [Checking changes](#checking-changes).
@@ -66,14 +69,14 @@ Once a page has any tagged question, its fallback list is ignored.
 
 ## Who sees it
 
-Ghost(Pro) sites only. The panel exists to deflect Ghost(Pro) support tickets,
-and its support form and billing alerts are Ghost(Pro)'s.
+Ghost(Pro) sites only. The panel is Ghost(Pro)'s support form, and its billing
+alerts are Ghost(Pro)'s too.
 
 `HelpPanelProvider` checks `hostSettings.billing.enabled` in the config (the
 same check Admin's billing screen uses). On other sites it renders no provider,
-so `useHelpPanel()` returns nothing and the Help items in the sidebar
-(`nav-settings.tsx`) and account menu (`user-menu.tsx`) keep linking to the
-help center as before. The same happens without the help center's API key
+so `useHelpPanel()` returns nothing and the sidebar (`nav-settings.tsx`) and
+account menu (`user-menu.tsx`) show the old Help link to the help center
+instead of Support. The same happens without the help center's API key
 (`hasHelpCenterKey` in `help-center.ts`), which is also how a key from config
 should behave on older Core that doesn't provide it.
 
@@ -87,43 +90,38 @@ Within Ghost(Pro), billing alerts only show to people who can manage billing
 - [ ] **Feature flag.** Add a private flag (the
       `.agents/skills/add-private-feature-flag` skill) and require it in
       `HelpPanelProvider` alongside the Ghost(Pro) check.
-- [ ] **Make "Contact support" real.** Ghost(Pro) support is email today (the
-      billing app's Support tab shows support@ghost.org). The quickest real
-      version keeps the form and opens a `mailto:support@ghost.org` draft with
-      the subject and message (`getSupportContext` lists the context a send
-      could add, if ever wanted). A ticketing API can replace it later. Until then, `sendToSupport` in `use-help-search.ts`
-      sends nothing, and the form promises a reply from the Ghost(Pro) support
-      team within 24 hours on working days, which support should confirm.
-- [ ] **Own the DocsBot bot.** `help-docsbot-search.ts` hardcodes a test team
-      and bot (`DOCSBOT_TEAM_ID`, `DOCSBOT_BOT_ID`), asked without a key
-      straight from the browser. Move them into Ghost config, decide whether
-      searches should go through Ghost(Pro) instead, and point the bot at the
-      production help center. Each search costs 0.1 of DocsBot's AI credits.
+- [ ] **Make sending real.** Ghost(Pro) support is email today (the billing
+      app's Support tab shows support@ghost.org). The quickest real version
+      opens a `mailto:support@ghost.org` draft with the message
+      (`getSupportContext` in `help-signals.ts` lists the context a send could
+      add, if ever wanted). A ticketing API can replace it later. Until then,
+      `send` in `use-help-session.ts` sends nothing, and the form promises a
+      reply from the Ghost(Pro) support team within 24 hours on working days,
+      which support should confirm.
 - [ ] **Acceptance tests.** The panel opens on Ghost(Pro); a self-hosted site
-      keeps the old Help link; the help center or DocsBot being down shows the
-      error state.
+      keeps the old Help link; the help center being down shows the error
+      state under the message and the form still sends.
 
 ### Before testing with customers
 
-- [ ] **Measurement.** Use Admin's `trackEvent` for: panel opened, search
-      made, no results, article read, and what's chosen at the end of an
-      article (new search, contact support). Without these
-      the test can't show whether tickets are deflected.
+- [ ] **Measurement.** Use Admin's `trackEvent` for: panel opened, question
+      opened (and whether it was a page question or matched the message),
+      message sent, and sent from an article. Without these the test can't
+      show whether tickets are deflected.
 - [ ] **Move the API URL and key into Ghost config** (`help-center.ts`), so
       they can change without an Admin release. Admin and Core deploy
       separately, so detect the config and keep working without it on older
       Core.
 - [ ] **Agree the contract with the docs team** ([below](#the-contract-with-the-help-center)):
-      the keys, tagging FAQ questions for the busiest pages, writing excerpts
-      that read well as a result, and a heads-up before renaming any slug
-      Admin refers to.
+      the keys, tagging FAQ questions for the busiest pages, and a heads-up
+      before renaming any slug Admin refers to.
 - [ ] **Check the referenced slugs automatically.** `getReferencedSlugs()` and
       `getReferencedTopics()` in `help-contract.ts` list them; a scheduled job
       or test against the live Content API would catch renames.
 - [ ] **Privacy review.** Opening the panel requests help.ghost.io from the
-      browser, which sends the site's origin as the referrer. Each search goes
-      to DocsBot (api.docsbot.ai) as the query alone; nothing about the user
-      or site is sent.
+      browser, which sends the site's origin as the referrer. The message
+      never leaves the browser until it's sent: matching it against the FAQ
+      happens locally.
 - [ ] **Rollout.** Turning the flag on for chosen customer sites depends on
       how Ghost(Pro) enables Labs features per site.
 
@@ -132,8 +130,8 @@ Within Ghost(Pro), billing alerts only show to people who can manage billing
 - [ ] Translations: `t()` for every string (see the internationalization
       guide).
 - [ ] The accessibility gaps under [Known gaps](#known-gaps).
-- [ ] Tests for the session (`use-help-search.ts`: searching, retrying,
-      reading, the support draft) and the keyboard handling.
+- [ ] Tests for the session (`use-help-session.ts`: editing, reading,
+      sending, resetting) and the view switching.
 
 ## How it fits together
 
@@ -142,24 +140,22 @@ around them are thin.
 
 **Wiring (outside this folder)**
 
-| File                                                                      | What it does                                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `layout/admin-layout.tsx`                                                 | Wraps the layout in `HelpPanelProvider` and places `<HelpPanel />` |
-| `layout/app-sidebar/nav-settings.tsx`, `layout/app-sidebar/user-menu.tsx` | Help opens the panel, or links out when there's no provider        |
-| `index.css`                                                               | The `help-working-shimmer` utility for the searching status        |
+| File                                                                      | What it does                                                          |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `layout/admin-layout.tsx`                                                 | Wraps the layout in `HelpPanelProvider` and places `<HelpPanel />`    |
+| `layout/app-sidebar/nav-settings.tsx`, `layout/app-sidebar/user-menu.tsx` | Support opens the panel; without a provider, Help links out as before |
 
 **Rules (pure, unit tested)**
 
-| File                     | What it owns                                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `help-pages.ts`          | Page keys, their labels, route to key (`getPageKey`), each page's topics, fallback articles and fallback questions |
-| `help-suggestions.ts`    | Account alerts (`getAccountAlert`) and the suggestion order (`getSuggestedArticles`)                               |
-| `help-questions.ts`      | The FAQ's questions (`getFaqQuestions`) and completing what's typed with them (`matchQuestions`)                   |
-| `help-docsbot-search.ts` | The DocsBot search client (`searchDocsBot`) and turning its hits into articles from the list (`toSearchResults`)   |
-| `help-contract.ts`       | Every key, slug and topic Admin relies on the help center for, in one place                                        |
-| `help-article-html.ts`   | Makes an article's HTML safe and readable in the panel                                                             |
-| `help-format.ts`         | Small text helpers (`plural`, `inDays`, `getInitials`)                                                             |
-| `help-fixtures.ts`       | Test fixtures: `article()`, billing states                                                                         |
+| File                   | What it owns                                                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `help-pages.ts`        | Page keys, their labels, route to key (`getPageKey`), each page's topics, fallback articles, fallback questions and words |
+| `help-suggestions.ts`  | Account alerts (`getAccountAlert`) and the order of the page's questions (`getSuggestedArticles`)                         |
+| `help-questions.ts`    | The FAQ's questions (`getFaqQuestions`) and the ones related to what's being written (`findRelatedQuestions`)             |
+| `help-contract.ts`     | Every key, slug and topic Admin relies on the help center for, in one place                                               |
+| `help-article-html.ts` | Makes an article's HTML safe and readable in the panel, and lifts out its "Further reading"                               |
+| `help-format.ts`       | Small text helpers (`plural`, `inDays`, `getInitials`)                                                                    |
+| `help-fixtures.ts`     | Test fixtures: `article()`, billing states                                                                                |
 
 **Data**
 
@@ -171,26 +167,24 @@ around them are thin.
 
 **State**
 
-| File                                               | What it owns                                                                                           |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `help-panel-provider.tsx`, `help-panel-context.ts` | Whether the panel is open, and the Ghost(Pro) gate                                                     |
-| `use-help-search.ts`                               | The session: the current search and results, reading articles, the support draft, and which view shows |
-| `use-help-suggestions.ts`                          | Runs `getSuggestedArticles` for the current page over the loaded article list                          |
-| `use-help-typeahead.ts`                            | Completions as the user types: the draft, the highlighted question, the keyboard, the combobox ARIA    |
-| `use-help-panel-size.ts`                           | The docked width, and the maximized width (the page area right of Admin's sidebar)                     |
+| File                                               | What it owns                                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `help-panel-provider.tsx`, `help-panel-context.ts` | Whether the panel is open, and the Ghost(Pro) gate                                            |
+| `use-help-session.ts`                              | The session: the message (draft, sending, sent), the article being read, and which view shows |
+| `use-help-suggestions.ts`                          | Runs `getSuggestedArticles` for the current page over the loaded article list                 |
+| `use-help-related-questions.ts`                    | The questions under the message: related to its words, or the page's while none are           |
+| `use-help-panel-size.ts`                           | The docked width, and the maximized width (the page area right of Admin's sidebar)            |
 
 **Views**
 
-| File                    | What it shows                                                                                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the three views (search, article, support)                                       |
-| `help-welcome.tsx`      | The greeting, and the page's FAQ questions to pick from under a headline naming the page (or an error with a link to the help center) |
-| `help-search-field.tsx` | The search field at the top, and the completions under it                                                                             |
-| `help-results.tsx`      | A search's results: the first as a preview of the article, the rest with title and excerpt; the searching, empty and error states     |
-| `help-article-view.tsx` | An article read in the panel, ending with "Not what you were looking for?": a new search, or support                                  |
-| `help-support.tsx`      | The message to support, which takes over the panel                                                                                    |
-| `help-panel-size.tsx`   | The maximize button                                                                                                                   |
-| `help-reveal.ts`        | The staggered entrance blocks use                                                                                                     |
+| File                    | What it shows                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                                  |
+| `help-form.tsx`         | The message to support with "You might be looking for" under it, the attach and send bar, and the sent confirmation |
+| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?": keep writing, or send the message     |
+| `help-cards.tsx`        | The cards under an article for what to read next                                                                    |
+| `help-panel-size.tsx`   | The maximize button                                                                                                 |
+| `help-reveal.ts`        | The staggered entrance blocks use                                                                                   |
 
 ## Where the content comes from
 
@@ -201,9 +195,8 @@ search uses (the `data-key` attribute on its pages), but it's left empty in the
 repository: add it locally, and don't commit it.
 
 The panel loads the whole article list once when it opens (about 140 articles,
-~25 KB in two requests): it's where results get their title, excerpt and topic,
-where suggestions and completions come from, and how links between articles
-open in the panel. An article's full HTML loads only when it's opened.
+~25 KB in two requests): it's where the questions under the message come from, and how
+links between articles open in the panel. An article's full HTML loads only when it's opened.
 
 Each article is parsed on its own, so one malformed article is skipped rather
 than failing the list. Requests time out after 10 seconds and show the error
@@ -211,8 +204,8 @@ state.
 
 - **Titles and URLs** are the articles' own (https only).
 - **Excerpts** are the custom excerpt (the Excerpt field in post settings), or
-  the article's first paragraph when it has none. Results show them, so an
-  excerpt that answers the title's question is the best kind.
+  the article's first paragraph when it has none. The panel shows them on
+  further-reading cards.
 - **Topics** are the article's public tags; the first is its primary topic.
 - **Admin keys** are its internal `#admin-…` tags (slug `hash-admin-…`).
 
@@ -252,14 +245,16 @@ dunning warnings use it).
 
 These live in `ACCOUNT_ALERTS` (`help-suggestions.ts`).
 
-## Suggestions
+## The questions under the message
 
-Before the user searches, up to three questions show for their page
-(`getSuggestedArticles`), under the search field and a headline naming the
-page ("Frequently asked questions for Members", from `PAGE_LABELS`). They come from the help
-center's [FAQ](https://ghost.org/help/topic/faq/), the articles tagged `faq`
-whose titles are questions (`getFaqQuestions`; a few FAQ titles are topics,
-such as "Modifying robots.txt", and are left out). In order:
+Under the message, "You might be looking for" lists FAQ questions from the
+help center's [FAQ](https://ghost.org/help/topic/faq/): the articles tagged
+`faq` whose titles are questions (`getFaqQuestions`; a few FAQ titles are
+topics, such as "Modifying robots.txt", and are left out). Which ones depends
+on what's written (`useHelpRelatedQuestions`):
+
+**Before anything is written**, up to three questions for the page the user
+is on (`getSuggestedArticles`). In order:
 
 1. **Account alert**, if one applies: the article tagged for it, or its
    fallback.
@@ -269,102 +264,41 @@ such as "Modifying robots.txt", and are left out). In order:
 3. **The FAQ's featured questions**, then the rest of the FAQ, for any slot
    left.
 
+**As the user writes**, up to four questions related to their words
+(`findRelatedQuestions` in `help-questions.ts`), and the page's again while
+none are. The words that carry meaning (not "how do I": a stop word list, and
+nothing under three letters) are compared with the words of each title with
+their endings taken off, so "members" finds "member" and "cancelling" finds
+"cancel". A short message relates by one shared word; from four meaningful
+words on it takes two, or every message mentioning members would relate to
+half the FAQ. The questions sharing the most words come first, then the ones
+about the page (`getPageRelevance`: tagged `#admin-<page>` or in
+`PAGE_QUESTIONS`, then a title with one of the page's `PAGE_WORDS`), then
+the shorter. The text is deferred (`useDeferredValue`), so typing never waits
+on the matching.
+
 The FAQ's articles carry no topic tag, only `faq`, so which questions suit
-which page can't come from topics: `PAGE_QUESTIONS` was picked by hand from
-the FAQ's 39 questions, and `PAGE_WORDS` (used by the completions) names the
-words that mark a question as about a page. Tagging an FAQ question
+which page can't come from topics: `PAGE_QUESTIONS` and `PAGE_WORDS` were
+picked by hand from the FAQ's 39 questions. Tagging an FAQ question
 `#admin-<page>` in the help center replaces both without a release.
 
-To see where a suggestion came from, inspect its row: `data-help-source` is
-`alert`, `tagged`, `default`, `general`, `featured` or `faq`.
-
-The keys 1, 2 and 3 pick the suggestions, as their number badges say, while
-nothing is typed. A suggestion is an FAQ article, so picking one opens it at
-once, while a search for it runs to fill "More from the help center" under
-it. That search exists only for the article: the field stays empty, and Back
-from the article is the intro screen again rather than a results list for a
-question the user never typed (`HelpSearchOrigin` in `use-help-search.ts`).
-A completion, by contrast, fills the field and leaves its results behind the
-article like a typed search.
-
-## Completions as the user types
-
-From 3 characters, the FAQ questions that continue what's typed show under
-the field in place of the suggestions or results (`matchQuestions` in
-`help-questions.ts`). The words that carry meaning (not "how do I", a stop
-word list) each have to start a word in the question, the last one usually
-half-typed, and more than half of them must, so from three words on one
-that isn't in a question doesn't lose it and completions stay as the user
-types on. The
-questions more of the words matched come first. Questions about the page the user is on come
-first (`getPageRelevance`): the page's own questions (tagged `#admin-<page>`,
-or its `PAGE_QUESTIONS` fallback), then questions whose title has one of the
-page's words (`PAGE_WORDS` in `help-pages.ts`: "member" and "subscription"
-on Members, "theme" on Design…), then the rest. Within each, questions that
-start the way the user did come first. So "how do i" on Members completes
-to the member questions before anything else, and on Posts to the publishing
-ones. With only 35 FAQ questions, a page can run out of its own: the rest
-fill in. Focus stays in the field, which is a combobox for screen
-readers: the arrow keys move through the questions, Enter picks the
-highlighted one, and Escape hides them until the text changes. Picking a
-completion puts it in the field and, like a suggestion, opens its article at
-once while a search for it runs; Enter with nothing highlighted searches for
-what's typed. A question already in the
-field whole isn't offered as its own completion.
-
-## How a search works
-
-A search goes to DocsBot's
-[semantic search API](https://docsbot.ai/documentation/developer/semantic-search-api)
-(`searchDocsBot` in `help-docsbot-search.ts`), whose bot is indexed on the
-help center. It answers in a second or two with the chunks of text closest in
-meaning to the query, best first, each with the page it came from. Nothing is
-generated and nothing is remembered: there's no answer to stream and no
-conversation, which is the difference from the chat prototype.
-
-`toSearchResults` turns the chunks into articles: each page's URL is matched
-to the article list by slug, an article counts once however many chunks it
-contributed, pages that aren't articles in the list (topic pages, other
-sites) are left out, and the first three are the results. The article list
-supplies the title, excerpt and topic shown; the chunk text isn't shown, as it
-reads as a fragment. Asking for 10 chunks (`TOP_K`) usually leaves three
-articles after collapsing.
-
-While it runs, placeholder rows stand in under a "Searching the help center"
-status. When it lands, the first result is shown as a preview
-(`HelpResultPreview`): its title and topic, then the opening of the article
-itself, clamped and faded out, with "Read the full article" to open it. The
-nearest page isn't always the answer, and an earlier version that opened it
-in full was frustrating when it wasn't; the preview lets the user judge it
-in a glance. The other results follow under "More from the help center". The
-preview loads the article through the same query the article view uses, so
-opening it is instant. No results, or DocsBot out of reach, offers the
-Ghost(Pro) support team; the error state also offers a retry. The results
-show only while the field still holds the query they came from, and the
-page's questions only while the field is empty: typing something else
-leaves the space under the field quiet once the completions run out, rather
-than snapping the questions back, and clearing the field brings them back. Searching again
-replaces the results, and "Start over" in the header clears everything.
-
-Nothing about the user or page goes with the query. The page only decides
-which questions are suggested.
+To see what's driving the list, inspect it: `data-help-source` on the `<ul>`
+is `message` or `page`.
 
 ## Reading articles in the panel
 
-Articles open in the panel (`help-article-view.tsx`), not a new tab, so the
-user stays in Admin: a picked FAQ question straight away, a result from its
-preview or card. The header links out to the help center, and the maximize
-button widens the panel over the page area right of Admin's sidebar, for long
-articles. Under the article, "More from the help center" is one list of what
-to read next: the article's own "Further reading" first (the docs team's
+Picking a question opens its article in the panel (`help-article-view.tsx`),
+over the message, which is kept exactly as it was. The header links out to
+the help center, and the maximize button widens the panel over the page area
+right of Admin's sidebar, for long articles. Under the article, "More from
+the help center" lists the article's own "Further reading" (the docs team's
 bookmark cards, lifted out of the body by `splitFurtherReading` so they don't
-show twice; help articles open in the panel, other pages in a new tab), then
-the search's other results, each once (a placeholder while a picked
-question's search is still running). The article ends with "Not what you
-were looking for?": a new search, or the support form; Back in the header
-returns to the results. An earlier "Did this answer your question?" with Yes and No went:
-Yes led nowhere, and the choices that matter are where to go next. Opened articles are marked "Read" in the
-results and listed in what the support form sends.
+show twice; help articles open in the panel, other pages in a new tab). The
+article ends with "Didn't answer your question?": "Keep writing" goes back to
+the message and "Send your message" sends it from there, so a ticket is never
+more than a click away; while nothing is written yet, a single "Write to
+support" goes back instead. Opened questions are marked "Read" in the list
+under the message.
 
 `help-article-html.ts` prepares the HTML:
 
@@ -381,50 +315,33 @@ results and listed in what the support form sends.
   video and audio with the browser's controls (and the video's thumbnail as its
   poster). Images zoom in a dialog when clicked.
 
-## Contacting support
+## Sending to support
 
-There's no "Contact support" button up front. The support team is offered
-where a search or an article didn't do it: no results, the error state, and
-"Contact support" at the end of an article. The form (`help-support.tsx`) starts from the
-last search typed into the field as the message (picked questions aren't
-the user's own words, so they don't count; the subject is optional) and
-promises a reply from the Ghost(Pro) support team within 24 hours on working
-days. Only what
-the user writes is sent.
+The message is the whole of the form: no subject, and the account is the
+signed-in one (the intro names the address the reply goes to). Files can be
+attached from the bar at the bottom. Sending shows a confirmation in the
+form's place, with Done (and a start-over icon in the header) clearing the
+message for the next one. Only what the user writes is sent.
 
 ## Decisions and trade-offs
 
-- **Search, not chat.** The results are the help center's own articles, in
-  full, rather than a generated summary of them: nothing to get wrong, nothing
-  to attribute, and the docs team's writing is what the user reads. The price
-  is that the user reads rather than being told; the chat prototype
-  (`poc-help-chat`) is the other side of that trade.
-- **DocsBot's semantic search rather than the chat agent's sources.** The chat
-  agent also returns sources, but only after generating an answer (10 to 20
-  seconds) and under a conversation. The search endpoint returns the pages in
-  a second or two with no state, which is what a search needs.
-- **A picked question opens; a typed one previews.** A picked FAQ question is
-  an exact match, so it opens in full at once. A typed search's first result
-  is only the nearest page, so it's previewed, not opened: enough to judge,
-  not enough to mislead.
-- **Results come from the article list, not the chunks.** The chunks are
-  fragments with page furniture in them; the list has the title and excerpt
-  the docs team wrote. The cost is that pages missing from the list (anything
-  that isn't a published post) can't be shown.
-- **Suggestions and completions are questions.** The FAQ is already written as
-  questions, so picking one reads as searching for it, and a completion is a
-  question the help center can answer.
-- **Completions replace what's under the field** rather than floating over
-  it, so they never cover the suggestions or results. Once they run out,
-  nothing takes their place until the field is cleared: the questions
-  snapping back mid-typing read as the panel changing its mind.
-- **Straight from the browser, with no key.** The simplest thing that works for
-  a prototype; a key, or a hop through Ghost(Pro), would hide the bot ids.
-- **Number keys pick suggestions** while nothing is typed: quick, but a
-  question starting with one of those digits ("2FA…") picks a suggestion
-  instead.
-- **Ghost(Pro) only:** self-hosted sites would get no support form, so they
-  keep the link they have.
+- **The form first.** The user came to write to support; the panel lets them,
+  and puts the help center beside the message rather than in front of it.
+  Nothing has to be searched before a ticket can be sent (Linear's contact
+  form and Slack's help request page were the references).
+- **Text matching rather than DocsBot.** The questions under the message are
+  matched in the browser from the FAQ titles: instant, free, and nothing
+  leaves the browser while the user writes. The price is that only the FAQ's
+  39 questions can be offered, and only by their words; the search prototype
+  shows what semantic search over the whole help center finds instead.
+- **The page's questions stay while nothing matches.** A message that matches
+  no FAQ title keeps the page's questions rather than an empty list: the
+  section stays useful and doesn't flash in and out as the user types.
+- **The message is kept, always.** Reading an article never touches the draft,
+  and Back returns to it with focus in the message. The draft lives in the
+  session, so closing the panel keeps it too.
+- **Ghost(Pro) only:** self-hosted sites have no Ghost(Pro) support team to
+  write to, so they keep the link they have.
 
 ## Still mocked
 
@@ -433,22 +350,18 @@ Search the code for `PROTOTYPE:`. In short:
 - Sending to support: nothing is sent. Attached files keep only their names.
 - The help center's API URL, hardcoded in `help-center.ts`, and its key,
   empty there until added locally.
-- The DocsBot team and bot ids, hardcoded in `help-docsbot-search.ts` (a test
-  bot).
 
 ## Known gaps
 
-**Search**
+**Matching**
 
-- **A query with no good match still returns three articles.** Semantic
-  search always finds the nearest pages; `autocut` in DocsBot's API, or a
-  score threshold if one is exposed, would let the panel say "nothing close"
-  instead.
-- **Pages that aren't posts can't be results** (the FAQ topic page, for
-  example), as the article list only has posts.
-- **The FAQ is small** (39 questions, 35 of them question-shaped), so pages
-  with no FAQ of their own borrow loosely related ones, and completions
-  match words at their starts only.
+- **Words only.** "Can't log in" doesn't find "How do members sign in to my
+  site?": there's no synonym list and no semantic matching. The FAQ is small
+  (39 questions, 35 of them question-shaped), which bounds how much that
+  costs.
+- **Long messages match little.** From four meaningful words a question needs
+  two of them, so a long, specific message often falls back to the page's
+  questions.
 
 **Reading**
 
@@ -460,16 +373,15 @@ Search the code for `PROTOTYPE:`. In short:
 
 **Accessibility and behaviour**
 
-- Escape closes the panel when no completions are showing, even mid-search.
-- Focus doesn't return to the Help button when the panel closes.
+- Escape closes the panel, including from inside the message.
+- Focus doesn't return to the Support button when the panel closes.
 - While maximized, the page behind the panel is hidden but still reachable by
   keyboard.
-- The number shortcut and "2FA…" (Decisions above).
 
 **Tests**
 
-- The pure modules are covered. The session (`use-help-search.ts`), the
-  keyboard handling and the view switching aren't.
+- The pure modules are covered. The session (`use-help-session.ts`) and the
+  view switching aren't.
 
 ## Checking changes
 
@@ -483,14 +395,5 @@ Search the code for `PROTOTYPE:`. In short:
   `hostSettings.billing.enabled: true` (for example
   `hostSettings__billing__enabled=true` in Ghost's environment). Without it,
   Help links out, which is the self-hosted case.
-- Searching calls DocsBot's test bot from the browser; no key is needed. To
-  try the API by hand:
-
-  ```bash
-  curl -X POST https://api.docsbot.ai/teams/HQWGXatyyGbuBqc5JOuT/bots/iUM7pu7wtd6BMYxBwpQU/search \
-    -H 'Content-Type: application/json' \
-    -d '{"query":"How do I connect Stripe?","top_k":10}'
-  ```
-
 - After the docs team reorganizes, check `getReferencedSlugs()` and
   `getReferencedTopics()` against the live Content API.

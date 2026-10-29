@@ -19,7 +19,7 @@ import { getPageKey, PAGE_LABELS, type HelpPageKey } from './help-pages';
  *   (trial, status, a failed payment), as Admin's upgrade banner and dunning
  *   warnings use it. Empty until the billing app reports.
  *
- * None of it goes to DocsBot with a search.
+ * None of it leaves the browser while the user writes.
  */
 
 type HelpDunning = NonNullable<ReturnType<typeof useDunningState>>;
