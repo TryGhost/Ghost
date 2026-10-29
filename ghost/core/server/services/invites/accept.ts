@@ -92,7 +92,6 @@ export async function accept<Transaction>(
 
     const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
 
-    // A resend, revocation or expiry may have invalidated the preliminary lookup.
     validateInvite(invite);
 
     const email = invite.get('email');
@@ -110,7 +109,6 @@ export async function accept<Transaction>(
 
     await invite.destroy(options);
 
-    // The validated invitation already occupies this seat, even after a large import.
     await models.User.add(
       {
         email,

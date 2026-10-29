@@ -35,9 +35,11 @@ export default class InvitationLimiter {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
-      const setting = await this.deps.lockStaffInvites(transaction);
+      const counterValue = await this.deps.lockStaffInvites(transaction);
       const options = { transacting: transaction };
-      const periodStart = await this.checkEmailAllowance(transaction);
+      if (this.deps.limitService.isLimited('inviteEmails')) {
+        await this.reserveEmail(transaction, counterValue);
+      }
       // Replacing a pending invitation does not occupy another seat, even after an import.
       if (this.deps.limitService.isLimited('allStaff')) {
         const existingInvite = await transaction('invites')
@@ -48,26 +50,16 @@ export default class InvitationLimiter {
           await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
         }
       }
-      const result = await prepare(transaction);
-      if (this.deps.limitService.isLimited('inviteEmails')) {
-        const previous = JSON.parse(setting.value ?? 'null');
-        const count = previous?.periodStart === periodStart ? previous.count : 0;
-        // The invitation and reservation commit together. Delivery happens afterwards.
-        // This internal counter is read from the database, never the settings cache.
-        await transaction('settings')
-          .where('key', 'staff_invitation_emails')
-          .update({
-            value: JSON.stringify({ periodStart, count: count + 1 }),
-          });
-      }
-      return result;
+      return prepare(transaction);
     });
   }
 
-  private async checkEmailAllowance(transaction: Knex.Transaction): Promise<string | null> {
-    // Capture the checked period before preparing the invitation. A later commit
-    // still belongs to that period. Only repeat if the check itself crosses a reset.
-    for (;;) {
+  private async reserveEmail(
+    transaction: Knex.Transaction,
+    counterValue: string | null,
+  ): Promise<void> {
+    // Retry only if the monthly period changes during the allowance check.
+    while (true) {
       const periodStart = this.deps.getPeriodStart();
       try {
         await this.deps.limitService.errorIfWouldGoOverLimit('inviteEmails', {
@@ -82,9 +74,24 @@ export default class InvitationLimiter {
         }
         continue;
       }
-      if (this.deps.getPeriodStart() === periodStart) {
-        return periodStart;
+      if (this.deps.getPeriodStart() !== periodStart) {
+        continue;
       }
+      await this.incrementEmailCounter(transaction, counterValue, periodStart);
+      return;
     }
+  }
+
+  private async incrementEmailCounter(
+    transaction: Knex.Transaction,
+    counterValue: string | null,
+    periodStart: string | null,
+  ): Promise<void> {
+    const previous = JSON.parse(counterValue ?? 'null');
+    const count = previous?.periodStart === periodStart ? previous.count : 0;
+    // The invitation and reservation commit together. Delivery happens afterwards.
+    await transaction('settings')
+      .where('key', 'staff_invitation_emails')
+      .update({ value: JSON.stringify({ periodStart, count: count + 1 }) });
   }
 }

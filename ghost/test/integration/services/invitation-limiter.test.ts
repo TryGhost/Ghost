@@ -298,6 +298,7 @@ describe('Trial invitation admission', function () {
     );
     assert.deepEqual(await actions(), []);
     assert.deepEqual(await db.knex('invites').select(), []);
+    assert.equal(await savedCounter(), null);
   });
 
   it('stops enforcing on upgrade without erasing the previously used allowance', async function () {
