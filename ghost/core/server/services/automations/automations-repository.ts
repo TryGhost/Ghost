@@ -155,6 +155,7 @@ export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'failed',
   'finished',
   'member changed status',
+  'member changed tier',
   'member unsubscribed',
 ] as const;
 
