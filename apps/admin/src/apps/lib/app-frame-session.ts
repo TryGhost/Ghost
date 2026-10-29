@@ -49,10 +49,10 @@ export interface AppFrameSessionOptions {
   navigate: (path: string, options: AppMoveOptions) => boolean;
   /**
    * Called when the app asks to open a place in Admin. The place is already validated as one Admin
-   * offers. Admin navigates there and returns whether it did. It doesn't navigate while the
-   * publisher is leaving the app.
+   * offers. `from` is the app's route when it asked, which a place can lead back to. Admin navigates
+   * there and returns whether it did. It doesn't navigate while the publisher is leaving the app.
    */
-  open: (place: Place) => boolean;
+  open: (place: Place, from: string) => boolean;
 }
 
 export interface AppFrameSession {
@@ -242,7 +242,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           // The app's path as Admin now has it, which the page stores as its current path.
           return appPath ?? next;
         },
-        open: (place) => options.open(place),
+        // The app reports each move before it asks to open a place, so its route is current.
+        open: (place) => options.open(place, appPath ?? options.context().path),
         documentChanged: () => {
           if (host === bound && documentEnded(false)) {
             window.clearTimeout(timer);
