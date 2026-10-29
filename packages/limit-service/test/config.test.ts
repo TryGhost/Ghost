@@ -15,7 +15,6 @@ describe('Config', function () {
     interface MockOptions {
         firstResult?: { count?: number | string | null; value?: string | null };
         unionResult?: unknown[];
-        rows?: unknown[];
     }
 
     function createMockKnex(options: MockOptions = {}): Knex & Mock {
@@ -24,10 +23,7 @@ describe('Config', function () {
             return chain;
         }
 
-        const rows = Promise.resolve(options.rows || []);
         const chain = {
-            then: rows.then.bind(rows),
-            limit: vi.fn(returnsChain),
             count: vi.fn(returnsChain),
             sum: vi.fn(returnsChain),
             where: vi.fn(returnsChain),

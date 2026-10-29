@@ -2,7 +2,6 @@
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const ObjectId = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
@@ -197,11 +196,7 @@ describe('Trial staff invitation limits', function () {
     assert.match(rejected.body.errors[0].context, /15 staff invitation emails/);
     assert.equal((await models.Invite.findOne({ email: 'quota@example.com' })).id, original.id);
     sinon.assert.callCount(send, 15);
-    assert.equal(
-      (await invitationActions()).length,
-      15,
-      'one audit entry per send, including resends',
-    );
+    assert.equal(await savedCount(), 15);
   });
 
   it('counts the owner, existing users and pending Contributors toward ten seats', async function () {
@@ -234,14 +229,7 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.callCount(send, 3);
     await nextMinute();
     await invite('other@example.com', 'Author').expect(201);
-    const recorded = await invitationActions();
-    assert.equal(recorded.length, 4);
-    assert.deepEqual(recorded.map((action) => action.actor_type).sort(), [
-      'integration',
-      'user',
-      'user',
-      'user',
-    ]);
+    assert.equal(await savedCount(), 4);
   });
 
   it('counts registered addresses, validation errors and permission denials toward the burst limit', async function () {
@@ -249,7 +237,7 @@ describe('Trial staff invitation limits', function () {
     await invite('not-an-email').expect(422);
     await invite('owner-role@example.com', 'Owner').expect(403);
     await invite('burst-full@example.com').expect(429);
-    assert.deepEqual(await invitationActions(), []);
+    assert.equal(await savedCount(), 0);
     sinon.assert.notCalled(send);
     await nextMinute();
     await invite('valid@example.com').expect(201);
@@ -348,24 +336,20 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('removes trial caps and rate limiting when the host removes the trial policy', async function () {
-    const actor = await db.knex('users').first();
-    await db.knex('actions').insert(
-      Array.from({ length: 15 }, () => ({
-        id: ObjectId().toHexString(),
-        resource_type: 'invite',
-        resource_id: ObjectId().toHexString(),
-        event: 'added',
-        actor_type: 'user',
-        actor_id: actor.id,
-        created_at: new Date(),
-      })),
-    );
+    const users = await db.knex('users').count('id', { as: 'count' }).first();
+    config.set('hostSettings:limits:allStaff:max', Number(users.count) + 1);
+    config.set('hostSettings:limits:inviteEmails:maxPeriodic', 1);
+    limitsService.init();
+    await invite('before-upgrade@example.com').expect(201);
+    await invite('over-limit@example.com').expect(403);
+
     config.set('hostSettings:limits', undefined);
     limitsService.init();
     for (let i = 0; i < 5; i++) {
       await invite(`paid-${i}@example.com`).expect(201);
     }
-    sinon.assert.callCount(send, 5);
+    assert.equal(await savedCount(), 1);
+    sinon.assert.callCount(send, 6);
   });
   it('counts imported staff toward subsequent invitations without emailing them', async function () {
     const users = await db.knex('users').count('id', { as: 'count' }).first();
@@ -392,7 +376,7 @@ describe('Trial staff invitation limits', function () {
     );
     const response = await invite('blocked-after-import@example.com').expect(403);
     assert.match(response.body.errors[0].context, /10 staff/);
-    assert.deepEqual(await invitationActions(), []);
+    assert.equal(await savedCount(), 0);
     sinon.assert.notCalled(send);
   });
 
@@ -449,7 +433,7 @@ describe('Trial staff invitation limits', function () {
       Number((await db.knex('users').count('id', { as: 'count' }).first()).count) +
       Number((await db.knex('invites').count('id', { as: 'count' }).first()).count);
     assert.equal(total, 10);
-    assert.equal((await invitationActions()).length, remaining);
+    assert.equal(await savedCount(), remaining);
   });
 
   it('allows resending and accepting an existing invite after imports exceed the cap', async function () {
@@ -468,7 +452,7 @@ describe('Trial staff invitation limits', function () {
     const seatsBefore =
       Number((await db.knex('users').count('id', { as: 'count' }).first()).count) + 1;
     await invite(email).expect(201);
-    assert.equal((await invitationActions()).length, 2);
+    assert.equal(await savedCount(), 2);
     sinon.assert.calledTwice(send);
     await invite('new-after-import@example.com').expect(403);
     const pending = await models.Invite.findOne({ email });
@@ -490,7 +474,7 @@ describe('Trial staff invitation limits', function () {
       Number((await db.knex('users').count('id', { as: 'count' }).first()).count),
       seatsBefore,
     );
-    assert.equal((await invitationActions()).length, 2);
+    assert.equal(await savedCount(), 2);
     sinon.assert.calledTwice(send);
   });
 

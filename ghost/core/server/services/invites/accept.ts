@@ -13,12 +13,6 @@ type TransactionOptions<Transaction> = {
   forUpdate: true;
 };
 
-type InviteLookupOptions<Transaction> = {
-  context: { internal: true };
-  transacting?: Transaction;
-  forUpdate?: true;
-};
-
 export type AcceptanceModels<Transaction = Knex.Transaction> = {
   Base: {
     transaction<T>(callback: (transacting: Transaction) => Promise<T>): Promise<T>;
@@ -26,7 +20,7 @@ export type AcceptanceModels<Transaction = Knex.Transaction> = {
   Invite: {
     findOne(
       data: { token: string; status: 'sent' },
-      options: InviteLookupOptions<Transaction>,
+      options: { context: { internal: true }; transacting?: Transaction; forUpdate?: true },
     ): Promise<{
       get(key: 'expires'): number;
       get(key: 'email' | 'role_id'): string;

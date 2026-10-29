@@ -60,9 +60,7 @@ describe('Trial invitation admission', function () {
     };
     config.set('hostSettings:limits', limits);
     initLimits();
-    limiter = new InvitationLimiter({
-      ...dependencies,
-    });
+    limiter = new InvitationLimiter(dependencies);
   });
 
   afterEach(function () {
@@ -80,10 +78,6 @@ describe('Trial invitation admission', function () {
       await existing.destroy(options);
     }
     return models.Invite.add({ email, role_id: roleId }, options);
-  }
-
-  function actions() {
-    return db.knex('actions').where({ resource_type: 'invite', event: 'added' });
   }
 
   async function savedCounter() {
@@ -205,21 +199,18 @@ describe('Trial invitation admission', function () {
     assert.equal((await savedCounter()).count, 15);
   });
 
-  it('preserves the trial allowance after rate cleanup and refreshing the policy', async function () {
-    for (let i = 0; i < 15; i++) {
-      await limiter.run('resend@example.com', (transaction) =>
-        prepare('resend@example.com', transaction),
-      );
-    }
-    await dbUtils.truncate('brute');
-    const restarted = new InvitationLimiter({
-      ...dependencies,
-    });
+  it('retains stored usage when the limiter is recreated', async function () {
+    config.set('hostSettings:limits:inviteEmails:maxPeriodic', 1);
+    initLimits();
+    await limiter.run('existing@example.com', (transaction) =>
+      prepare('existing@example.com', transaction),
+    );
+    const restarted = new InvitationLimiter(dependencies);
     await assert.rejects(
       restarted.run('new@example.com', async () => assert.fail()),
       /staff invitation emails/,
     );
-    assert.equal((await savedCounter()).count, 15);
+    assert.equal((await savedCounter()).count, 1);
   });
 
   it('reserves the last seat atomically, including pending Contributor invitations', async function () {
@@ -295,7 +286,6 @@ describe('Trial invitation admission', function () {
       }),
       /Invalid invitation/,
     );
-    assert.deepEqual(await actions(), []);
     assert.deepEqual(await db.knex('invites').select(), []);
     assert.equal(await savedCounter(), null);
   });

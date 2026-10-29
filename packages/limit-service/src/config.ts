@@ -80,12 +80,16 @@ const config: Record<string, LimitConfig> = {
                 return 0;
             }
             const counter = JSON.parse(setting.value);
-            if (!counter || !Number.isSafeInteger(counter.count) || counter.count < 0 ||
-                (counter.periodStart !== null &&
-                    (typeof counter.periodStart !== 'string' || !Number.isFinite(Date.parse(counter.periodStart))))) {
+            const validCount = Number.isSafeInteger(counter?.count) && counter.count >= 0;
+            const validPeriodStart = counter?.periodStart === null ||
+                (typeof counter?.periodStart === 'string' && Number.isFinite(Date.parse(counter.periodStart)));
+            if (!validCount || !validPeriodStart) {
                 throw new errors.IncorrectUsageError({message: 'Invalid staff invitation email counter.'});
             }
-            return counter.periodStart === (periodStart ?? null) ? counter.count : 0;
+            if (counter.periodStart !== (periodStart ?? null)) {
+                return 0;
+            }
+            return counter.count;
         }
     },
     customIntegrations: {},

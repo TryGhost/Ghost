@@ -5,7 +5,6 @@ interface SettingModel {
   toJSON(): unknown;
 }
 
-// The Settings model methods used by typed services.
 export const Settings: {
   findOne(
     data: { key: string },

@@ -24,10 +24,12 @@ export default defineService('Invites', () => {
       transaction: (callback) => models.Base.transaction(callback),
       limitService,
       Settings: models.Settings,
-      getPeriodStart: () =>
-        config.get('hostSettings:limits:inviteEmails:maxPeriodic') !== undefined
-          ? lastPeriodStart(config.get('hostSettings:subscription:start'), 'month')
-          : null,
+      getPeriodStart: () => {
+        if (config.get('hostSettings:limits:inviteEmails:maxPeriodic') === undefined) {
+          return null;
+        }
+        return lastPeriodStart(config.get('hostSettings:subscription:start'), 'month');
+      },
     }),
   });
 });
