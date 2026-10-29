@@ -1,17 +1,31 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const {
-  GiftEmailService,
-} = require('../../../../../core/server/services/gifts/gift-email-service');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { GiftEmailService } from '../../../../../core/server/services/gifts/gift-email-service';
+import type { ConfigInstance } from '../../../../../core/shared/config/loader';
+
+type GiftEmailServiceDeps = ConstructorParameters<typeof GiftEmailService>[0];
+type TransactionalMessage = Parameters<GiftEmailServiceDeps['transactionalMailer']['send']>[0];
+type BulkSendArgs = Parameters<GiftEmailServiceDeps['bulkMailer']['send']>;
+type BulkMessage = BulkSendArgs[0];
+type PurchaseConfirmationData = Parameters<GiftEmailService['sendPurchaseConfirmation']>[0];
+type TranslateOptions = { interpolation?: { escapeValue?: boolean }; [key: string]: unknown };
+
+const transactionalBodyFields: Array<'html' | 'text'> = ['html', 'text'];
+const bulkBodyFields: Array<'html' | 'plaintext'> = ['html', 'plaintext'];
 
 describe('GiftEmailService', function () {
-  let transactionalMailer;
-  let bulkMailer;
-  let service;
-  let config;
+  let transactionalMailer: {
+    send: sinon.SinonStub<[TransactionalMessage], Promise<unknown>>;
+  };
+  let bulkMailer: {
+    isConfigured: sinon.SinonStub<[], boolean>;
+    send: sinon.SinonStub<[BulkMessage, BulkSendArgs[1], BulkSendArgs[2]], Promise<unknown>>;
+  };
+  let service: GiftEmailService;
+  let config: { get: sinon.SinonStubbedMember<ConfigInstance['get']> };
 
   const settingsCache = {
-    get: (key) => {
+    get: (key: string) => {
       if (key === 'title') {
         return 'Test Site';
       }
@@ -35,8 +49,8 @@ describe('GiftEmailService', function () {
   };
 
   const translate =
-    (translations = {}) =>
-    (key, options = {}) => {
+    (translations: Record<string, string> = {}) =>
+    (key: string, options: TranslateOptions = {}) => {
       const translatedKey = translations[key] || key;
       const escapeValue = options.interpolation?.escapeValue !== false;
       const params = { ...options };
@@ -60,7 +74,7 @@ describe('GiftEmailService', function () {
       });
     };
 
-  const defaultData = {
+  const defaultData: PurchaseConfirmationData = {
     buyerEmail: 'buyer@example.com',
     token: 'abc-123',
     tierName: 'Gold',
@@ -72,10 +86,14 @@ describe('GiftEmailService', function () {
 
   beforeEach(function () {
     config = { get: sinon.stub() };
-    transactionalMailer = { send: sinon.stub().resolves() };
+    transactionalMailer = {
+      send: sinon.stub<[TransactionalMessage], Promise<unknown>>().resolves(),
+    };
     bulkMailer = {
-      isConfigured: sinon.stub().returns(true),
-      send: sinon.stub().resolves({ id: '<provider-123>' }),
+      isConfigured: sinon.stub<[], boolean>().returns(true),
+      send: sinon
+        .stub<[BulkMessage, BulkSendArgs[1], BulkSendArgs[2]], Promise<unknown>>()
+        .resolves({ id: '<provider-123>' }),
     };
     service = new GiftEmailService({
       config,
@@ -118,7 +136,7 @@ describe('GiftEmailService', function () {
 
     const message = transactionalMailer.send.firstCall.firstArg;
     assert.equal(message.subject, 'Your gift is on its way');
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('recipient@example.com'));
       sinon.assert.match(message[field], sinon.match('is on its way to'));
       sinon.assert.match(
@@ -139,7 +157,7 @@ describe('GiftEmailService', function () {
 
     const message = transactionalMailer.send.firstCall.firstArg;
     assert.match(message.subject, /^Your gift will be sent on /);
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('Your gift is scheduled'));
       sinon.assert.match(message[field], sinon.match('will be sent to'));
     }
@@ -162,7 +180,7 @@ describe('GiftEmailService', function () {
       replyTo: 'support@example.com',
       disableTracking: true,
     });
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('recipient@example.com'));
       sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
     }
@@ -184,7 +202,7 @@ describe('GiftEmailService', function () {
       disableTracking: true,
     });
     assert.equal(message.tags, undefined);
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('recipient@example.com'));
       sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
       sinon.assert.match(message[field], sinon.match('Send them the gift link below'));
@@ -196,7 +214,7 @@ describe('GiftEmailService', function () {
 
     const msg = transactionalMailer.send.getCall(0).args[0];
 
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
       sinon.assert.match(msg[field], sinon.match('Gold'));
     }
@@ -214,7 +232,7 @@ describe('GiftEmailService', function () {
 
   it('formats the expiry date with the active locale', async function () {
     const localizedSettingsCache = {
-      get: (key) => {
+      get: (key: string) => {
         if (key === 'title') {
           return 'Test Site';
         }
@@ -256,7 +274,7 @@ describe('GiftEmailService', function () {
 
   it('falls back to site domain when site title is undefined', async function () {
     const noTitleSettingsCache = {
-      get: (key) => {
+      get: (key: string) => {
         if (key === 'title') {
           return undefined;
         }
@@ -289,7 +307,7 @@ describe('GiftEmailService', function () {
 
   it('escapes user-controlled values containing HTML in the purchase confirmation HTML', async function () {
     const hostileSettingsCache = {
-      get: (key) => {
+      get: (key: string) => {
         if (key === 'title') {
           return 'Evil <script>alert(1)</script> Site';
         }
@@ -367,7 +385,7 @@ describe('GiftEmailService', function () {
           disable_tracking: true,
         });
         assert.deepEqual(bulkMailer.send.firstCall.args[1], { 'recipient@example.com': {} });
-        for (const field of ['html', 'plaintext']) {
+        for (const field of bulkBodyFields) {
           sinon.assert.match(message[field], sinon.match('Recipient'));
           sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
           sinon.assert.match(message[field], sinon.match('All stories'));
@@ -443,7 +461,7 @@ describe('GiftEmailService', function () {
 
     it('formats the claim deadline in the publication locale and timezone', async function () {
       const siteSettingsCache = {
-        get: (key) => {
+        get: (key: string) => {
           if (key === 'title') {
             return 'Test Site';
           }
@@ -492,7 +510,7 @@ describe('GiftEmailService', function () {
 
     it('keeps the publication timezone when its locale is not a valid tag', async function () {
       const invalidLocaleSettingsCache = {
-        get: (key) => {
+        get: (key: string) => {
           if (key === 'locale') {
             return 'en_US';
           }
@@ -535,7 +553,7 @@ describe('GiftEmailService', function () {
 
     it('falls back to neutral delivery colors when the accent color is invalid', async function () {
       const invalidColorSettingsCache = {
-        get: (key) => (key === 'accent_color' ? 'invalid' : settingsCache.get(key)),
+        get: (key: string) => (key === 'accent_color' ? 'invalid' : settingsCache.get(key)),
       };
       const invalidColorService = new GiftEmailService({
         config,
@@ -655,7 +673,7 @@ describe('GiftEmailService', function () {
 
     it('preserves literal interpolation characters in the subject and plain-text body', async function () {
       const literalSettingsCache = {
-        get: (key) => {
+        get: (key: string) => {
           if (key === 'title') {
             return 'Research & <Notes>';
           }
@@ -782,7 +800,7 @@ describe('GiftEmailService', function () {
         timeZone: 'Etc/UTC',
       }).format(reminderData.consumesAt);
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match(expectedDate));
         sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
       }
@@ -802,7 +820,7 @@ describe('GiftEmailService', function () {
 
       const msg = transactionalMailer.send.getCall(0).args[0];
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match('Hi Jamie,'));
       }
     });
@@ -812,14 +830,14 @@ describe('GiftEmailService', function () {
 
       const msg = transactionalMailer.send.getCall(0).args[0];
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match('Hey there,'));
       }
     });
 
     it('formats the expiry date with the active locale', async function () {
       const localizedSettingsCache = {
-        get: (key) => {
+        get: (key: string) => {
           if (key === 'title') {
             return 'Test Site';
           }
@@ -855,7 +873,7 @@ describe('GiftEmailService', function () {
         timeZone: 'Etc/UTC',
       }).format(reminderData.consumesAt);
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match(expectedDate));
       }
     });

@@ -4546,7 +4546,7 @@ services:
           - core/shared/url-utils.ts
         tests:
           - test/unit/server/services/gifts/gift-service-interface.test.ts
-          - test/unit/server/services/gifts/gift-email-service.test.js
+          - test/unit/server/services/gifts/gift-email-service.test.ts
       resources:
         summary: >-
           Gifts owns its graph, mail transport, template promises, scheduler registrations/sets
