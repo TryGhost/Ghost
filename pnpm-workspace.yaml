@@ -193,7 +193,7 @@ catalog:
   oxfmt: 0.63.0
   '@oxlint/plugins': 1.86.0
   oxlint: 1.86.0
-  postcss: 8.5.26
+  postcss: 8.5.32
   preact: ^10.29.2
   prettier: 3.9.10
   qs: 6.16.1
