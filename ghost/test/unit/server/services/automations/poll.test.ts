@@ -314,7 +314,7 @@ describe('automations poll', function () {
       );
     });
 
-    it('does not bail out if the member remains free', async function () {
+    it('continues when the member remains free', async function () {
       await poll(options);
 
       sinon.assert.notCalled(automationsApi.markStepTerminal);
@@ -351,7 +351,7 @@ describe('automations poll', function () {
       );
     });
 
-    it('does not bail out if the member still matches at least one trigger rule', async function () {
+    it('continues when the member still matches at least one trigger rule', async function () {
       const step = buildWaitStep({
         automation_trigger_rules: [
           {
@@ -383,7 +383,7 @@ describe('automations poll', function () {
       sinon.assert.notCalled(automationsApi.markStepTerminal);
     });
 
-    it('does not bail out when the member moves between matching tiers', async function () {
+    it('continues when the member moves between matching tiers', async function () {
       const attrs: Partial<StepBase> = {
         automation_trigger_rules: [
           {
@@ -467,7 +467,7 @@ describe('automations poll', function () {
       sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
     });
 
-    it('does not bail out if the member has a gift subscription', async function () {
+    it('continues when the member has a gift subscription', async function () {
       const step = buildEmailStep({
         automation_trigger_rules: [
           {
