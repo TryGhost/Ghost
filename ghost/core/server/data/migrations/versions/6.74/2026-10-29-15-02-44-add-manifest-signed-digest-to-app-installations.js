@@ -1,6 +1,6 @@
 const { createAddColumnMigration } = require('../../utils');
 
-module.exports = createAddColumnMigration('app_installation_manifests', 'backend_key_thumbprint', {
+module.exports = createAddColumnMigration('app_installations', 'manifest_signed_digest', {
   type: 'string',
   maxlength: 64,
   nullable: false,

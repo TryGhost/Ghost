@@ -14,7 +14,12 @@ import {
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
 import type { FetchFromApp } from './fetch-from-app';
-import { createManifestFetcher, parseJson } from './fetch-manifest';
+import {
+  MANIFEST_MAX_BYTES,
+  createManifestFetcher,
+  manifestTooLarge,
+  parseJson,
+} from './fetch-manifest';
 import { StoredManifest } from './schema';
 
 /** The rules a manifest is checked against: the site's URL and the environment. */
@@ -37,8 +42,11 @@ export interface LoadedManifest {
   digest: string;
   /** The RFC 7638 thumbprint of the identity key the manifest is signed with. */
   identityKeyThumbprint: string;
-  /** The RFC 7638 thumbprint of the backend key the manifest names. */
-  backendKeyThumbprint: string;
+  /**
+   * When the manifest was signed, in seconds since the epoch, as its verified protected
+   * header says. The identity check holds it to the newest the installation has seen.
+   */
+  issuedAt: number;
 }
 
 export type LoadManifest = (manifestUrl: string) => Promise<LoadedManifest>;
@@ -94,6 +102,9 @@ export function createManifestLoader({
         context: signed.error,
       });
     }
+    if (Buffer.byteLength(signed.payload) > MANIFEST_MAX_BYTES) {
+      throw manifestTooLarge(manifestUrl);
+    }
 
     const parsed = parseManifest(parseJson(signed.payload, manifestUrl), { ...rules, manifestUrl });
     if (!parsed.success) {
@@ -133,7 +144,7 @@ export function createManifestLoader({
       serialised,
       digest: digestOf(serialised),
       identityKeyThumbprint: await thumbprintOf(manifest.identity_key),
-      backendKeyThumbprint: await thumbprintOf(manifest.backend_key),
+      issuedAt: signed.issuedAt,
     };
   };
 }

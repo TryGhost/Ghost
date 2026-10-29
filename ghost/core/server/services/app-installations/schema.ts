@@ -15,6 +15,9 @@ export const DbAppInstallation = z.object({
   app_id: z.string(),
   current_app_id: z.string().nullable(),
   identity_key_thumbprint: z.string(),
+  // A bigInteger, which MySQL may hand back as a string.
+  manifest_signed_at: z.coerce.number().int().nonnegative(),
+  manifest_signed_digest: z.string(),
   status: AppInstallationStatus,
   manifest_id: z.string(),
   pending_manifest_id: z.string().nullable(),
@@ -37,7 +40,6 @@ export const DbAppInstallationManifest = z.object({
   manifest_url: z.string(),
   manifest: StoredManifest,
   digest: z.string(),
-  backend_key_thumbprint: z.string(),
   source: AppInstallationManifestSource,
   requires_approval: DbBoolean,
   created_at: DbDate,

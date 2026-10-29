@@ -28,21 +28,28 @@ export async function generateTestAppKeys(): Promise<TestAppKeys> {
   return { identity: await generateTestKey(), backend: await generateTestKey() };
 }
 
-/** Signs a manifest with an identity key, as an app's tooling would. */
-export function signTestManifest(manifest: unknown, identity: TestKey): Promise<SignedManifest> {
-  return signManifest(manifest, identity.privateKey);
+/**
+ * Signs a manifest with an identity key, as an app's tooling would, as of `issuedAt` or
+ * now.
+ */
+export function signTestManifest(
+  manifest: unknown,
+  identity: TestKey,
+  options: { issuedAt?: Date } = {},
+): Promise<SignedManifest> {
+  return signManifest(manifest, identity.privateKey, options);
 }
 
 /**
- * Answers a challenge as an app's backend would, for the origins it serves. Throws on a
- * challenge it would refuse, so a test notices one it didn't expect.
+ * Answers a challenge as an app's backend would, for a request that arrived at `url`.
+ * Throws on a challenge it would refuse, so a test notices one it didn't expect.
  */
 export async function answerTestChallenge(
   body: string,
   backend: TestKey,
-  origins: string[],
+  url: string,
 ): Promise<string> {
-  const result = await answerChallenge(body, { backendKey: backend.privateKey, origins });
+  const result = await answerChallenge(body, { backendKey: backend.privateKey, requestUrl: url });
   if (!result.success) {
     throw new Error(`The test app refused a challenge: ${result.error}`);
   }

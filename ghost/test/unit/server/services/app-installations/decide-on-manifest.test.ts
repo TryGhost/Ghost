@@ -40,7 +40,7 @@ function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
     serialised,
     digest: serialised,
     identityKeyThumbprint: 'identity',
-    backendKeyThumbprint: 'backend',
+    issuedAt: 1_800_000_000,
   };
 }
 

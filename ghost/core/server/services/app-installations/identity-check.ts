@@ -5,84 +5,88 @@ import {
   createChallenge,
   verifyChallengeAnswer,
 } from '@tryghost/app-contracts/identity';
-import { isLocalhost } from '@tryghost/app-contracts/manifest';
+import { isLocalhost, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 import type { LoadedManifest } from './load-manifest';
 
 const ANSWER_MAX_BYTES = 4 * 1024;
 
 /**
- * The codes an identity check fails with. A loaded manifest that fails to verify fails with
- * the first three; the check itself with the rest.
+ * How far ahead of Ghost's clock a manifest may say it was signed, for clocks that
+ * disagree a little. Any further, and one manifest would hold every site to its time.
  */
-export const IDENTITY_FAILURE_CODES: ReadonlySet<string> = new Set([
-  'APP_MANIFEST_UNSIGNED',
-  'APP_MANIFEST_URL_MISMATCH',
-  'APP_MANIFEST_SIGNATURE_INVALID',
-  'APP_IDENTITY_MISMATCH',
-  'APP_BACKEND_KEY_RETIRED',
-  'APP_CHALLENGE_FAILED',
-  'APP_CHALLENGE_UNREACHABLE',
-]);
+const CLOCK_SKEW_SECONDS = 5 * 60;
 
 /** What the site has to say about an app it already has. */
 export interface PinnedIdentity {
   /** The thumbprint of the identity key the app was installed with. */
   identityKeyThumbprint: string;
-  /** Thumbprints of the backend keys the installation has seen replaced. */
-  retiredBackendKeys: ReadonlySet<string>;
+  /** When the newest manifest the installation has seen was signed, in seconds. */
+  signedAt: number;
+  /** That manifest's digest. */
+  signedDigest: string;
 }
 
 export interface IdentityCheckResult {
-  /** The origins the manifest names that skipped the challenge, as the site trusts them. */
+  /** The app's origin, if the site trusts it so it skipped the challenge. */
   trustedOrigins: string[];
 }
 
-export type CheckIdentity = (
-  loaded: LoadedManifest,
-  pinned: PinnedIdentity | null,
-) => Promise<IdentityCheckResult>;
-
 /** The site's trust, as configured: listed origins, and whether loopback origins count too. */
 export interface TrustConfig {
-  /** `apps.trustedOrigins`, unchecked. */
-  trustedOrigins: unknown;
+  /** `apps.trustedOrigins`, already read as origins at boot. */
+  trustedOrigins: ReadonlySet<string>;
   /** Only while Ghost runs in development. */
   trustLoopback: boolean;
 }
 
-function parseTrustedOrigins(entries: unknown): Set<string> {
-  const origins = new Set<string>();
-  const invalid = (entry: unknown) =>
-    new errors.InternalServerError({
-      message: 'apps.trustedOrigins must be a list of origins, such as https://app.example.com.',
-      code: 'APP_TRUSTED_ORIGINS_INVALID',
-      context: JSON.stringify(entry),
-    });
-  if (!Array.isArray(entries)) {
-    throw invalid(entries);
-  }
-  for (const entry of entries) {
-    const url = typeof entry === 'string' ? URL.parse(entry) : null;
-    // Anything more than an origin would read as trusting less than it does, and a wildcard
-    // host, which the URL parser accepts, as trusting more.
-    if (
-      !url ||
-      url.origin === 'null' ||
-      url.href !== `${url.origin}/` ||
-      url.hostname.includes('*')
-    ) {
-      throw invalid(entry);
-    }
-    origins.add(url.origin);
-  }
-  return origins;
+type ChallengeOutcome =
+  | { kind: 'trusted' }
+  | { kind: 'answered'; sent: string; text: string }
+  /**
+   * Built when the check reads it, so a challenge whose manifest failed to load logs
+   * nothing.
+   */
+  | { kind: 'failed'; error: () => Error }
+  /** The manifest URL isn't one Ghost would fetch, which loading it reports. */
+  | { kind: 'skipped' };
+
+/**
+ * A challenge sent to the origin of a manifest URL, before its manifest is loaded. An app is
+ * one origin, so this is the only one there is to challenge. Never rejects, so it can be
+ * left unawaited when loading the manifest fails.
+ */
+export interface StartedChallenge {
+  origin: string | null;
+  outcome: Promise<ChallengeOutcome>;
 }
 
-/** Each origin the manifest names that Ghost loads from or fetches, in order, once. */
-function originsOf({ manifest }: LoadedManifest): string[] {
-  const urls = [manifest.manifest_url, ...manifest.surfaces.map((surface) => surface.url)];
-  return [...new Set(urls.map((url) => new URL(url).origin))];
+export interface IdentityChecker {
+  /**
+   * Starts the challenge for a manifest URL's origin, so it runs while the manifest loads.
+   * The origin follows from the URL alone: a loaded manifest must name the address it was
+   * fetched from, and every path in it resolves against that address.
+   */
+  challenge(manifestUrl: string): StartedChallenge;
+  /**
+   * Finishes the check once the manifest has loaded and its signature is verified:
+   *
+   * 1. It's signed no more than a few minutes ahead of Ghost's clock.
+   * 2. For an app the site has, it's signed with the pinned identity key, no earlier than
+   *    the newest manifest the installation has seen, and not at the same moment as a
+   *    different one.
+   * 3. The app's origin answered the challenge with the manifest's backend key, unless the
+   *    site trusts that origin. A rotated backend key works at once, as the manifest that
+   *    names it is the one the answer is checked against.
+   *
+   * Every failure is thrown as a ValidationError, those from steps 2 and 3 with one of
+   * `UNCONFIRMED_APP_CODES` unless the origin couldn't be reached.
+   */
+  check(
+    loaded: LoadedManifest,
+    pinned: PinnedIdentity | null,
+    started: StartedChallenge,
+  ): Promise<IdentityCheckResult>;
 }
 
 function challengeUnreachable(
@@ -111,30 +115,60 @@ function challengeFailed(origin: string, why: string) {
   });
 }
 
-/**
- * Checks a loaded manifest, whose signature is already verified, is the app it says it
- * is:
- *
- * 1. For an app the site has, the manifest is signed with the pinned identity key, and
- *    doesn't name a retired backend key.
- * 2. Every origin the manifest names, its own included, answers a challenge with the
- *    backend key, unless the site trusts that origin. Origins are challenged in parallel,
- *    each once.
- *
- * Every failure is thrown as a ValidationError with one of `IDENTITY_FAILURE_CODES`.
- * `getTrustConfig` is called on every check because it reads config; a trusted origin that
- * isn't one fails every check, rather than trusting more or less than was meant.
- */
+/** Refuses a manifest whose signing time can't follow what the site has seen. */
+function checkSignedAt(
+  loaded: LoadedManifest,
+  pinned: PinnedIdentity | null,
+  now: number,
+): Error | null {
+  if (loaded.issuedAt > now + CLOCK_SKEW_SECONDS) {
+    return new errors.ValidationError({
+      message: 'The app’s manifest says it was signed in the future.',
+      code: 'APP_MANIFEST_SIGNED_IN_FUTURE',
+      context: `iat is ${new Date(loaded.issuedAt * 1000).toISOString()}; check the clock of whatever signed it`,
+    });
+  }
+  if (!pinned) {
+    return null;
+  }
+  if (loaded.issuedAt < pinned.signedAt) {
+    return new errors.ValidationError({
+      message: 'Ghost couldn’t confirm this is the app’s current version.',
+      code: 'APP_MANIFEST_OUTDATED',
+      context: `It was signed at ${new Date(loaded.issuedAt * 1000).toISOString()}, before the newest one seen, at ${new Date(pinned.signedAt * 1000).toISOString()}. To roll back, sign the older manifest again.`,
+    });
+  }
+  if (loaded.issuedAt === pinned.signedAt && loaded.digest !== pinned.signedDigest) {
+    return new errors.ValidationError({
+      message: 'Ghost couldn’t confirm this is the app’s current version.',
+      code: 'APP_MANIFEST_CONFLICT',
+      context: 'Another manifest was signed at the same second. Sign this one again.',
+    });
+  }
+  return null;
+}
+
 export function createIdentityChecker({
   fetchFromApp,
   logging,
   getTrustConfig,
+  now = () => Math.floor(Date.now() / 1000),
 }: {
   fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
   getTrustConfig: () => TrustConfig;
-}): CheckIdentity {
-  async function challenge(origin: string, loaded: LoadedManifest): Promise<Error | null> {
+  /** Ghost's clock, in seconds since the epoch. */
+  now?: () => number;
+}): IdentityChecker {
+  function isTrusted(origin: string) {
+    const { trustedOrigins, trustLoopback } = getTrustConfig();
+    return trustedOrigins.has(origin) || (trustLoopback && isLocalhost(new URL(origin).hostname));
+  }
+
+  async function send(origin: string): Promise<ChallengeOutcome> {
+    if (isTrusted(origin)) {
+      return { kind: 'trusted' };
+    }
     const sent = createChallenge(origin);
     const answered = await fetchFromApp(challengeUrl(origin), {
       maxBytes: ANSWER_MAX_BYTES,
@@ -146,15 +180,38 @@ export function createIdentityChecker({
     });
     if (!answered.success) {
       if (answered.failure.reason === 'too_large') {
-        return challengeFailed(origin, `The answer is larger than ${ANSWER_MAX_BYTES / 1024} KB`);
+        return {
+          kind: 'failed',
+          error: () =>
+            challengeFailed(origin, `The answer is larger than ${ANSWER_MAX_BYTES / 1024} KB`),
+        };
       }
-      return challengeUnreachable(origin, answered.failure, logging);
+      const { failure } = answered;
+      return { kind: 'failed', error: () => challengeUnreachable(origin, failure, logging) };
     }
-    const verified = await verifyChallengeAnswer(sent, answered.text, loaded.manifest.backend_key);
-    return verified.success ? null : challengeFailed(origin, verified.error);
+    return { kind: 'answered', sent, text: answered.text };
   }
 
-  return async function checkIdentity(loaded, pinned) {
+  function challenge(manifestUrl: string): StartedChallenge {
+    // Only an address Ghost would fetch the manifest from gets a request. Loading the
+    // manifest refuses the rest with its own error.
+    const address = parseManifestUrl(manifestUrl, getTrustConfig().trustLoopback);
+    if (!address.success) {
+      return { origin: null, outcome: Promise.resolve({ kind: 'skipped' }) };
+    }
+    const origin = new URL(address.manifestUrl).origin;
+    const outcome = send(origin).catch((error: unknown): ChallengeOutcome => ({
+      kind: 'failed',
+      error: () => (error instanceof Error ? error : new Error(String(error))),
+    }));
+    return { origin, outcome };
+  }
+
+  async function check(
+    loaded: LoadedManifest,
+    pinned: PinnedIdentity | null,
+    started: StartedChallenge,
+  ): Promise<IdentityCheckResult> {
     if (pinned && loaded.identityKeyThumbprint !== pinned.identityKeyThumbprint) {
       // No detail: the publisher is told it isn't from the same developer, never about keys.
       throw new errors.ValidationError({
@@ -162,27 +219,62 @@ export function createIdentityChecker({
         code: 'APP_IDENTITY_MISMATCH',
       });
     }
-    if (pinned?.retiredBackendKeys.has(loaded.backendKeyThumbprint)) {
-      throw new errors.ValidationError({
-        message: 'Ghost couldn’t confirm the app comes from its developer.',
-        code: 'APP_BACKEND_KEY_RETIRED',
-        context: 'backend_key has been replaced, and can’t be used again',
-      });
+    const signedAt = checkSignedAt(loaded, pinned, now());
+    if (signedAt) {
+      throw signedAt;
     }
 
-    const { trustedOrigins, trustLoopback } = getTrustConfig();
-    const trusted = parseTrustedOrigins(trustedOrigins);
-    const isTrusted = (origin: string) =>
-      trusted.has(origin) || (trustLoopback && isLocalhost(new URL(origin).hostname));
-
-    const origins = originsOf(loaded);
-    const failures = await Promise.all(
-      origins.filter((origin) => !isTrusted(origin)).map((origin) => challenge(origin, loaded)),
-    );
-    const failure = failures.find((result) => result !== null);
-    if (failure) {
-      throw failure;
+    const origin = new URL(loaded.manifestUrl).origin;
+    // Always the same origin, as the manifest URL the challenge started from is the one the
+    // manifest was loaded from; checked anyway, so a caller's mistake can't skip it.
+    const outcome = await (started.origin === origin ? started.outcome : send(origin));
+    switch (outcome.kind) {
+      case 'trusted':
+        return { trustedOrigins: [origin] };
+      case 'failed':
+        throw outcome.error();
+      case 'skipped':
+        throw challengeFailed(origin, 'The origin was not challenged');
+      case 'answered': {
+        const verified = await verifyChallengeAnswer(
+          outcome.sent,
+          outcome.text,
+          loaded.manifest.backend_key,
+        );
+        if (!verified.success) {
+          throw challengeFailed(origin, verified.error);
+        }
+        return { trustedOrigins: [] };
+      }
     }
-    return { trustedOrigins: origins.filter(isTrusted) };
-  };
+  }
+
+  return { challenge, check };
+}
+
+/**
+ * Reads `apps.trustedOrigins` as a set of origins, or names the first entry that isn't one.
+ * Anything more than an origin would read as trusting less than it does, and a wildcard
+ * host, which the URL parser accepts, as trusting more.
+ */
+export function readTrustedOrigins(
+  entries: unknown,
+): { success: true; origins: Set<string> } | { success: false; entry: unknown } {
+  if (!Array.isArray(entries)) {
+    return { success: false, entry: entries };
+  }
+  const origins = new Set<string>();
+  for (const entry of entries) {
+    const url = typeof entry === 'string' ? URL.parse(entry) : null;
+    if (
+      !url ||
+      url.origin === 'null' ||
+      url.href !== `${url.origin}/` ||
+      url.hostname.includes('*')
+    ) {
+      return { success: false, entry };
+    }
+    origins.add(url.origin);
+  }
+  return { success: true, origins };
 }
