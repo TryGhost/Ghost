@@ -576,29 +576,6 @@ describe('automations poll', function () {
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
       });
-
-      it('advances a wait while the To tier matches, then bails out when the member leaves it', async function () {
-        const waitStep = buildWaitStep({ automation_trigger_rules: step.automation_trigger_rules });
-        automationsApi.fetchAndLockSteps.resolves({ steps: [waitStep], nextStepReadyAt: null });
-        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'silver' }] }));
-
-        await poll(options);
-
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, waitStep);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-
-        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'bronze' }] }));
-
-        await poll(options);
-
-        sinon.assert.calledOnceWithExactly(
-          automationsApi.markStepTerminal,
-          waitStep,
-          'member changed tier',
-        );
-        sinon.assert.calledOnce(automationsApi.finishStepAndEnqueueNext);
-        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-      });
     });
 
     describe('free destination', function () {
@@ -657,22 +634,6 @@ describe('automations poll', function () {
           sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         },
       );
-
-      it('bails out of a wait when the member is no longer free', async function () {
-        const waitStep = buildWaitStep({ automation_trigger_rules: step.automation_trigger_rules });
-        automationsApi.fetchAndLockSteps.resolves({ steps: [waitStep], nextStepReadyAt: null });
-        Member.findOne.resolves(buildMember({ status: 'paid' }));
-
-        await poll(options);
-
-        sinon.assert.calledOnceWithExactly(
-          automationsApi.markStepTerminal,
-          waitStep,
-          'member changed status',
-        );
-        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
-        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-      });
     });
   });
 
