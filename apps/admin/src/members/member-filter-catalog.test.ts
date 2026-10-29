@@ -15,12 +15,14 @@ const SOURCES = {
       key: KeySchema.parse('company'),
       name: 'Company',
       type: 'short_text' as const,
+      settings: null,
     },
     {
       namespace: CUSTOM_NAMESPACE,
       key: KeySchema.parse('shipping_address'),
       name: 'Shipping address',
       type: 'address' as const,
+      settings: null,
     },
   ],
 };

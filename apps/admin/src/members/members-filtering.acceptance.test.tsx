@@ -164,6 +164,79 @@ describe('Members list', () => {
     await expect(membersScreen.memberRows()).toHaveCount(1);
   });
 
+  describe('a list field filtered by every option chosen', () => {
+    const animals = {
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list' as const,
+      settings: { options: ['Dog', 'Cat'], multiple: true },
+      status: 'active' as const,
+      access: { member: 'none' as const },
+      created_at: '2026-08-05T00:00:00.000Z',
+      updated_at: null,
+    };
+    // One condition per option: a row holds one option, so no single condition names both.
+    const BOTH =
+      "((metafields.identity:'custom.favourite_animals'+metafields.value:'Cat')+(metafields.identity:'custom.favourite_animals'+metafields.value:'Dog'))";
+
+    it('finds members holding all of the options chosen', async () => {
+      fakeMemberCustomFields([animals]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/held-options/', {
+        held_options: [],
+      });
+      const membersApi = fakeMembers(({ filter }) =>
+        filter ? [member({ name: 'Both' })] : [member({ name: 'Both' }), member()],
+      );
+      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+      await membersScreen.openFilterField('Favourite animals');
+      await page.getByLabelText('Favourite animals operator').click();
+      await page.getByText('is all of', { exact: true }).click();
+      await page.getByLabelText('Favourite animals value').click();
+      await page.getByRole('option', { name: 'Dog' }).click();
+      // One option is one condition, written as any other.
+      await expect(membersApi).toHaveSentFilter(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:'Dog')",
+      );
+      await page.getByRole('option', { name: 'Cat' }).click();
+
+      await expect(membersApi).toHaveSentFilter(BOTH);
+      await expect(membersScreen.memberRows()).toHaveCount(1);
+    });
+
+    // No member can hold two options of a list that takes one, so asking for all finds nobody.
+    it('offers "is all of" only where a member can hold several options', async () => {
+      fakeMemberCustomFields([{ ...animals, settings: { ...animals.settings, multiple: false } }]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/held-options/', {
+        held_options: [],
+      });
+      fakeMembers([member()]);
+      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+      await membersScreen.openFilterField('Favourite animals');
+      await page.getByLabelText('Favourite animals operator').click();
+
+      await expect.element(page.getByText('is none of', { exact: true })).toBeVisible();
+      await expect(page.getByText('is all of', { exact: true })).toHaveCount(0);
+    });
+
+    it('reads a saved filter for all of the options back as one', async () => {
+      fakeMemberCustomFields([animals]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/held-options/', {
+        held_options: [],
+      });
+      fakeMembers([member({ name: 'Both' })]);
+      await renderAdminApp(`/members?filter=${encodeURIComponent(BOTH)}`, {
+        labs: { membersCustomFields: true },
+      });
+
+      await expect
+        .element(page.getByLabelText('Favourite animals operator'))
+        .toHaveTextContent('is all of');
+    });
+  });
+
   // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
   // Core without the definitions endpoint must keep filtering intact. Adding a filter swaps
   // the filter bar between its two placements, and each one asks for the definitions; the

@@ -14,7 +14,7 @@ import {
   readNegatedString,
   toComparator,
 } from '@/shared/filters';
-import type { CompoundMatch, PresenceAddressing } from '@/shared/filters';
+import type { AstNode, CompoundMatch, PresenceAddressing } from '@/shared/filters';
 import { memberCustomFieldIdentity } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const RELATION = 'metafields';
@@ -61,6 +61,12 @@ export function partOf(identity: Identity): string {
 
 export const CUSTOM_FIELD_SET_OPERATORS = PRESENCE_OPERATORS;
 
+/**
+ * The comparator a group of one field's single-option conditions reads as: a member holding every
+ * one of them. NQL has no word for it, so it is named here, for the list semantics to read.
+ */
+export const ALL_OF = '$all';
+
 function identityClause(identity: string): string {
   return `${IDENTITY_ATTRIBUTE}:${escapeNqlString(identity)}`;
 }
@@ -82,6 +88,40 @@ function fieldFromContext(
   params: Record<string, string>,
 ): Pick<Identity, 'namespace' | 'key'> | null {
   return bound ?? fieldFromParams(params);
+}
+
+/**
+ * The field and options a group of conditions names when each is the same field holding one
+ * option, which is how "is all of" is written, or null for any other group.
+ */
+function optionsAllHeld(children: AstNode[]): { identity: Identity; values: string[] } | null {
+  if (children.length < 2) {
+    return null;
+  }
+  const held = children.map((child) => {
+    const pair = getCompoundChildren(child, '$and');
+    if (!pair || pair.length !== 2) {
+      return null;
+    }
+    const identity = pair
+      .map((clause) => parseIdentityValue(clause[IDENTITY_ATTRIBUTE]))
+      .find(Boolean);
+    const value = pair.find((clause) => VALUE_ATTRIBUTE in clause)?.[VALUE_ATTRIBUTE];
+    return identity && typeof value === 'string' ? { identity, value } : null;
+  });
+  const [first] = held;
+  if (
+    !first ||
+    held.some(
+      (one) =>
+        !one ||
+        memberCustomFieldIdentity(one.identity, one.identity.parts) !==
+          memberCustomFieldIdentity(first.identity, first.identity.parts),
+    )
+  ) {
+    return null;
+  }
+  return { identity: first.identity, values: held.flatMap((one) => (one ? [one.value] : [])) };
 }
 
 export function customFieldAddressing(
@@ -175,6 +215,19 @@ export function customFieldAddressing(
         }
 
         return null;
+      }
+
+      const allOf = optionsAllHeld(children);
+      if (allOf) {
+        if (!ownsIdentity(allOf.identity)) {
+          return null;
+        }
+        return {
+          kind: 'value',
+          field: metafieldFieldId(allOf.identity),
+          leadingValues: [partOf(allOf.identity)],
+          comparator: { operator: ALL_OF, value: allOf.values },
+        };
       }
 
       if (children.length !== 2) {

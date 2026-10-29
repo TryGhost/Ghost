@@ -1,4 +1,5 @@
 import {
+  ALL_OF,
   CUSTOM_FIELD_SET_OPERATORS,
   METAFIELDS_FIELD_PREFIX,
   customFieldAddressing,
@@ -12,10 +13,13 @@ import {
   textSemantics,
 } from '@/shared/filters';
 import {
+  FIELD_STRUCTURES,
+  matchField,
   matchShape,
   type FieldType,
   type Leaf,
   type LeafKind,
+  type TypedSettings,
 } from '@tryghost/metafield-types/structure';
 import type {
   FieldDescriptor,
@@ -119,6 +123,64 @@ export function customFieldSemantics(partTypes: readonly LeafFilterType[]): Valu
   };
 }
 
+const LIST_OPERATORS = ['is-any', 'is-all', 'is-not-any'] as const;
+type ListOperator = (typeof LIST_OPERATORS)[number];
+
+/**
+ * How a list field's options filter: as any set does, "is any of" or "is none of", and also "is all
+ * of", which holds each option picked as a condition of its own, since one row holds one option
+ * and no single condition can name several.
+ */
+export function listSemantics(): ValueSemantics<ListOperator> {
+  const set = setSemantics({ quoteStrings: true });
+  const option = setSemantics({ quoteStrings: true, serializeSingletonAsScalar: true });
+  return {
+    operators: LIST_OPERATORS,
+    serialize(input, ctx) {
+      if (input.operator !== 'is-all') {
+        return set.serialize(input, ctx);
+      }
+      // Sorted, as "is any of" sorts its values, so one filter always reads the same.
+      const values = [...new Set(input.values.map(String))].sort((a, b) => a.localeCompare(b));
+      const fragments = values.flatMap((value) => {
+        const expression = option.serialize({ operator: 'is-any', values: [value] }, ctx);
+        return typeof expression === 'string' ? [{ expression }] : [];
+      });
+      return fragments.length > 0 ? { fragments, each: true } : null;
+    },
+    parse(comparator, ctx) {
+      if (comparator.operator === ALL_OF && Array.isArray(comparator.value)) {
+        return { operator: 'is-all', values: comparator.value };
+      }
+      const parsed = set.parse(comparator, ctx);
+      return parsed && listsOperator(LIST_OPERATORS, parsed.operator) ? parsed : null;
+    },
+  };
+}
+
+/**
+ * How a custom field filters until its own definition names it, so a saved filter of any type's
+ * shape parses whatever is loaded: typed parts as text, parts picked from a list as a set, and a
+ * list's options all at once.
+ */
+export function customFieldTemplate(): {
+  semantics: ValueSemantics<string>;
+  operators: readonly string[];
+} {
+  const parts = customFieldSemantics(LEAF_FILTER_TYPES);
+  const list = listSemantics();
+  return {
+    semantics: {
+      operators: [...parts.operators, 'is-all'],
+      serialize: (input, ctx) =>
+        input.operator === 'is-all' ? list.serialize(input, ctx) : parts.serialize(input, ctx),
+      parse: (comparator, ctx) =>
+        comparator.operator === ALL_OF ? list.parse(comparator, ctx) : parts.parse(comparator, ctx),
+    },
+    operators: [...customFieldOperators(LEAF_FILTER_TYPES), 'is-all'],
+  };
+}
+
 // The operators offered in the registered order of each part type, then presence.
 export function customFieldOperators(partTypes: readonly LeafFilterType[]): readonly string[] {
   return [
@@ -131,12 +193,13 @@ export function customFieldOperators(partTypes: readonly LeafFilterType[]): read
 
 export const CUSTOM_FIELD_CLAUSE = METAFIELDS_FIELD_PREFIX;
 
-export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' | 'name' | 'type'>;
+export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' | 'name'> &
+  TypedSettings;
 
 export function customFieldDescriptor(definition: CustomFieldDefinition): FieldDescriptor {
-  return matchShape<FieldDescriptor>(definition.type, {
-    scalar: ({ leaf }) =>
-      SCALAR_FILTER[LEAF_FILTER[leaf.leaf]]({
+  return matchField<CustomFieldDefinition, FieldDescriptor>(definition, {
+    scalar: ({ type }) =>
+      SCALAR_FILTER[LEAF_FILTER[FIELD_STRUCTURES[type].leaf.leaf]]({
         key: metafieldFieldId(definition),
         icon: 'text',
         addressing: customFieldAddressing(definition),
@@ -145,12 +208,12 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           type: 'custom',
         },
       }),
-    record: ({ parts }) =>
+    record: ({ type }) =>
       domainField({
         key: metafieldFieldId(definition),
         icon: 'text',
-        semantics: customFieldSemantics(usedFilterTypes(parts)),
-        operators: customFieldOperators(usedFilterTypes(parts)),
+        semantics: customFieldSemantics(usedFilterTypes(FIELD_STRUCTURES[type].parts)),
+        operators: customFieldOperators(usedFilterTypes(FIELD_STRUCTURES[type].parts)),
         addressing: customFieldAddressing(definition),
         ui: {
           label: definition.name,
@@ -158,13 +221,17 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           defaultOperator: 'is-set',
         },
       }),
-    // Options are picked, as labels are: "is any of" a choice of them, or "is none of".
-    set: () =>
+    // Options are picked, as labels are: "is any of" or "is none of" a choice of them, and "is all
+    // of" them where a member can hold several.
+    set: ({ settings }) =>
       domainField({
         key: metafieldFieldId(definition),
         icon: 'text',
-        semantics: customFieldSemantics(['set']),
-        operators: customFieldOperators(['set']),
+        semantics: listSemantics(),
+        operators: [
+          ...LIST_OPERATORS.filter((operator) => settings.multiple || operator !== 'is-all'),
+          ...CUSTOM_FIELD_SET_OPERATORS,
+        ],
         addressing: customFieldAddressing(definition),
         ui: {
           label: definition.name,

@@ -10,6 +10,7 @@ describe('a composite field descriptor', () => {
     key: KeySchema.parse('shipping'),
     name: 'Shipping',
     type: 'address',
+    settings: null,
   });
 
   it('reads its parts with their own types combined and starts the whole field at presence', () => {

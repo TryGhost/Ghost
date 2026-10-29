@@ -3,7 +3,7 @@ import {
   fieldFromParams,
   metafieldFieldId,
 } from './custom-fields/addressing';
-import { customFieldOperators, customFieldSemantics } from './custom-fields/filter-fields';
+import { customFieldTemplate } from './custom-fields/filter-fields';
 import {
   FUTURE_TIMESTAMP_OPERATORS,
   PAST_TIMESTAMP_OPERATORS,
@@ -276,17 +276,15 @@ const MEMBER_FIELDS = [
 
 export { METAFIELDS_FIELD_PREFIX, parseMetafieldFieldId } from './custom-fields/addressing';
 
-// The template every custom field reads through until its own definition names it:
-// typed parts as text, parts picked from a list as a set, so a saved filter of either
-// shape parses whatever is loaded.
-const CUSTOM_FIELD_PART_TYPES = ['text', 'set'] as const;
+// The template every custom field reads through until its own definition names it.
+const CUSTOM_FIELD_TEMPLATE = customFieldTemplate();
 
 const CUSTOM_FIELD = domainField({
   key: 'metafields.:namespace.:key',
   icon: 'text',
-  semantics: customFieldSemantics(CUSTOM_FIELD_PART_TYPES),
+  semantics: CUSTOM_FIELD_TEMPLATE.semantics,
   addressing: customFieldAddressing(),
-  operators: customFieldOperators(CUSTOM_FIELD_PART_TYPES),
+  operators: CUSTOM_FIELD_TEMPLATE.operators,
   ui: {
     label: 'Custom field',
     type: 'custom',

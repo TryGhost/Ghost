@@ -112,6 +112,7 @@ const CUSTOM_FIELDS_PREVIEW_LIMIT = 5;
 
 const MEMBER_OPERATOR_LABELS: Partial<Record<string, string>> = {
   'is-any': 'is any of',
+  'is-all': 'is all of',
   'is-not-any': 'is none of',
   'does-not-contain': 'does not contain',
   ...RELATIVE_DATE_OPERATOR_LABELS,

@@ -156,18 +156,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   );
   const archivedCustomFields = useMemo(
     () =>
-      catalogCustomFields
-        .filter(
-          (field) =>
-            field.status === 'archived' &&
-            referencedIdentities.has(memberCustomFieldIdentity(field)),
-        )
-        .map((field) => ({
-          namespace: field.namespace,
-          key: field.key,
-          name: field.name,
-          type: field.type,
-        })),
+      catalogCustomFields.filter(
+        (field) =>
+          field.status === 'archived' && referencedIdentities.has(memberCustomFieldIdentity(field)),
+      ),
     [catalogCustomFields, referencedIdentities],
   );
 

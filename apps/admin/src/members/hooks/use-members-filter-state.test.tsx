@@ -472,6 +472,7 @@ describe('useMembersFilterState — once its sources have arrived', () => {
           key: KeySchema.parse('company'),
           name: 'Company',
           type: 'short_text',
+          settings: null,
         },
       ],
     });

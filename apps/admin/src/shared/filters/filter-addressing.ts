@@ -181,8 +181,21 @@ export function composeCodec<TOperator extends string>(
 
       const { clauses, join } = writtenClauses(written, address.valueKey);
       const grouped = typeof written !== 'string';
+      const companions = address.companions ?? [];
 
-      return [combine([...(address.companions ?? []), ...clauses], join, grouped)];
+      // One fragment is one condition, whose own brackets are all it needs: NQL doesn't read a
+      // group bracketed twice.
+      if (typeof written !== 'string' && written.each && clauses.length > 1) {
+        return [
+          combine(
+            clauses.map((clause) => combine([...companions, clause], 'and', true)),
+            join,
+            true,
+          ),
+        ];
+      }
+
+      return [combine([...companions, ...clauses], join, grouped)];
     },
     parseCompound: semantics.parseClauses
       ? (node, ctx) => {

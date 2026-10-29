@@ -13,6 +13,12 @@ export interface ClauseFragment {
 export interface WrittenValue {
   join?: 'and' | 'or';
   fragments: ClauseFragment[];
+  /**
+   * Each fragment is a condition of its own rather than part of one, so an addressing that
+   * qualifies its value, such as a custom field naming itself beside it, writes the qualifier
+   * beside every fragment.
+   */
+  each?: boolean;
 }
 
 export type SerializedValue = string | WrittenValue;
