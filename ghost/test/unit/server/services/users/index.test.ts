@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
+import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 
 // require, not import: the service and its endpoints are CommonJS and must share these
 // module instances so prototype stubs and instanceof checks observe the real composition.
-const DomainEvents = require('@tryghost/domain-events');
 const { PostsBulkAddTagsEvent } = require('../../../../../core/shared/events-ts');
 const { PostRevisions } = require('../../../../../core/server/lib/post-revisions');
 const models = require('../../../../../core/server/models');
 const auth = require('../../../../../core/server/auth');
-const Users = require('../../../../../core/server/services/users');
+const Users = require('../../../../../core/server/services/users/users-service');
+const ROOT_PATH = require.resolve('../../../../../core/server/services/users');
 const USERS_ENDPOINT_PATH = require.resolve('../../../../../core/server/api/endpoints/users');
 const AUTHENTICATION_ENDPOINT_PATH =
   require.resolve('../../../../../core/server/api/endpoints/authentication');
@@ -103,12 +104,23 @@ function createModels({
   return { models: fakes, transaction, calls, inserted, state };
 }
 
+type Root = (typeof import('../../../../../core/server/services/users'))['default'];
+
 describe('Users service', function () {
   const sandbox = sinon.createSandbox();
   let dispatch: sinon.SinonStub;
 
+  function createService(fakes: ReturnType<typeof createModels>['models']) {
+    return new Users({
+      models: fakes,
+      DomainEvents: { dispatch },
+      PostsBulkAddTagsEvent,
+      PostRevisions,
+    });
+  }
+
   beforeEach(function () {
-    dispatch = sandbox.stub(DomainEvents, 'dispatch');
+    dispatch = sinon.stub();
   });
 
   afterEach(function () {
@@ -116,29 +128,40 @@ describe('Users service', function () {
   });
 
   describe('endpoint composition', function () {
-    let originalUsersEndpoint: NodeJS.Module | undefined;
+    // Each case evaluates the root and both endpoints afresh so the readiness guard and the
+    // endpoints' captured root are observed from an uninitialized state.
+    const paths = [ROOT_PATH, USERS_ENDPOINT_PATH, AUTHENTICATION_ENDPOINT_PATH];
+    let originalModules: Map<string, NodeJS.Module | undefined>;
+    let root: Root;
 
     beforeEach(function () {
-      originalUsersEndpoint = require.cache[USERS_ENDPOINT_PATH];
-      delete require.cache[USERS_ENDPOINT_PATH];
+      originalModules = new Map(paths.map((path) => [path, require.cache[path]]));
+      for (const path of paths) {
+        delete require.cache[path];
+      }
+      root = require(ROOT_PATH).default;
     });
 
     afterEach(function () {
-      if (originalUsersEndpoint) {
-        require.cache[USERS_ENDPOINT_PATH] = originalUsersEndpoint;
-      } else {
-        delete require.cache[USERS_ENDPOINT_PATH];
+      for (const [path, original] of originalModules) {
+        if (original) {
+          require.cache[path] = original;
+        } else {
+          delete require.cache[path];
+        }
       }
     });
 
-    it('loads the users endpoint through the API registry outside an Admin request', async function () {
+    it('loads the users endpoint through the API registry before the service is ready', async function () {
       // The update check composes api.users.browse from this registry while it runs,
       // which can evaluate the users endpoint before any Admin request has.
       const endpoints = require('../../../../../core/server/api').endpoints;
       const destroyUser = sandbox.stub(Users.prototype, 'destroyUser').resolves();
 
+      assert.throws(() => root.service, IncorrectUsageError);
       const controller = endpoints.users;
       const endpoint = require(USERS_ENDPOINT_PATH);
+      await root.init();
       const first = { id: 'user-id', context: { user: 'actor' } };
       const second = { id: 'other-user-id', context: { user: 'actor' } };
       await endpoint.destroy.query({ options: first });
@@ -150,14 +173,13 @@ describe('Users service', function () {
       assert.equal(destroyUser.secondCall.args[0], second);
       const instance = destroyUser.firstCall.thisValue;
       assert.ok(instance instanceof Users);
-      assert.equal(destroyUser.secondCall.thisValue, instance, 'one instance is retained');
       assert.equal(instance.models, models);
-      assert.equal(instance.auth, auth);
-      assert.equal(instance.apiMail, endpoints.mail);
-      assert.equal(instance.apiSettings, endpoints.settings);
+      assert.equal(destroyUser.secondCall.thisValue, instance);
+      assert.equal(instance, root.service, 'the boot-owned instance handles every call');
     });
 
-    it('passes the authentication endpoint instance to resetAuthentication on every reset', async function () {
+    it('passes the boot-owned instance to resetAuthentication on every reset', async function () {
+      await root.init();
       const resetAuthentication = sandbox.stub().resolves({ apiKeysRotated: 1, usersLocked: 2 });
       sandbox.stub(auth, 'resetAuthentication').get(() => resetAuthentication);
       const endpoint = require(AUTHENTICATION_ENDPOINT_PATH);
@@ -172,12 +194,14 @@ describe('Users service', function () {
       assert.equal(resetAuthentication.firstCall.args[0].options, options);
       assert.equal(typeof schedulerAdapter.rescheduleAll, 'function');
       assert.ok(userService instanceof Users);
-      assert.equal(resetAuthentication.secondCall.args[0].userService, userService);
       assert.equal(userService.models, models);
       assert.equal(userService.lockAll, Users.prototype.lockAll);
+      assert.equal(resetAuthentication.secondCall.args[0].userService, userService);
+      assert.equal(userService, root.service);
     });
 
-    it('retains a separate instance in each endpoint', async function () {
+    it('shares the boot-owned instance between both endpoints', async function () {
+      await root.init();
       const destroyUser = sandbox.stub(Users.prototype, 'destroyUser').resolves();
       const resetAuthentication = sandbox.stub().resolves({ apiKeysRotated: 0, usersLocked: 0 });
       sandbox.stub(auth, 'resetAuthentication').get(() => resetAuthentication);
@@ -185,24 +209,10 @@ describe('Users service', function () {
       await require(USERS_ENDPOINT_PATH).destroy.query({ options: { id: 'user-id' } });
       await require(AUTHENTICATION_ENDPOINT_PATH).reset.query({ options: {}, original: {} });
 
-      assert.notEqual(
+      assert.equal(
         destroyUser.firstCall.thisValue,
         resetAuthentication.firstCall.args[0].userService,
       );
-    });
-  });
-
-  describe('operations', function () {
-    it('use only the models dependency', async function () {
-      const { models: fakes } = createModels();
-      const service = new Users({ models: fakes });
-
-      const locked = await service.lockAll({ context: { user: 'actor' } });
-      await service.assignTagToUserPosts({ id: 'user-id', context: {}, transacting: {} });
-      await service.destroyUser({ id: 'user-id', context: { user: 'actor' } });
-
-      assert.deepEqual(locked, { count: 0 });
-      sinon.assert.calledOnce(fakes.User.destroy);
     });
   });
 
@@ -215,7 +225,7 @@ describe('Users service', function () {
       const { models: fakes, transaction } = createModels();
       const user = createUser();
       fakes.User.findAll.resolves({ models: [user] });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
       const frameOptions = { context: { user: 'actor' } };
 
       const result = await service.lockAll(frameOptions);
@@ -233,7 +243,7 @@ describe('Users service', function () {
       const { models: fakes } = createModels();
       const user = createUser();
       fakes.User.findAll.resolves({ models: [user] });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
       const frameOptions = { context: { user: 'actor' }, transacting: { label: 'outer' } };
 
       await service.lockAll(frameOptions);
@@ -250,7 +260,7 @@ describe('Users service', function () {
 
     it('is bound so it runs detached from the instance', async function () {
       const { models: fakes } = createModels();
-      const { assignTagToUserPosts } = new Users({ models: fakes });
+      const { assignTagToUserPosts } = createService(fakes);
 
       await assignTagToUserPosts({ id: 'user-id', context, transacting });
 
@@ -260,7 +270,7 @@ describe('Users service', function () {
 
     it('reads the author and their posts inside the caller transaction', async function () {
       const { models: fakes, calls } = createModels();
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.assignTagToUserPosts({ id: 'user-id', context, transacting });
 
@@ -279,7 +289,7 @@ describe('Users service', function () {
 
     it('returns before any tag work when the author has no posts', async function () {
       const { models: fakes, calls, inserted } = createModels({ userPostIds: [] });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.assignTagToUserPosts({ id: 'user-id', context, transacting });
 
@@ -296,7 +306,7 @@ describe('Users service', function () {
 
     it('creates the hash tag in the caller transaction and tags every post when it is missing', async function () {
       const { models: fakes, calls, inserted } = createModels({ existingTag: false });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.assignTagToUserPosts({ id: 'user-id', context, transacting });
 
@@ -335,7 +345,7 @@ describe('Users service', function () {
 
     it('looks up already tagged posts inside the caller transaction when the tag exists', async function () {
       const { models: fakes, calls, inserted } = createModels({ taggedPostIds: ['post-1'] });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.assignTagToUserPosts({ id: 'user-id', context, transacting });
 
@@ -356,7 +366,7 @@ describe('Users service', function () {
 
     it('dispatches one PostsBulkAddTagsEvent carrying the newly tagged post ids', async function () {
       const { models: fakes } = createModels({ taggedPostIds: ['post-1'] });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.assignTagToUserPosts({ id: 'user-id', context, transacting });
 
@@ -373,7 +383,7 @@ describe('Users service', function () {
 
     it('opens its own transaction and overwrites the caller transaction in every stage', async function () {
       const { models: fakes, transaction } = createModels();
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
       const frameOptions = { id: 'user-id', context, transacting: { label: 'outer' } };
 
       await service.destroyUser(frameOptions);
@@ -416,7 +426,7 @@ describe('Users service', function () {
 
     it('runs revision cleanup, tagging, reassignment, key removal and deletion in order inside the transaction', async function () {
       const { models: fakes, state } = createModels();
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.destroyUser({ id: 'user-id', context });
 
@@ -434,7 +444,7 @@ describe('Users service', function () {
     it('constructs a revisions helper around the PostRevision model on every call', async function () {
       const { models: fakes, transaction } = createModels();
       const removeAuthor = sandbox.spy(PostRevisions.prototype, 'removeAuthorFromRevisions');
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.destroyUser({ id: 'user-id', context });
       await service.destroyUser({ id: 'other-user-id', context });
@@ -456,7 +466,7 @@ describe('Users service', function () {
       dispatch.callsFake(() => {
         dispatchedWhileOpen = state.open;
       });
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.destroyUser({ id: 'user-id', context });
 
@@ -468,7 +478,7 @@ describe('Users service', function () {
       const { models: fakes } = createModels();
       const failure = new Error('reassignment failed');
       fakes.Post.reassignByAuthor.rejects(failure);
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await assert.rejects(service.destroyUser({ id: 'user-id', context }), failure);
 
@@ -480,7 +490,7 @@ describe('Users service', function () {
     it('ignores a missing staff API key and still deletes the user', async function () {
       const { models: fakes } = createModels();
       fakes.ApiKey.destroy.rejects(new fakes.ApiKey.NotFoundError('no key'));
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await service.destroyUser({ id: 'user-id', context });
 
@@ -491,7 +501,7 @@ describe('Users service', function () {
       const { models: fakes } = createModels();
       const failure = new Error('key removal failed');
       fakes.ApiKey.destroy.rejects(failure);
-      const service = new Users({ models: fakes });
+      const service = createService(fakes);
 
       await assert.rejects(service.destroyUser({ id: 'user-id', context }), failure);
 
