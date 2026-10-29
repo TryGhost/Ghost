@@ -215,10 +215,10 @@ const processStep = async ({
     return null;
   }
 
-  const rulesToCheck = step.automation_trigger_rules;
+  const rules = step.automation_trigger_rules;
 
   const memberRelationsToLoad = ['newsletters'];
-  if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
+  if (rules.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
   }
   const member = (await Member.findOne(
@@ -244,9 +244,9 @@ const processStep = async ({
   }
 
   // The member exists, but do they still match the trigger rules for this automation?
-  let matchingRule: (typeof rulesToCheck)[number] | undefined;
+  let matchingRule: (typeof rules)[number] | undefined;
   let stillMatchesStatus = false;
-  for (const rule of rulesToCheck) {
+  for (const rule of rules) {
     if (!doesMemberMatchTriggerRuleStatus(member, rule)) {
       continue;
     }
