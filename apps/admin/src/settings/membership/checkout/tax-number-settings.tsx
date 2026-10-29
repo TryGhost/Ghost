@@ -17,9 +17,15 @@ const TaxNumberSettings: React.FC<{
   onChange: (next: TaxNumberFormState) => void;
 }> = ({ state, tiers, automaticTax, errors, onChange }) => (
   <CollectRow
-    description={
-      automaticTax ? 'Stripe Automatic Tax already asks for it on every checkout' : undefined
-    }
+    // Unlike the other parts there's no field to choose, and Stripe leaves the option out for some
+    // buyers, so a publisher checking from the US would otherwise see no change at all.
+    description={{
+      text: automaticTax
+        ? 'Stripe Automatic Tax already asks for it on all paid tiers, in countries Stripe supports.'
+        : 'Business buyers can add a tax ID to their invoices, in countries Stripe supports.',
+      // Stripe's own docs say which buyers it asks, and stay current as that changes.
+      learnMoreUrl: 'https://docs.stripe.com/tax/checkout/tax-ids',
+    }}
     id="checkout-collect-tax-number"
     label="Tax ID or VAT"
     state={state}

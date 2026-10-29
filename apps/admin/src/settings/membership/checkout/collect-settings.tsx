@@ -10,6 +10,7 @@ import {
   FieldError,
   FieldLabel,
   FieldTitle,
+  Link,
   MultiSelectCombobox,
   Switch,
 } from '@tryghost/shade/components';
@@ -122,8 +123,11 @@ export const Destination: React.FC<{
 export const CollectRow: React.FC<{
   id: string;
   label: string;
-  /** Shown under the label. */
-  description?: string;
+  /**
+   * Shown under the label: the text, read out with the switch, and docs that explain the part
+   * further, linked after it.
+   */
+  description?: { text: string; learnMoreUrl?: string };
   state: CollectFormState;
   /** Paid tiers, archived ones included. */
   tiers: Tier[];
@@ -138,6 +142,8 @@ export const CollectRow: React.FC<{
       {label}
     </FieldLabel>
   );
+  // The switch is described by the sentence alone: the link beside it is its own control.
+  const descriptionId = `${id}-description`;
 
   return (
     // A group named by the part, so its "Collect for" and other settings are told apart from
@@ -147,12 +153,27 @@ export const CollectRow: React.FC<{
         {description ? (
           <FieldContent>
             {labelled}
-            <FieldDescription>{description}</FieldDescription>
+            <FieldDescription>
+              <span id={descriptionId}>{description.text}</span>
+              {description.learnMoreUrl && (
+                <>
+                  {' '}
+                  <Link href={description.learnMoreUrl} external>
+                    Learn more
+                  </Link>
+                </>
+              )}
+            </FieldDescription>
           </FieldContent>
         ) : (
           labelled
         )}
-        <Switch checked={state.collect} id={id} onCheckedChange={(collect) => set({ collect })} />
+        <Switch
+          aria-describedby={description ? descriptionId : undefined}
+          checked={state.collect}
+          id={id}
+          onCheckedChange={(collect) => set({ collect })}
+        />
       </Field>
       {state.collect && (
         <>

@@ -519,6 +519,31 @@ describe('Checkout settings', () => {
       });
   });
 
+  it('says what offering a tax ID does, and points to where Stripe says which buyers it asks', async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+      tax_number: { collect: false },
+    });
+
+    const description =
+      'Business buyers can add a tax ID to their invoices, in countries Stripe supports.';
+    await expect.element(modal.getByText(description)).toBeVisible();
+    await expect
+      .element(modal.getByRole('switch', { name: 'Tax ID or VAT' }))
+      .toHaveAccessibleDescription(description);
+    const learnMore = modal
+      .getByRole('group', { name: 'Tax ID or VAT' })
+      .getByRole('link', { name: 'Learn more' });
+    await expect.element(learnMore).toBeVisible();
+    await expect
+      .element(learnMore)
+      .toHaveAttribute('href', 'https://docs.stripe.com/tax/checkout/tax-ids');
+    // In a new tab, so the settings being edited stay open.
+    await expect.element(learnMore).toHaveAttribute('target', '_blank');
+  });
+
   it('shows a tax ID offered on every checkout while automatic tax is on', async () => {
     const { modal } = await openCheckoutFields(
       {
@@ -538,8 +563,18 @@ describe('Checkout settings', () => {
           .getByText("I'm purchasing as a business"),
       )
       .toBeVisible();
+    const description =
+      'Stripe Automatic Tax already asks for it on all paid tiers, in countries Stripe supports.';
+    await expect.element(modal.getByText(description)).toBeVisible();
     await expect
-      .element(modal.getByText('Stripe Automatic Tax already asks for it on every checkout'))
+      .element(modal.getByRole('switch', { name: 'Tax ID or VAT' }))
+      .toHaveAccessibleDescription(description);
+    await expect
+      .element(
+        modal
+          .getByRole('group', { name: 'Tax ID or VAT' })
+          .getByRole('link', { name: 'Learn more' }),
+      )
       .toBeVisible();
   });
 
