@@ -3985,6 +3985,9 @@ importers:
 
   packages/app-contracts:
     dependencies:
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.12
       zod:
         specifier: 'catalog:'
         version: 4.6.7
