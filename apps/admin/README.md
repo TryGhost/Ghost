@@ -106,9 +106,8 @@ in one browser tab, open `http://localhost:2368/ghost/#/?labs=<flag>`. These
 survive navigation and reloads in that tab; use `?labs=` to clear them.
 
 Build new Admin features in this React app. Use `admin-x-framework` for API
-access and Shade for UI rather than adding new `admin-x-design-system`
-components. Product copy belongs in the `ghost` namespace; follow the
-[internationalization guide](../../docs/practices/internationalization.md).
+access and Shade for UI. Product copy belongs in the `ghost` namespace; follow
+the [internationalization guide](../../docs/practices/internationalization.md).
 
 `pnpm dev` runs `pnpm nx run @tryghost/admin:build:dev` before starting Admin's
 dev server. It builds Koenig Lexical and the Unsplash selector, the only

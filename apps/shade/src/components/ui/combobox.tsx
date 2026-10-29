@@ -17,7 +17,8 @@ const ComboboxTrigger = React.forwardRef<
       className={cn(
         inputSurface('self'),
         inputSurfaceClasses.disabledFieldSelf,
-        'flex h-(--control-height) w-full min-w-0 items-center justify-between px-3 text-control hover:bg-button-hover',
+        // Chevron position matches SelectTrigger.
+        'flex h-(--control-height) w-full min-w-0 items-center justify-between pr-2 pl-3 text-control hover:bg-button-hover',
         className,
       )}
       role="combobox"
@@ -25,7 +26,7 @@ const ComboboxTrigger = React.forwardRef<
       type="button"
     >
       {children}
-      <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
+      <ChevronDown className="-mr-0.5 ml-2 size-4 shrink-0 opacity-50" />
     </button>
   </PopoverTrigger>
 ));

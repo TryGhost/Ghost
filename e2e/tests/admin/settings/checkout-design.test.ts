@@ -370,23 +370,6 @@ test.describe('Ghost Admin - Checkout design on a small screen', () => {
   });
 });
 
-test.describe('Ghost Admin - Checkout design without its labs flag', () => {
-  test.use({ stripeEnabled: true });
-
-  test('labs flag off - checkout settings cannot be opened', async ({ page }) => {
-    const settingsPage = new SettingsPage(page);
-    await settingsPage.goto();
-    const checkout = new CheckoutSettingsModal(page);
-
-    await expect(page.getByRole('button', { name: 'Connected to Stripe' })).toBeVisible();
-    await expect(checkout.openButton).toHaveCount(0);
-
-    await page.goto('/ghost/#/settings/tiers/checkout');
-    await expect(page).toHaveURL(/#\/settings\/tiers$/);
-    await expect(checkout.modal).toHaveCount(0);
-  });
-});
-
 test.describe('Ghost Admin - Checkout design without Stripe', () => {
   test.use({ labs: { stripeCheckoutDesign: true } });
 

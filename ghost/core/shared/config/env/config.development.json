@@ -1,6 +1,13 @@
 {
   "url": "http://localhost:2368",
   "createInDevelopmentTables": true,
+  "services": {
+    "jobs": {
+      "outbox": {
+        "enabled": true
+      }
+    }
+  },
   "mail": {
     "from": "test@example.com",
     "transport": "SMTP",

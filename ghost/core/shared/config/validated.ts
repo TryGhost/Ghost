@@ -84,7 +84,7 @@ export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
 
   if (isStrict(String(tree.env))) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
-    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error(`Ghost config failed validation:\n${report}`);
   }
 

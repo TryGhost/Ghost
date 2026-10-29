@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { AdapterManager } from '../../../../../core/server/services/adapter-manager/adapter-manager';
+import { AdapterManager } from '../../../../../core/kernel/adapter-manager';
 import { buildAdapterPaths } from '../../../../../core/server/services/adapter-manager/adapter-paths';
+import { normalizeAdapterConfig } from '../../../../../core/server/services/adapter-manager/config';
 import { createConfig } from '../../../../../core/shared/config/validated';
 import { configSources } from '../../../../utils/config-sources';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
-import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
+import type { Adapter } from '../../../../../core/kernel/adapter-manager';
 
 class BaseStorageAdapter implements Adapter {
   readonly requiredFns: string[];
@@ -67,7 +68,7 @@ describe('adapter-paths', function () {
       const adapterManager = new AdapterManager({
         loadAdapterFromPath: require,
         pathsToAdapters,
-        config,
+        getConfig: () => normalizeAdapterConfig(config),
         baseClasses: { storage: BaseStorageAdapter },
       });
 

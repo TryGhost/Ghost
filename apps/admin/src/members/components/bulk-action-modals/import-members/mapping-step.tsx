@@ -20,9 +20,9 @@ import {
 } from '@tryghost/admin-x-framework/errors';
 import {
   memberCustomFieldCsvColumns,
-  memberCustomFieldParts,
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { matchShape } from '@tryghost/metafield-types/structure';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { FieldPicker } from '@/members/components/bulk-action-modals/import-members/field-picker';
 import { LabelPicker } from '@/members/label-picker';
@@ -96,10 +96,10 @@ function toggled(set: ReadonlySet<string>, key: string, present: boolean): Reado
  * as any other mapping, and the picker already knows how to ask it.
  */
 function columnFor(field: MemberCustomField): string | null {
-  if (memberCustomFieldParts(field.type)) {
-    return null;
-  }
-  return memberCustomFieldCsvColumns([field])[0]?.value ?? null;
+  return matchShape(field.type, {
+    scalar: () => memberCustomFieldCsvColumns([field])[0]?.value ?? null,
+    record: () => null,
+  });
 }
 
 export function MappingStep({

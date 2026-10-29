@@ -8,8 +8,8 @@ const nock = require('nock');
 const { startGhost, configUtils } = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
-const EXPLORE_PATH = require.resolve('../../core/server/services/explore-ping');
-const explore = require(EXPLORE_PATH);
+const explore: (typeof import('../../core/server/services/explore-ping'))['default'] =
+  require('../../core/server/services/explore-ping').default;
 const {
   ExplorePingService,
 } = require('../../core/server/services/explore-ping/explore-ping-service');
@@ -69,8 +69,6 @@ describe('Explore ping during boot', function () {
         };
         return originalPing.call(this);
       });
-    const originalModule = require.cache[EXPLORE_PATH];
-    assert.ok(originalModule);
     const originalInit = explore.init;
     const originalPolicy = config.isProductionOrDevelopment;
     sandbox.stub(config, 'isProductionOrDevelopment').callsFake(() => {
@@ -78,16 +76,15 @@ describe('Explore ping during boot', function () {
     });
     // Enable only this initializer's environment gate. Other boot services keep
     // their test-environment behavior; the root unit tests cover the real policy.
-    const init = (...args: unknown[]) => {
+    sandbox.stub(explore, 'init').callsFake(() => {
       allowExplore = true;
       try {
-        return originalInit(...args);
+        return originalInit();
       } finally {
         allowExplore = false;
         initialized.resolve();
       }
-    };
-    require.cache[EXPLORE_PATH] = { ...originalModule, exports: { ...explore, init } };
+    });
     const endpoint = nock('https://explore.example')
       .post('/update')
       .matchHeader('Content-Type', 'application/json')
@@ -147,7 +144,6 @@ describe('Explore ping during boot', function () {
             ghostServer ?? (serverStart.firstCall?.thisValue as GhostServer | undefined);
           await startedServer?.stop();
         } finally {
-          require.cache[EXPLORE_PATH] = originalModule;
           sandbox.restore();
           nock.cleanAll();
           notify.resetNotifications();

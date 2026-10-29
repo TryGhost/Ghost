@@ -27,18 +27,18 @@ describe('MentionController', function () {
   });
 
   describe('processWebmention', function () {
-    it('parses the urls and forwards the payload to the api', async function () {
+    it('parses the urls and forwards them to the api', async function () {
       await controller.processWebmention({
         source: 'https://source.com/post/',
         target: 'https://target.com/post/',
-        payload: { withExtension: true },
       });
 
       sinon.assert.calledOnce(api.processWebmention);
       const webmention = api.processWebmention.firstCall.args[0];
-      assert.deepEqual(webmention.source, new URL('https://source.com/post/'));
-      assert.deepEqual(webmention.target, new URL('https://target.com/post/'));
-      assert.deepEqual(webmention.payload, { withExtension: true });
+      assert.deepEqual(webmention, {
+        source: new URL('https://source.com/post/'),
+        target: new URL('https://target.com/post/'),
+      });
     });
 
     it('swallows and logs a failure from the api', async function () {
@@ -48,7 +48,6 @@ describe('MentionController', function () {
       await controller.processWebmention({
         source: 'https://source.com/post/',
         target: 'https://target.com/post/',
-        payload: {},
       });
 
       sinon.assert.calledWith(
@@ -62,7 +61,6 @@ describe('MentionController', function () {
       await controller.processWebmention({
         source: 'not a url',
         target: 'https://target.com/post/',
-        payload: {},
       });
 
       sinon.assert.notCalled(api.processWebmention);
@@ -75,7 +73,7 @@ describe('MentionController', function () {
   });
 
   describe('receive', function () {
-    it('dispatches a job that processes the webmention off the request', async function () {
+    it('dispatches a job carrying only the source and target', async function () {
       await controller.receive({
         data: {
           source: 'https://source.com/post/',
@@ -89,9 +87,10 @@ describe('MentionController', function () {
 
       const job = jobsService.dispatch.firstCall.args[0];
       assert.ok(job instanceof ProcessWebmentionJob);
-      assert.equal(job.source, 'https://source.com/post/');
-      assert.equal(job.target, 'https://target.com/post/');
-      assert.deepEqual(job.payload, { withExtension: true });
+      assert.deepEqual(
+        { ...job },
+        { source: 'https://source.com/post/', target: 'https://target.com/post/' },
+      );
     });
   });
 });

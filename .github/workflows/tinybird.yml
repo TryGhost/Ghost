@@ -23,6 +23,12 @@ permissions:
 jobs:
   changes:
     name: Detect Tinybird changes
+    # Skip sync-fork.yml pushes to main in TryGhost copies: upstream already ran these commits.
+    if: >-
+      !(github.event_name == 'push'
+        && github.ref == 'refs/heads/main'
+        && github.repository_owner == 'TryGhost'
+        && github.repository != 'TryGhost/Ghost')
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -58,7 +64,7 @@ jobs:
         working-directory: ghost/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:b2ce4910a5e92c97e0dbe77e08d3507c04837b8af88dd215715890dac54bff97
+        image: tinybirdco/tinybird-local:latest@sha256:c1e2b1cc1f94878192d1c1dd5cda952ceeaa503c0af10d35b3737d1f566a7dad
         ports:
           - 7181:7181
     outputs:

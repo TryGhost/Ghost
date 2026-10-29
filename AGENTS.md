@@ -65,6 +65,8 @@ migration, private feature flag, Shade component, or internal package.
   use TypeScript; keep CommonJS only
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
+- **Repository tooling:** read the [tooling ownership guide](tools/README.md)
+  and the owning folder README before adding or relocating scripts.
 - **ESLint:** use the shared factories and dependency rules in the
   [ESLint configuration README](tools/configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.

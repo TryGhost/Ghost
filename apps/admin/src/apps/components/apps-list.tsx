@@ -20,13 +20,16 @@ import { AppIcon } from './app-icon';
 import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
+import type { AppPinsState } from '@/apps/lib/use-app-pins';
 
 interface AppsListProps {
   installations: AppInstallation[];
   onUninstall: (installation: AppInstallation) => void;
+  /** Pinning to the sidebar; left out, the menu doesn't offer it. */
+  pins?: Pick<AppPinsState, 'isPinned' | 'canPinMore' | 'setPinned'>;
 }
 
-const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
+const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins }) => {
   return (
     <Table aria-label="Apps" className="table-auto" data-testid="apps-list">
       <TableBody>
@@ -90,6 +93,14 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                       <DropdownMenuItem asChild>
                         <Link to={appDetailsRoute(id)}>Details</Link>
                       </DropdownMenuItem>
+                      {pins && (
+                        <DropdownMenuItem
+                          disabled={!pins.isPinned(id) && !pins.canPinMore}
+                          onSelect={() => pins.setPinned(id, !pins.isPinned(id))}
+                        >
+                          {pins.isPinned(id) ? 'Unpin from sidebar' : 'Pin to sidebar'}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onSelect={() => onUninstall(installation)}

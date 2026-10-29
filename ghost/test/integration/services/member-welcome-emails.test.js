@@ -228,9 +228,11 @@ describe('Member Welcome Emails Integration', function () {
       });
     }
 
-    async function sendAutomationEmail({ trackOpens } = {}) {
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
+    async function sendAutomationEmail({ trackOpens, reuseService = false } = {}) {
+      if (!reuseService) {
+        memberWelcomeEmailService.api = null;
+        memberWelcomeEmailService.init();
+      }
 
       return await memberWelcomeEmailService.api.sendAutomationEmail({
         email: {
@@ -504,6 +506,44 @@ describe('Member Welcome Emails Integration', function () {
         }),
         sinon.match.object,
         [],
+      );
+    });
+
+    it('keeps cached newsletter senders until welcome emails are reloaded', async function () {
+      const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+      await db.knex('newsletters').where('id', defaultNewsletter.id).update({
+        sender_name: 'First Sender',
+        sender_email: 'first@example.com',
+        sender_reply_to: 'first-reply@example.com',
+      });
+      await sendAutomationEmail();
+      const retainedApi = memberWelcomeEmailService.api;
+
+      await db.knex('newsletters').where('id', defaultNewsletter.id).update({
+        sender_name: 'Second Sender',
+        sender_email: 'second@example.com',
+        sender_reply_to: 'second-reply@example.com',
+      });
+      await sendAutomationEmail({ reuseService: true });
+
+      for (const call of MailgunClient.prototype.send.getCalls()) {
+        assert.equal(call.args[0].from, '"First Sender" <first@example.com>');
+        assert.equal(call.args[0].replyTo, 'first-reply@example.com');
+      }
+      assert.equal(MailgunClient.prototype.send.callCount, 2);
+
+      await retainedApi.loadMemberWelcomeEmails();
+      await sendAutomationEmail({ reuseService: true });
+
+      assert.equal(memberWelcomeEmailService.api, retainedApi);
+      assert.equal(MailgunClient.prototype.send.callCount, 3);
+      assert.equal(
+        MailgunClient.prototype.send.thirdCall.args[0].from,
+        '"Second Sender" <second@example.com>',
+      );
+      assert.equal(
+        MailgunClient.prototype.send.thirdCall.args[0].replyTo,
+        'second-reply@example.com',
       );
     });
 

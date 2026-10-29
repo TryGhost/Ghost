@@ -27,6 +27,7 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { NotFound } from '@/shared/not-found';
 import { AccessIndicator } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
+import { AppPinButton } from './components/app-pin-button';
 import { AppsGate } from './components/apps-gate';
 import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
@@ -34,6 +35,7 @@ import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
+import { useInstalledApps } from './lib/use-app-pins';
 import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -168,6 +170,8 @@ export const AppDetails: React.FC = () => {
     defaultErrorHandler: false,
   });
   const installation = data?.app_installations[0];
+  const { pins } = useInstalledApps();
+  const pinned = installation ? pins.isPinned(installation.id) : false;
 
   if (isInstallationNotFound(error)) {
     return <NotFound />;
@@ -221,6 +225,13 @@ export const AppDetails: React.FC = () => {
               {installation && installation.status !== 'uninstalled' && (
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup>
+                    {pins.isLoaded && (
+                      <AppPinButton
+                        full={!pins.canPinMore}
+                        pinned={pinned}
+                        onPinnedChange={(pin) => pins.setPinned(installation.id, pin)}
+                      />
+                    )}
                     <Button variant="outline" onClick={() => setUninstalling(true)}>
                       Uninstall
                     </Button>

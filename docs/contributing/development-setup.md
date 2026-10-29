@@ -9,7 +9,7 @@ Mailpit run in Docker.
 Install:
 
 - [Git](https://git-scm.com/)
-- Node.js `22.23.3` (the version in [`.nvmrc`](../../.nvmrc) and
+- Node.js `22.23.4` (the version in [`.nvmrc`](../../.nvmrc) and
   [`.node-version`](../../.node-version))
 - [Docker](https://docs.docker.com/get-docker/) with Docker Compose v2
 - [Corepack](https://nodejs.org/api/corepack.html), included with supported
@@ -159,6 +159,11 @@ pnpm dev:status  # this checkout and any other running one; --all lists every ch
 pnpm dev:down    # stop this checkout's Ghost, however it was started; --all stops everything
 ```
 
+These shortcuts run the same commands as `pnpm gx dev up`, `pnpm gx dev status`
+and `pnpm gx dev down`; `pnpm dev:gc` also remains a shortcut for `pnpm gx dev gc`.
+If dependencies are missing or stale, use `node tools/gx/dev-down.ts` directly
+to stop Ghost without installing them.
+
 `pnpm dev:up` writes its output to `.ghost-dev.log` and refuses to start while
 the checkout's ports are in use. Pass a variant's script name, such as
 `pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
@@ -253,6 +258,7 @@ Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 | `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)                    |
 | `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                                     |
 | `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
+| `pnpm dev:fake-upgrades`   | Ghost updates in Settings → About against a fake host; see [testing Ghost updates](testing-ghost-updates.md)    |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an

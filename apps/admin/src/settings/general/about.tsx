@@ -1,3 +1,4 @@
+import GhostUpdates from './ghost-updates/ghost-updates';
 import { GhostLogo, Link, Separator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -6,8 +7,6 @@ import { linkToGitHubReleases } from '@/settings/utils/link-to-github-releases';
 import { showDatabaseWarning } from '@/settings/utils/show-database-warning';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useUpgradeStatus } from '@/settings/providers/settings-app-context';
-
-const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
 
 function VersionLink({ label, version }: { label: string; version: string }) {
   const link = linkToGitHubReleases(version);
@@ -30,6 +29,7 @@ function AboutModal() {
   const globalData = useGlobalData();
   const config = globalData.config;
   const upgradeStatus = useUpgradeStatus();
+  const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
 
   function copyrightYear(): number {
     const date = new Date();
@@ -110,6 +110,7 @@ function AboutModal() {
             </div>
           )}
         </div>
+        <GhostUpdates />
         <Separator />
         <div className="flex flex-col gap-1.5">
           <a

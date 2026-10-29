@@ -37,7 +37,7 @@ describe('GiftLinksService (integration)', function () {
     otherPostId = testUtils.DataGenerator.Content.posts[1].id;
     // Mirror init()'s wiring: recordGiftLinkAction partially applied to models.Action.
     const recordAction: RecordGiftLinkAction = ({ context, verb, subject }) =>
-      recordGiftLinkAction({ Action: models.Action, context, verb, subject });
+      recordGiftLinkAction({ Action: models.Action, logging, context, verb, subject });
     service = new GiftLinksService({ knex: models.Base.knex, recordAction });
   });
 
@@ -142,6 +142,7 @@ describe('GiftLinksService (integration)', function () {
       knex: models.Base.knex,
       recordAction: ({ context, verb, subject }) =>
         recordGiftLinkAction({
+          logging,
           Action: {
             add: async () => {
               throw new Error('action write failed');

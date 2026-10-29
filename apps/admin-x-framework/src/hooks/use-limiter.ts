@@ -8,16 +8,9 @@ import { useBrowseUsers } from '../api/users';
 import { useBrowseAutomations } from '../api/automations';
 import type { EmailsResponseType } from '../api/emails';
 import { apiUrl, useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
-import { HostLimitError } from '../utils/errors';
+import { LIMIT_SERVICE_ERRORS } from '../utils/limit-service-errors';
 
 import { LimitService, type LimitConfig } from '@tryghost/limit-service';
-
-// limit-service constructs its misconfiguration error with a single options object
-class IncorrectUsageError extends Error {
-  constructor({ message }: { message: string }) {
-    super(message);
-  }
-}
 
 export interface Limiter {
   isLimited: (limitName: string) => boolean;
@@ -181,10 +174,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       limits,
       subscription,
       helpLink,
-      errors: {
-        HostLimitError,
-        IncorrectUsageError,
-      },
+      errors: LIMIT_SERVICE_ERRORS,
     });
 
     return {

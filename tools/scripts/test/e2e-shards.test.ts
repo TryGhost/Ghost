@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import type { JSONReport } from '@playwright/test/reporter';
 
-import { parseTimings, planShards, recordTimings, summarizeReport } from '../e2e-shards.ts';
+import { parseTimings, planShards, recordTimings, summarizeReport } from '../ci/e2e-shards.ts';
 
 const report = {
   suites: [

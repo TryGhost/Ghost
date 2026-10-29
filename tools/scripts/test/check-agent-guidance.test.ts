@@ -10,7 +10,7 @@ import {
   checkAgentGuidance,
   countLines,
   listTrackedAgentGuidance,
-} from '../check-agent-guidance.ts';
+} from '../ci/check-agent-guidance.ts';
 
 const execFileAsync = promisify(execFile);
 const temporaryDirectories: string[] = [];

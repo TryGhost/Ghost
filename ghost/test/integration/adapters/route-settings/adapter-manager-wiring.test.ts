@@ -5,7 +5,7 @@ import { Provider } from 'nconf';
 import type { RouteSettings } from '@tryghost/adapter-base-route-settings';
 import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
 
-import { normalizeAdapterConfig } from '../../../../core/server/services/adapter-manager/utils';
+import { normalizeAdapterConfig } from '../../../../core/server/services/adapter-manager/config';
 import { bindAll as bindHelpers } from '../../../../core/shared/config/helpers';
 import type { ConfigInstance } from '../../../../core/shared/config/loader';
 
@@ -146,12 +146,12 @@ describe('Integration: route-settings adapter config normalization', function ()
       },
     });
 
-    const normalized = normalizeAdapterConfig(conf);
+    const stores = normalizeAdapterConfig(conf)['route-settings'] as Record<
+      string,
+      Record<string, unknown> | undefined
+    >;
 
-    assert.equal(
-      normalized['route-settings'].FileStore.defaultSettingsBasePath,
-      '/default/route/settings',
-    );
-    assert.equal('S3RouteSettingsStore' in normalized['route-settings'], false);
+    assert.equal(stores.FileStore?.defaultSettingsBasePath, '/default/route/settings');
+    assert.equal(stores.S3RouteSettingsStore, undefined);
   });
 });

@@ -189,7 +189,9 @@ export const SemanticAuthoring: Story = {
       <p>
         Semantic color variables in <code>theme-variables.css</code> should resolve directly to raw
         color tokens such as <code>--color-gray-700</code>, not to another semantic token such as{' '}
-        <code>--foreground</code> or <code>--muted-foreground</code>.
+        <code>--foreground</code> or <code>--muted-foreground</code>, unless the two must always
+        match and the alias is deliberate, like <code>--interactive-hover</code> pointing at{' '}
+        <code>--button-hover</code>.
       </p>
       <p>
         This keeps each semantic decision inspectable in one place while the raw palette remains the

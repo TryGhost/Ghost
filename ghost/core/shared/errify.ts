@@ -1,4 +1,4 @@
-/* eslint-disable ghost/ghost-custom/no-native-error */
+/* oxlint-disable ghost/ghost-custom/no-native-error */
 
 /**
  * Converts an unknown value to an Error object, if it isn't already.

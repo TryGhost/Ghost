@@ -1,11 +1,16 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const configUtils = require('../../../../utils/config-utils');
 
 const JOBS_SERVICE_PATH = '../../../../../core/server/services/jobs-service';
 
 let jobsService;
 let adapterManager;
 let previousModule;
+
+const stubKnex = { client: { config: { client: 'sqlite3' } } };
+const stubConfig = { get: () => undefined };
+const initArgs = { knex: stubKnex, config: stubConfig };
 
 describe('jobs-service wrapper', function () {
   // The wrapper holds its instance in module state, and the unit project shares
@@ -20,8 +25,9 @@ describe('jobs-service wrapper', function () {
     adapterManager = require('../../../../../core/server/services/adapter-manager').default;
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
     // Restore the original wrapper: already-loaded controllers still retain it.
     // Deleting only our copy would let later tests initialize a different one.
     delete require.cache[require.resolve(JOBS_SERVICE_PATH)];
@@ -60,7 +66,7 @@ describe('jobs-service wrapper', function () {
   it('init builds the service from the jobs adapter and getInstance returns it', function () {
     stubAdapters();
 
-    const service = jobsService.init();
+    const service = jobsService.init(initArgs);
 
     assert.equal(
       jobsService.getInstance(),
@@ -72,10 +78,10 @@ describe('jobs-service wrapper', function () {
   it('init after a shutdown reuses the same instance, so captured references stay live', async function () {
     stubAdapters();
 
-    const service = jobsService.init();
+    const service = jobsService.init(initArgs);
     await jobsService.shutdown({ timeoutMs: 10 });
 
-    assert.equal(jobsService.init(), service, 'the instance survives a reboot');
+    assert.equal(jobsService.init(initArgs), service, 'the instance survives a reboot');
     sinon.assert.calledOnceWithExactly(adapterManager.getAdapter, 'jobs');
   });
 
@@ -94,15 +100,33 @@ describe('jobs-service wrapper', function () {
     class RebootJob {
       static type = 'reboot-job';
     }
-    jobsService.init().handle(RebootJob, async () => {});
+    jobsService.init(initArgs).handle(RebootJob, async () => {});
 
-    jobsService.init().handle(RebootJob, async () => {});
+    jobsService.init(initArgs).handle(RebootJob, async () => {});
+  });
+
+  it('with the flag on, stays on the direct path when the jobs_outbox table is not available', async function () {
+    stubAdapters();
+    const logging = require('@tryghost/logging');
+    const warn = sinon.stub(logging, 'warn');
+    // jobs_outbox is in development, so it only exists where in-development
+    // tables are created. Enabling the flag elsewhere must not break dispatch.
+    configUtils.set('createInDevelopmentTables', false);
+
+    const service = jobsService.init({
+      knex: { client: { config: { client: 'mysql2' } } },
+      config: { get: (key) => (key === 'services:jobs:outbox' ? { enabled: true } : undefined) },
+    });
+    await service.start();
+
+    sinon.assert.calledWithMatch(warn, /jobs_outbox table/);
+    await service.shutdown({ timeoutMs: 10 });
   });
 
   it('shutdown after init shuts down the backend', async function () {
     const { jobsBackend } = stubAdapters();
 
-    jobsService.init();
+    jobsService.init(initArgs);
     await jobsService.shutdown({ timeoutMs: 10 });
 
     assert.equal(jobsBackend.shutdownCalls, 1, 'the jobs backend was shut down');

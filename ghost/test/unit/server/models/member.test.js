@@ -167,24 +167,66 @@ describe('Unit: models/member', function () {
         { name: 'newsletter' }, // case-insensitive duplicate
       ]);
 
-      // Stub Label.findAll to return a collection with a pre-existing label
-      // so the buggy `.toLowerCase()` path on member.js:351 is exercised.
-      const existingLabels = [
-        {
-          id: 'existing-1',
-          get: (key) => (key === 'name' ? 'Existing' : 'existing-1'),
-        },
-      ];
-      const findAllStub = sinon.stub(Label, 'findAll').resolves({
-        models: existingLabels,
-      });
+      const lookupStub = sinon.stub(Label, 'findCandidatesByName').resolves([]);
 
       await memberModel.onSaving(memberModel, memberModel.attributes, {});
 
       const finalLabels = memberModel.get('labels');
       assert.equal(finalLabels.length, 1, 'only the valid label should remain');
       assert.equal(finalLabels[0].name, 'Newsletter');
-      sinon.assert.calledOnce(findAllStub);
+      sinon.assert.calledOnceWithExactly(lookupStub, ['Newsletter'], {});
+    });
+
+    it('reuses the name and id of an existing label that differs only in case', async function () {
+      const memberModel = new Member({ email: 'test@example.com' });
+      memberModel.set('labels', [{ name: 'vip' }, { name: 'Brand New' }]);
+      const lookupStub = sinon
+        .stub(Label, 'findCandidatesByName')
+        .resolves([{ id: 'existing-vip', name: 'VIP' }]);
+
+      await memberModel.onSaving(memberModel, memberModel.attributes, {});
+
+      assert.deepEqual(memberModel.get('labels'), [
+        { id: 'existing-vip', name: 'VIP' },
+        { name: 'Brand New' },
+      ]);
+      // Names go to the lookup as given, so a case-sensitive collation still finds exact matches
+      sinon.assert.calledOnceWithExactly(lookupStub, ['vip', 'Brand New'], {});
+    });
+
+    it('looks up labels inside the saving transaction', async function () {
+      const memberModel = new Member({ email: 'test@example.com' });
+      memberModel.set('labels', [{ name: 'VIP' }]);
+      const transacting = {};
+      const lookupStub = sinon.stub(Label, 'findCandidatesByName').resolves([]);
+
+      await memberModel.onSaving(memberModel, memberModel.attributes, {
+        transacting,
+        context: { internal: true },
+      });
+
+      sinon.assert.calledOnceWithExactly(lookupStub, ['VIP'], { transacting });
+    });
+
+    it('skips the label lookup when no label has a name', async function () {
+      const memberModel = new Member({ email: 'test@example.com' });
+      memberModel.set('labels', [{ id: 'abc123' }, { name: '  ' }]);
+      const lookupStub = sinon.stub(Label, 'findCandidatesByName').resolves([]);
+
+      await memberModel.onSaving(memberModel, memberModel.attributes, {});
+
+      assert.deepEqual(memberModel.get('labels'), []);
+      sinon.assert.notCalled(lookupStub);
+    });
+
+    it('leaves labels untouched when the save does not include them', async function () {
+      const memberModel = new Member({ email: 'test@example.com' });
+      const lookupStub = sinon.stub(Label, 'findCandidatesByName').resolves([]);
+
+      await memberModel.onSaving(memberModel, memberModel.attributes, {});
+
+      assert.equal(memberModel.has('labels'), false);
+      sinon.assert.notCalled(lookupStub);
     });
   });
 

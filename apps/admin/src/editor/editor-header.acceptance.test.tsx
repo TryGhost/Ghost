@@ -1063,15 +1063,12 @@ describe('Editor header actions', () => {
       await renderAdminApp(`/editor/post/${POST_ID}`);
       await expect.element(editorScreen.publishButton()).toBeEnabled();
 
-      // Header tooltips open on focus and describe the focused button.
+      // Header tooltips open on focus and describe the focused button. The
+      // button's own text names it, so the tooltip holds only the keys.
       editorScreen.previewButton().element().focus();
-      await expect
-        .element(editorScreen.previewButton())
-        .toHaveAccessibleDescription(`Preview ${previewKeys}`);
+      await expect.element(editorScreen.previewButton()).toHaveAccessibleDescription(previewKeys);
       editorScreen.publishButton().element().focus();
-      await expect
-        .element(editorScreen.publishButton())
-        .toHaveAccessibleDescription(`Publish ${publishKeys}`);
+      await expect.element(editorScreen.publishButton()).toHaveAccessibleDescription(publishKeys);
     },
   );
 
@@ -1244,6 +1241,8 @@ describe('Editor header actions', () => {
       expect(saveApi.requests).toHaveLength(0);
 
       await excerpt().fill('An excerpt the server keeps');
+      // Typing hid the chrome under the still pointer; moving it brings Publish back.
+      await userEvent.hover(editorScreen.titleInput());
       await editorScreen.publishButton().click();
       await expect.element(publishScreen.options()).toBeVisible();
     },

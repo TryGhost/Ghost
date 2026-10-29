@@ -7,41 +7,6 @@ import { shadeLayeredImportsRule } from '@internal/cfg-eslint';
 // `no-restricted-imports` rule slot, so the boundary blocks must re-include it.
 const shadeRestrictedPaths = shadeLayeredImportsRule['no-restricted-imports'][1].paths;
 
-const noHardcodedGhostPaths = {
-  meta: {
-    type: 'problem',
-    docs: {
-      description: 'Disallow hardcoded /ghost/ paths that break subdirectory installations',
-    },
-    messages: {
-      noHardcodedPath:
-        'Do not hardcode /ghost/ paths. Use getGhostPaths() from @tryghost/admin-x-framework/helpers to support subdirectory installations.',
-    },
-  },
-  create(context) {
-    const pattern = /^\/ghost\//;
-    return {
-      Literal(node) {
-        if (typeof node.value === 'string' && pattern.test(node.value)) {
-          context.report({ node, messageId: 'noHardcodedPath' });
-        }
-      },
-      TemplateLiteral(node) {
-        const first = node.quasis[0];
-        if (first && pattern.test(first.value.raw)) {
-          context.report({ node, messageId: 'noHardcodedPath' });
-        }
-      },
-    };
-  },
-};
-
-const localPlugin = {
-  rules: {
-    'no-hardcoded-ghost-paths': noHardcodedGhostPaths,
-  },
-};
-
 export default tseslint.config(
   ...reactAppConfig({
     tailwindCssPath: `${import.meta.dirname}/src/index.css`,
@@ -79,14 +44,6 @@ export default tseslint.config(
         'error',
         { allowSameFolder: true, rootDir: 'src', prefix: '@' },
       ],
-    },
-  },
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/**/*.test.*'],
-    plugins: { local: localPlugin },
-    rules: {
-      'local/no-hardcoded-ghost-paths': 'error',
     },
   },
   // Autofix can produce wrong paths for cross-directory imports here; use

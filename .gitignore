@@ -184,10 +184,9 @@ Caddyfile
 /ghost/*/build
 /koenig/*/build
 /packages/**/build
+/packages/app-sdk/dist
 # Typescript build artifacts
 tsconfig.tsbuildinfo
-
-# Admin X
 
 # Tinybird
 .tinyb

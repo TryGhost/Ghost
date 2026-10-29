@@ -8,7 +8,7 @@ const errors = require('@tryghost/errors');
 
 const validate = require('./validate');
 const list = require('./list');
-const customThemeSettings = require('../custom-theme-settings');
+const customThemeSettings = require('../custom-theme-settings').default;
 const ThemeStorage = require('./theme-storage');
 const themeLoader = require('./loader');
 const activator = require('./activation-bridge');
@@ -109,7 +109,7 @@ module.exports = {
       // Happens before any file changes so a failed copy leaves the
       // installed themes untouched
       if (copySettingsFrom) {
-        await customThemeSettings.api.copySettingsBetweenThemes(copySettingsFrom, themeName);
+        await customThemeSettings.service.copySettingsBetweenThemes(copySettingsFrom, themeName);
       }
 
       // CASE: copy the extracted theme in under a staging name first, so the live

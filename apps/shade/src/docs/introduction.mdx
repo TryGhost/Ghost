@@ -14,22 +14,50 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - **[Primitives](?path=/docs/primitives-primitives-guide--docs)** — `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. Layout, not chrome.
 - **Components** — `Button`, `Input`, `Dialog`, `Tabs`… Generic and accessible. Built on Radix + ShadCN.
 - **Patterns** — `PageHeader`, `KpiCard`, `Filters`. Product-shaped compositions.
-- **Page templates** — `ListPage`. Top-level page wrappers that compose patterns.
+- **Page templates** — `ListPage`, `DetailPage`. Top-level page wrappers that compose patterns.
 
-The boundaries between those layers are the whole point. See **[Layers](?path=/docs/overview-layers--docs)** for the decision flow.
+The boundaries between those layers are the whole point. See **[Layers](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md#layers)**, in Contributing to Shade, for the decision flow.
 
 ## Working in Shade
 
-Shade is the **default source for Ghost Admin UI**. It's already wired into every admin app — just import:
+Shade is the **default source for Ghost Admin UI** and for apps built for Ghost. If a control exists, use it. If it doesn't and you'll reuse it inside Ghost Admin, [Layers](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md#layers) tells you which folder to add it to.
+
+See **[Contributing to Shade](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md)** for the implementation and review checklist.
+
+## Imports
+
+Import from the subpath for the layer you need:
+
+| Subpath                          | Contains                                                               |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `@tryghost/shade/primitives`     | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`                  |
+| `@tryghost/shade/components`     | Generic controls: `Button`, `Input`, `Dialog`, `Table`…                |
+| `@tryghost/shade/patterns`       | Product-shaped compositions: `PageHeader`, `KpiCard`, `Filters`…       |
+| `@tryghost/shade/page-templates` | Page wrappers: `ListPage`, `DetailPage`                                |
+| `@tryghost/shade/utils`          | `cn`, `formatNumber` and other helpers, and the `LucideIcon` namespace |
+| `@tryghost/shade/app`            | `ShadeApp` and `useShade`                                              |
+| `@tryghost/shade/tokens`         | Token names and the `shadeToken()` helper                              |
 
 ```tsx
-import {Button} from '@tryghost/shade/components';
 import {Stack} from '@tryghost/shade/primitives';
+import {Button} from '@tryghost/shade/components';
+import {PageHeader} from '@tryghost/shade/patterns';
+import {ListPage} from '@tryghost/shade/page-templates';
+import {cn, formatNumber} from '@tryghost/shade/utils';
 ```
 
-If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/docs/overview-layers--docs) tells you which folder to add it to.
+Page templates have their own subpath: `ListPage` comes from `@tryghost/shade/page-templates`, not `/patterns`. Page templates are top-level page wrappers; patterns are the building blocks they compose.
 
-See **[Contributing](?path=/docs/overview-contributing--docs)** for the implementation and review checklist.
+Never import from the root `@tryghost/shade` barrel or from a deep path into the package, such as `@tryghost/shade/src/components/ui/button`. The subpath makes the layer visible at the call site, which is the first thing a reader needs; the root barrel hides it and encourages cross-layer drift. Inside Shade itself, imports follow [Contributing to Shade](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md#imports).
+
+## Embedded and standalone setup
+
+Where Shade's stylesheet and `ShadeApp` come from depends on who owns the document:
+
+- **Embedded Admin apps** are bundled into Ghost Admin and render in Admin's own document. Admin owns the single stylesheet and application wrapper, so these apps import neither `@tryghost/shade/styles.css` nor `ShadeApp`; they only import components.
+- **Standalone surfaces** own their document. This includes a Ghost app running in an iframe inside Admin, because an iframe doesn't inherit Admin's styles. They import `@tryghost/shade/styles.css` once, in the app stylesheet, and wrap the app in `ShadeApp`.
+
+To set up a standalone surface, follow [Using Shade in a Ghost app](?path=/docs/overview-ghost-apps--docs): install, Tailwind, fonts, `ShadeApp`, theme and page frame.
 
 ## Admin 7 milestones
 

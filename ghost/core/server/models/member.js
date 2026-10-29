@@ -522,30 +522,26 @@ const Member = ghostBookshelf.Model.extend(
       this.set('labels', labelsToSave);
       this.handleAttachedModels(model);
 
+      if (labelsToSave.length === 0) {
+        return;
+      }
+
       // CASE: Detect existing labels with same case-insensitive name and replace
+      const names = labelsToSave.map((label) => label.name);
+
       return ghostBookshelf
         .model('Label')
-        .findAll(
-          Object.assign(
-            {
-              columns: ['id', 'name'],
-            },
-            _.pick(options, 'transacting'),
-          ),
-        )
-        .then((labels) => {
+        .findCandidatesByName(names, _.pick(options, 'transacting'))
+        .then((existingLabels) => {
           const existingByName = new Map();
-          for (const lab of labels.models) {
-            const name = lab.get('name');
-            if (name) {
-              existingByName.set(name.toLowerCase(), lab);
-            }
+          for (const existing of existingLabels) {
+            existingByName.set(existing.name.toLowerCase(), existing);
           }
 
           labelsToSave.forEach((label) => {
             const match = existingByName.get(label.name.toLowerCase());
             if (match) {
-              label.name = match.get('name');
+              label.name = match.name;
               label.id = match.id;
             }
           });

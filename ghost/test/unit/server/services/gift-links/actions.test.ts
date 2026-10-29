@@ -25,7 +25,7 @@ describe('Unit: recordGiftLinkAction', function () {
     };
 
     await assert.doesNotReject(() =>
-      recordGiftLinkAction({ Action, context: CTX, verb: 'add', subject: 'post-id' }),
+      recordGiftLinkAction({ Action, logging, context: CTX, verb: 'add', subject: 'post-id' }),
     );
     assert.equal(errorStub.calledOnce, true, 'the failure is logged');
   });
@@ -35,6 +35,7 @@ describe('Unit: recordGiftLinkAction', function () {
 
     await recordGiftLinkAction({
       Action: { add },
+      logging,
       context: { actor: null },
       verb: 'add',
       subject: 'post-id',

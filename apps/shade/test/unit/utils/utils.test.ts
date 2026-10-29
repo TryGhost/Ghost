@@ -3,8 +3,6 @@ import {
   cn,
   debounce,
   kebabToPascalCase,
-  formatDisplayDate,
-  formatDisplayTime,
   formatNumber,
   abbreviateNumber,
   formatDuration,
@@ -112,78 +110,6 @@ describe('utils', function () {
     it('handles underscore too', function () {
       const result = kebabToPascalCase('hello_world');
       assert.equal(result, 'HelloWorld');
-    });
-  });
-
-  describe('formatDisplayDate function', function () {
-    it('returns an empty string if the date string is an empty string', function () {
-      const formatted = formatDisplayDate('');
-      assert.equal(formatted, '');
-    });
-
-    it('returns an empty string if the date string is an invalid type', function () {
-      // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
-      const formatted = formatDisplayDate(123);
-      assert.equal(formatted, '');
-    });
-
-    it('does not throw an error if the date string is a Date object', function () {
-      const date = new Date('2023-04-15');
-      // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
-      const formatted = formatDisplayDate(date);
-      assert.equal(formatted, '15 Apr 2023');
-    });
-
-    it('handles a date string with time but without a timezone', function () {
-      const formatted = formatDisplayDate('2023-04-15 12:00:00');
-      assert.equal(formatted, '15 Apr 2023');
-    });
-
-    it('handles an ISO8601 date string', function () {
-      const formatted = formatDisplayDate('2023-04-15T12:00:00Z');
-      assert.equal(formatted, '15 Apr 2023');
-    });
-
-    it('formats a date string to display format', function () {
-      // Using a predefined date for testing, bypassing the current date check
-      // Test different year formatting without mocking Date
-      const differentYearFormatted = formatDisplayDate('2020-12-31');
-      assert.equal(differentYearFormatted, '31 Dec 2020');
-    });
-
-    it('converts ISO date to site timezone when timezone is provided', function () {
-      // July 31, 2023 at midnight UTC - in America/New_York (UTC-4 in summer) this is July 30
-      const formatted = formatDisplayDate('2023-07-31T00:00:00Z', 'America/New_York');
-      assert.equal(formatted, '30 Jul 2023');
-    });
-
-    it('converts ISO date to site timezone correctly for positive offset', function () {
-      // July 30, 2023 at 11pm UTC - in Europe/Berlin (UTC+2 in summer) this is July 31
-      const formatted = formatDisplayDate('2023-07-30T23:00:00Z', 'Europe/Berlin');
-      assert.equal(formatted, '31 Jul 2023');
-    });
-
-    it('formats date in UTC when no timezone is provided for ISO dates', function () {
-      // July 31, 2023 at midnight UTC - should show July 31 without timezone conversion
-      const formatted = formatDisplayDate('2023-07-31T00:00:00Z');
-      assert.equal(formatted, '31 Jul 2023');
-    });
-  });
-
-  describe('formatDisplayTime function', function () {
-    it('formats time in the provided timezone', function () {
-      const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos');
-      assert.equal(formatted, '7:09pm');
-    });
-
-    it('handles timezones with negative offsets', function () {
-      const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'America/New_York');
-      assert.equal(formatted, '2:09pm');
-    });
-
-    it('handles times that cross a date boundary', function () {
-      const formatted = formatDisplayTime('2020-04-20T00:30:00.000Z', 'America/Los_Angeles');
-      assert.equal(formatted, '5:30pm');
     });
   });
 

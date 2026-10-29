@@ -13,11 +13,11 @@ exist for external consumers only (see [Shipping](#shipping)).
 
 ### Editor UI
 
-| Package                                        | What it is                                                                                     | Consumed by                                                                      |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [koenig-lexical](./koenig-lexical)             | The Lexical-based rich text editor (React). Ships as a UMD bundle with styles and SVGs inlined | `apps/admin` (bundled into admin assets at build time), `apps/admin-x-framework` |
-| [kg-simplemde](./kg-simplemde)                 | Customised fork of SimpleMDE, used by koenig-lexical's markdown card                           | `koenig-lexical`                                                                 |
-| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker                                                                    | `koenig-lexical`, `apps/admin`                                                   |
+| Package                                        | What it is                                                                                                    | Consumed by                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [koenig-lexical](./koenig-lexical)             | The Lexical-based rich text editor (React). Ships as an ES module with SVGs inlined and a separate stylesheet | `apps/admin` (bundled into admin assets at build time), `apps/admin-x-framework` |
+| [kg-simplemde](./kg-simplemde)                 | Customised fork of SimpleMDE, used by koenig-lexical's markdown card                                          | `koenig-lexical`                                                                 |
+| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker                                                                                   | `koenig-lexical`, `apps/admin`                                                   |
 
 ### Lexical node definitions & rendering
 
@@ -121,7 +121,7 @@ own publishing workflow. Release commits consume pending changesets and commit
 the resulting package versions before the tag is created.
 
 The workflow runs
-[`tools/scripts/publish-packages.ts`](../tools/scripts/publish-packages.ts), which:
+[`tools/scripts/release/publish-packages.ts`](../tools/scripts/release/publish-packages.ts), which:
 
 1. Selects every publishable workspace package, including the public Koenig
    packages.

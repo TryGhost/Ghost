@@ -12,7 +12,10 @@ import {
 import { H4 } from '@tryghost/shade/primitives';
 import { Link } from '@tryghost/admin-x-framework';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { getOutboundMigrationAvailability } from './account-migration/utils';
+import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
+import { useFeatureFlags } from '@src/lib/feature-flags';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 
 interface SettingsProps {
@@ -23,6 +26,9 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const navigate = useNavigateWithBasePath();
+  const { isEnabled } = useFeatureFlags();
+  const outboundMigration = getOutboundMigrationAvailability(useAccountMigrationForUser('index'));
+  const showOutboundMigration = isEnabled('outboundMove') && outboundMigration === 'available';
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -81,7 +87,11 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
       <SettingItem to="/preferences/move" withHover>
         <SettingHeader>
           <SettingTitle>Account migration</SettingTitle>
-          <SettingDescription>Move another social web account to this one</SettingDescription>
+          <SettingDescription>
+            {showOutboundMigration
+              ? 'Move followers in or out of this account'
+              : 'Move followers into this account'}
+          </SettingDescription>
         </SettingHeader>
         <SettingAction className="flex items-center gap-2">
           <LucideIcon.ChevronRight size={20} />

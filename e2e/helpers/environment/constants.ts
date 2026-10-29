@@ -190,6 +190,7 @@ export const EGRESS_ALLOWLIST: readonly string[] = [
 
   // Ghost-owned
   'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
+  'assets.ghost.io', // Ghost logo image on the Settings → About screen
 
   // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
   // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.

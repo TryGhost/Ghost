@@ -18,7 +18,21 @@ export const createTestAutomationsRepository2 = (
 ) => {
   return {
     withConnection: (fn) => fn(fakeConnection),
-    ...errorIfCalled(['getNumberOfAutomations']),
+    withTransaction: (fn) => fn(fakeConnection),
+    ...errorIfCalled([
+      'deleteTriggerRules',
+      'findFirstActionRevisions',
+      'getNumberOfAutomations',
+      'hasMemberEnteredAutomation',
+      'insertActions',
+      'insertRunSteps',
+      'insertRuns',
+      'insertTriggerRules',
+      'isAutomationActiveForRun',
+      'isAutomationActiveForRunStep',
+      'loadEdgeRows',
+      'lockMember',
+    ]),
     ...overrides,
   } satisfies AutomationsRepository2<TestAutomationsRepositoryConnection>;
 };

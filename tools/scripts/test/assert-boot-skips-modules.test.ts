@@ -5,9 +5,9 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { ROOT_DIR } from '../lib/constants.ts';
-import { findLoadedModules, NOT_AT_BOOT } from '../lib/boot-modules.ts';
+import { findLoadedModules, NOT_AT_BOOT } from '../ci/boot-modules.ts';
 
-const PRELOAD = path.join(ROOT_DIR, 'tools/scripts/assert-boot-skips-modules.ts');
+const PRELOAD = path.join(ROOT_DIR, 'tools/scripts/ci/assert-boot-skips-modules.ts');
 const CORE_DIR = path.join(ROOT_DIR, 'ghost');
 
 const run = (code: string) =>

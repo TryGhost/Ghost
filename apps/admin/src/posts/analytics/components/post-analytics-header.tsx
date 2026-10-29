@@ -59,15 +59,16 @@ import { useQueryClient } from '@tanstack/react-query';
  * Holds the header and its tabs together, sticky as a whole, where `sticky`;
  * otherwise only the tabs stick. It scrolls up until its first row (the
  * breadcrumb) sits where a list page's collapsed header row does, 24px from
- * the top, level with the sidebar's menu. It stays above the content's own
- * raised layers, like the newsletter charts' hover cards (z-50).
+ * the top, level with the sidebar's menu. It stays below overlays (z-50) and
+ * above the content, which keeps its own raised layers, like the newsletter
+ * charts' hover cards (z-50), to itself (PostAnalyticsContent).
  */
 const HeaderChrome: React.FC<{ sticky: boolean; children: React.ReactNode }> = ({
   sticky,
   children,
 }) =>
   sticky ? (
-    <div className="sticky top-[calc(24px-var(--large-title-space))] z-60 -mx-(--page-gutter) bg-background px-(--page-gutter)">
+    <div className="sticky top-[calc(24px-var(--large-title-space))] z-40 -mx-(--page-gutter) bg-background px-(--page-gutter)">
       {children}
     </div>
   ) : (
@@ -369,7 +370,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           )}
         >
           {!isPostLoading && (
-            <PageMenu className="min-h-[34px]" defaultValue={currentTab} responsive>
+            <PageMenu className="min-h-[34px]" value={currentTab} responsive>
               {availableTabs.includes('Overview') && (
                 <PageMenuItem
                   value="Overview"

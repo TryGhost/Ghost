@@ -12,8 +12,9 @@ import {
 } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
+import { performanceBoot } from './run-list.test-utils';
 
-const labs = { automations: true, automationsPerTier: true };
+const labs = { automations: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
@@ -30,6 +31,8 @@ const serveCreation = () =>
     ],
   }));
 
+const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
+
 describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
@@ -44,16 +47,12 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
-    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(nameField()).toHaveValue('New Automation (2)');
+    await expect.element(button('Save')).toBeEnabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
-    await expect.element(button('Hide automation sidebar')).toBeVisible();
-    await expect
-      .element(page.getByRole('tab', { name: 'Settings' }))
-      .toHaveAttribute('data-state', 'active');
-    await button('Hide automation sidebar').click();
+    await expect.element(button('Show automation sidebar')).toBeVisible();
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await page.getByRole('link', { name: 'Back to automations' }).click();
     await expect.element(page.getByRole('alertdialog')).toBeVisible();
@@ -83,6 +82,25 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => edit.requests.length).toBe(1);
     expect(create.requests).toHaveLength(1);
+  });
+
+  it('saves a new automation without actions while keeping publish disabled', async () => {
+    fakeAutomations([]);
+    const create = serveCreation();
+    await renderAdminApp('/automations/new', { labs });
+
+    await expect.element(button('Save')).toBeEnabled();
+    await expect.element(button('Publish')).toBeDisabled();
+
+    await button('Save').click();
+
+    await expect.poll(currentRoute).toBe('/automations/created');
+    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(button('Publish')).toBeDisabled();
+    expect(create.requests).toHaveLength(1);
+    expect(create.requests[0].body).toMatchObject({
+      automations: [{ status: 'inactive', actions: [], edges: [] }],
+    });
   });
 
   it('starts a fresh creation session when navigating from the saved route to new', async () => {
@@ -130,9 +148,9 @@ describe('New automation', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
     window.location.hash = '#/automations/other';
-    await expect.element(page.getByText('Other automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Other automation');
     window.history.back();
-    await expect.element(page.getByText('Saved automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Saved automation');
     expect(read.requests).toHaveLength(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
@@ -278,12 +296,111 @@ describe('New automation', () => {
     await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
   });
 
-  it('does not offer creation when its flag is off', async () => {
+  it('plays the header entrance once, not again after a trigger is picked', async () => {
     fakeAutomations([]);
-    await renderAdminApp('/automations/new', { labs: { automations: true } });
-    await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
-    await expect.element(button('New automation')).not.toBeInTheDocument();
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    const entering = () => document.querySelectorAll('header.screen-enter-from-top').length;
+    await renderAdminApp('/automations', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { stripe_secret_key: 'sk_test', stripe_publishable_key: 'pk_test' },
+          }),
+        },
+      },
+    });
+    await button('New automation').click();
+    await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+    expect(entering()).toBe(1);
+    await page.getByRole('button', { name: /^Free member signed up/ }).click();
+    await expect.element(button('Show automation sidebar')).toBeVisible();
+    expect(entering()).toBe(0);
+  });
+
+  it('opens the editor with the trigger where the picker card was', async () => {
+    fakeAutomations([]);
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    await renderAdminApp('/automations/new', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { stripe_secret_key: 'sk_test', stripe_publishable_key: 'pk_test' },
+          }),
+        },
+      },
+    });
+    const heading = page.getByText('Select a trigger', { exact: true });
+    await expect.element(heading).toBeVisible();
+    const card = heading.element().parentElement as HTMLElement;
+    const pickerTop = card.getBoundingClientRect().top;
+    const region = card.parentElement?.parentElement as HTMLElement;
+    const regionTop = region.getBoundingClientRect().top;
+    // Slightly above centre, not pinned under the header.
+    expect(pickerTop - regionTop).toBeGreaterThan(48);
+    await page.getByRole('button', { name: /^Free member signed up/ }).click();
+    const trigger = () =>
+      document.querySelector<HTMLElement>('.react-flow__node[data-id="__trigger__"]');
+    await expect.poll(() => trigger()?.getBoundingClientRect().top).toBeCloseTo(pickerTop, 0);
+  });
+
+  it('draws the connector and brings the exit card in once a trigger is picked', async () => {
+    fakeAutomations([]);
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    await renderAdminApp('/automations/new', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { stripe_secret_key: 'sk_test', stripe_publishable_key: 'pk_test' },
+          }),
+        },
+      },
+    });
+    await page.getByRole('button', { name: /^Free member signed up/ }).click();
+    const lines = () => [...document.querySelectorAll<SVGPathElement>('.react-flow__edge-path')];
+    await expect.poll(() => lines().length).toBe(1);
+    expect(lines()[0].style.strokeDasharray).not.toBe('');
+    await expect.poll(() => lines()[0].style.strokeDashoffset).toBe('0');
+    const exit = page.getByLabelText('Exit automation');
+    await expect.poll(() => getComputedStyle(exit.element()).opacity).toBe('1');
+    await expect.element(button('Add step')).toBeVisible();
+    // Only the flow that first appears: a step added afterwards arrives as usual.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 600);
+    });
+    await addWait();
+    await expect.poll(() => lines().length).toBe(2);
+    expect(lines().every((line) => line.style.strokeDasharray === '')).toBe(true);
+  });
+
+  it('offers Performance before the first save, without loading anything', async () => {
+    fakeAutomations([]);
+    const stats = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/performance-stats\//, {});
+    const runs = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/runs\//, {});
+    // Without Stripe there's no trigger to pick: the draft starts as a free one.
+    await renderAdminApp('/automations/new', { labs, boot: performanceBoot });
+    await button('Show automation sidebar').click();
+    await expect
+      .element(page.getByRole('tab', { name: 'Settings' }))
+      .toHaveAttribute('data-state', 'active');
+    await page.getByRole('tab', { name: 'Performance' }).click();
+    await expect
+      .element(page.getByRole('region', { name: 'Total runs' }))
+      .toHaveTextContent('Total runs loaded: 0.');
+    const counts = page.getByRole('region', { name: 'Automation status counts' });
+    for (const label of ['In progress', 'Completed', 'Stopped']) {
+      await expect
+        .element(counts.getByRole('button', { name: label, exact: true }))
+        .toHaveTextContent('0');
+    }
+    await expect
+      .element(page.getByRole('status').filter({ hasText: 'No members yet' }))
+      .toHaveTextContent("Once someone starts your automation, they'll show here");
+    await expect.element(button('Search members')).not.toBeInTheDocument();
+    expect(stats.requests).toHaveLength(0);
+    expect(runs.requests).toHaveLength(0);
   });
 
   for (const [title, scope] of [
@@ -312,12 +429,16 @@ describe('New automation', () => {
           .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
           .toBeVisible();
       }
+      await expect.element(button('Show automation sidebar')).toBeVisible();
+      await button('Show automation sidebar').click();
       await expect
         .element(page.getByRole('tab', { name: 'Settings' }))
         .toHaveAttribute('data-state', 'active');
-      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
+        .toBeVisible();
       await button('Hide automation sidebar').click();
-      await expect.element(button('Save')).toBeDisabled();
+      await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
       await addWait();
       await button('Save').click();

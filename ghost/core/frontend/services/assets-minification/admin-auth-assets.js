@@ -5,7 +5,7 @@ const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
 
-const Minifier = require('./minifier');
+const { Minifier } = require('./minifier');
 const AssetsMinificationBase = require('./assets-minification-base');
 
 module.exports = class AdminAuthAssets extends AssetsMinificationBase {

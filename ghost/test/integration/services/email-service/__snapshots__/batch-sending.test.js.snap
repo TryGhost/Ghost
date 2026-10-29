@@ -570,9 +570,7 @@ table.body h2 span {
                                             </tr>
 
                                             <tr class=\\"feature-image-row\\">
-                                                <td class=\\"feature-image
-                                                        feature-image-with-caption
-                                                \\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; padding-bottom: 30px; text-align: center; width: 100%; padding: 0; font-size: 13px;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/image.jpg\\" alt=\\"Testing sending\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
+                                                <td class=\\"feature-image feature-image-with-caption\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; vertical-align: top; color: #15212A; padding-bottom: 30px; text-align: center; width: 100%; padding: 0; font-size: 13px;\\" width=\\"100%\\" valign=\\"top\\"><img src=\\"https://example.com/image.jpg\\" alt=\\"Testing sending\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\"></td>
                                             </tr>
 
                                                 <tr>

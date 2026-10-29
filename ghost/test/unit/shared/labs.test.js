@@ -32,28 +32,6 @@ describe('Labs Service', function () {
     await configUtils.restore();
   });
 
-  it.each([{}, { automationRunAnalytics: false }])(
-    'enables automation run analytics regardless of stored Labs settings: %j',
-    function (storedLabs) {
-      sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
-
-      assert.equal(labs.isSet('automationRunAnalytics'), true);
-      assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('automationRunAnalytics'), false);
-    },
-  );
-
-  it.each([{}, { editorReact: false, billingReact: false }])(
-    'serves the React editor and billing screens regardless of stored Labs settings: %j',
-    function (storedLabs) {
-      sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
-
-      for (const flag of ['editorReact', 'billingReact']) {
-        assert.equal(labs.isSet(flag), true);
-        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes(flag), false);
-      }
-    },
-  );
-
   it('can getAll, even if empty with enabled members', function () {
     assert.deepEqual(
       labs.getAll(),

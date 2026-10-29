@@ -523,6 +523,25 @@ describe('API hooks', () => {
       );
     });
 
+    it('reads its response through parseResponse', async () => {
+      await withMockFetch(
+        {
+          json: { test: 1 },
+        },
+        async () => {
+          const useTestMutation = createMutation({
+            path: () => '/test/',
+            method: 'PUT',
+            parseResponse: (data) => ({ parsed: data }),
+          });
+
+          const { result } = renderHook(() => useTestMutation(), { wrapper });
+
+          expect(await result.current.mutateAsync({})).toEqual({ parsed: { test: 1 } });
+        },
+      );
+    });
+
     it('computes path, body, searchParams', async () => {
       await withMockFetch(
         {

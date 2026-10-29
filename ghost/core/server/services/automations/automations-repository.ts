@@ -1,6 +1,7 @@
-import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
-import type { AddAutomationData } from './automations-api';
+import type { ReadonlyDeep } from 'type-fest';
+import type { AddAutomationData, EditAutomationData } from './automations-schemas';
+import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
 
 export type Pagination = {
   page: number;
@@ -77,38 +78,22 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
+// This is deprecated and will be removed soon. See NY-1746.
+export type AutomationTriggerTierData =
+  | {
+      trigger_tier_scope: null | 'free' | 'all_paid';
+      trigger_tier_ids: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    };
+
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & (
-    | {
-        trigger_tier_scope: null | 'free' | 'all_paid';
-        trigger_tier_ids: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
-
-export type EditAutomationData = {
-  name?: string;
-  description?: string;
-  status: AutomationStatus;
-} & (
-  | { actions: AutomationAction[]; edges: AutomationEdge[] }
-  | { actions?: never; edges?: never }
-) &
-  (
-    | {
-        trigger_tier_scope?: null | 'free' | 'all_paid';
-        trigger_tier_ids?: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+  trigger_rules: AutomationTriggerRuleDefinition[];
+};
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
@@ -134,15 +119,12 @@ export type RecordEmailSentOptions = Readonly<{
   trackOpens: boolean;
 }>;
 
-export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
-
 type AutomationStepBase = {
   id: string;
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
-  automation_trigger_tier_ids: string[];
+  automation_trigger_rules: AutomationTriggerRule[];
   automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
@@ -215,17 +197,8 @@ export type AutomationRunMember = {
   email: string;
 };
 
-export type BrowseOptions = Readonly<{
-  /**
-   * Should stats be included?
-   *
-   * In the future, we plan to remove this option and never return stats from the database repository.
-   */
-  includeStats: boolean;
-}>;
-
 export type AutomationsRepository = {
-  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  browse(): Promise<Page<AutomationSummary>>;
   getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
@@ -243,14 +216,6 @@ export type AutomationsRepository = {
   ): Promise<AutomationActionLink[] | null>;
   add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-  trigger(
-    options: ReadonlyDeep<{
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-      memberTierIds: string[];
-    }>,
-  ): Promise<void>;
   /**
    * Select the steps we want to run and return the next time any remaining
    * pending step should be polled, if any.

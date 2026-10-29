@@ -2,6 +2,10 @@
 
 Ghost editor, based on the Lexical framework.
 
+The package is published as an ES module only. Consuming apps import the editor
+from `@tryghost/koenig-lexical` and its stylesheet from
+`@tryghost/koenig-lexical/style.css`.
+
 ## Development
 
 The editor can be run in two modes:
@@ -61,7 +65,7 @@ All styles are scoped under `.koenig-lexical` class to avoid clashes and keep st
 - Styles located in `src/styles/` are included in the final built module.
 - Styles located in `demo/*.css` are only used in the demo and will not be included in the built module.
 
-When packaging the module, styles are included inside the JS file rather than being separate to allow for a single import of the module in the consuming app.
+When packaging the module, styles are built into a separate `dist/style.css`, which consuming apps import alongside the module.
 
 **Content fonts**
 
@@ -78,6 +82,8 @@ so a host that sets none sees no change.
 | `--kg-font-heading`                 | Headings, and the heading and subheading text of header, signup, product and toggle cards | Inter         |
 | `--kg-font-heading-scale`           | Multiplies the H1–H6 font sizes                                                   | `1`                     |
 | `--kg-font-heading-tracking-scale`  | Multiplies the H1–H6 letter spacing                                               | `1`                     |
+| `--kg-font-code-size`               | Inline code's font size, relative to the text around it                           | `.8em`                  |
+| `--kg-font-code-vertical-align`     | Inline code's vertical alignment; `baseline` suits code set at the body's size    | `middle`                |
 
 In Tailwind, `font-body`, `font-heading` and `text-body` read the same variables.
 Captions, buttons, link previews and the editor's own controls are not content

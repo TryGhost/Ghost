@@ -30,6 +30,7 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -222,6 +223,32 @@ describe('Editor publish journeys', () => {
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
     const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
     expect(params.get('email_segment')).toBe(`tier_id:${gold.id},label:vip`);
+  });
+
+  it('sends an editor who emails a post to the posts list, not post analytics', async () => {
+    publishChrome([WEEKLY]);
+    const published = post({ id: POST_ID, title: 'Hello from React', status: 'published' });
+    fakePosts(({ filter }) => (filter === `id:${POST_ID}` ? [published] : []));
+    fakeTiers([]);
+    fakeLabels([]);
+    const saveApi = fakeSavableDraft();
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    const site = emailSite();
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...site,
+      boot: { ...site.boot, browseMe: { response: me } },
+    });
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(postsListScreen.celebrationModal()).toHaveTextContent('Hello from React');
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('newsletter')).toBe('weekly');
   });
 
   it.each([
@@ -469,12 +496,15 @@ describe('Editor publish journeys', () => {
       .poll(() => emailPreviewApi.lastRequest?.url)
       .toContain('newsletter=monthly-roundup');
 
-    // A preview opened from the header, outside the flow, keeps the site's first newsletter.
+    // A preview opened from the header, outside the flow, starts on the newsletter
+    // the draft remembers from the flow.
     await previewScreen.closeButton().click();
     await expect(publishScreen.root()).toHaveCount(0);
     await editorScreen.previewButton().click();
-    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Weekly');
-    await expect.poll(() => emailPreviewApi.lastRequest?.url).toContain('newsletter=weekly');
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+    await expect
+      .poll(() => emailPreviewApi.lastRequest?.url)
+      .toContain('newsletter=monthly-roundup');
   });
 
   it('previews the publish flow’s newsletter over one picked in an earlier preview', async () => {

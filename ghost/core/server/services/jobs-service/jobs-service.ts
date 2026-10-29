@@ -1,28 +1,55 @@
 import errors from '@tryghost/errors';
 import cronValidate from 'cron-validate';
+import ObjectID from 'bson-objectid';
+import type { Knex } from 'knex';
 import type {
   JobsBackendBase,
   JobEnvelope,
-  JobRouting,
+  DispatchEnvelope,
   JobsShutdownOptions,
   QueueDeclaration,
   RecurringSchedule,
 } from '@tryghost/adapter-base-jobs';
 import { Job, JobConstructor, JobHandler } from './job';
+import { afterCommit } from '../../lib/after-commit';
 
 export interface JobsLogger {
   error(...args: unknown[]): void;
   info(...args: unknown[]): void;
+  warn?(...args: unknown[]): void;
 }
 
 export interface JobsErrorReporter {
   captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
 }
 
+export interface OutboxStore {
+  insert(
+    entry: { id: string; envelope: DispatchEnvelope },
+    options?: { transacting?: Knex.Transaction },
+  ): Promise<void>;
+}
+
+export interface OutboxRelayLike {
+  start(): void;
+  stop(): Promise<void>;
+}
+
+export interface JobsOutboxWiring {
+  store: OutboxStore;
+  relay: OutboxRelayLike;
+}
+
+export interface DispatchOptions {
+  transacting?: Knex.Transaction;
+}
+
 export interface JobsServiceOptions {
   backend: JobsBackendBase;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
+  outbox?: JobsOutboxWiring;
+  logOutboxUnavailable?: boolean;
 }
 
 type Deliverer = (payload: string) => Promise<void> | void;
@@ -46,14 +73,18 @@ export class JobsService {
   readonly #backend: JobsBackendBase;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
+  readonly #outbox?: JobsOutboxWiring;
+  readonly #logOutboxUnavailable: boolean;
   readonly #registry = new Map<string, Deliverer>();
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
 
-  constructor({ backend, logging, sentry }: JobsServiceOptions) {
+  constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
     this.#backend = backend;
     this.#logging = logging;
     this.#sentry = sentry;
+    this.#outbox = outbox;
+    this.#logOutboxUnavailable = logOutboxUnavailable ?? false;
   }
 
   handle<T extends Job, D>(
@@ -109,25 +140,55 @@ export class JobsService {
     this.#queueByType.set(type, queue);
   }
 
-  #routingFor(type: string): JobRouting | undefined {
-    const queue = this.#queueByType.get(type);
-    return queue === undefined ? undefined : { queue };
+  /**
+   * Resolves once the job is handed off, without waiting for the handler to run:
+   * after the outbox row is written when the outbox is active, otherwise after the
+   * backend's enqueue call. With `transacting` the hand-off follows that
+   * transaction's commit, so on the direct path dispatch resolves as soon as the
+   * hand-off is scheduled and an enqueue failure is reported rather than thrown.
+   * Resolution does not guarantee execution: the backend controls what happens to
+   * work during shutdown.
+   */
+  async dispatch(job: Job, { transacting }: DispatchOptions = {}): Promise<void> {
+    const envelope = this.#buildEnvelope(job);
+    const id = new ObjectID().toHexString();
+
+    if (this.#outbox) {
+      await this.#outbox.store.insert({ id, envelope }, { transacting });
+      return;
+    }
+
+    // Direct path. The backend cannot join the caller's transaction, so the
+    // nearest safe equivalent is to hand the job over once that transaction
+    // commits: never before the write is visible, and not at all on rollback.
+    // A crash between commit and hand-off loses the job, as it always has on
+    // this path. Callers get one dispatch API either way and need no check.
+    await afterCommit(
+      transacting,
+      () => this.#enqueueDirect(id, envelope, transacting !== undefined),
+      () => {}, // Rolled back: nothing to dispatch.
+    );
   }
 
-  /**
-   * Resolves when the backend's enqueue call completes, without waiting for the
-   * handler to run. Enqueue errors reject this promise. Resolution does not
-   * guarantee execution: the backend controls what happens to work during shutdown.
-   */
-  async dispatch(job: Job): Promise<void> {
-    const envelope = this.#buildEnvelope(job);
-    await this.#backend.enqueue(envelope, this.#routingFor(envelope.type));
+  // After a commit the caller has moved on, so a failure is reported rather
+  // than thrown. Without a transaction it rejects dispatch as before.
+  async #enqueueDirect(id: string, envelope: DispatchEnvelope, deferred: boolean): Promise<void> {
+    try {
+      await this.#backend.enqueue(id, envelope);
+    } catch (err) {
+      if (!deferred) {
+        throw err;
+      }
+      const type = envelope.payload.job.type;
+      this.#logging.error(`[Background Job] ${type} failed to enqueue after commit`, err);
+      this.#sentry?.captureException(err, { tags: { job_type: type } });
+    }
   }
 
   async scheduleRecurring(job: Job, schedule: RecurringSchedule): Promise<void> {
     this.#assertValidCron(schedule.cron);
     const envelope = this.#buildEnvelope(job);
-    await this.#backend.scheduleRecurring(envelope, schedule, this.#routingFor(envelope.type));
+    await this.#backend.scheduleRecurring(envelope, schedule);
   }
 
   // later.parse.cron does not strictly validate: it silently coerces a
@@ -151,9 +212,19 @@ export class JobsService {
       processor: (envelope) => this.#process(envelope),
       queues: Object.fromEntries(this.#queues),
     });
+    if (this.#outbox) {
+      this.#outbox.relay.start();
+    } else if (this.#logOutboxUnavailable) {
+      this.#logging.warn?.(
+        '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL and the jobs_outbox table); using the legacy direct-dispatch path.',
+      );
+    }
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
+    if (this.#outbox) {
+      await this.#outbox.relay.stop();
+    }
     await this.#backend.shutdown(options);
   }
 
@@ -166,8 +237,15 @@ export class JobsService {
     this.#queues.clear();
   }
 
-  #buildEnvelope(job: Job): JobEnvelope {
-    return { type: this.#typeOf(job), payload: JSON.stringify(job) };
+  #buildEnvelope(job: Job): DispatchEnvelope {
+    const type = this.#typeOf(job);
+    const jobEnvelope = { type, payload: JSON.stringify(job) };
+    const queue = this.#queueByType.get(type);
+    return {
+      version: 1,
+      payload:
+        queue === undefined ? { job: jobEnvelope } : { job: jobEnvelope, routing: { queue } },
+    };
   }
 
   #typeOf(job: Job): string {

@@ -3,14 +3,12 @@ import crypto from 'node:crypto';
 import sinon from 'sinon';
 import type { buildSignedWebhookRequest } from '../../../../../core/server/lib/signed-webhook';
 
-const rootPath =
-  require.resolve('../../../../../core/server/services/export-requests/export-requests-service');
+const rootPath = require.resolve('../../../../../core/server/services/export-requests');
 const endpointPath = require.resolve('../../../../../core/server/api/endpoints/exports');
 const requestPath = require.resolve('@tryghost/request');
 const config = require('../../../../../core/shared/config');
 const logging = require('@tryghost/logging');
-type Root =
-  typeof import('../../../../../core/server/services/export-requests/export-requests-service');
+type Root = typeof import('../../../../../core/server/services/export-requests').default;
 type RequestOptions = ReturnType<typeof buildSignedWebhookRequest>;
 
 describe('Export requests root with its endpoint', function () {
@@ -28,7 +26,7 @@ describe('Export requests root with its endpoint', function () {
   let request: sinon.SinonStub;
   let getConfig: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     previousModules = new Map([rootPath, endpointPath].map((path) => [path, require.cache[path]]));
     for (const path of previousModules.keys()) {
       delete require.cache[path];
@@ -44,7 +42,8 @@ describe('Export requests root with its endpoint', function () {
     const previousTransport = transportModule.exports;
     try {
       transportModule.exports = request;
-      root = require(rootPath);
+      root = require(rootPath).default;
+      await root.init();
     } finally {
       transportModule.exports = previousTransport;
     }
@@ -77,7 +76,7 @@ describe('Export requests root with its endpoint', function () {
     sinon.assert.notCalled(request);
     assert.equal(getConfig.calledWith('hostSettings:export:webhookUrl'), false);
     // The endpoint must call the root's singleton, not an instance of its own.
-    const requestExport = sandbox.spy(root.exportRequestsService, 'requestExport');
+    const requestExport = sandbox.spy(root.service, 'requestExport');
 
     for (const [host, secret, siteId] of [
       ['https://first.example/export/', 'first-test-secret', 'first-site'],

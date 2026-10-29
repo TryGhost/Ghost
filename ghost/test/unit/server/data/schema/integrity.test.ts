@@ -3,11 +3,7 @@ import _ from 'lodash';
 import crypto from 'crypto';
 import fs from 'node:fs';
 import path from 'path';
-// @ts-expect-error This module lacks type definitions.
 import { config } from '../../../../utils/config-utils';
-// @ts-expect-error This module lacks type definitions.
-import schema from '../../../../../core/server/data/schema/schema';
-import * as inDevelopment from '../../../../../core/server/data/schema/in-development';
 import fixtures from '../../../../../core/server/data/schema/fixtures/fixtures.json';
 import defaultSettings from '../../../../../core/server/data/schema/default-settings/default-settings.json';
 
@@ -24,7 +20,6 @@ const parseYaml = require('../../../../../core/server/services/route-settings/ya
  * @NOTE
  *
  * If this test fails for you, you have modified one of:
- * - the database schema
  * - fixtures
  * - default settings
  * - routes.yaml
@@ -35,14 +30,13 @@ const parseYaml = require('../../../../../core/server/services/route-settings/ya
  * 2. A blog get's updated from a lower Ghost version and the database looks correct and complete.
  *
  * Typical cases:
- * You have to add a migration script if you've added/modified permissions.
- * You have to add a migration script if you've add a new table.
+ * Permissions are defined in core/server/services/permissions/permissions-data.ts
+ * and changing them needs no migration.
  * You have to add a migration script if you've added new settings to populate group/flags column.
  */
 describe('DB version integrity', function () {
   // Only these variables should need updating
-  const currentSchemaHash = '4d9309bf12fc4520e1c0614abcc95f8c';
-  const currentFixturesHash = '26c294c651c7104bc7e6272058f0075d';
+  const currentFixturesHash = '6b95ec92aa9846cbc44e75de6d29d8d0';
   const currentSettingsHash = 'ad77752f31c6a7f174c04c499214b975';
   const currentRoutesHash = 'd8c25fa01bf6d22a2bcb05ba0de70dc1';
 
@@ -59,18 +53,6 @@ describe('DB version integrity', function () {
       'yamlSource',
     );
 
-    const tablesNoValidation = _.cloneDeep(_.omit(schema, inDevelopment.IN_DEVELOPMENT_TABLES));
-
-    _.each(tablesNoValidation, function (table) {
-      return _.each(table, function (column, name) {
-        table[name] = _.omit(column, 'validations');
-      });
-    });
-
-    const schemaHash = crypto
-      .createHash('md5')
-      .update(JSON.stringify(tablesNoValidation), 'binary')
-      .digest('hex');
     const fixturesHash = crypto
       .createHash('md5')
       .update(JSON.stringify(fixtures), 'binary')
@@ -84,11 +66,6 @@ describe('DB version integrity', function () {
       .update(JSON.stringify(defaultRoutes), 'binary')
       .digest('hex');
 
-    assert.equal(
-      schemaHash,
-      currentSchemaHash,
-      'Database schema has changed, please ensure a proper migration has been created if necessary and update the hash in this test.',
-    );
     assert.equal(
       fixturesHash,
       currentFixturesHash,

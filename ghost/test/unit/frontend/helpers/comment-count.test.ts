@@ -1,12 +1,13 @@
 import sinon from 'sinon';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import { mockManager } from '../../../utils/e2e-framework';
 
 // @ts-expect-error This module lacks type definitions.
 import proxy from '../../../../core/frontend/services/proxy';
-import internalKeys from '../../../../core/server/services/internal-keys';
+import internalKeysRoot, {
+  type InternalKeys,
+} from '../../../../core/server/services/internal-keys';
 import { html } from 'common-tags';
 const { settingsCache } = proxy;
 
@@ -14,7 +15,11 @@ const { settingsCache } = proxy;
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
 
 describe('{{comment_count}} helper', function () {
-  beforeAll(function () {
+  let internalKeys: InternalKeys;
+
+  beforeAll(async function () {
+    await internalKeysRoot.init();
+    internalKeys = internalKeysRoot.service;
     registerHelper('comment_count');
   });
 

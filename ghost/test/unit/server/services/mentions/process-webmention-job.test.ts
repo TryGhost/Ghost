@@ -11,7 +11,6 @@ describe('ProcessWebmentionJob', function () {
     const job = new ProcessWebmentionJob({
       source: 'https://source.com/post/',
       target: 'https://target.com/post/',
-      payload: { withExtension: true, nested: { a: 'b' } },
     });
 
     const revived = new ProcessWebmentionJob(JSON.parse(JSON.stringify(job)));

@@ -15,12 +15,10 @@ export {
   formatNumber,
   formatDuration,
   formatPercentage,
-  formatDisplayDate,
-  formatDisplayTime,
-  formatDisplayDateWithRange,
   getCountryFlag,
   stringToHslColor,
   abbreviateNumber,
   getYRange,
   calculateYAxisWidth,
 } from './lib/ds-utils';
+export { formatDisplayDate, formatDisplayTime, formatDisplayDateWithRange } from './lib/date-utils';

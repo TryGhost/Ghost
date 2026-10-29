@@ -21,6 +21,7 @@ describe('GiftCheckoutAdapter', function () {
     const adapter = new GiftCheckoutAdapter({
       StripeCustomerModel,
       getStripeApi: () => stripeApi,
+      checkouts: { read: async () => null },
     });
 
     return {
@@ -52,6 +53,7 @@ describe('GiftCheckoutAdapter', function () {
       customerEmail: null,
       customer: { id: 'cus_123' },
       idempotencyKey: 'gift_123',
+      checkout: null,
     });
   });
 

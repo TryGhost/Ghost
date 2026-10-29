@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "1.12.0",
+  "version": "1.13.1",
   "description": "Ghost's Lexical-based rich text post editor",
   "repository": {
     "type": "git",
@@ -15,13 +15,9 @@
     "README.md",
     "dist/"
   ],
-  "main": "./dist/koenig-lexical.umd.js",
-  "module": "./dist/koenig-lexical.js",
+  "main": "./dist/koenig-lexical.js",
   "exports": {
-    ".": {
-      "import": "./dist/koenig-lexical.js",
-      "require": "./dist/koenig-lexical.umd.js"
-    },
+    ".": "./dist/koenig-lexical.js",
     "./style.css": "./dist/style.css"
   },
   "scripts": {
@@ -79,7 +75,6 @@
     "@mdx-js/rollup": "3.1.1",
     "@playwright/test": "catalog:",
     "@prettier/sync": "0.6.1",
-    "@sentry/vite-plugin": "5.3.0",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
     "@storybook/react": "10.4.6",
@@ -152,9 +147,6 @@
     "targets": {
       "build": {
         "inputs": [
-          {
-            "env": "IS_SHIPPING"
-          },
           "default",
           "^default"
         ]

@@ -1,9 +1,11 @@
+import { omit } from 'lodash';
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import * as db from '../../../core/server/data/db';
 const labs: { isSet(name: string): boolean } = require('../../../core/shared/labs');
-import type { AddAutomationData } from '../../../core/server/services/automations/automations-api';
+import type { AutomationStatus } from '../../../core/server/services/automations/automations-repository';
+import type { AddAutomationData } from '../../../core/server/services/automations/automations-repository-2';
 
 const {
   createDatabaseAutomationsRepository,
@@ -11,11 +13,11 @@ const {
 
 const { agentProvider, fixtureManager, hostLimits } = require('../../utils/e2e-framework');
 
-const payload = (status: 'active' | 'inactive' = 'active'): AddAutomationData => ({
+const payload = (status: AutomationStatus = 'active'): AddAutomationData => ({
   name: `Limit test ${ObjectId().toHexString()}`,
   description: '',
   status,
-  trigger_tier_scope: 'free',
+  trigger_rules: [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }],
   actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 1 } }],
   edges: [],
 });
@@ -30,7 +32,6 @@ describe('Automation host limits', () => {
   beforeEach(async () => {
     const stub = sinon.stub(labs, 'isSet').callThrough();
     stub.withArgs('automations').returns(true);
-    stub.withArgs('automationsPerTier').returns(true);
   });
   afterEach(async () => {
     sinon.restore();
@@ -113,7 +114,7 @@ describe('Automation host limits', () => {
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    await repository.browse({ includeStats: false });
+    await repository.browse();
     for (const { id } of [free, paid]) {
       assert.equal((await db.knex('automations').where('id', id).first()).status, 'inactive');
     }
@@ -135,7 +136,7 @@ describe('Automation host limits', () => {
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    await repository.browse({ includeStats: false });
+    await repository.browse();
     assert.equal(await countActiveAutomations(), 1);
     for (const { id } of [free, paid]) {
       assert.equal((await db.knex('automations').where('id', id).first()).status, 'inactive');
@@ -205,7 +206,7 @@ describe('Automation host limits', () => {
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    await repository.browse({ includeStats: false });
+    await repository.browse();
     const blocked = await agent
       .put(`automated_emails/${free.id}`)
       .body({ automated_emails: [{ name: free.name, status: 'active' }] })
@@ -230,7 +231,7 @@ describe('Automation host limits', () => {
       agent
         .put(`automated_emails/${free.id}`)
         .body({ automated_emails: [{ name: free.name, status: 'active' }] }),
-      repository.browse({ includeStats: false }),
+      repository.browse(),
     ]);
     assert.ok([200, 422].includes(legacy.statusCode));
     assert.equal((await db.knex('automations').where('id', free.id).first()).status, 'inactive');
@@ -260,11 +261,14 @@ describe('Automation host limits', () => {
         .put(`automated_emails/${free.id}`)
         .body({ automated_emails: [{ name: free.name, status: 'active' }] })
         .expectStatus(200);
-      await Promise.all([repository.add(payload()), repository.browse({ includeStats: false })]);
+      await Promise.all([repository.add(payload()), repository.browse()]);
       const automation = await repository.getById(free.id);
       assert.ok(automation);
       assert.equal(automation.status, 'active');
-      await repository.edit(free.id, { ...automation, status: 'inactive' });
+      await repository.edit(free.id, {
+        ...omit(automation, ['trigger_rules']),
+        status: 'inactive',
+      });
     } finally {
       db.knex.off('query', capture);
     }
@@ -285,10 +289,7 @@ describe('Automation host limits', () => {
         knex: db.knex,
         fakeWaitHoursMultiplier: null,
       });
-      await Promise.all([
-        repository.browse({ includeStats: false }),
-        repository.browse({ includeStats: false }),
-      ]);
+      await Promise.all([repository.browse(), repository.browse()]);
       assert.equal(
         (await db.knex('automations').where('id', existing.body.automations[0].id).first()).status,
         'active',
@@ -308,7 +309,7 @@ describe('Automation host limits', () => {
         2,
       );
       await capAtCurrentCount(2);
-      await repository.browse({ includeStats: false });
+      await repository.browse();
       assert.deepEqual(await statuses(), [
         slots > 0 ? 'active' : 'inactive',
         slots > 1 ? 'active' : 'inactive',
@@ -326,7 +327,7 @@ describe('Automation host limits', () => {
     });
     const [activation, conversion] = await Promise.allSettled([
       repository.add(payload()),
-      repository.browse({ includeStats: false }),
+      repository.browse(),
     ]);
     assert.equal(conversion.status, 'fulfilled');
     assert.equal(await countActiveAutomations(), 1);
@@ -405,11 +406,20 @@ describe('Automation host limits', () => {
     db.knex.on('query', capture);
     try {
       const draft = await repository.add(payload('inactive'));
-      await repository.edit(draft.id, { ...draft, description: 'Edited draft' });
-      await repository.edit(active.id, { ...active, status: 'inactive' });
+      await repository.edit(draft.id, {
+        ...omit(draft, ['trigger_rules']),
+        description: 'Edited draft',
+      });
+      await repository.edit(active.id, {
+        ...omit(active, ['trigger_rules']),
+        status: 'inactive',
+      });
       assert.deepEqual(limitLockQueries, []);
       assert.equal(await countActiveAutomations(), 1);
-      await repository.edit(republished.id, { ...republished, description: 'Edited active' });
+      await repository.edit(republished.id, {
+        ...omit(republished, ['trigger_rules']),
+        description: 'Edited active',
+      });
       assert.equal(limitLockQueries.length, 1);
       assert.equal(await countActiveAutomations(), 1);
     } finally {
@@ -459,19 +469,39 @@ describe('Automation host limits', () => {
         case 'add/edit':
           attempts = [
             () => repositories[0].add(payload()),
-            () => repositories[1].edit(second.id, { ...second, status: 'active' }),
+            () =>
+              repositories[1].edit(second.id, {
+                ...omit(second, ['trigger_rules']),
+                status: 'active',
+              }),
           ];
           break;
         case 'edit/edit':
           attempts = [
-            () => repositories[0].edit(first.id, { ...first, status: 'active' }),
-            () => repositories[1].edit(second.id, { ...second, status: 'active' }),
+            () =>
+              repositories[0].edit(first.id, {
+                ...omit(first, ['trigger_rules']),
+                status: 'active',
+              }),
+            () =>
+              repositories[1].edit(second.id, {
+                ...omit(second, ['trigger_rules']),
+                status: 'active',
+              }),
           ];
           break;
         case 'same edit':
           attempts = [
-            () => repositories[0].edit(first.id, { ...first, status: 'active' }),
-            () => repositories[1].edit(first.id, { ...first, status: 'active' }),
+            () =>
+              repositories[0].edit(first.id, {
+                ...omit(first, ['trigger_rules']),
+                status: 'active',
+              }),
+            () =>
+              repositories[1].edit(first.id, {
+                ...omit(first, ['trigger_rules']),
+                status: 'active',
+              }),
           ];
           expectedSuccesses = 2;
           break;

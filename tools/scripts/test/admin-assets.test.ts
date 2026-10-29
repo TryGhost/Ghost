@@ -14,7 +14,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import { assembleAdminAssets } from '../lib/admin-assets.ts';
+import { assembleAdminAssets } from '../build/admin-assets.ts';
 
 let root: string;
 function write(path: string, contents: string): void {
@@ -118,14 +118,6 @@ describe('Admin asset assembly', () => {
     assert.equal(read('ghost/core/built/admin/index.html'), 'previous build');
   });
 
-  it('rejects Admin output still holding bundles from the hybrid assembler', () => {
-    write('ghost/core/built/admin/index.html', 'previous build');
-    write('apps/admin/dist/assets/koenig-lexical/koenig-lexical.umd.js', 'koenig');
-    write('apps/admin/dist/assets/activitypub/activitypub.js', 'activitypub');
-    assert.throws(() => assembleAdminAssets(root), /still holds hybrid assets/);
-    assert.equal(read('ghost/core/built/admin/index.html'), 'previous build');
-  });
-
   it('keeps both Admin outputs readable after a restrictive umask', () => {
     const previous = process.umask(0o077);
     try {
@@ -140,12 +132,12 @@ describe('Admin asset assembly', () => {
   });
 
   it('runs from the CLI entry point', () => {
-    const script = join(root, 'tools/scripts/assemble-admin-assets.ts');
-    mkdirSync(join(root, 'tools/scripts/lib'), { recursive: true });
-    cpSync(new URL('../assemble-admin-assets.ts', import.meta.url), script);
+    const script = join(root, 'tools/scripts/build/assemble-admin-assets.ts');
+    mkdirSync(join(root, 'tools/scripts/build'), { recursive: true });
+    cpSync(new URL('../build/assemble-admin-assets.ts', import.meta.url), script);
     cpSync(
-      new URL('../lib/admin-assets.ts', import.meta.url),
-      join(root, 'tools/scripts/lib/admin-assets.ts'),
+      new URL('../build/admin-assets.ts', import.meta.url),
+      join(root, 'tools/scripts/build/admin-assets.ts'),
     );
     write('package.json', '{"type":"module"}');
     execFileSync(process.execPath, [script], { stdio: 'pipe' });

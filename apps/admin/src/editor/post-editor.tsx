@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import {
-  Button,
   FieldError,
   Tooltip,
   TooltipContent,
@@ -39,7 +38,6 @@ import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 import type { WritingFocus } from './writing-focus';
 import type { EditorFont } from './editor-font';
-import { EDITOR_HELP_URL } from './editor-help';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -78,8 +76,6 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
-  /** Takes the help link's place in the footer (admin7EditorImprovements). */
-  fontPicker?: React.ReactNode;
 }
 
 export interface PostEditorHandle {
@@ -94,7 +90,11 @@ const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slic
 const fieldClassName =
   'block w-full max-w-none min-w-0 min-h-0 resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 
-function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: string) {
+function useAutosize(
+  ref: React.RefObject<HTMLTextAreaElement | null>,
+  value: string,
+  font: EditorFont | undefined,
+) {
   const measure = useCallback(() => {
     const element = ref.current;
     if (!element) {
@@ -104,7 +104,9 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
     element.style.height = `${element.scrollHeight}px`;
   }, [ref]);
 
-  useLayoutEffect(measure, [measure, value]);
+  // A new editor font rewraps the text without resizing the field, and a system
+  // font such as mono loads no web font to announce it
+  useLayoutEffect(measure, [measure, value, font]);
 
   useEffect(() => {
     const element = ref.current;
@@ -206,7 +208,6 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
-  fontPicker,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -223,8 +224,8 @@ export function PostEditor({
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
 
-  useAutosize(titleRef, title);
-  useAutosize(excerptRef, excerpt);
+  useAutosize(titleRef, title, font);
+  useAutosize(excerptRef, excerpt, font);
 
   // Koenig's breakout cards are sized in viewport units less
   // `--kg-breakout-adjustment`, the width beside the writing area. The settings
@@ -502,7 +503,7 @@ export function PostEditor({
                 className={cn(
                   fieldClassName,
                   // The --editor-display-* variables come from the writer's font (index.css).
-                  'heading-font-features mb-4 pb-1 font-(family-name:--editor-display-font) text-[length:calc(4.8rem*var(--editor-title-scale,1))] leading-[1.1] font-bold tracking-[calc(-0.017em*var(--editor-display-tracking-scale,1))] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[length:calc(3.6rem*var(--editor-title-scale,1))] max-[501px]:text-[length:calc(2.8rem*var(--editor-title-scale,1))]',
+                  'heading-font-features mb-4 pb-1 font-(family-name:--editor-display-font) text-[length:calc(4.8rem*var(--editor-title-scale,1))] leading-[1.18] font-bold tracking-[calc(-0.017em*var(--editor-display-tracking-scale,1))] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[length:calc(3.6rem*var(--editor-title-scale,1))] max-[501px]:text-[length:calc(2.8rem*var(--editor-title-scale,1))]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
@@ -576,8 +577,8 @@ export function PostEditor({
         </Stack>
       </div>
       {/* Below the small breakpoint the footer spans the screen: the word count at
-          the left, the header's actions at the right, and no help link. Only its
-          controls take pointer input, so the document between them stays reachable.
+          the left and the header's actions at the right. Only its controls take
+          pointer input, so the document between them stays reachable.
           Actions that wrap grow upward, leaving the word count in the corner. The
           footer moves with the settings panel and its contents fade while the
           writer types, each on a transition of its own. */}
@@ -619,27 +620,6 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          {fontPicker ?? (
-            <Button
-              className={cn(
-                'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-                isAdmin7 && '[&_svg]:stroke-2!',
-              )}
-              shape="pill"
-              size={isAdmin7 ? 'icon' : 'icon-sm'}
-              variant="ghost"
-              asChild
-            >
-              <a
-                aria-label="Editor help"
-                href={EDITOR_HELP_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <LucideIcon.CircleHelp />
-              </a>
-            </Button>
-          )}
         </Inline>
       </Inline>
     </div>

@@ -60,6 +60,10 @@ a nearby README says otherwise.
 For conventions used when adding a Ghost Core service, see the
 [services README](../../ghost/core/server/services/README.md).
 
+The [authentication subsystem](../../ghost/core/server/auth/README.md) lives in
+`ghost/core/server/auth/`. It keeps the existing authentication middleware and
+account workflows together while their longer-term ownership is settled.
+
 ## Koenig
 
 `koenig/` contains the Lexical editor UI and the `kg-*` packages used to store,
@@ -85,6 +89,13 @@ modernizing an internal package. New internal packages start from
 package name instead of copying configuration into each project.
 The [shared ESLint README](../../tools/configs/eslint/README.md) explains the Node and
 React factories, standalone exceptions, and plugin dependency rules.
+
+## Tooling ownership
+
+The [tooling guide](../../tools/README.md) defines where shared configuration,
+repository automation, contributor commands, Ghost build scripts and installed
+Ghost tools belong. Read it before adding or moving a script. The nearby READMEs
+list the current tools and execution contracts.
 
 ## Workspace dependencies
 
