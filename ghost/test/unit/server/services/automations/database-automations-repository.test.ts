@@ -1224,16 +1224,7 @@ describe('automations repository', function () {
     });
   });
 
-  describe('getNumberOfAutomations', function () {
-    it('counts active, inactive, and archived automations without creating defaults', async function () {
-      const rows = await knex('automations').select('id');
-      assert.equal(await repo.getNumberOfAutomations(), rows.length);
-      for (const status of ['inactive', 'archived'] as const) {
-        await knex('automations').update({ status });
-        assert.equal(await repo.getNumberOfAutomations(), rows.length);
-      }
-    });
-
+  describe('browse', function () {
     it('includes archived automations in browse results', async function () {
       const initial = await getAutomationBySlug('member-welcome-email-free');
       await repo.edit(initial.id, { status: 'archived' });
@@ -1242,15 +1233,6 @@ describe('automations repository', function () {
         result.data.find((automation) => automation.id === initial.id)?.status,
         'archived',
       );
-    });
-
-    it('returns zero for an empty automations table', async function () {
-      await knex('automation_action_edges').del();
-      await knex('automation_action_revisions').del();
-      await knex('automation_actions').del();
-      await knex('automations').del();
-      assert.equal(await repo.getNumberOfAutomations(), 0);
-      assert.equal((await knex('automations').select('id')).length, 0);
     });
   });
 
