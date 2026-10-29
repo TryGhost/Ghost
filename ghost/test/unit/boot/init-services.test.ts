@@ -9,6 +9,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   // These initializers are synchronous in production.
   const gifts = sinon.stub();
   const analytics = sinon.stub();
+  const emailSuppressionList = { init: sinon.stub().resolves() };
   const mentions = sinon.stub().resolves();
   // Recommendations initializes synchronously and reads the mentions fields during its call.
   const recommendations = sinon.stub();
@@ -62,6 +63,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         init: analytics,
       },
       './server/services/email-service': { init: email, service: {} },
+      './server/services/email-suppression-list': emailSuppressionList,
       './server/services/donations': { default: { init: donations } },
       './server/services/tiers': { default: { init: tiers } },
       './server/services/member-attribution': { default: { init: memberAttribution } },
@@ -85,6 +87,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     mentions,
     recommendations,
     analytics,
+    emailSuppressionList,
     media,
     email,
     donations,
@@ -127,6 +130,18 @@ it('initializes dependencies and starts jobs before calling automations init', a
   }
   sinon.assert.callOrder(boot.register, boot.start, boot.automations, boot.reschedule);
   sinon.assert.calledOnce(boot.automations);
+});
+
+it('passes the eager email suppression list to email analytics before calling its init', async function () {
+  // Current behaviour: analytics retains the root object itself, captured before
+  // the root's init runs later in the same group.
+  const boot = createServicesHarness();
+  await boot.initServices();
+
+  sinon.assert.calledOnce(boot.analytics);
+  assert.equal(boot.analytics.firstCall.args[0].emailSuppressionList, boot.emailSuppressionList);
+  sinon.assert.calledOnce(boot.emailSuppressionList.init);
+  sinon.assert.callOrder(boot.analytics, boot.emailSuppressionList.init);
 });
 
 it('does not reschedule posts when the scheduling adapter opts out', async function () {
