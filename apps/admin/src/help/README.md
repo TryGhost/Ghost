@@ -177,14 +177,14 @@ around them are thin.
 
 **Views**
 
-| File                    | What it shows                                                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                                 |
-| `help-form.tsx`         | The headline, message, attach and send as one form, "You might be looking for" under it, and the sent confirmation |
-| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?": keep writing, or send the message    |
-| `help-cards.tsx`        | The cards under an article for what to read next                                                                   |
-| `help-panel-size.tsx`   | The maximize button                                                                                                |
-| `help-reveal.ts`        | The staggered entrance blocks use                                                                                  |
+| File                    | What it shows                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                              |
+| `help-form.tsx`         | The headline, message, "You might be looking for" card, attach and send as one form, and the sent confirmation  |
+| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?": keep writing, or send the message |
+| `help-cards.tsx`        | The cards under an article for what to read next                                                                |
+| `help-panel-size.tsx`   | The maximize button                                                                                             |
+| `help-reveal.ts`        | The staggered entrance blocks use                                                                               |
 
 ## Where the content comes from
 
@@ -324,9 +324,10 @@ under the message.
 ## Sending to support
 
 The form is one block: a headline asking the user to describe the problem
-they're having, the message, and under it "Attach a file" and "Send to
-support" with a line naming the address the reply goes to. No subject: the
-account is the signed-in one. Sending shows a confirmation in the form's
+they're having, the message, the "You might be looking for" card right under
+it where the eye is while typing (it comes in afresh whenever what it offers
+changes), then "Attach a file" and "Send to support" with a line naming the
+address the reply goes to. No subject: the account is the signed-in one. Sending shows a confirmation in the form's
 place, with Done (and a start-over icon in the header) clearing the message
 for the next one. Only what the user writes is sent.
 

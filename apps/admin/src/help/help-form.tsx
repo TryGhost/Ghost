@@ -105,35 +105,49 @@ export function HelpFormView({
             }
           }}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-6">
-            <Stack gap="xl">
-              {/* The form: what to write, the message, and sending it, as one block */}
-              <Stack className={REVEAL_CLASS_NAME} gap="md">
-                <Text as="h3" leading="heading" size="lg" weight="semibold">
-                  Describe the problem you’re having
-                </Text>
-                <Stack gap="sm">
-                  <Textarea
-                    ref={textareaRef}
-                    aria-label="Your message"
-                    className="min-h-32"
-                    disabled={sending}
-                    placeholder="What happened, and what did you expect to happen?"
-                    rows={5}
-                    value={message.body}
-                    onChange={(event) => editMessage({ body: event.target.value })}
-                  />
-                  {message.files.length > 0 && (
-                    <Inline gap="xs" wrap>
-                      {message.files.map((name) => (
-                        <Badge key={name} className="gap-1" size="sm" variant="secondary">
-                          <LucideIcon.Paperclip className="size-3" />
-                          {name}
-                        </Badge>
-                      ))}
-                    </Inline>
-                  )}
-                </Stack>
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-5 pb-8">
+            <Stack gap="lg">
+              <Text
+                as="h3"
+                className={REVEAL_CLASS_NAME}
+                leading="heading"
+                size="lg"
+                weight="semibold"
+              >
+                Describe the problem you’re having
+              </Text>
+
+              {/* The message, with what might answer it right under it, where
+                  the eye is while typing */}
+              <Stack className={REVEAL_CLASS_NAME} gap="sm" style={revealAt(1)}>
+                <Textarea
+                  ref={textareaRef}
+                  aria-label="Your message"
+                  className="min-h-28"
+                  disabled={sending}
+                  placeholder="What happened, and what did you expect to happen?"
+                  rows={4}
+                  value={message.body}
+                  onChange={(event) => editMessage({ body: event.target.value })}
+                />
+                {message.files.length > 0 && (
+                  <Inline gap="xs" wrap>
+                    {message.files.map((name) => (
+                      <Badge key={name} className="gap-1" size="sm" variant="secondary">
+                        <LucideIcon.Paperclip className="size-3" />
+                        {name}
+                      </Badge>
+                    ))}
+                  </Inline>
+                )}
+                <HelpRelatedQuestionsList
+                  opened={session.openedArticles}
+                  related={related}
+                  onPick={session.readArticle}
+                />
+              </Stack>
+
+              <Stack className={REVEAL_CLASS_NAME} gap="sm" style={revealAt(2)}>
                 <Inline align="center" gap="sm" justify="between">
                   <Button
                     disabled={sending}
@@ -172,14 +186,6 @@ export function HelpFormView({
                   24 hours during working days.
                 </Text>
               </Stack>
-
-              <div className={REVEAL_CLASS_NAME} style={revealAt(1)}>
-                <HelpRelatedQuestionsList
-                  opened={session.openedArticles}
-                  related={related}
-                  onPick={session.readArticle}
-                />
-              </div>
             </Stack>
           </div>
         </form>
@@ -219,19 +225,23 @@ function HelpSentView({ email, onDone }: { email: string; onDone: () => void }) 
   );
 }
 
-// Rows new to the list rise in (keyed by question), so the list settles
-// rather than flashing as the words change
+// The card comes in afresh whenever what it offers changes (keyed by its
+// articles), each row a moment after the one above, so a change catches the
+// eye without the rest of the form moving
+const CARD_ENTRANCE_CLASS_NAME =
+  'motion-safe:animate-in motion-safe:duration-300 motion-safe:ease-out motion-safe:fade-in';
 const ROW_ENTRANCE_CLASS_NAME =
   'motion-safe:animate-in motion-safe:duration-200 motion-safe:ease-out motion-safe:fill-mode-both motion-safe:fade-in motion-safe:slide-in-from-bottom-1';
+const ROW_STAGGER = 40;
 
-// Where questions go, shown as rows of the same size while they load
+// Where articles go, shown as rows of the same size while they load
 const QUESTION_SLOTS = [
   { key: 'first', placeholderWidth: 'w-3/5' },
   { key: 'second', placeholderWidth: 'w-2/5' },
   { key: 'third', placeholderWidth: 'w-1/2' },
 ];
 
-const ROW_CLASS_NAME = 'flex w-full items-start gap-3 rounded-lg p-2';
+const ROW_CLASS_NAME = 'flex w-full items-center gap-3 px-3 py-2.5';
 
 interface HelpRelatedQuestionsListProps {
   related: HelpRelatedQuestions;
@@ -239,7 +249,7 @@ interface HelpRelatedQuestionsListProps {
   onPick: (article: HelpArticle) => void;
 }
 
-/** The help center articles the user might be looking for, under the message. */
+/** The help center articles the user might be looking for, right under the message. */
 function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuestionsListProps) {
   if (related.failed) {
     return (
@@ -259,23 +269,48 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
   }
 
   return (
-    <Stack gap="xs">
-      <Text as="h3" size="sm" weight="semibold">
-        You might be looking for
-      </Text>
+    <div
+      key={related.loading ? 'loading' : related.questions.map(({ id }) => id).join()}
+      className={cn(
+        'overflow-hidden rounded-xl border border-border-default bg-background',
+        CARD_ENTRANCE_CLASS_NAME,
+      )}
+      data-help-source={related.source}
+    >
+      <Inline
+        align="center"
+        className="border-b border-border-default bg-muted/50 px-3 py-2"
+        gap="sm"
+        justify="between"
+      >
+        <Inline align="center" gap="xs">
+          <LucideIcon.Lightbulb className="size-4 text-text-secondary" />
+          <Text as="h3" size="sm" weight="semibold">
+            You might be looking for
+          </Text>
+        </Inline>
+        <a
+          className="inline-flex shrink-0 items-center gap-1 rounded-sm text-xs text-text-secondary outline-hidden transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-focus-ring"
+          href={HELP_CENTER_URL}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Help center
+          <LucideIcon.ArrowUpRight className="size-3" />
+        </a>
+      </Inline>
       <ul
         aria-busy={related.loading}
         aria-label="Articles from the help center"
-        className="-mx-2 flex flex-col"
-        data-help-source={related.source}
+        className="flex flex-col divide-y divide-border-default"
       >
         {related.loading
           ? QUESTION_SLOTS.map(({ key, placeholderWidth }) => (
               <li key={key} className={ROW_CLASS_NAME} aria-hidden>
-                <LucideIcon.CircleHelp className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+                <LucideIcon.CircleHelp className="size-4 shrink-0 text-text-tertiary" />
                 {/* The zero-width space gives it a title's line height */}
                 <Text as="span" className="flex flex-1 items-center" leading="snug">
-                  {'​'}
+                  {'\u200b'}
                   <Skeleton
                     className={cn('h-3.5', placeholderWidth)}
                     containerClassName="flex flex-1"
@@ -287,48 +322,34 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
               <li
                 key={question.id}
                 className={ROW_ENTRANCE_CLASS_NAME}
-                style={{ animationDelay: `${index * 25}ms` }}
+                style={{ animationDelay: `${index * ROW_STAGGER}ms` }}
               >
                 <button
                   className={cn(
                     ROW_CLASS_NAME,
-                    'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring',
+                    'group text-left outline-hidden transition-colors hover:bg-accent focus-visible:bg-accent',
                   )}
                   type="button"
                   onClick={() => onPick(question)}
                 >
                   {isFaqArticle(question) ? (
-                    <LucideIcon.CircleHelp className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+                    <LucideIcon.CircleHelp className="size-4 shrink-0 text-text-secondary" />
                   ) : (
-                    <LucideIcon.FileText className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+                    <LucideIcon.FileText className="size-4 shrink-0 text-text-secondary" />
                   )}
-                  <Text
-                    as="span"
-                    className="min-w-0 flex-1 transition-colors group-hover:text-text-primary"
-                    leading="snug"
-                    tone="secondary"
-                  >
+                  <Text as="span" className="min-w-0 flex-1" leading="snug" weight="medium">
                     {question.title}
                   </Text>
                   {opened.some(({ id }) => id === question.id) && (
-                    <Text as="span" className="mt-0.5 shrink-0" size="xs" tone="tertiary">
+                    <Text as="span" className="shrink-0" size="xs" tone="tertiary">
                       Read
                     </Text>
                   )}
-                  <LucideIcon.ChevronRight className="mt-0.5 size-4 shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100" />
+                  <LucideIcon.ChevronRight className="size-4 shrink-0 text-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:text-text-primary" />
                 </button>
               </li>
             ))}
       </ul>
-      <a
-        className="inline-flex w-fit items-center gap-1 rounded-sm text-sm text-text-secondary outline-hidden transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-focus-ring"
-        href={HELP_CENTER_URL}
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        Browse the help center
-        <LucideIcon.ArrowUpRight className="size-3.5" />
-      </a>
-    </Stack>
+    </div>
   );
 }
