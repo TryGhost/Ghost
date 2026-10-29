@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
-import type {
-  AutomationDetail,
-  AutomationTrigger,
-} from '@tryghost/admin-x-framework/api/automations';
+import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail, setup } from './run-history.test-utils';
+
+const specificTierRules = (tierIds: string[]): AutomationDetail['trigger_rules'] =>
+  tierIds.map((productId) => ({
+    trigger_type: 'paid_subscription_started',
+    scope: 'specific_paid_tier',
+    product_id: productId,
+    direction: null,
+  }));
 
 const flags = { labs: { automations: true } };
 const picker = () => page.getByRole('combobox', { name: 'Tiers', exact: true });
@@ -15,16 +20,19 @@ const selectScope = async (name = 'Specific tier(s)') => {
   await scope().click();
   await page.getByRole('option', { name, exact: true }).click();
 };
-const serve = (
-  overrides: Partial<Omit<AutomationDetail, keyof AutomationTrigger>> &
-    (AutomationTrigger | { trigger_tier_scope?: never; trigger_tier_ids?: never }) = {},
-) => {
+const serve = (overrides: Partial<AutomationDetail> = {}) => {
   setup();
   const automation: AutomationDetail = {
     ...detail('first'),
     slug: 'member-welcome-email-paid',
-    trigger_tier_scope: 'all_paid',
-    trigger_tier_ids: null,
+    trigger_rules: [
+      {
+        trigger_type: 'paid_subscription_started',
+        scope: 'any_paid_tier',
+        product_id: null,
+        direction: null,
+      },
+    ],
     ...overrides,
   };
   fakeAdminEndpoint('GET', '/automations/first/', { automations: [automation] });
@@ -54,8 +62,7 @@ const selectBronze = async () => {
 describe('Automation trigger tiers', () => {
   it('shows and saves tiers beyond the first 100 returned by Core', async () => {
     const save = serve({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['tier-100'],
+      trigger_rules: specificTierRules(['tier-100']),
     });
     fakeAdminEndpoint('GET', /\/tiers\/\?/, {
       tiers: Array.from({ length: 102 }, (_, index) => ({
@@ -81,8 +88,7 @@ describe('Automation trigger tiers', () => {
     expect(
       (save.requests[0].body as { automations: AutomationDetail[] }).automations[0],
     ).toMatchObject({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['tier-100', 'tier-101'],
+      trigger_rules: specificTierRules(['tier-100', 'tier-101']),
     });
   });
 
@@ -148,8 +154,7 @@ describe('Automation trigger tiers', () => {
         {
           name: detail('first').name,
           description: detail('first').description,
-          trigger_tier_scope: 'selected_paid',
-          trigger_tier_ids: ['bronze'],
+          trigger_rules: specificTierRules(['bronze']),
           status: ['Publish', 'Publish changes'].includes(action) ? 'active' : 'inactive',
           actions: detail('first').actions,
           edges: [],
@@ -194,8 +199,7 @@ describe('Automation trigger tiers', () => {
 
   it('shows previously selected archived tiers until their removal is saved', async () => {
     const save = serve({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['archived', 'bronze'],
+      trigger_rules: specificTierRules(['archived', 'bronze']),
     });
     await renderAdminApp('/automations/first', flags);
     await expect.element(chips()).toHaveTextContent('Legacy (archived)Bronze');
@@ -218,8 +222,7 @@ describe('Automation trigger tiers', () => {
     expect(
       (save.requests[0].body as { automations: AutomationDetail[] }).automations[0],
     ).toMatchObject({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['archived', 'bronze', 'gold'],
+      trigger_rules: specificTierRules(['archived', 'bronze', 'gold']),
     });
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
     await picker().click();
@@ -239,8 +242,7 @@ describe('Automation trigger tiers', () => {
     expect(
       (save.requests[1].body as { automations: AutomationDetail[] }).automations[0],
     ).toMatchObject({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['bronze', 'gold'],
+      trigger_rules: specificTierRules(['bronze', 'gold']),
     });
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
     await picker().click();
@@ -250,7 +252,9 @@ describe('Automation trigger tiers', () => {
   });
 
   it('clears tier IDs when saving Any paid tier', async () => {
-    const save = serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    const save = serve({
+      trigger_rules: specificTierRules(['bronze']),
+    });
     await renderAdminApp('/automations/first', flags);
     await selectScope('Any paid tier');
     await userEvent.keyboard('{Escape}');
@@ -259,13 +263,21 @@ describe('Automation trigger tiers', () => {
     expect(
       (save.requests[0].body as { automations: AutomationDetail[] }).automations[0],
     ).toMatchObject({
-      trigger_tier_scope: 'all_paid',
-      trigger_tier_ids: null,
+      trigger_rules: [
+        {
+          trigger_type: 'paid_subscription_started',
+          scope: 'any_paid_tier',
+          product_id: null,
+          direction: null,
+        },
+      ],
     });
   });
 
   it('searches tiers and removes chips before saving', async () => {
-    const save = serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    const save = serve({
+      trigger_rules: specificTierRules(['bronze']),
+    });
     await renderAdminApp('/automations/first', flags);
     await picker().fill('Gold');
     await expect
@@ -286,8 +298,7 @@ describe('Automation trigger tiers', () => {
     expect(
       (save.requests[0].body as { automations: AutomationDetail[] }).automations[0],
     ).toMatchObject({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['gold'],
+      trigger_rules: specificTierRules(['gold']),
     });
   });
 
@@ -304,8 +315,9 @@ describe('Automation trigger tiers', () => {
 
   it('shows the free description without controls', async () => {
     serve({
-      trigger_tier_scope: 'free',
-      trigger_tier_ids: null,
+      trigger_rules: [
+        { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+      ],
       slug: 'member-welcome-email-free',
     });
     await renderAdminApp('/automations/first', flags);
@@ -316,7 +328,9 @@ describe('Automation trigger tiers', () => {
   });
 
   it('keeps the tier picker and sends unchanged trigger fields when run analytics is absent', async () => {
-    const save = serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    const save = serve({
+      trigger_rules: specificTierRules(['bronze']),
+    });
     await renderAdminApp('/automations/first', { labs: { automations: true } });
     await expect
       .element(page.getByRole('article', { name: 'Paid subscription started' }))
@@ -331,8 +345,7 @@ describe('Automation trigger tiers', () => {
     expect(
       (save.requests[0].body as { automations: AutomationDetail[] }).automations[0],
     ).toMatchObject({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: ['bronze'],
+      trigger_rules: specificTierRules(['bronze']),
     });
   });
 });
