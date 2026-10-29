@@ -7188,7 +7188,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/member-attribution/index.ts
-        - core/server/services/staff/index.js
+        - core/server/services/staff/index.ts
         - core/server/services/email-service/email-service-wrapper.js
         - core/boot.js
         - test/e2e-server/services/member-attribution.test.js
@@ -7213,7 +7213,7 @@ services:
           - core/server/services/member-attribution/referrer-translator.js
           - core/server/services/member-attribution/outbound-link-tagger.js
           - core/server/services/member-attribution/url-translator.js
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/members/api.js
           - core/boot.js
     entryPoints:
@@ -7290,7 +7290,7 @@ services:
           - core/server/services/members/members-api/controllers/router-controller.js
           - core/server/services/members/members-api/services/member-bread-service.js
           - core/server/services/members/members-api/repositories/event-repository.js
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
@@ -7314,7 +7314,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/member-attribution/index.ts
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/members/api.js
           - core/server/services/email-service/email-service-wrapper.js
         tests:
@@ -11355,7 +11355,7 @@ services:
           uses BookshelfClickEventRepository for both click and subscription models. Two
           GhostMailers are constructed: one inside SettingsBREADService and one for incoming
           notifications. Metadata borrows the shared oEmbed and external-request objects; the
-          renderer retains the staff wrapper. No other production root construction or deep
+          renderer retains a getter over the ready Staff service. No other production root construction or deep
           composition was found. Service units use in-memory repositories and fake dependencies;
           booted API/email tests exercise normal composition. The root test runs the real init
           with the Mentions facade replaced and asserts the repositories are bound to the three
@@ -12471,7 +12471,7 @@ services:
           - core/server/services/member-welcome-emails/index.ts
           - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service-emails.js
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service-emails.js
           - core/server/services/gifts/index.ts
           - core/server/services/invites/index.ts
@@ -13040,63 +13040,68 @@ services:
   staff:
     kind: directory
     disposition: migrate
+    migrated: true
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        The retained mail/service composition fits, but four anonymous domain-event
-        subscriptions need an owned cleanup boundary that the event-bus API does not
-        currently provide. Await member attribution before construction and preserve
-        late-bound email consumers in Gifts and Stripe. Partial registration must not leave
-        duplicate notification handlers on retry.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned default root returns one ready StaffService after member attribution,
+        with its mailer, renderer and four domain-event subscriptions. Gifts, Stripe and
+        Recommendations read the service through call-time getters. The event bus cannot
+        remove a handler, so a subscription failure makes the root refuse later init calls
+        instead of registering the earlier handlers twice; an owned subscription cleanup
+        boundary remains a kernel question.
+      reviewedAt: a7dfbfff558768efd13bd1cba076039bdd889733
       sources:
-        - core/server/services/staff/index.js
+        - core/server/services/staff/index.ts
         - core/server/services/staff/staff-service.js
         - core/server/services/gifts/index.ts
+        - core/server/services/stripe/stripe-service.js
+        - core/server/services/recommendations/index.ts
         - core/boot.js
+        - test/unit/server/services/staff/root.test.ts
       dependencies:
         complexity: straightforward
         reason: >-
           Models, logging, mail, settings, URLs, DomainEvents, attribution, the four event
           constructors and a template reader enter through the root. The reader confines HTML and
           partial reads to the fixed staff files, the root supplies the file access, and Moment
-          comes from the kernel clock. CSS inlining goes through the allowlisted shared
-          inline-css helper. The renderer still imports Handlebars and the shared delivery
-          address formatter, which need exact library allowances before the ratchet applies.
-          Gifts and Stripe use Staff emails through deferred access, so preserving that access
-          avoids a new construction cycle.
-        preparation:
-          - >-
-            Resolve the remaining Handlebars and delivery address formatter imports with exact
-            allowances, and preserve call-time Staff-email access in Gifts and Stripe.
+          comes from the kernel clock. The renderer imports Handlebars, the shared delivery
+          address formatter and the shared inline-css helper through exact allowances. Gifts,
+          Stripe and Recommendations read the Staff service through call-time getters, so
+          preserving that access avoids a new construction cycle.
+        preparation: []
         reviewedAt: a7dfbfff558768efd13bd1cba076039bdd889733
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
           - core/server/services/staff/email-template-files.ts
+          - core/server/lib/email-rendering/inline-css.ts
           - core/server/services/gifts/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/boot.js
     entryPoints:
-      - staff/index.js
+      - staff/index.ts
     notes: >-
-      Preserve event-driven staff notifications and direct email/rendering consumers. Decide
-      partial-initialization recovery and ownership of subscriptions, mail transport and pending
-      deliveries before changing lifetime.
+      Preserve event-driven staff notifications and direct email/rendering consumers. The prior
+      auditedAt records the pre-migration baseline. The bounded migration was inspected on main
+      a7dfbfff558768efd13bd1cba076039bdd889733; the root, notification, boot and consumer
+      characterization passed on the CommonJS wrapper before production changes. The default
+      initializer replaces the wrapper. Ownership of subscriptions, mail transport and pending
+      deliveries is unchanged and still undecided.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one eagerly constructed wrapper with a synchronous init method that
-          uses this and returns undefined. api is initially absent; successful initialization
-          exposes StaffService and its emails helper. Stripe, gifts and recommendations depend
-          on api.emails. No reset or shutdown method is exposed. Root units pin the wrapper's
-          only operation, the synchronous undefined return and an absent api before init.
+          The TypeScript root default-exports a defineService initializer with init and a guarded
+          service getter that throws IncorrectUsageError before init; there are no extras. The ready
+          StaffService exposes the emails helper that Stripe, Gifts and Recommendations use. No
+          reset or shutdown method is exposed. Root units pin the export shape, the guard and the
+          promise returned by init.
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
@@ -13105,17 +13110,17 @@ services:
           - test/unit/server/services/staff/root.test.ts
       construction:
         summary: >-
-          The root is the only production StaffService constructor found. First init creates
+          The root is the only production StaffService constructor found. The factory creates
           GhostMailer and StaffService, which creates StaffServiceEmails, a private Handlebars
-          environment, partials and helpers. It captures memberAttribution.service and shared
-          model/settings/URL helpers, assigns api, then subscribes. A retained api skips all
-          subsequent construction and subscription work. Direct implementation construction
-          outside this root is confined to tests in the searched repository. Root units pin the
-          captured attribution, DomainEvents and GhostMailer identities, the emails helper type,
-          and that an unavailable attribution root or a renderer failure throws before api
-          assignment or any subscription, with a later init succeeding.
+          environment, partials from the fixed template reader and helpers. It captures
+          memberAttribution.service, injects the event constructors and shared model/settings/URL
+          helpers, then subscribes and returns the instance. Direct implementation construction
+          outside this root is confined to tests. Root units pin the captured attribution,
+          DomainEvents and GhostMailer identities, the emails helper type, and that an unavailable
+          attribution root or a renderer failure rejects init with the guard still closed and no
+          subscription, with a later init succeeding.
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
           - core/server/lib/mail/ghost-mailer.js
@@ -13124,15 +13129,15 @@ services:
       consumers:
         summary: >-
           Boot initializes the root. Member and subscription events from the members repository
-          and milestone events from the milestone repository drive its four subscribers.
-          Stripe donation checkout and gifts resolve api.emails through getters when sending;
-          recommendations uses it for HTML/text rendering while owning a separate mailer.
-          E2E tests assert signup, subscription, donation, gift and recommendation emails through
-          these consumers up to a mocked mail transport. Root units pin that the Stripe checkout
-          and Gifts getters throw before init and return the current api.emails on each access,
-          and drive a members milestone from MilestonesService through an in-memory repository
-          into the staff handler and mailer. Recommendations units pin the renderer reading
-          api.emails at send time. No provider delivery is proved.
+          and milestone events from the milestone repository drive its four subscribers. Stripe
+          donation checkout and Gifts resolve service.emails through getters when sending;
+          Recommendations passes its renderer a getter over the ready service and owns a separate
+          mailer. E2E tests assert signup, subscription, donation, gift and recommendation emails
+          through these consumers up to a mocked mail transport. Root units pin that the Stripe
+          checkout and Gifts getters throw the readiness error before init and return the current
+          service.emails on each access, and drive a members milestone from MilestonesService
+          through an in-memory repository into the staff handler and mailer. Recommendations units
+          pin the renderer reading the service at send time. No provider delivery is proved.
         sources:
           - core/boot.js
           - core/server/services/staff/staff-service.js
@@ -13155,18 +13160,17 @@ services:
           - test/e2e-server/services/recommendation-emails.test.js
       startup:
         summary: >-
-          Foreground boot invokes staff init before mounting the app and notifying readiness.
-          Email-address initialization runs earlier; boot awaits member-attribution init before
-          entering the Promise.all group in which staff captures its ready service.
-          Stripe and gifts are composed earlier but defer reading
-          api.emails. Staff init registers listeners and prepares rendering/transport objects;
-          it does not send or verify delivery. Direct use before init has no readiness guard;
-          consumer getters throw TypeError. Boot units pin that staff init waits for
-          member-attribution init and that a staff init error stops job registration; the
-          booted member-attribution E2E pins the shared attribution instance.
+          Foreground boot awaits staff init in the services Promise.all group, before mounting the
+          app and notifying readiness. Email-address initialization runs earlier; boot awaits
+          member-attribution init before entering that group, and the factory captures its ready
+          service. Stripe and Gifts are composed earlier but defer reading service.emails. Staff
+          init registers listeners and prepares rendering and transport objects; it does not send
+          or verify delivery. Boot units pin that staff init waits for member-attribution init and
+          that a staff init rejection stops job registration; the booted member-attribution E2E
+          pins the shared attribution instance.
         sources:
           - core/boot.js
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/member-attribution/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
@@ -13176,16 +13180,16 @@ services:
           - test/e2e-server/services/member-attribution.test.js
       lifetime:
         summary: >-
-          Wrapper, api, emails, transport and captured attribution instance survive repeat init
-          and server stop. init guards subscriptions using api, not a completed-startup flag.
-          Calling api.subscribeEvents directly registers four more handlers without a guard.
-          Events may run concurrently; this root keeps no delivery queue or deduplication state.
-          Direct email methods await sequential recipient sends, while event dispatch does not
-          await notification completion. Root units pin one set of four subscriptions in order
-          across repeated init, partial subscriptions retained after a subscription failure
-          with later init a no-op, and the captured attribution surviving a root change.
+          The root, service, emails, transport and captured attribution instance survive repeat
+          init and server stop. Calling service.subscribeEvents directly registers four more
+          handlers without a guard. Events may run concurrently; the service keeps no delivery
+          queue or deduplication state. Direct email methods await sequential recipient sends,
+          while event dispatch does not await notification completion. Root units pin one set of
+          four subscriptions in order across repeated init, a subscription failure leaving earlier
+          handlers registered while later init rejects without subscribing again, and the captured
+          attribution surviving a root change.
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
           - core/server/services/members/members-api/repositories/member-repository.js
@@ -13204,7 +13208,7 @@ services:
           title and accent colour read per notification, the sender read per recipient while an
           earlier delivery is pending, and recipient preferences read once per notification.
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service-emails.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/models/user.js
@@ -13216,13 +13220,13 @@ services:
       resources:
         summary: >-
           Staff owns its mailer/transport, renderer and four DomainEvents subscriptions; models,
-          settings and attribution are borrowed. Neither wrapper nor implementation stores
+          settings and attribution are borrowed. Neither root nor implementation stores
           unsubscribe handles or pending delivery promises, and boot registers no staff cleanup.
           GhostMailer exposes no close/drain method. Provider-specific connections, queued sends
           and disposal are therefore outside the implemented staff lifecycle. Unit tests assert
           four subscriptions but do not establish cleanup or transport shutdown.
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
           - core/server/lib/mail/ghost-mailer.js
@@ -13233,20 +13237,21 @@ services:
           - test/unit/server/services/staff/root.test.ts
       failures:
         summary: >-
-          Construction failures throw synchronously before api assignment; subscription failure
-          occurs after assignment and leaves later init guarded out. Event handlers catch/log
-          notification failures without retry. Historical attribution lookup failure warns and
-          continues, but supplied-attribution resolution failure aborts that notification.
-          Recipient lookup, rendering or send failure rejects direct email calls and stops later
-          recipients, including the loops that await sends before Promise.allSettled. Gifts
-          catch staff-mail failures; donation handling propagates them after saving the donation.
-          Invalid milestone content warns and skips. Notification units pin each handler's log
-          message, supplied versus historical attribution failures, missing member and
-          subscription rows logging a TypeError, template failures, and the first rejected send
-          stopping the member, donation and milestone loops before any allSettled warning.
-          Checkout units pin donation notification failure propagating after the save.
+          Construction failures reject init with the guard closed and nothing subscribed. A
+          subscription failure rejects init and leaves earlier handlers registered; the root then
+          refuses later init with IncorrectUsageError. Event handlers catch and log notification
+          failures without retry. Historical attribution lookup failure warns and continues, but
+          supplied-attribution resolution failure aborts that notification. Recipient lookup,
+          rendering or send failure rejects direct email calls and stops later recipients,
+          including the loops that await sends before Promise.allSettled. Gifts catch staff-mail
+          failures; donation handling propagates them after saving the donation. Invalid milestone
+          content warns and skips. Notification units pin each handler's log message, supplied
+          versus historical attribution failures, missing member and subscription rows logging a
+          TypeError, template failures, and the first rejected send stopping the member, donation
+          and milestone loops before any allSettled warning. Checkout units pin donation
+          notification failure propagating after the save.
         sources:
-          - core/server/services/staff/index.js
+          - core/server/services/staff/index.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
           - core/server/lib/mail/ghost-mailer.js
@@ -13262,12 +13267,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Preserve boot's explicit await of member-attribution init before staff captures its
-        service; boot and root units pin the ordering and the failure before api assignment.
-      - >-
-        Decide startup failure recovery for a retrying initializer. A renderer or attribution
-        failure leaves no api or subscriptions, but a subscription failure leaves earlier
-        handlers registered; the event bus has no unsubscribe, so a retry cannot release them.
+        Decide an owned cleanup boundary for domain-event subscriptions. The event bus has no
+        unsubscribe, so the root can only refuse a retry after a partial subscription; it
+        cannot release the handlers that attempt registered.
       - >-
         Decide restart, subscription disposal, provider transport cleanup and pending-delivery
         drain ownership. Server stop currently does not reset staff or wait for its detached

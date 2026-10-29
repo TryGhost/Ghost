@@ -51,7 +51,7 @@ export function init(options: GiftServiceInitOptions): void {
       return tiers.service.api;
     },
   };
-  const staffService = require('../staff');
+  const staffService = require('../staff').default;
   const DomainEvents = require('@tryghost/domain-events');
   const logging = require('@tryghost/logging');
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
@@ -139,7 +139,7 @@ export function init(options: GiftServiceInitOptions): void {
     tiersService,
     giftEmailService,
     get staffServiceEmails() {
-      return staffService.api.emails;
+      return staffService.service.emails;
     },
     giftReminderScheduler,
     checkoutAdapter,
