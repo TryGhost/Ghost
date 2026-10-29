@@ -1,5 +1,9 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const DomainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
+
+const TEMPLATE_DIRECTORY = path.join(__dirname, 'email-templates');
 
 class StaffServiceWrapper {
   init() {
@@ -9,6 +13,13 @@ class StaffServiceWrapper {
     }
 
     const StaffService = require('./staff-service');
+    const { createStaffEmailTemplateFiles } = require('./email-template-files');
+    const {
+      MemberCreatedEvent,
+      SubscriptionActivatedEvent,
+      SubscriptionCancelledEvent,
+    } = require('../../../shared/events');
+    const MilestoneCreatedEvent = require('../milestones/milestone-created-event');
 
     const logging = require('@tryghost/logging');
     const models = require('../../models');
@@ -31,6 +42,17 @@ class StaffServiceWrapper {
       DomainEvents,
       memberAttributionService: memberAttribution.service,
       labs,
+      events: {
+        MemberCreatedEvent,
+        SubscriptionActivatedEvent,
+        SubscriptionCancelledEvent,
+        MilestoneCreatedEvent,
+      },
+      // Reads are confined to the fixed staff template files in this directory.
+      templateFiles: createStaffEmailTemplateFiles({
+        readFile: (file) => fs.promises.readFile(path.join(TEMPLATE_DIRECTORY, file), 'utf8'),
+        readFileSync: (file) => fs.readFileSync(path.join(TEMPLATE_DIRECTORY, file), 'utf8'),
+      }),
     });
 
     this.api.subscribeEvents();
