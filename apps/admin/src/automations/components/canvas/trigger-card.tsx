@@ -189,7 +189,8 @@ const SubscriptionChangedPicker: React.FC<{
         {/* A subscription can end long after the member cancels. */}
         {value.to === 'downgraded_to_free' && (
           <Text as="p" size="sm" tone="secondary">
-            Members start this automation when their subscription expires, not when they cancel.
+            Starts when a canceled subscription expires and the member&apos;s status changes to
+            free.
           </Text>
         )}
       </Stack>

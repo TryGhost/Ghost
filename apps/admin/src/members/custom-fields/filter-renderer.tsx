@@ -1,17 +1,21 @@
 import React, { useEffect, useMemo } from 'react';
 import { CUSTOM_FIELD_SET_OPERATORS, parseMetafieldFieldId } from './addressing';
+import { matchLeaf, matchShape } from '@tryghost/metafield-types/structure';
 import { FILTER_TYPES, createOperatorOptions, listsOperator } from '@/shared/filters';
 import {
   FilterSegmentInput,
   FilterSegmentMultiSelect,
   FilterSegmentSelect,
 } from '@tryghost/shade/patterns';
-import { countryOptions } from '@tryghost/admin-x-framework/utils/countries';
-import { memberCustomFieldParts } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { partFilterType } from './filter-fields';
+import {
+  memberCustomFieldChoiceLists,
+  memberCustomFieldParts,
+  type MemberCustomFieldChoiceList,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { filterLeaf, partFilterType } from './filter-fields';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { CustomRendererProps, FilterFieldConfig } from '@tryghost/shade/patterns';
-import type { PartFilterType } from './filter-fields';
+import type { LeafFilterType } from './filter-fields';
 
 // "Is set" and "is not set" apply to a field of any value type.
 const PRESENCE_ONLY_OPTIONS = createOperatorOptions(CUSTOM_FIELD_SET_OPERATORS);
@@ -19,7 +23,7 @@ const PRESENCE_ONLY_OPTIONS = createOperatorOptions(CUSTOM_FIELD_SET_OPERATORS);
 // The whole of a composite has no value of its own, so it filters on presence alone;
 // a part filters with the operators of its own type (text typed in, or a set picked
 // from a list) plus presence; a scalar field offers everything it declared.
-function offeredOperators(field: FilterFieldConfig<string>, part: PartFilterType | 'whole' | null) {
+function offeredOperators(field: FilterFieldConfig<string>, part: LeafFilterType | 'whole' | null) {
   const declared = field.operators?.length ? field.operators : PRESENCE_ONLY_OPTIONS;
   const allowed =
     part === 'whole'
@@ -57,12 +61,21 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
       }))
     : [];
   const fieldLabel = field.label ?? definition?.name ?? 'Custom field';
-  const isComposite = parts.length > 0;
+  const isComposite = definition
+    ? matchShape(definition.type, { scalar: () => false, record: () => true })
+    : false;
 
   // The part first, then what it holds: one text, or the codes an "is any of" lists.
   const [part = '', ...rest] = values;
   const partType = definition ? partFilterType(definition.type, part) : undefined;
   const filtersAs = isComposite ? (partType ?? 'whole') : null;
+  const leaf = definition ? filterLeaf(definition.type, part) : undefined;
+  const list = leaf
+    ? matchLeaf<MemberCustomFieldChoiceList | null>(leaf, {
+        text: () => null,
+        choice: ({ from }) => memberCustomFieldChoiceLists[from],
+      })
+    : null;
 
   const {
     options: operatorOptions,
@@ -111,20 +124,20 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
         />
       )}
 
-      {needsValue && filtersAs === 'set' && (
+      {needsValue && list && (
         <FilterSegmentMultiSelect
           ariaLabel={`${fieldLabel} value`}
-          options={countryOptions(codes)}
-          placeholder="Select countries..."
+          options={list.options(codes)}
+          placeholder={list.placeholder}
           readOnly={readOnly}
-          searchPlaceholder="Search countries..."
+          searchPlaceholder={list.searchPlaceholder}
           testId="custom-field-filter-value"
           values={codes}
           onChange={(nextCodes) => onChange([part, ...nextCodes])}
         />
       )}
 
-      {needsValue && filtersAs !== 'set' && (
+      {needsValue && !list && (
         <FilterSegmentInput
           ariaLabel={`${fieldLabel} value`}
           placeholder="Enter value..."

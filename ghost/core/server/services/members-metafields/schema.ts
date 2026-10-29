@@ -1,8 +1,11 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import {
+  FIELD_STATUS,
+  FieldStatusSchema,
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
+  type FieldStatus,
   type MetafieldChangeEntry,
   type MetafieldChangeSource,
 } from '@tryghost/metafield-types';
@@ -11,12 +14,9 @@ import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
-// `archived` is soft: the field drops out of the values path but stays in the definition
-// list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
-// column, which is static config and cannot import this.
-export const FIELD_STATUS = { active: 'active', archived: 'archived' } as const;
-export type FieldStatus = (typeof FIELD_STATUS)[keyof typeof FIELD_STATUS];
-export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archived]);
+// schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
+// Re-exported so the service reads every column's vocabulary from this module.
+export { FIELD_STATUS, FieldStatusSchema, type FieldStatus };
 
 // The single source for the read projection and the knex table type below. `type` parses
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
@@ -74,12 +74,8 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's namespace and key travel with the row so a value assembles without a second
-// lookup.
-//
-// `type` takes no part in the assembly and is here as a gate: a value whose type has left
-// the catalog is one the definitions list no longer returns either, so failing to parse
-// is what drops it.
+// `type` says what shape a field's rows add up to, and also drops a value whose type has left the
+// catalog: its definition is no longer listed either, and the row fails to parse.
 export const DbStoredValueRow = z.object({
   member_id: z.string(),
   namespace: NamespaceSchema,
@@ -134,6 +130,12 @@ export type WriteOrigin =
       writtenBy: WriterOf<'member'>;
       source: Extract<MetafieldChangeSource, 'portal' | 'checkout'>;
     };
+
+/**
+ * Where a write of one member's values was made, by anyone but an import, which stores each
+ * row's values through a write of its own.
+ */
+export type SingleWriteOrigin = Exclude<WriteOrigin, { source: 'import' }>;
 
 /** The fields an entry names. */
 export const MetafieldChangeEventFields = z.array(MetafieldChangeEventFieldSchema);

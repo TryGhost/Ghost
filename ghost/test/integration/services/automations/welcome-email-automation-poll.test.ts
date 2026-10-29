@@ -153,7 +153,6 @@ describe('welcome email automations poll', function () {
     return insert('automations', {
       id: ObjectId().toHexString(),
       status: 'active',
-      trigger_type: 'membership_started',
       name: `Automation ${ObjectId().toHexString()}`,
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
       created_at: currentTime,

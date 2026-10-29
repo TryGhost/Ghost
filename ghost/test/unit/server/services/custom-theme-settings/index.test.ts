@@ -98,7 +98,13 @@ describe('Custom theme settings root and retained consumers', function () {
         './server/services/themes': themes,
         './server/services/offers': offers,
       },
-      { fallback: () => ({ init: async () => {} }) },
+      {
+        // Unlisted frontend services answer both wrapper and defineService shapes.
+        fallback: () => {
+          const service = { init: async () => {} };
+          return { ...service, default: service };
+        },
+      },
     );
     return { init: () => init({ bootLogger: { metric() {} } }), offers };
   }

@@ -326,8 +326,6 @@ class MemberWelcomeEmailService {
   }
 
   async #sendEmailVerificationMagicLink({ email, property }) {
-    const fromEmail = emailAddressService.service.defaultFromEmail;
-
     this.#magicLinkService.transporter = {
       sendMail: (message) => {
         if (process.env.NODE_ENV !== 'production') {
@@ -335,7 +333,6 @@ class MemberWelcomeEmailService {
         }
 
         return this.#transactionalMailer.send({
-          from: fromEmail,
           subject: 'Verify email address',
           forceTextContent: true,
           ...message,

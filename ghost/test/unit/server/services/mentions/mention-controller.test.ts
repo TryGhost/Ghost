@@ -18,7 +18,7 @@ describe('MentionController', function () {
     api = { processWebmention: sinon.stub().resolves() };
     jobsService = { dispatch: sinon.stub().resolves() };
     loggingStub = sinon.stub(logging);
-    controller = new MentionController();
+    controller = new MentionController({ logging });
     await controller.init({ api, jobsService, mentionResourceService: { getByID: sinon.stub() } });
   });
 

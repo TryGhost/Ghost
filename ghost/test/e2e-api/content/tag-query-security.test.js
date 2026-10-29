@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const db = require('../../../core/server/data/db');
 const configUtils = require('../../utils/config-utils');
 const postsPublicService = require('../../../core/server/services/posts-public').default;
-const tagsPublicService = require('../../../core/server/services/tags-public');
+const tagsPublicService = require('../../../core/server/services/tags-public').default;
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 
 describe('Content API tag query privacy', function () {
@@ -32,7 +32,7 @@ describe('Content API tag query privacy', function () {
           parent_id: String(index + 1).padStart(24, '0'),
         });
     }
-    await tagsPublicService.api.cache?.reset();
+    await tagsPublicService.service.cache?.reset();
   });
 
   afterAll(function () {

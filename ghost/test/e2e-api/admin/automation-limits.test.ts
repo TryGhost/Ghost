@@ -17,7 +17,7 @@ const payload = (status: AutomationStatus = 'active'): AddAutomationData => ({
   name: `Limit test ${ObjectId().toHexString()}`,
   description: '',
   status,
-  trigger_tier_scope: 'free',
+  trigger_rules: [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }],
   actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 1 } }],
   edges: [],
 });
@@ -266,7 +266,7 @@ describe('Automation host limits', () => {
       assert.ok(automation);
       assert.equal(automation.status, 'active');
       await repository.edit(free.id, {
-        ...omit(automation, ['trigger_tier_scope', 'trigger_tier_ids']),
+        ...omit(automation, ['trigger_rules']),
         status: 'inactive',
       });
     } finally {
@@ -407,17 +407,17 @@ describe('Automation host limits', () => {
     try {
       const draft = await repository.add(payload('inactive'));
       await repository.edit(draft.id, {
-        ...omit(draft, ['trigger_tier_scope', 'trigger_tier_ids']),
+        ...omit(draft, ['trigger_rules']),
         description: 'Edited draft',
       });
       await repository.edit(active.id, {
-        ...omit(active, ['trigger_tier_scope', 'trigger_tier_ids']),
+        ...omit(active, ['trigger_rules']),
         status: 'inactive',
       });
       assert.deepEqual(limitLockQueries, []);
       assert.equal(await countActiveAutomations(), 1);
       await repository.edit(republished.id, {
-        ...omit(republished, ['trigger_tier_scope', 'trigger_tier_ids']),
+        ...omit(republished, ['trigger_rules']),
         description: 'Edited active',
       });
       assert.equal(limitLockQueries.length, 1);
@@ -471,7 +471,7 @@ describe('Automation host limits', () => {
             () => repositories[0].add(payload()),
             () =>
               repositories[1].edit(second.id, {
-                ...omit(second, ['trigger_tier_scope', 'trigger_tier_ids']),
+                ...omit(second, ['trigger_rules']),
                 status: 'active',
               }),
           ];
@@ -480,12 +480,12 @@ describe('Automation host limits', () => {
           attempts = [
             () =>
               repositories[0].edit(first.id, {
-                ...omit(first, ['trigger_tier_scope', 'trigger_tier_ids']),
+                ...omit(first, ['trigger_rules']),
                 status: 'active',
               }),
             () =>
               repositories[1].edit(second.id, {
-                ...omit(second, ['trigger_tier_scope', 'trigger_tier_ids']),
+                ...omit(second, ['trigger_rules']),
                 status: 'active',
               }),
           ];
@@ -494,12 +494,12 @@ describe('Automation host limits', () => {
           attempts = [
             () =>
               repositories[0].edit(first.id, {
-                ...omit(first, ['trigger_tier_scope', 'trigger_tier_ids']),
+                ...omit(first, ['trigger_rules']),
                 status: 'active',
               }),
             () =>
               repositories[1].edit(first.id, {
-                ...omit(first, ['trigger_tier_scope', 'trigger_tier_ids']),
+                ...omit(first, ['trigger_rules']),
                 status: 'active',
               }),
           ];

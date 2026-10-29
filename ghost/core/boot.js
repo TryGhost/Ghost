@@ -157,8 +157,8 @@ async function initCore({ ghostServer, config }) {
   debug('End: Internal Keys Service');
 
   debug('Begin: i18n');
-  const i18n = require('./server/services/i18n');
-  await i18n.init();
+  const i18n = require('./shared/i18n');
+  await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
 
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
@@ -239,7 +239,7 @@ async function initServicesForFrontend({ bootLogger }) {
   debug('End: Redirects');
 
   debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection');
+  const linkRedirects = require('./server/services/link-redirection').default;
   await linkRedirects.init();
   debug('End: Link Redirects');
 
@@ -385,7 +385,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
-  const comments = require('./server/services/comments');
+  const comments = require('./server/services/comments').default;
   const staffService = require('./server/services/staff');
   const memberAttribution = require('./server/services/member-attribution').default;
   const membersEvents = require('./server/services/members-events');
@@ -394,8 +394,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
-  const mentionsService = require('./server/services/mentions');
-  const tagsPublic = require('./server/services/tags-public');
+  const mentionsService = require('./server/services/mentions').default;
+  const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
   const slackNotifications = require('./server/services/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner');
@@ -405,8 +405,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const machinePaymentsService = require('./server/services/machine-payments');
   const recommendationsService = require('./server/services/recommendations');
   const emailAddressService = require('./server/services/email-address');
+  const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats');
-  const explorePingService = require('./server/services/explore-ping');
+  const explorePingService = require('./server/services/explore-ping').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -445,10 +446,13 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await memberAttribution.init();
   // Email captures Audience Feedback's ready link service during initialization.
   await audienceFeedback.init();
+  // Members captures the ready Newsletters instance during initialization.
+  await newsletters.init();
+  // Recommendations reads the ready Mentions instance during initialization.
+  await mentionsService.init();
 
   await Promise.all([
     identityTokens.init(),
-    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -496,8 +500,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
-  assert(mentionsService.controller, 'Mentions controller should be initialized');
-  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+  assert(mentionsService.service.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.service.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
@@ -508,8 +512,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     memberJobs,
     giftService: giftService.service,
     mediaInliner: mediaInliner.getInstance(),
-    mentionsController: mentionsService.controller,
-    mentionsSendingService: mentionsService.sendingService,
+    mentionsController: mentionsService.service.controller,
+    mentionsSendingService: mentionsService.service.sendingService,
     membersService,
     emailService: emailService.service,
     siteImporter,

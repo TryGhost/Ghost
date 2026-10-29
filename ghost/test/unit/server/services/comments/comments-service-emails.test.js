@@ -1,8 +1,15 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const i18nLib = require('@tryghost/i18n').default;
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
 
+const { t } = i18nLib('en', 'ghost');
+
 describe('Comments Service: CommentsServiceEmails', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
   function createClassInstance({ labs = {} }) {
     const urlService = {
       getUrlForResource: sinon.stub().returns('https://example.com/my-post/'),
@@ -21,6 +28,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
       urlService,
       urlUtils: {},
       labs: labsStub,
+      t,
+      createUnsubscribeUrl: sinon.stub(),
+      readTemplate: sinon.stub().resolves(''),
     });
 
     return { instance, urlService };
@@ -85,6 +95,134 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
   });
 
+  function makeModel(attrs, related = {}) {
+    return {
+      id: attrs.id,
+      attributes: attrs,
+      get: (key) => attrs[key],
+      related: (name) => related[name],
+    };
+  }
+
+  function makeAuthor(attrs) {
+    return makeModel(Object.assign({ comment_notifications: true }, attrs));
+  }
+
+  // The comment is created late on 1 April UTC, so a site east of UTC already
+  // shows 2 April: the rendered date proves the site timezone was applied.
+  const COMMENT_CREATED_AT = new Date('2026-04-01T23:30:00Z');
+
+  function buildHarness(opts = {}) {
+    const post = makeModel(Object.assign({ id: 'post-id', title: 'My Post' }, opts.post), {
+      authors:
+        opts.authors !== undefined
+          ? opts.authors
+          : [makeAuthor({ email: 'author@example.com', slug: 'author' })],
+    });
+    const member = makeModel({
+      id: 'member-id',
+      name: 'Reader',
+      email: 'reader@example.com',
+      expertise: '',
+    });
+    const owner = makeModel({ email: 'owner@example.com', slug: 'owner' });
+    const comment = makeModel({
+      id: 'comment-id',
+      post_id: 'post-id',
+      member_id: 'member-id',
+      html: '<p>hi</p>',
+      created_at: COMMENT_CREATED_AT,
+    });
+    const parentMember = makeModel(
+      Object.assign(
+        {
+          id: 'parent-member-id',
+          uuid: 'parent-uuid',
+          email: 'parent@example.com',
+          enable_comment_notifications: true,
+        },
+        opts.parentMember,
+      ),
+    );
+    const parentComment = makeModel(
+      Object.assign({ id: 'parent-id', status: 'published' }, opts.parentComment),
+      { member: parentMember },
+    );
+    const reply = makeModel({
+      id: 'reply-id',
+      post_id: 'post-id',
+      member_id: 'member-id',
+      parent_id: 'parent-id',
+      in_reply_to_id: 'in-reply-to-id',
+      html: '<p>reply</p>',
+      created_at: COMMENT_CREATED_AT,
+    });
+
+    const Post = { findOne: sinon.stub().resolves(post) };
+    const Member = { findOne: sinon.stub().resolves(member) };
+    const User = { getOwnerUser: sinon.stub().resolves(owner) };
+    const Comment = { findOne: sinon.stub().resolves(parentComment) };
+
+    const renderStub = sinon.stub().resolves({ html: 'h', text: 't' });
+    const mailerSendStub = sinon.stub().resolves();
+    const createUnsubscribeUrl = sinon
+      .stub()
+      .returns('https://example.com/unsubscribe/?uuid=parent-uuid&comments=1');
+
+    // Stub the URL service's getUrlForResource with a withArgs match:
+    // the URL only resolves when a resource carrying the post's id
+    // is passed. Anything else returns undefined, so a regression
+    // that drops `post.id` somewhere between notifyX and the URL
+    // service surfaces as a bad URL landing in templateData.
+    const getUrlForResourceStub = sinon.stub().returns(undefined);
+    getUrlForResourceStub
+      .withArgs(sinon.match({ id: 'post-id' }), sinon.match.any)
+      .returns('https://example.com/my-post/');
+    const urlService = { getUrlForResource: getUrlForResourceStub };
+
+    const instance = new CommentsServiceEmails({
+      config: {},
+      logging: { warn: sinon.stub() },
+      models: { Post, Member, User, Comment },
+      mailer: { send: mailerSendStub },
+      settingsCache: {
+        get: (() => {
+          const stub = sinon.stub().returns('Test Site');
+          stub.withArgs('timezone').returns(opts.timezone || 'Etc/UTC');
+          return stub;
+        })(),
+      },
+      settingsHelpers: { getMembersSupportAddress: () => 'support@example.com' },
+      urlService,
+      urlUtils: {
+        getSiteUrl: () => 'https://example.com/',
+        urlFor: () => 'https://example.com/ghost/',
+        urlJoin: (...parts) => parts.join(''),
+      },
+      labs: { isSet: sinon.stub().returns(false) },
+      t,
+      createUnsubscribeUrl,
+      readTemplate: sinon.stub().resolves(''),
+    });
+
+    instance.commentsServiceEmailRenderer.renderEmailTemplate = renderStub;
+    const getPostUrlSpy = sinon.spy(instance, 'getPostUrl');
+
+    return {
+      instance,
+      post,
+      comment,
+      reply,
+      parentComment,
+      Comment,
+      getPostUrlSpy,
+      renderStub,
+      mailerSendStub,
+      createUnsubscribeUrl,
+      urlService,
+    };
+  }
+
   // Characterisation tests for the three notification entry points. These
   // exercise the full public path so that future changes to `getPostUrl`'s
   // signature have to migrate every call site coherently — historically
@@ -92,88 +230,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
   // refactored, and the helper-only test above did not catch it.
   describe('public notification methods invoke getPostUrl', function () {
     const POST_URL_FOR_COMMENT = 'https://example.com/my-post/#ghost-comments-comment-id';
-
-    function makeModel(attrs, related = {}) {
-      return {
-        id: attrs.id,
-        attributes: attrs,
-        get: (key) => attrs[key],
-        related: (name) => related[name],
-      };
-    }
-
-    function makeAuthor(attrs) {
-      return makeModel(Object.assign({ comment_notifications: true }, attrs));
-    }
-
-    function buildHarness(opts = {}) {
-      const post = makeModel(Object.assign({ id: 'post-id', title: 'My Post' }, opts.post), {
-        authors:
-          opts.authors !== undefined
-            ? opts.authors
-            : [makeAuthor({ email: 'author@example.com', slug: 'author' })],
-      });
-      const member = makeModel({
-        id: 'member-id',
-        name: 'Reader',
-        email: 'reader@example.com',
-        expertise: '',
-      });
-      const owner = makeModel({ email: 'owner@example.com', slug: 'owner' });
-      const comment = makeModel({
-        id: 'comment-id',
-        post_id: 'post-id',
-        member_id: 'member-id',
-        html: '<p>hi</p>',
-        created_at: new Date('2026-04-01T00:00:00Z'),
-      });
-
-      const Post = { findOne: sinon.stub().resolves(post) };
-      const Member = { findOne: sinon.stub().resolves(member) };
-      const User = { getOwnerUser: sinon.stub().resolves(owner) };
-      const Comment = { findOne: sinon.stub() };
-
-      const renderStub = sinon.stub().resolves({ html: 'h', text: 't' });
-      const mailerSendStub = sinon.stub().resolves();
-
-      // Stub the URL service's getUrlForResource with a withArgs match:
-      // the URL only resolves when a resource carrying the post's id
-      // is passed. Anything else returns undefined, so a regression
-      // that drops `post.id` somewhere between notifyX and the URL
-      // service surfaces as a bad URL landing in templateData.
-      const getUrlForResourceStub = sinon.stub().returns(undefined);
-      getUrlForResourceStub
-        .withArgs(sinon.match({ id: 'post-id' }), sinon.match.any)
-        .returns('https://example.com/my-post/');
-      const urlService = { getUrlForResource: getUrlForResourceStub };
-
-      const instance = new CommentsServiceEmails({
-        config: {},
-        logging: { warn: sinon.stub() },
-        models: { Post, Member, User, Comment },
-        mailer: { send: mailerSendStub },
-        settingsCache: {
-          get: (() => {
-            const stub = sinon.stub().returns('Test Site');
-            stub.withArgs('timezone').returns('Etc/UTC');
-            return stub;
-          })(),
-        },
-        settingsHelpers: { getMembersSupportAddress: () => 'support@example.com' },
-        urlService,
-        urlUtils: {
-          getSiteUrl: () => 'https://example.com/',
-          urlFor: () => 'https://example.com/ghost/',
-          urlJoin: (...parts) => parts.join(''),
-        },
-        labs: { isSet: sinon.stub().returns(false) },
-      });
-
-      instance.commentsServiceEmailRenderer.renderEmailTemplate = renderStub;
-      const getPostUrlSpy = sinon.spy(instance, 'getPostUrl');
-
-      return { instance, post, comment, getPostUrlSpy, renderStub, mailerSendStub, urlService };
-    }
 
     it('notifyPostAuthors: passes the right post arg into getPostUrl and threads the URL into templateData', async function () {
       const { instance, post, comment, getPostUrlSpy, renderStub, urlService } = buildHarness();
@@ -212,12 +268,15 @@ describe('Comments Service: CommentsServiceEmails', function () {
       sinon.assert.notCalled(renderStub);
     });
 
-    // notifyParentCommentAuthor is intentionally not exercised here: the
-    // function reaches into emailService.renderer.createUnsubscribeUrl,
-    // which is only populated after the email-service module is
-    // initialised, requiring far more setup than the regression scope
-    // justifies. notifyPostAuthors above and notifyReport below cover
-    // the same `getPostUrl` call-shape contract.
+    it('notifyParentCommentAuthor: threads the post URL for the reply into templateData', async function () {
+      const { instance, reply, renderStub, urlService } = buildHarness();
+
+      await instance.notifyParentCommentAuthor(reply);
+
+      sinon.assert.calledWith(urlService.getUrlForResource, sinon.match({ id: 'post-id' }));
+      const [, templateData] = renderStub.firstCall.args;
+      assert.equal(templateData.postUrl, 'https://example.com/my-post/#ghost-comments-reply-id');
+    });
 
     it('notifyReport: threads the post URL through to templateData (regression for the missed line-161 migration)', async function () {
       const { instance, post, comment, getPostUrlSpy, renderStub, urlService } = buildHarness();
@@ -267,6 +326,146 @@ describe('Comments Service: CommentsServiceEmails', function () {
         html: 'h',
         text: 't',
       });
+    });
+  });
+
+  describe('notifyParentCommentAuthor', function () {
+    it('emails the parent comment author with the reply and an unsubscribe link', async function () {
+      const { instance, reply, renderStub, mailerSendStub, createUnsubscribeUrl } = buildHarness();
+
+      await instance.notifyParentCommentAuthor(reply);
+
+      sinon.assert.calledOnceWithExactly(createUnsubscribeUrl, 'parent-uuid', { comments: true });
+      const [template, templateData] = renderStub.firstCall.args;
+      assert.equal(template, 'new-comment-reply');
+      assert.equal(templateData.replyHtml, '<p>reply</p>');
+      assert.equal(templateData.memberName, 'Reader');
+      assert.equal(templateData.toEmail, 'parent@example.com');
+      assert.equal(
+        templateData.profileUrl,
+        'https://example.com/unsubscribe/?uuid=parent-uuid&comments=1',
+      );
+      sinon.assert.calledOnceWithMatch(mailerSendStub, {
+        to: 'parent@example.com',
+        from: 'support@example.com',
+        forceTextContent: true,
+        html: 'h',
+        text: 't',
+      });
+    });
+
+    it('puts the site title in the translated subject', async function () {
+      const { instance, reply, mailerSendStub } = buildHarness();
+
+      await instance.notifyParentCommentAuthor(reply);
+
+      assert.equal(
+        mailerSendStub.firstCall.args[0].subject,
+        '↪️ New reply to your comment on Test Site',
+      );
+    });
+
+    it('resolves with the notified parent member id', async function () {
+      const { instance, reply } = buildHarness();
+
+      const notified = await instance.notifyParentCommentAuthor(reply);
+
+      assert.equal(notified, 'parent-member-id');
+    });
+
+    it('looks up the parent comment by parent_id by default', async function () {
+      const { instance, reply, Comment } = buildHarness();
+
+      await instance.notifyParentCommentAuthor(reply);
+
+      sinon.assert.calledOnceWithExactly(Comment.findOne, { id: 'parent-id' });
+    });
+
+    it('looks up the in_reply_to comment for an in_reply_to notification', async function () {
+      const { instance, reply, Comment } = buildHarness();
+
+      await instance.notifyParentCommentAuthor(reply, { type: 'in_reply_to' });
+
+      sinon.assert.calledOnceWithExactly(Comment.findOne, { id: 'in-reply-to-id' });
+    });
+
+    it('uses a supplied parent comment without querying for it', async function () {
+      const { instance, reply, parentComment, Comment, mailerSendStub } = buildHarness();
+
+      await instance.notifyParentCommentAuthor(reply, { parent: parentComment });
+
+      sinon.assert.notCalled(Comment.findOne);
+      sinon.assert.calledOnce(mailerSendStub);
+    });
+
+    it('does not notify when the parent comment is not published', async function () {
+      const { instance, reply, mailerSendStub } = buildHarness({
+        parentComment: { status: 'hidden' },
+      });
+
+      const notified = await instance.notifyParentCommentAuthor(reply);
+
+      assert.equal(notified, undefined);
+      sinon.assert.notCalled(mailerSendStub);
+    });
+
+    it('does not notify a parent author who disabled comment notifications', async function () {
+      const { instance, reply, mailerSendStub } = buildHarness({
+        parentMember: { enable_comment_notifications: false },
+      });
+
+      const notified = await instance.notifyParentCommentAuthor(reply);
+
+      assert.equal(notified, undefined);
+      sinon.assert.notCalled(mailerSendStub);
+    });
+
+    it('does not notify a member replying to their own comment', async function () {
+      const { instance, reply, mailerSendStub } = buildHarness({
+        parentMember: { id: 'member-id' },
+      });
+
+      const notified = await instance.notifyParentCommentAuthor(reply);
+
+      assert.equal(notified, undefined);
+      sinon.assert.notCalled(mailerSendStub);
+    });
+  });
+
+  // The notification templates show the comment's creation date as a calendar
+  // day in the site's timezone. Pinned here so a later move of this formatting
+  // to the shared clock is checked against the current output.
+  describe('notification dates', function () {
+    it('notifyPostAuthors renders the comment date as a calendar day in the site timezone', async function () {
+      const auckland = buildHarness({ timezone: 'Pacific/Auckland' });
+      await auckland.instance.notifyPostAuthors(auckland.comment);
+      assert.equal(auckland.renderStub.firstCall.args[1].commentDate, '2 Apr 2026');
+
+      const utc = buildHarness({ timezone: 'Etc/UTC' });
+      await utc.instance.notifyPostAuthors(utc.comment);
+      assert.equal(utc.renderStub.firstCall.args[1].commentDate, '1 Apr 2026');
+    });
+
+    it('notifyParentCommentAuthor renders the reply date as a calendar day in the site timezone', async function () {
+      const auckland = buildHarness({ timezone: 'Pacific/Auckland' });
+      await auckland.instance.notifyParentCommentAuthor(auckland.reply);
+      assert.equal(auckland.renderStub.firstCall.args[1].replyDate, '2 Apr 2026');
+
+      const utc = buildHarness({ timezone: 'Etc/UTC' });
+      await utc.instance.notifyParentCommentAuthor(utc.reply);
+      assert.equal(utc.renderStub.firstCall.args[1].replyDate, '1 Apr 2026');
+    });
+
+    it('notifyReport renders the comment date as a calendar day in the site timezone', async function () {
+      const reporter = { name: 'Reporter', email: 'reporter@example.com' };
+
+      const auckland = buildHarness({ timezone: 'Pacific/Auckland' });
+      await auckland.instance.notifyReport(auckland.comment, reporter);
+      assert.equal(auckland.renderStub.firstCall.args[1].commentDate, '2 Apr 2026');
+
+      const utc = buildHarness({ timezone: 'Etc/UTC' });
+      await utc.instance.notifyReport(utc.comment, reporter);
+      assert.equal(utc.renderStub.firstCall.args[1].commentDate, '1 Apr 2026');
     });
   });
 });

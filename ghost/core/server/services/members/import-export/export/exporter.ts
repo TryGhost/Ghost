@@ -1,10 +1,12 @@
 import moment from 'moment';
-import { Transform, pipeline, type Readable } from 'node:stream';
+import { Transform, type Readable } from 'node:stream';
+import { finished, pipeline } from 'node:stream/promises';
 import type { Knex } from 'knex';
+import { csvCellsForFields, type CsvField } from '@tryghost/metafield-csv';
+import type { ImportExportTracking } from '../tracking';
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { csvCellsForFields } = require('@tryghost/metafield-csv');
 
 // Options accepted by the export, forwarded to the members query for filtering.
 export interface ExportOptions {
@@ -14,17 +16,15 @@ export interface ExportOptions {
   [option: string]: unknown;
 }
 
-// A metafield definition, opaque to the exporter: it only counts the set and hands
-// it to the values codec, which decides the columns. Named for intent; its shape is
-// the metafields service's concern, not this one's.
-export type MetafieldDefinition = Record<string, unknown>;
+// A member's metafield values, by namespace and then key, as the columns are filled from.
+type MemberValues = Record<string, Record<string, unknown>>;
 
 // The metafields collaborator: the active column set for this export, and the
 // per-member values that fill those columns. Both resolve empty when the feature is
 // off, so the exporter carries no flag of its own.
 export interface MetafieldsService {
-  activeDefinitions(): Promise<MetafieldDefinition[]>;
-  valuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
+  activeDefinitions(): Promise<CsvField[]>;
+  valuesForMembers(memberIds: string[]): Promise<Map<string, MemberValues>>;
 }
 
 // The members aggregate, narrowed to the one read the export makes: the ids matching
@@ -37,6 +37,7 @@ export interface ExporterDeps {
   knex: Knex;
   members: MembersRepository;
   metafields: MetafieldsService;
+  tracking: ImportExportTracking;
 }
 
 interface BatchRelatedData {
@@ -45,14 +46,14 @@ interface BatchRelatedData {
   stripeCustomerMap: Map<string, string>;
   subscribedSet: Set<string>;
   giftIdMap: Map<string, string>;
-  metafieldValuesMap: Map<string, Record<string, unknown>>;
+  metafieldValuesMap: Map<string, MemberValues>;
 }
 
 // The reference data read once up front and shared across every batch.
 interface ReferenceData {
   allProducts: Record<string, string>;
   allLabels: Record<string, string>;
-  activeMetafields: MetafieldDefinition[];
+  activeMetafields: CsvField[];
 }
 
 // A member row as the export query selects it -- the shape the stream emits, and the
@@ -142,11 +143,13 @@ export default class MembersCSVExporter {
   private _knex: Knex;
   private _members: MembersRepository;
   private _metafields: MetafieldsService;
+  private _tracking: ImportExportTracking;
 
-  constructor({ knex, members, metafields }: ExporterDeps) {
+  constructor({ knex, members, metafields, tracking }: ExporterDeps) {
     this._knex = knex;
     this._members = members;
     this._metafields = metafields;
+    this._tracking = tracking;
   }
 
   async export(options: ExportOptions = {}): Promise<Readable> {
@@ -171,22 +174,27 @@ export default class MembersCSVExporter {
       { event: { name: 'members-export.started' } },
       'Starting streaming export of members',
     );
+    const attempt = this._tracking.export(reference.activeMetafields);
     const batchingTransform = this.createBatchingTransform();
-    const processingTransform = this.createProcessingTransform(reference);
+    const processingTransform = this.createProcessingTransform(reference, (rows) =>
+      attempt.wrote(rows),
+    );
 
-    pipeline(membersQuery.stream(), batchingTransform, processingTransform, (err) => {
-      if (err) {
-        logging.error(
-          { event: { name: 'members-export.stream.error' }, err },
-          'Members export stream failed',
-        );
-      } else {
+    // Over once the reader has taken every row, not once the last one is buffered for it, so a
+    // small export that fits in the buffer still counts as broken off if its download is.
+    const streamed = pipeline(membersQuery.stream(), batchingTransform, processingTransform).then(
+      () => finished(processingTransform),
+    );
+    streamed.then(
+      () =>
         logging.info(
           { event: { name: 'members-export.completed' }, durationMs: Date.now() - start },
           'Members export completed',
-        );
-      }
-    });
+        ),
+      // The export's span logs a failure.
+      () => {},
+    );
+    attempt.ended(streamed);
 
     return processingTransform;
   }
@@ -254,7 +262,10 @@ export default class MembersCSVExporter {
   }
 
   // Each flattened row is pushed individually so a batch's rows do not pile up in memory.
-  private createProcessingTransform(reference: ReferenceData): Transform {
+  private createProcessingTransform(
+    reference: ReferenceData,
+    onWritten: (rows: number) => void,
+  ): Transform {
     const assembleRelatedData = (memberIds: string[]) =>
       this.assembleRelatedData(memberIds, reference.activeMetafields);
     const flattenBatch = (members: MemberDbRow[], related: BatchRelatedData) =>
@@ -269,6 +280,7 @@ export default class MembersCSVExporter {
           const related = await assembleRelatedData(memberIds);
           const rows = flattenBatch(batch, related);
           rows.forEach((row) => this.push(row));
+          onWritten(rows.length);
           callback();
         } catch (err) {
           callback(
@@ -283,7 +295,7 @@ export default class MembersCSVExporter {
   // values are read only when there are columns to fill.
   private async assembleRelatedData(
     memberIds: string[],
-    activeMetafields: MetafieldDefinition[],
+    activeMetafields: CsvField[],
   ): Promise<BatchRelatedData> {
     const knex = this._knex;
 
@@ -313,7 +325,7 @@ export default class MembersCSVExporter {
 
         activeMetafields.length > 0
           ? this._metafields.valuesForMembers(memberIds)
-          : new Map<string, Record<string, unknown>>(),
+          : new Map<string, MemberValues>(),
       ]);
 
     return {

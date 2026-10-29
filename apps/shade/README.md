@@ -97,8 +97,8 @@ export function Example() {
 ## Docs
 
 Shade's docs are its Storybook: how to use tokens, primitives, components,
-patterns and page templates, with live examples. It isn't hosted yet. Read the
-sources in
+patterns and page templates, with live examples. Browse it at
+[shade.ghost.org](https://shade.ghost.org), read the sources in
 [`src/docs/`](https://github.com/TryGhost/Ghost/tree/main/apps/shade/src/docs)
 on GitHub, or run it from a Ghost checkout with `pnpm storybook` in
 `apps/shade`.

@@ -1,10 +1,9 @@
+import type { AutomationTriggerRuleDefinition } from './trigger-rules';
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
-import type { AutomationTriggerTierScope } from './automations-repository-2';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
-import { MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES } from '../member-welcome-emails/constants';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
@@ -60,11 +59,71 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-const MEMBER_STATUS_BY_TRIGGER_TIER_SCOPE = new Map<AutomationTriggerTierScope, 'free' | 'paid'>([
-  ['free', 'free'],
-  ['all_paid', 'paid'],
-  ['selected_paid', 'paid'],
-]);
+const getFreeOrPaidForTriggerRule = (
+  rule: Readonly<AutomationTriggerRuleDefinition>,
+): 'free' | 'paid' => {
+  const triggerType = rule.trigger_type;
+  switch (triggerType) {
+    case 'free_signup':
+      return 'free';
+    case 'paid_subscription_started':
+      return 'paid';
+    case 'paid_subscription_changed':
+      return rule.scope === 'free' ? 'free' : 'paid';
+    default: {
+      const _exhaustive: never = triggerType;
+      throw new errors.InternalServerError({
+        message: `Unexpected automation trigger type: ${_exhaustive}`,
+      });
+    }
+  }
+};
+
+const doesMemberMatchTriggerRuleStatus = (
+  member: MemberModel,
+  rule: Readonly<AutomationTriggerRuleDefinition>,
+): boolean => {
+  const expectedFreeOrPaid = getFreeOrPaidForTriggerRule(rule);
+  const actualMemberStatus = member.get('status');
+  switch (expectedFreeOrPaid) {
+    case 'free':
+      if (actualMemberStatus !== 'free') {
+        return false;
+      }
+      break;
+    case 'paid':
+      if (actualMemberStatus !== 'paid' && actualMemberStatus !== 'gift') {
+        return false;
+      }
+      break;
+    default: {
+      const _exhaustive: never = expectedFreeOrPaid;
+      throw new errors.InternalServerError({
+        message: `Unexpected expected member status: ${_exhaustive}`,
+      });
+    }
+  }
+
+  return true;
+};
+
+const doesMemberMatchTriggerRuleScope = (
+  member: MemberModel,
+  rule: Readonly<AutomationTriggerRuleDefinition>,
+): boolean => {
+  switch (rule.scope) {
+    case null:
+    case 'any_paid_tier':
+    case 'free':
+      return true;
+    case 'specific_paid_tier':
+      return member.related('products').models.some((tier) => tier.id === rule.product_id);
+    default: {
+      const _exhaustive: never = rule;
+      throw new errors.InternalServerError({ message: `Unexpected rule: ${_exhaustive}` });
+    }
+  }
+};
 
 const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
   const preference = member.get('enable_updates_and_announcements');
@@ -149,45 +208,17 @@ const processStep = async ({
     return null;
   }
 
-  // NOTE: This will change once we support additional automation triggers.
-  const triggerTierScope = step.automation_trigger_tier_scope;
-  if (!triggerTierScope) {
-    logging.error(
-      {
-        system: {
-          event: 'automations.poll.missing_trigger_tier_scope',
-          step_id: step.id,
-        },
-      },
-      `[AUTOMATIONS] Trigger tier scope is missing for step ${step.id}. Currently, this is unexpected`,
-    );
-    await automationsApi.markStepTerminal(step, 'failed');
-    return null;
-  }
-
-  const memberStatus = MEMBER_STATUS_BY_TRIGGER_TIER_SCOPE.get(triggerTierScope);
-  if (!memberStatus) {
-    logging.error(
-      {
-        system: {
-          event: 'automations.poll.unsupported_trigger_tier_scope',
-          trigger_tier_scope: triggerTierScope,
-          step_id: step.id,
-        },
-      },
-      `[AUTOMATIONS] Unsupported trigger tier scope for step ${step.id}: ${triggerTierScope}`,
-    );
-    await automationsApi.markStepTerminal(step, 'failed');
-    return null;
-  }
-
   if (!step.member_id) {
     await automationsApi.markStepTerminal(step, 'member unsubscribed');
     return null;
   }
 
+  // For paid_subscription_changed triggers, only the destination rules determine whether the run continues.
+  // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
+  const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
+
   const memberRelationsToLoad = ['newsletters'];
-  if (triggerTierScope === 'selected_paid') {
+  if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
   }
   const member = (await Member.findOne(
@@ -212,20 +243,28 @@ const processStep = async ({
     return null;
   }
 
-  const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[
-    memberStatus
-  ] as readonly string[];
-  const doesMemberStatusStillMatchAutomation =
-    eligibleStatuses.includes(member.get('status') ?? '') &&
-    (triggerTierScope !== 'selected_paid' ||
-      member
-        .related('products')
-        .models.some((tier) => step.automation_trigger_tier_ids.includes(tier.id)));
-  if (!doesMemberStatusStillMatchAutomation) {
-    await automationsApi.markStepTerminal(step, 'member changed status');
+  // The member exists, but do they still match the trigger rules for this automation?
+  let matchingRule: (typeof rulesToCheck)[number] | undefined;
+  let stillMatchesStatus = false;
+  for (const rule of rulesToCheck) {
+    if (!doesMemberMatchTriggerRuleStatus(member, rule)) {
+      continue;
+    }
+    stillMatchesStatus = true;
+    if (doesMemberMatchTriggerRuleScope(member, rule)) {
+      matchingRule = rule;
+      break;
+    }
+  }
+  if (!matchingRule) {
+    await automationsApi.markStepTerminal(
+      step,
+      stillMatchesStatus ? 'member changed tier' : 'member changed status',
+    );
     return null;
   }
 
+  const memberStatus = getFreeOrPaidForTriggerRule(matchingRule);
   let nextReadyAt: Date | null = null;
 
   try {

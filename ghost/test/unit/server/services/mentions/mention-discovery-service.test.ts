@@ -12,7 +12,7 @@ import externalRequest from '../../../../../core/server/lib/request-external.js'
 import MentionDiscoveryService from '../../../../../core/server/services/mentions/mention-discovery-service';
 
 describe('MentionDiscoveryService', function () {
-  const service = new MentionDiscoveryService({ externalRequest });
+  const service = new MentionDiscoveryService({ externalRequest, logging });
 
   beforeEach(function () {
     nock.disableNetConnect();

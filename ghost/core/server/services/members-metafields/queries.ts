@@ -1,4 +1,6 @@
 import type { Knex } from 'knex';
+import untypedNql from '@tryghost/nql';
+import knexify from '@tryghost/mongo-knex';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
 import { readableLevels, type Audience } from './access';
 import type { Namespaces } from './namespaces';
@@ -24,16 +26,11 @@ const COLUMNS_BESIDE_STATUS = Object.keys({
   updated_at: true,
 } satisfies Record<Exclude<keyof MetafieldRow, 'status'>, true>);
 
-// The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to our
-// raw-knex queries: nql parses a `filter` string to a Mongo query, mongo-knex turns that
-// into parametrised WHERE clauses. Neither needs a Bookshelf model. Typed once here, since
-// neither package ships types.
-export const nql = require('@tryghost/nql') as (filter: string) => { toJSON(): object };
-export const knexify = require('@tryghost/mongo-knex') as <T extends Knex.QueryBuilder>(
-  qb: T,
-  mongoQuery: object,
-  config: { tableName: string },
-) => T;
+// Bookshelf's filter plugin uses the same pair: nql parses a filter string into a Mongo-style
+// query, and mongo-knex turns that into WHERE clauses. nql ships no types, so the one call made of
+// it is typed here, and what it returns is parsed where it is read.
+export const nql: (filter: string) => { toJSON(): unknown } = untypedNql;
+export { knexify };
 
 // Nothing in the database keeps an archived or hidden field out of a read: no
 // constraint stops a value row referencing one. Both filters are therefore applied in
@@ -54,8 +51,6 @@ export const ACTIVE_ONLY = 'active-only';
 export const ANY_STATUS = 'any-status';
 export type StatusScope = typeof ACTIVE_ONLY | typeof ANY_STATUS;
 
-declare const scoped: unique symbol;
-
 // Typed with the row itself rather than the table registration: a read goes on to read from
 // the fields as the source reads them, a subquery the registration doesn't describe.
 function metafieldsTable(db: Knex) {
@@ -63,13 +58,23 @@ function metafieldsTable(db: Knex) {
 }
 
 /**
- * A query built by a source's `definitions()`, carrying both filters.
- *
- * knex's builder methods return an unbranded type, so chaining anything onto one of
- * these drops the mark and it stops satisfying this type. Narrow by passing what you
- * need to `definitions()` instead.
+ * A read of the fields built by `definitions()`, scoped to the audience and statuses it was asked
+ * for. The class isn't exported and its query is private, so only `definitions()` can make one, and
+ * a query that skipped that scoping can't be passed where this is expected.
  */
-export type DefinitionQuery = ReturnType<typeof metafieldsTable> & { readonly [scoped]: true };
+class ScopedDefinitions {
+  readonly #query: ReturnType<typeof metafieldsTable>;
+
+  constructor(query: ReturnType<typeof metafieldsTable>) {
+    this.#query = query;
+  }
+
+  get read(): ReturnType<typeof metafieldsTable> {
+    return this.#query;
+  }
+}
+
+export type DefinitionQuery = ScopedDefinitions;
 
 /** Which fields a definitions read is for. */
 export interface DefinitionScope {
@@ -158,7 +163,7 @@ export function fieldSource(namespaces: Pick<Namespaces, 'unavailable'>): FieldS
         query = query.limit(scope.limit);
       }
 
-      return readableBy(query, scope.audience) as DefinitionQuery;
+      return new ScopedDefinitions(readableBy(query, scope.audience));
     },
 
     locked(trx, namespace, keys) {

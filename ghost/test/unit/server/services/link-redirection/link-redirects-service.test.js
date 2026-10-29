@@ -12,6 +12,7 @@ describe('LinkRedirectsService', function () {
   describe('getSlugUrl', function () {
     it('works for first random slug that does not exist', async function () {
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {
           getByURL: () => Promise.resolve(undefined),
         },
@@ -27,6 +28,7 @@ describe('LinkRedirectsService', function () {
 
     it('works when first random slug already exists', async function () {
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {
           getByURL: (url) => {
             if (url.href === 'https://localhost:2368/r/00000000') {
@@ -57,6 +59,7 @@ describe('LinkRedirectsService', function () {
         save: sinon.fake(),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -90,6 +93,7 @@ describe('LinkRedirectsService', function () {
         save: sinon.stub(),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: { baseURL: new URL('https://localhost:2368/') },
       });
@@ -108,6 +112,7 @@ describe('LinkRedirectsService', function () {
         save: sinon.stub().resolves(),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: { baseURL: new URL('https://localhost:2368/') },
       });
@@ -140,6 +145,7 @@ describe('LinkRedirectsService', function () {
           save: sinon.stub().rejects(Object.assign(new Error('duplicate'), { code })),
         };
         const instance = new LinkRedirectsService({
+          DomainEvents,
           linkRedirectRepository,
           config: { baseURL: new URL('https://localhost:2368/') },
         });
@@ -159,6 +165,7 @@ describe('LinkRedirectsService', function () {
         save: sinon.stub().rejects(new Error('database offline')),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: { baseURL: new URL('https://localhost:2368/') },
       });
@@ -177,6 +184,7 @@ describe('LinkRedirectsService', function () {
         save: sinon.stub().rejects(duplicate),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: { baseURL: new URL('https://localhost:2368/') },
       });
@@ -200,6 +208,7 @@ describe('LinkRedirectsService', function () {
         }),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: { baseURL: new URL('https://localhost:2368/') },
       });
@@ -217,6 +226,7 @@ describe('LinkRedirectsService', function () {
   describe('relativeRedirectPrefix', function () {
     it('returns relative path without subdirectory for Express routing', function () {
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {},
         config: {
           baseURL: new URL('https://localhost:2368/blog/'),
@@ -227,6 +237,7 @@ describe('LinkRedirectsService', function () {
 
     it('returns same value as redirectPrefix when no subdirectory configured', function () {
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {},
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -249,6 +260,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -270,6 +282,7 @@ describe('LinkRedirectsService', function () {
     it('dispatches a redirect event for GET requests', async function () {
       const dispatch = sinon.stub(DomainEvents, 'dispatch');
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {
           getByURL: () =>
             Promise.resolve({
@@ -294,6 +307,7 @@ describe('LinkRedirectsService', function () {
     it('redirects HEAD requests without dispatching a redirect event', async function () {
       const dispatch = sinon.stub(DomainEvents, 'dispatch');
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {
           getByURL: () =>
             Promise.resolve({
@@ -321,6 +335,7 @@ describe('LinkRedirectsService', function () {
         getByURL: () => Promise.resolve(undefined),
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -337,6 +352,7 @@ describe('LinkRedirectsService', function () {
 
     it('does not redirect if url does not contain a redirect prefix on site with no subdir', async function () {
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {
           getByURL: () => Promise.resolve(undefined),
         },
@@ -357,6 +373,7 @@ describe('LinkRedirectsService', function () {
 
     it('does not redirect if url does not contain a redirect prefix on site with subdir', async function () {
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository: {
           getByURL: () => Promise.resolve(undefined),
         },
@@ -387,6 +404,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -419,6 +437,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -451,6 +470,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -480,6 +500,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -510,6 +531,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -541,6 +563,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),
@@ -576,6 +599,7 @@ describe('LinkRedirectsService', function () {
         },
       };
       const instance = new LinkRedirectsService({
+        DomainEvents,
         linkRedirectRepository,
         config: {
           baseURL: new URL('https://localhost:2368/'),

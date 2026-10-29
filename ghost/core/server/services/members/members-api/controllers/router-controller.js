@@ -231,7 +231,7 @@ module.exports = class RouterController {
         email = claims && claims.sub;
       }
     } catch (err) {
-      logging.error(err);
+      logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
       res.writeHead(401);
       return res.end('Unauthorized');
     }
@@ -436,7 +436,8 @@ module.exports = class RouterController {
     // Validate basic input
     if (!offerId && !tierId) {
       logging.error(
-        '[RouterController._getSubscriptionCheckoutData] Expected offerId or tierId, received none',
+        { event: { name: 'stripe_checkout.session.request_invalid' } },
+        'Expected offerId or tierId, received none',
       );
       throw new BadRequestError({
         message: tpl(messages.badRequest),
@@ -446,7 +447,8 @@ module.exports = class RouterController {
 
     if (offerId && tierId) {
       logging.error(
-        '[RouterController._getSubscriptionCheckoutData] Expected offerId or tierId, received both',
+        { event: { name: 'stripe_checkout.session.request_invalid' } },
+        'Expected offerId or tierId, received both',
       );
       throw new BadRequestError({
         message: tpl(messages.badRequest),
@@ -456,8 +458,8 @@ module.exports = class RouterController {
 
     if (tierId && !cadence) {
       logging.error(
-        '[RouterController._getSubscriptionCheckoutData] Expected cadence to be "month" or "year", received ',
-        cadence,
+        { event: { name: 'stripe_checkout.session.request_invalid' }, cadence },
+        'Expected cadence to be "month" or "year"',
       );
       throw new BadRequestError({
         message: tpl(messages.badRequest),
@@ -467,8 +469,8 @@ module.exports = class RouterController {
 
     if (tierId && cadence && cadence !== 'month' && cadence !== 'year') {
       logging.error(
-        '[RouterController._getSubscriptionCheckoutData] Expected cadence to be "month" or "year", received ',
-        cadence,
+        { event: { name: 'stripe_checkout.session.request_invalid' }, cadence },
+        'Expected cadence to be "month" or "year"',
       );
       throw new BadRequestError({
         message: tpl(messages.badRequest),
@@ -513,7 +515,10 @@ module.exports = class RouterController {
           throw undefined;
         }
       } catch (err) {
-        logging.error(err);
+        logging.error(
+          { event: { name: 'stripe_checkout.session.tier_not_found' }, err, tier_id: tierId },
+          'Tier not found for a checkout',
+        );
         this._sentry?.captureException?.(err);
         throw new BadRequestError({
           message: tpl(messages.tierNotFound),
@@ -618,7 +623,7 @@ module.exports = class RouterController {
               referrer: options.referrer,
             });
           } catch (err) {
-            logging.warn(err);
+            logging.warn({ event: { name: 'stripe_checkout.session.sign_in_link_failed' }, err });
           }
         }
         throw new NoPermissionError({
@@ -636,7 +641,6 @@ module.exports = class RouterController {
 
       return { url: paymentLink };
     } catch (err) {
-      logging.error(err);
       this._sentry?.captureException?.(err);
       throw new BadRequestError({
         err,
@@ -668,7 +672,11 @@ module.exports = class RouterController {
 
       return welcomeUrl.href;
     } catch (err) {
-      logging.warn(`Invalid welcome page URL "${welcomePageURL}", using original success URL`, err);
+      logging.warn({
+        event: { name: 'stripe_checkout.session.welcome_page_invalid' },
+        err,
+        welcome_page_url: welcomePageURL,
+      });
       return originalSuccessUrl;
     }
   }
@@ -696,7 +704,6 @@ module.exports = class RouterController {
 
       return { url: paymentLink };
     } catch (err) {
-      logging.error(err);
       this._sentry?.captureException?.(err);
       throw new BadRequestError({
         err,
@@ -757,7 +764,6 @@ module.exports = class RouterController {
         throw err;
       }
 
-      logging.error(err);
       this._sentry?.captureException?.(err);
       throw new BadRequestError({
         err,
@@ -799,7 +805,7 @@ module.exports = class RouterController {
             isAuthenticated = true;
           }
         } catch (err) {
-          logging.error(err);
+          logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
           this._sentry?.captureException?.(err);
           throw new UnauthorizedError({ err });
         }
@@ -1350,7 +1356,10 @@ const STRIPE_CUSTOM_FIELD_LABEL_MAX_LENGTH = 50;
 
 function parsePersonalNote(rawText) {
   if (rawText && typeof rawText !== 'string') {
-    logging.warn('Donation personal note is not a string, ignoring');
+    logging.warn(
+      { event: { name: 'stripe_checkout.session.personal_note_invalid' } },
+      'Donation personal note is not a string, ignoring',
+    );
     return '';
   }
 

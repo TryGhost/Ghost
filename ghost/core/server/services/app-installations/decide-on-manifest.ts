@@ -1,4 +1,5 @@
 import { compareManifests } from '@tryghost/app-contracts/manifest';
+import type { AddedRow } from './app-installations-repository';
 import type { Installation } from './codec';
 import type { LoadedManifest } from './load-manifest';
 
@@ -33,14 +34,17 @@ function compare(approved: Approved, loaded: LoadedManifest) {
   };
 }
 
-/** What to do with a loaded manifest. `decideOnManifest` describes each kind. */
-export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'resume' | 'suspend';
-
-/** A decision with the changes it was based on, so storing it doesn't compare again. */
-export interface ManifestDecision {
-  kind: ManifestDecisionKind;
-  changes: AppManifestChange[];
+/** The approved, pending and just-loaded manifests. */
+interface Manifests {
+  current: Pick<Installation, 'manifest_id' | 'manifest_url' | 'manifest'>;
+  pending: { id: string; digest: string } | null;
+  loaded: LoadedManifest;
 }
+
+/** See `decideOnManifest` for each kind. Carries the changes so callers don't compare again. */
+export type ManifestDecision =
+  | { kind: 'unchanged' | 'apply' | 'resume' | 'suspend'; changes: AppManifestChange[] }
+  | { kind: 'use_pending'; changes: AppManifestChange[]; pendingManifestId: string };
 
 /**
  * Decides what to do with a loaded manifest, given the approved manifest and the pending
@@ -58,18 +62,10 @@ export interface ManifestDecision {
  * These are the outcomes for the re-check. An approval applies a `suspend` decision
  * instead of leaving it pending.
  */
-export function decideOnManifest({
-  current,
-  pending,
-  loaded,
-}: {
-  current: Approved;
-  pending: { digest: string } | null;
-  loaded: LoadedManifest;
-}): ManifestDecision {
+export function decideOnManifest({ current, pending, loaded }: Manifests): ManifestDecision {
   const { changes, requiresApproval } = compare(current, loaded);
   if (pending && pending.digest === loaded.digest) {
-    return { kind: 'use_pending', changes };
+    return { kind: 'use_pending', changes, pendingManifestId: pending.id };
   }
   if (requiresApproval) {
     return { kind: 'suspend', changes };
@@ -78,4 +74,83 @@ export function decideOnManifest({
     return { kind: 'resume', changes };
   }
   return { kind: changes.length === 0 ? 'unchanged' : 'apply', changes };
+}
+
+/**
+ * Prepare the write so that anything a new row needs can be done outside the transaction.
+ *
+ * - `nothing`: no write.
+ * - `approve_existing`: approve an existing row and clear any pending one.
+ * - `add_approved`: add a row, approve it and clear any pending one.
+ * - `add_pending`: add a row as the pending manifest, which suspends the installation.
+ */
+export type ManifestWrite =
+  | { kind: 'nothing' }
+  | { kind: 'approve_existing'; manifestId: string }
+  | { kind: 'add_approved'; row: AddedRow }
+  | { kind: 'add_pending'; row: AddedRow };
+
+/**
+ * Approving never leaves a manifest pending, so the staff history can't record an approval
+ * while the app stays suspended.
+ */
+export type ApprovalWrite = Exclude<ManifestWrite, { kind: 'add_pending' }>;
+
+/**
+ * The reviewed manifest becomes the approved one, even with changes that need approval. It
+ * reuses the pending or approved row when it matches, and otherwise adds an `approval` row.
+ */
+export function approvalWrite(manifests: Manifests): ApprovalWrite {
+  const decision = decideOnManifest(manifests);
+  switch (decision.kind) {
+    case 'unchanged':
+      return { kind: 'nothing' };
+    case 'use_pending':
+      return { kind: 'approve_existing', manifestId: decision.pendingManifestId };
+    case 'apply':
+    case 'resume':
+    case 'suspend':
+      if (decision.changes.length === 0) {
+        return { kind: 'approve_existing', manifestId: manifests.current.manifest_id };
+      }
+      return {
+        kind: 'add_approved',
+        row: {
+          loaded: manifests.loaded,
+          source: 'approval',
+          requiresApproval: decision.kind === 'suspend',
+        },
+      };
+  }
+}
+
+/**
+ * Every change gets a row, silent ones too: nobody approved them, so the row is their only
+ * record.
+ */
+export function recheckWrite(manifests: Manifests): ManifestWrite {
+  const decision = decideOnManifest(manifests);
+  const { loaded } = manifests;
+  switch (decision.kind) {
+    case 'unchanged':
+    case 'use_pending':
+      return { kind: 'nothing' };
+    // Silent changes apply right away. A resume means the app reverted the pending changes.
+    case 'apply':
+    case 'resume':
+      return {
+        kind: 'add_approved',
+        row: {
+          loaded,
+          source: decision.kind === 'resume' ? 'resume' : 'update',
+          requiresApproval: false,
+        },
+      };
+    // Replaces any older pending manifest, since only the latest is worth reviewing.
+    case 'suspend':
+      return {
+        kind: 'add_pending',
+        row: { loaded, source: 'update', requiresApproval: true },
+      };
+  }
 }

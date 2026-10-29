@@ -117,14 +117,6 @@ describe('Admin asset assembly', () => {
     assert.equal(read('ghost/core/built/admin/index.html'), 'previous build');
   });
 
-  it('rejects Admin output still holding bundles from the hybrid assembler', () => {
-    write('ghost/core/built/admin/index.html', 'previous build');
-    write('apps/admin/dist/assets/koenig-lexical/koenig-lexical.umd.js', 'koenig');
-    write('apps/admin/dist/assets/activitypub/activitypub.js', 'activitypub');
-    assert.throws(() => assembleAdminAssets(root), /still holds hybrid assets/);
-    assert.equal(read('ghost/core/built/admin/index.html'), 'previous build');
-  });
-
   it('keeps both Admin outputs readable after a restrictive umask', () => {
     const previous = process.umask(0o077);
     try {

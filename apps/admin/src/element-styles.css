@@ -182,9 +182,13 @@ body:where(.react-admin) {
   border: none;
   background: transparent;
   line-height: inherit;
-  text-decoration: none !important;
   user-select: none;
   cursor: pointer;
+}
+
+/* Shade's Link stays underlined on a button, as on a link */
+:where(body.react-admin) button:not([data-slot='link']) {
+  text-decoration: none !important;
 }
 
 :where(body.react-admin) button[disabled] {

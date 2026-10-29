@@ -17,20 +17,19 @@ const messages = {
 
 /**
  * Adds a column to a table being built. A `references` on the column is built by
- * `addForeignKey`, like any other foreign key.
+ * `addForeignKey`, like any other foreign key, and a `pattern` by the caller, as a check on
+ * the table.
  *
  * @param {string} tableName
  * @param {import('knex').knex.TableBuilder} tableBuilder
  * @param {string} columnName
  * @param {object} [columnSpec]
- * @param {import('knex').Knex} [transaction] - the connection the table is built on
  */
 function addTableColumn(
   tableName,
   tableBuilder,
   columnName,
   columnSpec = schema[tableName][columnName],
-  transaction = db.knex,
 ) {
   let column;
 
@@ -72,13 +71,24 @@ function addTableColumn(
   if (Object.hasOwn(columnSpec, 'index') && columnSpec.index === true) {
     column.index();
   }
+}
 
-  // Read on every database, so a pattern MySQL would refuse fails everywhere, but held only on
-  // MySQL: SQLite is being removed, and its driver here has no regular expression function.
-  const checks = patternChecksOf(tableName, { [columnName]: columnSpec });
-  if (DatabaseInfo.isMySQL(transaction)) {
-    checks.forEach((check) => column.checkRegex(check.pattern, check.constraintName));
-  }
+/**
+ * The check constraints a table's column patterns become. Read on every database, so a
+ * pattern MySQL would refuse fails everywhere, but held only on MySQL: SQLite is being
+ * removed, and its driver here has no regular expression function.
+ *
+ * Each is declared on the table rather than on its column, because MariaDB can only name a
+ * check on the table.
+ *
+ * @param {string} tableName
+ * @param {object} tableSpec
+ * @param {import('knex').Knex} transaction - the connection the table is built on
+ * @returns {import('./lib/column-patterns').PatternCheck[]}
+ */
+function patternChecksOn(tableName, tableSpec, transaction) {
+  const checks = patternChecksOf(tableName, tableSpec);
+  return DatabaseInfo.isMySQL(transaction) ? checks : [];
 }
 
 /**
@@ -171,8 +181,9 @@ async function addColumn(
   columnSpec = schema[tableName][column],
   options = {},
 ) {
+  const checks = patternChecksOn(tableName, { [column]: columnSpec }, transaction);
   const addColumnBuilder = transaction.schema.table(tableName, function (table) {
-    addTableColumn(tableName, table, column, columnSpec, transaction);
+    addTableColumn(tableName, table, column, columnSpec);
     foreignKeySpecsOf({ [column]: columnSpec }).forEach((foreignKey) =>
       addForeignKey(table, foreignKey),
     );
@@ -185,14 +196,30 @@ async function addColumn(
     return;
   }
 
-  for (const sqlQuery of addColumnBuilder.toSQL()) {
+  for (const [index, sqlQuery] of addColumnBuilder.toSQL().entries()) {
     if (!DatabaseInfo.isMySQL(transaction)) {
       await transaction.raw(sqlQuery.sql);
       continue;
     }
 
     // Guard against an ending semicolon
-    const sql = sqlQuery.sql.replace(/;\s*$/, '');
+    let sql = sqlQuery.sql.replace(/;\s*$/, '');
+    // The checks go in the statement that adds the column, which knex sends first, so a
+    // column that rows already in the table would break is not added at all. A knex table
+    // check would be a statement of its own, and loses its bindings when altering a table.
+    if (index === 0) {
+      sql += checks
+        .map((check) =>
+          transaction
+            .raw(', add constraint ?? check (?? REGEXP ?)', [
+              check.constraintName,
+              check.column,
+              check.pattern,
+            ])
+            .toQuery(),
+        )
+        .join('');
+    }
     // default to copy if not specified
     await rawWithAlgorithm(transaction, sql, options?.algorithm || 'copy');
   }
@@ -650,7 +677,7 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
-      .forEach((column) => addTableColumn(table, t, column, tableSpec[column], transaction));
+      .forEach((column) => addTableColumn(table, t, column, tableSpec[column]));
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index) => {
@@ -687,6 +714,9 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
       t.primary(tableSpec['@@PRIMARY_KEY@@']);
     }
     foreignKeySpecsOf(tableSpec).forEach((foreignKey) => addForeignKey(t, foreignKey));
+    patternChecksOn(table, tableSpec, transaction).forEach((check) =>
+      t.check('?? REGEXP ?', [check.column, check.pattern], check.constraintName),
+    );
   });
 }
 

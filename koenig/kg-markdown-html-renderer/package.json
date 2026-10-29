@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/markdown-it": "14.1.2",
+    "@types/markdown-it": "14.2.0",
     "@types/node": "catalog:",
     "@types/semver": "7.8.0",
     "@typescript/native": "catalog:",

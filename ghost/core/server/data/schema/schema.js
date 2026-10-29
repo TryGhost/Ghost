@@ -2173,24 +2173,13 @@ module.exports = {
       validations: { isIn: [['active', 'inactive', 'archived']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false },
-    trigger_type: {
-      type: 'string',
-      maxlength: 50,
-      nullable: false,
-      validations: { isIn: [['membership_started']] },
-    },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
-    trigger_tier_scope: {
-      type: 'string',
-      maxlength: 50,
-      nullable: true,
-      validations: { isIn: [['free', 'all_paid', 'selected_paid']] },
-    },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  automation_trigger_tiers: {
+  automation_trigger_rules: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     automation_id: {
       type: 'string',
       maxlength: 24,
@@ -2198,12 +2187,35 @@ module.exports = {
       references: 'automations.id',
       cascadeDelete: true,
     },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: {
+        isIn: [['free_signup', 'paid_subscription_started', 'paid_subscription_changed']],
+      },
+    },
+    scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['any_paid_tier', 'specific_paid_tier', 'free']] },
+    },
+    direction: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['from', 'to']] },
+    },
     product_id: {
       type: 'string',
       maxlength: 24,
-      nullable: false,
+      nullable: true,
       references: 'products.id',
+      cascadeDelete: true,
     },
+    created_at: { type: 'dateTime', nullable: false },
+    // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
     '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
   },
   automation_actions: {
@@ -2371,6 +2383,7 @@ module.exports = {
             'failed',
             'finished',
             'member changed status',
+            'member changed tier',
             'member unsubscribed',
           ],
         ],
