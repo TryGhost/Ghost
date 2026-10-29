@@ -23,7 +23,6 @@ const MANIFESTS = 'app_installation_manifests';
 
 const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
-  manifest_url: true,
   source: true,
   requires_approval: true,
   created_at: true,
@@ -32,6 +31,8 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
 const ManifestDigestRow = DbAppInstallationManifest.pick({ digest: true });
+
+const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
 
 const HistoryActionRow = z
   .object({
@@ -106,6 +107,7 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
       source,
       requires_approval: requiresApproval,
       created_at: toDatabaseDate(new Date()),
@@ -187,6 +189,25 @@ export class AppInstallationsRepository {
     return row ? z.decode(ManifestDigestRow, row).digest : undefined;
   }
 
+  /**
+   * The backend keys an installation has seen replaced: every key its manifest rows name,
+   * other than the newest row's. Rows are only added for verified manifests, pending ones
+   * included, so a key is retired as soon as a verified manifest names a newer one.
+   */
+  async retiredBackendKeysOf(id: string): Promise<Set<string>> {
+    const newest = this.knex(MANIFESTS)
+      .where({ installation_id: id })
+      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
+      .limit(1)
+      .select('backend_key_thumbprint');
+    const rows = await this.knex(MANIFESTS)
+      .where({ installation_id: id })
+      .whereNot('backend_key_thumbprint', newest)
+      .distinct<z.input<typeof BackendKeyRow>[]>('backend_key_thumbprint');
+    return new Set(rows.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
+  }
+
   /** An installation's manifest rows and staff actions, oldest first. */
   async historyRows(
     id: string,
@@ -197,7 +218,6 @@ export class AppInstallationsRepository {
       .orderBy('id', 'asc')
       .select<z.input<typeof HistoryManifestRow>[]>(
         'id',
-        'manifest_url',
         'source',
         'requires_approval',
         'created_at',
@@ -260,6 +280,7 @@ export class AppInstallationsRepository {
     const written: z.input<typeof InstallationRow> = {
       id,
       app_id: manifest.id,
+      identity_key_thumbprint: loaded.identityKeyThumbprint,
       status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
@@ -276,6 +297,7 @@ export class AppInstallationsRepository {
             id,
             app_id: written.app_id,
             current_app_id: written.app_id,
+            identity_key_thumbprint: written.identity_key_thumbprint,
             status: written.status,
             manifest_id: written.manifest_id,
             created_at: now,
@@ -287,6 +309,7 @@ export class AppInstallationsRepository {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
+            backend_key_thumbprint: loaded.backendKeyThumbprint,
             source: 'install',
             requires_approval: false,
             created_at: now,

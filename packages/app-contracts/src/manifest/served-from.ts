@@ -1,4 +1,3 @@
-import { isLocalhost } from './localhost.ts';
 import type { AppManifest } from './schema.ts';
 
 function pageUrl(manifest: AppManifest): URL {
@@ -25,16 +24,6 @@ export function servedFrom(manifest: AppManifest): string {
   return pageUrl(manifest).host;
 }
 
-/** True when the app's page is on localhost. Ghost only allows that in development. */
-export function isDevelopmentApp(manifest: AppManifest): boolean {
-  return isLocalhost(pageUrl(manifest).hostname);
-}
-
-export interface ServedManifest {
-  manifestUrl: string;
-  manifest: AppManifest;
-}
-
 export interface AppMove {
   from: string;
   to: string;
@@ -45,14 +34,14 @@ export interface AppMove {
  * A new page host counts first, then a new manifest host.
  * A new path on the same host isn't a move.
  */
-export function movedBetween(approved: ServedManifest, reviewed: ServedManifest): AppMove | null {
-  const pages = { from: servedFrom(approved.manifest), to: servedFrom(reviewed.manifest) };
+export function movedBetween(approved: AppManifest, reviewed: AppManifest): AppMove | null {
+  const pages = { from: servedFrom(approved), to: servedFrom(reviewed) };
   if (pages.from !== pages.to) {
     return pages;
   }
   const manifests = {
-    from: new URL(approved.manifestUrl).host,
-    to: new URL(reviewed.manifestUrl).host,
+    from: new URL(approved.manifest_url).host,
+    to: new URL(reviewed.manifest_url).host,
   };
   return manifests.from === manifests.to ? null : manifests;
 }

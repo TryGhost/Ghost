@@ -560,6 +560,28 @@ describe('Managing apps', () => {
     expect(sessionsApi.requests).toHaveLength(2);
   });
 
+  it('marks a development build in the list and its details, as its signed manifest says', async () => {
+    const development = installation({ manifest: manifest({ development: true }) });
+    fakeInstallations([development]);
+    await fakeAppPage(development);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Development');
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+    await expect.element(appsScreen.details()).toHaveTextContent('Development');
+  });
+
+  it('doesn’t mark an app that isn’t a development build', async () => {
+    fakeInstallations([installation()]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    await expect.element(appsScreen.row('Podcast')).not.toHaveTextContent('Development');
+  });
+
   it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
     fakeSessionStart(
       'missing',

@@ -2674,6 +2674,9 @@ module.exports = {
     // Being unique, it is what lets a site have only one installation per app however two
     // installs race, while any number of ended ones share the null.
     current_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    // The RFC 7638 thumbprint of the identity key the app was installed with. It never
+    // changes: a manifest signed with any other key is a different app.
+    identity_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     status: {
       type: 'string',
       maxlength: 50,
@@ -2705,12 +2708,15 @@ module.exports = {
     },
     // As wide as the contract's URL limit, which is what refuses a longer one.
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
-    // The validated manifest, with its URLs resolved, as JSON.
+    // The validated manifest, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest_url` and `manifest` together, in hex: what a publisher confirms,
+    // SHA-256 of `manifest`, which names its own URL, in hex: what a publisher confirms,
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // The RFC 7638 thumbprint of the manifest's backend key. Every key named before the
+    // newest row's is retired: a manifest naming one is refused.
+    backend_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: the app was installed, an Administrator approved changes, the
     // re-check applied a newer manifest or stored one for approval (`update`), or the
     // re-check lifted a suspension because the app reverted the pending changes (`resume`).
