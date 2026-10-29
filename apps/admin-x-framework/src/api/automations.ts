@@ -68,15 +68,22 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationTrigger =
+export type AutomationTriggerRule =
+  | { trigger_type: 'free_signup'; scope: null; product_id: null; direction: null }
   | {
-      trigger_tier_scope: 'free' | 'all_paid' | null;
-      trigger_tier_ids: null;
+      trigger_type: 'paid_subscription_started';
+      scope: 'any_paid_tier';
+      product_id: null;
+      direction: null;
     }
   | {
-      trigger_tier_scope: 'selected_paid';
-      trigger_tier_ids: readonly string[];
+      trigger_type: 'paid_subscription_started';
+      scope: 'specific_paid_tier';
+      product_id: string;
+      direction: null;
     };
+
+export type AutomationTrigger = { trigger_rules: readonly AutomationTriggerRule[] };
 
 export type AutomationDetail = Automation &
   AutomationTrigger & {
@@ -325,8 +332,7 @@ const serializeEditableAction = (action: AutomationAction): AutomationAction => 
 const serializeEditableAutomation = ({
   name,
   description,
-  trigger_tier_scope: triggerTierScope,
-  trigger_tier_ids: triggerTierIds,
+  trigger_rules: triggerRules,
   status,
   actions,
   edges,
@@ -335,8 +341,7 @@ const serializeEditableAutomation = ({
     {
       name,
       description,
-      trigger_tier_scope: triggerTierScope,
-      trigger_tier_ids: triggerTierIds,
+      trigger_rules: triggerRules,
       status,
       actions: actions?.map(serializeEditableAction),
       edges,
