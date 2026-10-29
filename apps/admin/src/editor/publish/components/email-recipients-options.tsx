@@ -123,6 +123,7 @@ export function EmailRecipientsOptions({
             .sort((a, b) => Number(b.active) - Number(a.active))
             .map((tier) => ({
               segment: `tier:${tier.slug}`,
+              aliases: [`tier_id:${tier.id}`],
               name: tier.name,
               group: tier.active ? 'Active tiers' : 'Archived tiers',
             }))

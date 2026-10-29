@@ -5,15 +5,13 @@ import { EmptyIndicator } from '@/components/ui/empty-indicator';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { PageMenu, PageMenuItem } from '@/components/ui/pagemenu';
 import { ListPage } from '@/components/page-templates/list-page';
+import { PageChromeProvider } from '@/components/page-templates/large-page-title';
 import { PageHeader } from '@/components/patterns/page-header';
 import { ViewBar } from '@/components/patterns/view-bar';
 import { FilterBar } from '@/components/patterns/filter-bar';
-import {
-  Filters,
-  createFilter,
-  type Filter,
-  type FilterFieldConfig,
-} from '@/components/patterns/filters';
+import { formatNumber } from '@/utils';
+import { Filters, type Filter, type FilterFieldConfig } from '@/components/patterns/filters';
+import { createFilter } from '@/components/patterns/filters-helpers';
 import {
   Table,
   TableBody,
@@ -47,15 +45,17 @@ ListPage is the canonical recipe for the **List page** type — the recurring st
 
 It is intentionally thin: a vertical flex-col stack with horizontal padding that grows to fill its flex parent. Drop the named slots in as direct children.
 
-- \`<ListPage.Header>\` — sticky, blurred, full-bleed chrome band. Place \`PageHeader\`, \`ViewBar\`, and/or \`FilterBar\` directly inside as siblings. \`FilterBar\` auto-collapses when it has no active filters.
+- \`<ListPage.Header>\` — sticky, blurred, full-bleed chrome band. Place \`PageHeader\`, \`ViewBar\`, and/or \`FilterBar\` directly inside as siblings. \`FilterBar\` hides itself only when it has no children, so mount it while filters are active.
 - \`<ListPage.Body>\` — grows to fill remaining space. Use \`flex-1 flex items-center justify-center\` on the immediate child to vertically center empty/loading states.
+
+With large titles on (\`PageChromeProvider value={{ largeTitles: true }}\`, which Admin sets inside its desktop frame), the header's \`PageHeader.Title\` also shows large above the header, sized by the window. As the page scrolls, it fades out, the header sticks with a solid background and its own small title fades in. A separator sits under the header's first row unless a \`FilterBar\` takes its place. Pages without a \`PageHeader.Title\` keep the usual header.
 
 \`\`\`tsx
 <ListPage>
   <ListPage.Header>
     <PageHeader sticky={false} blurredBackground={false}>…</PageHeader>
     <ViewBar>…</ViewBar>          {/* optional */}
-    <FilterBar>…</FilterBar>      {/* optional — auto-collapses when empty */}
+    {hasFilters && <FilterBar>…</FilterBar>}  {/* only while filters are active */}
   </ListPage.Header>
   <ListPage.Body>…</ListPage.Body>
 </ListPage>
@@ -92,16 +92,24 @@ const memberStatusFields: FilterFieldConfig[] = [
 
 export const WithData: Story = {
   name: 'With data',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A populated list on the page canvas, with a header that blends into it in both themes.',
+      },
+    },
+  },
   render: () => {
     const [search, setSearch] = useState('');
     return (
-      <ListPage>
+      <ListPage className="bg-background">
         <ListPage.Header>
           <PageHeader blurredBackground={false} sticky={false}>
             <PageHeader.Left>
               <PageHeader.Title>
                 Members
-                <PageHeader.Count>{SAMPLE_MEMBERS.length}</PageHeader.Count>
+                <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length)}</PageHeader.Count>
               </PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
@@ -234,7 +242,7 @@ export const WithViewBar: Story = {
           <PageHeader.Left>
             <PageHeader.Title>
               Members
-              <PageHeader.Count>{SAMPLE_MEMBERS.length}</PageHeader.Count>
+              <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length)}</PageHeader.Count>
             </PageHeader.Title>
           </PageHeader.Left>
           <PageHeader.Actions>
@@ -322,7 +330,7 @@ export const WithFilterBar: Story = {
             <PageHeader.Left>
               <PageHeader.Title>
                 Members
-                <PageHeader.Count>{SAMPLE_MEMBERS.length}</PageHeader.Count>
+                <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length)}</PageHeader.Count>
               </PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
@@ -389,4 +397,61 @@ export const WithFilterBar: Story = {
       </ListPage>
     );
   },
+};
+
+export const LargeTitles: Story = {
+  name: 'Large titles',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With large titles on, scroll the list: the large title hands over to the sticky header, which sticks with its own small title.',
+      },
+    },
+  },
+  render: () => (
+    <PageChromeProvider value={{ largeTitles: true }}>
+      <div className="h-screen overflow-y-auto bg-background">
+        <ListPage>
+          <ListPage.Header>
+            <PageHeader blurredBackground={false} sticky={false}>
+              <PageHeader.Left>
+                <PageHeader.Title>
+                  Members
+                  <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length * 10)}</PageHeader.Count>
+                </PageHeader.Title>
+              </PageHeader.Left>
+              <PageHeader.Actions>
+                <PageHeader.ActionGroup>
+                  <Button variant="outline">
+                    <FilterIcon className="size-4" />
+                    Filter
+                  </Button>
+                  <Button>
+                    <Plus className="size-4" />
+                    Add member
+                  </Button>
+                </PageHeader.ActionGroup>
+              </PageHeader.Actions>
+            </PageHeader>
+          </ListPage.Header>
+          <ListPage.Body>
+            <Table>
+              <TableBody>
+                {Array.from({ length: 10 }, (_, round) =>
+                  SAMPLE_MEMBERS.map((member) => (
+                    <TableRow key={`${round}-${member.id}`}>
+                      <TableCell>{member.name}</TableCell>
+                      <TableCell>{member.email}</TableCell>
+                      <TableCell>{member.tier}</TableCell>
+                    </TableRow>
+                  )),
+                )}
+              </TableBody>
+            </Table>
+          </ListPage.Body>
+        </ListPage>
+      </div>
+    </PageChromeProvider>
+  ),
 };

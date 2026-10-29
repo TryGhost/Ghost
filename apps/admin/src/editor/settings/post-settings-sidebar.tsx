@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
   isAuthorOrContributor,
@@ -22,6 +22,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
+  settingsEditorHelpRow,
   settingsExcerptInput,
   settingsFeaturedToggle,
 } from '@tryghost/test-data/selectors/editor';
@@ -33,16 +34,24 @@ import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
-import { type EditorSettingsPort, useEditorSettingsPort } from './editor-settings-port';
+import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
-import { MetaDataSection } from './meta-data-section';
+import { SettingsLinkRow } from './settings-navigation-row';
+import { EDITOR_HELP_URL } from '@/editor/editor-help';
+import { MetaDataTabsSection } from './meta-data-tabs-section';
+import { EditorFontSection } from './editor-font-section';
+import type { EditorFontControl } from '@/editor/use-editor-font';
 import { PostHistorySection } from './post-history-section';
-import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
+import { focusSettingsField } from './focus-settings-field';
+import {
+  SETTINGS_FIELD_SECTIONS,
+  SETTINGS_SECTION_ORDER,
+  type SettingsPanelField,
+  type SettingsSectionId,
+} from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
-import { FACEBOOK_CARD_NETWORK, X_CARD_NETWORK } from './social-card-networks';
-import { SocialCardSection } from './social-card-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
@@ -52,22 +61,15 @@ const MemoAuthorsSection = memo(AuthorsSection);
 const MemoCodeInjectionSection = memo(CodeInjectionSection);
 const MemoDeleteSection = memo(DeleteSection);
 const MemoKeyboardShortcutsSection = memo(KeyboardShortcutsSection);
-const MemoMetaDataSection = memo(MetaDataSection);
+const MemoMetaDataTabsSection = memo(MetaDataTabsSection);
 const MemoPostHistorySection = memo(PostHistorySection);
 const MemoPublishDateSection = memo(PublishDateSection);
 const MemoShowTitleSection = memo(ShowTitleSection);
-const MemoSocialCardSection = memo(SocialCardSection);
 const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
 
-const ExcerptSection = memo(function ExcerptSection({
-  session,
-  inputRef,
-}: {
-  session: EditorSettingsPort;
-  inputRef?: Ref<HTMLTextAreaElement>;
-}) {
+const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
   const errorId = useId();
   const error = settingsFieldErrorFor('custom_excerpt', session.settings);
@@ -76,9 +78,9 @@ const ExcerptSection = memo(function ExcerptSection({
     <SettingsSection>
       <Label htmlFor={inputId}>Excerpt</Label>
       <Textarea
-        ref={inputRef}
         aria-describedby={error ? errorId : undefined}
         aria-invalid={!!error}
+        data-settings-field="custom_excerpt"
         data-testid={settingsExcerptInput}
         id={inputId}
         rows={3}
@@ -115,6 +117,11 @@ const FeaturedSection = memo(function FeaturedSection({
   );
 });
 
+/** A request to take the writer to a settings field; each request is a new object. */
+export interface SettingsFieldReveal {
+  field: SettingsPanelField;
+}
+
 export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
   postType: PostType;
@@ -127,10 +134,21 @@ export interface PostSettingsSidebarProps {
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
-  /** The excerpt field, for the screen to take the writer to. */
-  excerptRef?: Ref<HTMLTextAreaElement>;
+  /**
+   * A field to take the writer to, such as one a refused save named: the panel
+   * shows its section, opening the section's pane if it has one, and focuses it.
+   * A new request, even for the same field, goes again.
+   */
+  reveal?: SettingsFieldReveal | null;
   /** The panel's frame, whose width transition the screen waits on before unmounting it. */
   frameRef?: Ref<HTMLDivElement | null>;
+  /**
+   * The panel opens with the editor, restored as the writer left it, so it mounts
+   * already open rather than sliding in. Read only as the panel mounts.
+   */
+  opensInPlace?: boolean;
+  /** The writer's editor font, chosen in the panel. */
+  editorFont?: EditorFontControl;
 }
 
 /**
@@ -145,15 +163,19 @@ export function PostSettingsSidebar({
   featureImage,
   currentUser,
   hasInlineExcerpt = false,
-  excerptRef,
+  reveal,
   frameRef,
+  opensInPlace = false,
+  editorFont,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
   useImperativeHandle(frameRef, () => ownFrameRef.current, []);
   // The panel mounts in the render that opens it, and a new element has no
   // earlier style to transition from. It renders closed first, its style is
   // read, and then it takes the shell's progress, so it opens like a reopen.
-  const [entering, setEntering] = useState(true);
+  // A panel restored with the editor skips this and is open from the first paint.
+  const [entering, setEntering] = useState(!opensInPlace);
   useLayoutEffect(() => {
     ownFrameRef.current?.getBoundingClientRect();
     setEntering(false);
@@ -167,12 +189,30 @@ export function PostSettingsSidebar({
   // Ember hides the authors field from Authors and Contributors alike.
   const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
   const subviews = useSubviewController();
+  const [focusing, setFocusing] = useState<SettingsFieldReveal | null>(null);
+
+  // Only a new request reveals: closing the pane afterwards must not reopen it.
+  useEffect(() => {
+    if (reveal) {
+      subviews.reveal(SETTINGS_FIELD_SECTIONS[reveal.field]);
+      setFocusing(reveal);
+    }
+  }, [reveal]);
+
+  // Runs again once the pane opens, after the pane has focused its own back button.
+  useEffect(() => {
+    const root = asideRef.current;
+    if (!focusing || !root) {
+      return;
+    }
+    return focusSettingsField(root, focusing.field, () => setFocusing(null));
+  }, [focusing, subviews.open]);
 
   const sections: Record<SettingsSectionId, ReactNode> = {
     url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <MemoPublishDateSection session={session} />,
     tags: canTag ? <MemoTagsSection session={session} /> : null,
-    excerpt: hasInlineExcerpt ? null : <ExcerptSection inputRef={excerptRef} session={session} />,
+    excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
     authors: canCreditOthers ? (
@@ -183,27 +223,30 @@ export function PostSettingsSidebar({
         <MemoShowTitleSection currentUser={currentUser} session={session} />
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
-    delete: <MemoDeleteSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
-    'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
-    'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
-    'x-card': (
-      <MemoSocialCardSection
+    'meta-data': (
+      <MemoMetaDataTabsSection
         cardConfig={cardConfig}
         featureImage={featureImage}
-        network={X_CARD_NETWORK}
+        revealField={focusing?.field}
         session={session}
         siteUrl={siteUrl}
       />
     ),
-    'facebook-card': (
-      <MemoSocialCardSection
-        cardConfig={cardConfig}
-        featureImage={featureImage}
-        network={FACEBOOK_CARD_NETWORK}
-        session={session}
-        siteUrl={siteUrl}
-      />
+    'editor-font': editorFont ? <EditorFontSection control={editorFont} /> : null,
+    'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
+    'editor-help': (
+      <SettingsLinkRow href={EDITOR_HELP_URL} icon={<LucideIcon.CircleHelp />}>
+        {settingsEditorHelpRow}
+      </SettingsLinkRow>
+    ),
+    // The list's last entry, pushed to the panel's foot while the list is
+    // shorter than the panel. A post with nothing to delete yet gets nothing,
+    // not an empty wrapper.
+    delete: isNewPost(session) ? null : (
+      <Box className="mt-auto">
+        <MemoDeleteSection postType={postType} session={session} />
+      </Box>
     ),
     'post-history': (
       <MemoPostHistorySection
@@ -240,8 +283,9 @@ export function PostSettingsSidebar({
         style={entering ? ({ '--editor-settings-progress': 0 } as CSSProperties) : undefined}
       >
         <aside
+          ref={asideRef}
           aria-label={open?.title ?? panelLabel}
-          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar"
+          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar max-[500px]:m-0 max-[500px]:h-full max-[500px]:w-(--editor-settings-width) max-[500px]:rounded-none max-[500px]:border-0"
           data-testid={postSettingsSidebar}
         >
           <Stack
@@ -250,7 +294,12 @@ export function PostSettingsSidebar({
           >
             {open ? null : (
               <Box className="z-10 shrink-0 bg-sidebar">
-                <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
+                <Inline
+                  align="center"
+                  className="px-4 py-3 max-[500px]:px-3"
+                  gap="sm"
+                  justify="between"
+                >
                   <Text as="h2" className="pl-1" size="lg" weight="semibold">
                     {panelLabel}
                   </Text>

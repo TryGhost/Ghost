@@ -1,7 +1,19 @@
 import CheckoutPreview from './checkout-preview';
 import ColorPickerField from '@/settings/components/color-picker-field';
+import FormSection from '@/settings/components/form-section';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { COLLECTED_PARTS, type CollectedPart } from '@tryghost/checkout';
+import {
+  CHECKOUT_PARTS,
+  type PartFormStates,
+  partErrorsOf,
+  partFieldsOf,
+  partFormStatesOf,
+  partSettingsOf,
+  withPartState,
+} from './checkout-parts';
+import { audienceOf } from './collect-form';
 import {
   Field,
   FieldContent,
@@ -9,6 +21,8 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
+  FieldTitle,
+  Link,
   Select,
   SelectContent,
   SelectItem,
@@ -20,24 +34,35 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PreviewModalContent } from '@/settings/components/preview-modal';
 import { STRIPE_FONTS_CSS, STRIPE_FONT_OPTIONS, fontFamilyOf } from './stripe-fonts';
 import {
+  type StripeCheckoutBranding,
+  type StripeCheckoutConfig,
   type StripeCheckoutDesign,
   type StripeCheckoutDesignSetting,
+  useCreateStripeCheckoutPreview,
   useEditStripeCheckoutConfig,
+  useReadStripeCheckoutBranding,
   useReadStripeCheckoutConfig,
 } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import {
+  type Tier,
+  getPaidActiveTiers,
+  useBrowseTiers,
+} from '@tryghost/admin-x-framework/api/tiers';
+import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseCustomThemeSettings } from '@tryghost/admin-x-framework/api/custom-theme-settings';
+import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useFeatureFlag, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { toast } from 'sonner';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
-// Stripe's own defaults, from its Customize Checkout page. Customizing starts from these,
-// because Ghost can't read the design set in the publisher's Stripe dashboard yet.
+// Stripe's own defaults, from its Customize Checkout page, for when the design in the Stripe
+// dashboard can't be read.
 const STRIPE_DEFAULT_DESIGN: StripeCheckoutDesign = {
   button_color: '#0074d4',
   background_color: '#ffffff',
@@ -47,7 +72,12 @@ const STRIPE_DEFAULT_DESIGN: StripeCheckoutDesign = {
 
 type DesignFormState = { customize: boolean; design: StripeCheckoutDesign };
 
-const formStateOf = (setting: StripeCheckoutDesignSetting): DesignFormState =>
+// Customizing starts from the Stripe dashboard design, so switching it on changes nothing until
+// one of the settings does.
+const formStateOf = (
+  setting: StripeCheckoutDesignSetting,
+  dashboardDesign: StripeCheckoutDesign,
+): DesignFormState =>
   setting.customize
     ? {
         customize: true,
@@ -58,7 +88,113 @@ const formStateOf = (setting: StripeCheckoutDesignSetting): DesignFormState =>
           font_family: setting.font_family,
         },
       }
-    : { customize: false, design: STRIPE_DEFAULT_DESIGN };
+    : { customize: false, design: dashboardDesign };
+
+const designSettingOf = ({ customize, design }: DesignFormState): StripeCheckoutDesignSetting =>
+  customize ? { customize: true, ...design } : { customize: false };
+
+type CheckoutFormState = DesignFormState & { parts: PartFormStates };
+
+type SketchBranding = Omit<StripeCheckoutBranding, 'design'> & { design: StripeCheckoutDesign };
+
+/**
+ * The checkout branding in the Stripe dashboard. Until Stripe is connected, or when Stripe
+ * can't be asked, the site title and Stripe's own defaults stand in for it, and the defaults
+ * stand in for a design Ghost can't show.
+ */
+function useStripeBranding(): { branding: SketchBranding; loading: boolean } {
+  const { settings, config } = useGlobalData();
+  const [title] = getSettingValues<string>(settings, ['title']);
+  // No error toast: the stand-in is shown instead, as it is on a Ghost too old to read this.
+  const { data, isLoading } = useReadStripeCheckoutBranding({
+    enabled: checkStripeEnabled(settings, config),
+    defaultErrorHandler: false,
+  });
+
+  const read = data?.checkout_branding[0];
+  return {
+    branding: {
+      display_name: read?.display_name ?? (title || 'Your publication'),
+      design: read?.design ?? STRIPE_DEFAULT_DESIGN,
+    },
+    loading: isLoading,
+  };
+}
+
+/**
+ * "Preview in Stripe": one item per active paid tier, each opening a real Stripe Checkout page
+ * for that tier from the settings being edited, saved or not. Undefined while there is nothing
+ * to preview: Stripe isn't connected, or there are no paid tiers.
+ */
+function useStripePreviewMenu(
+  /**
+   * The settings being edited as saving sends them, or null once the form shows why they can't
+   * be saved yet. A collected part left out asks as saved.
+   */
+  checkedSettings: () => StripeCheckoutConfig | null,
+) {
+  const { settings, config } = useGlobalData();
+  const { data: { tiers = [] } = {} } = useBrowseTiers();
+  const handleError = useHandleError();
+  const { mutateAsync: createPreview } = useCreateStripeCheckoutPreview();
+  const [opening, setOpening] = useState(false);
+
+  const paidTiers = [...getPaidActiveTiers(tiers)].sort(
+    (a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0),
+  );
+  if (!checkStripeEnabled(settings, config) || !paidTiers.length) {
+    return undefined;
+  }
+
+  const open = async (tier: Tier) => {
+    const previewed = checkedSettings();
+    if (!previewed) {
+      return;
+    }
+    // Opened inside the click, so the browser doesn't block it as a popup, and cut off from
+    // Admin before Stripe's page loads in it. A blocked tab can't be opened later, after the
+    // checkout is created, so the preview stops here.
+    const tab = window.open('about:blank', '_blank');
+    if (!tab) {
+      toast.error(
+        'Your browser blocked the preview. Allow pop-ups for Ghost Admin, then try again.',
+      );
+      return;
+    }
+    tab.opener = null;
+    setOpening(true);
+    try {
+      const response = await createPreview({
+        tier_id: tier.id,
+        cadence: tier.monthly_price ? 'month' : 'year',
+        ...previewed,
+      });
+      const url = response.checkout_preview[0]?.url;
+      if (!url) {
+        throw new Error('Stripe returned no checkout to preview');
+      }
+      tab.location.href = url;
+    } catch (error) {
+      tab.close();
+      handleError(error);
+    } finally {
+      setOpening(false);
+    }
+  };
+
+  return {
+    label: opening ? 'Opening…' : 'Preview in Stripe',
+    items: paidTiers.map((tier) => ({
+      key: tier.id,
+      label: tier.name,
+      onSelect: () => {
+        if (!opening) {
+          void open(tier);
+        }
+      },
+    })),
+  };
+}
 
 const DesignSettings: React.FC<{
   state: DesignFormState;
@@ -88,126 +224,102 @@ const DesignSettings: React.FC<{
   ];
 
   return (
-    <FieldSet className="mt-8">
-      <FieldGroup>
-        <Field orientation="horizontal">
-          <FieldContent>
-            <FieldLabel htmlFor="checkout-customize-design">Customize checkout design</FieldLabel>
-            <FieldDescription>
-              {/* In a span, the link isn't a direct child, so FieldDescription's underline and
-                  hover styles don't apply to it. */}
-              <span>
-                Overrides the{' '}
-                <a
-                  className="text-green"
-                  href="https://dashboard.stripe.com/settings/branding/checkout"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  checkout styling
-                </a>{' '}
-                set in Stripe
-              </span>
-            </FieldDescription>
-          </FieldContent>
-          <Switch
-            checked={state.customize}
-            id="checkout-customize-design"
-            onCheckedChange={(customize) => onChange({ ...state, customize })}
+    <FormSection>
+      <Field orientation="horizontal">
+        <FieldContent>
+          <FieldLabel htmlFor="checkout-customize-design">Customize checkout design</FieldLabel>
+          <FieldDescription>
+            {/* In a span, the link isn't a direct child, so FieldDescription's own link
+                underline and hover styles don't override Link's. */}
+            <span>
+              Overrides the{' '}
+              <Link href="https://dashboard.stripe.com/settings/branding/checkout" external>
+                checkout styling
+              </Link>{' '}
+              set in Stripe
+            </span>
+          </FieldDescription>
+        </FieldContent>
+        <Switch
+          checked={state.customize}
+          id="checkout-customize-design"
+          onCheckedChange={(customize) => onChange({ ...state, customize })}
+        />
+      </Field>
+      {state.customize && (
+        <>
+          <ColorPickerField
+            direction="rtl"
+            swatches={backgroundSwatches}
+            title="Background color"
+            value={state.design.background_color}
+            onChange={(color) =>
+              setDesign('background_color', color ?? STRIPE_DEFAULT_DESIGN.background_color)
+            }
           />
-        </Field>
-        {state.customize && (
-          <>
-            <div className="mb-1">
-              <ColorPickerField
-                direction="rtl"
-                swatches={backgroundSwatches}
-                title="Background color"
-                value={state.design.background_color}
-                onChange={(color) =>
-                  setDesign('background_color', color ?? STRIPE_DEFAULT_DESIGN.background_color)
+          <ColorPickerField
+            direction="rtl"
+            swatches={[{ value: siteAccent, title: 'Site accent', hex: siteAccent }]}
+            title="Accent color"
+            value={state.design.button_color}
+            onChange={(color) =>
+              setDesign('button_color', color ?? STRIPE_DEFAULT_DESIGN.button_color)
+            }
+          />
+          <Inline className="w-full" gap="sm" justify="between">
+            <FieldTitle>Corners</FieldTitle>
+            <IconToggleGroup
+              label="Corners"
+              options={[
+                {
+                  value: 'rectangular',
+                  label: 'Squared',
+                  icon: <LucideIcon.Square className="size-3.5!" />,
+                },
+                {
+                  value: 'rounded',
+                  label: 'Rounded',
+                  icon: <LucideIcon.Squircle className="size-3.5!" />,
+                },
+                {
+                  value: 'pill',
+                  label: 'Pill',
+                  icon: <LucideIcon.Circle className="size-3.5!" />,
+                },
+              ]}
+              value={state.design.border_style}
+              onValueChange={(borderStyle) => setDesign('border_style', borderStyle)}
+            />
+          </Inline>
+          <Field className="justify-between" orientation="horizontal">
+            <FieldLabel htmlFor="checkout-font">Checkout font</FieldLabel>
+            <link href={STRIPE_FONTS_CSS} rel="stylesheet" />
+            <Select
+              value={state.design.font_family}
+              onValueChange={(value) => {
+                const font = STRIPE_FONT_OPTIONS.find((option) => option.value === value);
+                if (font) {
+                  setDesign('font_family', font.value);
                 }
-              />
-            </div>
-            <div className="mb-1">
-              <ColorPickerField
-                direction="rtl"
-                swatches={[{ value: siteAccent, title: 'Site accent', hex: siteAccent }]}
-                title="Accent color"
-                value={state.design.button_color}
-                onChange={(color) =>
-                  setDesign('button_color', color ?? STRIPE_DEFAULT_DESIGN.button_color)
-                }
-              />
-            </div>
-            <Inline className="w-full" gap="sm" justify="between">
-              <span>Corners</span>
-              <IconToggleGroup
-                label="Corners"
-                options={[
-                  {
-                    value: 'rectangular',
-                    label: 'Squared',
-                    icon: <LucideIcon.Square className="size-3.5!" />,
-                  },
-                  {
-                    value: 'rounded',
-                    label: 'Rounded',
-                    icon: <LucideIcon.Squircle className="size-3.5!" />,
-                  },
-                  {
-                    value: 'pill',
-                    label: 'Pill',
-                    icon: <LucideIcon.Circle className="size-3.5!" />,
-                  },
-                ]}
-                value={state.design.border_style}
-                onValueChange={(borderStyle) => setDesign('border_style', borderStyle)}
-              />
-            </Inline>
-            <Field className="justify-between" orientation="horizontal">
-              <FieldLabel className="font-normal" htmlFor="checkout-font">
-                Checkout font
-              </FieldLabel>
-              <link href={STRIPE_FONTS_CSS} rel="stylesheet" />
-              <Select
-                value={state.design.font_family}
-                onValueChange={(value) => {
-                  const font = STRIPE_FONT_OPTIONS.find((option) => option.value === value);
-                  if (font) {
-                    setDesign('font_family', font.value);
-                  }
-                }}
-              >
-                <SelectTrigger className="max-w-[200px]" id="checkout-font">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STRIPE_FONT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <span style={{ fontFamily: fontFamilyOf(option.value) }}>{option.name}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </>
-        )}
-      </FieldGroup>
-    </FieldSet>
+              }}
+            >
+              <SelectTrigger className="max-w-[200px]" id="checkout-font">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STRIPE_FONT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <span style={{ fontFamily: fontFamilyOf(option.value) }}>{option.name}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </>
+      )}
+    </FormSection>
   );
 };
-
-const Sidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="pt-4">
-    <Tabs defaultValue="design" variant="underline">
-      <TabsList>
-        <TabsTrigger value="design">Design</TabsTrigger>
-      </TabsList>
-      <TabsContent value="design">{children}</TabsContent>
-    </Tabs>
-  </div>
-);
 
 const modalProps = {
   cancelLabel: 'Close',
@@ -219,22 +331,119 @@ const modalProps = {
 } as const;
 
 const CheckoutEditor: React.FC<{
-  setting: StripeCheckoutDesignSetting;
-  displayName: string;
+  config: StripeCheckoutConfig;
+  branding: SketchBranding;
   onClose: () => void;
-}> = ({ setting, displayName, onClose }) => {
+}> = ({ config, branding, onClose }) => {
   const handleError = useHandleError();
   const { mutateAsync: editConfig } = useEditStripeCheckoutConfig();
-  const { formState, saveState, updateForm, handleSave, okProps } = useForm<DesignFormState>({
-    initialState: formStateOf(setting),
-    savingDelay: 500,
-    onSave: async ({ customize, design }) => {
-      await editConfig({
-        design: customize ? { customize: true, ...design } : { customize: false },
-      });
-    },
-    onSaveError: handleError,
+  // Each part is only offered while the collection flag is on and Ghost says what is saved
+  // for it, which a Ghost older than the part doesn't.
+  const collecting = useFeatureFlag('stripeCheckoutCollection');
+  // Automatic tax lets a business buyer give a tax ID on every checkout that takes payment.
+  const automaticTax = useFeatureFlag('stripeAutomaticTax');
+  const offered = COLLECTED_PARTS.filter((part) => collecting && config[part] !== undefined);
+  const { data: { tiers = [] } = {} } = useBrowseTiers();
+  const { data: customFields = [] } = useBrowseMemberCustomFieldsIncludingArchived({
+    enabled: offered.length > 0,
   });
+  const [tab, setTab] = useState<'design' | 'fields'>('design');
+  /** The settings as saving sends them: the design, and the parts on offer. */
+  const settingsOf = (state: CheckoutFormState): StripeCheckoutConfig => ({
+    design: designSettingOf(state),
+    ...partSettingsOf(state.parts, offered),
+  });
+  // Only the Fields tab can be incomplete, so a failed check shows it.
+  const showIncomplete = () => setTab('fields');
+  const { formState, saveState, updateForm, handleSave, okProps, errors, clearError, validate } =
+    useForm<CheckoutFormState>({
+      initialState: {
+        ...formStateOf(config.design, branding.design),
+        parts: partFormStatesOf(config),
+      },
+      savingDelay: 500,
+      // Only the parts on offer are checked and saved, as an older Ghost refuses the others.
+      onValidate: (state) => partErrorsOf(state.parts, offered),
+      onSave: async (state) => {
+        await editConfig(settingsOf(state));
+      },
+      onSaveError: handleError,
+    });
+  // Previewed only once the settings could be saved, so a preview is what saving would give.
+  const previewMenu = useStripePreviewMenu(() => {
+    if (validate()) {
+      return settingsOf(formState);
+    }
+    showIncomplete();
+    return null;
+  });
+  // Every field a collected value has in this form, so no other value is offered it. A part
+  // that is switched off still counts, as switching it back on brings its fields back.
+  const chosenFields = partFieldsOf(formState.parts, offered);
+  // Cheapest first, like the Preview in Stripe menu.
+  const paidTiers = tiers
+    .filter((tier) => tier.type === 'paid')
+    .sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
+  // What the sketch shows each part as, tagged with the tiers it's asked on.
+  const sketched: { [Part in CollectedPart]?: { audience: string } } = {};
+  for (const part of COLLECTED_PARTS) {
+    const state = formState.parts[part];
+    if (CHECKOUT_PARTS[part].alwaysAsked?.({ automaticTax })) {
+      sketched[part] = { audience: '' };
+    } else if (offered.includes(part) && state.collect) {
+      sketched[part] = { audience: audienceOf(state, paidTiers) };
+    }
+  }
+
+  const partRow = <Part extends CollectedPart>(part: Part) => {
+    const { Settings, errorKeys } = CHECKOUT_PARTS[part];
+    return (
+      <Settings
+        key={part}
+        automaticTax={automaticTax}
+        chosenFields={chosenFields}
+        errors={errors}
+        fields={customFields}
+        state={formState.parts[part]}
+        tiers={paidTiers}
+        onChange={(next) => {
+          errorKeys.forEach(clearError);
+          updateForm((state) => ({ ...state, parts: withPartState(state.parts, part, next) }));
+        }}
+      />
+    );
+  };
+
+  const designSettings = (
+    <DesignSettings
+      state={formState}
+      onChange={(next) => updateForm((state) => ({ ...state, ...next }))}
+    />
+  );
+  const sidebar = offered.length ? (
+    <div className="pt-4">
+      <Tabs
+        value={tab}
+        variant="underline"
+        onValueChange={(next) => setTab(next === 'fields' ? 'fields' : 'design')}
+      >
+        <TabsList>
+          <TabsTrigger value="design">Design</TabsTrigger>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+        </TabsList>
+        <TabsContent value="design">{designSettings}</TabsContent>
+        <TabsContent className="mt-8" value="fields">
+          <FieldSet>
+            <FieldGroup>
+              <Stack gap="lg">{offered.map(partRow)}</Stack>
+            </FieldGroup>
+          </FieldSet>
+        </TabsContent>
+      </Tabs>
+    </div>
+  ) : (
+    designSettings
+  );
 
   return (
     <PreviewModalContent
@@ -245,19 +454,20 @@ const CheckoutEditor: React.FC<{
       okVariant={okProps.variant}
       preview={
         <CheckoutPreview
-          design={formState.customize ? formState.design : STRIPE_DEFAULT_DESIGN}
-          displayName={displayName}
+          asks={sketched}
+          design={formState.customize ? formState.design : branding.design}
+          displayName={branding.display_name}
         />
       }
-      sidebar={
-        <Sidebar>
-          <DesignSettings state={formState} onChange={(next) => updateForm(() => next)} />
-        </Sidebar>
-      }
+      sidebar={sidebar}
+      siteLinkMenu={previewMenu}
       onClose={onClose}
       onOk={async () => {
         try {
-          await handleSave({ fakeWhenUnchanged: true });
+          const saved = await handleSave({ fakeWhenUnchanged: true });
+          if (!saved) {
+            showIncomplete();
+          }
         } catch {
           // Already shown by onSaveError; handleSave re-throws after it.
         }
@@ -268,38 +478,35 @@ const CheckoutEditor: React.FC<{
 
 const CheckoutModal: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
-  const { settings } = useGlobalData();
-  const [title] = getSettingValues<string>(settings, ['title']);
-  // Stripe shows the business name set in the Stripe dashboard, which Ghost can't read yet.
-  const displayName = title || 'Your publication';
   const { data, isError } = useReadStripeCheckoutConfig();
-  const setting = data?.checkout_config[0]?.design;
+  const { branding, loading } = useStripeBranding();
+  const config = data?.checkout_config[0];
   const close = () => updateRoute('tiers');
 
-  if (!setting) {
+  if (!config || loading) {
     return (
       <PreviewModalContent
         {...modalProps}
         buttonsDisabled={true}
         okLabel="Save"
         preview={
-          <CheckoutPreview design={STRIPE_DEFAULT_DESIGN} displayName={displayName} loading />
+          <CheckoutPreview design={branding.design} displayName={branding.display_name} loading />
         }
         sidebar={
-          <Sidebar>
+          <div>
             {isError ? (
-              <p className="mt-8 text-sm text-destructive">
+              <p className="text-sm text-destructive">
                 Your checkout settings couldn&apos;t be loaded. Close this and try again.
               </p>
             ) : null}
-          </Sidebar>
+          </div>
         }
         onClose={close}
       />
     );
   }
 
-  return <CheckoutEditor displayName={displayName} setting={setting} onClose={close} />;
+  return <CheckoutEditor branding={branding} config={config} onClose={close} />;
 };
 
 // The route stays registered, but with the stripeCheckoutDesign flag off it goes straight

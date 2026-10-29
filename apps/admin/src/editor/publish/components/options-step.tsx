@@ -197,6 +197,14 @@ export function OptionsStep({
           </PublishSetting>
         )}
 
+        {state.missingRecipients && !publishBlocked ? (
+          <PublishSettingNote>
+            {state.publishType === 'send'
+              ? 'Choose at least one recipient to send this email.'
+              : 'No recipients are selected, so this post will be published without being emailed.'}
+          </PublishSettingNote>
+        ) : null}
+
         {historicEmail && !emailDisabledInSettings ? (
           <PublishSetting
             icon={<LucideIcon.Users className="size-4" />}

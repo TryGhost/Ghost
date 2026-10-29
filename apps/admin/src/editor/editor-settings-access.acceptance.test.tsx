@@ -25,7 +25,6 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 
@@ -46,13 +45,12 @@ const MANY_TIERS = Array.from({ length: 18 }, (_, index) =>
 function asContributor() {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 /** The site default the select and tiers stand in until a post carries its own visibility. */
 function withDefaultVisibility(visibility: string, tierIds: string[] = []) {
-  return {
-    ...FLAG_ON,
+  return withoutAutosave({
     boot: {
       browseSettings: {
         response: settingsResponse({
@@ -63,7 +61,7 @@ function withDefaultVisibility(visibility: string, tierIds: string[] = []) {
         }),
       },
     },
-  };
+  });
 }
 
 function editorChrome(tiers = SITE_TIERS) {
@@ -136,7 +134,7 @@ async function chooseVisibility(label: string) {
 describe('Post settings access', () => {
   it('persists a draft’s visibility on its own', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Public');
@@ -150,7 +148,7 @@ describe('Post settings access', () => {
   it('sends the tier IDs a paid post already carries when its visibility changes', async () => {
     // A Paid read carries every paid tier, archived ones included.
     const saveApi = fakeSavablePost({ visibility: 'paid', tiers: [GOLD, SILVER, BRONZE] });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await chooseVisibility('Specific tier(s)');
@@ -165,7 +163,7 @@ describe('Post settings access', () => {
   it('grants a public post’s paid tiers but not the free one it carries', async () => {
     // A Public read carries every site tier, the free one included.
     const saveApi = fakeSavablePost({ visibility: 'public', tiers: SITE_TIERS });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await chooseVisibility('Specific tier(s)');
@@ -210,7 +208,7 @@ describe('Post settings access', () => {
       },
     );
 
-    await renderAdminApp('/editor/post', withFastAutosave({ labs: { editorReact: true } }));
+    await renderAdminApp('/editor/post', withFastAutosave());
     await openAccess();
 
     await chooseVisibility('Specific tier(s)');
@@ -220,7 +218,8 @@ describe('Post settings access', () => {
     await expect
       .element(editorScreen.settingsTiersError())
       .toHaveTextContent('Please select at least one tier.');
-    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    await editorScreen.settingsTiersInput().click();
+    await expect.element(editorScreen.settingsTierOption('Gold')).toBeVisible();
     expect(createApi.requests).toHaveLength(0);
     await expect.poll(unsavedChangesGuarded).toBe(true);
 
@@ -238,17 +237,15 @@ describe('Post settings access', () => {
     await expect
       .element(editorScreen.settingsTiersError())
       .toHaveTextContent('Please select at least one tier.');
-    await expect.element(editorScreen.settingsTiers()).toHaveAttribute('aria-invalid', 'true');
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.settingsTiersInput()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.settingsTierChip('Gold')).not.toBeInTheDocument();
     // A save that follows the create leaves the pair out as well.
     for (let index = 0; index < updateApi.requests.length; index += 1) {
       expect(submittedPost(updateApi, index)).not.toHaveProperty('visibility');
       expect(submittedPost(updateApi, index)).not.toHaveProperty('tiers');
     }
 
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
 
     await expect(updateApi).toHaveSavedFields({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
@@ -259,7 +256,7 @@ describe('Post settings access', () => {
 
   it('sends the visibility and the tiers together once a tier is picked', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await chooseVisibility('Specific tier(s)');
@@ -268,19 +265,23 @@ describe('Post settings access', () => {
     await expect
       .element(editorScreen.settingsTiersError())
       .toHaveTextContent('Please select at least one tier.');
-    await expect.element(editorScreen.settingsTiers()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(editorScreen.settingsTiersInput()).toHaveAttribute('aria-invalid', 'true');
     await expect
-      .element(editorScreen.settingsTiers())
+      .element(editorScreen.settingsTiersInput())
       .toHaveAttribute('aria-describedby', editorScreen.settingsTiersError().element().id);
     expect(saveApi.requests).toHaveLength(0);
     // Archived paid tiers are offered after the active ones; free tiers are not.
-    await expect.element(editorScreen.settingsTier('Bronze')).toBeVisible();
-    await expect(editorScreen.settingsTier('Free')).toHaveCount(0);
+    await editorScreen.settingsTiersInput().click();
+    await expect.element(editorScreen.settingsTierOption('Bronze')).toBeVisible();
+    await expect
+      .element(editorScreen.settingsTierGroup('Archived tiers'))
+      .toHaveTextContent('Bronze');
+    await expect(editorScreen.settingsTierOption('Free')).toHaveCount(0);
     // Staged rather than refused, so the writer sees no save error for it.
     await expect.element(editorScreen.status()).toHaveTextContent('Draft');
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
 
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
 
     await expect(saveApi).toHaveSavedFields({
       visibility: 'tiers',
@@ -288,7 +289,7 @@ describe('Post settings access', () => {
     });
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
 
-    await editorScreen.settingsTier('Silver').click();
+    await editorScreen.toggleSettingsTier('Silver');
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
     expect(submittedPost(saveApi).tiers).toEqual([{ id: GOLD.id }, { id: SILVER.id }]);
@@ -296,7 +297,7 @@ describe('Post settings access', () => {
 
   it('saves a published post’s visibility on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await chooseVisibility('Paid-members only');
@@ -318,16 +319,14 @@ describe('Post settings access', () => {
       tiers: [{ id: GOLD.id }],
       featured: false,
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await editorScreen.settingsTier('Silver').click();
-    await editorScreen.settingsTier('Bronze').click();
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Silver');
+    await editorScreen.toggleSettingsTier('Bronze');
+    await editorScreen.toggleSettingsTier('Gold');
 
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.settingsTierChip('Gold')).not.toBeInTheDocument();
     await expect.element(editorScreen.updateButton()).toBeEnabled();
     expect(unsavedChangesGuarded()).toBe(true);
 
@@ -349,12 +348,12 @@ describe('Post settings access', () => {
       visibility: 'tiers',
       tiers: [{ id: GOLD.id }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await editorScreen.settingsTier('Silver').click();
-    await editorScreen.settingsTier('Bronze').click();
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Silver');
+    await editorScreen.toggleSettingsTier('Bronze');
+    await editorScreen.toggleSettingsTier('Gold');
     await expect.element(editorScreen.updateButton()).toBeEnabled();
 
     await editorScreen.updateButton().click();
@@ -412,15 +411,9 @@ describe('Post settings access', () => {
     await openAccess();
 
     await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'checked');
-    await expect
-      .element(editorScreen.settingsTier('Silver'))
-      .toHaveAttribute('data-state', 'checked');
-    await expect
-      .element(editorScreen.settingsTier('Bronze'))
-      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.settingsTierChip('Gold')).toBeVisible();
+    await expect.element(editorScreen.settingsTierChip('Silver')).toBeVisible();
+    await expect.element(editorScreen.settingsTierChip('Bronze')).not.toBeInTheDocument();
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
 
     await typeIntoBody('First words');
@@ -430,12 +423,8 @@ describe('Post settings access', () => {
     expect(submittedPost(createApi)).not.toHaveProperty('visibility');
     expect(submittedPost(createApi)).not.toHaveProperty('tiers');
     // Created, the post shows the tiers it was given.
-    await expect
-      .element(editorScreen.settingsTier('Silver'))
-      .toHaveAttribute('data-state', 'unchecked');
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTierChip('Silver')).not.toBeInTheDocument();
+    await expect.element(editorScreen.settingsTierChip('Gold')).toBeVisible();
   });
 
   it('starts a tier change on a new post from the site’s default tiers', async () => {
@@ -443,26 +432,21 @@ describe('Post settings access', () => {
     await renderAdminApp('/editor/post', withDefaultVisibility('tiers', [GOLD.id, SILVER.id]));
     await openAccess();
 
-    await editorScreen.settingsTier('Silver').click();
+    await editorScreen.toggleSettingsTier('Silver');
 
     await expect(createApi).toHaveSavedFields({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
-    await expect
-      .element(editorScreen.settingsTier('Silver'))
-      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.settingsTierChip('Silver')).not.toBeInTheDocument();
   });
 
   it('offers every paid tier, past the first page of the browse', async () => {
     const last = MANY_TIERS[MANY_TIERS.length - 1];
     const saveApi = fakeSavablePost({ visibility: 'tiers', tiers: [{ id: last.id }] }, MANY_TIERS);
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await expect.element(editorScreen.settingsTier(last.name)).toBeVisible();
-    await expect
-      .element(editorScreen.settingsTier(last.name))
-      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTierChip(last.name)).toBeVisible();
 
-    await editorScreen.settingsTier('Tier 01').click();
+    await editorScreen.toggleSettingsTier('Tier 01');
 
     // The last tier survives the toggle only because the browse loaded past page one.
     await expect(saveApi).toHaveSavedFields({
@@ -477,13 +461,12 @@ describe('Post settings access', () => {
       const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
       return browseResponse('tiers', [GOLD, SILVER], { page: pageNumber, limit: 1 });
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await expect
-      .element(editorScreen.settingsTier('Silver'))
-      .toHaveAttribute('data-state', 'checked');
-    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    await expect.element(editorScreen.settingsTierChip('Silver')).toBeVisible();
+    await editorScreen.settingsTiersInput().click();
+    await expect.element(editorScreen.settingsTierOption('Gold')).toBeVisible();
     await expect.poll(() => tiersApi.requests.length).toBe(2);
     expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
   });
@@ -498,21 +481,17 @@ describe('Post settings access', () => {
       }
       return browseResponse('tiers', [GOLD, SILVER], { page: pageNumber, limit: 1 });
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await expect.poll(() => tiersApi.requests.length).toBe(2);
     await expect.element(editorScreen.settingsTiers()).toBeInTheDocument();
-    expect(editorScreen.settingsTiers().getByRole('checkbox').elements()).toHaveLength(0);
+    expect(editorScreen.settingsTierChips().elements()).toHaveLength(0);
 
     secondPage.resolve();
 
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'unchecked');
-    await expect
-      .element(editorScreen.settingsTier('Silver'))
-      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTierChip('Gold')).not.toBeInTheDocument();
+    await expect.element(editorScreen.settingsTierChip('Silver')).toBeVisible();
   });
 
   it('reports a failed tier lookup and lets the writer retry', async () => {
@@ -523,13 +502,13 @@ describe('Post settings access', () => {
       { errors: [{ message: 'Authorization failed', type: 'UnauthorizedError' }] },
       { status: 401 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
     await expect
       .element(editorScreen.settingsLoadError())
       .toHaveTextContent('Couldn’t load tiers.');
-    await expect(editorScreen.settingsTier('Gold')).toHaveCount(0);
+    await expect(editorScreen.settingsTierChip('Gold')).toHaveCount(0);
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
     expect(tiersApi.requests).toHaveLength(1);
 
@@ -537,29 +516,23 @@ describe('Post settings access', () => {
     fakeTiers(SITE_TIERS);
     await editorScreen.settingsLoadErrorRetry().click();
 
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTierChip('Gold')).toBeVisible();
     await expect(editorScreen.settingsLoadError()).toHaveCount(0);
     expect(tiersApi.requests).toHaveLength(1);
   });
 
   it('asks for a tier again when the last one is unpicked', async () => {
     const saveApi = fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'checked');
+    await expect.element(editorScreen.settingsTierChip('Gold')).toBeVisible();
     await expect(editorScreen.settingsTiersError()).toHaveCount(0);
 
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
 
     await expect.element(editorScreen.settingsTiersError()).toBeVisible();
-    await expect
-      .element(editorScreen.settingsTier('Gold'))
-      .toHaveAttribute('data-state', 'unchecked');
+    await expect.element(editorScreen.settingsTierChip('Gold')).not.toBeInTheDocument();
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -570,10 +543,10 @@ describe('Post settings access', () => {
       visibility: 'tiers',
       tiers: [{ id: GOLD.id }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
 
     // The empty selection is staged, so it is the writer's unsaved work.
     await expect.element(editorScreen.updateButton()).toBeEnabled();
@@ -582,7 +555,7 @@ describe('Post settings access', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Please select at least one tier.');
     expect(saveApi.requests).toHaveLength(0);
     await expect.element(editorScreen.updateButton()).toBeEnabled();
@@ -591,10 +564,10 @@ describe('Post settings access', () => {
   it('browses paid tiers at the URL the publish flow and preview also send', async () => {
     fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
     const tiersApi = fakeTiers(SITE_TIERS);
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openAccess();
 
-    await expect.element(editorScreen.settingsTier('Gold')).toBeVisible();
+    await expect.element(editorScreen.settingsTierChip('Gold')).toBeVisible();
     // A differently spelled param order would be a second cache entry and a second browse.
     await expect
       .poll(() => new URL(tiersApi.lastRequest?.url ?? '', window.location.origin).search)

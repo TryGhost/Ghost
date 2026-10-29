@@ -5,13 +5,16 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.439@sha256:1b597033cec3662f361e826d5ccccdbe3d90dc40c3e0450649650b20fae1b2b8
+    image: ghost/traffic-analytics:1.0.440@sha256:045a958d001b8d8543a410aa414fbd50bdba5ee50b80beb22d8b10275cee1613
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ['node', '--enable-source-maps', 'dist/server.js']
     entrypoint: ['/app/entrypoint.sh']
     expose:
       - '3000'
+    # The Admin dev server proxies /.ghost/analytics/ here
+    ports:
+      - '127.0.0.1:7182:3000'
     healthcheck:
       test:
         [
@@ -36,7 +39,7 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:b2ce4910a5e92c97e0dbe77e08d3507c04837b8af88dd215715890dac54bff97
+    image: tinybirdco/tinybird-local:latest@sha256:c1e2b1cc1f94878192d1c1dd5cda952ceeaa503c0af10d35b3737d1f566a7dad
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
@@ -63,7 +66,7 @@ services:
       - TB_HOST=http://tinybird-local:7181
       - TB_LOCAL_HOST=tinybird-local
     volumes:
-      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - ./ghost/core/server/data/tinybird:/home/tinybird
       - shared-config:/mnt/shared-config
     depends_on:
       tinybird-local:
@@ -77,7 +80,7 @@ services:
     entrypoint: ['tb', '--local', 'dev']
     environment: *tb-cli-environment
     volumes:
-      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - ./ghost/core/server/data/tinybird:/home/tinybird
     depends_on:
       tb-cli:
         condition: service_completed_successfully

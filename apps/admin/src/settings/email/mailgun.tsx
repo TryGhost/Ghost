@@ -6,6 +6,7 @@ import {
   FieldDescription,
   FieldLabel,
   Input,
+  Link,
   Select,
   SelectContent,
   SelectItem,
@@ -70,15 +71,10 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const apiKeysHint = (
     <>
-      Find your Mailgun API keys{' '}
-      <a
-        className="text-green hover:text-green-400"
-        href="https://app.mailgun.com/settings/api_security"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        here
-      </a>
+      Find your API keys in the{' '}
+      <Link href="https://app.mailgun.com/settings/api_security" external>
+        Mailgun dashboard
+      </Link>
     </>
   );
   const inputs = (
@@ -133,14 +129,9 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const groupDescription = (
     <>
       The Mailgun API is used for bulk email newsletter delivery.{' '}
-      <a
-        className="text-green hover:text-green-400"
-        href="https://docs.ghost.org/faq/mailgun-newsletters/"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
+      <Link href="https://docs.ghost.org/faq/mailgun-newsletters/" external>
         Why is this required?
-      </a>
+      </Link>
     </>
   );
 

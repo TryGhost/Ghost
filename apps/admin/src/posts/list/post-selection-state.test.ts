@@ -142,10 +142,7 @@ describe('postSelectionReducer', () => {
      * carries a `// Shift behaviour in inverted mode needs a review`
      * comment, and no Ember test covers it. It is ported as-is anyway.
      * "This looks wrong to me" is not the same as "this diverges from the
-     * thing we are porting", and fixing it here would make the two
-     * implementations disagree while the flag is still switchable.
-     *
-     * Worth raising as its own issue, then changing in both at once.
+     * thing we are porting". Changing it is its own issue.
      */
     it('re-selects the range when inverted, as Ember does', () => {
       const state = run([

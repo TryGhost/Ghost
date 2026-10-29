@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import { deferred } from '@/utils/deferred';
 import {
   configResponse,
+  currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
   fakeIntegrations,
@@ -52,9 +53,10 @@ const customIntegrationsLimit = {
 
 function limitedConfig(upgradeUrl?: string) {
   const response = configResponse();
-  response.config.hostSettings = upgradeUrl
-    ? { limits: customIntegrationsLimit, billing: { upgradeUrl } }
-    : { limits: customIntegrationsLimit };
+  response.config.hostSettings = {
+    limits: customIntegrationsLimit,
+    billing: { enabled: true, upgradeUrl },
+  };
   return response;
 }
 
@@ -393,7 +395,7 @@ describe('Advanced integrations', () => {
       .getByTestId('zapier-integration')
       .getByRole('button', { name: 'Upgrade' })
       .click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await expect.poll(currentRoute).toBe('/pro');
   });
 
   it("sends the upgrade CTA to a host's own billing app when one is configured", async () => {
@@ -407,9 +409,7 @@ describe('Advanced integrations', () => {
       .getByTestId('zapier-integration')
       .getByRole('button', { name: 'Upgrade' })
       .click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({
-      route: '/pro/billing/plans',
-    });
+    await expect.poll(currentRoute).toBe('/pro/billing/plans');
   });
 
   it('saves FirstPromoter configuration and warns before discarding later changes', async () => {

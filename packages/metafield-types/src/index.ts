@@ -9,7 +9,7 @@ export {
   FIELD_TYPE_IDS,
   PART_TYPE_IDS,
   partTypesOf,
-  subFieldsOf,
+  partsOf,
   type FieldKind,
   type FieldType,
   type PartsOf,
@@ -157,7 +157,7 @@ const longText = () =>
   });
 
 /**
- * Both ends are pinned to a string because storage keeps one string per leaf: a type
+ * Both ends are pinned to a string because storage keeps one string per part: a type
  * parsing to anything else could be written and never read back, which is better learned
  * from the compiler than from a 500 on the first save.
  */

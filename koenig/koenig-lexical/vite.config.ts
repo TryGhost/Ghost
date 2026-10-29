@@ -7,7 +7,6 @@ import {defineConfig, esmExternalRequirePlugin, loadEnv} from 'vite';
 import {resolve, dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {createRequire} from 'node:module';
-import {sentryVitePlugin} from '@sentry/vite-plugin';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -32,26 +31,9 @@ export default (function viteConfig({mode}) {
         })
     ];
 
-    // Keep sentryVitePlugin as the last plugin. Shipping builds only inject
-    // debug IDs; CI uploads the maps afterwards so Sentry can't block the build
-    if (process.env.IS_SHIPPING) {
-        plugins.push(
-            sentryVitePlugin({
-                sourcemaps: {disable: 'disable-upload'},
-                // Release injection breaks the build: CJS deps aren't transpiled yet when it runs
-                release: {inject: false},
-                telemetry: false
-            })
-        );
-    }
-
     return defineConfig({
         plugins,
         server: {
-            // Allow access from Ghost's Docker dev environment (host.docker.internal)
-            allowedHosts: true
-        },
-        preview: {
             // Allow access from Ghost's Docker dev environment (host.docker.internal)
             allowedHosts: true
         },
@@ -81,23 +63,11 @@ export default (function viteConfig({mode}) {
             cssCodeSplit: true,
             lib: {
                 entry: resolve(__dirname, 'src/index.ts'),
-                name: pkg.name,
-                fileName(format) {
-                    if (format === 'umd') {
-                        return `${outputFileName}.umd.js`;
-                    }
-
-                    return `${outputFileName}.js`;
-                }
+                formats: ['es'],
+                fileName: () => `${outputFileName}.js`
             },
             rolldownOptions: {
                 output: {
-                    globals: {
-                        'react': 'React',
-                        'react/jsx-runtime': 'React',
-                        'react-dom': 'ReactDOM',
-                        'react-dom/client': 'ReactDOM'
-                    },
                     assetFileNames: (assetInfo) => {
                         // Vite 6 changed CSS output naming in lib mode from
                         // 'style.css' to deriving from the entry filename.

@@ -17,8 +17,6 @@ const SIGNIN_REDIRECT_KEY = 'ghost-signin-redirect';
 const ghostError = (status: number, error: Record<string, unknown>) =>
   [{ errors: [error] }, { status }] as const;
 
-const emberFrameHidden = () => document.getElementById('ember-app')?.parentElement?.hidden;
-
 beforeEach(() => {
   vi.mocked(reloadAdmin).mockClear();
   window.sessionStorage.clear();
@@ -30,7 +28,6 @@ it('serves sign in from React', async () => {
 
   await expect.element(authScreen.emailInput()).toBeVisible();
   await expect.element(authScreen.signInButton()).toBeVisible();
-  expect(emberFrameHidden()).toBe(true);
 });
 
 it('paints the sign in button with the site accent colour', async () => {
@@ -173,7 +170,7 @@ it('asks for a refresh when Ghost has been upgraded', async () => {
 
 it.each([
   ['2FA_TOKEN_REQUIRED', '2FA confirmation'],
-  ['2FA_NEW_DEVICE_DETECTED', "Verify it's really you"],
+  ['2FA_NEW_DEVICE_DETECTED', 'Verify it’s really you'],
 ])('asks for the emailed code when Core answers %s', async (code, heading) => {
   fakeSetupStatus();
   fakeAdminEndpoint(

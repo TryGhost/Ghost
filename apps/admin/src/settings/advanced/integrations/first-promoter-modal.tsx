@@ -8,6 +8,7 @@ import {
   FieldLabel,
   FieldSet,
   Input,
+  Link,
   Switch,
 } from '@tryghost/shade/components';
 import {
@@ -99,14 +100,9 @@ function FirstPromoterModal() {
               <FieldLabel htmlFor="firstpromoter-enabled">Enable FirstPromoter</FieldLabel>
               <FieldDescription>
                 Enable{' '}
-                <a
-                  className="text-green"
-                  href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" external>
                   FirstPromoter
-                </a>{' '}
+                </Link>{' '}
                 for tracking referrals
               </FieldDescription>
             </FieldContent>
@@ -123,15 +119,10 @@ function FirstPromoterModal() {
               />
               <FieldDescription>
                 <>
-                  Affiliate and referral tracking, find your ID{' '}
-                  <a
-                    className="text-green"
-                    href="https://ghost.org/help/firstpromoter-id/"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    here
-                  </a>
+                  Affiliate and referral tracking.{' '}
+                  <Link href="https://ghost.org/help/firstpromoter-id/" external>
+                    Find your FirstPromoter account ID
+                  </Link>
                 </>
               </FieldDescription>
             </Field>

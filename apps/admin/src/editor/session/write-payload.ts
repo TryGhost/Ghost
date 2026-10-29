@@ -22,10 +22,11 @@ export type EditorWritableData = Omit<
 export type EditorCreatePayload = CreateContentData<EditorWritableData>;
 
 /**
- * An update carries the id and the collision token the save was built at. A
- * settings save writes the settings alone, so an update need not carry a title.
+ * An update carries the id and the collision token the save was built at, null
+ * for a post the server holds none for. A settings save writes the settings
+ * alone, so an update need not carry a title.
  */
 export type EditorEditPayload = EditorWritableData & {
   id: string;
-  updated_at: string;
+  updated_at: string | null;
 };

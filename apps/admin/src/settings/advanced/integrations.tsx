@@ -32,6 +32,7 @@ import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation'
 import { DEFAULT_UPGRADE_ROUTE } from '@tryghost/admin-x-framework/api/config';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import { navigateTo } from '@/utils/navigation';
 
 interface IntegrationItemProps {
   icon?: React.ReactNode;
@@ -68,14 +69,12 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
   testId,
   custom = false,
 }) => {
-  const { updateRoute } = useSettingsNavigation();
-
   const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
     // Prevent the click event from bubbling up when clicking the delete button
     e?.stopPropagation();
 
     if (disabled) {
-      updateRoute({ route: upgradeRoute, isExternal: true });
+      navigateTo(upgradeRoute);
     } else {
       action();
     }
@@ -96,13 +95,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
       Upgrade
     </Button>
   ) : (
-    <Button
-      className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
-      size="sm"
-      type="button"
-      variant="link"
-      onClick={handleClick}
-    >
+    <Button size="sm" type="button" variant="ghost" onClick={handleClick}>
       Configure
     </Button>
   );

@@ -1,9 +1,9 @@
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCallback, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { useBrowseTags, type Tag } from '@tryghost/admin-x-framework/api/tags';
-import { ChipPicker } from '@/shared/pickers/chip-picker';
+import { ChipPicker, OptionLabel } from '@/shared/pickers/chip-picker';
 import {
   canCreateTag,
   isInternalTag,
@@ -39,6 +39,8 @@ interface TagPickerProps {
   onSearchChange?: (search: string) => void;
   maxLength?: number;
   testIds?: { field?: string; input?: string; list?: string; chip?: string };
+  /** Extra classes for every chip, on top of the internal-tag styling. */
+  chipClassName?: string;
 }
 
 /**
@@ -60,6 +62,7 @@ export function TagPicker({
   onSearchChange,
   maxLength,
   testIds,
+  chipClassName,
 }: TagPickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -94,24 +97,29 @@ export function TagPicker({
   return (
     <ChipPicker<Tag, TagLike>
       chipClassName={(tag) =>
-        isInternalTag(tag)
-          ? 'border-border bg-secondary/30 text-secondary-foreground/70'
-          : undefined
+        cn(
+          isInternalTag(tag) && 'border-border bg-secondary/30 text-secondary-foreground/70',
+          chipClassName,
+        ) || undefined
       }
-      chipVariant={(tag) => (isInternalTag(tag) ? 'outline' : 'secondary')}
       createRow={{
         offer: (typed, offered) => searchSettled && canCreateTag(typed, offered, selected),
         render: (typed) => (
           <>
-            <LucideIcon.Plus className="size-4 shrink-0" />
-            <span className="truncate">Create “{typed}”</span>
+            {/* Level with the first line of a label that wraps. */}
+            <LucideIcon.Plus className="mt-0.5 size-4 shrink-0 self-start" />
+            <OptionLabel>Create “{typed}”</OptionLabel>
           </>
         ),
         onSelect: (typed) => onAdd({ name: typed }),
       }}
       emptyMessage="No tags found"
+      // Names are not unique; the slug, on hover, is what tells two of them
+      // apart. A tag typed but not yet saved has none, and so no title.
+      getChipTitle={(tag) => tag.slug}
       getKey={tagKey}
       getLabel={tagName}
+      getOptionTitle={(tag) => tag.slug}
       hideSelected={hideSelected}
       inputId={inputId}
       inputLabel={inputLabel}
@@ -124,12 +132,10 @@ export function TagPicker({
       placeholder="Select or enter tags..."
       renderOption={(tag, { chosen }) => (
         <>
-          <span className="truncate">{tag.name}</span>
-          {/* Names are not unique; the slug is what tells two of them apart. */}
-          <span className="ms-auto truncate font-mono text-xs text-muted-foreground">
-            {tag.slug}
-          </span>
-          {chosen && <LucideIcon.Check className="size-4 shrink-0 text-primary" />}
+          <OptionLabel>{tagName(tag)}</OptionLabel>
+          {chosen && (
+            <LucideIcon.Check className="ms-auto mt-0.5 size-4 shrink-0 self-start text-primary" />
+          )}
         </>
       )}
       selected={selected}

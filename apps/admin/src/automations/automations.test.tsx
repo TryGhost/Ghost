@@ -18,6 +18,12 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
   return {
     ...actual,
     useBrowseAutomations: mockUseBrowseAutomations,
+    useSetAutomationStatus: () => ({
+      mutate: vi.fn(),
+      reset: vi.fn(),
+      isPending: false,
+      isError: false,
+    }),
   };
 });
 
@@ -120,23 +126,7 @@ describe('Automations', () => {
     mockUseCurrentUser.mockReturnValue({ data: { id: 'user-1', roles: [{ name: 'Owner' }] } });
   });
 
-  it.each([undefined, false])('hides "New automation" button when per-tier flag is %s', (flag) => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: flag } } },
-      isLoading: false,
-    });
-
-    renderPage();
-
-    expect(screen.queryByRole('button', { name: 'New automation' })).not.toBeInTheDocument();
-  });
-
-  it('shows the "New automation" button when per-tier flag is enabled', () => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
-      isLoading: false,
-    });
-
+  it('shows the "New automation" button without optional labs flags', () => {
     renderPage();
 
     const button = screen.getByRole('button', { name: 'New automation' });
@@ -156,10 +146,6 @@ describe('Automations', () => {
     { role: 'Contributor', disabled: true },
     { role: undefined, disabled: true },
   ])('sets "New automation" disabled=$disabled for role=$role', ({ role, disabled }) => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
-      isLoading: false,
-    });
     mockUseCurrentUser.mockReturnValue({
       data: role ? { id: 'user-1', roles: [{ name: role }] } : undefined,
     });
@@ -169,8 +155,10 @@ describe('Automations', () => {
     const button = screen.getByRole('button', { name: 'New automation' });
     if (disabled) {
       expect(button).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     } else {
       expect(button).toBeEnabled();
+      expect(screen.getAllByRole('button', { name: /Actions for/ })).toHaveLength(2);
     }
   });
 
@@ -181,10 +169,6 @@ describe('Automations', () => {
     { count: 50, disabled: true },
     { count: 51, disabled: true },
   ])('sets "New automation" disabled=$disabled with count=$count', ({ count, disabled }) => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
-      isLoading: false,
-    });
     mockUseBrowseAutomations.mockReturnValue({
       data:
         count === undefined
@@ -211,7 +195,7 @@ describe('Automations', () => {
 
   it('counts hidden paid automations towards the limit', () => {
     mockUseBrowseConfig.mockReturnValue({
-      data: { config: { stripeDirect: true, labs: { automationsPerTier: true } } },
+      data: { config: { stripeDirect: true } },
       isLoading: false,
     });
     mockUseBrowseAutomations.mockReturnValue({
@@ -253,5 +237,95 @@ describe('Automations', () => {
 
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
+  });
+
+  it('shows creation guidance when there are no automations', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: { automations: [] },
+      isLoading: false,
+    });
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'No automations yet' })).toBeInTheDocument();
+    expect(screen.getByText('Automations you create will show up here.')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Every automation you have is archived. Switch views to see them.'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Automations to show' })).not.toBeInTheDocument();
+  });
+
+  it('shows active empty copy when every automation is archived', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: { automations: [{ ...automations[0], status: 'archived' }] },
+      isLoading: false,
+    });
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'No active automations' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Every automation you have is archived. Switch views to see them.'),
+    ).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Automations to show' }), {
+      key: 'Enter',
+    });
+    fireEvent.click(screen.getByRole('option', { name: 'Archived automations' }));
+    expect(screen.queryByText('No active automations')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toBeInTheDocument();
+  });
+
+  it('hides archived automations by default and shows the status filter', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: [
+          ...automations,
+          { ...automations[0], id: 'archived', name: 'Archived flow', status: 'archived' },
+        ],
+      },
+      isLoading: false,
+    });
+    renderPage();
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Active automations',
+    );
+    expect(screen.queryByRole('link', { name: 'Archived flow' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Paid member welcome flow' })).toBeInTheDocument();
+  });
+
+  it('omits the status filter when the only archived automation is hidden by Stripe', () => {
+    mockUseBrowseSettings.mockReturnValue({ data: { settings: [] }, isLoading: false });
+    mockUseBrowseAutomations.mockReturnValue({
+      data: { automations: [automations[0], { ...automations[1], status: 'archived' }] },
+      isLoading: false,
+    });
+    renderPage();
+    expect(screen.queryByRole('combobox', { name: 'Automations to show' })).not.toBeInTheDocument();
+  });
+
+  it('resets the filter when the page remounts', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: [
+          ...automations,
+          { ...automations[0], id: 'archived', name: 'Archived flow', status: 'archived' },
+        ],
+      },
+      isLoading: false,
+    });
+    const page = renderPage();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Automations to show' }), {
+      key: 'Enter',
+    });
+    fireEvent.click(screen.getByRole('option', { name: 'Archived automations' }));
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Archived automations',
+    );
+    page.unmount();
+    renderPage();
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Active automations',
+    );
   });
 });

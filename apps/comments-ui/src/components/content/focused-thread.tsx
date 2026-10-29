@@ -1,10 +1,10 @@
 import CommentComponent from './comment';
 import React, { useCallback } from 'react';
 import ReplyTree from './reply-tree';
-import { ThreadWindow } from '../../utils/thread-graph';
 import { buildCommentPermalink, buildCommentsRootPermalink } from '../../utils/helpers';
 import { useAppContext } from '../../app-context';
 import { useNavActions } from '../../utils/nav-actions';
+import type { ThreadWindow } from '../../utils/thread-graph';
 
 type FocusedThreadProps = {
   focusedThread: ThreadWindow;

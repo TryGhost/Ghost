@@ -11,6 +11,7 @@ import {
 } from './save-engine';
 import {
   BASE,
+  dispatchAny,
   flush,
   forbidden,
   FUTURE,
@@ -311,6 +312,41 @@ describe('createSaveEngine', () => {
       await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
       expect(h.execute).toHaveBeenCalledTimes(1);
       await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
+    });
+
+    it.each(['publish', 'schedule'] as const)(
+      'refuses only the %s, not the post, when the writer may not change its status',
+      async (kind) => {
+        const h = setup();
+        const command = dispatchAny(h.engine, kind);
+        await h.fail(forbidden);
+
+        await expect(command).resolves.toEqual({
+          kind: 'failed',
+          error: forbidden,
+          executedAs: kind,
+        });
+        expect(h.engine.getState()).toEqual({ kind: 'error', intent: kind, error: forbidden });
+
+        h.edit();
+        void h.engine.dispatch('autosave');
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        expect(h.execute).toHaveBeenCalledTimes(2);
+        expect(h.requests[1]).toMatchObject({ command: { kind: 'autosave' } });
+      },
+    );
+
+    it('refuses only the unpublish of a published post the writer may not change', async () => {
+      const h = setup({ status: 'published' });
+      const revert = h.engine.dispatch('revert');
+      await h.fail(forbidden);
+
+      await expect(revert).resolves.toMatchObject({ kind: 'failed', error: forbidden });
+      expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'revert', error: forbidden });
+      h.edit();
+      void h.engine.dispatch('explicit');
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(2);
     });
 
     it('crashes on a 404 for a post that has no id yet', async () => {

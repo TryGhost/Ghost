@@ -6,6 +6,7 @@ import {
   isCollisionToken,
   isSettingsOnly,
   zeroMilliseconds,
+  type ConfirmOutcome,
   type LeaveDecision,
   type PersistedIdentity,
   type PendingSave,
@@ -39,17 +40,14 @@ import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
 import {
-  AUTHORS_REQUIRED,
-  PUBLISHED_AT_MUST_BE_PAST,
   SETTINGS_FIELD_KEYS,
   VALIDATED_SETTINGS_FIELD_KEYS,
   identityFor,
-  publishedAtInFuture,
-  settingsFieldError,
+  invalidField,
   tiersIncomplete,
-  titleError,
   validatedFieldsOf,
   type EditorSettingsPatch,
+  type InvalidField,
   type EditorSettingsFields,
   type SettingsFieldKey,
 } from './settings-fields';
@@ -102,6 +100,7 @@ export type PreparedSave =
   | (PreparedWrite & { isCreate: false; payload: EditorEditPayload });
 
 const MISSING_COLLISION_TOKEN = 'Cannot save without the version this post was loaded at.';
+const SAVED_ELSEWHERE = 'A newer version of this post was saved since it was opened.';
 
 function preparedOrInvalid(
   prepared: PreparedSave,
@@ -119,6 +118,8 @@ export interface EditorSessionTransport {
     options: PostWriteOptions,
   ) => Promise<EditorRecord | undefined>;
   generateSlug: (text: string, postId: string | null) => Promise<string>;
+  /** The post as the server holds it now. */
+  read: (id: string) => Promise<EditorRecord | undefined>;
 }
 
 export interface EditorSessionOptions {
@@ -206,6 +207,8 @@ export interface EditorSession {
   dispatchExplicit: () => Promise<SaveCompletion>;
   /** Retries a failed save: a settings save on a post that is not a draft as one, else explicitly. */
   retrySave: () => Promise<SaveCompletion>;
+  /** The field an explicit save of the live document would be refused over, by the save's own validator. */
+  invalidField: () => InvalidField | null;
   dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
   dispatchSchedule: (options: ScheduleOptions) => Promise<SaveCompletion>;
   dispatchRevert: () => Promise<SaveCompletion>;
@@ -301,12 +304,11 @@ function isHeldToken(candidate: string | null | undefined, held: string | null):
   );
 }
 
-/** Whether a collision token names a version later than another. */
+/** Whether a collision token names a version later than another; any token is later than none. */
 function isLaterToken(candidate: string | null, than: string | null): boolean {
   return (
     isCollisionToken(candidate) &&
-    isCollisionToken(than) &&
-    Date.parse(candidate) > Date.parse(than)
+    (!than || (isCollisionToken(than) && Date.parse(candidate) > Date.parse(than)))
   );
 }
 
@@ -331,6 +333,9 @@ export function createEditorSession({
   let identity: PersistedIdentity = record
     ? { id: record.id, updatedAt: record.updated_at ?? '' }
     : { id: null, updatedAt: null };
+  // Core allows a post with no updated_at, as imported posts can be, and skips its
+  // collision check for an update without one; the first save stamps it.
+  let requiresUpdatedAt = !record || Boolean(record.updated_at);
   let status: PostStatus = record?.status ?? 'draft';
   let publishedAt: string | null = record?.published_at ?? null;
   // Retain the writer's choice through older saves, even when it matches a refetch.
@@ -625,29 +630,35 @@ export function createEditorSession({
     projection: EditablePostPatch,
     settingsOnly: boolean,
   ): string | null {
-    const creatingDraft = request.snapshot.id === null && request.target.status === 'draft';
-    // The canvas fields a settings save leaves for Update are checked by Update.
-    const invalid =
-      (settingsOnly ? null : titleError(request.title)) ??
-      settingsFieldError(
-        validatedFieldsOf(live),
-        creatingDraft,
-        settingsOnly ? VALIDATED_SETTINGS_FIELD_KEYS.filter(heldForUpdate) : [],
-      );
-    if (invalid) {
-      return invalid;
-    }
-    // A status command with no time of its own carries whatever the sidebar
-    // staged; Core validates the publish time for scheduled posts only.
-    if (
-      request.target.publishedAt !== publishedAt &&
-      publishedAtInFuture(request.target.status, request.target.publishedAt)
-    ) {
-      return PUBLISHED_AT_MUST_BE_PAST;
-    }
-    // Only an emptied list reaches the request; an untouched create is credited
-    // to the current user while the payload is built.
-    return projection.authors?.length === 0 ? AUTHORS_REQUIRED : null;
+    return (
+      invalidField({
+        // The canvas fields a settings save leaves for Update are checked by Update.
+        title: settingsOnly ? null : request.title,
+        fields: validatedFieldsOf(live),
+        isNew: request.snapshot.id === null && request.target.status === 'draft',
+        skip: settingsOnly ? VALIDATED_SETTINGS_FIELD_KEYS.filter(heldForUpdate) : [],
+        // A status command with no time of its own carries whatever the sidebar staged.
+        changedPublishTime:
+          request.target.publishedAt !== publishedAt
+            ? { status: request.target.status, publishedAt: request.target.publishedAt }
+            : null,
+        // Only an emptied list reaches the request; an untouched create is credited
+        // to the current user while the payload is built.
+        authors: projection.authors,
+      })?.message ?? null
+    );
+  }
+
+  // What an explicit save of the live document would be refused over.
+  function liveInvalidField(): InvalidField | null {
+    const current = livePublishedAt();
+    return invalidField({
+      title: live.title,
+      fields: validatedFieldsOf(live),
+      isNew: identity.id === null && status === 'draft',
+      changedPublishTime: current !== publishedAt ? { status, publishedAt: current } : null,
+      authors: tracker.isFieldDirty('authors') ? live.authors : undefined,
+    });
   }
 
   function prepare(
@@ -750,12 +761,14 @@ export function createEditorSession({
         ),
       );
     }
-    if (!projection.updated_at) {
+    if (!projection.updated_at && (requiresUpdatedAt || newerVersion !== null)) {
       // Without the token the server skips its collision check entirely and the
       // save would overwrite whatever landed in the meantime.
       return Promise.resolve({
         ok: false,
-        error: { kind: 'unknown', message: MISSING_COLLISION_TOKEN },
+        error: requiresUpdatedAt
+          ? { kind: 'unknown', message: MISSING_COLLISION_TOKEN }
+          : { kind: 'conflict', message: SAVED_ELSEWHERE },
       });
     }
     return Promise.resolve(
@@ -763,7 +776,7 @@ export function createEditorSession({
         {
           ...prepared,
           isCreate: false,
-          payload: { ...payload, id, updated_at: projection.updated_at },
+          payload: { ...payload, id, updated_at: projection.updated_at || null },
         },
         invalid,
       ),
@@ -799,6 +812,32 @@ export function createEditorSession({
       releaseSavedPublishTime();
       return { ok: false, error: toSaveError(error, saveFailureMessage) };
     }
+  }
+
+  // A write landed when the server holds this session's saved copy with exactly
+  // that write over it; a copy anyone else touched stays theirs to collide with.
+  async function confirm(prepared: PreparedSave): Promise<ConfirmOutcome<EditorSaveResult>> {
+    if (prepared.isCreate) {
+      return { ok: true, result: null };
+    }
+    let post: EditorRecord | undefined;
+    try {
+      post = await transport.read(prepared.payload.id);
+    } catch (error) {
+      return { ok: false, error: toSaveError(error, saveFailureMessage) };
+    }
+    if (
+      !post ||
+      !isLaterToken(post.updated_at ?? null, identity.updatedAt) ||
+      post.status !== prepared.target.status ||
+      !tracker.holdsWrite(prepared.projection, projectionOf(post))
+    ) {
+      return { ok: true, result: null };
+    }
+    return {
+      ok: true,
+      result: { id: post.id, status: post.status, updatedAt: post.updated_at ?? '', post },
+    };
   }
 
   function reconcile(prepared: PreparedSave, result: EditorSaveResult): void {
@@ -841,6 +880,7 @@ export function createEditorSession({
 
     const created = identity.id === null;
     identity = { id: result.id, updatedAt: result.updatedAt };
+    requiresUpdatedAt = true;
     status = result.status;
     publishedAt = result.post.published_at ?? null;
     if (publishedAtEditedAt <= prepared.builtAtVersion) {
@@ -878,6 +918,7 @@ export function createEditorSession({
     prepare,
     execute,
     reconcile,
+    confirm,
     autosaveDebounceMs,
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
@@ -1077,6 +1118,7 @@ export function createEditorSession({
         ? engine.dispatch('settings', { retry: true })
         : engine.dispatch('explicit');
     },
+    invalidField: liveInvalidField,
     dispatchPublish: (options) => engine.dispatch('publish', options),
     dispatchSchedule: (options) => engine.dispatch('schedule', options),
     dispatchRevert: () => engine.dispatch('revert'),

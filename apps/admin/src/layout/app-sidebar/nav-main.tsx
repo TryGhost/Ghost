@@ -6,7 +6,8 @@ import {
   SidebarMenu,
   SidebarMenuBadge,
 } from '@tryghost/shade/components';
-import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { formatNumber, LucideIcon, useIsMobile } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
@@ -25,6 +26,10 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
   const site = useBrowseSite();
   const url = getAdminToolbarUrl(site.data?.site.url);
+  // With admin7Design, View site is a place in the desktop frame's top bar
+  const admin7Design = useFeatureFlag('admin7Design');
+  const isMobile = useIsMobile();
+  const viewSiteInTopBar = admin7Design && !isMobile;
 
   // The network app has its own notification state, so we don't want to show
   // multiple indicators when you have navigated there.
@@ -75,21 +80,23 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
               )}
             </NavMenuItem>
           )}
-          <NavMenuItem className="group/viewsite relative">
-            <NavMenuItem.Link to="site">
-              <LucideIcon.AppWindow />
-              <NavMenuItem.Label>View site</NavMenuItem.Label>
-            </NavMenuItem.Link>
-            <a
-              aria-label="View site in new tab"
-              className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2"
-              href={url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <LucideIcon.ExternalLink size={16} />
-            </a>
-          </NavMenuItem>
+          {!viewSiteInTopBar && (
+            <NavMenuItem className="group/viewsite relative">
+              <NavMenuItem.Link to="site">
+                <LucideIcon.AppWindow />
+                <NavMenuItem.Label>View site</NavMenuItem.Label>
+              </NavMenuItem.Link>
+              <a
+                aria-label="View site in new tab"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2"
+                href={url}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <LucideIcon.ExternalLink size={16} />
+              </a>
+            </NavMenuItem>
+          )}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

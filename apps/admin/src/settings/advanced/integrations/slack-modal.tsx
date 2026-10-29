@@ -12,6 +12,7 @@ import {
   FieldLegend,
   FieldSet,
   Input,
+  Link,
 } from '@tryghost/shade/components';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { getSettingValues, useTestSlack } from '@tryghost/admin-x-framework/api/settings';
@@ -96,9 +97,10 @@ function SlackModal() {
                 <FieldDescription>
                   <>
                     Automatically send newly published posts to a channel in Slack or any
-                    Slack-compatible service like Discord or Mattermost. Set up a new incoming
-                    webhook{' '}
-                    <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks">here</a>,
+                    Slack-compatible service like Discord or Mattermost. Set up a new{' '}
+                    <Link href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" external>
+                      incoming webhook in Slack
+                    </Link>{' '}
                     and grab the URL.
                   </>
                 </FieldDescription>

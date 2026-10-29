@@ -125,7 +125,7 @@ export function RevisionPreview({
             </figure>
           ) : null}
           <div
-            className="heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]"
+            className="heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.18] font-bold tracking-[-0.017em] text-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]"
             data-testid={postHistoryPreviewTitle}
           >
             {title}
@@ -133,12 +133,12 @@ export function RevisionPreview({
           {showExcerpt ? (
             <>
               <div
-                className="text-xl leading-normal tracking-tight text-text-secondary"
+                className="text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90"
                 data-testid={postHistoryPreviewExcerpt}
               >
                 {excerpt}
               </div>
-              {excerpt ? <hr className="mt-4 mb-6 border-border" /> : null}
+              {excerpt ? <hr className="mt-4 mb-12 border-border-default" /> : null}
             </>
           ) : null}
           {revision.lexical === null ? (

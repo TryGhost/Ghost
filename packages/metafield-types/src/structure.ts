@@ -82,7 +82,7 @@ export type PartsOf<T extends FieldType> = T extends FieldType
  * Typed to the parts the caller's type declares, so a caller holding one of these can
  * index a value of that type without restating which parts exist.
  */
-export function subFieldsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
+export function partsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
   // Optional because a caller built against an older catalog than the server it talks
   // to reaches here with a type this build has never heard of, which reads as no parts.
   const parts: Readonly<Record<string, PartType>> | null | undefined = FIELD_PARTS[type];

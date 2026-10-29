@@ -11,10 +11,6 @@ interface JSONArray extends Array<string | number | boolean | Date | JSONObject 
 export type Config = {
   version: string;
   environment: string;
-  editor: {
-    url: string;
-    version: string;
-  };
   signupForm: {
     url: string;
     version: string;
@@ -54,8 +50,16 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      limitAutomations?: {
+        max?: number;
+        error?: string;
+      };
       newsletters?: {
         max?: number;
+        error?: string;
+      };
+      uploads?: {
+        max?: number; // Bytes, enforced on file and media uploads but not images
         error?: string;
       };
       emails?: {

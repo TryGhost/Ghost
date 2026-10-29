@@ -1,4 +1,5 @@
 import AutomationStatusBadge from './automation-status-badge';
+import AutomationListActions from './automation-list-actions';
 import React from 'react';
 import type { AutomationBrowseItem } from '@tryghost/admin-x-framework/api/automations';
 import { Link } from '@tryghost/admin-x-framework';
@@ -11,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 
 // Widths are scoped to `lg` because below that the stats lay out on the row's
@@ -48,9 +50,28 @@ const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
   event.currentTarget.querySelector('a')?.click();
 };
 
+export type AutomationsToShow = 'non-archived' | 'archived' | 'all';
+
+const EMPTY_COPY = {
+  'non-archived': {
+    title: 'No active automations',
+    description: 'Every automation you have is archived. Switch views to see them.',
+  },
+  archived: {
+    title: 'Nothing archived',
+    description: 'Archiving an automation takes it off your list without deleting it.',
+  },
+  all: {
+    title: 'No automations yet',
+    description: 'Automations you create will show up here.',
+  },
+};
+
 interface AutomationsListProps {
-  automations?: AutomationBrowseItem[];
+  automations: AutomationBrowseItem[];
+  automationsToShow: AutomationsToShow;
   isLoading?: boolean;
+  canManage: boolean;
 }
 
 const AutomationsListSkeleton: React.FC = () => {
@@ -94,14 +115,42 @@ const AutomationsListSkeleton: React.FC = () => {
 };
 
 const AutomationsList: React.FC<AutomationsListProps> = ({
-  automations = [],
+  automations,
+  automationsToShow,
   isLoading = false,
+  canManage,
 }) => {
   if (isLoading) {
     return <AutomationsListSkeleton />;
   }
 
-  const showRunAnalytics = automations.every((automation) => automation.stats !== undefined);
+  const filteredAutomations = automations.filter((automation) => {
+    if (automationsToShow === 'all') {
+      return true;
+    }
+    return automationsToShow === 'archived'
+      ? automation.status === 'archived'
+      : automation.status !== 'archived';
+  });
+
+  if (filteredAutomations.length === 0) {
+    const { title, description } = EMPTY_COPY[automations.length === 0 ? 'all' : automationsToShow];
+
+    return (
+      <Stack align="center" className="py-16 text-center" gap="xs">
+        <Text as="h3" weight="medium">
+          {title}
+        </Text>
+        <Text className="max-w-80 text-pretty" leading="tight" size="sm" tone="secondary">
+          {description}
+        </Text>
+      </Stack>
+    );
+  }
+
+  const showRunAnalytics = filteredAutomations.every(
+    (automation) => automation.stats !== undefined,
+  );
 
   return (
     <Table
@@ -127,11 +176,16 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
             <TableHead className="w-28 lg:px-4" scope="col">
               Status
             </TableHead>
+            {canManage && (
+              <TableHead className="w-16" scope="col">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
       )}
       <TableBody className="flex flex-col lg:table-row-group">
-        {automations.map((automation) => {
+        {filteredAutomations.map((automation) => {
           const description = automation.description.trim();
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
@@ -158,12 +212,17 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
           return (
             <TableRow
               key={automation.id}
-              className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
+              className={cn(
+                'grid w-full cursor-pointer items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0',
+                canManage
+                  ? 'grid-cols-[repeat(3,minmax(0,1fr))_auto_auto]'
+                  : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',
+              )}
               data-testid="automation-list-row"
               onClick={handleRowClick}
             >
               <TableHead
-                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"
+                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:max-w-0 lg:p-4"
                 scope="row"
               >
                 <Link
@@ -172,7 +231,9 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                 >
                   <span className="block text-md font-semibold">{automation.name}</span>
                 </Link>
-                {description && <span className="block text-muted-foreground">{description}</span>}
+                {description && (
+                  <span className="block truncate text-muted-foreground">{description}</span>
+                )}
               </TableHead>
               {showRunAnalytics &&
                 AUTOMATION_STAT_COLUMNS.map((column) => {
@@ -204,6 +265,14 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               >
                 <AutomationStatusBadge status={automation.status} />
               </TableCell>
+              {canManage && (
+                <TableCell
+                  className="col-start-5 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-16 lg:p-4"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <AutomationListActions automation={automation} />
+                </TableCell>
+              )}
             </TableRow>
           );
         })}

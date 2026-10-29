@@ -18,10 +18,10 @@ import {
   withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // What a real publish stamps: seconds the minute-granular fields cannot show.
@@ -50,8 +50,7 @@ let settingsRequestUrl: string | null = null;
 
 function withTimezone(timezone: string) {
   settingsRequestUrl = null;
-  return {
-    ...FLAG_ON,
+  return withoutAutosave({
     boot: {
       browseSettings: {
         response: (request: Request) => {
@@ -60,13 +59,13 @@ function withTimezone(timezone: string) {
         },
       },
     },
-  };
+  });
 }
 
 function asContributor() {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {
@@ -226,6 +225,11 @@ describe('Post settings publish date', () => {
     // Published an hour ago, so the field already shows today in that zone.
     const anHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const saveApi = fakeSavablePost({ status: 'published', published_at: anHourAgo });
+    // The site's member total, which the publish inputs read before Unpublish is offered.
+    fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+      members: [],
+      meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+    });
     await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(timezone));
     await openPublishDate();
 
@@ -245,16 +249,24 @@ describe('Post settings publish date', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Please choose a past date and time.');
     expect(saveApi.requests).toHaveLength(0);
 
-    // The banner outlives the panel: closing it does not hide the reason.
+    // The status line outlives the panel: closing it does not hide the reason.
     await editorScreen.settingsToggle().click();
     await expect(editorScreen.settingsPublishDateError()).toHaveCount(0);
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Please choose a past date and time.');
+
+    // Unpublish is refused too, and opens the panel on the date.
+    await expect.element(editorScreen.unpublishButton()).toBeEnabled();
+    await editorScreen.unpublishButton().click();
+
+    await expect.element(editorScreen.settingsPublishDate()).toHaveFocus();
+    await expect(publishScreen.updateFlow()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
   });
 
   it('saves a typed date, however far back, once the field is left', async () => {

@@ -20,12 +20,12 @@ describe('renderers/callout-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">💡</div>
                     <div class="kg-callout-text">
@@ -38,10 +38,10 @@ describe('renderers/callout-renderer', function () {
             `);
         });
 
-        it('renders without emoji', function () {
+        it('renders without emoji', async function () {
             const result = renderForWeb(getTestData({calloutEmoji: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-text">
                         <b><strong>Hello!</strong></b>
@@ -53,10 +53,10 @@ describe('renderers/callout-renderer', function () {
             `);
         });
 
-        it('falls back to white with an invalid backgroundColor', function () {
+        it('falls back to white with an invalid backgroundColor', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'rgba(124, 139, 154, 0.13)'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-callout-card kg-callout-card-white">
                     <div class="kg-callout-emoji">💡</div>
                     <div class="kg-callout-text">
@@ -69,10 +69,10 @@ describe('renderers/callout-renderer', function () {
             `);
         });
 
-        it('renders inline code', function () {
+        it('renders inline code', async function () {
             const result = renderForWeb(getTestData({calloutText: '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">💡</div>
                     <div class="kg-callout-text">
@@ -84,12 +84,12 @@ describe('renderers/callout-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">💡</div>
                     <div class="kg-callout-text">

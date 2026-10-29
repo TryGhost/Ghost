@@ -27,6 +27,7 @@ const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="embed-signup-form"
       testId="embed-signup-form"
       title="Signup forms"
+      onOpen={openPreviewModal}
     />
   );
 };

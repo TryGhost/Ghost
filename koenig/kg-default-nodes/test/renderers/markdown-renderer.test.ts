@@ -18,12 +18,12 @@ describe('renderers/markdown-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <h1 id="heading">HEADING</h1>
                 <ul>
                     <li>list</li>
@@ -45,12 +45,12 @@ describe('renderers/markdown-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <h1 id="heading">HEADING</h1>
                 <ul>
                     <li>list</li>

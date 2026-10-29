@@ -39,11 +39,4 @@ describe('Skip link', () => {
     expect(main.contains(document.activeElement)).toBe(true);
     expect(main.hasAttribute('tabindex')).toBe(false);
   });
-
-  it('leaves skipping to Ember on the screens Ember shows', async () => {
-    await renderAdminApp('/pro');
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-
-    await expect(skipLink()).toHaveCount(0);
-  });
 });

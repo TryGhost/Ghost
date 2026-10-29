@@ -70,9 +70,17 @@ that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
 
+The screen can ask the panel to take the writer to a field, as a refused
+publish does. The panel shows the field's section, closing another pane or
+opening the field's own, and focuses the field once it is there, including a
+code editor that is still loading. Each field marks the element it is edited in
+with `data-settings-field`, and `SETTINGS_FIELD_SECTIONS` in `sections.ts` names
+the section each field the save checks lives in.
+
 Returning to the section list and reopening the same social-card pane keeps an
-in-progress image upload pending. Its file picker and Unsplash button stay
-disabled until the upload succeeds or fails.
+in-progress image upload pending, as does switching between Meta data's tabs.
+Its file picker and Unsplash button stay disabled until the upload succeeds or
+fails.
 
 ## Escape
 
@@ -81,7 +89,9 @@ it closes the list and keeps the term that was typed. In a code injection editor
 it frees the editor's Tab and closes nothing. In a dialog, a select or an
 uploader it closes that control. In the Unsplash search it closes the search and
 leaves the field it was opened from. With none of those open it closes the pane,
-and with no pane open the sidebar answers Escape with nothing.
+and with no pane open the sidebar answers Escape with nothing. The Editor font
+row's choices are not a layer: Escape leaves them shown, and only the row folds
+them away.
 
 The Unsplash search traps focus and loops Tab navigation in both directions.
 Closing it returns focus to the picker button when that field is still present.
@@ -89,13 +99,25 @@ Closing it returns focus to the picker button when that field is still present.
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every
-editor entry. There is no keyboard shortcut for it.
+editor entry unless it is restored open as described below. Cmd/Ctrl+. toggles
+it too, and Keyboard shortcuts lists it. The shortcut leaves focus where the
+writer is typing; closing the panel while focus is inside it moves focus to the
+toggle, as a click does. It does nothing while the publish flow or a modal
+dialog is open.
 
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
 sits in the flow beside the editor at a fixed 350px, including while a subview
 is open, and wide and full cards in the document keep fitting the narrowed
 writing area throughout the panel's motion.
+
+The editor opens with the panel as the writer last left it with the toggle, one
+state for every post and page held in this browser's `localStorage`
+(`settings-open.ts`, `use-settings-open.ts`). A panel restored open is in place
+from the first paint, without sliding in. When a save is refused and the editor
+opens the panel to show the field, that open is not remembered. Nor is a toggle
+below `lg`, where the panel always starts closed so it never covers the post on
+arrival. Storage that is blocked, empty or unreadable starts the panel closed.
 
 ## URL
 
@@ -194,17 +216,18 @@ There is no keyboard reorder: Enter and Space on a chip remove it.
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then. When that default is `Specific tier(s)`, the list ticks the tiers
-in `default_content_visibility_tiers` until then too, and ticking or unticking
+until then. When that default is `Specific tier(s)`, the picker selects the tiers
+in `default_content_visibility_tiers` until then too, and picking or removing
 a tier starts from them. Re-choosing the value already shown is not an edit and
 sends nothing. Choosing anything other than `Specific tier(s)` clears the tiers
-it granted. The tier list is every one of the site's paid
-tiers, active ones before archived, and it loads only while `Specific tier(s)`
-is the choice. The browse is followed page by page, and the list shows once the
-last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
+it granted. The tiers are picked in a chip field, as authors are: the selected
+tiers are chips, and its list is every one of the site's paid tiers, under
+`Active tiers` and `Archived tiers` headings, with the selected ones ticked. It
+loads only while `Specific tier(s)` is the choice. The browse is followed page by
+page, and the chips and list show once the last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
 selection, and a tier ID without type metadata is preserved. A failed tier
-lookup shows an error and a Retry action in place of the list.
+lookup shows an error and a Retry action in place of the field.
 
 An empty tier selection is staged like any other edit but never sent: the
 section asks for at least one tier. On a post that exists, no settings save runs
@@ -226,8 +249,8 @@ every paid tier, archived ones included, so switching one of those posts to
 the save that follows the switch. Once saved, an unrelated edit sends neither
 access field.
 
-On a post that is not a draft, ticking or unticking a tier is staged without a
-save of its own, as in Ember: every save of a published post writes a revision,
+On a post that is not a draft, picking or removing a tier is staged without a
+save of its own: every save of a published post writes a revision,
 so the picks go out once, with the next settings change or Update, and count as
 unsaved work until then. The visibility choice itself saves at once.
 
@@ -393,14 +416,19 @@ carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
 
+The X and Facebook cards are tabs of this pane rather than panes of their own:
+Search, X card and Facebook card, with no rows of their own in the section list.
+The pane opens on Search every time, unless the panel is taking the writer to a
+card's field, when it opens on that card's tab.
+
 ## X and Facebook cards
 
-The card each network renders for the post is a pane of its own, and every role
-that can open the panel can open either. Their image, title and description are
-the post's `twitter_` and `og_` fields: the title and description are staged as
-the writer types and committed on the blur that ends the edit, and an uploaded
-or removed image is committed as it lands rather than waiting for a blur. A
-field cleared back to empty is stored as no value.
+The card each network renders for the post is a tab of the Meta data pane, and
+every role that can open the panel can open either. Their image, title and
+description are the post's `twitter_` and `og_` fields: the title and
+description are staged as the writer types and committed on the blur that ends
+the edit, and an uploaded or removed image is committed as it lands rather than
+waiting for a blur. A field cleared back to empty is stored as no value.
 
 The image comes from the file picker, a drop, or Unsplash, and an upload the
 server refuses is reported without changing the field. The Unsplash picker is
@@ -424,6 +452,16 @@ title, the description and the domain and shows the title whole, while Facebook
 stacks the domain, the title and the description and truncates both to the 140
 characters the description is held to.
 
+## Editor font
+
+A row before Keyboard shortcuts chooses the font the writer reads the post in
+while editing (see the [editor README](../README.md#editor-font)). Unlike the
+surrounding rows, it opens no pane: its chevron turns down and the three fonts
+slide open beneath it, each as a sample in its own font, and fold away the same
+way. Folded, they stay mounted but take no focus. A pick applies to the canvas
+at once and is saved as it is made. The row starts folded whenever the section
+list is shown again. Every role sees it, at every screen size.
+
 ## Keyboard shortcuts
 
 A pane every role that can open the panel can open, and the one thing in the
@@ -436,10 +474,16 @@ a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
 
 The reference uses compact rows with a shared hover background, wrapping labels,
-and underlined group headings. Definition-list spacing is reset locally so Ember's
-global list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
+and underlined group headings. Definition-list spacing is reset locally so inherited
+list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
 lays out the individual `Kbd` caps; it does not draw another cap around them.
 The caps use `variant="contrast"` to stand out against the sidebar background.
+
+## Using the editor
+
+A row after Keyboard shortcuts links to Ghost's guide to the editor. Unlike the
+surrounding rows, it opens no pane: it opens the guide in a new tab, and ends in
+an outward arrow instead of a chevron to say so. Every role sees it.
 
 ## Delete
 
@@ -448,6 +492,13 @@ calls the API itself. A post has nothing to delete until its first save gives it
 an ID, so the button appears only once the post exists, and every role that can
 open the editor is offered it — which posts each of them may actually delete is
 the API's answer, not the panel's.
+
+The button is the last thing in the section list. When the list is shorter
+than the panel it sits at the panel's foot rather than straight after the last
+section; when the list is longer, it follows the last section and is reached by
+scrolling to the end. Before the first save the list ends at the last section,
+with no space held for the button, and an open pane hides it along with the
+other sections.
 
 Confirming names the post and says the deletion is permanent. Cancelling returns
 focus to the Delete button. An expired session asks the writer to sign in, in

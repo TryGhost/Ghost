@@ -1,23 +1,31 @@
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import IconToggleGroup from '@/settings/components/icon-toggle-group';
+import { FieldTitle } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const ButtonStyleField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
-    <div className="flex items-center justify-between">
-      <span>Button style</span>
-      <ToggleGroup
-        type="single"
+    <Inline className="w-full" gap="sm" justify="between">
+      <FieldTitle>Button style</FieldTitle>
+      <IconToggleGroup
+        label="Button style"
+        options={[
+          {
+            value: 'fill',
+            label: 'Fill',
+            icon: <LucideIcon.Squircle className="size-3.5!" fill="currentColor" />,
+          },
+          {
+            value: 'outline',
+            label: 'Outline',
+            icon: <LucideIcon.Squircle className="size-3.5!" />,
+          },
+        ]}
         value={settings.button_style || 'fill'}
-        onValueChange={(value: string) => value && onSettingsChange({ button_style: value })}
-      >
-        <ToggleGroupItem aria-label="Fill" value="fill">
-          <span className="inline-block h-4 w-5 rounded-sm bg-current" />
-        </ToggleGroupItem>
-        <ToggleGroupItem aria-label="Outline" value="outline">
-          <span className="inline-block h-4 w-5 rounded-sm border-[1.5px] border-current" />
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </div>
+        onValueChange={(buttonStyle) => onSettingsChange({ button_style: buttonStyle })}
+      />
+    </Inline>
   );
 };

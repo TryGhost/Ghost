@@ -8,9 +8,9 @@ import {
 import { withMockFetch } from '../../utils/mock-fetch';
 
 describe('automated-email-design api', () => {
-  it('updates the React cache without invalidating Ember state', async () => {
+  it('updates the cache without invalidating the query', async () => {
     const queryClient = createTestQueryClient();
-    const onInvalidate = vi.fn();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
     const initialData: AutomatedEmailDesignResponseType = {
       automated_email_design: [
@@ -61,7 +61,6 @@ describe('automated-email-design api', () => {
 
     await withMockFetch({ json: updatedData }, async () => {
       const { result } = renderHookWithProviders(() => useEditAutomatedEmailDesign(), {
-        frameworkProps: { onInvalidate },
         queryClient,
       });
 
@@ -78,7 +77,7 @@ describe('automated-email-design api', () => {
         ).toEqual(updatedData);
       });
 
-      expect(onInvalidate).not.toHaveBeenCalled();
+      expect(invalidateSpy).not.toHaveBeenCalled();
     });
   });
 });

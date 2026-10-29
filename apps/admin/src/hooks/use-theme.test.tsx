@@ -172,47 +172,7 @@ describe('useTheme (standalone)', () => {
   );
 });
 
-describe('useTheme with an Ember adapter', () => {
-  themeTest(
-    'owns the DOM and keeps the Ember editor in sync with system changes',
-    async ({ server, wrapper, animationFrames }) => {
-      mockPreferences(server, 'system');
-      const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
-      const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
-      const apply = vi.fn();
-      const disconnect = vi.fn();
-      window.EmberBridge = {
-        state: {
-          onUpdate: vi.fn(),
-          onInvalidate: vi.fn(),
-          onDelete: vi.fn(),
-          on: vi.fn(),
-          off: vi.fn(),
-          sidebarVisible: true,
-          connectAdminTheme: () => ({ preload: async () => {}, apply, disconnect }),
-        },
-      };
-
-      try {
-        const { result, unmount } = renderHook(() => useTheme(), { wrapper });
-        await waitFor(() => expect(result.current.theme).toBe('system'));
-        await waitFor(() => expect(apply).toHaveBeenLastCalledWith('light'));
-        act(() => {
-          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
-        });
-        expect(result.current.resolvedTheme).toBe('dark');
-        expect(document.documentElement.classList.contains('dark')).toBe(true);
-        expect(apply).toHaveBeenLastCalledWith('dark');
-        unmount();
-        expect(disconnect).toHaveBeenCalledOnce();
-      } finally {
-        delete window.EmberBridge;
-        mediaSpy.mockRestore();
-        flushAnimationFrames(animationFrames);
-      }
-    },
-  );
-
+describe('useTheme save failures', () => {
   themeTest(
     'rolls back a failed save to the current system appearance',
     async ({ server, wrapper, animationFrames }) => {

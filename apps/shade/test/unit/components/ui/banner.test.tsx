@@ -29,12 +29,19 @@ describe('Banner Component', () => {
     { variant: 'info' as const, expectedClass: 'bg-state-info/10' },
     { variant: 'success' as const, expectedClass: 'bg-state-success/10' },
     { variant: 'warning' as const, expectedClass: 'bg-state-warning/10' },
-    { variant: 'destructive' as const, expectedClass: 'bg-surface-panel' },
+    { variant: 'destructive' as const, expectedClass: 'bg-state-danger/10' },
   ])('applies $variant variant correctly', ({ variant, expectedClass }) => {
     render(<Banner variant={variant}>Content</Banner>);
     const banner = screen.getByRole('status');
 
     assert.ok(banner.className.includes(expectedClass), `Should have ${expectedClass} class`);
+  });
+
+  it('gives the destructive variant a 20% danger border', () => {
+    render(<Banner variant="destructive">Content</Banner>);
+    const banner = screen.getByRole('status');
+
+    assert.ok(banner.className.includes('border-state-danger/20'), 'Should have a 20% border');
   });
 
   it('applies gradient variant correctly', () => {

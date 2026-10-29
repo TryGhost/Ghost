@@ -10,7 +10,7 @@ export const getNewAutomationName = (
 
   let result = 'New Automation';
   for (let suffix = 2; existingNames.has(result); suffix += 1) {
-    result = `New Automation ${suffix}`;
+    result = `New Automation (${suffix})`;
   }
 
   return result;

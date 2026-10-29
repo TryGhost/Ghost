@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-framework",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-framework",
@@ -103,6 +103,8 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/limit-service": "workspace:*",
     "@tryghost/metafield-csv": "workspace:*",
@@ -120,6 +122,7 @@
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
     "@playwright/test": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@tryghost/koenig-lexical": "workspace:*",

@@ -1,5 +1,7 @@
 import { availableParallelism } from 'node:os';
+import { fileURLToPath } from 'node:url';
 
+import { build, type Rolldown } from 'vite';
 import { defineConfig } from 'vitest/config';
 import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
@@ -49,23 +51,239 @@ const guardFrameNavigations: BrowserCommand<[]> = async ({ page }) => {
   );
 };
 
-const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string, delayMs?: number]> = async (
   { page },
   origin,
   html,
+  delayMs = 0,
 ) => {
   const fakedOrigin = new URL(origin).origin;
   const matcher = (url: URL) => url.origin === fakedOrigin;
-  const handler: FrameRouteHandler = (route) =>
-    route.fulfill({ contentType: 'text/html', body: html });
+  const handler: FrameRouteHandler = async (route) => {
+    const request = route.request();
+    if (request.resourceType() !== 'document' || !request.frame().parentFrame()) {
+      await route.fallback();
+      return;
+    }
+    if (delayMs > 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, delayMs);
+      });
+    }
+    try {
+      await route.fulfill({ contentType: 'text/html', body: html });
+    } catch {
+      // The frame gave up waiting and was removed, or the spec ended: nothing to answer.
+    }
+  };
   await page.route(matcher, handler);
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+};
+
+const failFrameOrigin: BrowserCommand<[origin: string]> = async ({ page }, origin) => {
+  const failedOrigin = new URL(origin).origin;
+  const matcher = (url: URL) => url.origin === failedOrigin;
+  const handler: FrameRouteHandler = (route) => route.abort('connectionrefused');
+  await page.route(matcher, handler);
+  frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+};
+
+// Returns the code of a build's entry chunk, which is what a frame loads.
+function entryChunkCode(result: Awaited<ReturnType<typeof build>>, what: string): string {
+  const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
+  const chunk = outputs
+    .flatMap(({ output }) => output)
+    .find((file): file is Rolldown.OutputChunk => file.type === 'chunk' && file.isEntry);
+  if (!chunk) {
+    throw new Error(`${what} produced no script`);
+  }
+  return chunk.code;
+}
+
+// Runs each build once for the whole run, by key. If a build fails, the next spec that asks builds
+// it again, rather than every later spec failing.
+const builds = new Map<string, Promise<string>>();
+
+function buildOnce(key: string, run: () => Promise<string>): Promise<string> {
+  let built = builds.get(key);
+  if (!built) {
+    built = run();
+    built.catch(() => builds.delete(key));
+    builds.set(key, built);
+  }
+  return built;
+}
+
+// Bundles a script that a faked frame runs into one module with its imports, because the frame is
+// on another origin and can't load anything from the test server.
+async function buildFrameScript(entry: string): Promise<string> {
+  const root = fileURLToPath(new URL('.', import.meta.url));
+  const result = await build({
+    configFile: false,
+    root,
+    logLevel: 'silent',
+    publicDir: false,
+    resolve: sharedResolve,
+    build: {
+      write: false,
+      minify: false,
+      copyPublicDir: false,
+      lib: { entry, formats: ['es'], fileName: 'frame' },
+    },
+  });
+  return entryChunkCode(result, `Bundling ${entry} for a frame`);
+}
+
+const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) =>
+  buildOnce(`frame:${entry}`, () => buildFrameScript(entry));
+
+// The app SDK's browser bundle, built with the SDK's own build config, as `pnpm build` writes it to
+// packages/app-sdk/dist/app-sdk.js. It's built here rather than read from there, so the specs run
+// the SDK as it is in the checkout, whether or not it has been built. Workspace packages resolve to
+// their source, as everywhere in these specs, so app-contracts doesn't need to be built either.
+const APP_SDK_ROOT = fileURLToPath(new URL('../../packages/app-sdk/', import.meta.url));
+
+async function buildAppSdk(): Promise<string> {
+  const result = await build({
+    configFile: `${APP_SDK_ROOT}vite.config.ts`,
+    root: APP_SDK_ROOT,
+    logLevel: 'silent',
+    resolve: { conditions: sharedResolve.conditions },
+    build: { write: false, sourcemap: false },
+  });
+  return entryChunkCode(result, 'Building the app SDK');
+}
+
+const bundleAppSdk: BrowserCommand<[]> = () => buildOnce('app-sdk', buildAppSdk);
+
+// How long `callInFrame` waits for Playwright to see a frame the page already shows. A frame on
+// another origin runs in its own process, and Playwright attaches to it asynchronously. On a busy
+// machine, that can happen after the page has already received messages from the frame.
+const FRAME_ATTACH_TIMEOUT_MS = 5000;
+
+// Returns the newest frame on `origin`, waiting for Playwright to attach to it if it hasn't yet.
+async function newestFrameOn(page: BrowserPage, origin: string, purpose: string) {
+  const newestOnOrigin = () =>
+    page
+      .frames()
+      .filter(
+        (candidate) => URL.canParse(candidate.url()) && new URL(candidate.url()).origin === origin,
+      )
+      .at(-1);
+  const deadline = Date.now() + FRAME_ATTACH_TIMEOUT_MS;
+  let frame = newestOnOrigin();
+  while (!frame && Date.now() < deadline) {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    frame = newestOnOrigin();
+  }
+  if (!frame) {
+    throw new Error(`No frame on ${origin} to ${purpose}`);
+  }
+  return frame;
+}
+
+// Calls a hook that the script in a faked frame exposes on `window.__app`, in the newest frame on
+// `origin`. The frame is on another origin, so the spec can't reach into it directly.
+const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]]> = async (
+  { page },
+  origin,
+  hook,
+  args,
+) => {
+  const frame = await newestFrameOn(page, origin, `call ${hook} in`);
+  return frame.evaluate(
+    ([name, rest]) => {
+      const hooks = (globalThis as { __app?: Record<string, (...a: unknown[]) => unknown> }).__app;
+      if (!hooks?.[name]) {
+        throw new Error(`The frame has no ${name} hook`);
+      }
+      return hooks[name](...rest);
+    },
+    [hook, args] as const,
+  );
+};
+
+// Reloads the document in the newest frame on `origin`, as the page itself would, without changing
+// the frame element. The reload is scheduled, so the call returns before the document unloads. The
+// script is a string because it runs in the frame, where this file's types don't exist.
+const reloadFrame: BrowserCommand<[origin: string]> = async ({ page }, origin) => {
+  const frame = await newestFrameOn(page, origin, 'reload');
+  await frame.evaluate('setTimeout(() => location.reload(), 0)');
+};
+
+// Posts a form from the document in the newest frame on `origin` to `action`, as the page's own
+// form would. The response loads as a new document in the same frame. Scheduled and passed as a
+// string, like `reloadFrame`.
+const postFrameForm: BrowserCommand<[origin: string, action: string]> = async (
+  { page },
+  origin,
+  action,
+) => {
+  const frame = await newestFrameOn(page, origin, 'post a form in');
+  await frame.evaluate(
+    `setTimeout(() => {
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = ${JSON.stringify(action)};
+      document.body.append(form);
+      form.submit();
+    }, 0)`,
+  );
 };
 
 const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   const fakes = frameFakes.get(page) ?? [];
   frameFakes.delete(page);
   await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
+};
+
+// Module requests fail as a dropped connection would, or are held back as a slow one would
+// (test-utils/acceptance/module-loads.ts). These are the routes that do either, so they can be
+// removed after each spec.
+// Routed on the context: the page's routes never see what MSW's service worker fetches.
+type BrowserContext = BrowserCommandContext['context'];
+const routedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
+
+const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  await context.route(matcher, (route) => route.abort('connectionreset'));
+  routedModules.set(context, [...(routedModules.get(context) ?? []), matcher]);
+};
+
+// The release function for each module `holdModuleLoads` holds back, by the end of its path.
+const heldModules = new WeakMap<BrowserContext, Map<string, () => void>>();
+
+const holdModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
+  let release!: () => void;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const held = heldModules.get(context) ?? new Map<string, () => void>();
+  held.set(pathEnd, release);
+  heldModules.set(context, held);
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  await context.route(matcher, async (route) => {
+    await released;
+    // The spec may have ended in the meantime, and the request with it.
+    await route.fallback().catch(() => {});
+  });
+  routedModules.set(context, [...(routedModules.get(context) ?? []), matcher]);
+};
+
+const releaseModuleLoads: BrowserCommand<[pathEnd: string]> = ({ context }, pathEnd) => {
+  heldModules.get(context)?.get(pathEnd)?.();
+};
+
+const resetModuleRoutes: BrowserCommand<[]> = async ({ context }) => {
+  for (const release of heldModules.get(context)?.values() ?? []) {
+    release();
+  }
+  heldModules.delete(context);
+  const matchers = routedModules.get(context) ?? [];
+  routedModules.delete(context);
+  await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
 };
 
 export default defineConfig({
@@ -78,12 +296,23 @@ export default defineConfig({
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
   define: sharedDefine,
+  // Run on React's production build, the one Admin ships: the development
+  // build and StrictMode's double renders cost the suite more than a tenth of
+  // its time. App and workspace sources keep their NODE_ENV; only pre-bundled
+  // dependencies switch, so JSX must not target the dev runtime either.
+  oxc: { jsx: { development: false } },
   optimizeDeps: {
     // Scan every app module so deps behind lazy routes are pre-bundled up
     // front — mid-run discovery reloads the test page and flakes the
     // suite. Test files and screen helpers import test-lane modules the
     // browser bundler can't process; vitest serves those itself.
     entries: ['src/**/*.{ts,tsx}', '!src/**/*.test.*', '!src/**/*.screen.ts'],
+    // The harness's MSW (and its graphql dependency) would otherwise load as
+    // ~150 separate modules in every spec file's fresh iframe.
+    include: ['msw', 'msw/browser'],
+    rolldownOptions: {
+      transform: { define: { 'process.env.NODE_ENV': JSON.stringify('production') } },
+    },
   },
   resolve: sharedResolve,
   test: {
@@ -98,7 +327,7 @@ export default defineConfig({
     outputFile: { json: './test-results/acceptance.json' },
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
-    setupFiles: ['./test-utils/acceptance/setup.ts'],
+    setupFiles: ['./test-utils/acceptance/react-production.ts', './test-utils/acceptance/setup.ts'],
     // Most journeys finish well under a second, but a few that wait out a
     // product-side hold reach ~6s; this leaves those headroom on slower CI.
     testTimeout: 15_000,
@@ -111,7 +340,21 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
-      commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
+      commands: {
+        bundleAppSdk,
+        bundleFrameScript,
+        callInFrame,
+        failFrameOrigin,
+        failModuleLoads,
+        fakeFrameOrigin,
+        guardFrameNavigations,
+        holdModuleLoads,
+        postFrameForm,
+        releaseModuleLoads,
+        reloadFrame,
+        resetModuleRoutes,
+        resetFakeFrameOrigins,
+      },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

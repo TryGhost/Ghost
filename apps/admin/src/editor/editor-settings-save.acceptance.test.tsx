@@ -17,7 +17,6 @@ import { settingsMetaDataRow } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FIRST_SAVE_AT = '2026-01-01T00:00:01.000Z';
 const THEIR_SAVE_AT = '2026-01-01T00:00:05.000Z';
@@ -164,7 +163,7 @@ async function stageBodyEdit() {
 describe('Post settings saving', () => {
   it('saves a published post’s tag change at once, and leaves a staged body for Update', async () => {
     const { saveApi } = fakeCorePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await stageBodyEdit();
 
     await addNewsTag();
@@ -197,7 +196,7 @@ describe('Post settings saving', () => {
       status: 'published',
       published_at: PUBLISHED_AT,
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await stageBodyEdit();
     writeElsewhere({ title: 'Their title', lexical: buildLexicalParagraph('Their body') });
 
@@ -223,7 +222,7 @@ describe('Post settings saving', () => {
 
   it('saves a scheduled post’s Featured switch at once without moving its schedule', async () => {
     const { saveApi } = fakeCorePost({ status: 'scheduled', published_at: SCHEDULED_FOR });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsFeatured().click();
@@ -242,7 +241,7 @@ describe('Post settings saving', () => {
 
   it('saves a sent post’s tag change at once with the tags and the saved canvas', async () => {
     const { saveApi } = fakeCorePost({ status: 'sent', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     await addNewsTag();
 
@@ -261,7 +260,7 @@ describe('Post settings saving', () => {
     const { saveApi } = fakeCorePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(
       `/editor/post/${POST_ID}`,
-      withoutAutosave({ labs: { editorReact: true, editorExcerpt: true } }),
+      withoutAutosave({ labs: { editorExcerpt: true } }),
     );
     await editorScreen.excerptInput().fill('A staged excerpt');
     await openSidebar();
@@ -289,13 +288,13 @@ describe('Post settings saving', () => {
       status: 'published',
       published_at: PUBLISHED_AT,
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await stageBodyEdit();
     refuseNext();
 
     await addNewsTag();
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(REFUSED);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(REFUSED);
     expect(saveApi.requests).toHaveLength(1);
     await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('News');
     await expect.element(editorScreen.updateButton()).toBeEnabled();
@@ -310,7 +309,7 @@ describe('Post settings saving', () => {
       ...SAVED_CANVAS,
       tags: [{ id: 'tag1' }],
     });
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     await expect.element(editorScreen.updateButton()).toBeEnabled();
   });
 });

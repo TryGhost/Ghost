@@ -34,6 +34,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="labs"
       testId="labs"
       title="Labs"
+      onOpen={openManually}
     >
       {isOpen ? (
         <Tabs

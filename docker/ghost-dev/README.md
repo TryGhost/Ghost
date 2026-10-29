@@ -11,32 +11,27 @@ This lightweight image:
 - Enables `nodemon` for automatic restarts on file changes
 - Works with the Caddy gateway to proxy frontend assets from host dev servers
 
-## Key Differences from Main Dockerfile
+## Key Differences from the Production Dockerfile
 
-**Main `Dockerfile`** (for E2E tests, full builds):
+**[`Dockerfile.production`](../../Dockerfile.production)** (for E2E tests and published images):
 
-- Builds all frontend apps (Admin, Portal, AdminX apps, etc.)
-- Bundles everything into the image
-- ~15 build stages, 5-10 minute build time
+- Builds Ghost Core and its workspace dependencies into a production-only app
+- Builds no frontend apps; the `full` target copies in a prebuilt Admin and embed renderer
+- Bakes everything into the image
 
 **This `Dockerfile`** (for local development):
 
 - Only installs dependencies
 - No frontend builds or bundling
 - Source code mounted at runtime
-- Used for: Local development with `pnpm dev`
+- Used for: Local development with `pnpm dev:docker`
 
 ## Usage
 
 This image is used automatically when running:
 
 ```bash
-pnpm dev              # Builds Ember once; starts Docker backend + React/shared/Portal watchers
-pnpm dev:ember        # Also starts Ember's continuous rebuild and live-reload server
-pnpm dev:public       # Include all optional public UMD app watchers
-pnpm dev:analytics    # Include Tinybird analytics
-pnpm dev:storage      # Include VersityGW S3-compatible object storage
-pnpm dev:stripe       # Include Stripe webhook forwarding
-pnpm dev:full         # Include analytics, storage, Stripe, and public app watchers
-pnpm dev:all          # Backwards-compatible alias for all optional services
+pnpm dev:docker       # Starts Docker backend + React/shared/Portal watchers
 ```
+
+`pnpm dev` and its variants run Ghost on the host instead.

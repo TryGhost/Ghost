@@ -28,12 +28,12 @@ describe('renderers/video-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-video-card kg-card-hascaption" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="/content/images/2022/11/koenig-lexical-custom.jpg">
                     <div class="kg-video-container">
                         <video src="/content/images/2022/11/koenig-lexical.mp4" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="200" height="100" playsinline="" preload="metadata" style="aspect-ratio: 200 / 100; background: transparent url('/content/images/2022/11/koenig-lexical-custom.jpg') 50% 50% / cover no-repeat;"></video>
@@ -115,12 +115,12 @@ describe('renderers/video-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-video-card kg-card-hascaption">
                     <!--[if !mso !vml]-->
                     <a class="kg-video-preview" href="https://test.com/post/" aria-label="Play video" style="mso-hide: all">

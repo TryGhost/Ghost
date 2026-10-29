@@ -86,7 +86,6 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
   path: (name) => `/themes/${name}/activate/`,
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: (newData: ThemesResponseType, currentData: unknown) => ({
       ...(currentData as ThemesResponseType),
       themes: (currentData as ThemesResponseType).themes.map((theme) => {
@@ -110,7 +109,6 @@ export const useDeleteTheme = createMutation<unknown, string>({
   path: (name) => `/themes/${name}/`,
   updateQueries: {
     dataType,
-    emberUpdateType: 'delete',
     update: (_, currentData, name) => ({
       ...(currentData as ThemesResponseType),
       themes: (currentData as ThemesResponseType).themes.filter((theme) => theme.name !== name),
@@ -118,19 +116,28 @@ export const useDeleteTheme = createMutation<unknown, string>({
   },
 });
 
+// Installs and uploads overwrite an existing theme with the same name
+function replaceThemesByName(newData: ThemesInstallResponseType, currentData: unknown) {
+  return (
+    currentData && {
+      ...(currentData as ThemesResponseType),
+      themes: [
+        ...(currentData as ThemesResponseType).themes.filter(
+          (theme) => !newData.themes.some(({ name }) => name === theme.name),
+        ),
+        ...newData.themes,
+      ],
+    }
+  );
+}
+
 export const useInstallTheme = createMutation<ThemesInstallResponseType, string>({
   method: 'POST',
   path: () => '/themes/install/',
   searchParams: (repo) => ({ source: 'github', ref: repo }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
-    // Assume that all invite queries should include this new one
-    update: (newData, currentData) =>
-      currentData && {
-        ...(currentData as ThemesResponseType),
-        themes: [...(currentData as ThemesResponseType).themes, ...newData.themes],
-      },
+    update: replaceThemesByName,
   },
 });
 
@@ -149,19 +156,7 @@ export const useUploadTheme = createMutation<
   },
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
-    // Uploading can replace an existing theme, so swap it out by name
-    // instead of appending a duplicate entry
-    update: (newData, currentData) =>
-      currentData && {
-        ...(currentData as ThemesResponseType),
-        themes: [
-          ...(currentData as ThemesResponseType).themes.filter(
-            (theme) => !newData.themes.some(({ name }) => name === theme.name),
-          ),
-          ...newData.themes,
-        ],
-      },
+    update: replaceThemesByName,
   },
 });
 

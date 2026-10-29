@@ -24,7 +24,7 @@ describe('keyboardShortcutGroups', () => {
       'Application',
       'Inserting',
     ]);
-    expect(mac.map((group) => group.shortcuts.length)).toEqual([12, 7, 3, 28]);
+    expect(mac.map((group) => group.shortcuts.length)).toEqual([12, 7, 4, 28]);
   });
 
   it('shows Mac writers the Mac glyphs', () => {
@@ -71,6 +71,11 @@ describe('keyboardShortcutGroups', () => {
       { text: 'or', mono: true, plain: true },
       { text: '/hr', mono: true },
     ]);
+  });
+
+  it('lists the settings panel shortcut', () => {
+    expect(keys(mac, 'Toggle settings')).toEqual(['⌘', '.']);
+    expect(keys(windows, 'Toggle settings')).toEqual(['Ctrl', '.']);
   });
 
   it('shows the formatting labels as the formatting they produce', () => {

@@ -10,12 +10,14 @@ import {
 import { FakeServer } from '@/helpers/services/fake-server';
 import {
   type RecordedStripeCheckoutSession,
+  type StripeCheckoutBranding,
   type StripeCoupon,
   type StripeCustomer,
   type StripePaymentMethod,
   type StripePrice,
   type StripeProduct,
   type StripeSubscription,
+  buildCheckoutBranding,
   buildCheckoutSession,
   buildCoupon,
   buildCustomer,
@@ -53,6 +55,8 @@ export class FakeStripeServer extends FakeServer {
   private readonly subscriptions: Map<string, StripeSubscription> = new Map();
   private readonly paymentMethods: Map<string, StripePaymentMethod> = new Map();
   private readonly checkoutSessions: Map<string, RecordedStripeCheckoutSession> = new Map();
+  // Null stands for a Stripe that reports no branding, which Ghost can't read.
+  private checkoutBranding: StripeCheckoutBranding | null = buildCheckoutBranding();
 
   constructor(port = 0) {
     super({ port, debugNamespace: 'e2e:fake-stripe' });
@@ -84,6 +88,10 @@ export class FakeStripeServer extends FakeServer {
 
   upsertCheckoutSession(session: RecordedStripeCheckoutSession): void {
     this.checkoutSessions.set(session.response.id, session);
+  }
+
+  setCheckoutBranding(branding: StripeCheckoutBranding | null): void {
+    this.checkoutBranding = branding;
   }
 
   getProducts(): StripeProduct[] {
@@ -539,6 +547,25 @@ export class FakeStripeServer extends FakeServer {
       session.response.url = `http://localhost:${this.port}/checkout/sessions/${session.response.id}`;
       this.upsertCheckoutSession(session);
       this.debug(`Created checkout session: ${session.response.id} (${session.response.mode})`);
+      res.status(200).json({
+        ...session.response,
+        ...(this.checkoutBranding
+          ? { branding_settings: { ...this.checkoutBranding, ...body.branding_settings } }
+          : {}),
+      });
+    });
+
+    this.app.post('/v1/checkout/sessions/:id/expire', (req, res) => {
+      const session = this.checkoutSessions.get(req.params.id);
+      if (!session) {
+        res
+          .status(404)
+          .json({ error: { type: 'invalid_request_error', message: 'No such checkout session' } });
+        return;
+      }
+
+      session.response.status = 'expired';
+      this.debug(`Expired checkout session: ${session.response.id}`);
       res.status(200).json(session.response);
     });
 

@@ -1,0 +1,205 @@
+import type { Knex } from 'knex';
+import type { CsvField } from '@tryghost/metafield-csv';
+import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
+import { INTERNAL, type Audience } from '../../members-metafields';
+import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
+import type { MetafieldValuesService } from '../../members-metafields/values-service';
+import MembersCSVImporter, {
+  type MembersRepository,
+  type GiftService,
+  type EmailNotifications,
+  type Tier,
+  type MetafieldsImport,
+  type FailureReporter,
+} from './import/importer';
+import readMemberRows from './import/reader';
+import { createRowSpool } from './import/spool';
+import type MembersImportJob from '../jobs/members-import-job';
+import { tracer } from '../../../lib/tracing';
+import { importExportTracking } from './tracking';
+import MembersCSVExporter, { type ExportOptions } from './export/exporter';
+
+const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
+const db = require('../../../data/db');
+const models = require('../../../models');
+const logging = require('@tryghost/logging');
+const sentry = require('../../../../shared/sentry');
+
+// The raw collaborators the members service hands the import composition root, before
+// they are adapted into the ports the importer declares. The members repository is the
+// importer's aggregate minus the import-label lookup, which the root folds in itself.
+interface ImporterServices {
+  knex: Knex;
+  getMembersRepository(): Promise<Omit<MembersRepository, 'getImportLabel'>>;
+  getDefaultTier(): Promise<Tier>;
+  getTierByName(name: string): Promise<Tier | null>;
+  getGiftService(): {
+    reassignRedeemer(input: {
+      giftId: string;
+      memberId: string;
+      transacting?: Knex.Transaction;
+    }): Promise<void>;
+  };
+  sendEmail: EmailNotifications['send'];
+  urlFor(type: string, data: unknown, absolute: boolean): string;
+  dispatchJob(job: MembersImportJob): Promise<void>;
+  getTimezone(): string;
+  getInlineThreshold(): number;
+  stripeAPIService: unknown;
+  productRepository: unknown;
+  // The metafields services the members service hands the import composition root.
+  metafields: {
+    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+    values: {
+      planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
+      applyImportedWrite(
+        memberId: string,
+        plan: unknown[],
+        executor: Knex.Transaction,
+      ): Promise<void>;
+    };
+  };
+}
+
+// The metafields services the members service hands the export composition root.
+interface MetafieldsServices {
+  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+  values: Pick<MetafieldValuesService, 'getValuesForMembers'>;
+}
+
+// Build the members CSV importer. This is the composition root: today's models and
+// services are wired behind the collaborators the importer declares, one per
+// concern, so nothing Bookshelf-shaped leaks into the import service itself.
+export function makeImporter(deps: ImporterServices) {
+  // The members repository resolves asynchronously and is stable once ready, so
+  // cache the promise and reuse it across every call the import makes.
+  let membersRepositoryPromise: Promise<Omit<MembersRepository, 'getImportLabel'>> | undefined;
+  const getMembersRepository = () => (membersRepositoryPromise ??= deps.getMembersRepository());
+
+  // The members aggregate, plus the import label lookup folded in so the label
+  // (member-tagging data) does not need a source of its own.
+  const members: MembersRepository = {
+    get: async (query, options) => (await getMembersRepository()).get(query, options),
+    create: async (values, options) => (await getMembersRepository()).create(values, options),
+    update: async (values, options) => (await getMembersRepository()).update(values, options),
+    getCustomerIdByEmail: async (email) =>
+      (await getMembersRepository()).getCustomerIdByEmail(email),
+    linkStripeCustomer: async (link, options) =>
+      (await getMembersRepository()).linkStripeCustomer(link, options),
+    getImportLabel: (name) => models.Label.findOne({ name }),
+  };
+
+  // The completion email: its recipient, links and delivery in one collaborator.
+  const email: EmailNotifications = {
+    send: deps.sendEmail,
+    getDefaultRecipient: async () => (await models.User.getOwnerUser()).get('email'),
+    links: {
+      siteUrl: () => new URL(deps.urlFor('home', null, true)),
+      membersUrl: (labelSlug?: string) => {
+        const url = new URL('members', deps.urlFor('admin', null, true));
+        if (labelSlug) {
+          url.searchParams.set('label', labelSlug);
+        }
+        return url;
+      },
+    },
+  };
+
+  // Gifts is initialised at boot and always present at request time; the getter
+  // resolves it lazily so the ready service is picked up whenever a row uses it.
+  const gifts: GiftService = {
+    reassignRedeemer: (giftId, memberId, options) =>
+      deps.getGiftService().reassignRedeemer({
+        giftId,
+        memberId,
+        transacting: options.transacting,
+      }),
+  };
+
+  const metafields: MetafieldsImport = {
+    // Only the publisher's own fields: a file exported and imported again must not rewrite
+    // the values another namespace's owner keeps.
+    activeFields: async () =>
+      deps.metafields.definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
+    planWrite: (values) => deps.metafields.values.planWrite(values, INTERNAL),
+    applyWrite: (memberId, plan, executor) =>
+      deps.metafields.values.applyImportedWrite(memberId, plan, executor),
+  };
+
+  // The import job never rejects, so the jobs service never sees its failures, and the
+  // inline path's bookkeeping failures never reach the request: a throw here would be
+  // seen by nobody.
+  const report: FailureReporter = (error) => {
+    try {
+      logging.error(
+        { event: { name: 'members.import.error' }, err: error },
+        '[Background Job] members-import error',
+      );
+      sentry.captureException(error);
+    } catch {
+      // Callers report from catch and finally blocks, so this must not throw.
+    }
+  };
+
+  return new MembersCSVImporter({
+    knex: deps.knex,
+    readRows: readMemberRows,
+    spool: createRowSpool(require('../../adapter-manager').default.getAdapter('storage:imports')),
+    members,
+    tiers: {
+      getDefault: deps.getDefaultTier,
+      getByName: deps.getTierByName,
+    },
+    stripe: new MembersCSVImporterStripeUtils({
+      stripeAPIService: deps.stripeAPIService,
+      productRepository: deps.productRepository,
+    }),
+    gifts,
+    metafields,
+    email,
+    report,
+    dispatchJob: deps.dispatchJob,
+    getTimezone: deps.getTimezone,
+    getInlineThreshold: deps.getInlineThreshold,
+    tracking: importExportTracking(tracer),
+  });
+}
+
+// Build the members CSV exporter. The same composition root from the other direction:
+// knex and the members id lookup are wired here, and the metafields definitions and
+// values services are injected (boot builds them before this one).
+export function makeExporter({
+  definitions,
+  values,
+}: MetafieldsServices): (options?: ExportOptions) => Promise<NodeJS.ReadableStream> {
+  const exporter = new MembersCSVExporter({
+    knex: db.knex,
+
+    members: {
+      // Minimal query, only to fetch the ids of the filtered members; the stream
+      // reads their related data itself.
+      findFilteredIds: async (options) => {
+        const page = await models.Member.findPage({
+          ...options,
+          withRelated: [],
+          columns: ['id'],
+          limit: 'all',
+        });
+        return page.data.map((member: { id: string }) => member.id);
+      },
+    },
+
+    metafields: {
+      // Boot builds the definitions and values services before this one, so they
+      // are always present -- no not-initialised state to guard.
+      // The same fields the import reads back.
+      activeDefinitions: async (): Promise<CsvField[]> =>
+        definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
+      valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
+    },
+
+    tracking: importExportTracking(tracer),
+  });
+
+  return (options = {}) => exporter.export(options);
+}

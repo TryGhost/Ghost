@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   APIError,
+  EmailError,
   HostLimitError,
   JSONError,
   MaintenanceError,
@@ -16,7 +17,10 @@ import type { SaveError } from '@/editor/engine/save-engine';
 import {
   ACCESS_LOST,
   EDITOR_CRASHED,
+  EMAIL_REFUSED_MESSAGE,
   POST_DELETED,
+  isSessionInvalid,
+  requestFailureMessage,
   stateSaveError,
   toSaveError,
 } from './error-mapping';
@@ -42,6 +46,15 @@ function errorBody(overrides: Partial<ErrorResponse['errors'][number]> = {}): Er
 
 function response(status: number): Response {
   return new Response(null, { status });
+}
+
+/** A response from the posts endpoint, whose URL the transport's summary names. */
+function postsResponse(status: number): Response {
+  const answered = new Response(null, { status });
+  Object.defineProperty(answered, 'url', {
+    value: 'http://localhost:2368/ghost/api/admin/posts/1/?formats=lexical',
+  });
+  return answered;
 }
 
 const NO_PERMISSION = errorBody({
@@ -104,6 +117,23 @@ describe('toSaveError', () => {
       new RequestEntityTooLargeError(response(413), ''),
       'validation',
     ],
+    [
+      'a publish whose newsletter changed while it was being published',
+      new JSONError(
+        response(409),
+        errorBody({
+          type: 'UpdateCollisionError',
+          message: 'Saving failed! Someone else is editing this post.',
+          context: 'The post was changed while it was being published, please try again',
+        }),
+      ),
+      'conflict',
+    ],
+    [
+      'a session Core no longer authorizes',
+      new UnauthorizedError(response(403), errorBody({ message: 'Authorization failed' })),
+      'session-invalid',
+    ],
     ['a server error', new JSONError(response(500), errorBody()), 'unknown'],
     ['a thrown non-error', 'broken', 'unknown'],
   ])('maps %s', (_label, error, kind) => {
@@ -161,9 +191,143 @@ describe('toSaveError', () => {
     expect(toSaveError(tooLarge, 'fallback').message).toBe(tooLarge.message);
   });
 
+  // Core's error handler summarises `message` and moves its own sentence into `context`.
+  // Only a 4xx is a refusal Core words for the person; a 5xx's text is for logs.
+  it.each<[string, unknown, string]>([
+    [
+      'a publish to an archived newsletter',
+      new JSONError(
+        postsResponse(400),
+        errorBody({
+          type: 'BadRequestError',
+          message: 'Request not understood error, cannot edit post.',
+          context: 'Cannot send email to archived newsletters',
+        }),
+      ),
+      'Cannot send email to archived newsletters',
+    ],
+    [
+      'a newsletter that matches no active newsletter',
+      new JSONError(
+        postsResponse(400),
+        errorBody({
+          type: 'BadRequestError',
+          message: 'Request not understood error, cannot edit post.',
+          context: 'The newsletter parameter doesn’t match any active newsletter.',
+        }),
+      ),
+      'The newsletter parameter doesn’t match any active newsletter.',
+    ],
+    // Read by its class: Core gives this case no code, only a sentence naming a model relation.
+    [
+      'a post without a newsletter to send to',
+      new EmailError(
+        postsResponse(500),
+        errorBody({
+          type: 'EmailError',
+          message: 'Error sending email!',
+          context: 'The post does not have a newsletter relation',
+        }),
+      ),
+      EMAIL_REFUSED_MESSAGE,
+    ],
+    [
+      'a server error, whatever Core said about it',
+      new JSONError(
+        postsResponse(500),
+        errorBody({
+          type: 'InternalServerError',
+          message: 'The email could not be sent.',
+          context: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+        }),
+      ),
+      'Couldn’t save this post.',
+    ],
+    [
+      'a bad request that carries no reason',
+      new JSONError(postsResponse(400), errorBody({ message: '', context: null })),
+      'Couldn’t save this post.',
+    ],
+    [
+      'a JSON failure that carries no reason',
+      new JSONError(postsResponse(500), errorBody({ message: '', context: null })),
+      'Couldn’t save this post.',
+    ],
+    [
+      'a failure that is not JSON',
+      new APIError(postsResponse(502), '<html>'),
+      'Couldn’t save this post.',
+    ],
+  ])('shows %s as the writer reads it, never the transport’s summary', (_label, error, message) => {
+    const mapped = toSaveError(error, 'Couldn’t save this post.');
+
+    expect(mapped).toMatchObject({ kind: 'unknown', message });
+    expect(mapped.message).not.toContain('while loading');
+  });
+
+  it('keeps an error’s own message when it is not the transport’s summary', () => {
+    expect(requestFailureMessage(new Error('Boom'), 'fallback')).toBe('Boom');
+    expect(requestFailureMessage(new TimeoutError(), 'fallback')).toBe(
+      'Request timed out, please try again.',
+    );
+  });
+
+  it('keeps an explicit message on a bare transport error', () => {
+    const explicit = new JSONError(
+      postsResponse(500),
+      errorBody({ message: '', context: null }),
+      'The posts list is out of date.',
+    );
+
+    expect(requestFailureMessage(explicit, 'fallback')).toBe('The posts list is out of date.');
+    expect(requestFailureMessage(new APIError(undefined, undefined, 'Boom'), 'fallback')).toBe(
+      'Boom',
+    );
+    expect(requestFailureMessage(new APIError(), 'fallback')).toBe('fallback');
+  });
+
+  it('reads Core’s message when the context is not text', () => {
+    const error = new JSONError(
+      postsResponse(400),
+      errorBody({
+        type: 'BadRequestError',
+        message: 'Request not understood error, cannot edit post.',
+        context: { field: 'newsletter' } as unknown as string,
+      }),
+    );
+
+    expect(requestFailureMessage(error, 'fallback')).toBe(
+      'Request not understood error, cannot edit post.',
+    );
+    const neither = new JSONError(
+      postsResponse(400),
+      errorBody({ message: 42 as unknown as string, context: ['x'] as unknown as string }),
+    );
+    expect(requestFailureMessage(neither, 'fallback')).toBe('fallback');
+  });
+
   it('carries the cause for reporting', () => {
     const error = new ServerUnreachableError();
     expect(toSaveError(error, 'fallback').cause).toBe(error);
+  });
+});
+
+describe('isSessionInvalid', () => {
+  it.each<[string, unknown, boolean]>([
+    ['an expired session', new SessionExpiredError(response(401), errorBody()), true],
+    ['an unauthorized response', new UnauthorizedError(response(401), errorBody()), true],
+    ['a bare 401', new APIError(response(401)), true],
+    // The framework's response handler classes Core's 403 "Authorization failed" this way.
+    [
+      'a 403 Core answers for a session it no longer authorizes',
+      new UnauthorizedError(response(403), errorBody({ message: 'Authorization failed' })),
+      true,
+    ],
+    ['a writer who lost access', new ValidationError(response(403), NO_PERMISSION), false],
+    ['a server error', new JSONError(response(500), errorBody()), false],
+    ['an unreachable server', new ServerUnreachableError(), false],
+  ])('reads %s', (_label, error, expected) => {
+    expect(isSessionInvalid(error)).toBe(expected);
   });
 });
 

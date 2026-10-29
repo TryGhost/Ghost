@@ -15,12 +15,15 @@ npm install @tryghost/metafield-types
   type of value each part holds. It depends on nothing.
 - `@tryghost/metafield-types/countries`: the two-letter country codes a country
   part accepts. It depends on nothing.
-- `@tryghost/metafield-types/identity`: how a field is named in filters and
-  payloads (`custom.<key>`). It depends on nothing.
+- `@tryghost/metafield-types/identity`: how a field is named everywhere: its
+  namespace, its key, the parts of a record value, and the identity they make
+  together (`custom.shipping_address.country`). Each is a type that only its
+  check produces. It loads `zod/mini`, a small fraction of zod's size, so a
+  browser app can check identities without paying for the rest.
 - `@tryghost/metafield-types`: the structure above, plus the rules that validate
   a value of each type. These are built on [zod](https://zod.dev), and only this
-  entry point loads it, so an integration that only draws inputs can use the three
-  entry points above without zod ever being loaded.
+  entry point loads all of it, so an integration that only draws inputs can use
+  `./structure` and `./countries` without loading zod at all.
 
 ## Compatibility
 
@@ -62,7 +65,7 @@ green. So **`src/structure.ts` must not import anything** — an ESLint rule enf
 it, relative imports included, since anything reached through one is bundled too.
 Whatever needs an import belongs in `./index`, which is free to use them.
 
-`ghost/core` is CommonJS but consumes this package via `require()`, which works
+`ghost` is CommonJS but consumes this package via `require()`, which works
 on Ghost's Node version (22.13+/24) through Node's `require(esm)` support. That
 support has one hard constraint: **no top-level `await`** anywhere in this
 package's module graph — it makes the graph async and `require()` of it throws

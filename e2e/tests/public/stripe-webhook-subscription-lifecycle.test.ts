@@ -1,5 +1,5 @@
 import { APIRequestContext, Page } from '@playwright/test';
-import { HomePage, MemberDetailsPage, MembersPage, PortalAccountPage } from '@/helpers/pages';
+import { HomePage, MemberDetailsPage, MembersListPage, PortalAccountPage } from '@/helpers/pages';
 import { MembersService } from '@/helpers/services/members';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { expect, test } from '@/helpers/playwright';
@@ -41,7 +41,7 @@ async function waitForCanceledSubscription(request: APIRequestContext, email: st
 }
 
 async function openPortalAsMember(page: Page, email: string) {
-  const membersPage = new MembersPage(page);
+  const membersPage = new MembersListPage(page);
   await membersPage.goto();
   await membersPage.clickMemberByEmail(email);
 
@@ -49,7 +49,7 @@ async function openPortalAsMember(page: Page, email: string) {
   await memberDetailsPage.settingsSection.memberActionsButton.click();
   await memberDetailsPage.settingsSection.impersonateButton.click();
 
-  await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
+  await expect(memberDetailsPage.magicLinkInput).toHaveValue(/^https?:\/\/.+/);
   const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
   await memberDetailsPage.goto(magicLink);
 

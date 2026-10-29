@@ -15,6 +15,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
+  Link,
   MultiSelectCombobox,
   Select,
   SelectContent,
@@ -343,15 +344,11 @@ const Access: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             </Field>
             {privateRssUrl && !isPrivateLocked && (
               <FieldDescription className="mt-2">
-                A private RSS feed is available{' '}
-                <a
-                  className="text-primary"
-                  href={privateRssUrl}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  here
-                </a>
+                A{' '}
+                <Link href={privateRssUrl} external>
+                  private RSS feed
+                </Link>{' '}
+                is available
               </FieldDescription>
             )}
           </div>

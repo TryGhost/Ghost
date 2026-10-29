@@ -1,4 +1,4 @@
-import { describe, expect, it, onTestFinished, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { EditorView } from '@uiw/react-codemirror';
 
@@ -48,33 +48,6 @@ async function fakeThemeDownload(name: string): Promise<void> {
     contentType: 'application/zip',
   });
 }
-
-/**
- * This tier serves no Ember CSS, so a collision with Ghost's legacy unlayered
- * stylesheet only shows up here if it is staged deliberately.
- */
-function stageLegacyGhostCss(css: string): void {
-  const style = document.createElement('style');
-  style.textContent = css;
-  document.head.appendChild(style);
-  onTestFinished(() => style.remove());
-}
-
-/** Verbatim from `ghost/core/core/built/admin/assets/ghost.css`. */
-const LEGACY_CODE_CSS = `code, tt {
-    padding: 0.2rem 0.3rem;
-    border: 1px solid hsl(203, 12.29%, 91.14%);
-    background: hsl(205, 12.29%, 95.14%);
-    border-radius: 2px;
-    color: hsl(332.04, 96.26%, 43.04%);
-    vertical-align: middle;
-    white-space: pre-wrap;
-    font-size: 0.85em;
-    line-height: 1em;
-}`;
-
-/** Tachyons' `.rotate-180`, which Tailwind v4 expresses as `rotate` rather than `transform`. */
-const LEGACY_TACHYONS_CSS = '.rotate-180 { transform: rotate(180deg); }';
 
 function themeProblem(overrides: {
   code: string;
@@ -154,6 +127,17 @@ async function editorTextbox() {
   });
 }
 
+/**
+ * Cmd/Ctrl+S where a keypress lands: on the focused element, so window
+ * listeners see it in capture and bubble order. Dispatched on window itself,
+ * every listener would run in registration order instead.
+ */
+function pressSaveShortcut(): void {
+  (document.activeElement ?? document.body).dispatchEvent(
+    new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
+  );
+}
+
 describe('Theme settings', () => {
   it('activates an installed official theme and updates another', async () => {
     const installed = fakeThemeWorld();
@@ -179,6 +163,9 @@ describe('Theme settings', () => {
       .toHaveTextContent(/casper is now your active theme/i);
     expect(activateApi.requests).toHaveLength(1);
 
+    // The success toast can arrive before the previous picker has closed.
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect(modal).toHaveCount(0);
     await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
     const reopenedModal = settingsScreen.themeModal();
     await reopenedModal.getByRole('button', { name: /Edition/ }).click();
@@ -186,6 +173,25 @@ describe('Theme settings', () => {
     await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/overwrite/i);
     await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
     await expect.poll(() => installApi.lastRequest?.url).toContain('ref=TryGhost%2FEdition');
+  });
+
+  it('lists a theme once after updating it', async () => {
+    const installed = fakeThemeWorld();
+    const edition = installed.find((item) => item.name === 'edition')!;
+    fakeAdminEndpoint('POST', /^\/themes\/install\/\?/, { themes: [edition] });
+    await renderAdminApp('/settings/design/change-theme');
+
+    const modal = settingsScreen.themeModal();
+    await modal.getByRole('button', { name: /Edition/ }).click();
+    await modal.getByRole('button', { name: 'Update Edition' }).click();
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Close' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await modal.getByRole('button', { name: 'Change theme' }).click();
+    await modal.getByRole('tab', { name: 'Installed' }).click();
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect(installedTheme('edition')).toHaveCount(1);
   });
 
   it('manages installed themes', async () => {
@@ -322,11 +328,6 @@ describe('Theme settings', () => {
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
 
-    // Legacy Tachyons `.rotate-180` (transform) and Tailwind v4's (rotate)
-    // both apply to that literal class, turning the icon a full circle. The
-    // chevron must rotate via a selector the legacy rule cannot match.
-    stageLegacyGhostCss(LEGACY_TACHYONS_CSS);
-
     const row = settingsScreen.confirmationModal().getByRole('button', { name: /GS001-DEPR-PURL/ });
     await expect.element(row).toBeVisible();
     const chevron = () => (row.element() as HTMLElement).querySelector('svg')!;
@@ -339,7 +340,7 @@ describe('Theme settings', () => {
     expect(getComputedStyle(chevron()).transform).toBe('none');
   });
 
-  it("chips gscan's inline code without letting the legacy code rule through", async () => {
+  it("chips gscan's inline code without letting the element code rule through", async () => {
     fakeThemeWorld();
     fakeThemeUpload([
       theme({
@@ -358,7 +359,6 @@ describe('Theme settings', () => {
 
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
-    stageLegacyGhostCss(LEGACY_CODE_CSS);
 
     const row = settingsScreen.confirmationModal().getByRole('button', { name: /GS001-DEPR-PURL/ });
     await expect.element(row).toBeVisible();
@@ -366,7 +366,7 @@ describe('Theme settings', () => {
     await expect.element(settingsScreen.confirmationModal().getByText(/deprecated/)).toBeVisible();
 
     // gscan's own markup: a grey chip, sized and coloured by the line it sits
-    // on rather than by the legacy rule, and never broken across two lines.
+    // on rather than by the element rule, and never broken across two lines.
     for (const text of ['{{@blog.url}}', '{{@blog.title}}']) {
       const code = codeSpan(text);
       const surrounding = getComputedStyle(code.parentElement!);
@@ -375,14 +375,14 @@ describe('Theme settings', () => {
       expect(style.color).toBe(surrounding.color);
       // A step down, since mono reads larger than the text it sits in.
       expect(parseFloat(style.fontSize)).toBeLessThan(parseFloat(surrounding.fontSize));
-      // The legacy `line-height: 1em` computes to exactly the font size.
+      // The element rule's `line-height: 1em` computes to exactly the font size.
       expect(style.lineHeight).not.toBe(style.fontSize);
       expect(lineRatio(style)).toBeCloseTo(lineRatio(surrounding), 2);
       expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
       expect(parseFloat(style.borderTopLeftRadius)).toBeGreaterThan(0);
       expect(parseFloat(style.paddingLeft)).toBeGreaterThan(0);
       expect(style.whiteSpace).toBe('nowrap');
-      // The legacy rule's border and pink must still lose.
+      // The element rule's border and pink must still lose.
       expect(style.borderTopWidth).toBe('0px');
       expect(style.verticalAlign).toBe('baseline');
     }
@@ -399,7 +399,7 @@ describe('Theme settings', () => {
     expect(filename.fontSize).toBe(detailsCode.fontSize);
     expect(filename.fontFamily).toBe(detailsCode.fontFamily);
     expect(filename.fontWeight).toBe(detailsCode.fontWeight);
-    // Same foreground as the line it sits on, i.e. not the legacy pink.
+    // Same foreground as the line it sits on, i.e. not the element rule's pink.
     expect(filename.color).toBe(getComputedStyle(filenameCode.parentElement!).color);
   });
 
@@ -454,7 +454,6 @@ describe('Theme settings', () => {
 
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
-    stageLegacyGhostCss(LEGACY_CODE_CSS);
 
     const dialog = settingsScreen.confirmationModal();
     await expect.element(dialog).toHaveTextContent('1 error, 8 warnings');
@@ -537,6 +536,34 @@ describe('Theme settings', () => {
     await expect(page.getByText('Theme not uploaded')).toHaveCount(0);
   });
 
+  it('keeps the existing theme listed when an overwriting upload fails', async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/themes/upload/',
+      {
+        errors: [
+          { message: 'Theme is not compatible or contains errors.', details: 'Missing index.hbs' },
+        ],
+      },
+      { status: 422 },
+    );
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'edition.zip', { type: 'application/zip' }));
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
+
+    const errorModal = settingsScreen.confirmationModal();
+    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+    await errorModal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect.element(installedTheme('edition')).toBeVisible();
+  });
+
   it('tells a blocking problem apart from the errors reported alongside it', async () => {
     fakeThemeWorld();
     fakeAdminEndpoint(
@@ -571,7 +598,6 @@ describe('Theme settings', () => {
 
     await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
     await uploadThemeFile(new File([buffer], 'mytheme.zip', { type: 'application/zip' }));
-    stageLegacyGhostCss(LEGACY_CODE_CSS);
 
     const errorModal = settingsScreen.confirmationModal();
     await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
@@ -677,13 +703,9 @@ describe('Theme settings', () => {
     await expect
       .element(settingsScreen.themeCodeEditorModal())
       .toHaveTextContent(/1 file modified/);
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
-    );
+    pressSaveShortcut();
     await expect.element(settingsScreen.themeEditorConfirmModal()).toBeVisible();
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
-    );
+    pressSaveShortcut();
     await expect(settingsScreen.themeEditorConfirmModal()).toHaveCount(1);
     await settingsScreen
       .themeEditorConfirmModal()
@@ -994,6 +1016,36 @@ describe('Theme settings', () => {
       replaceState.mock.calls.some(([, , url]) => String(url).endsWith('#/settings/theme')),
     ).toBe(true);
     replaceState.mockRestore();
+  });
+
+  it('keeps a built-in theme activatable after its marketplace installation fails', async () => {
+    fakeThemeWorld();
+    const installApi = fakeAdminEndpoint(
+      'POST',
+      /^\/themes\/install\/\?/,
+      {
+        errors: [
+          { message: "Please rename your zip, it's not allowed to override the default theme." },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp('/settings/theme/install?source=github&ref=TryGhost/Casper');
+
+    const confirmModal = settingsScreen.confirmationModal();
+    await expect.element(confirmModal).toHaveTextContent(/overwrite your existing version/i);
+    await confirmModal.getByRole('button', { name: 'Install' }).click();
+    await expect.element(settingsScreen.errorToast()).toHaveTextContent(/override the default/i);
+    expect(installApi.requests).toHaveLength(1);
+    await confirmModal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    const modal = settingsScreen.themeModal();
+    await modal.getByRole('button', { name: /Casper/ }).click();
+    await modal.getByRole('button', { name: 'Activate Casper' }).click();
+    await expect
+      .element(settingsScreen.confirmationModal())
+      .toHaveTextContent(/Do you want to activate Casper/);
   });
 
   it('confirms before discarding editor changes', async () => {

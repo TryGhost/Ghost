@@ -2,7 +2,6 @@ import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index
 import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
-import Prettier from '@prettier/sync';
 
 import {EmbedNode, $createEmbedNode, $isEmbedNode} from '../../src/index.js';
 
@@ -35,11 +34,10 @@ describe('EmbedNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -168,7 +166,7 @@ describe('EmbedNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders embed html with no metadata', editorTest(function () {
+        it('renders embed html with no metadata', editorTest(async function () {
             const embedNode = $createEmbedNode(dataset);
             const {element} = embedNode.exportDOM(editor, exportOptions);
 
@@ -179,9 +177,7 @@ describe('EmbedNode', function () {
                 </figure>
             `;
 
-            const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
-
-            assertPrettifiesTo((element as HTMLElement).outerHTML, prettyExpectedHtml);
+            await assertPrettifiesTo((element as HTMLElement).outerHTML, expectedHtml);
         }));
 
         it('renders video in email', editorTest(function () {
@@ -263,7 +259,7 @@ describe('EmbedNode', function () {
         // Medium Live HTML <figure><iframe data-width="854" data-height="480" width="700" height="393" data-src="/media/345?postId=567" data-media-id="345" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FYTVID%2Fhqdefault.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/345?postId=567"></iframe></figure>
         // WP <figure class=\"wp-block-embed-youtube \"><div class=\"wp-block-embed__wrapper\">\n<span class=\"embed-youtube\" style=\"text-align:center; display: block;\"><iframe class='youtube-player' type='text/html' width='640' height='360' src='https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent' allowfullscreen='true' style='border: 0;'></iframe></span>\n</div></figure>
 
-            it('youtube iframe', editorTest(function () {
+            it('youtube iframe', editorTest(async function () {
                 const document = createDocument(html`<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
@@ -271,7 +267,7 @@ describe('EmbedNode', function () {
                 expect(nodes[0].getType()).toBe('embed');
                 // expect(nodes[0].embedType).toBe('embed');
                 expect(nodes[0].url).toBe('https://www.youtube.com/embed/YTVID?feature=oembed');
-                assertPrettifiesTo(nodes[0].html, '<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                await assertPrettifiesTo(nodes[0].html, '<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
             it('medium youtube iframe', editorTest(function () {
@@ -285,7 +281,7 @@ describe('EmbedNode', function () {
                 expect(nodes[0].html).toBe('<iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe>');
             }));
 
-            it('wordpress youtube iframe', editorTest(function () {
+            it('wordpress youtube iframe', editorTest(async function () {
                 const document = createDocument(html`<figure class="wp-block-embed-youtube "><div class="wp-block-embed__wrapper"><span class="embed-youtube" style="text-align:center; display: block;"><iframe class=\'youtube-player\' type=\'text/html\' width=\'640\' height=\'360\' src=\'https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent\' allowfullscreen=\'true\' style=\'border:0;\'></iframe></span>\n</div></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
@@ -293,10 +289,10 @@ describe('EmbedNode', function () {
                 expect(nodes[0].getType()).toBe('embed');
                 // expect(nodes[0].embedType).toBe('embed');
                 expect(nodes[0].url).toBe('https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent');
-                expect(nodes[0].html).toBe('<iframe class="youtube-player" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/YTVID?version=3&amp;rel=1&amp;fs=1&amp;autohide=2&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;wmode=transparent" allowfullscreen="true" style="border: 0"></iframe>');
+                await assertPrettifiesTo(nodes[0].html, '<iframe class="youtube-player" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/YTVID?version=3&amp;rel=1&amp;fs=1&amp;autohide=2&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;wmode=transparent" allowfullscreen="true" style="border: 0"></iframe>');
             }));
 
-            it('youtube iframe with caption', editorTest(function () {
+            it('youtube iframe with caption', editorTest(async function () {
                 const document = createDocument(html`<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>My Video</figcaption></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
@@ -304,8 +300,8 @@ describe('EmbedNode', function () {
                 expect(nodes[0].getType()).toBe('embed');
                 // expect(nodes[0].embedType).toBe('embed');
                 expect(nodes[0].url).toBe('https://www.youtube.com/embed/YTVID?feature=oembed');
-                assertPrettifiesTo(nodes[0].html, '<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
                 expect(nodes[0].caption).toBe('My Video');
+                await assertPrettifiesTo(nodes[0].html, '<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
             it('ignore iframe with relative src', editorTest(function () {
@@ -320,22 +316,22 @@ describe('EmbedNode', function () {
             // WP Naked YouTube <div class="video-container"><iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
             // Hubspot Naked YouTube <div class="hs-responsive-embed-wrapper hs-responsive-embed" style="width: 100%; height: auto; position: relative; overflow: hidden; padding: 0; min-width: 256px; margin: 0px auto; display: block; margin-left: auto; margin-right: auto;"><div class="hs-responsive-embed-inner-wrapper" style="position: relative; overflow: hidden; max-width: 100%; padding-bottom: 56.25%; margin: 0;"><iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="//www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe></div></div>
 
-            it('youtube iframe with single wrapper div', editorTest(function () {
+            it('youtube iframe with single wrapper div', editorTest(async function () {
                 const document = createDocument(html`<div class="video-container"><iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
                 expect(nodes.length).toBe(1);
                 expect(nodes[0].url).toBe('https://www.youtube.com/embed/YTVID?feature=oembed');
-                assertPrettifiesTo(nodes[0].html, '<iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                await assertPrettifiesTo(nodes[0].html, '<iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
-            it('youtube iframe with double wrapper div + schemaless url', editorTest(function () {
+            it('youtube iframe with double wrapper div + schemaless url', editorTest(async function () {
                 const document = createDocument(html`<div class="hs-responsive-embed-wrapper hs-responsive-embed" style="width: 100%; height: auto; position: relative; overflow: hidden; padding: 0; min-width: 256px; margin: 0px auto; display: block; margin-left: auto; margin-right: auto;"><div class="hs-responsive-embed-inner-wrapper" style="position: relative; overflow: hidden; max-width: 100%; padding-bottom: 56.25%; margin: 0;"><iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="//www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe></div></div>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
                 expect(nodes.length).toBe(1);
                 expect(nodes[0].url).toBe('https://www.youtube.com/embed/YTVID');
-                assertPrettifiesTo(nodes[0].html, '<iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="https://www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe>');
+                await assertPrettifiesTo(nodes[0].html, '<iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="https://www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe>');
             }));
         });
 
@@ -346,42 +342,42 @@ describe('EmbedNode', function () {
             // Medium Export HTML <figure name="7b98" id="7b98" class="graf graf--figure graf--iframe graf-after--p graf--trailing"><blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>
             // Medium Live HTML <figure name="7b98" id="7b98" class="graf graf--figure graf--iframe graf-after--p graf--trailing"><iframe data-width="500" data-height="281" width="500" height="281" data-src="/media/6969?postId=890" data-media-id="6969" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fpbs.twimg.com%2Fprofile_images%2F1071055431215276033%2FU9-RIlDs_400x400.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/6969?postId=890"></iframe></figure>
 
-            it('twitter blockquote', editorTest(function () {
+            it('twitter blockquote', editorTest(async function () {
                 const document = createDocument(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
                 expect(nodes.length).toBe(1);
                 expect(nodes[0].url).toBe('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
-                assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
+                await assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
             }));
 
-            it('twitter medium blockquote', editorTest(function () {
+            it('twitter medium blockquote', editorTest(async function () {
                 const document = createDocument(html`<figure name="7b98" id="7b98" class="graf graf--figure graf--iframe graf-after--p graf--trailing"><blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
                 expect(nodes.length).toBe(1);
                 expect(nodes[0].url).toBe('https://twitter.com/iamdevloper/status/1133348012439220226');
-                assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
+                await assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
             }));
 
-            it('twitter blockquote with caption', editorTest(function () {
+            it('twitter blockquote with caption', editorTest(async function () {
                 const document = createDocument(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><figcaption>A Tweet</figcaption></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
                 expect(nodes.length).toBe(1);
                 expect(nodes[0].url).toBe('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
-                assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
                 expect(nodes[0].caption).toBe('A Tweet');
+                await assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
             }));
 
-            it('twitter blockquote with linked caption', editorTest(function () {
+            it('twitter blockquote with linked caption', editorTest(async function () {
                 const document = createDocument(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><figcaption><a href="https://twitter.com">A Tweet</a></figcaption></figure>`);
                 const nodes = $generateNodesFromDOM(editor, document) as EmbedNode[];
 
                 expect(nodes.length).toBe(1);
                 expect(nodes[0].url).toBe('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
-                assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
                 expect(nodes[0].caption).toBe('<a href="https://twitter.com">A Tweet</a>');
+                await assertPrettifiesTo(nodes[0].html, '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
             }));
         });
     });

@@ -1,0 +1,215 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  FETCH_BODY_MAX_BYTES,
+  FETCH_PATH_MAX_LENGTH,
+  FetchRequestSchema,
+} from '../../src/bridge/index.ts';
+
+function requestErrors(request: unknown) {
+  const result = FetchRequestSchema.safeParse(request);
+  expect(result.success).toBe(false);
+  return result.error?.issues.map((issue) => ({ path: issue.path, message: issue.message }));
+}
+
+describe('a fetch request', () => {
+  it('needs only a path', () => {
+    expect(FetchRequestSchema.parse({ path: '/posts/?limit=5' })).toEqual({
+      path: '/posts/?limit=5',
+    });
+  });
+
+  it('takes a method, headers and a text body', () => {
+    const request = {
+      path: '/posts/',
+      method: 'POST',
+      headers: { 'X-Request-Id': 'abc' },
+      body: JSON.stringify({ posts: [{ title: 'Hello' }] }),
+    };
+    expect(FetchRequestSchema.parse(request)).toEqual(request);
+    for (const method of ['GET', 'PUT', 'DELETE']) {
+      expect(FetchRequestSchema.parse({ path: '/posts/', method }).method).toBe(method);
+    }
+  });
+
+  it('refuses a URL in place of a path', () => {
+    for (const path of [
+      'https://evil.example/ghost/api/admin/posts/',
+      '//evil.example/posts/',
+      'posts/',
+      '/\\evil.example/',
+      '',
+    ]) {
+      expect(requestErrors({ path })).toEqual([
+        { path: ['path'], message: 'Expected an Admin API path such as /posts/, not a URL' },
+      ]);
+    }
+    expect(requestErrors({ path: 42 })).toEqual([
+      { path: ['path'], message: 'Expected an Admin API path such as /posts/' },
+    ]);
+  });
+
+  it('refuses a path that is too long', () => {
+    expect(requestErrors({ path: `/${'a'.repeat(FETCH_PATH_MAX_LENGTH)}` })).toEqual([
+      { path: ['path'], message: 'Expected an Admin API path of at most 2048 characters' },
+    ]);
+  });
+
+  it('refuses methods the Admin API does not answer', () => {
+    for (const method of ['get', 'OPTIONS', 'TRACE', 'CONNECT', 1]) {
+      expect(requestErrors({ path: '/posts/', method })).toEqual([
+        { path: ['method'], message: 'Expected a method of: GET, POST, PUT, DELETE' },
+      ]);
+    }
+  });
+
+  it('refuses headers the browser could not send', () => {
+    expect(requestErrors({ path: '/posts/', headers: { 'Bad Name': 'x', 'X-Ok': 'y' } })).toEqual([
+      {
+        path: ['headers', 'Bad Name'],
+        message: "Expected header names of letters, digits and !#$%&'*+-.^_`|~ alone",
+      },
+    ]);
+    // Any HTTP token is a header name.
+    expect(
+      FetchRequestSchema.safeParse({ path: '/posts/', headers: { "x_id!#$%&'*+-.^_`|~": 'y' } })
+        .success,
+    ).toBe(true);
+    // A line break, a character fetch cannot send as a byte, or another control character.
+    for (const value of ['a\r\nCookie: b', 'a\nb', '\u0000', '€', '😀', 'a\u0001b', '\u007f']) {
+      expect(requestErrors({ path: '/posts/', headers: { 'X-Test': value } }), value).toEqual([
+        {
+          path: ['headers', 'X-Test'],
+          message: 'Expected header values on one line, in Latin-1 and without control characters',
+        },
+      ]);
+    }
+    expect(requestErrors({ path: '/posts/', headers: { 'X-Test': 1 } })).toEqual([
+      { path: ['headers', 'X-Test'], message: 'Expected header values to be text' },
+    ]);
+    expect(requestErrors({ path: '/posts/', headers: { 'X-Test': 'a'.repeat(8193) } })).toEqual([
+      { path: ['headers', 'X-Test'], message: 'Expected header values of at most 8192 characters' },
+    ]);
+    expect(requestErrors({ path: '/posts/', headers: [['X-Test', 'a']] })).toEqual([
+      { path: ['headers'], message: 'Expected headers as an object of names to values' },
+    ]);
+  });
+
+  it('takes any Latin-1 text in a header value, tabs included', () => {
+    const headers = { 'X-Test': 'café\tnaïve ÿ ~' };
+    expect(FetchRequestSchema.parse({ path: '/posts/', headers }).headers).toEqual(headers);
+  });
+
+  it('refuses the headers only Admin sets, rather than dropping them', () => {
+    for (const name of [
+      'Cookie',
+      'authorization',
+      'X-Ghost-Version',
+      'App-Pragma',
+      'Host',
+      'Origin',
+      'Referer',
+      'Content-Length',
+      'X-Forwarded-For',
+      'Forwarded',
+      'X-Real-IP',
+      'Via',
+    ]) {
+      expect(requestErrors({ path: '/posts/', headers: { [name]: 'x' } })).toEqual([
+        {
+          path: ['headers', name],
+          message: `Expected no ${name.toLowerCase()} header, which only Admin sets`,
+        },
+      ]);
+    }
+    for (const name of ['Accept', 'If-None-Match', 'X-Ghostly', 'X-Request-Id']) {
+      expect(
+        FetchRequestSchema.safeParse({ path: '/posts/', headers: { [name]: 'x' } }).success,
+      ).toBe(true);
+    }
+  });
+
+  it('refuses a content type or encoding, which only Admin sets, with any value', () => {
+    for (const [name, value] of [
+      // UTF-7 would carry a body Admin reads as harmless past its checks.
+      ['Content-Type', 'application/json; charset=utf-7'],
+      ['content-type', 'application/json; charset="utf-7"'],
+      ['Content-Type', 'application/json; charset=utf-8; charset=utf-7'],
+      ['Content-Type', 'application/json'],
+      ['content-type', 'application/x-www-form-urlencoded'],
+      ['Content-Type', 'multipart/form-data; boundary=x'],
+      ['Content-Encoding', 'gzip'],
+    ] as const) {
+      expect(
+        requestErrors({ path: '/posts/', method: 'POST', headers: { [name]: value }, body: '{}' }),
+        value,
+      ).toEqual([
+        {
+          path: ['headers', name],
+          message: `Expected no ${name.toLowerCase()} header, which only Admin sets`,
+        },
+      ]);
+    }
+    // Only the content type says what the body is.
+    expect(
+      FetchRequestSchema.safeParse({ path: '/posts/', headers: { Accept: 'multipart/mixed' } })
+        .success,
+    ).toBe(true);
+  });
+
+  it('refuses a body that is not JSON', () => {
+    for (const body of ['posts[0][title]=x', '', '{']) {
+      expect(requestErrors({ path: '/posts/', method: 'POST', body }), body).toEqual([
+        { path: ['body'], message: 'Expected the body as JSON text' },
+      ]);
+    }
+  });
+
+  it('refuses too many headers', () => {
+    const headers = Object.fromEntries(
+      Array.from({ length: 51 }, (_, index) => [`X-Test-${index}`, 'a']),
+    );
+    expect(requestErrors({ path: '/posts/', headers })).toEqual([
+      { path: ['headers'], message: 'Expected at most 50 headers' },
+    ]);
+    delete headers['X-Test-0'];
+    expect(FetchRequestSchema.safeParse({ path: '/posts/', headers }).success).toBe(true);
+  });
+
+  it('refuses a body on a GET request', () => {
+    for (const method of [undefined, 'GET']) {
+      expect(requestErrors({ path: '/posts/', method, body: '{}' })).toEqual([
+        { path: ['body'], message: 'Expected no body on a GET request' },
+      ]);
+    }
+  });
+
+  it('measures the body in bytes', () => {
+    // A JSON string of exactly 1 MiB.
+    const ascii = `"${'a'.repeat(FETCH_BODY_MAX_BYTES - 2)}"`;
+    expect(
+      FetchRequestSchema.safeParse({ path: '/db/', method: 'POST', body: ascii }).success,
+    ).toBe(true);
+    const tooLong = { path: '/posts/', method: 'POST', body: `${ascii} ` };
+    expect(requestErrors(tooLong)).toEqual([
+      { path: ['body'], message: 'Expected a body of at most 1 MiB' },
+    ]);
+    // Half as many characters, each two bytes in UTF-8, plus one more.
+    const wide = {
+      path: '/posts/',
+      method: 'POST',
+      body: 'é'.repeat(FETCH_BODY_MAX_BYTES / 2 + 1),
+    };
+    expect(requestErrors(wide)).toEqual([
+      { path: ['body'], message: 'Expected a body of at most 1 MiB' },
+    ]);
+    expect(requestErrors({ path: '/posts/', method: 'POST', body: {} })).toEqual([
+      { path: ['body'], message: 'Expected the body as text' },
+    ]);
+  });
+
+  it('refuses options it does not support rather than ignoring them', () => {
+    expect(requestErrors({ path: '/posts/', credentials: 'include' })?.[0]?.path).toEqual([]);
+    expect(FetchRequestSchema.safeParse(null).success).toBe(false);
+  });
+});

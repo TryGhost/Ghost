@@ -6,9 +6,9 @@
  * Design System Adoption — snapshot extractor.
  *
  * Scans the Ghost monorepo and writes a single JSON snapshot describing how
- * each Admin React app uses Shade vs. admin-x-design-system, plus a coarse
- * Ember legacy summary and a public-apps count. Output is consumed by the
- * Storybook page at src/docs/adoption-dashboard.stories.tsx.
+ * each Admin React app uses Shade vs. admin-x-design-system, plus a
+ * public-apps count. Output is consumed by the Storybook page at
+ * src/docs/adoption-dashboard.stories.tsx.
  *
  * Run with: pnpm --filter @tryghost/shade run adoption:extract
  *
@@ -54,13 +54,6 @@ type AppReport = {
   adminXDsComponents: ComponentCount[];
 };
 
-type EmberReport = {
-  hbsFiles: number;
-  spiritUtilityFiles: number;
-  patternFiles: number;
-  componentCssFiles: number;
-};
-
 type AdoptionData = {
   snapshot: {
     generatedAt: string;
@@ -77,7 +70,6 @@ type AdoptionData = {
   apps: AppReport[];
   topShadeComponents: ComponentCount[];
   adminXDsComponentsAggregate: ComponentCount[];
-  ember: EmberReport | null;
   publicApps: {
     count: number;
     names: readonly string[];
@@ -187,21 +179,6 @@ function scanApp(appName: string): AppReport | null {
   };
 }
 
-function scanEmber(): EmberReport | null {
-  const appDir = join(REPO_ROOT, 'apps', 'ember-admin', 'app');
-  try {
-    statSync(appDir);
-  } catch {
-    return null;
-  }
-  const hbsFiles = globSync('**/*.hbs', { cwd: appDir, ignore: ['**/node_modules/**'] }).length;
-  const stylesDir = join(appDir, 'styles');
-  const spiritUtilityFiles = globSync('spirit/**/*.css', { cwd: stylesDir }).length;
-  const patternFiles = globSync('patterns/**/*.css', { cwd: stylesDir }).length;
-  const componentCssFiles = globSync('components/**/*.css', { cwd: stylesDir }).length;
-  return { hbsFiles, spiritUtilityFiles, patternFiles, componentCssFiles };
-}
-
 function getGitInfo(): { sha: string; branch: string } {
   try {
     const sha = execSync('git rev-parse HEAD', { cwd: REPO_ROOT }).toString().trim();
@@ -263,7 +240,6 @@ function main(): void {
     adminXDsComponentsAggregate: [...adminXDsTotal.entries()]
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count),
-    ember: scanEmber(),
     publicApps: {
       count: PUBLIC_APPS.length,
       names: PUBLIC_APPS,

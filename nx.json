@@ -2,10 +2,7 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "reactAdminDependency": ["default"],
     "sharedGlobals": [
-      "{workspaceRoot}/.npmrc",
-      "{workspaceRoot}/ghost/tsconfig.json",
       "{workspaceRoot}/package.json",
       "{workspaceRoot}/pnpm-workspace.yaml",
       "{workspaceRoot}/pnpm-lock.yaml"
@@ -16,13 +13,7 @@
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": [
-        {
-          "env": "GHOST_CDN_URL"
-        },
-        "default",
-        "^default"
-      ],
+      "inputs": ["default", "^default"],
       "outputs": [
         "{projectRoot}/build",
         "{projectRoot}/dist",
@@ -56,7 +47,6 @@
       "continuous": true
     }
   },
-  "cacheDirectory": ".nxcache",
   "analytics": true,
   "nxCloudId": "6a146249a88a39d9ffa5046c"
 }

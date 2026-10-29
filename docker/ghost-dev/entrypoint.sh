@@ -44,7 +44,7 @@ ghost_pid() {
         cmdline=$(tr '\0' ' ' < "$proc/cmdline" 2>/dev/null || true)
         [ "${cmdline% }" = "$GHOST_COMMAND" ] || continue
         cwd=$(readlink "$proc/cwd" 2>/dev/null || true)
-        [[ "$cwd" == */ghost/core ]] || continue
+        [[ "$cwd" == */ghost ]] || continue
         echo "${proc#/proc/}"
         return
     done

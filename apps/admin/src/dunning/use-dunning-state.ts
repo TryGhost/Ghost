@@ -51,8 +51,8 @@ function readLockDismissedFor(): string | null {
 
 /**
  * One subscription serves every dunning snapshot: `dismissLock` is the only
- * writer that notifies. The payment-settled snapshot is written by the Ember
- * billing service without a notification on purpose — the return navigation
+ * writer that notifies. The payment-settled snapshot is written by the
+ * billing screen without a notification on purpose — the return navigation
  * triggers the render that picks it up (useSyncExternalStore re-reads its
  * snapshot on every render).
  */
@@ -97,8 +97,8 @@ export function dismissLockQuietly(state: DunningState): void {
 
 /**
  * Records the route a "Pay now" CTA was clicked on. The billing app's
- * post-payment `previousPage` request is resolved from this on the Ember
- * side — an explicit route rather than history.back(), so a deep link (or a
+ * post-payment `previousPage` request is resolved from this by the billing
+ * screen — an explicit route rather than history.back(), so a deep link (or a
  * tab whose history points outside Admin) falls back to the billing overview
  * instead of leaving Ghost.
  */
@@ -117,8 +117,7 @@ export function markPayNowReturnRoute(route: string): void {
  * Returns `null` when there is nothing to show: no dunning block, a malformed
  * one (the /config/ response isn't runtime-validated, so guard against a
  * misconfigured host config), or a live subscription that has become active
- * (the billing app reports payment over the Ember bridge before the server
- * config catches up).
+ * (the billing app reports payment before the server config catches up).
  *
  * The phase is computed client-side from the position within the
  * paymentFailedAt -> suspendsAt window so no config rewrite is needed for the

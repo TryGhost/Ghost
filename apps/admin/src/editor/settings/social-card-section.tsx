@@ -1,13 +1,9 @@
-import { useCallback } from 'react';
 import { Field, FieldError, FieldLabel, Input, Textarea } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import BrandIcon from '@/shared/brand-icon/brand-icon';
 import type { PostCardConfig } from '@/editor/card-config';
 import { ImageField } from '@/editor/image-field';
-import { useImageFieldUpload } from '@/editor/use-image-field-upload';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { truncate } from './meta-data-fields';
-import { SettingsSubview } from './settings-subview';
 import {
   SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH,
   SOCIAL_PREVIEW_LENGTH,
@@ -19,9 +15,10 @@ import {
 } from './social-card-fields';
 import type { SocialCardNetwork, SocialPreviewRow } from './social-card-networks';
 import { useSettingsField } from './use-settings-field';
+import type { SocialCardImage } from './use-social-card-image';
 
-export interface SocialCardSectionProps {
-  /** Which network's card this pane edits (see `social-card-networks.ts`). */
+export interface SocialCardFieldsProps {
+  /** Which network's card this edits (see `social-card-networks.ts`). */
   network: SocialCardNetwork;
   session: EditorSettingsPort;
   /** The site's homepage URL, which the card previews the post under. */
@@ -36,16 +33,16 @@ export interface SocialCardSectionProps {
  * The card a network renders for the post: an image, a title and a description
  * that stand in for the post's own, and the result they produce.
  */
-export function SocialCardSection({
+export function SocialCardFields({
   network,
   session,
   siteUrl,
   featureImage,
   cardConfig,
-}: SocialCardSectionProps) {
+  image: { src: image, edit: editImage, upload },
+}: SocialCardFieldsProps & { image: SocialCardImage }) {
   const title = useSettingsField(session, network.titleKey);
   const description = useSettingsField(session, network.descriptionKey);
-  const image = session.settings[network.imageKey] ?? '';
 
   const imageSubject = `${network.name} image`;
 
@@ -67,12 +64,6 @@ export function SocialCardSection({
     siteSocialImage: cardConfig[network.siteImageKey] ?? '',
     siteCoverImage: cardConfig.siteCoverImage ?? '',
   });
-
-  const editImage = useCallback(
-    (src: string | null) => session.editSettings({ [network.imageKey]: src }),
-    [network.imageKey, session],
-  );
-  const upload = useImageFieldUpload(imageSubject, editImage);
 
   const previewRow = (row: SocialPreviewRow) => {
     if (row === 'title') {
@@ -101,13 +92,7 @@ export function SocialCardSection({
   };
 
   return (
-    <SettingsSubview
-      closeLabel={`Close ${network.name} card panel`}
-      icon={<BrandIcon className="size-4" name={network.icon} />}
-      id={network.id}
-      label={`${network.name} card`}
-      title={`${network.name} card`}
-    >
+    <>
       <ImageField
         src={image || null}
         subject={imageSubject}
@@ -160,6 +145,6 @@ export function SocialCardSection({
           </Stack>
         </Stack>
       </Stack>
-    </SettingsSubview>
+    </>
   );
 }

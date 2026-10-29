@@ -24,7 +24,6 @@ export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-f
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
-export { useDocsBot } from './hooks/use-docsbot';
 
 // API status
 export { onUpgradeStatus } from './utils/api/upgrade-status';
@@ -84,18 +83,25 @@ export type { NavigateOptions } from './providers/router-provider';
 export type AdminRouteHandle = {
   allowInForceUpgrade?: boolean;
   hideAdminSidebar?: boolean;
+  /** Marks a full-screen surface: navigating into or out of it runs a screen transition. */
+  screenTransition?: boolean;
+  settingsSidebar?: boolean;
 };
+export type { ViewTransitionController } from './providers/router-provider';
 export {
+  Link,
   RouterProvider,
   useNavigate,
+  useRouterDestination,
+  ViewTransitionControllerProvider,
   useRouteHasParams,
   resetScrollPosition,
   ScrollRestoration,
   Navigate,
 } from './providers/router-provider';
 export { useNavigationStack } from './providers/navigation-stack-provider';
+export { isAppPagePath } from './utils/feature-flag-overrides';
 export {
-  Link,
   NavigationType,
   Outlet,
   useBlocker,
@@ -107,6 +113,7 @@ export {
   matchRoutes,
   useMatch,
   useMatches,
+  useViewTransitionState,
 } from 'react-router';
 export type { BlockerFunction } from 'react-router';
 

@@ -13,7 +13,6 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LONG_DOCUMENT = buildLexicalParagraph(
   'A long document keeps its editor controls in reach. '.repeat(500),
 );
@@ -48,7 +47,6 @@ function controls(postType: 'post' | 'page') {
     editorScreen.publishButton(),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
-    editorScreen.helpLink(),
   ];
 }
 
@@ -260,23 +258,49 @@ function failPublishInputs() {
   );
 }
 
-/** Every header action lies wholly on screen and clear of the floating settings toggle. */
-function expectHeaderActionsOnScreen(buttons: number) {
-  const toggle = editorScreen.settingsToggle().element();
+/**
+ * Below the small breakpoint the header row holds the back link and the status,
+ * and the bottom bar the word count at the left and the header's actions at the
+ * right.
+ */
+function expectSmallScreenLayout(buttons: number) {
+  const back = editorScreen.backLink('post').element().getBoundingClientRect();
+  const status = editorScreen.status().element().getBoundingClientRect();
+  const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
+  const words = editorScreen.wordCount().element().getBoundingClientRect();
+  const bar = editorScreen.headerActions().element();
   const actions = editorScreen.headerActions().getByRole('button').elements();
   expect(actions).toHaveLength(buttons);
-  for (const action of [editorScreen.backLink('post').element(), ...actions, toggle]) {
-    const { left, top, right, bottom } = action.getBoundingClientRect();
+  for (const { left, top, right, bottom } of [back, status, toggle, words].concat(
+    actions.map((action) => action.getBoundingClientRect()),
+  )) {
     expect(left).toBeGreaterThanOrEqual(0);
     expect(top).toBeGreaterThanOrEqual(0);
     expect(right).toBeLessThanOrEqual(window.innerWidth);
     expect(bottom).toBeLessThanOrEqual(window.innerHeight);
   }
-  const toggleBounds = toggle.getBoundingClientRect();
-  for (const action of actions) {
-    const { right, top } = action.getBoundingClientRect();
-    expect(right <= toggleBounds.left || top >= toggleBounds.bottom).toBe(true);
-  }
+  // The status sits on the header row, between the back link and the toggle.
+  expect(status.top).toBe(back.top);
+  expect(status.left).toBeGreaterThan(back.right);
+  expect(status.right).toBeLessThanOrEqual(toggle.left);
+  // The word count sits in the bottom-left corner, the actions in the bottom right.
+  expect(words.left).toBe(12);
+  expect(window.innerHeight - words.bottom).toBe(12);
+  expect(editorScreen.root().element().contains(bar)).toBe(true);
+  const barBounds = bar.getBoundingClientRect();
+  expect(window.innerWidth - barBounds.right).toBe(12);
+  expect(window.innerHeight - barBounds.bottom).toBe(12);
+  expect(barBounds.left).toBeGreaterThan(words.right);
+}
+
+/** The colour Shade's success token resolves to in the current theme. */
+function successColour() {
+  const probe = document.createElement('span');
+  probe.className = 'text-state-success';
+  document.body.append(probe);
+  const colour = getComputedStyle(probe).color;
+  probe.remove();
+  return colour;
 }
 
 function expectTranslucentSurface(element: Element) {
@@ -290,12 +314,33 @@ afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
+/** The vertical centre of the first line of an element's text. */
+function firstLineCentre(element: Element): number {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
+  });
+  const text = walker.nextNode();
+  if (!text) {
+    throw new Error('No text to measure');
+  }
+  const range = document.createRange();
+  range.selectNodeContents(text);
+  const line = range.getClientRects()[0];
+  return line.top + line.height / 2;
+}
+
+function verticalCentre(element: Element): number {
+  const bounds = element.getBoundingClientRect();
+  return bounds.top + bounds.height / 2;
+}
+
 describe('Floating editor shell', () => {
   it.each(['post', 'page'] as const)(
     'keeps %s controls in the viewport while only the document scrolls',
     async (postType) => {
       fakeLongDocument(postType);
-      await renderAdminApp(`/editor/${postType}/abc123`, FLAG_ON);
+      await renderAdminApp(`/editor/${postType}/abc123`, withoutAutosave());
       await expect.element(editorScreen.body()).toBeVisible();
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await expect
@@ -328,9 +373,9 @@ describe('Floating editor shell', () => {
 
   it('moves header actions and footer beside floating settings and scrolls each pane independently', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
-    const footerBefore = editorScreen.helpLink().element().getBoundingClientRect();
+    const footerBefore = editorScreen.wordCount().element().getBoundingClientRect();
     const toggle = editorScreen.settingsToggle().element();
     const toggleBefore = toggle.getBoundingClientRect();
 
@@ -342,7 +387,7 @@ describe('Floating editor shell', () => {
       .toBe(sidebar.getBoundingClientRect().width + 8);
     await expect.poll(() => sidebar.getBoundingClientRect().right).toBe(window.innerWidth - 8);
     const sidebarBounds = sidebar.getBoundingClientRect();
-    const footerAfter = editorScreen.helpLink().element().getBoundingClientRect();
+    const footerAfter = editorScreen.wordCount().element().getBoundingClientRect();
     expect(footerBefore.right - footerAfter.right).toBeCloseTo(sidebarBounds.width + 16, 0);
     expect(footerAfter.bottom).toBe(footerBefore.bottom);
     expect(footerAfter.right).toBeLessThan(sidebarBounds.left);
@@ -381,13 +426,15 @@ describe('Floating editor shell', () => {
     );
     expect(sidebar.scrollTop).toBe(0);
     expect(pane.scrollTop).toBe(700);
-    expect(editorScreen.helpLink().element().getBoundingClientRect().right).toBe(footerAfter.right);
+    expect(editorScreen.wordCount().element().getBoundingClientRect().right).toBe(
+      footerAfter.right,
+    );
     expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
     // The toggle remains reachable even after the settings list has scrolled.
     await editorScreen.settingsToggle().click();
     await expect(editorScreen.settingsSidebar()).toHaveCount(0);
     expect(document.activeElement).toBe(editorScreen.settingsToggle().element());
-    expect(editorScreen.helpLink().element().getBoundingClientRect().right).toBe(
+    expect(editorScreen.wordCount().element().getBoundingClientRect().right).toBe(
       footerBefore.right,
     );
   });
@@ -399,15 +446,28 @@ describe('Floating editor shell', () => {
       fakeLongDocument('post');
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
-      await renderAdminApp('/editor/post/abc123', {
-        ...FLAG_ON,
-        boot: { browseMe: { response: me } },
-      });
+      await renderAdminApp(
+        '/editor/post/abc123',
+        withoutAutosave({
+          boot: { browseMe: { response: me } },
+        }),
+      );
       await expect.element(editorScreen.body()).toBeVisible();
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await expect
         .poll(() => document.documentElement.classList.contains('dark'))
         .toBe(theme === 'dark');
+      expectSmallScreenLayout(2);
+      // Publish is the bar's primary button, the size of the controls around it.
+      const publish = editorScreen.publishButton().element();
+      await expect.element(editorScreen.publishButton()).toHaveClass('bg-primary');
+      await expect.element(editorScreen.publishButton()).not.toHaveClass('text-state-success');
+      expect(publish.getBoundingClientRect().height).toBe(
+        editorScreen.backLink('post').element().getBoundingClientRect().height,
+      );
+      // The bar names no shortcuts.
+      expect(publish.getAttribute('aria-keyshortcuts')).toBeNull();
+      expect(editorScreen.previewButton().element().getAttribute('aria-keyshortcuts')).toBeNull();
 
       for (const { x, y, width, height } of positions('post')) {
         expect(x).toBeGreaterThanOrEqual(0);
@@ -427,13 +487,12 @@ describe('Floating editor shell', () => {
         );
         expectTranslucentSurface(element);
       }
-      const help = editorScreen.helpLink().element().getBoundingClientRect();
       const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
-      expect(help.height).toBe(back.getBoundingClientRect().height);
-      expect(window.innerHeight - help.bottom).toBe(12);
-      expect(back.getBoundingClientRect().top).toBe(21);
-      expect(window.innerWidth - help.right).toBe(16);
-      expect(window.innerWidth - toggle.right).toBe(25);
+      expect(back.getBoundingClientRect().top).toBe(12);
+      expect(window.innerWidth - toggle.right).toBe(12);
+      // The back link is just its arrow, still named for where it goes.
+      await expect.element(editorScreen.backLink('post')).toHaveAccessibleName('Posts');
+      expect(back.getBoundingClientRect().width).toBe(toggle.width);
 
       const before = positions('post');
       const pane = editorScreen.scrollPane();
@@ -446,9 +505,14 @@ describe('Floating editor shell', () => {
       await expect.element(editorScreen.settingsSidebar()).toBeVisible();
       await expect
         .poll(() => editorScreen.settingsSidebar().element().getBoundingClientRect().right)
-        .toBe(window.innerWidth - 8);
+        .toBe(window.innerWidth);
       expect(editorScreen.root().element().getBoundingClientRect().width).toBe(documentWidth);
-      expect(editorScreen.settingsSidebar().element().getBoundingClientRect().top).toBe(8);
+      // Edge to edge: no inset, corners or border below 500px.
+      const sidebarStyle = getComputedStyle(editorScreen.settingsSidebar().element());
+      expect(editorScreen.settingsSidebar().element().getBoundingClientRect().left).toBe(0);
+      expect(editorScreen.settingsSidebar().element().getBoundingClientRect().top).toBe(0);
+      expect(sidebarStyle.borderTopWidth).toBe('0px');
+      expect(sidebarStyle.borderTopLeftRadius).toBe('0px');
       expect(
         editorScreen.settingsSidebar().element().contains(editorScreen.settingsToggle().element()),
       ).toBe(false);
@@ -466,32 +530,76 @@ describe('Floating editor shell', () => {
     { status: 'published', inputs: 'failed' },
     { status: 'scheduled', inputs: 'failed' },
   ] as const)(
-    'keeps a $status post’s actions on a narrow screen with publish inputs $inputs',
+    'keeps a $status post’s actions in the bottom bar on a narrow screen with publish inputs $inputs',
     async ({ status, inputs }) => {
       await page.viewport(390, 844);
       fakeLongDocument('post', status);
       if (inputs === 'failed') {
         failPublishInputs();
       }
-      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await renderAdminApp('/editor/post/abc123', withoutAutosave());
       await expect.element(editorScreen.body()).toBeVisible();
       await expect.element(editorScreen.updateButton()).toBeVisible();
       if (inputs === 'failed') {
         await expect.element(editorScreen.publishInputsError()).toBeVisible();
+        expect(
+          editorScreen
+            .headerActions()
+            .element()
+            .contains(editorScreen.publishInputsError().element()),
+        ).toBe(true);
+      }
+      if (status === 'scheduled') {
+        // Scheduled reads in the success colour at every width.
+        const scheduled = editorScreen.status().getByText('Scheduled', { exact: true });
+        expect(getComputedStyle(scheduled.element()).color).toBe(successColour());
       }
 
       // Unpublish or Unschedule and Update, plus Retry when the load failed.
-      expectHeaderActionsOnScreen(inputs === 'failed' ? 3 : 2);
+      expectSmallScreenLayout(inputs === 'failed' ? 3 : 2);
+      // Update, the bar's rightmost action, is its primary button, disabled until
+      // something changes; the others keep their header looks.
+      const actions = editorScreen.headerActions().getByRole('button').elements();
+      expect(actions.at(-1)).toBe(editorScreen.updateButton().element());
+      await expect.element(editorScreen.updateButton()).toHaveClass('bg-primary');
+      await expect.element(editorScreen.updateButton()).not.toHaveClass('text-state-success');
+      await expect.element(editorScreen.updateButton()).toBeDisabled();
+      const secondary =
+        status === 'scheduled' ? editorScreen.unscheduleButton() : editorScreen.unpublishButton();
+      await expect.element(secondary).not.toHaveClass('bg-primary');
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
     },
   );
 
+  it('hides the bottom bar’s actions with the word count while the on-screen keyboard is open', async () => {
+    await page.viewport(390, 844);
+    fakeLongDocument('post');
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    // A keyboard shrinks the visual viewport while the layout viewport stays put.
+    const viewport = window.visualViewport!;
+    Object.defineProperty(viewport, 'height', {
+      configurable: true,
+      get: () => window.innerHeight - 300,
+    });
+    try {
+      await editorScreen.body().click();
+      viewport.dispatchEvent(new Event('resize'));
+      await expect(editorScreen.wordCount()).toHaveCount(0);
+      await expect(editorScreen.publishButton()).toHaveCount(0);
+    } finally {
+      Reflect.deleteProperty(viewport, 'height');
+    }
+    viewport.dispatchEvent(new Event('resize'));
+    await expect.element(editorScreen.publishButton()).toBeVisible();
+  });
+
   it('eases the sidebar and fades its contents without making header actions jump', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const publishBefore = editorScreen.publishButton().element().getBoundingClientRect().right;
-    const footerBefore = editorScreen.helpLink().element().getBoundingClientRect().right;
+    const footerBefore = editorScreen.wordCount().element().getBoundingClientRect().right;
     // Hold the real transition long enough to inspect precise points on its timeline,
     // independently of browser scheduling and Playwright's actionability waits.
     const animationStyle = slowSettingsTransition();
@@ -523,7 +631,7 @@ describe('Floating editor shell', () => {
       expect(writingPane.right).toBeCloseTo(window.innerWidth - width, 0);
       const remainingToggle = (footerBefore - publishBefore) * (1 - width / sidebarWidth);
       const publishDuring = editorScreen.publishButton().element().getBoundingClientRect().right;
-      const footerDuring = editorScreen.helpLink().element().getBoundingClientRect().right;
+      const footerDuring = editorScreen.wordCount().element().getBoundingClientRect().right;
       expect(publishDuring).toBeLessThan(publishBefore);
       expect(footerDuring - publishDuring).toBeCloseTo(remainingToggle, 0);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
@@ -562,7 +670,7 @@ describe('Floating editor shell', () => {
 
   it('reverses a closing sidebar without discarding its contents or jumping its controls', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const animationStyle = slowSettingsTransition();
     try {
@@ -602,7 +710,7 @@ describe('Floating editor shell', () => {
 
   it('preserves document focus when writing resumes during sidebar closing', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const animationStyle = slowSettingsTransition();
     try {
@@ -627,9 +735,7 @@ describe('Floating editor shell', () => {
 
   it('keeps one stationary sidebar toggle across subviews and omits its tooltip', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
-    });
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const toggle = editorScreen.settingsToggle().element();
     const toggleBefore = toggle.getBoundingClientRect();
@@ -677,7 +783,7 @@ describe('Floating editor shell', () => {
         cardWidth: 'full',
       });
       fakeLongDocument('post', 'draft', JSON.stringify(lexical));
-      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await renderAdminApp('/editor/post/abc123', withoutAutosave());
       const image = editorScreen.body().getByRole('img', { name: 'Full-width landscape' });
       await expect.element(image).toBeVisible();
       const pane = editorScreen.scrollPane();
@@ -726,7 +832,7 @@ describe('Floating editor shell', () => {
     lexical.root.children.unshift(full.node);
     lexical.root.children.push(wide.node);
     fakeLongDocument('post', 'draft', JSON.stringify(lexical));
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     const fullImage = editorScreen.body().getByRole('img', { name: 'Full-width landscape' });
     const wideImage = editorScreen.body().getByRole('img', { name: 'Wide landscape' });
     await expect.element(fullImage).toBeVisible();
@@ -870,7 +976,7 @@ describe('Floating editor shell', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     await editorScreen.body().click();
     await userEvent.keyboard('{End} more');
@@ -881,30 +987,83 @@ describe('Floating editor shell', () => {
     expect(bounds.right).toBeLessThanOrEqual(window.innerWidth);
     expect(status.scrollWidth).toBeLessThanOrEqual(status.clientWidth);
     expect(status.scrollHeight).toBeLessThanOrEqual(status.clientHeight);
-    expect(bounds.top).toBeGreaterThanOrEqual(
-      editorScreen.publishButton().element().getBoundingClientRect().bottom,
+    // It wraps on the header row, between the back link and the toggle, in red.
+    const back = editorScreen.backLink('post').element().getBoundingClientRect();
+    expect(bounds.top).toBe(back.top);
+    expect(bounds.left).toBeGreaterThan(back.right);
+    expect(bounds.right).toBeLessThanOrEqual(
+      editorScreen.settingsToggle().element().getBoundingClientRect().left,
     );
+    expect(bounds.height).toBeGreaterThan(back.height);
+    await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+  });
+
+  it('keeps a wrapped status level with the back link and the actions level with the settings toggle', async () => {
+    await page.viewport(645, 800);
+    fakeLongDocument('post');
+    fakeAdminEndpoint(
+      'PUT',
+      /^\/posts\/abc123\/\?/,
+      {
+        errors: [
+          {
+            type: 'ValidationError',
+            message:
+              'Saving failed: this post contains a value that is too long. Shorten the value and try saving again.',
+          },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect.element(editorScreen.status()).toBeVisible();
+    const back = () => editorScreen.backLink('post').element();
+    const status = () => editorScreen.status().element();
+    const expectAligned = () => {
+      // The back link is its arrow alone, so the status's first line centres on it.
+      expect(Math.abs(firstLineCentre(status()) - verticalCentre(back()))).toBeLessThan(2);
+      expect(
+        Math.abs(
+          verticalCentre(editorScreen.publishButton().element()) -
+            verticalCentre(editorScreen.settingsToggle().element()),
+        ),
+      ).toBeLessThan(2);
+    };
+    expectAligned();
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End} more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.element(editorScreen.saveError()).toBeVisible();
+
+    // The rule wraps under its first line rather than centring against the row.
+    expect(status().getBoundingClientRect().height).toBeGreaterThan(
+      back().getBoundingClientRect().height + 8,
+    );
+    expectAligned();
   });
 
   it('bounds the contributor layout and keeps its controls anchored while writing', async () => {
     fakeLongDocument('post');
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Contributor' })];
-    await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp(
+      '/editor/post/abc123',
+      withoutAutosave({
+        boot: { browseMe: { response: me } },
+      }),
+    );
     await expect.element(editorScreen.body()).toBeVisible();
     const visibleControls = [
       editorScreen.backLink('post'),
       editorScreen.status(),
       editorScreen.settingsToggle(),
       editorScreen.wordCount(),
-      editorScreen.helpLink(),
     ];
     const before = visibleControls.map((control) => control.element().getBoundingClientRect().top);
-    expect(editorScreen.helpLink().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    expect(editorScreen.wordCount().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
       window.innerHeight,
     );
     const pane = editorScreen.scrollPane();
@@ -923,16 +1082,23 @@ describe('Floating editor shell', () => {
     'keeps the $status action translucent and blurred against the $theme canvas',
     async ({ status, theme }) => {
       fakeLongDocument('post', status);
+      // The site's member total, which the publish inputs read before the action is enabled.
+      fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+        members: [],
+        meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+      });
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
-      await renderAdminApp('/editor/post/abc123', {
-        ...FLAG_ON,
-        boot: { browseMe: { response: me } },
-      });
+      await renderAdminApp(
+        '/editor/post/abc123',
+        withoutAutosave({
+          boot: { browseMe: { response: me } },
+        }),
+      );
       await expect.element(editorScreen.body()).toBeVisible();
       const action =
         status === 'published' ? editorScreen.unpublishButton() : editorScreen.unscheduleButton();
-      await expect.element(action).toBeVisible();
+      await expect.element(action).toBeEnabled();
       await expect
         .poll(() => document.documentElement.classList.contains('dark'))
         .toBe(theme === 'dark');
@@ -944,46 +1110,59 @@ describe('Floating editor shell', () => {
   );
 
   it.each([1280, 390])(
-    'reserves space for a session warning beneath the header at %spx while keeping the footer anchored',
+    'puts a session warning above the header at %spx while keeping the footer anchored',
     async (width) => {
       await page.viewport(width, 800);
       fakeLongDocument('post');
+      // A collision's banner, unlike a failed save, sits above the header.
       fakeAdminEndpoint(
         'PUT',
         /^\/posts\/abc123\/\?/,
         {
-          errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+          errors: [
+            {
+              code: 'UPDATE_COLLISION',
+              type: 'UpdateCollisionError',
+              message: 'Saving failed! Someone else is editing this post.',
+            },
+          ],
         },
-        { status: 401 },
+        { status: 409 },
       );
-      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await renderAdminApp('/editor/post/abc123', withoutAutosave());
       await expect.element(editorScreen.body()).toBeVisible();
       const headerBefore = editorScreen.settingsToggle().element().getBoundingClientRect();
-      const footerBefore = editorScreen.helpLink().element().getBoundingClientRect();
+      const footerBefore = editorScreen.wordCount().element().getBoundingClientRect();
       const pane = editorScreen.scrollPane();
       const paneHeight = pane.clientHeight;
 
       await editorScreen.body().click();
       await userEvent.keyboard('{End} more');
       await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.element(editorScreen.reauthDialog()).toBeVisible();
-      await userEvent.keyboard('{Escape}');
-      await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+      await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
-      const banner = editorScreen.saveErrorBanner().element().getBoundingClientRect();
-      expect(banner.top).toBeGreaterThanOrEqual(headerBefore.bottom);
+      const banner = editorScreen.conflictBanner().element().getBoundingClientRect();
+      const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
+      const back = editorScreen.backLink('post').element().getBoundingClientRect();
+      // The header row, with the settings toggle floating on it, moves down below the banner.
+      expect(toggle.top).toBeGreaterThan(banner.bottom);
+      expect(toggle.top).toBeGreaterThan(headerBefore.top);
+      expect(back.top).toBe(toggle.top);
+      // The document starts beneath the banner and reaches behind the header only.
       expect(pane.getBoundingClientRect().top).toBeGreaterThanOrEqual(banner.bottom);
       expect(pane.clientHeight).toBeLessThan(paneHeight);
-      expect(editorScreen.settingsToggle().element().getBoundingClientRect().top).toBe(
-        headerBefore.top,
-      );
-      expect(editorScreen.helpLink().element().getBoundingClientRect().bottom).toBe(
+      // Its writing area still starts below the header it reaches behind.
+      const writingArea = pane.firstElementChild as HTMLElement;
+      expect(
+        pane.getBoundingClientRect().top + parseFloat(getComputedStyle(writingArea).paddingTop),
+      ).toBeGreaterThan(back.bottom);
+      expect(editorScreen.wordCount().element().getBoundingClientRect().bottom).toBe(
         footerBefore.bottom,
       );
 
       pane.scrollTo({ top: 700 });
       await expect.poll(() => pane.scrollTop).toBe(700);
-      expect(editorScreen.saveErrorBanner().element().getBoundingClientRect().top).toBe(banner.top);
+      expect(editorScreen.conflictBanner().element().getBoundingClientRect().top).toBe(banner.top);
       expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
       expect(banner.left).toBeGreaterThanOrEqual(0);

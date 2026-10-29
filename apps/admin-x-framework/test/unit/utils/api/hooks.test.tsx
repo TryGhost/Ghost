@@ -2,6 +2,7 @@ import { InfiniteData, QueryClient, QueryClientProvider } from '@tanstack/react-
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React, { ReactNode } from 'react';
 import { FrameworkProvider } from '../../../../src/providers/framework-provider';
+import { renderHookWithProviders } from '../../../../src/test/test-utils';
 import {
   createInfiniteQuery,
   createMutation,
@@ -29,7 +30,6 @@ const queryClient = new QueryClient({
 
 const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
-    externalNavigate={() => {}}
     ghostVersion="5.x"
     unsplashConfig={{
       Authorization: '',
@@ -38,9 +38,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
       'App-Pragma': '',
       'X-Unsplash-Cache': true,
     }}
-    onDelete={() => {}}
-    onInvalidate={() => {}}
-    onUpdate={() => {}}
   >
     {/* Being nested, this overrides the default QueryClientProvider from the framework */}
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -600,43 +597,19 @@ describe('API hooks', () => {
           queryClient.setQueryData(['SecondDataType', '1'], { test: 2 });
           queryClient.setQueryData(['OtherDataType', '1'], { test: 3 });
 
-          const onInvalidate = vi.fn();
-          const spyWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
-            <FrameworkProvider
-              externalNavigate={() => {}}
-              ghostVersion="5.x"
-              unsplashConfig={{
-                Authorization: '',
-                'Accept-Version': '',
-                'Content-Type': '',
-                'App-Pragma': '',
-                'X-Unsplash-Cache': true,
-              }}
-              onDelete={() => {}}
-              onInvalidate={onInvalidate}
-              onUpdate={() => {}}
-            >
-              <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-            </FrameworkProvider>
-          );
-
           const useTestMutation = createMutation({
             path: () => '/test/',
             method: 'PUT',
             invalidateQueries: { dataType: ['FirstDataType', 'SecondDataType'] },
           });
 
-          const { result } = renderHook(() => useTestMutation(), { wrapper: spyWrapper });
+          const { result } = renderHook(() => useTestMutation(), { wrapper });
 
           await result.current.mutateAsync({});
 
           expect(queryClient.getQueryState(['FirstDataType', '1'])?.isInvalidated).toBe(true);
           expect(queryClient.getQueryState(['SecondDataType', '1'])?.isInvalidated).toBe(true);
           expect(queryClient.getQueryState(['OtherDataType', '1'])?.isInvalidated).toBe(false);
-
-          expect(onInvalidate).toHaveBeenCalledTimes(2);
-          expect(onInvalidate).toHaveBeenNthCalledWith(1, 'FirstDataType');
-          expect(onInvalidate).toHaveBeenNthCalledWith(2, 'SecondDataType');
         },
       );
     });
@@ -650,26 +623,6 @@ describe('API hooks', () => {
           queryClient.setQueryData(['NarrowedDataType', 'list'], { test: 1 });
           queryClient.setQueryData(['NarrowedDataType', 'index'], { test: 2 });
 
-          const onInvalidate = vi.fn();
-          const spyWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
-            <FrameworkProvider
-              externalNavigate={() => {}}
-              ghostVersion="5.x"
-              unsplashConfig={{
-                Authorization: '',
-                'Accept-Version': '',
-                'Content-Type': '',
-                'App-Pragma': '',
-                'X-Unsplash-Cache': true,
-              }}
-              onDelete={() => {}}
-              onInvalidate={onInvalidate}
-              onUpdate={() => {}}
-            >
-              <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-            </FrameworkProvider>
-          );
-
           const useTestMutation = createMutation({
             path: () => '/test/',
             method: 'PUT',
@@ -679,7 +632,7 @@ describe('API hooks', () => {
             },
           });
 
-          const { result } = renderHook(() => useTestMutation(), { wrapper: spyWrapper });
+          const { result } = renderHookWithProviders(() => useTestMutation(), { queryClient });
 
           await result.current.mutateAsync({});
 
@@ -687,7 +640,6 @@ describe('API hooks', () => {
           expect(queryClient.getQueryState(['NarrowedDataType', 'index'])?.isInvalidated).toBe(
             false,
           );
-          expect(onInvalidate).toHaveBeenCalledExactlyOnceWith('NarrowedDataType');
         },
       );
     });
@@ -705,7 +657,6 @@ describe('API hooks', () => {
             path: () => '/test/',
             method: 'PUT',
             updateQueries: {
-              emberUpdateType: 'skip',
               dataType: 'MyDataType',
               update: (newData, currentData) => {
                 return {

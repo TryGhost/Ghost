@@ -12,6 +12,7 @@ import type { EditorSaveFailure } from '@/editor/session/editor-session';
 import { body, record, sessionHarness } from '@/editor/session/__test-utils__/session-harness';
 import { preloadKoenig } from '@/settings/components/koenig-loader';
 import {
+  koenigErrorReporters,
   reportEditorError,
   reportEditorNotice,
   reportKoenigError,
@@ -143,6 +144,47 @@ describe('reportKoenigRenderError', () => {
   });
 });
 
+describe('koenigErrorReporters', () => {
+  it.each(['primary', 'secondary'] as const)(
+    'tags a Lexical failure in the %s instance with its role',
+    async (instance) => {
+      await preloadKoenig();
+      const error = new Error('lexical exploded');
+
+      koenigErrorReporters(instance).onError(error);
+
+      expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+        tags: { lexical: true, koenig_instance: instance },
+        contexts: { koenig: { version: '1.2.3' } },
+      });
+    },
+  );
+
+  it('tags a boundary crash with the instance role and where in the tree', async () => {
+    await preloadKoenig();
+    const error = new Error('render exploded');
+
+    koenigErrorReporters('secondary').onRenderError(error, {
+      componentStack: '\n    at KoenigComposer',
+    });
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: {
+        koenig: { version: '1.2.3' },
+        react: { componentStack: '\n    at KoenigComposer' },
+      },
+    });
+  });
+
+  it('reports without a role for a Koenig instance outside the post body', () => {
+    reportKoenigError(new Error('caption exploded'));
+
+    const context = vi.mocked(Sentry.captureException).mock.calls[0][1] as { tags: object };
+    expect(context.tags).toStrictEqual({ lexical: true });
+  });
+});
+
 describe('reportSaveFailure', () => {
   it('reports the failing request with what it was and which post it was for', () => {
     const cause = new Error('Boom');
@@ -201,6 +243,38 @@ describe('reportSaveFailure', () => {
       titled('SaveConflictError', 'Saving failed! Someone else is editing this post.', cause),
       expect.anything(),
     );
+  });
+
+  it('attaches the collision details the API gave with a collision', () => {
+    const collision = {
+      changedFields: ['lexical'],
+      clientUpdatedAt: '2026-10-08T20:30:00.000Z',
+      serverUpdatedAt: '2026-10-08T23:31:10.000Z',
+    };
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          // Core sends an object here, which the shared error type doesn't describe
+          details: collision as unknown as string,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      extra: { post_id: 'post-1', duration_ms: 120, collision },
+    });
   });
 
   it.each<[string, SaveError, string]>([
@@ -284,23 +358,6 @@ describe('reportSaveFailure', () => {
     );
   });
 
-  it('reports an abandoned re-authentication as the session failure it was', () => {
-    const cause = new Error('Unauthorized');
-
-    reportSaveFailure(
-      failure({ error: { kind: 'session-invalid', message: 'Unauthorized', cause } }),
-      'post',
-    );
-
-    expect(Sentry.captureException).toHaveBeenCalledWith(
-      titled('SaveSessionInvalidError', 'Unauthorized', cause),
-      {
-        tags: { ...TAGS, save_error_kind: 'session-invalid' },
-        extra: { post_id: 'post-1', duration_ms: 120 },
-      },
-    );
-  });
-
   it('reports a persisted post that is gone as a message carrying the post id', () => {
     reportSaveFailure(
       failure({ error: { kind: 'not-found', message: 'Post not found', cause: new Error('404') } }),
@@ -340,7 +397,6 @@ describe('reportSaveFailure', () => {
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
-    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },
@@ -350,6 +406,29 @@ describe('reportSaveFailure', () => {
 
     expect(Sentry.captureException).not.toHaveBeenCalled();
     expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, SaveError, string]>([
+    [
+      'a forbidden save',
+      { kind: 'forbidden', message: 'Permission error' },
+      'Save of page was forbidden',
+    ],
+    [
+      'an expired session the writer did not sign back in to',
+      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+      'Session expired while editing page',
+    ],
+  ])('notes %s as a message rather than an error', (_label, error, message) => {
+    reportSaveFailure(failure({ error }), 'page');
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(message, {
+      tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
+      extra: { post_id: 'post-1' },
+    });
     // eslint-disable-next-line no-console
     expect(console.error).not.toHaveBeenCalled();
   });

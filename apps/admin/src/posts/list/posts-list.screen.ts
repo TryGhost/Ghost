@@ -21,8 +21,6 @@ import {
  *
  * Page-scoped locators go through `page(resource)`: the admin sidebar carries
  * its own "Create new post" link, so an unscoped role query matches twice.
- * Which implementation is serving a route is asserted via `page(resource)`,
- * which only the React screen renders.
  */
 /**
  * A cmd-click on a row is a cmd-click on a *link*, which opens a new browser
@@ -101,7 +99,7 @@ export const postsListScreen = {
     page.getByRole('alertdialog').getByRole('button', { name: label, exact: true }),
   bulkModal: () => page.getByRole('alertdialog'),
   /**
-   * The post-publish celebration, handed over from the Ember editor.
+   * The post-publish celebration, handed over from the editor.
    *
    * Located by role, not testid: `PostShareModal` spreads its extra props
    * onto Radix's `Dialog.Root`, which renders no DOM node at all, so a
@@ -128,6 +126,7 @@ export const postsListScreen = {
   filterValueOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
   /** A field in the add-filter popover, which renders into a portal. */
   filterFieldOption: (label: string) => page.getByRole('option', { name: label, exact: true }),
+  filterSearchInput: () => page.getByRole('dialog').getByRole('combobox'),
   sortButton: () => page.getByTestId(postsSort),
   /** Select options, so the active sort is announced and visibly checked. */
   sortOption: (label: string) => page.getByRole('option', { name: label, exact: true }),

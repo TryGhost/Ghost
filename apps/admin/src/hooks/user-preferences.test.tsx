@@ -300,6 +300,27 @@ describe('useUserPreferences', () => {
       });
     });
 
+    describe('editor body font', () => {
+      (['serif', 'sans', 'mono'] as const).forEach((font) => {
+        queryTest(`parses ${font}`, async ({ setup }) => {
+          const result = await setup({
+            accessibility: JSON.stringify({ editor: { bodyFont: font } }),
+          });
+
+          expect(result.current.data?.editor?.bodyFont).toBe(font);
+        });
+      });
+
+      queryTest('drops an unknown font', async ({ setup }) => {
+        const result = await setup({
+          accessibility: JSON.stringify({ editor: { bodyFont: 'comic-sans' } }),
+        });
+
+        // The editor falls back to serif where it reads the preference.
+        expect(result.current.data?.editor?.bodyFont).toBeUndefined();
+      });
+    });
+
     queryTest('returns undefined when user is not loaded', async ({ server, wrapper }) => {
       server.use(
         http.get(USERS_API_URL, () => {
@@ -489,6 +510,59 @@ describe('useEditUserPreferences', () => {
         });
       });
     });
+
+    editTest(
+      'leaves the editor font out of a save that does not set it',
+      async ({ server, setup }) => {
+        const { mutation } = await setup();
+        let saved: Record<string, unknown> | undefined;
+        server.use(
+          http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(
+            USER_UPDATE_API_URL,
+            async ({ request }) => {
+              const body = await request.json();
+              const accessibility = body.users[0]?.accessibility ?? '{}';
+              saved = JSON.parse(accessibility) as Record<string, unknown>;
+              return HttpResponse.json({ users: [{ ...mockUser, accessibility }] });
+            },
+          ),
+        );
+
+        await act(async () => {
+          await mutation.current.mutateAsync(fixtures.singlePreference);
+        });
+
+        expect(saved).toBeDefined();
+        expect(saved).not.toHaveProperty('editor');
+      },
+    );
+
+    editTest(
+      'works out an update from the preferences as they are when it runs',
+      async ({ setup }) => {
+        const { query, mutation } = await setup();
+        let seen: unknown;
+
+        await act(async () => {
+          // Not awaited in between: the second edit is queued behind the first
+          await Promise.all([
+            mutation.current.mutateAsync({ navigation: { expanded: { posts: false } } }),
+            mutation.current.mutateAsync((current) => {
+              seen = current.navigation.expanded.posts;
+              return { navigation: { expanded: { members: false } } };
+            }),
+          ]);
+        });
+
+        expect(seen).toBe(false);
+        await waitFor(() => {
+          expect(query.current.data?.navigation.expanded).toEqual({
+            posts: false,
+            members: false,
+          });
+        });
+      },
+    );
 
     editTest('throws error when user is not loaded', async ({ server, wrapper }) => {
       server.use(

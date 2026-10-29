@@ -71,7 +71,7 @@ const AutomationRunPlanResponseSchema = z.object({
     .array(
       z.object({
         id: z.string().min(1),
-        status: z.enum(['active', 'inactive']),
+        status: z.enum(['active', 'inactive', 'archived']),
         actions: z
           .array(PlanActionSchema)
           .refine(

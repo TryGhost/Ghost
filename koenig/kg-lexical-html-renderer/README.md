@@ -47,7 +47,7 @@ and resolves through the pnpm workspace — there is no linking or per-package
 install step. Run `pnpm bootstrap` in the monorepo root, then work in
 `koenig/kg-lexical-html-renderer`.
 
-`ghost/core` resolves this package via a `source` export condition pointing at
+`ghost` resolves this package via a `source` export condition pointing at
 `src/`, so a change here is picked up by a running Ghost dev server without a
 rebuild. Run `pnpm dev` for a watching `tsc` build when you need the compiled
 output.

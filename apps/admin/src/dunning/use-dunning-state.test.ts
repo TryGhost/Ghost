@@ -141,7 +141,7 @@ describe('useDunningState', () => {
       vi.setSystemTime(new Date(NOW.getTime() + skewDays * DAY_MS));
       mockUseBrowseConfig.mockReturnValue(browseConfigWithDunning(dunning));
       mockUseSubscriptionStatus.mockReturnValue({ subscription: { status: 'past_due' } });
-      // Written by the Ember billing service on the post-payment return.
+      // Written by the billing screen on the post-payment return.
       window.sessionStorage.setItem('ghost-dunning-payment-settled-for', dunning.paymentFailedAt);
 
       const { result, rerender } = renderHook(() => useDunningState());

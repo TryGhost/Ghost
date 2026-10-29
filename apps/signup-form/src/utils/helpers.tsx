@@ -1,4 +1,4 @@
-import { SignupFormOptions } from '../app-context';
+import type { SignupFormOptions } from '../app-context';
 
 export type URLHistory = {
   type?: 'post';

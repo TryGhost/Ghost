@@ -2,7 +2,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   publicPreviewWarningDialog,
   publishFlowModal,
@@ -20,7 +20,12 @@ import { isEmailDisabledInSettings } from './publish-options';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
-import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './publish-options';
+import type {
+  NewsletterInput,
+  PublishLimitPorts,
+  PublishSiteInput,
+  PublishUserInput,
+} from './publish-options';
 
 export interface PublishFlowModalProps {
   post: PublishFlowPost;
@@ -32,20 +37,28 @@ export interface PublishFlowModalProps {
   limits?: PublishLimitPorts;
   /** The publish machine's clock, injected for tests. */
   now?: () => Date;
+  /**
+   * The newsletter remembered for a draft, selected over the default when the flow
+   * opens. A later change, such as a pick in the preview over the flow, switches the
+   * open flow to it; undefined switches it back to the default.
+   */
+  draftNewsletter?: string;
   timezone: string;
   siteTitle?: string;
   /** Gates the flow behind a reminder when the body still has TK markers. */
   tkCount?: number;
   /** The `paywallImprovements` lab; the public-preview gate is off without it. */
   paywallImprovements?: boolean;
-  /** The `improveSendingUI` lab; a publish that emails then completes without confirming the send. */
-  improveSendingUI?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
+  /** Asks the writer to sign in again; resolves true once they have. */
+  requestReauth?: () => Promise<boolean>;
   onBeforePublish?: () => Promise<void>;
   onClose: () => void;
   /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
   onNewsletterChange?: (slug: string | undefined) => void;
+  /** Hears a newsletter the writer picks in the options step. */
+  onNewsletterPick?: (slug: string) => void;
   onPreview?: () => void;
   onRevertToDraft?: () => void;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -64,15 +77,17 @@ function KeyedPublishFlowModal({
   user,
   limits,
   now,
+  draftNewsletter,
   timezone,
   siteTitle,
   tkCount = 0,
   paywallImprovements = false,
-  improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
+  onNewsletterPick,
   onPreview,
   onRevertToDraft,
   onCompleted,
@@ -116,10 +131,11 @@ function KeyedPublishFlowModal({
     <PublishFlowDialog
       animate={animate}
       dispatch={dispatch}
-      improveSendingUI={improveSendingUI}
+      draftNewsletter={draftNewsletter}
       limits={limits}
       now={now}
       post={post}
+      requestReauth={requestReauth}
       showCompletion={showCompletion}
       site={site}
       siteTitle={siteTitle}
@@ -129,6 +145,7 @@ function KeyedPublishFlowModal({
       onClose={onClose}
       onCompleted={onCompleted}
       onNewsletterChange={onNewsletterChange}
+      onNewsletterPick={onNewsletterPick}
       onPreview={onPreview}
       onRevertToDraft={onRevertToDraft}
     />
@@ -145,13 +162,15 @@ function PublishFlowDialog({
   user,
   limits,
   now,
+  draftNewsletter,
   timezone,
   siteTitle,
-  improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
+  onNewsletterPick,
   onPreview,
   onRevertToDraft,
   onCompleted,
@@ -162,13 +181,14 @@ function PublishFlowDialog({
     user,
     limits,
     now,
+    draftNewsletter,
     dispatch,
+    requestReauth,
     showCompletion,
-    improveSendingUI,
     onBeforePublish,
     onCompleted,
   });
-  const { state, step } = flow;
+  const { state, step, setNewsletter } = flow;
   const newsletterSlug = state.newsletter?.slug;
 
   useEffect(() => {
@@ -176,7 +196,37 @@ function PublishFlowDialog({
     return () => onNewsletterChange?.(undefined);
   }, [newsletterSlug, onNewsletterChange]);
 
+  // The flow opened on the draft's newsletter; only a later change to it, a pick in
+  // the preview over the flow, moves the selection.
+  const followedDraftNewsletter = useRef(draftNewsletter);
+  const { newsletters } = state;
+  useEffect(() => {
+    if (followedDraftNewsletter.current === draftNewsletter) {
+      return;
+    }
+    followedDraftNewsletter.current = draftNewsletter;
+    const next = draftNewsletter
+      ? newsletters.find((newsletter) => newsletter.slug === draftNewsletter)
+      : newsletters[0];
+    if (next && next.slug !== newsletterSlug) {
+      setNewsletter(next);
+    }
+  }, [draftNewsletter, newsletterSlug, newsletters, setNewsletter]);
+
+  const pickNewsletter = (newsletter: NewsletterInput | null) => {
+    setNewsletter(newsletter);
+    if (newsletter) {
+      onNewsletterPick?.(newsletter.slug);
+    }
+  };
+
+  // While the publish request is in flight, closing would abandon its outcome
+  // unseen: a publish that lands would never navigate and one that fails would
+  // never say so. The request settles on its own, so close waits for it.
   const close = () => {
+    if (flow.publishInFlight) {
+      return;
+    }
     flow.cancel();
     onClose();
   };
@@ -197,7 +247,7 @@ function PublishFlowDialog({
           <PageHeader.ActionGroup>
             {step === 'complete' ? null : (
               <>
-                <Button variant="ghost" onClick={close}>
+                <Button disabled={flow.publishInFlight} variant="ghost" onClick={close}>
                   Close
                 </Button>
                 {flow.emailErrorMessage || !onPreview ? null : (
@@ -219,19 +269,21 @@ function PublishFlowDialog({
           {step === 'email-error' && flow.emailErrorMessage ? (
             <CompleteWithEmailErrorStep
               canRetry={flow.canRetryEmail}
+              checkingEligibility={flow.checkingRetryEligibility}
+              eligibilityFailed={flow.retryEligibilityFailed}
               emailErrorMessage={flow.emailErrorMessage}
               mailgunConfigured={site.mailgunConfigured}
               post={post}
               retryFailure={flow.retryFailure}
               status={flow.retryStatus}
               willOnlyEmail={state.willOnlyEmail}
+              onCheckEligibility={flow.checkRetryEligibility}
               onRetry={() => void flow.retryEmail()}
             />
           ) : step === 'complete' ? (
             <CompleteStep
               captured={flow.captured}
               completedAt={flow.completedAt}
-              note={flow.emailNote}
               post={post}
               postCount={flow.postCount}
               siteTitle={siteTitle}
@@ -260,7 +312,7 @@ function PublishFlowDialog({
               timezone={timezone}
               onContinue={flow.toConfirm}
               onRetryLimits={flow.retryLimits}
-              onSetNewsletter={flow.setNewsletter}
+              onSetNewsletter={pickNewsletter}
               onSetPublishType={flow.setPublishType}
               onSetRecipientFilter={flow.setRecipientFilter}
               onSetScheduledAt={flow.setScheduledAt}

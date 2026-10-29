@@ -81,6 +81,7 @@ export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
         { label: 'Save', keys: [cmd, typed('S')] },
         { label: 'Preview', keys: [cmd, typed('P')] },
         { label: 'Publish', keys: [cmd, shift, typed('P')] },
+        { label: 'Toggle settings', keys: [cmd, typed('.')] },
       ],
     },
     {

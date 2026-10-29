@@ -188,6 +188,15 @@ function pasteText(content: string) {
 }
 
 describe('Member welcome emails', () => {
+  it('can pick a callout emoji in the welcome email modal', async () => {
+    const modal = await openWelcomeEmailModal();
+    await chooseSlashMenuItem(modal, 'callout', 'Callout');
+    await modal.getByRole('button', { name: '💡', exact: true }).click();
+    await page.getByRole('searchbox').fill('taco');
+    await page.getByRole('button', { name: '🌮', exact: true }).click();
+    await expect.element(modal.getByRole('button', { name: '🌮', exact: true })).toBeVisible();
+  });
+
   it('loads the Koenig stylesheet with the editor', async () => {
     const modal = await openWelcomeEmailModal();
     const editor = modal.element().querySelector<HTMLElement>('.koenig-lexical');

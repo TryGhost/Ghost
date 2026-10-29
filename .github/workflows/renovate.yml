@@ -157,7 +157,7 @@ jobs:
           echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@6d26fcf0275dc65624cbc3d51fe78bc773f98321 # v46.3.6
+        uses: renovatebot/github-action@230ce922b08968d0a4f6f70f295601daff09ef1d # v46.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:
@@ -181,4 +181,4 @@ jobs:
           # `allowedCommands` is the current name; the old
           # `allowedPostUpgradeCommands` is silently ignored on Renovate >= 41,
           # which left every npm PR with a failed `renovate/artifacts` status.
-          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node scripts/generate-changeset\\.js$"]'
+          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node tools/scripts/release/generate-changeset\\.ts$"]'

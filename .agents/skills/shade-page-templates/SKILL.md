@@ -63,7 +63,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
       </PageHeader.Actions>
     </PageHeader>
     <ViewBar>{/* optional */}</ViewBar>
-    <FilterBar>{/* optional — auto-collapses when empty */}</FilterBar>
+    {hasFilters && <FilterBar>{/* active filters and their actions */}</FilterBar>}
   </ListPage.Header>
   <ListPage.Body>
     {items.length === 0 ? <EmptyIndicator title='No members yet' /> : <Table>...</Table>}
@@ -76,7 +76,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 - **`sticky={false}` on `PageHeader` inside `ListPage.Header`.** The wrapper handles stickiness and blur — leaving `PageHeader` sticky stacks two sticky containers and breaks scroll.
 - **Don't put `useQuery` inside a pattern.** State lives in the consumer. Patterns are layout/composition contracts.
 - **`PageHeader` is slot-based** (`.Left`, `.Title`, `.Count`, `.Description`, `.Meta`, `.Actions`, `.ActionGroup`, `.Breadcrumb`) — don't pass a prop bag.
-- **`FilterBar` auto-collapses when empty** — render it unconditionally; no need to conditionally mount.
+- **Show `FilterBar` only while filters are active.** It hides itself only when it has no children, so mount it with the active filters (`hasFilters && <FilterBar>…</FilterBar>`), as Comments does.
 
 ## Subcomponent inventory (PageHeader)
 

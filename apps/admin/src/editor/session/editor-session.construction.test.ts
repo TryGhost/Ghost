@@ -56,6 +56,7 @@ function spyingTransport() {
       } as EditorRecord),
     ),
     generateSlug: vi.fn<EditorSessionTransport['generateSlug']>(() => Promise.resolve('hello')),
+    read: vi.fn<EditorSessionTransport['read']>(() => Promise.resolve(record())),
   };
 }
 
@@ -95,6 +96,7 @@ describe('createEditorSession construction', () => {
     expect(transport.create).not.toHaveBeenCalled();
     expect(transport.update).not.toHaveBeenCalled();
     expect(transport.generateSlug).not.toHaveBeenCalled();
+    expect(transport.read).not.toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
     expect(autosaveDebounceMs).not.toHaveBeenCalled();

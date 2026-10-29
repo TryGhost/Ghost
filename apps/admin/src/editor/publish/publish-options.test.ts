@@ -3,6 +3,7 @@ import { normalizeRecipientFilter } from '@tryghost/admin-x-framework/utils/reci
 import {
   DEFAULT_SCHEDULE_LEAD_MS,
   EMAIL_VERIFICATION_HOLD_MESSAGE,
+  LimitCheckError,
   MIN_SCHEDULE_LEAD_MS,
   createPublishOptions,
   getDefaultRecipientFilter,
@@ -108,6 +109,7 @@ describe('normalizeRecipientFilter', () => {
     ['none', null],
     [null, null],
     ['label:vip', 'label:vip'],
+    ['66b68362d3360500077ad2d2,label:vip', 'tier_id:66b68362d3360500077ad2d2,label:vip'],
   ])('normalizes %j to %j', (filter, expected) => {
     expect(normalizeRecipientFilter(filter)).toBe(expected);
   });
@@ -322,6 +324,48 @@ describe('publish type availability', () => {
     expect(state.newsletter?.slug).toBe('paid-only');
   });
 
+  describe('with a newsletter remembered for the draft', () => {
+    const site = createSite({ newsletters: [WEEKLY, PAID_NEWSLETTER] });
+
+    it('starts with it over the default, as an unchanged choice', () => {
+      const state = create({ site, draftNewsletter: 'paid-only' }).getState();
+
+      expect(state.newsletter?.slug).toBe('paid-only');
+      expect(state.isDirty).toBe(false);
+    });
+
+    it('starts with the post’s own newsletter over it', () => {
+      const state = create({
+        post: createPost({ newsletter: 'weekly' }),
+        site,
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+
+    it('ignores it once it is no longer selectable', () => {
+      const state = create({
+        site: createSite({
+          newsletters: [WEEKLY, { ...PAID_NEWSLETTER, status: 'archived' }],
+        }),
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+
+    it('ignores it for a post that is not a draft', () => {
+      const state = create({
+        post: createPost({ status: 'published' }),
+        site,
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+  });
+
   it('trusts a member count of zero only from an admin', () => {
     const site = createSite({ memberCount: 0 });
 
@@ -457,6 +501,38 @@ describe('will* matrix', () => {
     machine.setRecipientFilter(null);
 
     expect(machine.getState().willEmail).toBe(false);
+  });
+
+  it.each(['publish+send', 'send'] as const)(
+    'says when %s has no recipients to email',
+    (publishType) => {
+      const machine = create();
+
+      machine.setPublishType(publishType);
+      expect(machine.getState().missingRecipients).toBe(false);
+
+      machine.setRecipientFilter(null);
+      expect(machine.getState().missingRecipients).toBe(true);
+      expect(machine.getState().canPublish).toBe(publishType === 'publish+send');
+    },
+  );
+
+  it('does not ask for recipients when nothing would be emailed anyway', () => {
+    const publishOnly = create();
+    publishOnly.setPublishType('publish');
+    publishOnly.setRecipientFilter(null);
+
+    const failedRetry = create({ post: createPost({ email: { status: 'failed' } }) });
+    failedRetry.setPublishType('send');
+    failedRetry.setRecipientFilter(null);
+
+    const noMailgun = create({ site: createSite({ mailgunConfigured: false }) });
+    noMailgun.setPublishType('send');
+    noMailgun.setRecipientFilter(null);
+
+    expect(publishOnly.getState().missingRecipients).toBe(false);
+    expect(failedRetry.getState().missingRecipients).toBe(false);
+    expect(noMailgun.getState().missingRecipients).toBe(false);
   });
 
   it('emails a failed-email draft even without a recipient filter', () => {
@@ -599,6 +675,15 @@ describe('getDefaultRecipientFilter', () => {
         editorDefaultEmailRecipientsFilter: 'label:vip',
       },
       'label:vip',
+    ],
+    [
+      'explicit filter with a bare tier id',
+      { visibility: 'public' },
+      {
+        editorDefaultEmailRecipients: 'filter' as const,
+        editorDefaultEmailRecipientsFilter: '66b68362d3360500077ad2d2,label:vip',
+      },
+      'tier_id:66b68362d3360500077ad2d2,label:vip',
     ],
     [
       'usually nobody follows visibility',
@@ -996,6 +1081,25 @@ describe('checkLimits', () => {
       message: 'Your plan is over its email limit, please upgrade.',
     });
     expect(limits.getEmailVerification).not.toHaveBeenCalled();
+  });
+
+  it('rejects, rather than blocking email, when the email limit could not be checked', async () => {
+    const checkFailure = new LimitCheckError('emails', new Error('Network request failed'));
+    const limits = ports({ checkSendingLimit: vi.fn(() => Promise.reject(checkFailure)) });
+    const machine = create({ limits });
+
+    await expect(machine.checkLimits()).rejects.toBe(checkFailure);
+    expect(machine.getState().emailBlock).toBeNull();
+    expect(machine.getState().emailDisabled).toBe(false);
+  });
+
+  it('rejects, rather than passing, when the member limit could not be checked', async () => {
+    const checkFailure = new LimitCheckError('members', new Error('Authorization failed'));
+    const limits = ports({ checkPublishingLimit: vi.fn(() => Promise.reject(checkFailure)) });
+    const machine = create({ limits });
+
+    await expect(machine.checkLimits()).rejects.toBe(checkFailure);
+    expect(machine.getState().publishBlock).toBeNull();
   });
 
   it.each([

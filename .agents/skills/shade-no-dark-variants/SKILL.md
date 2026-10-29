@@ -3,6 +3,7 @@ name: Shade no dark variants
 description: Don't write dark: Tailwind variants for colour in Shade or admin apps — semantic tokens flip in dark mode automatically. Trigger when editing TSX in Shade-consuming apps.
 autoTrigger:
   - fileEdit: "apps/{shade,admin,admin-x-framework,activitypub}/**/*.tsx"
+  - fileEdit: "apps/shade/src/components/**/*-variants.ts"
 ---
 
 # Shade — don't use `dark:` for colour
@@ -43,7 +44,7 @@ Assets that are genuinely different in dark mode and can't be expressed as a tok
 
 For these, `dark:` is fine because there's nothing semantic to express.
 
-Some existing Shade components also use `dark:` for ring opacity (e.g. `dark:ring-destructive/40` inside `inputSurface`). When a token doesn't exist for the variant you need and the value is an opacity modifier on an existing token, a narrow `dark:` is acceptable — but first check whether a new token belongs in `theme-variables.css`.
+Some existing Shade components also use `dark:` for ring opacity (e.g. `dark:aria-[invalid=true]:ring-destructive/40` inside `inputSurface`, scoped to invalid fields). When a token doesn't exist for the variant you need and the value is an opacity modifier on an existing token, a narrow `dark:` is acceptable — but first check whether a new token belongs in `theme-variables.css`.
 
 ## When debugging dark mode
 

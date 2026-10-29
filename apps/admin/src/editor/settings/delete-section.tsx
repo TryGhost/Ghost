@@ -25,6 +25,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
+import { draftNewsletterStorage, writeDraftNewsletter } from '@/editor/publish/draft-newsletter';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { ReauthDialog } from '@/editor/session/reauth-dialog';
 import type { EditorSettingsPort } from './editor-settings-port';
@@ -89,6 +90,8 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
     // Nothing may be written to a post that is gone. Ending the session aborts
     // the save in flight and drops every later one, including the leave guard's.
     session.dispose();
+    // A deleted draft's remembered newsletter would otherwise wait for the cap to drop it.
+    writeDraftNewsletter(draftNewsletterStorage(), postId, null);
 
     // The list would otherwise serve its cached page, deleted row and all.
     // `refetchType: 'none'`: the editor's own read of this post is still mounted.

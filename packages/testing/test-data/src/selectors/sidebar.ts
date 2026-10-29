@@ -24,6 +24,11 @@ export const systemAppearanceOption = 'System appearance';
 export const themeErrorsDialog = 'Theme errors';
 export const ghostProLink = 'Ghost(Pro)';
 export const upgradeNowLink = 'Upgrade now';
+/** admin7Design moves Help from the sidebar to the user menu. */
+export const helpMenuItem = 'Help';
+/** The admin7Design floating sidebar's pin button, by state. */
+export const pinSidebarButton = 'Pin sidebar';
+export const unpinSidebarButton = 'Unpin sidebar';
 
 // text fragments
 export const themeErrorsBannerText = 'Your theme has errors';
