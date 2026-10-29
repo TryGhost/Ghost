@@ -3,15 +3,18 @@ import sinon from 'sinon';
 import nock from 'nock';
 import { setImmediate } from 'node:timers/promises';
 import type { EmailBouncedEvent as EmailBouncedEventType } from '../../../../../core/server/services/email-service/events/email-bounced-event';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const SERVICE_DIR = require.resolve('../../../../../core/server/services/email-suppression-list');
-// Resolve shared libraries from the service so the stubs replace the instances it uses.
+// Resolve shared libraries as the root does, so the stubs replace the instances it injects.
 const DomainEvents = require(require.resolve('@tryghost/domain-events', { paths: [SERVICE_DIR] }));
-const logging = require(require.resolve('@tryghost/logging', { paths: [SERVICE_DIR] }));
-const models = require('../../../../../core/server/models');
+const db = require('../../../../../core/server/data/db');
 const MailgunClient = require('../../../../../core/server/lib/mailgun/mailgun-client');
+// The Mailgun client is not injected with logging, so its failures reach the shared logger.
+const MAILGUN_CLIENT = require.resolve('../../../../../core/server/lib/mailgun/mailgun-client');
+const clientLogging = require(require.resolve('@tryghost/logging', { paths: [MAILGUN_CLIENT] }));
 const MailgunEmailSuppressionList = require('../../../../../core/server/services/email-suppression-list/mailgun-email-suppression-list');
-// Required, not imported, so the test shares the event classes the service requires.
+// Required, not imported, so the test shares the event classes the root injects.
 const {
   EmailBouncedEvent,
 } = require('../../../../../core/server/services/email-service/events/email-bounced-event');
@@ -48,6 +51,12 @@ function createApiClient() {
 
 const unsuppressed = { suppressed: false, info: null };
 
+let logging: ReturnType<typeof createLoggingFake>;
+
+function collaborators() {
+  return { db, logging, domainEvents: DomainEvents, EmailBouncedEvent, SpamComplaintEvent };
+}
+
 describe('MailgunEmailSuppressionList', function () {
   let sandbox: sinon.SinonSandbox;
   let Suppression: ReturnType<typeof createSuppressionModel>;
@@ -60,9 +69,10 @@ describe('MailgunEmailSuppressionList', function () {
     sandbox = sinon.createSandbox();
     Suppression = createSuppressionModel();
     apiClient = createApiClient();
-    loggedError = sandbox.stub(logging, 'error');
-    loggedInfo = sandbox.stub(logging, 'info');
-    list = new MailgunEmailSuppressionList({ Suppression, apiClient });
+    logging = createLoggingFake();
+    loggedError = logging.error;
+    loggedInfo = logging.info;
+    list = new MailgunEmailSuppressionList({ Suppression, apiClient, ...collaborators() });
   });
 
   afterEach(function () {
@@ -300,7 +310,11 @@ describe('MailgunEmailSuppressionList', function () {
         config: { get: (key: string) => (key === 'bulkEmail' ? bulkEmail : undefined) },
         settings: { get: () => undefined },
       });
-      return new MailgunEmailSuppressionList({ Suppression, apiClient: client });
+      return new MailgunEmailSuppressionList({
+        Suppression,
+        apiClient: client,
+        ...collaborators(),
+      });
     }
 
     beforeEach(function () {
@@ -348,6 +362,7 @@ describe('MailgunEmailSuppressionList', function () {
     it('reports success and deletes the local row when provider deletions fail', async function () {
       // Pinned defect: the client logs each failed deletion and resolves false,
       // and removeEmail still returns true.
+      const clientLoggedError = sandbox.stub(clientLogging, 'error');
       const scope = nock('https://api.mailgun.net')
         .delete(/.*/)
         .times(3)
@@ -356,15 +371,14 @@ describe('MailgunEmailSuppressionList', function () {
       assert.equal(await createListWithClient().removeEmail('a@example.com'), true);
 
       assert.ok(scope.isDone());
-      assert.equal(loggedError.callCount, 3);
+      assert.equal(clientLoggedError.callCount, 3);
       sinon.assert.calledOnce(Suppression.destroy);
     });
   });
 
-  describe('init', function () {
+  describe('subscribe', function () {
     let subscribe: sinon.SinonStub;
     let dispatch: sinon.SinonStub;
-    let sharedSuppression: ReturnType<typeof createSuppressionModel>;
 
     function handlerFor(Event: unknown, index = 0): Handler {
       const calls = subscribe.getCalls().filter((call) => call.args[0] === Event);
@@ -386,19 +400,15 @@ describe('MailgunEmailSuppressionList', function () {
       // Capture handlers rather than installing them on the shared bus.
       subscribe = sandbox.stub(DomainEvents, 'subscribe');
       dispatch = sandbox.stub(DomainEvents, 'dispatch');
-      // The shared model is a Bookshelf model class, so the replacement is a function.
-      sharedSuppression = Object.assign(function SharedSuppression() {}, createSuppressionModel());
-      sandbox.replace(models, 'Suppression', sharedSuppression);
     });
 
-    it('replaces the injected model with the shared Suppression model', async function () {
+    it('keeps the injected model', function () {
+      list.subscribe();
       assert.equal(list.Suppression, Suppression);
-      await list.init();
-      assert.equal(list.Suppression, sharedSuppression);
     });
 
     it('subscribes once to bounces and once to spam complaints', async function () {
-      await list.init();
+      list.subscribe();
 
       sinon.assert.calledTwice(subscribe);
       assert.deepEqual(
@@ -408,21 +418,34 @@ describe('MailgunEmailSuppressionList', function () {
       sinon.assert.notCalled(dispatch);
     });
 
-    it('subscribes again on every init', async function () {
-      // Incidental, pinned so a change is deliberate: there is no guard or
-      // unsubscribe, so each init adds two more handlers.
-      await list.init();
-      await list.init();
+    it('subscribes only once across repeated calls', function () {
+      list.subscribe();
+      list.subscribe();
 
+      sinon.assert.calledTwice(subscribe);
+    });
+
+    it('deactivates the handler it added when a later registration fails, then registers again', async function () {
+      const failure = new Error('subscribe failed');
+      subscribe.onSecondCall().throws(failure);
+
+      assert.throws(() => list.subscribe(), failure);
+      await handlerFor(EmailBouncedEvent, 0)(bounce({ code: 605, message: 'suppressed' }));
+      sinon.assert.notCalled(Suppression.add);
+      sinon.assert.notCalled(dispatch);
+
+      list.subscribe();
       sinon.assert.callCount(subscribe, 4);
-      assert.notEqual(handlerFor(SpamComplaintEvent, 0), handlerFor(SpamComplaintEvent, 1));
+      await handlerFor(EmailBouncedEvent, 1)(bounce({ code: 605, message: 'suppressed' }));
+      sinon.assert.calledOnce(Suppression.add);
+      sinon.assert.calledOnce(dispatch);
     });
 
     it('stores a spam complaint, then dispatches a suppression event with its time', async function () {
-      await list.init();
+      list.subscribe();
       const timestamp = new Date('2020-01-01T00:00:00Z');
       const order: string[] = [];
-      sharedSuppression.add.callsFake(async () => {
+      Suppression.add.callsFake(async () => {
         order.push('add');
       });
       dispatch.callsFake(() => {
@@ -438,7 +461,7 @@ describe('MailgunEmailSuppressionList', function () {
         }),
       );
 
-      sinon.assert.calledOnceWithExactly(sharedSuppression.add, {
+      sinon.assert.calledOnceWithExactly(Suppression.add, {
         email: 'a@example.com',
         email_id: 'email-id',
         reason: 'spam',
@@ -456,7 +479,7 @@ describe('MailgunEmailSuppressionList', function () {
     });
 
     it('handlers use the model current when the event arrives', async function () {
-      await list.init();
+      list.subscribe();
       const later = createSuppressionModel();
       list.Suppression = later;
 
@@ -465,17 +488,17 @@ describe('MailgunEmailSuppressionList', function () {
       );
 
       sinon.assert.calledOnce(later.add);
-      sinon.assert.notCalled(sharedSuppression.add);
+      sinon.assert.notCalled(Suppression.add);
     });
 
     for (const code of [605, 607]) {
       it(`stores and dispatches a bounce with Mailgun suppression code ${code}`, async function () {
-        await list.init();
+        list.subscribe();
         const event = bounce({ code, message: 'suppressed' });
 
         await handlerFor(EmailBouncedEvent)(event);
 
-        sinon.assert.calledOnceWithExactly(sharedSuppression.add, {
+        sinon.assert.calledOnceWithExactly(Suppression.add, {
           email: 'a@example.com',
           email_id: 'email-id',
           reason: 'bounce',
@@ -497,30 +520,30 @@ describe('MailgunEmailSuppressionList', function () {
       ['a fractional code', { code: 605.5, message: 'failed' }],
     ] as const) {
       it(`ignores a bounce with ${label}`, async function () {
-        await list.init();
+        list.subscribe();
 
         await handlerFor(EmailBouncedEvent)(bounce(error));
 
-        sinon.assert.notCalled(sharedSuppression.add);
+        sinon.assert.notCalled(Suppression.add);
         sinon.assert.notCalled(dispatch);
       });
     }
 
     it('ignores an integer bounce code that does not identify an undeliverable address', async function () {
-      await list.init();
+      list.subscribe();
 
       await handlerFor(EmailBouncedEvent)(
         bounce({ code: 554, enhancedCode: '5.7.1', message: '5.7.1 Message rejected as spam' }),
       );
 
-      sinon.assert.notCalled(sharedSuppression.add);
+      sinon.assert.notCalled(Suppression.add);
       sinon.assert.notCalled(dispatch);
     });
 
     for (const code of ['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT']) {
       it(`still dispatches when the row already exists (${code})`, async function () {
-        await list.init();
-        sharedSuppression.add.rejects(Object.assign(new Error('duplicate'), { code }));
+        list.subscribe();
+        Suppression.add.rejects(Object.assign(new Error('duplicate'), { code }));
 
         await handlerFor(EmailBouncedEvent)(bounce({ code: 605, message: 'suppressed' }));
 
@@ -532,9 +555,9 @@ describe('MailgunEmailSuppressionList', function () {
     }
 
     it('logs any other storage failure and does not dispatch', async function () {
-      await list.init();
+      list.subscribe();
       const failure = Object.assign(new Error('storage failed'), { code: 'ER_LOCK_DEADLOCK' });
-      sharedSuppression.add.rejects(failure);
+      Suppression.add.rejects(failure);
 
       await handlerFor(SpamComplaintEvent)(
         SpamComplaintEvent.create({ email: 'a@example.com', memberId: 'm', emailId: 'e' }),

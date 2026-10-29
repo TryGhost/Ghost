@@ -3157,7 +3157,8 @@ describe('Members API', function () {
     });
 
     it('Returns 500 when suppression removal fails', async function () {
-      const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
+      const emailSuppressionList = require('../../../core/server/services/email-suppression-list')
+        .default.service;
       const removeEmailStub = sinon.stub(emailSuppressionList, 'removeEmail').resolves(false);
 
       const suppressedMember = await models.Member.add({

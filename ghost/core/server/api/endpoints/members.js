@@ -510,7 +510,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      const emailSuppressionList = require('../../services/email-suppression-list');
+      const emailSuppressionList = require('../../services/email-suppression-list').default.service;
 
       // Get the member first to retrieve their email
       const member = await membersService.api.memberBREADService.read(

@@ -273,6 +273,28 @@ it('allows the exact libraries required by Member Attribution without allowing s
   );
 });
 
+it('allows Node strict assertions without allowing plain assert or other builtins', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/prefixed.js`]: "require('node:assert/strict');",
+    [`${alpha}/bare.ts`]: "import 'assert/strict';",
+    [`${alpha}/rejected.ts`]: "import 'node:assert'; import 'node:fs';",
+  });
+  const graph = f.graph();
+  assert.deepEqual(
+    edges(graph)
+      .filter(([from]) => from === `${alpha}/prefixed.js` || from === `${alpha}/bare.ts`)
+      .map(([from, , to]) => [from, to]),
+    [
+      [`${alpha}/bare.ts`, 'assert/strict'],
+      [`${alpha}/prefixed.js`, 'assert/strict'],
+    ],
+  );
+  assert.deepEqual(
+    violations(graph),
+    ['assert', 'fs'].map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to]),
+  );
+});
+
 it('allows the debug tracing library without allowing sibling packages', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]:

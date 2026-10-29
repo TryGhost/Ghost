@@ -228,6 +228,7 @@
         "ghost/core/server/services/comments/index.ts",
         "ghost/core/server/services/custom-theme-settings/index.ts",
         "ghost/core/server/services/donations/index.ts",
+        "ghost/core/server/services/email-suppression-list/index.ts",
         "ghost/core/server/services/explore-ping/index.ts",
         "ghost/core/server/services/export-requests/index.ts",
         "ghost/core/server/services/gift-links/index.ts",

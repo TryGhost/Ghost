@@ -1,9 +1,4 @@
 const { EmailSuppressionData, EmailSuppressedEvent } = require('./email-suppression-list');
-const { SpamComplaintEvent } = require('../email-service/events/spam-complaint-event');
-const { EmailBouncedEvent } = require('../email-service/events/email-bounced-event');
-const DomainEvents = require('@tryghost/domain-events');
-const logging = require('@tryghost/logging');
-const models = require('../../models');
 /** @import {IEmailSuppressionList} from './email-suppression-list' */
 
 const REPEATED_FAILURE_THRESHOLD = 3;
@@ -36,14 +31,31 @@ function isUndeliverableAddress({ code, enhancedCode, message }) {
  * @implements {IEmailSuppressionList}
  */
 class MailgunEmailSuppressionList {
+  #db;
+  #logging;
+  #domainEvents;
+  #EmailBouncedEvent;
+  #SpamComplaintEvent;
+  #subscribed = false;
+
   /**
    * @param {object} deps
    * @param {import('bookshelf').Model} deps.Suppression
    * @param {IMailgunAPIClient} deps.apiClient
+   * @param {{knex: import('knex').Knex}} deps.db read for each query
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'error' | 'info'>} deps.logging
+   * @param {{subscribe: Function, dispatch: (event: unknown) => void}} deps.domainEvents
+   * @param {typeof import('../email-service/events/email-bounced-event').EmailBouncedEvent} deps.EmailBouncedEvent
+   * @param {typeof import('../email-service/events/spam-complaint-event').SpamComplaintEvent} deps.SpamComplaintEvent
    */
   constructor(deps) {
     this.Suppression = deps.Suppression;
     this.apiClient = deps.apiClient;
+    this.#db = deps.db;
+    this.#logging = deps.logging;
+    this.#domainEvents = deps.domainEvents;
+    this.#EmailBouncedEvent = deps.EmailBouncedEvent;
+    this.#SpamComplaintEvent = deps.SpamComplaintEvent;
   }
 
   async removeEmail(email) {
@@ -52,7 +64,7 @@ class MailgunEmailSuppressionList {
       await this.apiClient.removeComplaint(email);
       await this.apiClient.removeUnsubscribe(email);
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return false;
     }
 
@@ -63,7 +75,7 @@ class MailgunEmailSuppressionList {
         },
       });
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return false;
     }
 
@@ -74,7 +86,7 @@ class MailgunEmailSuppressionList {
     try {
       await this.apiClient.removeUnsubscribe(email);
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return false;
     }
   }
@@ -83,7 +95,7 @@ class MailgunEmailSuppressionList {
     try {
       await this.apiClient.removeComplaint(email);
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return false;
     }
   }
@@ -103,7 +115,7 @@ class MailgunEmailSuppressionList {
         reason: model.get('reason') === 'spam' ? 'spam' : 'fail',
       });
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return new EmailSuppressionData(false);
     }
   }
@@ -131,14 +143,25 @@ class MailgunEmailSuppressionList {
         });
       });
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return emails.map(() => new EmailSuppressionData(false));
     }
   }
 
-  async init() {
-    this.Suppression = models.Suppression;
+  /**
+   * Stores bounces and spam complaints as suppressions. Registers once per
+   * instance. DomainEvents cannot remove a listener, so a failed registration
+   * deactivates any handler it already added before rethrowing.
+   */
+  subscribe() {
+    if (this.#subscribed) {
+      return;
+    }
+    let active = true;
     const handleEvent = (reason) => async (event) => {
+      if (!active) {
+        return;
+      }
       if (reason === 'bounce') {
         if (!Number.isInteger(event.error?.code)) {
           return;
@@ -157,16 +180,16 @@ class MailgunEmailSuppressionList {
         });
       } catch (err) {
         if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-          logging.error(err);
+          this.#logging.error(err);
           return;
         }
         // Suppression already exists — still dispatch so any drifted
         // member state (e.g. email_disabled=false) gets corrected.
-        logging.info(
+        this.#logging.info(
           `Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`,
         );
       }
-      DomainEvents.dispatch(
+      this.#domainEvents.dispatch(
         EmailSuppressedEvent.create(
           {
             emailAddress: event.email,
@@ -177,8 +200,14 @@ class MailgunEmailSuppressionList {
         ),
       );
     };
-    DomainEvents.subscribe(EmailBouncedEvent, handleEvent('bounce'));
-    DomainEvents.subscribe(SpamComplaintEvent, handleEvent('spam'));
+    try {
+      this.#domainEvents.subscribe(this.#EmailBouncedEvent, handleEvent('bounce'));
+      this.#domainEvents.subscribe(this.#SpamComplaintEvent, handleEvent('spam'));
+    } catch (err) {
+      active = false;
+      throw err;
+    }
+    this.#subscribed = true;
   }
 
   /**
@@ -190,7 +219,8 @@ class MailgunEmailSuppressionList {
       return false;
     }
 
-    const latestFailures = await models.Base.knex('email_recipients')
+    const latestFailures = await this.#db
+      .knex('email_recipients')
       .leftJoin('email_recipient_failures', function () {
         this.on('email_recipient_failures.email_recipient_id', '=', 'email_recipients.id').andOnVal(
           'email_recipient_failures.severity',
