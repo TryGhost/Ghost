@@ -1,30 +1,46 @@
 import { describe, expect, it } from 'vitest';
 import {
   comparableTriggerRules,
+  signupTriggerRules,
   selectedPaidTierRules,
   subscriptionChangedRulesFromSelection,
   subscriptionChangedSelectionFromRules,
-  signupTriggerRules,
-  scopeFromTriggerRules,
-  getTriggerTierIds,
 } from './trigger-rules';
 
 describe('signup trigger rules', () => {
-  it.each(['free', 'all_paid', 'selected_paid'] as const)('round trips %s selections', (scope) => {
-    const ids = scope === 'selected_paid' ? ['bronze', 'gold'] : [];
-    const rules = signupTriggerRules(scope, ids);
-    expect(scopeFromTriggerRules(rules)).toBe(scope);
-    expect(getTriggerTierIds(rules)).toEqual(ids);
+  it('encodes a free signup with no tier or direction', () => {
+    expect(signupTriggerRules('free_signup')).toEqual([
+      { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+    ]);
   });
 
-  it('keeps an empty specific-tier draft in the paid picker', () => {
-    expect(scopeFromTriggerRules(signupTriggerRules('selected_paid'))).toBe('selected_paid');
+  it('distinguishes any paid tier from an unanswered specific-tier selection', () => {
+    expect(signupTriggerRules('paid_subscription_started')).toEqual([
+      {
+        trigger_type: 'paid_subscription_started',
+        scope: 'any_paid_tier',
+        product_id: null,
+        direction: null,
+      },
+    ]);
+    expect(selectedPaidTierRules([])).toEqual([]);
   });
 
-  it('ignores server rule ordering without hiding selection changes', () => {
-    const rules = signupTriggerRules('selected_paid', ['gold', 'bronze']);
-    expect(comparableTriggerRules(rules)).toEqual(comparableTriggerRules([...rules].reverse()));
-    expect(comparableTriggerRules(rules)).not.toEqual(comparableTriggerRules(rules.slice(1)));
+  it('encodes each selected paid tier without a lifecycle direction', () => {
+    expect(selectedPaidTierRules(['bronze', 'gold'])).toEqual([
+      {
+        trigger_type: 'paid_subscription_started',
+        scope: 'specific_paid_tier',
+        product_id: 'bronze',
+        direction: null,
+      },
+      {
+        trigger_type: 'paid_subscription_started',
+        scope: 'specific_paid_tier',
+        product_id: 'gold',
+        direction: null,
+      },
+    ]);
   });
 });
 

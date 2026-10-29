@@ -190,3 +190,23 @@ retries that page. Search-scoped charts and date/status controls are a separate
 enhancement. Opening search replaces the Performance heading with the input.
 Typing slides the chart, status cards, and applied date chip closed over 200 ms;
 clearing search expands them again. Reduced-motion preferences disable the transition.
+
+## Automation trigger editing
+
+Automation details and writes use `trigger_rules`. Free signups have one
+`free_signup` rule; paid subscription starts use either any paid tier or one rule
+per selected tier. The picker helpers in `src/automations/utils/trigger-rules.ts`
+map between these rules and the UI selections. Rule ordering does not affect
+whether a draft has unsaved changes. The selected trigger type comes from the
+creation picker or saved automation, so clearing every tier does not change the
+trigger. Trigger cards derive their selections from the draft rules and update
+them through the editor's normal change handler.
+
+The `automationsLifecycleTriggers` Labs flag exposes the paid subscription change
+picker. Its rules have `from` and `to` directions: From accepts any paid tier or
+specific tiers, and To accepts specific tiers or Free. Both sides are required
+and specific tiers cannot overlap. Saved archived tiers remain available; missing
+tiers remain visible so they can be removed. The editor persists and reloads
+these rules through the normal automation endpoints. Lifecycle enrollment and
+execution are owned by Core and must be ready before enabling the flag for
+publishers.
