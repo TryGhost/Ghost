@@ -56,8 +56,8 @@ export interface AppInstallationPreview {
   digest: string;
   icon_data_url: string | null;
   /**
-   * The app's origins, its manifest's own included, that the site's configuration trusts. Ghost
-   * didn't ask these to prove they hold the app's key. Empty when every origin proved it.
+   * The app's origin, if the site's configuration trusts it, so Ghost didn't ask it to prove it
+   * holds the app's key. Empty when it proved it. An app is one origin, so there's at most one.
    */
   trusted_origins: string[];
   /**

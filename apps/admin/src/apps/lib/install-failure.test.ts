@@ -105,7 +105,12 @@ describe('installFailureOf', () => {
     });
   });
 
-  it.each(['APP_MANIFEST_SIGNATURE_INVALID', 'APP_BACKEND_KEY_RETIRED', 'APP_CHALLENGE_FAILED'])(
+  it.each([
+    'APP_MANIFEST_SIGNATURE_INVALID',
+    'APP_MANIFEST_OUTDATED',
+    'APP_MANIFEST_CONFLICT',
+    'APP_CHALLENGE_FAILED',
+  ])(
     'says Ghost couldn’t confirm where the app comes from on %s, with the app’s answer',
     (code) => {
       const context =
