@@ -1,24 +1,25 @@
-/* global vi */
-const assert = require('node:assert/strict');
-const supertest = require('supertest');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import supertest from 'supertest';
+import sinon from 'sinon';
+import type { LimitConfig } from '@tryghost/limit-service';
+import { vi } from 'vitest';
 const errors = require('@tryghost/errors');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
 const config = require('../../../core/shared/config');
 const limitsService = require('../../../core/server/services/limits');
-const db = require('../../../core/server/data/db');
+const db: typeof import('../../../core/server/data/db') = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const mailService = require('../../../core/server/lib/mail');
 const localUtils = require('./utils');
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 describe('Trial staff invitation limits', function () {
-  let request;
-  let originalLimits;
-  let originalSubscription;
-  let send;
-  let clock;
+  let request: ReturnType<typeof supertest.agent>;
+  let originalLimits: Record<string, LimitConfig> | undefined;
+  let originalSubscription: unknown;
+  let send: sinon.SinonStub;
+  let clock: sinon.SinonFakeTimers;
 
   beforeAll(async function () {
     await localUtils.startGhost();
@@ -70,8 +71,10 @@ describe('Trial staff invitation limits', function () {
     return JSON.parse(row.value ?? 'null')?.count ?? 0;
   }
 
-  function invite(email, roleName = 'Contributor', integration = false, session = request) {
-    const role = testUtils.getExistingData().roles.find((entry) => entry.name === roleName);
+  function invite(email: string, roleName = 'Contributor', integration = false, session = request) {
+    const role = testUtils
+      .getExistingData()
+      .roles.find((entry: { name: string }) => entry.name === roleName);
     const client = integration ? supertest(config.get('url')) : session;
     const call = client
       .post(localUtils.API.getApiQuery('invites/'))
@@ -92,8 +95,8 @@ describe('Trial staff invitation limits', function () {
 
   describe('with a two-staff plan', function () {
     const planLimits = require('../../../core/server/services/limits');
-    let originalPlanLimits;
-    let userStatuses;
+    let originalPlanLimits: Record<string, LimitConfig> | undefined;
+    let userStatuses: Array<{ id: string; status: string }>;
 
     beforeEach(async function () {
       originalPlanLimits = config.get('hostSettings:limits');
@@ -124,7 +127,7 @@ describe('Trial staff invitation limits', function () {
       assert.equal(await models.Invite.findOne({ email: 'plan-admin@example.com' }), null);
       assert.equal(await savedCount(), 1);
 
-      const users = await db.knex('users').count('id', { as: 'count' }).first();
+      const [users] = await db.knex('users').count('id', { as: 'count' });
       const remaining = 10 - Number(users.count) - 1;
       assert.ok(remaining > 0);
       for (let index = 0; index < remaining; index++) {
@@ -149,7 +152,7 @@ describe('Trial staff invitation limits', function () {
       await invite('promotion-editor@example.com', 'Editor').expect(201);
       const role = testUtils
         .getExistingData()
-        .roles.find((entry) => entry.name === 'Administrator');
+        .roles.find((entry: { name: string }) => entry.name === 'Administrator');
       const rejected = await request
         .put(localUtils.API.getApiQuery(`users/${contributor.id}/`))
         .set('Origin', config.get('url'))
@@ -200,7 +203,7 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('counts the owner, existing users and pending Contributors toward ten seats', async function () {
-    const users = await db.knex('users').count('id', { as: 'count' }).first();
+    const [users] = await db.knex('users').count('id', { as: 'count' });
     const remaining = 10 - Number(users.count);
     assert.ok(remaining > 0);
     for (let i = 0; i < remaining; i++) {
@@ -255,8 +258,9 @@ describe('Trial staff invitation limits', function () {
       },
       { context: { internal: true } },
     );
-    const contributorSession = supertest.agent(config.get('url'));
-    contributorSession.user = { email: contributor.get('email') };
+    const contributorSession = Object.assign(supertest.agent(config.get('url')), {
+      user: { email: contributor.get('email') },
+    });
     await testUtils.API.login(contributorSession, localUtils.API.getApiQuery('session/'));
     for (let i = 0; i < 3; i++) {
       await invite(
@@ -336,7 +340,7 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('removes trial caps and rate limiting when the host removes the trial policy', async function () {
-    const users = await db.knex('users').count('id', { as: 'count' }).first();
+    const [users] = await db.knex('users').count('id', { as: 'count' });
     config.set('hostSettings:limits:allStaff:max', Number(users.count) + 1);
     config.set('hostSettings:limits:inviteEmails:maxPeriodic', 1);
     limitsService.init();
@@ -352,7 +356,7 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.callCount(send, 6);
   });
   it('counts imported staff toward subsequent invitations without emailing them', async function () {
-    const users = await db.knex('users').count('id', { as: 'count' }).first();
+    const [users] = await db.knex('users').count('id', { as: 'count' });
     const remaining = 10 - Number(users.count);
     for (let i = 0; i < remaining; i++) {
       await db.knex.transaction(async (transacting) => {
@@ -408,7 +412,7 @@ describe('Trial staff invitation limits', function () {
   });
 
   it('accepts an invitation at capacity without consuming another seat or email', async function () {
-    const users = await db.knex('users').count('id', { as: 'count' }).first();
+    const [users] = await db.knex('users').count('id', { as: 'count' });
     const remaining = 10 - Number(users.count);
     for (let i = 0; i < remaining; i++) {
       await invite(`trial-created-${i}@example.com`).expect(201);
@@ -430,8 +434,8 @@ describe('Trial staff invitation limits', function () {
       .expect(200);
     assert.equal(await models.Invite.findOne({ email: 'trial-created-0@example.com' }), null);
     const total =
-      Number((await db.knex('users').count('id', { as: 'count' }).first()).count) +
-      Number((await db.knex('invites').count('id', { as: 'count' }).first()).count);
+      Number((await db.knex('users').count('id', { as: 'count' }))[0].count) +
+      Number((await db.knex('invites').count('id', { as: 'count' }))[0].count);
     assert.equal(total, 10);
     assert.equal(await savedCount(), remaining);
   });
@@ -449,8 +453,7 @@ describe('Trial staff invitation limits', function () {
         { importing: true, context: { internal: true } },
       );
     }
-    const seatsBefore =
-      Number((await db.knex('users').count('id', { as: 'count' }).first()).count) + 1;
+    const seatsBefore = Number((await db.knex('users').count('id', { as: 'count' }))[0].count) + 1;
     await invite(email).expect(201);
     assert.equal(await savedCount(), 2);
     sinon.assert.calledTwice(send);
@@ -471,7 +474,7 @@ describe('Trial staff invitation limits', function () {
       .expect(200);
     assert.equal(await models.Invite.findOne({ email }), null);
     assert.equal(
-      Number((await db.knex('users').count('id', { as: 'count' }).first()).count),
+      Number((await db.knex('users').count('id', { as: 'count' }))[0].count),
       seatsBefore,
     );
     assert.equal(await savedCount(), 2);
