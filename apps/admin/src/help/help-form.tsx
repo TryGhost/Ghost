@@ -58,6 +58,7 @@ export function HelpFormView({
   const { message, canSend, editMessage, send, reset } = session;
   const sending = message.status === 'sending';
   const sent = message.status === 'sent';
+  const firstName = signals.user.name.split(' ')[0] ?? '';
 
   // Opening the panel, or coming back from an article, lands in the message
   useEffect(() => {
@@ -114,7 +115,7 @@ export function HelpFormView({
                 size="lg"
                 weight="semibold"
               >
-                Describe the problem you’re having
+                {firstName ? `Hi ${firstName}, what can we help with?` : 'What can we help with?'}
               </Text>
 
               {/* The message, with what might answer it right under it, where
@@ -125,7 +126,7 @@ export function HelpFormView({
                   aria-label="Your message"
                   className="min-h-28"
                   disabled={sending}
-                  placeholder="What happened, and what did you expect to happen?"
+                  placeholder="Describe what’s happening, and what you expected instead"
                   rows={4}
                   value={message.body}
                   onChange={(event) => editMessage({ body: event.target.value })}

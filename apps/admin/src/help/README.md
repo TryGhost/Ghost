@@ -192,7 +192,7 @@ around them are thin.
 | File                    | What it shows                                                                                                      |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                                 |
-| `help-form.tsx`         | The headline, message, "You might be looking for" under it, attach and send as one form, and the sent confirmation |
+| `help-form.tsx`         | The greeting, message, "You might be looking for" under it, attach and send as one form, and the sent confirmation |
 | `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?" and the way back to the message       |
 | `help-cards.tsx`        | The cards under an article for what to read next                                                                   |
 | `help-panel-size.tsx`   | The maximize button                                                                                                |
@@ -336,8 +336,9 @@ form, so the user sees what they're sending. Opened questions are marked
 
 ## Sending to support
 
-The form is one block: a headline asking the user to describe the problem
-they're having, the message, "You might be looking for" right under it where
+The form is one block: a greeting by first name asking what we can help
+with (the placeholder asks for what's happening and what was expected), the
+message, "You might be looking for" right under it where
 the eye is while typing (rows new to it rise in as what it offers changes),
 then "Attach a file" and "Send to support" with a line naming the address the
 reply goes to. No subject: the account is the signed-in one. Sending shows a confirmation in the form's
