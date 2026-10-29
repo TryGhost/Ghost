@@ -26,12 +26,6 @@ export default class InvitationLimiter {
     );
   }
 
-  async lockStaffUsage(transaction: Knex.Transaction): Promise<void> {
-    if (this.isLimited()) {
-      await this.getAndLockInviteEmailCounter(transaction);
-    }
-  }
-
   async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
     if (!this.isLimited()) {
       return prepare();

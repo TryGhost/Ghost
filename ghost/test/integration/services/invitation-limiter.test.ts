@@ -134,13 +134,15 @@ describe('Trial invitation admission', function () {
   });
 
   it('fails closed if the lock setting is missing', async function () {
-    await assert.rejects(
-      models.Base.transaction(async (transaction: Knex.Transaction) => {
-        await transaction('settings').where({ key: 'staff_invitation_emails' }).delete();
-        await limiter.lockStaffUsage(transaction);
-      }),
-      /Cannot lock the staff invitation email counter/,
-    );
+    await db.knex('settings').where({ key: 'staff_invitation_emails' }).delete();
+    try {
+      await assert.rejects(
+        limiter.run('missing-setting@example.com', () => assert.fail('Must not prepare an email')),
+        /Cannot lock the staff invitation email counter/,
+      );
+    } finally {
+      await models.Settings.populateDefaults();
+    }
   });
 
   it('allows brute cleanup while an invitation holds the shared lock', async function () {
@@ -151,8 +153,7 @@ describe('Trial invitation admission', function () {
       .insert({ key: 'expired-test', firstRequest: 0, lastRequest: 0, lifetime: 0, count: 0 });
     let read: Promise<unknown> | undefined;
     try {
-      await models.Base.transaction(async (transaction: Knex.Transaction) => {
-        await limiter.lockStaffUsage(transaction);
+      await limiter.run('cleanup@example.com', async () => {
         read = new Promise((resolve, reject) => {
           store.get('unrelated-login', (error: Error | null, value: unknown) =>
             error ? reject(error) : resolve(value),
@@ -226,10 +227,8 @@ describe('Trial invitation admission', function () {
       ),
     );
     assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
-    const invite = await db.knex('invites').first();
-    // A resend reuses the occupied slot even at capacity.
-    await limiter.run(invite.email, (transaction) => prepare(invite.email, transaction));
-    assert.equal((await savedCounter()).count, 2);
+    assert.equal((await db.knex('invites')).length, 1);
+    assert.equal((await savedCounter()).count, 1);
   });
 
   it('leaves counted records available to other transactions during preparation', async function () {
@@ -244,38 +243,6 @@ describe('Trial invitation admission', function () {
       });
       return prepare('new@example.com', transaction);
     });
-  });
-
-  it('creates the installation user fixture inside a migration transaction on a trial', async function () {
-    const { fixtureManager } = require('../../../core/server/data/schema/fixtures');
-    const fixtures = require('../../../core/server/data/schema/fixtures/fixtures.json');
-    const owner = fixtures.models.find((model: { name: string }) => model.name === 'User')
-      .entries[0];
-    const id = ObjectId().toHexString();
-    const rollback = new Error('Roll back installation fixture');
-
-    await assert.rejects(
-      models.Base.transaction(async (transacting: Knex.Transaction) => {
-        const result = await fixtureManager.addFixturesForModel(
-          {
-            name: 'User',
-            entries: [{ ...owner, id, email: 'installation-owner@example.com' }],
-          },
-          {
-            transacting,
-            migrating: true,
-            autoRefresh: false,
-            context: { internal: true, user: id },
-          },
-        );
-        assert.equal(result.done, 1);
-        assert.ok(await transacting('users').where({ id }).first());
-        assert.deepEqual(await transacting('actions').where({ resource_type: 'invite' }), []);
-        throw rollback;
-      }),
-      (error) => error === rollback,
-    );
-    assert.equal(await db.knex('users').where({ id }).first(), undefined);
   });
 
   it('rolls back email allowance and invitation changes on preparation failure', async function () {

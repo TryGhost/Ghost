@@ -63,9 +63,11 @@ const config: Record<string, LimitConfig> = {
     },
     allStaff: {
         currentCountQuery: async (knex: Knex) => {
-            const users = await knex('users').count('id', {as: 'count'}).first();
-            const invites = await knex('invites').count('id', {as: 'count'}).first();
-            return Number(users.count) + Number(invites.count);
+            // Read both counts in one statement so acceptance cannot move a seat between reads.
+            const result = await knex('users').select({
+                invites: knex('invites').count('id', {as: 'count'})
+            }).count('id', {as: 'users'}).first();
+            return Number(result.users) + Number(result.invites);
         }
     },
     inviteEmails: {

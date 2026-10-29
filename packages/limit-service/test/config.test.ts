@@ -13,7 +13,7 @@ describe('Config', function () {
     });
 
     interface MockOptions {
-        firstResult?: { count?: number | string | null; value?: string | null };
+        firstResult?: Record<string, number | string | null>;
         unionResult?: unknown[];
     }
 
@@ -118,11 +118,14 @@ describe('Config', function () {
     });
 
     describe('allStaff', function () {
-        it('adds the user and invitation counts, including database string counts', async function () {
-            const knex = createMockKnex({firstResult: {count: '2'}});
+        it.each([
+            [{users: '2', invites: '3'}, 5],
+            [{users: 0, invites: 0}, 0]
+        ])('adds the user and invitation counts from %j', async function (firstResult, expected) {
+            const knex = createMockKnex({firstResult});
             const countQuery = config.allStaff?.currentCountQuery;
             assertExists(countQuery);
-            assert.equal(await countQuery(knex), 4);
+            assert.equal(await countQuery(knex), expected);
             expect(knex).toHaveBeenCalledWith('users');
             expect(knex).toHaveBeenCalledWith('invites');
         });
