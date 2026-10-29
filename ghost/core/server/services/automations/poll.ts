@@ -80,7 +80,7 @@ const getFreeOrPaidForTriggerType = (
   }
 };
 
-const doesMemberMatchTriggerRule = (
+const doesMemberMatchTriggerRuleStatus = (
   member: MemberModel,
   rule: Readonly<AutomationTriggerRuleDefinition>,
 ): boolean => {
@@ -105,6 +105,13 @@ const doesMemberMatchTriggerRule = (
     }
   }
 
+  return true;
+};
+
+const doesMemberMatchTriggerRuleScope = (
+  member: MemberModel,
+  rule: Readonly<AutomationTriggerRuleDefinition>,
+): boolean => {
   switch (rule.scope) {
     case null:
     case 'any_paid_tier':
@@ -236,9 +243,24 @@ const processStep = async ({
     return null;
   }
 
-  const matchingRule = rules.find((rule) => doesMemberMatchTriggerRule(member, rule));
+  // The member exists, but do they still match the trigger rules for this automation?
+  let matchingRule: (typeof rules)[number] | undefined;
+  let stillMatchesStatus = false;
+  for (const rule of rules) {
+    if (!doesMemberMatchTriggerRuleStatus(member, rule)) {
+      continue;
+    }
+    stillMatchesStatus = true;
+    if (doesMemberMatchTriggerRuleScope(member, rule)) {
+      matchingRule = rule;
+      break;
+    }
+  }
   if (!matchingRule) {
-    await automationsApi.markStepTerminal(step, 'member changed status');
+    await automationsApi.markStepTerminal(
+      step,
+      stillMatchesStatus ? 'member changed tier' : 'member changed status',
+    );
     return null;
   }
 
