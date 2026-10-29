@@ -61,10 +61,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/email-service': { init: email, service: {} },
       './server/services/donations': { default: { init: donations } },
       './server/services/tiers': { default: { init: tiers } },
-      './server/services/media-inliner': {
-        init: media,
-        getInstance: () => ({}),
-      },
+      './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/automations': { automationsService: { init: automations } },
