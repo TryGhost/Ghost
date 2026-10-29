@@ -86,6 +86,11 @@ test.describe('Content Visibility', async () => {
         await expect(card.getByTestId(`tab-contents-${tab}`)).toBeVisible();
     }
 
+    // the indicator's position is measured from the media, so wait for it to have a size
+    async function expectImageLoaded(card) {
+        await expect.poll(() => card.locator('figure img').first().evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    }
+
     async function expectToolbarWithoutPanel(card) {
         await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
         await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
@@ -294,6 +299,7 @@ test.describe('Content Visibility', async () => {
             const card = page.locator('[data-kg-card="image"]');
             const indicator = card.getByTestId('visibility-indicator');
             await expect(indicator).toBeVisible();
+            await expectImageLoaded(card);
 
             const cardBox = await card.boundingBox();
             const imageBox = await card.locator('figure img').first().boundingBox();
@@ -316,6 +322,7 @@ test.describe('Content Visibility', async () => {
             const card = page.locator('[data-kg-card="video"]');
             const indicator = card.getByTestId('visibility-indicator');
             await expect(indicator).toBeVisible();
+            await expectImageLoaded(card);
 
             const videoBox = await card.locator('figure img').first().boundingBox();
             const indicatorBox = await indicator.boundingBox();
