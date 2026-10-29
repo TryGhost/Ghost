@@ -1,35 +1,44 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const { mockSystemTime } = require('../../utils/clock-utils');
-const DomainEvents = require('@tryghost/domain-events');
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
-const models = require('../../../core/server/models');
-const db = require('../../../core/server/data/db');
-const adapterManager = require('../../../core/server/services/adapter-manager').default;
-const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
-const mailService = require('../../../core/server/lib/mail');
-const membersService = require('../../../core/server/services/members');
-const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
-const {
-  MEMBER_WELCOME_EMAIL_SLUGS,
-} = require('../../../core/server/services/member-welcome-emails/constants');
-const {
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { mockSystemTime } from '../../utils/clock-utils';
+// @ts-expect-error This module lacks type definitions.
+import DomainEvents from '@tryghost/domain-events';
+import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
+import * as db from '../../../core/server/data/db';
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../core/server/models';
+import adapterManager from '../../../core/server/services/adapter-manager';
+import { getSignedAdminToken } from '../../../core/server/adapters/scheduling/utils';
+// @ts-expect-error This module lacks type definitions.
+import mailService from '../../../core/server/lib/mail';
+import type {
+  Automation,
+  AutomationAction,
+  AutomationSummary,
+} from '../../../core/server/services/automations/automations-repository';
+import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../core/server/services/member-welcome-emails/constants';
+import membersService from '../../../core/server/services/members';
+import {
   cleanupAutomationsFixture,
   setupAutomationsFixture,
-} = require('../../utils/automations-fixtures');
+} from '../../utils/automations-fixtures';
+
+// Keep the same CommonJS instance Ghost uses so the send stub intercepts delivery.
+const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
 
 const HOUR_MS = 60 * 60 * 1000;
 const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
 
-let agent;
-let schedulerKey;
+let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
+let schedulerKey: Parameters<typeof getSignedAdminToken>[0]['key'];
+let mailgunSend: sinon.SinonStub;
 
-async function getFreeMemberSignupAutomation() {
+async function getFreeMemberSignupAutomation(): Promise<Automation> {
   const {
     body: { automations },
   } = await agent.get('automations').expectStatus(200);
   const summary = automations.find(
-    (automation) => automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
+    (automation: AutomationSummary) => automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
   );
   assert(summary, 'Expected free member signup automation to exist');
 
@@ -53,7 +62,13 @@ async function runSchedulerPoll() {
   await DomainEvents.allSettled();
 }
 
-async function upsertEmailDesignSetting({ id, senderReplyTo }) {
+async function upsertEmailDesignSetting({
+  id,
+  senderReplyTo,
+}: {
+  id: string;
+  senderReplyTo: string;
+}) {
   const currentTime = new Date();
 
   await db
@@ -86,7 +101,7 @@ async function upsertEmailDesignSetting({ id, senderReplyTo }) {
     });
 }
 
-function serializeEditableAction(action) {
+function serializeEditableAction(action: AutomationAction) {
   if (action.type !== 'send_email') {
     return action;
   }
@@ -102,7 +117,10 @@ function serializeEditableAction(action) {
   };
 }
 
-async function updateAutomationEmailDesignSetting(automation, emailDesignSettingId) {
+async function updateAutomationEmailDesignSetting(
+  automation: Automation,
+  emailDesignSettingId: string,
+): Promise<Automation> {
   const actions = automation.actions.map((action) => {
     if (action.type !== 'send_email') {
       return action;
@@ -134,7 +152,10 @@ async function updateAutomationEmailDesignSetting(automation, emailDesignSetting
   return body.automations[0];
 }
 
-async function updateAutomation(automation, overrides = {}) {
+async function updateAutomation(
+  automation: Automation,
+  overrides: Partial<Automation> = {},
+): Promise<Automation> {
   const { body } = await agent
     .put(`automations/${automation.id}`)
     .body({
@@ -153,12 +174,10 @@ async function updateAutomation(automation, overrides = {}) {
 }
 
 function getAutomationEmailSends() {
-  return MailgunClient.prototype.send
-    .getCalls()
-    .filter((call) => call.args[0].tags?.includes('automation-email'));
+  return mailgunSend.getCalls().filter((call) => call.args[0].tags?.includes('automation-email'));
 }
 
-async function getEmailSentCounts(actions) {
+async function getEmailSentCounts(actions: AutomationAction[]) {
   const actionIds = actions.map((action) => action.id);
   const rows = await db
     .knex('automation_action_revisions')
@@ -170,7 +189,7 @@ async function getEmailSentCounts(actions) {
   return actionIds.map((actionId) => countsByActionId.get(actionId));
 }
 
-async function runAutomationForFreeMember(automation, email) {
+async function runAutomationForFreeMember(automation: Automation, email: string) {
   // Freeze to a round second to match database precision. (Real production code works fine.)
   const clock = mockSystemTime(new Date('2026-01-01T12:00:00.000Z'));
 
@@ -199,7 +218,7 @@ async function runAutomationForFreeMember(automation, email) {
   }
 }
 
-describe('Members Automations', function () {
+describe('automations', function () {
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'integrations', 'api_keys');
@@ -212,8 +231,11 @@ describe('Members Automations', function () {
     mockManager.mockLabsEnabled('automations');
     const schedulerAdapter = adapterManager.getAdapter('scheduling');
     sinon.stub(schedulerAdapter, 'schedule');
+    assert('_pingUrl' in schedulerAdapter);
     sinon.stub(schedulerAdapter, '_pingUrl');
-    sinon.stub(MailgunClient.prototype, 'send').resolves({ id: '<bulk-mailgun-message-id>' });
+    mailgunSend = sinon
+      .stub(MailgunClient.prototype, 'send')
+      .resolves({ id: '<bulk-mailgun-message-id>' });
     sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
     await setupAutomationsFixture();
   });
@@ -234,7 +256,7 @@ describe('Members Automations', function () {
 
     const { body: browseBody } = await agent.get('automations').expectStatus(200);
     const summary = browseBody.automations.find(
-      (automation) => automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
+      (automation: AutomationSummary) => automation.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
     );
     assert(summary);
     assert.equal(summary.description, description);

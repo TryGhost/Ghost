@@ -1116,7 +1116,7 @@ services:
           - core/server/services/email-analytics/index.ts
           - core/server/services/email-analytics/automation-email-analytics-batch-processor.ts
         tests:
-          - test/e2e-api/members/automations.test.js
+          - test/e2e-api/automations/automations.test.ts
           - test/unit/server/services/members/members-api/repositories/member-repository.test.js
           - test/integration/services/email-analytics/automation-email-analytics.test.js
       startup:
