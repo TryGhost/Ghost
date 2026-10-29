@@ -27,6 +27,7 @@ const preview = (overrides: Partial<AppInstallationPreview> = {}): AppInstallati
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
   digest: 'digest-1',
+  trusted_origins: [],
   installation: null,
   ...overrides,
 });
@@ -45,16 +46,24 @@ const existing = (
 });
 
 /** An Admin API error, as Ghost serialises it. */
+/**
+ * An error as Ghost answers a preview, install or approval with. Its error handler replaces
+ * the server's `message` with a generic one, and puts it at the start of `context`.
+ */
 const apiError = (
   status: number,
-  error: { type: string; code: string; context?: string; details?: unknown },
+  {
+    message,
+    context,
+    ...error
+  }: { type: string; code: string; message?: string; context?: string; details?: unknown },
 ) =>
   new Response(
     JSON.stringify({
       errors: [
         {
-          message: 'Something went wrong.',
-          context: null,
+          message: 'Validation error, cannot save app installation preview.',
+          context: [message, context].filter(Boolean).join(' ') || null,
           details: null,
           help: null,
           id: 'error-id',
@@ -163,6 +172,30 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
   });
 
+  it('says which of the app’s hosts the site trusts rather than verified', async () => {
+    fakeInstallations();
+    fakePreview(previewResponse(preview({ trusted_origins: ['https://podcast.example.com'] })));
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect
+      .element(appsScreen.trustedOrigins())
+      .toHaveTextContent(
+        'podcast.example.com is trusted by this site’s configuration rather than verified.',
+      );
+    await expect.element(appsScreen.installButton()).toBeVisible();
+  });
+
+  it('says nothing about trust when every host was verified', async () => {
+    fakeInstallations();
+    fakePreview(previewResponse(preview()));
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installButton()).toBeVisible();
+    await expect.element(appsScreen.trustedOrigins()).not.toBeInTheDocument();
+  });
+
   it('asks for a fresh review when the app changed while it was being reviewed', async () => {
     fakeInstallations();
     const changed = preview({ manifest: manifest({ name: 'Podcasts' }), digest: 'digest-2' });
@@ -242,6 +275,7 @@ describe('Installing an app', () => {
             surfaces: [{ type: 'admin_page', url: 'https://audio.example.org/admin' }],
           }),
           digest: 'digest-2',
+          trusted_origins: ['https://audio.example.org'],
           installation: existing([
             { path: 'manifest_url', requires_approval: true },
             { path: 'surfaces[0].url', requires_approval: true },
@@ -263,11 +297,106 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.changes().last())
       .toHaveTextContent('https://podcast.example.com/adminhttps://audio.example.org/admin');
+    await expect.element(appsScreen.trustedOrigins()).toHaveTextContent('audio.example.org');
 
     await appsScreen.approveChangesButton().click();
 
     await expect.poll(() => approveApi.requests.length).toBe(1);
     await expect.element(page.getByText('Changes to Podcast approved')).toBeVisible();
+  });
+
+  it('refuses another developer’s app with an installed app’s ID, with no way to approve it', async () => {
+    fakeInstallations([installation()]);
+    fakePreview(
+      apiError(422, {
+        type: 'ValidationError',
+        code: 'APP_IDENTITY_MISMATCH',
+        message: 'This app doesn’t come from the same developer as the installed one.',
+      }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Can’t install this app');
+    await expect
+      .element(appsScreen.installDialog())
+      .toHaveTextContent('doesn’t come from the same developer');
+    await expect.element(appsScreen.approveChangesButton()).not.toBeInTheDocument();
+    await expect.element(appsScreen.installButton()).not.toBeInTheDocument();
+    await expect.element(appsScreen.tryAgainButton()).not.toBeInTheDocument();
+    await appsScreen.okButton().click();
+
+    await expect.poll(currentRoute).toBe('/apps');
+  });
+
+  it('says Ghost couldn’t confirm where an app comes from, with how it answered', async () => {
+    fakeInstallations();
+    fakePreview(
+      apiError(422, {
+        type: 'ValidationError',
+        code: 'APP_CHALLENGE_FAILED',
+        message: 'Ghost couldn’t confirm the app comes from its developer.',
+        context: 'https://podcast.example.com: The signature was not made with backend_key',
+      }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Can’t install this app');
+    await expect
+      .element(appsScreen.unconfirmed())
+      .toHaveTextContent('The signature was not made with backend_key');
+    // The server's own sentence starts what it says, so the dialog doesn't say it again.
+    expect(
+      appsScreen
+        .installDialog()
+        .element()
+        .textContent?.match(/couldn’t confirm/g),
+    ).toHaveLength(1);
+    await expect.element(appsScreen.installButton()).not.toBeInTheDocument();
+  });
+
+  it('lets the publisher try again when the app’s backend can’t be reached', async () => {
+    fakeInstallations();
+    let attempts = 0;
+    fakePreview(() => {
+      attempts += 1;
+      return attempts === 1
+        ? apiError(422, {
+            type: 'ValidationError',
+            code: 'APP_CHALLENGE_UNREACHABLE',
+            message: 'Could not reach the app to confirm it comes from its developer.',
+            context: 'https://podcast.example.com',
+          })
+        : previewResponse(preview());
+    });
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('didn’t respond');
+    await appsScreen.tryAgainButton().click();
+
+    await expect.element(appsScreen.installButton()).toBeVisible();
+  });
+
+  it('lists an unsigned app’s problem for its developer', async () => {
+    fakeInstallations();
+    fakePreview(
+      apiError(422, {
+        type: 'ValidationError',
+        code: 'APP_MANIFEST_UNSIGNED',
+        message: 'The app’s manifest is not signed.',
+        context:
+          'Expected a signed manifest: flattened JWS JSON with protected, payload and signature',
+      }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect
+      .element(appsScreen.problems())
+      .toHaveTextContent('The app’s details aren’t signed');
+    await expect.element(appsScreen.problems()).toHaveTextContent('flattened JWS');
   });
 
   it('says when the app is already installed and nothing changed', async () => {
@@ -416,6 +545,8 @@ describe('Installing an app', () => {
       apiError(422, {
         type: 'ValidationError',
         code: 'APP_MANIFEST_INVALID',
+        message: 'The app manifest is not valid.',
+        context: 'surfaces[0].url: Expected an https URL',
         details: [{ path: 'surfaces[0].url', message: 'Expected an https URL' }],
       }),
     );
@@ -524,6 +655,7 @@ describe('Installing an app', () => {
       apiError(422, {
         type: 'ValidationError',
         code: 'APP_MANIFEST_INVALID',
+        message: 'The app manifest is not valid.',
         context: 'id: Expected a lowercase reverse-domain ID',
         details: [{ path: 'id', message: 'Expected a lowercase reverse-domain ID' }],
       }),
@@ -550,6 +682,7 @@ describe('Installing an app', () => {
         ? apiError(422, {
             type: 'ValidationError',
             code: 'APP_MANIFEST_UNREACHABLE',
+            message: 'Could not load the app’s manifest.',
             context: `${MANIFEST_URL} answered with HTTP 503`,
           })
         : previewResponse(preview());
