@@ -2526,5 +2526,36 @@ describe('PostsStatsService', function () {
       assert.equal(result.length, 3);
       assert.deepEqual(result, completeValues, 'Should return same values when all dates present');
     });
+
+    it('keys event instants by their calendar day in the given timezone', function () {
+      // 03:00 UTC on 2 January is still the evening of 1 January in New York.
+      const sparseValues = [{ date: '2024-01-02T03:00:00.000Z', value: 30 }];
+
+      const resultUTC = service._fillMissingDates(
+        sparseValues,
+        '2024-01-01',
+        '2024-01-03',
+        'UTC',
+        20,
+      );
+      const resultNY = service._fillMissingDates(
+        sparseValues,
+        '2024-01-01',
+        '2024-01-03',
+        'America/New_York',
+        20,
+      );
+
+      assert.deepEqual(resultUTC, [
+        { date: '2024-01-01', value: 20 },
+        { date: '2024-01-02', value: 30 },
+        { date: '2024-01-03', value: 30 },
+      ]);
+      assert.deepEqual(resultNY, [
+        { date: '2024-01-01', value: 30 },
+        { date: '2024-01-02', value: 30 },
+        { date: '2024-01-03', value: 30 },
+      ]);
+    });
   });
 });

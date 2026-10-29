@@ -274,6 +274,44 @@ describe('RecommendationService', function () {
       });
     });
 
+    it('saves and returns an existing recommendation before its metadata refresh settles', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/existing',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+      const metadata = Promise.withResolvers<RecommendationMetadata>();
+      fetchMetadataStub.returns(metadata.promise);
+      const save = sinon.spy(service.repository, 'save');
+
+      try {
+        const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+
+        // The refresh is not awaited, so the response and the save carry the stored values.
+        sinon.assert.calledOnce(fetchMetadataStub);
+        sinon.assert.calledOnceWithExactly(save, recommendation);
+        assert.equal(response.excerpt, null);
+      } finally {
+        metadata.resolve({
+          title: 'Test',
+          excerpt: 'Fetched later',
+          featuredImage: null,
+          favicon: null,
+          oneClickSubscribe: false,
+        });
+      }
+
+      await metadata.promise;
+      assert.equal(recommendation.excerpt, 'Fetched later');
+      sinon.assert.calledOnce(save);
+    });
+
     it('Returns existing recommendation if found and fetch failes', async function () {
       const recommendation = Recommendation.create({
         id: '2',
