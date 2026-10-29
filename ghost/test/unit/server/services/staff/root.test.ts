@@ -22,10 +22,15 @@ const MilestonesService = require('../../../../../core/server/services/milestone
 const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/in-memory-milestone-repository');
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
 const StaffServiceEmails = require('../../../../../core/server/services/staff/staff-service-emails');
-const staffRoot = require('../../../../../core/server/services/staff');
+const STAFF_PATH = require.resolve('../../../../../core/server/services/staff');
+const GIFTS_PATH = require.resolve('../../../../../core/server/services/gifts');
+const STRIPE_PATHS = [
+  require.resolve('../../../../../core/server/services/stripe'),
+  require.resolve('../../../../../core/server/services/stripe/service'),
+];
 
 type Handler = (event: unknown) => Promise<void>;
-type Root = { init(): unknown; api?: StaffApi };
+type Root = { init(): Promise<void>; readonly service: StaffApi };
 type StaffApi = {
   emails: { mailer: unknown };
   memberAttributionService: unknown;
@@ -39,16 +44,22 @@ const SUBSCRIBED_EVENTS = [
   MilestoneCreatedEvent,
 ];
 
-// A wrapper of the same class as the exported singleton, so these cases never
-// depend on, or change, the root other files in this worker have initialized.
+// A freshly loaded root, so these cases never depend on, or change, the root
+// other files in this worker have initialized.
 function createRoot(): Root {
-  return new staffRoot.constructor();
+  const saved = require.cache[STAFF_PATH];
+  delete require.cache[STAFF_PATH];
+  try {
+    return require(STAFF_PATH).default;
+  } finally {
+    delete require.cache[STAFF_PATH];
+    if (saved) {
+      require.cache[STAFF_PATH] = saved;
+    }
+  }
 }
 
-function apiOf(root: Root): StaffApi {
-  assert.ok(root.api);
-  return root.api;
-}
+const BEFORE_INIT = { name: 'IncorrectUsageError', message: /^Staff used before init\(\)/ };
 
 describe('Staff service root', function () {
   const sandbox = sinon.createSandbox();
@@ -94,37 +105,39 @@ describe('Staff service root', function () {
   }
 
   describe('exports and initialization', function () {
-    it('exports one wrapper whose only operation is a synchronous init with no api until it runs', function () {
-      const prototype = Object.getPrototypeOf(staffRoot);
-      assert.deepEqual(Object.getOwnPropertyNames(prototype), ['constructor', 'init']);
+    it('default-exports a root with only init and a service getter that throws until init resolves', async function () {
+      assert.deepEqual(Object.keys(require(STAFF_PATH)), ['default']);
       const root = createRoot();
-      assert.equal(root.api, undefined);
+      assert.deepEqual(Object.keys(root), ['init', 'service']);
+      assert.throws(() => root.service, BEFORE_INIT);
 
-      assert.equal(root.init(), undefined);
-      assert.ok(apiOf(root) instanceof StaffService);
+      const initialization = root.init();
+      assert.ok(initialization instanceof Promise);
+      assert.equal(await initialization, undefined);
+      assert.ok(root.service instanceof StaffService);
     });
 
-    it('composes the service with the ready attribution instance, its emails helper and mailer', function () {
+    it('composes the service with the ready attribution instance, its emails helper and mailer', async function () {
       const root = createRoot();
-      root.init();
+      await root.init();
 
-      const api = root.api as StaffApi;
+      const api = root.service;
       assert.equal(api.memberAttributionService, attribution);
       assert.equal(api.DomainEvents, DomainEvents);
       assert.ok(api.emails instanceof StaffServiceEmails);
       assert.ok(api.emails.mailer instanceof mail.GhostMailer);
     });
 
-    it('subscribes the four notification handlers once, in order, across repeated init', function () {
+    it('subscribes the four notification handlers once, in order, across repeated init', async function () {
       const root = createRoot();
-      root.init();
-      const api = root.api;
-      const emails = api?.emails;
+      await root.init();
+      const api = root.service;
+      const emails = api.emails;
 
-      root.init();
+      await root.init();
 
-      assert.equal(root.api, api);
-      assert.equal(root.api?.emails, emails);
+      assert.equal(root.service, api);
+      assert.equal(root.service.emails, emails);
       assert.deepEqual(
         subscribe.getCalls().map((call) => call.args[0]),
         SUBSCRIBED_EVENTS,
@@ -134,71 +147,64 @@ describe('Staff service root', function () {
       }
     });
 
-    it('fails without subscribing while member attribution is unavailable, and a later init succeeds', function () {
+    it('fails without subscribing while member attribution is unavailable, and a later init succeeds', async function () {
       const failure = new Error('Member attribution used before init()');
       getAttribution.get(() => {
         throw failure;
       });
       const root = createRoot();
 
-      assert.throws(
-        () => root.init(),
-        (error) => error === failure,
-      );
-      assert.equal(root.api, undefined);
+      await assert.rejects(root.init(), (error) => error === failure);
+      assert.throws(() => root.service, BEFORE_INIT);
       sinon.assert.notCalled(subscribe);
 
       getAttribution.get(() => attribution);
-      root.init();
+      await root.init();
 
-      assert.equal(apiOf(root).memberAttributionService, attribution);
+      assert.equal(root.service.memberAttributionService, attribution);
       sinon.assert.callCount(subscribe, 4);
     });
 
-    it('fails without subscribing when the renderer cannot be built, and a later init succeeds', function () {
+    it('fails without subscribing when the renderer cannot be built, and a later init succeeds', async function () {
       const failure = new Error('renderer unavailable');
       const create = sandbox.stub(handlebars, 'create').throws(failure);
       const root = createRoot();
 
-      assert.throws(
-        () => root.init(),
-        (error) => error === failure,
-      );
-      assert.equal(root.api, undefined);
+      await assert.rejects(root.init(), (error) => error === failure);
+      assert.throws(() => root.service, BEFORE_INIT);
       sinon.assert.notCalled(subscribe);
 
       create.restore();
-      root.init();
+      await root.init();
 
-      assert.ok(apiOf(root) instanceof StaffService);
+      assert.ok(root.service instanceof StaffService);
       sinon.assert.callCount(subscribe, 4);
     });
 
-    it('keeps partial subscriptions and blocks re-subscription after a subscription failure', function () {
-      // Pinned as today's behaviour: the api is assigned before subscribing, so a
-      // failed subscription leaves earlier handlers registered (the event bus has
-      // no unsubscribe) and the api guard turns later init calls into no-ops.
+    it('keeps partial subscriptions and blocks re-subscription after a subscription failure', async function () {
+      // A failed subscription leaves earlier handlers registered because the event
+      // bus has no unsubscribe, so the root refuses later init calls rather than
+      // registering those handlers twice.
       const failure = new Error('subscription failed');
       subscribe.onThirdCall().throws(failure);
       const root = createRoot();
 
-      assert.throws(
-        () => root.init(),
-        (error) => error === failure,
-      );
-      const api = apiOf(root);
-      assert.ok(api instanceof StaffService);
+      await assert.rejects(root.init(), (error) => error === failure);
+      assert.throws(() => root.service, BEFORE_INIT);
       sinon.assert.callCount(subscribe, 3);
 
-      root.init();
+      await assert.rejects(root.init(), {
+        name: 'IncorrectUsageError',
+        message: /partly subscribed by an earlier failed init/,
+      });
 
-      assert.equal(root.api, api);
+      assert.throws(() => root.service, BEFORE_INIT);
       sinon.assert.callCount(subscribe, 3);
     });
 
     it('keeps using the attribution instance captured at init after the attribution root changes', async function () {
       const root = createRoot();
-      root.init();
+      await root.init();
       const replacement = {
         getMemberCreatedAttribution: sandbox.stub().resolves(null),
         fetchResource: sandbox.stub().resolves(null),
@@ -212,7 +218,7 @@ describe('Staff service root', function () {
         MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }),
       );
 
-      assert.equal(root.api?.memberAttributionService, attribution);
+      assert.equal(root.service.memberAttributionService, attribution);
       sinon.assert.calledOnceWithExactly(attribution.getMemberCreatedAttribution, 'member-1');
       sinon.assert.notCalled(replacement.getMemberCreatedAttribution);
       sinon.assert.calledOnce(send);
@@ -220,68 +226,59 @@ describe('Staff service root', function () {
   });
 
   describe('consumers', function () {
-    let hadApi: boolean;
-    let savedApi: unknown;
+    const paths = [STAFF_PATH, GIFTS_PATH, ...STRIPE_PATHS];
+    let saved: (NodeJS.Module | undefined)[];
+    let staff: Root;
 
+    // Fresh Staff, Gifts and Stripe roots, so the consumers bind to an uninitialized
+    // Staff root and the singletons other files initialize are untouched.
     beforeEach(function () {
-      hadApi = Object.hasOwn(staffRoot, 'api');
-      savedApi = staffRoot.api;
-      delete staffRoot.api;
+      saved = paths.map((modulePath) => require.cache[modulePath]);
+      for (const modulePath of paths) {
+        delete require.cache[modulePath];
+      }
+      staff = require(STAFF_PATH).default;
     });
 
     afterEach(function () {
-      if (hadApi) {
-        staffRoot.api = savedApi;
-      } else {
-        delete staffRoot.api;
-      }
-    });
-
-    it('gives Stripe donation checkout the staff emails read at each access', function () {
-      const stripe = require('../../../../../core/server/services/stripe');
-      const deps = stripe.webhookController.checkoutSessionEventService.deps;
-
-      assert.throws(() => deps.staffServiceEmails, TypeError);
-
-      const first = {};
-      staffRoot.api = { emails: first };
-      assert.equal(deps.staffServiceEmails, first);
-
-      const second = {};
-      staffRoot.api = { emails: second };
-      assert.equal(deps.staffServiceEmails, second);
-    });
-
-    it('gives Gifts the staff emails read at each access', function () {
-      const giftsPath = require.resolve('../../../../../core/server/services/gifts');
-      const saved = require.cache[giftsPath];
-      delete require.cache[giftsPath];
-      try {
-        // A fresh Gifts root, so the singleton other files initialize is untouched.
-        const gifts = require('../../../../../core/server/services/gifts');
-        gifts.init({
-          apiUrl: 'https://site.example/ghost/api/admin/',
-          schedulerAdapter: { register: sandbox.stub() },
-          internalKeys: {},
-          checkouts: { read: sandbox.stub() },
-        });
-        const deps = (gifts.service as { deps: { staffServiceEmails: unknown } }).deps;
-
-        assert.throws(() => deps.staffServiceEmails, TypeError);
-
-        const first = {};
-        staffRoot.api = { emails: first };
-        assert.equal(deps.staffServiceEmails, first);
-
-        const second = {};
-        staffRoot.api = { emails: second };
-        assert.equal(deps.staffServiceEmails, second);
-      } finally {
-        delete require.cache[giftsPath];
-        if (saved) {
-          require.cache[giftsPath] = saved;
+      paths.forEach((modulePath, index) => {
+        delete require.cache[modulePath];
+        const entry = saved[index];
+        if (entry) {
+          require.cache[modulePath] = entry;
         }
-      }
+      });
+    });
+
+    async function assertReadOnEachAccess(deps: { staffServiceEmails: unknown }) {
+      assert.throws(() => deps.staffServiceEmails, BEFORE_INIT);
+
+      await staff.init();
+      assert.equal(deps.staffServiceEmails, staff.service.emails);
+
+      const replacement = {};
+      sandbox.stub(staff, 'service').get(() => ({ emails: replacement }));
+      assert.equal(deps.staffServiceEmails, replacement);
+    }
+
+    it('gives Stripe donation checkout the staff emails read at each access', async function () {
+      const stripe = require('../../../../../core/server/services/stripe');
+
+      await assertReadOnEachAccess(stripe.webhookController.checkoutSessionEventService.deps);
+    });
+
+    it('gives Gifts the staff emails read at each access', async function () {
+      const gifts = require('../../../../../core/server/services/gifts');
+      gifts.init({
+        apiUrl: 'https://site.example/ghost/api/admin/',
+        schedulerAdapter: { register: sandbox.stub() },
+        internalKeys: {},
+        checkouts: { read: sandbox.stub() },
+      });
+
+      await assertReadOnEachAccess(
+        (gifts.service as { deps: { staffServiceEmails: unknown } }).deps,
+      );
     });
   });
 
@@ -326,7 +323,7 @@ describe('Staff service root', function () {
 
     it('mails a saved milestone whose email was scheduled', async function () {
       const root = createRoot();
-      root.init();
+      await root.init();
       const event = await reachMembersMilestone();
       assert.ok(event instanceof MilestoneCreatedEvent);
       assert.ok(event.data.milestone instanceof Milestone);
@@ -341,7 +338,7 @@ describe('Staff service root', function () {
     it('does not mail a saved milestone suppressed by a recent import', async function () {
       hasImportedMembers = true;
       const root = createRoot();
-      root.init();
+      await root.init();
       const event = await reachMembersMilestone();
       // The production entity carries the reason beside the milestone, not on it.
       assert.equal(event.data.meta.reason, 'import');
@@ -357,7 +354,7 @@ describe('Staff service root', function () {
       // entity never has. Production only attaches a reason when emailSentAt is
       // null, so this combination does not occur from MilestonesService today.
       const root = createRoot();
-      root.init();
+      await root.init();
       const milestone = await Milestone.create({
         type: 'members',
         value: 1000,

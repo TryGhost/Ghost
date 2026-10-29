@@ -487,6 +487,30 @@ it('allows the exact libraries required by Comments without allowing siblings', 
   );
 });
 
+it('allows the delivery address formatter required by Staff without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/mail/format-address-for-delivery.ts';
+  const rejected = [
+    'ghost/core/server/lib/mail/ghost-mailer.js',
+    'ghost/core/server/lib/mail/format-address-for-delivery-extra.ts',
+  ] as const;
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('../../lib/mail/format-address-for-delivery');",
+    [`${alpha}/rejected.ts`]:
+      "import '../../lib/mail/ghost-mailer'; import '../../lib/mail/format-address-for-delivery-extra';",
+    [approved]: 'export const formatAddressForDelivery = (mailbox: unknown) => mailbox;',
+    [rejected[0]]: 'module.exports = class GhostMailer {};',
+    [rejected[1]]: 'export {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.js` && to === approved),
+  );
+  assert.deepEqual(
+    violations(graph),
+    rejected.map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to]).sort(),
+  );
+});
+
 it('allows the CSS inlining helper required by Staff without allowing its siblings', (t) => {
   const approved = 'ghost/core/server/lib/email-rendering/inline-css.ts';
   // finalize.ts is itself allowed for Member welcome emails, so the rejected siblings are

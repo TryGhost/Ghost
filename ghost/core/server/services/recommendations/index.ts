@@ -44,7 +44,13 @@ export default defineService('Recommendations', (): RecommendationsService => {
   const mentions = require('../mentions').default;
   const oembedService = require('../oembed');
   const settings = require('../settings');
-  const staffService = require('../staff');
+  const staff = require('../staff').default;
+  // The renderer reads the ready Staff service for each email.
+  const staffService = {
+    get api() {
+      return staff.service;
+    },
+  };
 
   const mentionsFacade = mentions.service;
 

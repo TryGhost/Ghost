@@ -18,7 +18,7 @@ const {
   SubscriptionCancelledEvent,
 } = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
-const staffRoot = require('../../../../../core/server/services/staff');
+const STAFF_PATH = require.resolve('../../../../../core/server/services/staff');
 
 type Handler = (event: unknown) => Promise<void>;
 type Recipient = { email: string; slug: string };
@@ -81,10 +81,10 @@ describe('Staff notifications', function () {
   let findMember: sinon.SinonStub;
   let findSubscription: sinon.SinonStub;
   let attribution: Record<string, sinon.SinonStub>;
-  let root: { init(): void; api: { emails: Emails } };
+  let root: { init(): Promise<void>; readonly service: { emails: Emails } };
   let emails: Emails;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     configUtils.set('mail', { transport: 'direct' });
     subscribe = sandbox.stub(DomainEvents, 'subscribe');
     send = sandbox.stub(mail.GhostMailer.prototype, 'send').resolves({});
@@ -115,11 +115,20 @@ describe('Staff notifications', function () {
       .resolves(row(SUBSCRIPTION));
     sandbox.stub(models.Offer, 'findOne').resolves(null);
 
-    // A wrapper of the same class as the exported singleton, so these cases never
-    // depend on, or change, the root other files in this worker have initialized.
-    root = new staffRoot.constructor();
-    root.init();
-    emails = root.api.emails;
+    // A freshly loaded root, so these cases never depend on, or change, the root
+    // other files in this worker have initialized.
+    const saved = require.cache[STAFF_PATH];
+    delete require.cache[STAFF_PATH];
+    try {
+      root = require(STAFF_PATH).default;
+    } finally {
+      delete require.cache[STAFF_PATH];
+      if (saved) {
+        require.cache[STAFF_PATH] = saved;
+      }
+    }
+    await root.init();
+    emails = root.service.emails;
   });
 
   afterEach(async function () {
