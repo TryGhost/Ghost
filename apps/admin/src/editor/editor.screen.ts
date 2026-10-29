@@ -5,6 +5,7 @@ import {
   addFeatureImageLabel,
   addXImageLabel,
   analyticsBackLink,
+  appBackLink,
   chooseDateButton,
   conflictCancelReloadButton,
   conflictCopyContentButton,
@@ -458,6 +459,7 @@ export const editorScreen = {
       exact: true,
     }),
   analyticsBackLink: () => page.getByRole('link', { name: analyticsBackLink, exact: true }),
+  appBackLink: () => page.getByRole('link', { name: appBackLink, exact: true }),
   /** Whether keyboard focus is inside the primary Koenig body. */
   bodyHasFocus: (): boolean =>
     document.querySelector(`[data-testid="${editorBody}"]`)?.contains(document.activeElement) ??

@@ -35,6 +35,7 @@ import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
@@ -248,7 +249,15 @@ const AppFrame: React.FC<{
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
-      open: (place) => navigateForApp(placeRoute(place)),
+      // The editor's back link leads to the app, at the route it was on. Admin sets this, not the
+      // app.
+      open: (place, from) =>
+        navigateForApp(placeRoute(place), {
+          state:
+            'post' in place || 'page' in place
+              ? editorReturnState(appPathRoute(id, from, entryPath))
+              : undefined,
+        }),
     }),
   );
   const { status, title, attempt, startedAt } = useSyncExternalStore(

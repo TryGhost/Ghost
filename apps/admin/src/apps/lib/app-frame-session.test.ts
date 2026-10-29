@@ -768,12 +768,24 @@ describe('createAppFrameSession', () => {
     expect(frame.app.themeChanged).not.toHaveBeenCalled();
   });
 
-  it('opens a place the app asks for', async () => {
+  it('opens a place the app asks for, from the route the app is on', async () => {
     const frame = await started();
 
     await frame.host.open({ post: { id: '5ddc9141c35e7700383b2937' } });
 
-    expect(open).toHaveBeenCalledExactlyOnceWith({ post: { id: '5ddc9141c35e7700383b2937' } });
+    expect(open).toHaveBeenCalledExactlyOnceWith({ post: { id: '5ddc9141c35e7700383b2937' } }, '/');
+  });
+
+  it('opens a place from the route the app moved to, before Admin has caught up', async () => {
+    const frame = await started();
+
+    await frame.host.pathChanged('/episodes/12?tab=notes', 'push');
+    await frame.host.open({ post: { id: '5ddc9141c35e7700383b2937' } });
+
+    expect(open).toHaveBeenCalledExactlyOnceWith(
+      { post: { id: '5ddc9141c35e7700383b2937' } },
+      '/episodes/12?tab=notes',
+    );
   });
 
   it('rejects a place Admin doesn’t open because the publisher is leaving', async () => {

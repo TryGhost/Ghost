@@ -12,8 +12,10 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEditorChrome,
   fakeFrameOrigin,
   fakeTags,
+  post,
   holdModuleLoads,
   postFrameForm,
   reloadFrame,
@@ -22,6 +24,7 @@ import {
   siteResponse,
   staffRole,
 } from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
@@ -925,29 +928,35 @@ describe('Managing apps', () => {
     const pageId = '6500000000000000000000a3';
     const memberId = '6500000000000000000000b2';
 
-    it('opens a post in the editor', async () => {
-      // The editor owns its request graph.
-      allowUnhandledRequests();
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
+    // An ObjectId, as Ghost generates them, which is how the editor recognises an app's route.
+    for (const postType of ['post', 'page'] as const) {
+      it(`opens a ${postType} in the editor, whose back link returns to the app where it was`, async () => {
+        const id = '6a1b2c3d4e5f60718293a4b5';
+        const resource = postType === 'post' ? 'posts' : 'pages';
+        const placeId = postType === 'post' ? postId : pageId;
+        fakeEditorChrome();
+        fakeAdminEndpoint('GET', new RegExp(`^/${resource}/${placeId}/\\?`), {
+          [resource]: [post({ id: placeId })],
+        });
+        await fakeAppPage(installation({ id }));
+        await renderAdminApp(`/apps/${id}`, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
 
-      await callAppFrame(APP_ORIGIN, 'open', { post: { id: postId } });
+        // The app asks straight after moving, before Admin has necessarily caught up.
+        answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12?tab=notes'));
+        await callAppFrame(
+          APP_ORIGIN,
+          'open',
+          postType === 'post' ? { post: { id: placeId } } : { page: { id: placeId } },
+        );
 
-      await expect.poll(currentRoute).toBe(`/editor/post/${postId}`);
-    });
-
-    it('opens a page in the editor', async () => {
-      // The editor owns its request graph.
-      allowUnhandledRequests();
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
-
-      await callAppFrame(APP_ORIGIN, 'open', { page: { id: pageId } });
-
-      await expect.poll(currentRoute).toBe(`/editor/page/${pageId}`);
-    });
+        await expect.poll(currentRoute).toBe(`/editor/${postType}/${placeId}`);
+        await editorScreen.appBackLink().click();
+        await expect.poll(currentRoute).toBe(`/apps/${id}/episodes/12?tab=notes`);
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(async () => (await appState()).address).toBe('/episodes/12?tab=notes');
+      });
+    }
 
     it('opens a member', async () => {
       // The member's page owns its request graph.
