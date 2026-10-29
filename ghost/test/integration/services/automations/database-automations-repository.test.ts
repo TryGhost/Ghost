@@ -1,11 +1,11 @@
+import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
-import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
-import { toDatabaseDate } from '../../../../core/server/lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
@@ -45,14 +45,17 @@ describe('database automations repository', function () {
       slug,
       name: `Test automation ${id}`,
       status: 'active',
-      trigger_tier_scope: triggerTierScope,
       created_at: now,
       updated_at: now,
     });
-    if (triggerTierIds.length > 0) {
-      await knex('automation_trigger_tiers').insert(
-        triggerTierIds.map((product_id) => ({ automation_id: id, product_id })),
-      );
+    const rules = buildTriggerRuleRows({
+      automationId: id,
+      scope: triggerTierScope,
+      tierIds: triggerTierIds,
+      createdAt: fromDatabaseDate(now),
+    });
+    if (rules.length > 0) {
+      await knex('automation_trigger_rules').insert(rules);
     }
     await knex('automation_actions').insert({
       id: actionId,
@@ -119,8 +122,9 @@ describe('database automations repository', function () {
         edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
         name: `Creation test ${ObjectId().toHexString()}`,
         description: 'Test description',
-        trigger_tier_scope: 'free' as const,
-        trigger_tier_ids: null,
+        trigger_rules: [
+          { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+        ],
       };
       const automation = await repo.add(data);
 
@@ -146,84 +150,6 @@ describe('database automations repository', function () {
         await knex('automations').where('id', automation.id).del();
       }
     });
-
-    it('rejects duplicate names', async function () {
-      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
-      const actions = [1, 2].map((wait_hours) => ({
-        id: ObjectId().toHexString(),
-        type: 'wait' as const,
-        data: { wait_hours },
-      }));
-      const data = {
-        status: 'active' as const,
-        actions,
-        edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
-        name: `Duplicate creation test ${ObjectId().toHexString()}`,
-        description: 'Test description',
-        trigger_tier_scope: 'free' as const,
-        trigger_tier_ids: null,
-      };
-      const automation = await repo.add(data);
-
-      try {
-        await assert.rejects(repo.add(data), (error: unknown) => {
-          assert(error instanceof errors.ValidationError);
-          assert.equal(error.statusCode, 422);
-          assert.equal(error.property, 'name');
-          assert.equal(error.message, 'An automation with this name already exists.');
-          return true;
-        });
-        const rows = await knex('automations').where({ name: data.name }).select('id');
-        assert.deepEqual(rows, [{ id: automation.id }]);
-        assert.deepEqual(await repo.getById(automation.id), automation);
-      } finally {
-        const actionIds = data.actions.map((action) => action.id);
-        await knex('automation_action_edges').whereIn('source_action_id', actionIds).del();
-        await knex('automation_action_revisions').whereIn('action_id', actionIds).del();
-        await knex('automation_actions').whereIn('id', actionIds).del();
-        await knex('automations').where('id', automation.id).del();
-      }
-    });
-  });
-
-  describe('edit', function () {
-    it('rejects duplicate names', async function () {
-      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
-      const automation = await repo.getById(automationId);
-      assert(automation);
-      const otherId = ObjectId().toHexString();
-      const now = toDatabaseDate(new Date());
-      const name = `Existing automation ${otherId}`;
-      await knex('automations').insert({
-        id: otherId,
-        slug: `duplicate-name-test-${otherId}`,
-        name,
-        status: 'inactive',
-        created_at: now,
-        updated_at: now,
-      });
-
-      try {
-        await assert.rejects(
-          repo.edit(automationId, {
-            ...automation,
-            name,
-            description: 'Should not be saved',
-            status: 'inactive',
-          }),
-          (error: unknown) => {
-            assert(error instanceof errors.ValidationError);
-            assert.equal(error.statusCode, 422);
-            assert.equal(error.property, 'name');
-            assert.equal(error.message, 'An automation with this name already exists.');
-            return true;
-          },
-        );
-        assert.deepEqual(await repo.getById(automationId), automation);
-      } finally {
-        await knex('automations').where('id', otherId).del();
-      }
-    });
   });
 
   describe('trigger', function () {
@@ -232,7 +158,7 @@ describe('database automations repository', function () {
       const api = createApi();
       const memberId = ObjectId().toHexString();
       await api.trigger({
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
@@ -250,7 +176,7 @@ describe('database automations repository', function () {
       const api = createApi();
       const memberId = ObjectId().toHexString();
       await api.trigger({
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
@@ -295,7 +221,7 @@ describe('database automations repository', function () {
         // Actually do the triggers.
         const api = createApi();
         const triggerOptions = {
-          event: 'member_sign_up' as const,
+          event: 'membership_started' as const,
           memberId,
           memberEmail,
           memberStatus: 'free' as const,
@@ -352,7 +278,7 @@ describe('database automations repository', function () {
 
       const triggers = memberIds.map((memberId, index) =>
         api.trigger({
-          event: 'member_sign_up',
+          event: 'membership_started',
           memberId,
           memberEmail: memberEmails[index],
           memberStatus: 'free',
@@ -390,7 +316,7 @@ describe('database automations repository', function () {
       const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
         await api.trigger({
-          event: 'member_sign_up',
+          event: 'membership_started',
           memberId,
           memberEmail: await insertMember(memberId),
           memberStatus: 'paid',
@@ -409,18 +335,21 @@ describe('database automations repository', function () {
       const first = await repo.fetchAndLockSteps(1);
       assert.equal(first.steps.length, 1);
       assert.deepEqual(
-        [...first.steps[0].automation_trigger_tier_ids].sort(),
+        [...first.steps[0].automation_trigger_rules.map((rule) => rule.product_id)].sort(),
         [...selectedTierIds].sort(),
       );
 
       await repo.finishStepAndEnqueueNext(first.steps[0]);
-      await knex('automation_trigger_tiers')
-        .where({ automation_id: selectedAutomationId })
+      await knex('automation_trigger_rules')
+        .where({ automation_id: selectedAutomationId, product_id: selectedTierIds[0] })
         .delete();
       const second = await repo.fetchAndLockSteps(1);
       assert.equal(second.steps.length, 1);
       assert.notEqual(second.steps[0].id, first.steps[0].id);
-      assert.deepEqual(second.steps[0].automation_trigger_tier_ids, []);
+      assert.deepEqual(
+        second.steps[0].automation_trigger_rules.map((rule) => rule.product_id),
+        [selectedTierIds[1]],
+      );
     });
   });
 });

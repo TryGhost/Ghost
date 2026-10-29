@@ -1,4 +1,4 @@
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 
 export interface Actor {
   id: string;
@@ -33,11 +33,13 @@ export type RecordGiftLinkAction = (input: {
 // Best-effort action-log write: a failed action must never fail the command that triggered it.
 export async function recordGiftLinkAction({
   Action,
+  logging,
   context,
   verb,
   subject,
 }: {
   Action: ActionRecorder;
+  logging: Pick<GhostLogger, 'error'>;
   context: RequestContext;
   verb: GiftLinkVerb;
   subject: string | null;

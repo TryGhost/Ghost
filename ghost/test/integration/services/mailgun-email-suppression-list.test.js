@@ -2,6 +2,8 @@ const sinon = require('sinon');
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const DomainEvents = require('@tryghost/domain-events');
+const ObjectId = require('bson-objectid').default;
+const { randomUUID } = require('node:crypto');
 
 const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
 const emailAnalytics = require('../../../core/server/services/email-analytics');
@@ -323,9 +325,173 @@ describe('MailgunEmailSuppressionList', function () {
     // Clean up so subsequent tests using this email aren't affected
     await models.Suppression.destroy({ destroyBy: { email: recipient } });
   });
+
+  it('Suppresses an address after repeated permanent failures for an invalid recipient', async function () {
+    const member = await addMember('repeatedly-rejected@example.com');
+    await addSentEmail(member, {
+      sentAt: new Date(2000, 0, 1),
+      failure: { code: 498, message: 'No MX for example.com' },
+    });
+    await addSentEmail(member, {
+      sentAt: new Date(2000, 0, 2),
+      failure: { code: 550, message: '#5.1.0 Address rejected.' },
+    });
+    const latest = await addSentEmail(member, { sentAt: new Date(2000, 0, 3) });
+
+    events = [
+      createPermanentFailedEvent({
+        errorCode: 550,
+        enhancedCode: '5.1.1',
+        description: '5.1.1 The email account that you tried to reach does not exist.',
+        providerId: latest.providerId,
+        timestamp: new Date(2000, 0, 3),
+        recipient: member.get('email'),
+      }),
+    ];
+
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
+    await DomainEvents.allSettled();
+
+    const memberAfter = await models.Member.findOne({ id: member.id }, { require: true });
+    assert.equal(memberAfter.get('email_disabled'), true);
+    const suppression = await models.Suppression.findOne({ email: member.get('email') });
+    assert.equal(suppression.get('reason'), 'bounce');
+  });
+
+  it('Does not suppress an address after repeated policy rejections', async function () {
+    const member = await addMember('repeatedly-blocked@example.com');
+    await addSentEmail(member, {
+      sentAt: new Date(2000, 0, 1),
+      failure: { code: 550, message: '#5.1.0 Address rejected.' },
+    });
+    await addSentEmail(member, {
+      sentAt: new Date(2000, 0, 2),
+      failure: { code: 554, enhancedCode: '5.7.1', message: '5.7.1 Message rejected as spam' },
+    });
+    const latest = await addSentEmail(member, { sentAt: new Date(2000, 0, 3) });
+
+    events = [
+      createPermanentFailedEvent({
+        errorCode: 550,
+        enhancedCode: '5.1.1',
+        description: '5.1.1 User unknown',
+        providerId: latest.providerId,
+        timestamp: new Date(2000, 0, 3),
+        recipient: member.get('email'),
+      }),
+    ];
+
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
+    await DomainEvents.allSettled();
+
+    const memberAfter = await models.Member.findOne({ id: member.id }, { require: true });
+    assert.equal(memberAfter.get('email_disabled'), false);
+    assert.equal(await models.Suppression.findOne({ email: member.get('email') }), null);
+  });
+
+  it('Does not suppress an address that received an email since its last invalid recipient failure', async function () {
+    const member = await addMember('recovered@example.com');
+    await addSentEmail(member, {
+      sentAt: new Date(2000, 0, 1),
+      failure: { code: 550, message: '#5.1.0 Address rejected.' },
+    });
+    await addSentEmail(member, { sentAt: new Date(2000, 0, 2), delivered: true });
+    await addSentEmail(member, {
+      sentAt: new Date(2000, 0, 3),
+      failure: { code: 550, message: '550 5.1.1 User unknown' },
+    });
+    const latest = await addSentEmail(member, { sentAt: new Date(2000, 0, 4) });
+
+    events = [
+      createPermanentFailedEvent({
+        errorCode: 550,
+        enhancedCode: '5.1.1',
+        description: '5.1.1 User unknown',
+        providerId: latest.providerId,
+        timestamp: new Date(2000, 0, 4),
+        recipient: member.get('email'),
+      }),
+    ];
+
+    await emailAnalytics.getNewsletters().fetchLatestOpenedEvents();
+    await DomainEvents.allSettled();
+
+    const memberAfter = await models.Member.findOne({ id: member.id }, { require: true });
+    assert.equal(memberAfter.get('email_disabled'), false);
+    assert.equal(await models.Suppression.findOne({ email: member.get('email') }), null);
+  });
 });
 
-function createPermanentFailedEvent({ errorCode, providerId, timestamp, recipient }) {
+async function addMember(email) {
+  return await models.Member.add({
+    email,
+    status: 'free',
+    newsletters: [{ id: fixtureManager.get('newsletters', 0).id }],
+    email_disabled: false,
+  });
+}
+
+async function addSentEmail(member, { sentAt, failure, delivered = false }) {
+  const knex = models.Base.knex;
+  const emailId = ObjectId().toHexString();
+  const batchId = ObjectId().toHexString();
+  const emailRecipientId = ObjectId().toHexString();
+  const providerId = `${batchId}@testing.mailgun.net`;
+
+  await knex('emails').insert({
+    id: emailId,
+    post_id: ObjectId().toHexString(),
+    uuid: randomUUID(),
+    status: 'submitted',
+    recipient_filter: 'all',
+    submitted_at: sentAt,
+    newsletter_id: fixtureManager.get('newsletters', 0).id,
+    created_at: sentAt,
+  });
+  await knex('email_batches').insert({
+    id: batchId,
+    email_id: emailId,
+    mailgun_message_id: providerId,
+    status: 'submitted',
+    created_at: sentAt,
+    updated_at: sentAt,
+  });
+  await knex('email_recipients').insert({
+    id: emailRecipientId,
+    email_id: emailId,
+    member_id: member.id,
+    batch_id: batchId,
+    processed_at: sentAt,
+    delivered_at: delivered ? sentAt : null,
+    failed_at: failure ? sentAt : null,
+    member_uuid: member.get('uuid'),
+    member_email: member.get('email'),
+  });
+  if (failure) {
+    await knex('email_recipient_failures').insert({
+      id: ObjectId().toHexString(),
+      email_id: emailId,
+      member_id: member.id,
+      email_recipient_id: emailRecipientId,
+      code: failure.code,
+      enhanced_code: failure.enhancedCode ?? null,
+      message: failure.message,
+      severity: 'permanent',
+      failed_at: sentAt,
+    });
+  }
+
+  return { providerId };
+}
+
+function createPermanentFailedEvent({
+  errorCode,
+  enhancedCode,
+  description = 'Not delivering to previously bounced address',
+  providerId,
+  timestamp,
+  recipient,
+}) {
   return {
     event: 'failed',
     id: 'pl271FzxTTmGRW8Uj3dUWw',
@@ -347,7 +513,8 @@ function createPermanentFailedEvent({ errorCode, providerId, timestamp, recipien
       'attempt-no': 1,
       message: '',
       code: errorCode,
-      description: 'Not delivering to previously bounced address',
+      'enhanced-code': enhancedCode,
+      description,
       'session-seconds': 0.0,
     },
     message: {

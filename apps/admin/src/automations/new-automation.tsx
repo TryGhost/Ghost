@@ -1,11 +1,10 @@
 import React from 'react';
-import { Navigate } from '@tryghost/admin-x-framework';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Background, ReactFlow } from '@xyflow/react';
 import AutomationHeader from './components/automation-header';
 import { AutomationCanvasControls } from './components/canvas/controls';
@@ -15,13 +14,38 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
+import type { TierSelection } from './types';
+
+type PickedTrigger = 'free' | 'all_paid' | 'paid_subscription_changed';
+
+const TRIGGER_OPTIONS = [
+  ['free', LucideIcon.UserPlus, 'Free member signed up', 'When someone signs up as a free member'],
+  [
+    'all_paid',
+    LucideIcon.CreditCard,
+    'Paid subscription started',
+    'When a new or free member starts a paid subscription',
+  ],
+] as const;
+
+// Behind the lifecycle triggers Labs flag until the API can save it (NY-1733).
+const SUBSCRIPTION_CHANGED_OPTION = [
+  'paid_subscription_changed',
+  LucideIcon.ArrowRightLeft,
+  'Paid subscription changed',
+  "When a member's paid subscription moves to another tier or ends",
+] as const;
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
-  onPick: (scope: 'free' | 'all_paid', cardTop: number) => void;
+  onPick: (trigger: PickedTrigger, cardTop: number) => void;
 }> = ({ automation, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
+  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
+  const options = lifecycleTriggers
+    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION]
+    : TRIGGER_OPTIONS;
   const cardRef = React.useRef<HTMLDivElement>(null);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
@@ -62,28 +86,13 @@ const TriggerPicker: React.FC<{
             gap="xl"
           >
             <Text weight="semibold">Select a trigger</Text>
-            {(
-              [
-                [
-                  'free',
-                  LucideIcon.UserPlus,
-                  'Free member signed up',
-                  'When someone signs up as a free member',
-                ],
-                [
-                  'all_paid',
-                  LucideIcon.CreditCard,
-                  'Paid subscription started',
-                  'When a new or free member starts a paid subscription',
-                ],
-              ] as const
-            ).map(([scope, Icon, title, description]) => (
+            {options.map(([trigger, Icon, title, description]) => (
               <Button
-                key={scope}
+                key={trigger}
                 className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
                 shape="rounded"
                 variant="ghost"
-                onClick={() => onPick(scope, cardRef.current?.offsetTop ?? 0)}
+                onClick={() => onPick(trigger, cardRef.current?.offsetTop ?? 0)}
               >
                 <Inline gap="md">
                   <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
@@ -109,15 +118,21 @@ const TriggerPicker: React.FC<{
 
 const NewAutomationLoading: React.FC = () => {
   return (
-    <div className="delayed-fade-in">
+    <Stack align="center" className="delayed-fade-in fixed inset-0" justify="center" role="status">
       <LoadingIndicator size="lg" />
-    </div>
+      <span className="sr-only">Loading automation</span>
+    </Stack>
   );
 };
 
 type NewAutomationProps = {
   // `triggerTop`: where the picker's card was, when a trigger was picked on it.
-  children: (automation: AutomationDetail, triggerTop?: number) => React.ReactNode;
+  // `tierSelection`: set when the picked trigger was "Paid subscription changed".
+  children: (
+    automation: AutomationDetail,
+    triggerTop?: number,
+    tierSelection?: TierSelection,
+  ) => React.ReactNode;
 };
 
 const NewAutomationSession: React.FC<
@@ -130,6 +145,7 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
+  const [tierSelection, setTierSelection] = React.useState<TierSelection>();
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -151,12 +167,18 @@ const NewAutomationSession: React.FC<
     return (
       <TriggerPicker
         automation={initialAutomation}
-        onPick={(scope, cardTop) => {
+        onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
-          setInitialAutomation({
-            ...initialAutomation,
-            trigger_tier_scope: scope,
-          });
+          if (trigger === 'paid_subscription_changed') {
+            // A stand-in paid scope loads the paid tiers; the editor never saves it (NY-1733).
+            setTierSelection({ from: [], to: [] });
+            setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'all_paid' });
+          } else {
+            setInitialAutomation({
+              ...initialAutomation,
+              trigger_tier_scope: trigger,
+            });
+          }
         }}
       />
     );
@@ -165,7 +187,7 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children(initialAutomation, triggerTop)}
+      {children(initialAutomation, triggerTop, tierSelection)}
     </ScreenEntranceContext.Provider>
   ) : (
     children(initialAutomation)
@@ -175,10 +197,6 @@ const NewAutomationSession: React.FC<
 const NewAutomation: React.FC<NewAutomationProps> = ({ children }) => {
   const { allAutomations, stripeEnabled, isStripeReady, isLoading, isError, error } =
     useVisibleAutomations();
-  const enabled = useFeatureFlag('automationsPerTier');
-  if (!enabled) {
-    return <Navigate to="/automations" replace />;
-  }
   if (isError && !allAutomations) {
     throw error instanceof Error ? error : new Error('Failed to load automations');
   }

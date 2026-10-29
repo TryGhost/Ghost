@@ -220,6 +220,8 @@ describe('Post editor refetch', () => {
     releaseReads();
     await editorReadLanded(queryClient, shared.stored());
 
+    // Typing hid the chrome under the still pointer; moving it brings Update back.
+    await userEvent.hover(editorScreen.body());
     await editorScreen.updateButton().click();
 
     await expect.poll(() => shared.saveApi.requests.length).toBe(2);

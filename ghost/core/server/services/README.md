@@ -49,7 +49,7 @@ For example:
   implementation through `init()` and `service`. It qualifies without owning a
   background worker.
 - Staff invitation acceptance is a domain action owned by `invites`. Its
-  `accept.js` function keeps transaction state local to each invocation; it
+  `accept.ts` function keeps transaction state local to each invocation; it
   does not need its own service root or lifecycle.
 - Magic-link token and URL helpers are reusable support for several workflows,
   not a separately boot-managed capability. They belong in their own library,
@@ -125,33 +125,12 @@ The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
 
-To inspect the remaining work across **all** entries:
+### Migration reports
 
-```bash
-pnpm audit:services
-pnpm --silent audit:services:summary
-pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
-```
-
-The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
-all entries, including those absent from the inventory. It uses Dependency
-Cruiser's built-in terminal report, with Markdown and JSON also available.
-The audit returns success even when it finds violations; the normal lint
-command fails on violations in migrated services. Reports list source files and
-dependency targets, without custom inventory grouping. Legacy root `index.js`
-files are treated as wiring
-candidates; imports there do not prove readiness for migration.
-
-The optional summary requires `jq`. It groups `service-dependencies` findings
-by dependency and counts distinct importing implementation files, largest first.
-Multiple imports of the same target in one file count once. It does not include
-unresolved-import or own-root findings; use the detailed audit for those.
-
-Counts in the detailed report describe rule violations; one import can appear
-under more than one rule. Review whether each dependency needs injection, a
-library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
-by this static check and are not separately scanned. Unresolved imports,
-globals, runtime state and initialization behavior still need tests and review.
+Tools for inspecting progress of the active service migration are available
+under `pnpm gx services`. Start with `pnpm gx services report`; see the
+[gx guide](../../../../tools/gx/README.md#service-migration-reports) for lists,
+per-service details and dependency audits.
 
 ### Migration assessment
 
@@ -208,6 +187,21 @@ when marking a service migrated; recheck it against current source before use.
 Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
+
+`disposition` records the intended home of the current directory entry:
+`retain` keeps it here, `relocate` plans a move or split between other owners,
+and `review` leaves ownership undecided. It does not record completed work.
+A relocated capability can still be a configured runtime service; relocation
+does not make its initialization assessment `not-applicable`. Keep the entry
+until the directory actually leaves, and preserve its dependency, readiness
+and lifetime contracts at the destination. Use `notes` to describe the intended
+split and distinguish it from an earlier in-place migration assessment.
+
+Base disposition on the capability's responsibilities and intended owner. Per-call
+construction, no initializer, a single consumer, or use of another service does
+not by itself justify relocation. A feature-owned target list or an extractable
+helper also does not settle ownership of the whole root. If the owner is
+undecided, use `review` and keep initialization and dependency work applicable.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;

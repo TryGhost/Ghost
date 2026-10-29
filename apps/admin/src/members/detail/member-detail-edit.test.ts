@@ -15,9 +15,23 @@ import {
   resolveSlugsToLabels,
   toggleMemberNewsletter,
 } from './member-detail-edit';
-import { MEMBER_CUSTOM_FIELD_TYPES } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { memberCustomFieldValueSchema } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { describe, expect, it } from 'vitest';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+
+const customField = (key: string, type: MemberCustomField['type']): MemberCustomField => ({
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse(key),
+  name: key,
+  type,
+  status: 'active',
+  access: { member: 'none' },
+  created_at: '2026-07-14T00:00:00.000Z',
+  updated_at: null,
+});
+const jobTitle = customField('job_title', 'short_text');
+const homeAddress = customField('home_address', 'address');
 
 describe('getMemberEditableSlice', () => {
   it('normalizes missing fields to empty strings and empty relation lists', () => {
@@ -121,32 +135,38 @@ describe('buildMemberFieldEditPayload', () => {
 describe('getEditableCustomFieldValues', () => {
   it('keeps string values trimmed and drops empty/null ones', () => {
     expect(
-      getEditableCustomFieldValues({
-        custom: {
-          job_title: ' Editor ',
-          cleared: null,
-          blank: '',
-          spaces: '   ',
+      getEditableCustomFieldValues(
+        {
+          custom: {
+            job_title: ' Editor ',
+            cleared: null,
+            blank: '',
+            spaces: '   ',
+          },
         },
-      }),
+        [jobTitle, ...['cleared', 'blank', 'spaces'].map((key) => customField(key, 'short_text'))],
+      ),
     ).toEqual({ 'custom.job_title': 'Editor' });
   });
 
-  it('normalizes address values: trims sub-fields, drops empty and unknown ones', () => {
+  it('normalizes address values: trims parts, drops empty and unknown ones', () => {
     expect(
-      getEditableCustomFieldValues({
-        custom: {
-          home_address: {
-            line1: ' 1 Main St ',
-            line2: '',
-            city: 'Berlin',
-            state: '   ',
-            postal_code: '10115',
-            country: 'DE',
-            not_a_subfield: 'ignored',
+      getEditableCustomFieldValues(
+        {
+          custom: {
+            home_address: {
+              line1: ' 1 Main St ',
+              line2: '',
+              city: 'Berlin',
+              state: '   ',
+              postal_code: '10115',
+              country: 'DE',
+              not_a_part: 'ignored',
+            },
           },
         },
-      }),
+        [homeAddress],
+      ),
     ).toEqual({
       'custom.home_address': {
         line1: '1 Main St',
@@ -159,31 +179,24 @@ describe('getEditableCustomFieldValues', () => {
 
   it('collapses an all-empty address to an absent key, like an empty string', () => {
     expect(
-      getEditableCustomFieldValues({
-        custom: { home_address: { line1: '', city: '  ', postal_code: null } },
-      }),
+      getEditableCustomFieldValues(
+        { custom: { home_address: { line1: '', city: '  ', postal_code: null } } },
+        [homeAddress],
+      ),
     ).toEqual({});
   });
 });
 
 describe('buildCustomFieldSavePayload', () => {
   it('sends only this field as a merge patch, trimmed', () => {
-    expect(
-      buildCustomFieldSavePayload(
-        'mem_1',
-        { namespace: 'custom', key: 'job_title' },
-        ' Publisher ',
-      ),
-    ).toEqual({
+    expect(buildCustomFieldSavePayload('mem_1', jobTitle, ' Publisher ')).toEqual({
       id: 'mem_1',
       metafields: { custom: { job_title: 'Publisher' } },
     });
   });
 
   it('sends null to clear an emptied value', () => {
-    expect(
-      buildCustomFieldSavePayload('mem_1', { namespace: 'custom', key: 'job_title' }, '  '),
-    ).toEqual({
+    expect(buildCustomFieldSavePayload('mem_1', jobTitle, '  ')).toEqual({
       id: 'mem_1',
       metafields: { custom: { job_title: null } },
     });
@@ -193,17 +206,13 @@ describe('buildCustomFieldSavePayload', () => {
     // A write touches the parts it names. Leaving `line2` out would read as "no
     // change" and the stored one would survive the person deleting it.
     expect(
-      buildCustomFieldSavePayload(
-        'mem_1',
-        { namespace: 'custom', key: 'home_address' },
-        {
-          line1: ' 1 Main St ',
-          line2: '',
-          city: 'Berlin',
-          postal_code: '10115',
-          country: 'DE',
-        },
-      ),
+      buildCustomFieldSavePayload('mem_1', homeAddress, {
+        line1: ' 1 Main St ',
+        line2: '',
+        city: 'Berlin',
+        postal_code: '10115',
+        country: 'DE',
+      }),
     ).toEqual({
       id: 'mem_1',
       metafields: {
@@ -223,13 +232,23 @@ describe('buildCustomFieldSavePayload', () => {
   it('sends an address emptied of everything as a cleared field', () => {
     // Every part empty is not an address of empties, it is no address — which the
     // field-level null already says.
+    expect(buildCustomFieldSavePayload('mem_1', homeAddress, { line1: '', city: '  ' })).toEqual({
+      id: 'mem_1',
+      metafields: { custom: { home_address: null } },
+    });
+  });
+});
+
+describe('a value of another shape than its field', () => {
+  // No control produces a value of another shape than its field's, but if one ever reaches a save
+  // it must not be read as clearing the field, which would delete what the member holds.
+  it('is checked and sent as it is, rather than saved as a clear', () => {
     expect(
-      buildCustomFieldSavePayload(
-        'mem_1',
-        { namespace: 'custom', key: 'home_address' },
-        { line1: '', city: '  ' },
-      ),
-    ).toEqual({ id: 'mem_1', metafields: { custom: { home_address: null } } });
+      getCustomFieldValidationErrors({ home_address: '1 Main St' }, [homeAddress]),
+    ).not.toEqual({});
+    expect(buildCustomFieldSavePayload('mem_1', homeAddress, '1 Main St').metafields).toEqual({
+      custom: { home_address: '1 Main St' },
+    });
   });
 });
 
@@ -436,24 +455,7 @@ describe('isDraftInSyncWithServer', () => {
 });
 
 describe('getCustomFieldValidationErrors', () => {
-  const fields = [
-    {
-      namespace: 'custom',
-      key: 'job_title',
-      name: 'Job title',
-      type: 'short_text',
-      created_at: '',
-      updated_at: null,
-    },
-    {
-      namespace: 'custom',
-      key: 'home_address',
-      name: 'Home address',
-      type: 'address',
-      created_at: '',
-      updated_at: null,
-    },
-  ] as MemberCustomField[];
+  const fields = [jobTitle, homeAddress];
   const validAddress = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
   it('returns no errors for valid values', () => {
@@ -466,7 +468,7 @@ describe('getCustomFieldValidationErrors', () => {
     expect(getCustomFieldValidationErrors({ job_title: '', home_address: {} }, fields)).toEqual({});
   });
 
-  it('accepts a partial address — no sub-field is required', () => {
+  it('accepts a partial address — no part is required', () => {
     // The stored shape is fixed, but which parts of it exist is a per-country
     // question, so an address without a city or postal code is valid rather
     // than incomplete.
@@ -508,7 +510,7 @@ describe('getCustomFieldValidationErrors', () => {
     expect(errors).toEqual({ 'custom.job_title': 'Use 255 characters or fewer.' });
   });
 
-  it('reports an over-long address sub-field with the limit a person can act on', () => {
+  it('reports an over-long address part with the limit a person can act on', () => {
     const errors = getCustomFieldValidationErrors(
       { home_address: { ...validAddress, line1: 'x'.repeat(256) } },
       fields,
@@ -521,22 +523,16 @@ describe('getCustomFieldValidationErrors', () => {
 
     // The schema trims each part, so this names two parts as empty — a valid request
     // to clear them, not a malformed address.
-    expect(MEMBER_CUSTOM_FIELD_TYPES.address.value.safeParse(whitespaceOnly).success).toBe(true);
+    expect(memberCustomFieldValueSchema(homeAddress).safeParse(whitespaceOnly).success).toBe(true);
     expect(getCustomFieldValidationErrors({ home_address: whitespaceOnly }, fields)).toEqual({});
 
     // And with nothing left in it, the save clears the field outright.
-    expect(
-      buildCustomFieldSavePayload(
-        'm1',
-        { namespace: 'custom', key: 'home_address' },
-        whitespaceOnly,
-      ).metafields,
-    ).toEqual({
+    expect(buildCustomFieldSavePayload('m1', homeAddress, whitespaceOnly).metafields).toEqual({
       custom: { home_address: null },
     });
   });
 
-  it('lets a sub-field with a format be emptied, not just one with a bound', () => {
+  it('lets a part with a format be emptied, not just one with a bound', () => {
     // Emptying the country box is the one way a person removes a country while
     // keeping the address. Its rule is a pattern rather than a length, so unless the
     // catalog treats empty as a clear the save is refused and the box cannot be
@@ -551,13 +547,7 @@ describe('getCustomFieldValidationErrors', () => {
     };
 
     expect(getCustomFieldValidationErrors({ home_address: clearedCountry }, fields)).toEqual({});
-    expect(
-      buildCustomFieldSavePayload(
-        'm1',
-        { namespace: 'custom', key: 'home_address' },
-        clearedCountry,
-      ).metafields,
-    ).toEqual({
+    expect(buildCustomFieldSavePayload('m1', homeAddress, clearedCountry).metafields).toEqual({
       custom: { home_address: clearedCountry },
     });
   });
@@ -569,16 +559,13 @@ describe('getCustomFieldValidationErrors', () => {
     const emptiedParts = { line1: '62 Ghost Lane', country: '' };
 
     expect(
-      getEditableCustomFieldValues({ custom: { home_address: emptiedParts } })[
+      getEditableCustomFieldValues({ custom: { home_address: emptiedParts } }, [homeAddress])[
         'custom.home_address'
       ],
     ).toEqual({
       line1: '62 Ghost Lane',
     });
-    expect(
-      buildCustomFieldSavePayload('m1', { namespace: 'custom', key: 'home_address' }, emptiedParts)
-        .metafields,
-    ).toEqual({
+    expect(buildCustomFieldSavePayload('m1', homeAddress, emptiedParts).metafields).toEqual({
       custom: { home_address: emptiedParts },
     });
     expect(getCustomFieldValidationErrors({ home_address: emptiedParts }, fields)).toEqual({});

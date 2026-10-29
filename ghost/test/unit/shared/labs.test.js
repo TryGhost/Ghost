@@ -32,30 +32,6 @@ describe('Labs Service', function () {
     await configUtils.restore();
   });
 
-  it.each([{}, { automationsArchive: false, automationsPerTier: false }])(
-    'enables automation archiving and per-tier settings regardless of stored Labs settings: %j',
-    function (storedLabs) {
-      sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
-
-      for (const flag of ['automationsArchive', 'automationsPerTier']) {
-        assert.equal(labs.isSet(flag), true);
-        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes(flag), false);
-      }
-    },
-  );
-
-  it.each([{}, { editorReact: false, billingReact: false }])(
-    'serves the React editor and billing screens regardless of stored Labs settings: %j',
-    function (storedLabs) {
-      sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
-
-      for (const flag of ['editorReact', 'billingReact']) {
-        assert.equal(labs.isSet(flag), true);
-        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes(flag), false);
-      }
-    },
-  );
-
   it('can getAll, even if empty with enabled members', function () {
     assert.deepEqual(
       labs.getAll(),

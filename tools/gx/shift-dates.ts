@@ -2,7 +2,6 @@
 import chalk from 'chalk';
 import { DateTime } from 'luxon';
 import { z } from 'zod';
-// @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
 // @ts-expect-error This module lacks type definitions.
 import inquirer from 'inquirer';
@@ -61,7 +60,7 @@ async function main() {
         return;
       }
       argv.offset = Math.floor(
-        DateTime.utc().diff(DateTime.fromJSDate(point.created_at), 'days').days,
+        DateTime.utc().diff(DateTime.fromJSDate(point.created_at, { zone: 'utc' }), 'days').days,
       );
     }
     const dateOffset = argv.offset;

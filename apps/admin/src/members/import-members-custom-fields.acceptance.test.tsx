@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
+  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeMembers,
@@ -12,6 +13,7 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 // The import dialog is served to everyone now, so custom fields are the only switch left, and
 // the dialog has to hold up on either side of it.
@@ -54,8 +56,8 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
       body as { members_metafields: Array<{ name: string; type: MemberCustomField['type'] }> }
     ).members_metafields;
     const field: MemberCustomField = {
-      namespace: 'custom',
-      key: input.name.trim().toLowerCase().replace(/\s+/g, '-'),
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse(input.name.trim().toLowerCase().replace(/\s+/g, '_')),
       name: input.name.trim(),
       type: input.type,
       status: 'active',
@@ -71,8 +73,8 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
 
 /** A field the site has already defined, for proving what an import does and does not offer. */
 const NICKNAME_FIELD: MemberCustomField = {
-  namespace: 'custom',
-  key: 'nickname',
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('nickname'),
   name: 'Nickname',
   type: 'short_text',
   status: 'active',
@@ -814,6 +816,23 @@ describe('Import members custom fields', () => {
 
       // The offer to add a field was the list's only force-mounted item, so without it a
       // fruitless search would leave the list blank with nothing said.
+      await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
+      await expect.element(importMembersScreen.messageText('No fields found.')).toBeVisible();
+    });
+
+    // While the host switches custom fields off every field reads as archived, so there is
+    // none to map onto, and the server would refuse a new one.
+    it('offers no way to make a field while the host switches custom fields off', async () => {
+      fakeCustomFieldsWorld();
+      const config = configResponse(FLAGS);
+      config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
+      await renderAdminApp('/members', { ...FLAGS, boot: { browseConfig: { response: config } } });
+      await openMappingStep();
+
+      await importToggle('nickname').click();
+      await fieldSelect('nickname').click();
+      await userEvent.fill(importMembersScreen.searchFieldsInput(), 'zzzz');
+
       await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
       await expect.element(importMembersScreen.messageText('No fields found.')).toBeVisible();
     });

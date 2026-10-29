@@ -45,7 +45,7 @@ ListPage is the canonical recipe for the **List page** type — the recurring st
 
 It is intentionally thin: a vertical flex-col stack with horizontal padding that grows to fill its flex parent. Drop the named slots in as direct children.
 
-- \`<ListPage.Header>\` — sticky, blurred, full-bleed chrome band. Place \`PageHeader\`, \`ViewBar\`, and/or \`FilterBar\` directly inside as siblings. \`FilterBar\` auto-collapses when it has no active filters.
+- \`<ListPage.Header>\` — sticky, blurred, full-bleed chrome band. Place \`PageHeader\`, \`ViewBar\`, and/or \`FilterBar\` directly inside as siblings. \`FilterBar\` hides itself only when it has no children, so mount it while filters are active.
 - \`<ListPage.Body>\` — grows to fill remaining space. Use \`flex-1 flex items-center justify-center\` on the immediate child to vertically center empty/loading states.
 
 With large titles on (\`PageChromeProvider value={{ largeTitles: true }}\`, which Admin sets inside its desktop frame), the header's \`PageHeader.Title\` also shows large above the header, sized by the window. As the page scrolls, it fades out, the header sticks with a solid background and its own small title fades in. A separator sits under the header's first row unless a \`FilterBar\` takes its place. Pages without a \`PageHeader.Title\` keep the usual header.
@@ -55,7 +55,7 @@ With large titles on (\`PageChromeProvider value={{ largeTitles: true }}\`, whic
   <ListPage.Header>
     <PageHeader sticky={false} blurredBackground={false}>…</PageHeader>
     <ViewBar>…</ViewBar>          {/* optional */}
-    <FilterBar>…</FilterBar>      {/* optional — auto-collapses when empty */}
+    {hasFilters && <FilterBar>…</FilterBar>}  {/* only while filters are active */}
   </ListPage.Header>
   <ListPage.Body>…</ListPage.Body>
 </ListPage>

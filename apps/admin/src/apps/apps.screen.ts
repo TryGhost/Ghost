@@ -38,6 +38,7 @@ export const appsScreen = {
   appPage: () => page.getByTestId(sel.appPage),
   frame: () => page.getByTestId(sel.appFrame),
   notResponding: () => page.getByTestId(sel.appNotResponding),
+  unavailable: () => page.getByTestId(sel.appUnavailable),
   notInstalled: () => page.getByTestId(sel.appNotInstalled),
   notFramed: () => page.getByTestId(sel.appNotFramed),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),

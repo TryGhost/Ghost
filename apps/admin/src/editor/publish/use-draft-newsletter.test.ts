@@ -16,8 +16,7 @@ const stored = () => readDraftNewsletter(localStorage, 'post-1');
 
 function renderDraftNewsletter(newsletters: ReadonlyArray<NewsletterInput> | null) {
   return renderHook(
-    ({ list }) =>
-      useDraftNewsletter({ enabled: true, postId: 'post-1', status: 'draft', newsletters: list }),
+    ({ list }) => useDraftNewsletter({ postId: 'post-1', status: 'draft', newsletters: list }),
     { initialProps: { list: newsletters } },
   );
 }

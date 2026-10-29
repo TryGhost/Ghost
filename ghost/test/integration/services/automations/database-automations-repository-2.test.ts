@@ -1,10 +1,15 @@
+import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import { onTestFinished } from 'vitest';
 import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
+import type {
+  ActionToInsert,
+  EdgeRow,
+  RunStepToInsert,
+} from '../../../../core/server/services/automations/automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
-import type { RunStepToInsert } from '../../../../core/server/services/automations/automations-repository-2';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
 // @ts-expect-error This module lacks type definitions.
@@ -23,7 +28,6 @@ describe('database automations repository', function () {
     id,
     name: `Test automation ${id}`,
     status: 'active',
-    trigger_tier_scope: 'free',
     created_at: now,
   });
 
@@ -60,6 +64,15 @@ describe('database automations repository', function () {
     member_email: `${memberId}@example.com`,
     created_at: now,
     updated_at: later,
+  });
+
+  const createRunStep = (runId: string, revisionId: string): RunStepToInsert => ({
+    id: ObjectId().toHexString(),
+    automation_run_id: runId,
+    automation_action_revision_id: revisionId,
+    created_at: createdAt,
+    updated_at: updatedAt,
+    ready_at: readyAt,
   });
 
   beforeAll(async function () {
@@ -104,11 +117,23 @@ describe('database automations repository', function () {
     };
 
     const insertAutomation = async (
-      overrides: Partial<ReturnType<typeof createAutomation>> = {},
+      overrides: Partial<ReturnType<typeof createAutomation>> & {
+        triggerScope?: 'free' | 'all_paid' | 'selected_paid';
+      } = {},
     ) => {
-      const automation = { ...createAutomation(), ...overrides };
+      const { triggerScope = 'free', ...automationOverrides } = overrides;
+      const automation = { ...createAutomation(), ...automationOverrides };
       automationIds.push(automation.id);
       await knex('automations').insert(automation);
+      const rules = buildTriggerRuleRows({
+        automationId: automation.id,
+        scope: triggerScope,
+        tierIds: [],
+        createdAt: now,
+      });
+      if (rules.length > 0) {
+        await knex('automation_trigger_rules').insert(rules);
+      }
       return await insertAction(automation.id);
     };
 
@@ -126,8 +151,13 @@ describe('database automations repository', function () {
     };
 
     const insertAutomationTriggerTiers = async (automationId: string, productIds: string[]) => {
-      await knex('automation_trigger_tiers').insert(
-        productIds.map((product_id) => ({ automation_id: automationId, product_id })),
+      await knex('automation_trigger_rules').insert(
+        buildTriggerRuleRows({
+          automationId,
+          scope: 'selected_paid',
+          tierIds: productIds,
+          createdAt: now,
+        }),
       );
     };
 
@@ -147,9 +177,17 @@ describe('database automations repository', function () {
       await knex('automation_action_edges').whereIn('source_action_id', actionIds).delete();
       await knex('automation_action_revisions').whereIn('action_id', actionIds).delete();
       await knex('automation_actions').whereIn('id', actionIds).delete();
-      await knex('automation_trigger_tiers').whereIn('automation_id', automationIds).delete();
       await knex('automations').whereIn('id', automationIds).delete();
       await knex('products').whereIn('id', tierIds).delete();
+    });
+
+    it('uses current trigger rules for matching', async function () {
+      const first = await insertAutomation();
+      await knex('automation_trigger_rules')
+        .where('automation_id', first.automation_id)
+        .update({ trigger_type: 'paid_subscription_started', scope: 'any_paid_tier' });
+      assert.deepEqual(await findFirstActionRevisions('free', []), []);
+      assert.deepEqual(await findFirstActionRevisions('paid', []), [first]);
     });
 
     it('returns an empty array when there are no automations', async function () {
@@ -181,8 +219,8 @@ describe('database automations repository', function () {
 
     it('returns only free automations for free members, even with tier IDs', async function () {
       const free = await insertAutomation();
-      await insertAutomation({ trigger_tier_scope: 'all_paid' });
-      const selected = await insertAutomation({ trigger_tier_scope: 'selected_paid' });
+      await insertAutomation({ triggerScope: 'all_paid' });
+      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
       const tierId = await insertTier();
       await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
@@ -191,18 +229,18 @@ describe('database automations repository', function () {
 
     it('returns only all-paid automations for paid members without tier IDs', async function () {
       await insertAutomation();
-      const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
-      await insertAutomation({ trigger_tier_scope: 'selected_paid' });
+      const paid = await insertAutomation({ triggerScope: 'all_paid' });
+      await insertAutomation({ triggerScope: 'selected_paid' });
 
       await expect(findFirstActionRevisions('paid', [])).resolves.toEqual([paid]);
     });
 
     it('returns matching selected-tier and all-paid automations without duplicates', async function () {
       await insertAutomation();
-      const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
-      const selected = await insertAutomation({ trigger_tier_scope: 'selected_paid' });
-      const unmatched = await insertAutomation({ trigger_tier_scope: 'selected_paid' });
-      await insertAutomation({ trigger_tier_scope: 'selected_paid' });
+      const paid = await insertAutomation({ triggerScope: 'all_paid' });
+      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
+      const unmatched = await insertAutomation({ triggerScope: 'selected_paid' });
+      await insertAutomation({ triggerScope: 'selected_paid' });
       const firstTierId = await insertTier();
       const secondTierId = await insertTier();
       const otherTierId = await insertTier();
@@ -219,10 +257,10 @@ describe('database automations repository', function () {
       'excludes %s automations for every tier scope',
       async function (status) {
         const free = await insertAutomation();
-        const paid = await insertAutomation({ trigger_tier_scope: 'all_paid' });
+        const paid = await insertAutomation({ triggerScope: 'all_paid' });
         await insertAutomation({ status });
-        await insertAutomation({ status, trigger_tier_scope: 'all_paid' });
-        const selected = await insertAutomation({ status, trigger_tier_scope: 'selected_paid' });
+        await insertAutomation({ status, triggerScope: 'all_paid' });
+        const selected = await insertAutomation({ status, triggerScope: 'selected_paid' });
         const tierId = await insertTier();
         await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
@@ -373,6 +411,63 @@ describe('database automations repository', function () {
     });
   });
 
+  describe('insertActions', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+
+    const createActionToInsert = (type: ActionToInsert['type']): ActionToInsert => ({
+      id: ObjectId().toHexString(),
+      automation_id: automationId,
+      type,
+      created_at: createdAt,
+      updated_at: updatedAt,
+    });
+
+    const findActions = async () => {
+      const rows = await knex('automation_actions')
+        .select('id', 'automation_id', 'type', 'created_at', 'updated_at')
+        .where('automation_id', automationId)
+        .orderBy('id');
+      return rows.map((row) => ({
+        ...row,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+      }));
+    };
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_actions').where('automation_id', automationId).delete();
+      await knex('automations').where('id', automationId).delete();
+    });
+
+    it('inserts multiple actions with their types and timestamps', async function () {
+      const actions = [createActionToInsert('wait'), createActionToInsert('send_email')];
+
+      await repository.withConnection((connection) =>
+        repository.insertActions(connection, actions),
+      );
+
+      await expect(findActions()).resolves.toEqual(
+        actions.toSorted((a, b) => a.id.localeCompare(b.id)),
+      );
+    });
+
+    it('leaves existing actions unchanged when given an empty array', async function () {
+      const action = createActionToInsert('wait');
+
+      await repository.insertActions(knex, [action]);
+      await repository.insertActions(knex, []);
+
+      await expect(findActions()).resolves.toEqual([action]);
+    });
+  });
+
   describe('insertRunSteps', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
@@ -380,15 +475,6 @@ describe('database automations repository', function () {
     let actionId: string;
     let revisionId: string;
     let runId: string;
-
-    const createRunStep = (): RunStepToInsert => ({
-      id: ObjectId().toHexString(),
-      automation_run_id: runId,
-      automation_action_revision_id: revisionId,
-      created_at: createdAt,
-      updated_at: updatedAt,
-      ready_at: readyAt,
-    });
 
     const findRunSteps = async () => {
       const rows = await knex('automation_run_steps')
@@ -438,8 +524,8 @@ describe('database automations repository', function () {
 
     it('inserts multiple run steps', async function () {
       const steps = [
-        createRunStep(),
-        { ...createRunStep(), ready_at: new Date(readyAt.getTime() + 3600000) },
+        createRunStep(runId, revisionId),
+        { ...createRunStep(runId, revisionId), ready_at: new Date(readyAt.getTime() + 3600000) },
       ];
       await repository.withConnection((connection) => repository.insertRunSteps(connection, steps));
       await expect(findRunSteps()).resolves.toEqual(
@@ -447,25 +533,8 @@ describe('database automations repository', function () {
       );
     });
 
-    it('truncates fractional seconds so readiness is not rounded into the future', async function () {
-      const step = {
-        ...createRunStep(),
-        created_at: new Date(createdAt.getTime() + 900),
-        updated_at: new Date(updatedAt.getTime() + 900),
-        ready_at: new Date(readyAt.getTime() + 900),
-      };
-
-      await repository.withConnection((connection) =>
-        repository.insertRunSteps(connection, [step]),
-      );
-
-      await expect(findRunSteps()).resolves.toEqual([
-        { ...step, created_at: createdAt, updated_at: updatedAt, ready_at: readyAt },
-      ]);
-    });
-
     it('leaves existing run steps unchanged when given an empty array', async function () {
-      const step = createRunStep();
+      const step = createRunStep(runId, revisionId);
       await repository.withConnection((connection) =>
         repository.insertRunSteps(connection, [step]),
       );
@@ -517,25 +586,144 @@ describe('database automations repository', function () {
       );
     });
 
-    it('truncates fractional seconds in run timestamps', async function () {
-      const run = {
-        ...createRun(automationId, memberId),
-        created_at: new Date(createdAt.getTime() + 900),
-        updated_at: new Date(updatedAt.getTime() + 900),
-      };
-
-      await repository.withConnection((connection) => repository.insertRuns(connection, [run]));
-
-      await expect(findRuns()).resolves.toEqual([
-        { ...run, created_at: createdAt, updated_at: updatedAt },
-      ]);
-    });
-
     it('leaves existing runs unchanged when given an empty array', async function () {
       const run = createRun(automationId, memberId);
       await repository.withConnection((connection) => repository.insertRuns(connection, [run]));
       await repository.withConnection((connection) => repository.insertRuns(connection, []));
       await expect(findRuns()).resolves.toHaveLength(1);
+    });
+  });
+
+  describe('isAutomationActiveForRun', function () {
+    const isAutomationActiveForRun = async (status: string) => {
+      const repository = createDatabaseAutomationsRepository2({ knex });
+
+      const automation = { ...createAutomation(), status };
+      const member = createMember(ObjectId().toHexString());
+      const run = createRun(automation.id, member.id);
+
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await repository.insertRuns(knex, [run]);
+
+      return await repository.isAutomationActiveForRun(knex, run.id);
+    };
+
+    it('resolves with true if the associated automation is active', async function () {
+      await expect(isAutomationActiveForRun('active')).resolves.toBe(true);
+    });
+
+    it.each(['inactive', 'archived'])(
+      'resolves with false if the associated automation is %s',
+      async function (status) {
+        await expect(isAutomationActiveForRun(status)).resolves.toBe(false);
+      },
+    );
+  });
+
+  describe('isAutomationActiveForRunStep', function () {
+    const isAutomationActiveForRunStep = async (status: string) => {
+      const repository = createDatabaseAutomationsRepository2({ knex });
+
+      const automation = { ...createAutomation(), status };
+      const member = createMember(ObjectId().toHexString());
+      const action = createAction(automation.id);
+      const revision = createRevision(action.id);
+      const run = createRun(automation.id, member.id);
+      const step = createRunStep(run.id, revision.id);
+
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await knex('automation_actions').insert(action);
+      await knex('automation_action_revisions').insert(revision);
+      await repository.insertRuns(knex, [run]);
+      await repository.insertRunSteps(knex, [step]);
+
+      return await repository.isAutomationActiveForRunStep(knex, step.id);
+    };
+
+    it('resolves with true if the associated automation is active', async function () {
+      await expect(isAutomationActiveForRunStep('active')).resolves.toBe(true);
+    });
+
+    it.each(['inactive', 'archived'])(
+      'resolves with false if the associated automation is %s',
+      async function (status) {
+        await expect(isAutomationActiveForRunStep(status)).resolves.toBe(false);
+      },
+    );
+  });
+
+  describe('loadEdgeRows', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let actions: ReturnType<typeof createAction>[];
+
+    const insertEdges = async (edges: ReadonlyArray<EdgeRow>) => {
+      await knex('automation_action_edges').insert(edges);
+    };
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      actions = [
+        createAction(automationId),
+        createAction(automationId),
+        createAction(automationId),
+        createAction(otherAutomationId),
+        createAction(otherAutomationId),
+      ];
+
+      await knex('automations').insert([
+        createAutomation(automationId),
+        createAutomation(otherAutomationId),
+      ]);
+      await knex('automation_actions').insert(actions);
+    });
+
+    afterEach(async function () {
+      const actionIds = actions.map((action) => action.id);
+      await knex('automation_action_edges').whereIn('source_action_id', actionIds).delete();
+      await knex('automation_actions').whereIn('id', actionIds).delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+    });
+
+    it('returns an empty array when the automation has no edges', async function () {
+      await expect(repository.loadEdgeRows(knex, automationId)).resolves.toEqual([]);
+    });
+
+    it('returns edges scoped to the automation', async function () {
+      const [first, second, third] = actions;
+      const edges = [
+        { source_action_id: first.id, target_action_id: second.id },
+        { source_action_id: first.id, target_action_id: third.id },
+        { source_action_id: second.id, target_action_id: third.id },
+      ];
+      const excludedEdges = [
+        { source_action_id: actions[3].id, target_action_id: actions[4].id },
+        { source_action_id: first.id, target_action_id: actions[3].id },
+        { source_action_id: actions[3].id, target_action_id: first.id },
+      ];
+      await insertEdges([...edges, ...excludedEdges]);
+
+      const result = await repository.withConnection((connection) =>
+        repository.loadEdgeRows(connection, automationId),
+      );
+
+      const compareEdges = (a: Readonly<EdgeRow>, b: Readonly<EdgeRow>) =>
+        a.source_action_id.localeCompare(b.source_action_id) ||
+        a.target_action_id.localeCompare(b.target_action_id);
+      expect(result.toSorted(compareEdges)).toEqual(edges.toSorted(compareEdges));
+    });
+
+    it.each([0, 1])('excludes edges when action %i is soft-deleted', async function (index) {
+      await insertEdges([{ source_action_id: actions[0].id, target_action_id: actions[1].id }]);
+      await knex('automation_actions').where('id', actions[index].id).update({ deleted_at: now });
+
+      await expect(repository.loadEdgeRows(knex, automationId)).resolves.toEqual([]);
     });
   });
 

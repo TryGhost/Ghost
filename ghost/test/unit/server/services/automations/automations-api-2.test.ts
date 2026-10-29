@@ -103,7 +103,7 @@ describe('automations API', function () {
       steps = [];
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
       trigger = {
-        event: 'member_sign_up',
+        event: 'membership_started',
         memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
@@ -132,7 +132,7 @@ describe('automations API', function () {
       const withTransaction = vi.fn();
       const api = createApi({ repository: { ...repository, withTransaction } });
 
-      const events = [undefined, 'invalid', 'member_signed_up'];
+      const events = [undefined, 'invalid', 'membership_ended', 'membership_did_start'];
       await Promise.all(
         events.map(async (event) => {
           await expect(() =>
@@ -273,6 +273,9 @@ describe('automations API', function () {
       expect(steps).toHaveLength(1);
       expect(steps[0]?.automation_action_revision_id).toBe(available.automation_action_revision_id);
       expect(steps[0]?.automation_run_id).toBe(runs[1]?.id);
+      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+        expect.any(StartAutomationsPollEvent),
+      );
     });
 
     it('inserts no runs or steps when there are no matching automations', async function () {
@@ -282,6 +285,7 @@ describe('automations API', function () {
 
       expect(runs).toHaveLength(0);
       expect(steps).toHaveLength(0);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('applies the fake wait-hours multiplier when scheduling a wait action', async function () {

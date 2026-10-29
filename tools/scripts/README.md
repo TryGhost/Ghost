@@ -28,26 +28,28 @@ Checks, affected/shard selection and report generation. Classify by purpose:
 `release/build-publish-matrix.ts` belongs to release, although CI calls it; TypeScript
 inventory is a reporting tool, although contributors can run it locally.
 
-| Current file                                                        | Purpose                                                                 | Caller                                                    |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| [assert-boot-skips-modules.ts](./ci/assert-boot-skips-modules.ts)   | Fail boot smoke checks if deferred native modules load eagerly          | CI Node --import preload                                  |
-| [change-check.ts](./ci/change-check.ts)                             | Require changesets for changed publishable workspace packages           | CI and pre-commit hook                                    |
-| [check-agent-guidance.ts](./ci/check-agent-guidance.ts)             | Check tracked AGENTS.md line limits                                     | pnpm lint:agent-guidance                                  |
-| [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)       | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
-| [check-app-version-bump.ts](./ci/check-app-version-bump.ts)         | Check CDN app version lines against Core defaults                       | PR CI                                                     |
-| [check-internal-packages.ts](./ci/check-internal-packages.ts)       | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
-| [check-migration-integrity.ts](./ci/check-migration-integrity.ts)   | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
-| [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)       | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
-| [compare-image-report.ts](./ci/compare-image-report.ts)             | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
-| [e2e-shards.ts](./ci/e2e-shards.ts)                                 | Plan browser-test shards and update recorded execution timings          | Browser-test CI: plan / record; sparse checkout supported |
-| [nx-set-shas.ts](./ci/nx-set-shas.ts)                               | Select affected CI commit ranges from successful workflow history       | CI job setup                                              |
-| [summarize-admin-acceptance.ts](./ci/summarize-admin-acceptance.ts) | Render Admin acceptance-test results into a CI summary                  | Acceptance CI after test shards                           |
-| [typescript-inventory.ts](./ci/typescript-inventory.ts)             | Measure tracked JS/TS adoption, dependencies and historical counts      | pnpm inventory:typescript; TypeScript inventory workflow  |
+| Current file                                                            | Purpose                                                                 | Caller                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| [assert-boot-skips-modules.ts](./ci/assert-boot-skips-modules.ts)       | Fail boot smoke checks if deferred native modules load eagerly          | CI Node --import preload                                  |
+| [change-check.ts](./ci/change-check.ts)                                 | Require changesets for changed publishable workspace packages           | CI and pre-commit hook                                    |
+| [check-agent-guidance.ts](./ci/check-agent-guidance.ts)                 | Check tracked AGENTS.md line limits                                     | pnpm lint:agent-guidance                                  |
+| [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)           | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
+| [check-app-version-bump.ts](./ci/check-app-version-bump.ts)             | Check CDN app version lines against Core defaults                       | PR CI                                                     |
+| [check-internal-packages.ts](./ci/check-internal-packages.ts)           | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
+| [check-migration-integrity.ts](./ci/check-migration-integrity.ts)       | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
+| [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)           | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
+| [compare-image-report.ts](./ci/compare-image-report.ts)                 | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
+| [e2e-shards.ts](./ci/e2e-shards.ts)                                     | Plan browser-test shards and update recorded execution timings          | Browser-test CI: plan / record; sparse checkout supported |
+| [nx-set-shas.ts](./ci/nx-set-shas.ts)                                   | Select affected CI commit ranges from successful workflow history       | CI job setup                                              |
+| [service-dependency-resolver.mjs](./ci/service-dependency-resolver.mjs) | Resolve authored Core source for Dependency Cruiser                     | Boundary lint and gx service dependency reports           |
+| [summarize-admin-acceptance.ts](./ci/summarize-admin-acceptance.ts)     | Render Admin acceptance-test results into a CI summary                  | Acceptance CI after test shards                           |
+| [typescript-inventory.ts](./ci/typescript-inventory.ts)                 | Measure tracked JS/TS adoption, dependencies and historical counts      | pnpm inventory:typescript; TypeScript inventory workflow  |
 
 ### Build support — build/
 
 Cross-workspace asset assembly, build-cache inputs and post-build artifacts.
-Ghost-owned browser asset builds stay in [ghost/scripts](../../ghost/scripts/README.md).
+Build steps for the `ghost/` server workspace's own browser assets stay in
+[ghost/scripts](../../ghost/scripts/README.md).
 
 | Current file                                                       | Purpose                                                      | Caller                                        |
 | ------------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
@@ -76,6 +78,7 @@ manifest is release-owned data, shared with validation through `lib/publish-mani
 | [next-version.ts](./release/next-version.ts)                 | Compute the next continuous-publishing version from registry state     | Publishing CI; --latest prints the comparison version                          |
 | [publish-packages.ts](./release/publish-packages.ts)         | Publish eligible workspace packages in dependency order                | Tagged-release / manual publishing workflow                                    |
 | [release-apps.ts](./release/release-apps.ts)                 | Prepare intentional CDN-app minor/major releases and matching defaults | App-local pnpm ship                                                            |
+| [release-notes.ts](./release/release-notes.ts)               | Generate release notes from tagged commit ranges                       | Release CI                                                                     |
 | [release.ts](./release/release.ts)                           | Prepare Ghost and package release versions, commits and tags           | pnpm release; release workflow                                                 |
 
 ### Root setup and maintenance
@@ -104,9 +107,9 @@ cross-workspace build, lint, packaging and CI contracts; they are repository
 validation, even when the implementation they exercise lives elsewhere.
 
 Private helpers such as Admin asset assembly, boot-module checks, PR-base
-resolution, release-note generation and inventory types live with their owning
-group. `release/release-notes.ts` is also a direct workflow
-entrypoint, so its path is a caller contract rather than just an internal import.
+resolution, release base-tag resolution and inventory types live with their owning
+group. Direct entrypoint paths are caller contracts; check their workflows and
+package aliases before changing them.
 
 ## Language and adding a script
 
@@ -149,13 +152,13 @@ boundary; see [its README](../../.github/scripts/i18n-review/README.md).
 
 ## Service dependency audit
 
-`pnpm audit:services` uses Dependency Cruiser's native reports. Pass
-`--output-type markdown` or `--output-type json` for saved output;
-`pnpm --silent audit:services:summary` uses local `jq` to summarise implementation
-violations. Rules and the allowlist live in `.dependency-cruiser.cjs`; the
+Contributor reports live in [gx](../gx/README.md#service-migration-reports):
+`pnpm gx services audit` provides Dependency Cruiser's native reports and
+`pnpm gx services dependencies` summarises disallowed dependencies. Rules and
+the allowlist remain in `.dependency-cruiser.cjs`; the resolver adapter in
+`ci/` supports both reporting and boundary lint. The
 [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
-defines their meaning. The resolver adapter in `ci/` supports that analysis;
-it does not implement a separate service CLI.
+defines the policy.
 
 ## TypeScript inventory
 

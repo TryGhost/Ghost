@@ -248,7 +248,7 @@ const patternColumnHydrators: Record<
       // composite the same way the member detail screen does.
       getValue: (member) => {
         const text = formatMemberCustomFieldValue(
-          field.type,
+          field,
           member.metafields?.[field.namespace]?.[field.key],
         );
         return text ? { text } : null;

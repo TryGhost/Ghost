@@ -11,11 +11,20 @@ import {
 } from '@test-utils/acceptance';
 import { memberDetailScreen } from './member-detail.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
+
+const SaveBody = z.object({ members: z.tuple([z.record(z.string(), z.unknown())]) });
+const savedMember = (body: unknown) => SaveBody.parse(body).members[0];
+
+const MetafieldsPatch = z
+  .object({ custom: z.record(z.string(), z.unknown()).optional() })
+  .optional();
 
 const FIELDS: MemberCustomField[] = [
   {
-    namespace: 'custom',
-    key: 'job_title',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('job_title'),
     name: 'Job title',
     type: 'short_text',
     status: 'active',
@@ -24,8 +33,8 @@ const FIELDS: MemberCustomField[] = [
     updated_at: null,
   },
   {
-    namespace: 'custom',
-    key: 'company',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('company'),
     name: 'Company',
     type: 'long_text',
     status: 'active',
@@ -34,8 +43,8 @@ const FIELDS: MemberCustomField[] = [
     updated_at: null,
   },
   {
-    namespace: 'custom',
-    key: 'home_address',
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('home_address'),
     name: 'Home address',
     type: 'address',
     status: 'active',
@@ -66,9 +75,8 @@ function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>
     meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
   });
   return fakeAdminEndpoint('PUT', new RegExp(`^/members/${m.id}/`), ({ body }) => {
-    const { metafields, ...edited } = (body as { members: Array<Record<string, unknown>> })
-      .members[0];
-    const patch = (metafields as { custom?: Record<string, unknown> } | undefined)?.custom ?? {};
+    const { metafields, ...edited } = savedMember(body);
+    const patch = MetafieldsPatch.parse(metafields)?.custom ?? {};
     current = { ...current, ...edited };
     for (const [key, value] of Object.entries(patch)) {
       if (value === null) {
@@ -113,9 +121,9 @@ describe('Member detail custom fields', () => {
     await expect.element(modal()).not.toBeInTheDocument();
     await expect.element(memberDetailScreen.saveButton()).toBeDisabled();
     // The payload was a single-field merge patch: only this key, nothing else.
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { job_title: 'Publisher' } });
-    expect(saved.members[0].name).toBeUndefined();
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({ custom: { job_title: 'Publisher' } });
+    expect(saved.name).toBeUndefined();
   });
 
   it('leaves an unsaved page edit intact when a custom field is saved', async () => {
@@ -156,8 +164,8 @@ describe('Member detail custom fields', () => {
     // here, since other empty rows already show the dash.
     await expect.element(modal()).not.toBeInTheDocument();
     await expect.element(memberDetailScreen.emptyValueDash()).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { job_title: null } });
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({ custom: { job_title: null } });
   });
 
   it('a dirty editor refuses casual dismissal; a pristine one closes freely', async () => {
@@ -194,7 +202,7 @@ describe('Member detail custom fields', () => {
     expect(editApi.requests).toHaveLength(0);
   });
 
-  it('saves an address that leaves sub-fields the country does not use empty', async () => {
+  it('saves an address that leaves parts the country does not use empty', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {});
     await renderAdminApp(`/members/${m.id}`);
@@ -214,8 +222,8 @@ describe('Member detail custom fields', () => {
     await expect
       .element(page.getByText(/^Flat 3, 8 Wan Chai Road, Hong Kong, Hong Kong/))
       .toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: {
         home_address: { line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', country: 'HK' },
       },
@@ -242,8 +250,8 @@ describe('Member detail custom fields', () => {
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Germany')).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: { home_address: { line1: '1 Main St', country: 'DE' } },
     });
   });
@@ -268,8 +276,8 @@ describe('Member detail custom fields', () => {
     await expect
       .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, Germany'))
       .toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { home_address: ADDRESS } });
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({ custom: { home_address: ADDRESS } });
   });
 
   it('clears a country by picking the chosen one again', async () => {
@@ -290,8 +298,8 @@ describe('Member detail custom fields', () => {
     // The emptied part is named in the write, since leaving it out would read as
     // "no change"; the rest of the address stays.
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin')).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: '' } },
     });
   });
@@ -327,8 +335,8 @@ describe('Member detail custom fields', () => {
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, Germany')).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: 'DE' } },
     });
   });

@@ -1,6 +1,5 @@
 import ExpressBrute from 'express-brute';
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import * as spamPrevention from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';
@@ -23,7 +22,8 @@ type FactoryName =
   | 'privateBlog'
   | 'contentApiKey'
   | 'webmentionsBlock'
-  | 'emailPreviewBlock';
+  | 'emailPreviewBlock'
+  | 'supportRequestBlock';
 
 const factories: Array<{
   name: FactoryName;
@@ -62,6 +62,7 @@ const factories: Array<{
   },
   { name: 'webmentionsBlock', attachResetToRequest: false },
   { name: 'emailPreviewBlock', attachResetToRequest: false },
+  { name: 'supportRequestBlock', configKey: 'support_request_block', attachResetToRequest: false },
 ];
 
 const fakeSpamConfig = (seed: number) => ({

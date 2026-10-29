@@ -392,6 +392,43 @@ describe('Members Feedback', function () {
   });
 
   describe('Redirect link', function () {
+    it('uses the booted email renderer feedback links for member redirects', async function () {
+      const emailService = require('../../../core/server/services/email-service');
+      const postId = fixtureManager.get('posts', 0).id;
+      const post = await models.Post.findOne(
+        { id: postId },
+        { withRelated: ['tags', 'authors', 'posts_meta'] },
+      );
+      const newsletter = await models.Newsletter.findOne({ status: 'active' });
+      newsletter.set('feedback_enabled', true);
+      const data = await emailService.renderer.getTemplateData({
+        post,
+        newsletter,
+        html: '<p>Newsletter content</p>',
+        addPaywall: false,
+      });
+
+      assert.ok(data.feedbackButtons);
+      for (const [score, link] of [
+        [1, data.feedbackButtons.likeHref],
+        [0, data.feedbackButtons.dislikeHref],
+      ]) {
+        const url = new URL(link);
+        assert.equal(url.pathname, `/members/feedback/${postId}/${score}/`);
+        assert.equal(url.search, '?uuid=%%{uuid}%%&key=%%{key}%%');
+        url.searchParams.set('uuid', memberUuid);
+        url.searchParams.set('key', memberHmac);
+
+        await membersAgent
+          .get(`${url.pathname.replace(/^\/members/, '')}${url.search}`)
+          .expectStatus(302)
+          .expectHeader(
+            'Location',
+            new RegExp(`/${post.get('slug')}/#/feedback/${postId}/${score}/`),
+          );
+      }
+    });
+
     it('redirects to the post url with the feedback fragment', async function () {
       const post = fixtureManager.get('posts', 0);
 

@@ -25,7 +25,7 @@ const postsFactory = require(POSTS_PATH);
 const ROOT_PATH = require.resolve('../../../../../core/server/services/explore-ping');
 const EXPLORE_URL = 'https://explore.example/update';
 
-type Root = typeof import('../../../../../core/server/services/explore-ping');
+type Root = (typeof import('../../../../../core/server/services/explore-ping'))['default'];
 type Response = Awaited<ReturnType<ExplorePingServiceDeps['request']>>;
 
 describe('explore-ping root', function () {
@@ -68,7 +68,7 @@ describe('explore-ping root', function () {
     sandbox.stub(statsService, 'api').value(null);
     info = sandbox.stub(logging, 'info');
     warn = sandbox.stub(logging, 'warn');
-    root = require(ROOT_PATH);
+    root = require(ROOT_PATH).default;
   });
 
   afterEach(async function () {
@@ -86,32 +86,46 @@ describe('explore-ping root', function () {
     }
   });
 
-  it('uses the real configuration policy to construct fresh instances only in production and development', async function () {
-    sinon.assert.notCalled(createPosts);
-    sinon.assert.notCalled(ping);
-    for (const env of ['testing', 'testing-mysql', 'test', 'staging']) {
+  for (const env of ['testing', 'testing-mysql', 'test', 'staging']) {
+    it(`constructs with a fresh Posts service but does not ping in the ${env} environment`, async function () {
       getConfig.withArgs('env').returns(env);
-      assert.equal(await root.init(), undefined);
-      sinon.assert.notCalled(createPosts);
-      sinon.assert.notCalled(ping);
-    }
 
-    getSetting.withArgs('explore_ping').returns(false);
-    for (const env of ['production', 'development']) {
+      assert.equal(await root.init(), undefined);
+
+      sinon.assert.calledOnce(createPosts);
+      assert.equal(root.service.posts, createPosts.firstCall.returnValue);
+      sinon.assert.notCalled(ping);
+      sinon.assert.notCalled(totalPosts);
+      sinon.assert.notCalled(info);
+      sinon.assert.notCalled(warn);
+    });
+  }
+
+  for (const env of ['production', 'development']) {
+    it(`constructs with a fresh Posts service and pings in the ${env} environment`, async function () {
       getConfig.withArgs('env').returns(env);
+
       assert.equal(await root.init(), undefined);
-      assert.equal(await root.init(), undefined);
-    }
-    assert.equal(createPosts.callCount, 4);
-    assert.equal(ping.callCount, 4);
-    assert.equal(new Set(ping.getCalls().map((call) => call.thisValue)).size, 4);
-    assert.equal(new Set(createPosts.returnValues).size, 4);
-    for (let index = 0; index < 4; index += 1) {
-      assert.equal(ping.getCall(index).thisValue.posts, createPosts.getCall(index).returnValue);
-    }
-    sinon.assert.notCalled(totalPosts);
-    sinon.assert.notCalled(totalMembers);
-    sinon.assert.notCalled(warn);
+
+      sinon.assert.calledOnce(createPosts);
+      sinon.assert.calledOnce(ping);
+      assert.equal(ping.firstCall.thisValue.posts, createPosts.firstCall.returnValue);
+      // The disabled setting is read through the wired settings cache during the ping.
+      sinon.assert.calledOnceWithExactly(info, 'Explore ping disabled');
+      sinon.assert.notCalled(totalPosts);
+      sinon.assert.notCalled(totalMembers);
+      sinon.assert.notCalled(warn);
+    });
+  }
+
+  it('retains one instance and pings once across repeated init', async function () {
+    assert.equal(await root.init(), undefined);
+    assert.equal(await root.init(), undefined);
+
+    sinon.assert.calledOnce(createPosts);
+    sinon.assert.calledOnce(ping);
+    assert.equal(root.service, ping.firstCall.thisValue);
+    assert.equal(root.service.posts, createPosts.firstCall.returnValue);
   });
 
   it('finishes init before payload and request completion, reading the shared Stats API when ready', async function () {

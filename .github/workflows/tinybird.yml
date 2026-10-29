@@ -23,6 +23,12 @@ permissions:
 jobs:
   changes:
     name: Detect Tinybird changes
+    # Skip sync-fork.yml pushes to main in TryGhost copies: upstream already ran these commits.
+    if: >-
+      !(github.event_name == 'push'
+        && github.ref == 'refs/heads/main'
+        && github.repository_owner == 'TryGhost'
+        && github.repository != 'TryGhost/Ghost')
     runs-on: ubuntu-slim
     permissions:
       contents: read

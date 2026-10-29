@@ -1,3 +1,5 @@
+import type { AutomationTriggerRuleDefinition } from '../../../core/server/services/automations/trigger-rules';
+import { buildTriggerRuleRows } from '../../../core/server/services/automations/trigger-rules';
 import { createRequire } from 'node:module';
 import got, { type ExtendOptions, type Got } from 'got';
 import logging from '@tryghost/logging';
@@ -7,7 +9,6 @@ import sinon from 'sinon';
 import nock from 'nock';
 // @ts-expect-error Module has no type declarations.
 import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
-// @ts-expect-error Module has no type declarations.
 import configUtils from '../../utils/config-utils';
 // @ts-expect-error Module has no type declarations.
 import domainEvents from '@tryghost/domain-events';
@@ -54,6 +55,7 @@ type Automation = {
   slug: string;
   status: string;
   description: string | null;
+  trigger_rules: AutomationTriggerRuleDefinition[];
   trigger_tier_scope: string;
   trigger_tier_ids: string[];
   edges: { source_action_id: string; target_action_id: string }[];
@@ -117,11 +119,6 @@ const matchAutomationBase = () => ({
 
 const matchAutomationSummary = () => ({
   ...matchAutomationBase(),
-  stats: {
-    last_run_created_at: null,
-    total_run_count: 0,
-    in_progress_run_count: 0,
-  },
 });
 
 const matchAutomation = () => ({
@@ -223,13 +220,14 @@ describe('Automations API', function () {
       edges: buildLinearEdges(actions),
       name: 'Created automation',
       description: 'Welcome selected members',
-      trigger_tier_scope: 'free',
+      trigger_rules: [
+        { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+      ],
     };
     const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
 
     beforeEach(async function () {
       mockManager.mockLabsEnabled('automations');
-      mockManager.mockLabsEnabled('automationsPerTier');
       await models.Base.knex('products').insert(
         tierIds.map((id) => ({
           id,
@@ -274,6 +272,7 @@ describe('Automations API', function () {
         assert.equal(created.description, payload.description);
         assert.equal(created.status, payload.status);
         assert.equal(created.slug, null);
+        assert.deepEqual(created.trigger_rules, payload.trigger_rules);
         assert.equal(created.trigger_tier_scope, 'free');
         assert.deepEqual(created.trigger_tier_ids, null);
         assert.deepEqual(
@@ -300,6 +299,63 @@ describe('Automations API', function () {
       });
     }
 
+    for (const { trigger_rules, expectedLegacyTriggerTierScope, expectedLegacyTriggerTierIds } of [
+      {
+        trigger_rules: payload.trigger_rules,
+        expectedLegacyTriggerTierScope: 'free',
+        expectedLegacyTriggerTierIds: null,
+      },
+      {
+        trigger_rules: [
+          {
+            trigger_type: 'paid_subscription_started',
+            scope: 'any_paid_tier',
+            product_id: null,
+            direction: null,
+          },
+        ],
+        expectedLegacyTriggerTierScope: 'all_paid',
+        expectedLegacyTriggerTierIds: null,
+      },
+      {
+        trigger_rules: tierIds.map((productId) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: productId,
+          direction: null,
+        })),
+        expectedLegacyTriggerTierScope: 'selected_paid',
+        expectedLegacyTriggerTierIds: tierIds,
+      },
+    ]) {
+      it(`adds, edits, and reads explicit ${expectedLegacyTriggerTierScope} rules with legacy fields ignored`, async function () {
+        const request = {
+          ...payload,
+          trigger_rules,
+          trigger_tier_scope: 'invalid',
+          trigger_tier_ids: false,
+        };
+        const { body } = await agent
+          .post('automations')
+          .body({ automations: [request] })
+          .expectStatus(201);
+        const created = body.automations[0];
+        assert.deepEqual(created.trigger_rules, trigger_rules);
+        assert.equal(created.trigger_tier_scope, expectedLegacyTriggerTierScope);
+        assert.deepEqual(created.trigger_tier_ids, expectedLegacyTriggerTierIds);
+
+        const { body: edited } = await agent
+          .put(`automations/${created.id}`)
+          .body({ automations: [{ ...request, name: 'Edited rules' }] })
+          .expectStatus(200);
+        assert.deepEqual(edited.automations[0].trigger_rules, trigger_rules);
+        assert.equal(edited.automations[0].trigger_tier_scope, expectedLegacyTriggerTierScope);
+        assert.deepEqual(edited.automations[0].trigger_tier_ids, expectedLegacyTriggerTierIds);
+        const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+        assert.deepEqual(read.automations[0], edited.automations[0]);
+      });
+    }
+
     it('Admin Integration can create an automation', async function () {
       await agent.useZapierAdminAPIKey();
       await agent
@@ -308,11 +364,33 @@ describe('Automations API', function () {
         .expectStatus(201);
     });
 
-    it('creates "all paid signups" automations without trigger pairs', async function () {
+    it('creates automations for any paid tier', async function () {
       const { body } = await agent
         .post('automations')
-        .body({ automations: [{ ...payload, trigger_tier_scope: 'all_paid' }] })
+        .body({
+          automations: [
+            {
+              ...payload,
+              trigger_rules: [
+                {
+                  trigger_type: 'paid_subscription_started',
+                  scope: 'any_paid_tier',
+                  product_id: null,
+                  direction: null,
+                },
+              ],
+            },
+          ],
+        })
         .expectStatus(201);
+      assert.deepEqual(body.automations[0].trigger_rules, [
+        {
+          trigger_type: 'paid_subscription_started',
+          scope: 'any_paid_tier',
+          product_id: null,
+          direction: null,
+        },
+      ]);
       assert.equal(body.automations[0].trigger_tier_scope, 'all_paid');
       assert.deepEqual(body.automations[0].trigger_tier_ids, null);
     });
@@ -324,8 +402,12 @@ describe('Automations API', function () {
           automations: [
             {
               ...payload,
-              trigger_tier_scope: 'selected_paid',
-              trigger_tier_ids: [...tierIds, tierIds[0]],
+              trigger_rules: tierIds.map((productId) => ({
+                trigger_type: 'paid_subscription_started',
+                scope: 'specific_paid_tier',
+                product_id: productId,
+                direction: null,
+              })),
             },
           ],
         })
@@ -333,10 +415,19 @@ describe('Automations API', function () {
 
       const created = body.automations[0];
       assert.equal(created.name, payload.name);
+      assert.deepEqual(
+        created.trigger_rules,
+        [...tierIds].toSorted().map((productId) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: productId,
+          direction: null,
+        })),
+      );
       assert.deepEqual([...created.trigger_tier_ids].sort(), [...tierIds].sort());
       assert.deepEqual(
         (
-          await models.Base.knex('automation_trigger_tiers')
+          await models.Base.knex('automation_trigger_rules')
             .where({ automation_id: created.id })
             .pluck('product_id')
         ).sort(),
@@ -365,20 +456,65 @@ describe('Automations API', function () {
       assert.deepEqual(read.automations[0], created);
     });
 
-    it.each([
-      {},
-      { trigger_tier_scope: null, trigger_tier_ids: null },
-      { trigger_tier_scope: 'free', trigger_tier_ids: null },
-    ])('accepts omitted or null trigger data %j', async function (triggerData) {
+    // Support for legacy payloads will be removed soon. See NY-1746.
+    it('supports legacy payloads when adding and editing automations', async function () {
+      const { trigger_rules: _rules, ...legacyPayload } = payload;
       const { body } = await agent
         .post('automations')
         .body({
-          automations: [{ ...payload, trigger_tier_scope: undefined, ...triggerData }],
+          automations: [
+            {
+              ...legacyPayload,
+              trigger_tier_scope: 'selected_paid',
+              trigger_tier_ids: tierIds,
+            },
+          ],
         })
         .expectStatus(201);
-      assert.equal(body.automations[0].trigger_tier_scope, triggerData.trigger_tier_scope ?? null);
-      assert.equal(body.automations[0].trigger_tier_ids, null);
+      const created = body.automations[0];
+      assert.deepEqual(
+        created.trigger_rules,
+        tierIds.map((productId) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: productId,
+          direction: null,
+        })),
+      );
+      assert.equal(created.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(created.trigger_tier_ids, tierIds);
+      const { body: edited } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [
+            {
+              ...legacyPayload,
+              trigger_tier_scope: 'free',
+              trigger_tier_ids: null,
+            },
+          ],
+        })
+        .expectStatus(200);
+      assert.deepEqual(edited.automations[0].trigger_rules, payload.trigger_rules);
+      assert.equal(edited.automations[0].trigger_tier_scope, 'free');
+      assert.equal(edited.automations[0].trigger_tier_ids, null);
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], edited.automations[0]);
     });
+
+    it.each([{ trigger_rules: undefined }, { trigger_rules: null }])(
+      'rejects missing or null trigger data %j',
+      async function (triggerData) {
+        await agent
+          .post('automations')
+          .body({ automations: [{ ...payload, ...triggerData }] })
+          .expectStatus(422);
+        assert.equal(
+          await models.Base.knex('automations').where({ name: payload.name }).first(),
+          undefined,
+        );
+      },
+    );
 
     it('rejects duplicate names', async function () {
       await agent
@@ -392,7 +528,7 @@ describe('Automations API', function () {
       assert.equal((await models.Base.knex('automations').where({ name: payload.name })).length, 1);
     });
 
-    it.each(['name', 'description', 'status', 'actions', 'edges'])(
+    it.each(['name', 'description', 'status', 'actions', 'edges', 'trigger_rules'])(
       'requires %s',
       async function (field) {
         await agent
@@ -424,7 +560,7 @@ describe('Automations API', function () {
       { automations: [{ ...payload, name: '' }] },
       { automations: [{ ...payload, edges: [] }] },
       { automations: [{ ...payload, status: 'invalid' }] },
-      { automations: [{ ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] }] },
+      { automations: [{ ...payload, trigger_rules: [] }] },
     ])('rejects malformed request %j', async function (data) {
       await agent
         .post('automations')
@@ -442,7 +578,15 @@ describe('Automations API', function () {
         .post('automations')
         .body({
           automations: [
-            { ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+            {
+              ...payload,
+              trigger_rules: tierIds.map((productId) => ({
+                trigger_type: 'paid_subscription_started',
+                scope: 'specific_paid_tier',
+                product_id: productId,
+                direction: null,
+              })),
+            },
           ],
         })
         .expectStatus(422);
@@ -458,7 +602,15 @@ describe('Automations API', function () {
         .post('automations')
         .body({
           automations: [
-            { ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+            {
+              ...payload,
+              trigger_rules: tierIds.map((productId) => ({
+                trigger_type: 'paid_subscription_started',
+                scope: 'specific_paid_tier',
+                product_id: productId,
+                direction: null,
+              })),
+            },
           ],
         })
         .expectStatus(422);
@@ -474,7 +626,15 @@ describe('Automations API', function () {
         .post('automations')
         .body({
           automations: [
-            { ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+            {
+              ...payload,
+              trigger_rules: tierIds.map((productId) => ({
+                trigger_type: 'paid_subscription_started',
+                scope: 'specific_paid_tier',
+                product_id: productId,
+                direction: null,
+              })),
+            },
           ],
         })
         .expectStatus(422);
@@ -484,16 +644,13 @@ describe('Automations API', function () {
       );
     });
 
-    it.each(['automations', 'automationsPerTier'])(
-      'returns 404 when %s is disabled',
-      async function (flag) {
-        mockManager.mockLabsDisabled(flag);
-        await agent
-          .post('automations')
-          .body({ automations: [payload] })
-          .expectStatus(404);
-      },
-    );
+    it('returns 404 when automations is disabled', async function () {
+      mockManager.mockLabsDisabled('automations');
+      await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(404);
+    });
 
     it('denies unauthenticated requests', async function () {
       agent.resetAuthentication();
@@ -629,89 +786,6 @@ describe('Automations API', function () {
         });
     });
 
-    it('returns null last run timestamps for automations without runs', async function () {
-      const { body } = await agent.get('automations').expectStatus(200);
-
-      assert.deepEqual(
-        body.automations.map((automation) => automation.stats.last_run_created_at),
-        [null, null],
-      );
-    });
-
-    it('returns latest automation run timestamp', async function () {
-      const { body: beforeBody } = await agent.get('automations').expectStatus(200);
-      const automationId = beforeBody.automations[0].id;
-      const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
-      const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
-
-      await createAutomationRun(automationId, olderRunCreatedAt);
-      await createAutomationRun(automationId, latestRunCreatedAt);
-
-      const { body } = await agent.get('automations').expectStatus(200);
-      const automation = body.automations.find((candidate) => candidate.id === automationId);
-      assert.ok(automation);
-
-      assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
-    });
-
-    it('returns zero total run counts for automations without runs', async function () {
-      const { body } = await agent.get('automations').expectStatus(200);
-
-      assert.deepEqual(
-        body.automations.map((automation) => automation.stats.total_run_count),
-        [0, 0],
-      );
-    });
-
-    it('returns the total automation run count', async function () {
-      const { body: beforeBody } = await agent.get('automations').expectStatus(200);
-      const automationId = beforeBody.automations[0].id;
-
-      await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
-      await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
-
-      const { body } = await agent.get('automations').expectStatus(200);
-      const automation = body.automations.find((candidate) => candidate.id === automationId);
-      assert.ok(automation);
-
-      assert.equal(automation.stats.total_run_count, 2);
-    });
-
-    it('returns zero in progress run counts for automations without runs', async function () {
-      const { body } = await agent.get('automations').expectStatus(200);
-
-      assert.deepEqual(
-        body.automations.map((automation) => automation.stats.in_progress_run_count),
-        [0, 0],
-      );
-    });
-
-    it('returns the number of runs with pending steps', async function () {
-      const { body: beforeBody } = await agent.get('automations').expectStatus(200);
-      const automationId = beforeBody.automations[0].id;
-
-      const pendingRunId = await createAutomationRun(
-        automationId,
-        new Date('2026-01-01T00:00:00.000Z'),
-      );
-      await createAutomationRunStep(automationId, pendingRunId, 'finished');
-      await createAutomationRunStep(automationId, pendingRunId, 'pending');
-
-      const finishedRunId = await createAutomationRun(
-        automationId,
-        new Date('2026-01-02T00:00:00.000Z'),
-      );
-      await createAutomationRunStep(automationId, finishedRunId, 'finished');
-
-      await createAutomationRun(automationId, new Date('2026-01-03T00:00:00.000Z'));
-
-      const { body } = await agent.get('automations').expectStatus(200);
-      const automation = body.automations.find((candidate) => candidate.id === automationId);
-      assert.ok(automation);
-
-      assert.equal(automation.stats.in_progress_run_count, 1);
-    });
-
     describe('with Tinybird configured', function () {
       const TINYBIRD_ENDPOINT = 'https://api.tinybird.co';
 
@@ -766,20 +840,8 @@ describe('Automations API', function () {
             ],
           });
 
-        const queries: string[] = [];
-        const captureQuery = (query: { sql: string }) => queries.push(query.sql);
-        models.Base.knex.on('query', captureQuery);
-        let body: ApiResponse['body'];
-        try {
-          ({ body } = await agent.get('automations').expectStatus(200));
-        } finally {
-          models.Base.knex.removeListener('query', captureQuery);
-        }
+        const { body } = await agent.get('automations').expectStatus(200);
 
-        assert.equal(
-          queries.some((sql) => /\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)),
-          false,
-        );
         assert.ok(tinybird.isDone());
         const automation = body.automations.find((candidate) => candidate.id === automationId);
         assert.ok(automation);
@@ -799,26 +861,33 @@ describe('Automations API', function () {
         });
       });
 
-      it('uses database stats when Tinybird configuration is missing', async function () {
+      it('omits stats when Tinybird is unconfigured', async function () {
         configUtils.set('tinybird:stats', null);
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
         const { body } = await agent.get('automations').expectStatus(200);
-        assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
+        assert.ok(body.automations.every((item) => !Object.hasOwn(item, 'stats')));
       });
 
-      it('uses database stats when no Tinybird token is available', async function () {
+      it('omits stats when the Tinybird service is unavailable', async function () {
+        TinybirdServiceWrapper.instance = null;
+        const { body } = await agent.get('automations').expectStatus(200);
+        assert.equal(body.automations.length, 2);
+        assert.ok(body.automations.every((item) => !Object.hasOwn(item, 'stats')));
+      });
+
+      it('omits stats when no Tinybird token is available', async function () {
         sinon.stub(TinybirdServiceWrapper.instance, 'getToken').returns(null);
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
 
         const { body } = await agent.get('automations').expectStatus(200);
 
-        assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
+        assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
       });
 
       it.each([undefined, ''])(
-        'uses MySQL without requesting Tinybird when the local token is %j',
+        'omits stats without requesting Tinybird when the local token is %j',
         async function (token) {
           configUtils.set('tinybird', {
             stats: { local: { enabled: true, endpoint: TINYBIRD_ENDPOINT, token } },
@@ -835,12 +904,12 @@ describe('Automations API', function () {
           const { body } = await agent.get('automations').expectStatus(200);
 
           assert.equal(tinybird.isDone(), false);
-          assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
+          assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
         },
       );
 
       it.each(['client preparation', 'request construction'])(
-        'uses MySQL when token generation throws during %s',
+        'omits stats when token generation throws during %s',
         async function (stage) {
           const error = sinon.stub(logging, 'error');
           const getToken = sinon.stub(TinybirdServiceWrapper.instance, 'getToken');
@@ -855,7 +924,7 @@ describe('Automations API', function () {
 
           const { body } = await agent.get('automations').expectStatus(200);
 
-          assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
+          assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
           assert.ok(error.calledOnce);
         },
       );
@@ -863,8 +932,10 @@ describe('Automations API', function () {
       it.each([
         { reason: 'missing', status: 404, response: 'missing pipe' },
         { reason: 'unavailable', status: 500, response: 'nope' },
+        { reason: 'invalid JSON', status: 200, response: '{' },
+        { reason: 'missing data', status: 200, response: {} },
         { reason: 'malformed', status: 200, response: { data: [{ automation_id: 42 }] } },
-      ])('uses database stats when Tinybird is $reason', async function ({ status, response }) {
+      ])('omits stats when Tinybird is $reason', async function ({ status, response }) {
         sinon.stub(logging, 'error');
         const [automation] = await models.Base.knex('automations').select('id');
         const createdAt = new Date('2026-01-01T00:00:00.000Z');
@@ -880,14 +951,28 @@ describe('Automations API', function () {
 
         assert.ok(tinybird.isDone());
         assert.equal(body.automations.length, 2);
-        assert.deepEqual(findAutomation(body.automations, automation.id).stats, {
-          last_run_created_at: createdAt.toISOString(),
-          total_run_count: 1,
-          in_progress_run_count: 1,
-        });
+        assert.ok(body.automations.every((item) => !Object.hasOwn(item, 'stats')));
       });
 
-      it('falls back after one retryable response without the test-only retry override', async function () {
+      it.each(['ETIMEDOUT', 'ECONNRESET'])(
+        'omits stats when the Tinybird request fails with %s',
+        async function (code) {
+          sinon.stub(logging, 'error');
+          const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
+          const tinybird = nock(TINYBIRD_ENDPOINT)
+            .get('/v0/pipes/api_automation_browse_stats.json')
+            .query({ site_uuid: siteUuid, ghost_client: 'server' })
+            .replyWithError({ code, message: 'Tinybird request failed' });
+
+          const { body } = await agent.get('automations').expectStatus(200);
+
+          assert.ok(tinybird.isDone());
+          assert.equal(body.automations.length, 2);
+          assert.ok(body.automations.every((item) => !Object.hasOwn(item, 'stats')));
+        },
+      );
+
+      it('omits stats after one retryable response without the test-only retry override', async function () {
         // Load after database initialization, which clears the CommonJS module cache.
         const loadCommonJS = createRequire(__filename);
         const requestExternal: { extend(options: ExtendOptions): Got } = loadCommonJS(
@@ -915,7 +1000,7 @@ describe('Automations API', function () {
         assert.ok(extend.calledOnce);
         assert.ok(firstAttempt.isDone());
         assert.equal(retry.isDone(), false);
-        assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
+        assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
       });
 
       it('keeps zero stats for a successful empty Tinybird response', async function () {
@@ -1308,13 +1393,17 @@ describe('Automations API', function () {
       const automationId = browseBody.automations[0].id;
       const [tierId] = await models.Base.knex('products').pluck('id');
       assert(tierId);
-      await models.Base.knex('automations').where({ id: automationId }).update({
-        trigger_tier_scope: 'selected_paid',
-      });
-      await models.Base.knex('automation_trigger_tiers').insert({
-        automation_id: automationId,
-        product_id: tierId,
-      });
+      await models.Base.knex('automation_trigger_rules')
+        .where('automation_id', automationId)
+        .delete();
+      await models.Base.knex('automation_trigger_rules').insert(
+        buildTriggerRuleRows({
+          automationId,
+          scope: 'selected_paid',
+          tierIds: [tierId],
+          createdAt: new Date(),
+        }),
+      );
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -1368,6 +1457,14 @@ describe('Automations API', function () {
       const automation = editBody.automations[0];
       assert.equal(automation.name, beforeBody.automations[0].name);
       assert.equal(automation.status, 'inactive');
+      assert.deepEqual(automation.trigger_rules, [
+        {
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: tierId,
+          direction: null,
+        },
+      ]);
       assert.equal(automation.trigger_tier_scope, 'selected_paid');
       assert.deepEqual(automation.trigger_tier_ids, [tierId]);
       assert.equal(automation.actions.length, 2);
@@ -1394,13 +1491,17 @@ describe('Automations API', function () {
       const original = {
         name: 'Created automation',
         description: 'Welcome selected members',
-        trigger_tier_scope: 'selected_paid',
       };
       await models.Base.knex('automations').where({ id }).update(original);
-      await models.Base.knex('automation_trigger_tiers').insert({
-        automation_id: id,
-        product_id: tierId,
-      });
+      await models.Base.knex('automation_trigger_rules').where('automation_id', id).delete();
+      await models.Base.knex('automation_trigger_rules').insert(
+        buildTriggerRuleRows({
+          automationId: id,
+          scope: 'selected_paid',
+          tierIds: [tierId],
+          createdAt: new Date(),
+        }),
+      );
 
       const { body: edited } = await agent
         .put(`automations/${id}`)
@@ -1411,6 +1512,14 @@ describe('Automations API', function () {
 
       assert.equal(edited.automations[0].name, original.name);
       assert.equal(edited.automations[0].description, original.description);
+      assert.deepEqual(edited.automations[0].trigger_rules, [
+        {
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: tierId,
+          direction: null,
+        },
+      ]);
       assert.equal(edited.automations[0].trigger_tier_scope, 'selected_paid');
       assert.deepEqual(edited.automations[0].trigger_tier_ids, [tierId]);
     });

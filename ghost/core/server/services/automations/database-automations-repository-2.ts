@@ -1,10 +1,7 @@
+import errors from '@tryghost/errors';
 import { type Knex } from 'knex';
 import { z } from 'zod';
-import { toDatabaseDate } from '../../lib/db-types/date';
-import type {
-  AutomationsRepository2,
-  AutomationTriggerTierScope,
-} from './automations-repository-2';
+import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
 
@@ -24,10 +21,12 @@ const nextActionRevisionRowSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
-  free: 'free',
-  paid: 'all_paid',
-} as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
+const selectExists = async (connection: Connection, query: Knex.QueryBuilder): Promise<boolean> => {
+  const row = await connection
+    .select<{ exists: boolean | number | string }>(connection.raw('exists ? as `exists`', [query]))
+    .first();
+  return Boolean(Number(row?.exists));
+};
 
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
@@ -41,6 +40,10 @@ export const createDatabaseAutomationsRepository2 = ({
   knex: Knex;
 }>) => {
   return {
+    async deleteTriggerRules(connection, automationId) {
+      await connection('automation_trigger_rules').where('automation_id', automationId).delete();
+    },
+
     async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
       const rows = await connection('automations as automation')
         .select(
@@ -52,24 +55,36 @@ export const createDatabaseAutomationsRepository2 = ({
         )
         .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
         .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-        .where((builder) => {
-          builder.where(
-            'automation.trigger_tier_scope',
-            TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus],
-          );
-          if (memberStatus === 'paid' && memberTierIds.length > 0) {
-            builder.orWhere((selected) => {
-              selected
-                .where('automation.trigger_tier_scope', 'selected_paid')
-                .whereExists(
-                  connection('automation_trigger_tiers as trigger_tier')
-                    .select('trigger_tier.automation_id')
-                    .where('trigger_tier.automation_id', connection.ref('automation.id'))
-                    .whereIn('trigger_tier.product_id', memberTierIds),
-                );
-            });
-          }
-        })
+        .whereExists(
+          connection('automation_trigger_rules as rule')
+            .select('rule.id')
+            .where('rule.automation_id', connection.ref('automation.id'))
+            .where((builder) => {
+              switch (memberStatus) {
+                case 'free':
+                  builder.where('rule.trigger_type', 'free_signup');
+                  break;
+                case 'paid':
+                  builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
+                    paid.where('rule.scope', 'any_paid_tier');
+                    if (memberTierIds.length > 0) {
+                      paid.orWhere((specific) =>
+                        specific
+                          .where('rule.scope', 'specific_paid_tier')
+                          .whereIn('rule.product_id', memberTierIds),
+                      );
+                    }
+                  });
+                  break;
+                default: {
+                  const _exhaustive: never = memberStatus;
+                  throw new errors.InternalServerError({
+                    message: `Unexpected member status: ${_exhaustive}`,
+                  });
+                }
+              }
+            }),
+        )
         .where('automation.status', 'active')
         .whereNull('actions.deleted_at')
         .whereNotExists(
@@ -99,14 +114,16 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const [{ hasEntered }] = await connection.select<{ hasEntered: number }[]>(
-        connection.raw('EXISTS ? AS hasEntered', [
-          connection('automation_runs')
-            .select('id')
-            .where({ automation_id: automationId, member_id: memberId }),
-        ]),
-      );
-      return Boolean(hasEntered);
+      const query = connection('automation_runs')
+        .select(connection.raw('1'))
+        .where({ automation_id: automationId, member_id: memberId });
+      return await selectExists(connection, query);
+    },
+
+    async insertActions(connection, toInsert) {
+      if (toInsert.length > 0) {
+        await connection('automation_actions').insert(toInsert);
+      }
     },
 
     async insertRunSteps(connection, toInsert) {
@@ -114,9 +131,9 @@ export const createDatabaseAutomationsRepository2 = ({
         await connection('automation_run_steps').insert(
           toInsert.map((step) => ({
             ...step,
-            created_at: toDatabaseDate(step.created_at),
-            updated_at: toDatabaseDate(step.updated_at),
-            ready_at: toDatabaseDate(step.ready_at),
+            created_at: step.created_at,
+            updated_at: step.updated_at,
+            ready_at: step.ready_at,
           })),
         );
       }
@@ -127,11 +144,52 @@ export const createDatabaseAutomationsRepository2 = ({
         await connection('automation_runs').insert(
           toInsert.map((run) => ({
             ...run,
-            created_at: toDatabaseDate(run.created_at),
-            updated_at: toDatabaseDate(run.updated_at),
+            created_at: run.created_at,
+            updated_at: run.updated_at,
           })),
         );
       }
+    },
+
+    async insertTriggerRules(connection, toInsert) {
+      if (toInsert.length > 0) {
+        await connection('automation_trigger_rules').insert(toInsert);
+      }
+    },
+
+    async isAutomationActiveForRun(connection, automationRunId) {
+      const query = connection('automation_runs as run')
+        .select(connection.raw('1'))
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
+    },
+
+    async isAutomationActiveForRunStep(connection, runStepId) {
+      const query = connection('automation_run_steps as step')
+        .select(connection.raw('1'))
+        .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('step.id', runStepId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
+    },
+
+    async loadEdgeRows(connection, automationId) {
+      return await connection('automation_action_edges as e')
+        .select('e.source_action_id', 'e.target_action_id')
+        .innerJoin('automation_actions as source_action', (join) => {
+          join.on('source_action.id', 'e.source_action_id').onNull('source_action.deleted_at');
+        })
+        .innerJoin('automation_actions as target_action', (join) => {
+          join
+            .on('target_action.id', 'e.target_action_id')
+            .onNull('target_action.deleted_at')
+            .on('target_action.automation_id', 'source_action.automation_id');
+        })
+        .where('source_action.automation_id', automationId)
+        .orderBy(['e.source_action_id', 'e.target_action_id']);
     },
 
     async lockMember(connection, memberId) {

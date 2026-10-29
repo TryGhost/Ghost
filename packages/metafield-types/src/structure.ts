@@ -1,96 +1,201 @@
 /**
  * What a field type is made of, with no opinion on what a valid value looks like.
  *
- * This is the half of the catalog a renderer needs. Drawing an address means knowing
- * it has six parts, in that order, and that the last of them holds a country code —
- * nothing about lengths, formats, or what happens when one is left blank.
+ * Every type is composed from a few building blocks. A leaf is one value: text of a size, or a
+ * choice from a list. A type is a leaf on its own, or a record of named leaves. Everything that
+ * stores, exports, edits, filters or draws a value is written once per building block, so a type
+ * composed from existing blocks needs nothing beyond its entry here.
  *
- * It is separate from `./index` because that half is built out of zod, and zod is
- * sixty-odd kilobytes. Ghost's server enforces the rules and can afford them; Portal
- * only draws the inputs, and it loads on every page view of every themed site. Split
- * this way a renderer imports well under a kilobyte and still gets the types.
- *
- * The two halves cannot drift, because the schemas are built from these declarations
- * rather than beside them: adding a part here without a rule in `./index` fails to
- * compile.
+ * This half is separate from `./index` because that half is built out of zod, and zod is
+ * sixty-odd kilobytes. Ghost's server enforces the rules and can afford them; Portal only draws
+ * the inputs, and it loads on every page view of every themed site.
  */
 
-/** The source for the union type, the zod enum and the `FIELD_TYPES` keys alike. */
+/** How much text a text leaf holds. Each size has its bound, and its message, in `./index`. */
+export const TEXT_SIZES = ['line', 'code', 'long'] as const;
+export type TextSize = (typeof TEXT_SIZES)[number];
+
+/** The lists a choice can pick from. Each list says which keys it accepts in `./index`. */
+export const LIST_SOURCES = ['countries'] as const;
+export type ListSource = (typeof LIST_SOURCES)[number];
+
+export interface TextLeaf {
+  readonly leaf: 'text';
+  readonly size: TextSize;
+}
+
+export interface ChoiceLeaf {
+  readonly leaf: 'choice';
+  readonly from: ListSource;
+}
+
+/** One value, stored as one string. */
+export type Leaf = TextLeaf | ChoiceLeaf;
+export type LeafKind = Leaf['leaf'];
+
+export const text = <const S extends TextSize>(size: S) => ({ leaf: 'text', size }) as const;
+export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice', from }) as const;
+
+/** A country, as the two-letter code a list of countries offers. */
+export const country = choice('countries');
+
+/** A type whose value is one leaf. */
+export interface ScalarStructure {
+  readonly shape: 'scalar';
+  readonly leaf: Leaf;
+}
+
+/**
+ * A type whose value is a leaf per named part. Parts are listed in the order they are shown, and
+ * that order is relied on wherever parts are laid out.
+ */
+export interface RecordStructure {
+  readonly shape: 'record';
+  readonly parts: Readonly<Record<string, Leaf>>;
+}
+
+export type FieldStructure = ScalarStructure | RecordStructure;
+export type FieldShape = FieldStructure['shape'];
+
+/** The source for the union type, the zod enum and the `FIELD_STRUCTURES` keys alike. */
 export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'address'] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 
 /**
- * What kind of thing a type's value is, as anything comparing values needs to know.
+ * What each type is composed of.
  *
- * Coarser than the type: `short_text` and `long_text` are both text, and differ only in
- * how much of it. This is the level at which a value can be ordered, matched or grouped,
- * so it is what a filter, a sort or an export reads to decide how to treat a value —
- * without either of them enumerating the types themselves.
- *
- * Deliberately not presentation: it says a value is a date, not that its operator is
- * called "is before". Naming the operators stays with whoever renders them.
+ * An address is a delivery address, modeled on Stripe's Address object. Who the parcel is
+ * addressed to is not here: a parcel needs a name as well as an address, but that is a fact about
+ * posting parcels rather than about either type, and the name is often not the account name, as
+ * with gift subscriptions, workplace deliveries or c/o. A site that needs one keeps it in a field of
+ * its own, which is also how Stripe hands it back.
  */
-export const FIELD_KINDS = ['text', 'date', 'number', 'record'] as const;
-export type FieldKind = (typeof FIELD_KINDS)[number];
-
-/**
- * The types a composite's parts can declare. A country code and a postal code both
- * store short text, but they are different things — the part's type is what a control
- * or a filter dispatches on, the way a field's own type is for a scalar.
- */
-export const PART_TYPE_IDS = ['short_text', 'postal_code', 'country_code'] as const;
-export type PartType = (typeof PART_TYPE_IDS)[number];
-
-/**
- * Which parts each type has, in the order they are shown, and what each part holds.
- * `null` for a type whose value is a single thing.
- *
- * An address is a delivery address, modeled on Stripe's Address object. Who the parcel
- * is addressed to is not here: a parcel needs a name as well as an address, but that is
- * a fact about posting parcels rather than about either type, and the name is often not
- * the account name — gift subscriptions, workplace deliveries, c/o. A site that needs
- * one keeps it in a field of its own, which is also how Stripe hands it back.
- */
-export const FIELD_PARTS = {
-  short_text: null,
-  long_text: null,
+export const FIELD_STRUCTURES = {
+  short_text: { shape: 'scalar', leaf: text('line') },
+  long_text: { shape: 'scalar', leaf: text('long') },
   address: {
-    line1: 'short_text',
-    line2: 'short_text',
-    city: 'short_text',
-    state: 'short_text',
-    postal_code: 'postal_code',
-    country: 'country_code',
+    shape: 'record',
+    parts: {
+      line1: text('line'),
+      line2: text('line'),
+      city: text('line'),
+      state: text('line'),
+      postal_code: text('code'),
+      country,
+    },
   },
-} as const satisfies Record<FieldType, Readonly<Record<string, PartType>> | null>;
+} as const satisfies Record<FieldType, FieldStructure>;
+
+export type StructureOf<T extends FieldType> = (typeof FIELD_STRUCTURES)[T];
+export type ShapeOf<T extends FieldType> = StructureOf<T>['shape'];
+
+export type FieldTypeOfShape<S extends FieldShape> = {
+  [T in FieldType]: ShapeOf<T> extends S ? T : never;
+}[FieldType];
 
 /**
- * The parts a record type declares, or never for a type whose value is a single thing.
- *
- * Distributed over `T`, so a caller holding a type it only knows as `FieldType` gets
- * every part any type declares rather than the empty intersection of all of them.
+ * The parts a record type declares, or never for another shape. Distributes over `T`, so a union
+ * of types gives every part any of them declares.
  */
 export type PartsOf<T extends FieldType> = T extends FieldType
-  ? (typeof FIELD_PARTS)[T] extends null
-    ? never
-    : Extract<keyof (typeof FIELD_PARTS)[T], string>
+  ? StructureOf<T> extends { parts: infer P }
+    ? Extract<keyof P, string>
+    : never
+  : never;
+
+type ValueOfStructure<S extends FieldStructure> = {
+  scalar: string;
+  record: S extends { parts: infer P } ? { [K in keyof P]?: string } : never;
+}[S['shape']];
+
+/**
+ * A value of a type, by its shape: one string for a scalar, and a string for any of its declared
+ * parts for a record. Every value is laid out this way, so storage, which keeps one string per
+ * leaf, can always read back what was written.
+ */
+export type ValueOf<T extends FieldType> = T extends FieldType
+  ? ValueOfStructure<StructureOf<T>>
   : never;
 
 /**
- * The parts of a record type in declaration order, or null for a type with none.
- *
- * Typed to the parts the caller's type declares, so a caller holding one of these can
- * index a value of that type without restating which parts exist.
+ * Whether a value names a type this build knows. A site newer than an integration can send a type
+ * the integration doesn't know, so check a type from the wire with this first. `constructor` and
+ * other names every object has are not types.
  */
-export function subFieldsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
-  // Optional because a caller built against an older catalog than the server it talks
-  // to reaches here with a type this build has never heard of, which reads as no parts.
-  const parts: Readonly<Record<string, PartType>> | null | undefined = FIELD_PARTS[type];
-  return parts ? (Object.keys(parts) as PartsOf<T>[]) : null;
+export function isFieldType(value: unknown): value is FieldType {
+  return FIELD_TYPE_IDS.some((id) => id === value);
 }
 
-/** Each part's declared type, keyed by part; null for a type with none, and for one this build has never heard of. */
-export function partTypesOf<T extends FieldType>(type: T): Record<PartsOf<T>, PartType> | null {
-  const parts: Readonly<Record<string, PartType>> | null | undefined = FIELD_PARTS[type];
-  return parts ? ({ ...parts } as Record<PartsOf<T>, PartType>) : null;
+export type ShapeHandlers<R> = {
+  [S in FieldShape]: (
+    structure: Extract<FieldStructure, { shape: S }>,
+    type: FieldTypeOfShape<S>,
+  ) => R;
+};
+
+const hasShape =
+  <S extends FieldShape>(shape: S) =>
+  (type: FieldType): type is FieldTypeOfShape<S> =>
+    isFieldType(type) && FIELD_STRUCTURES[type].shape === shape;
+
+const isScalarType = hasShape('scalar');
+const isRecordType = hasShape('record');
+
+/**
+ * Calls the handler for the shape `type` declares, with the type narrowed to that shape. Throws,
+ * naming the type, for one this build doesn't know; check with `isFieldType` first.
+ */
+export function matchShape<R>(type: FieldType, handlers: ShapeHandlers<R>): R {
+  if (isScalarType(type)) {
+    return handlers.scalar(FIELD_STRUCTURES[type], type);
+  }
+  if (isRecordType(type)) {
+    return handlers.record(FIELD_STRUCTURES[type], type);
+  }
+  return unknownType(type);
+}
+
+/**
+ * Every shape has a branch above, so only a type this build doesn't know, which a plain
+ * JavaScript caller can still pass, reaches here.
+ */
+function unknownType(type: never): never {
+  // A native error, because this module imports nothing, @tryghost/errors included.
+  // oxlint-disable-next-line ghost/ghost-custom/no-native-error
+  throw new Error(`Unknown field type: ${String(type)}`);
+}
+
+export type LeafHandlers<R> = { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => R };
+
+/** Calls the handler for a leaf's kind. */
+export function matchLeaf<R>(leaf: Leaf, handlers: LeafHandlers<R>): R {
+  switch (leaf.leaf) {
+    case 'text':
+      return handlers.text(leaf);
+    case 'choice':
+      return handlers.choice(leaf);
+  }
+}
+
+/**
+ * Whether a value is laid out as a record: an object of parts, which a list is not. What a record
+ * must hold is its type's rule to decide.
+ */
+export function isRecordValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A record type's parts in declaration order, or null for any other type, including one this build
+ * doesn't know. Parts are plain strings here; `FIELD_STRUCTURES[type].parts` gives one type's parts
+ * with typed keys.
+ */
+export function partsOf(type: FieldType): string[] | null {
+  if (!isFieldType(type)) {
+    return null;
+  }
+  return matchShape<string[] | null>(type, {
+    scalar: () => null,
+    record: ({ parts }) => Object.keys(parts),
+  });
 }

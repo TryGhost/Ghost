@@ -30,6 +30,7 @@
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
     "@floating-ui/react-dom": "catalog:",
+    "@quilted/threads": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
@@ -61,7 +62,7 @@
     "dompurify": "catalog:",
     "flexsearch": "catalog:",
     "i18n-iso-countries": "7.14.0",
-    "jszip": "3.10.1",
+    "jszip": "3.10.2",
     "lucide-react": "catalog:",
     "luxon": "catalog:",
     "mingo": "catalog:",
@@ -87,6 +88,7 @@
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
+    "@tryghost/app-sdk": "workspace:*",
     "@tryghost/test-data": "workspace:*",
     "@types/node": "catalog:",
     "@types/papaparse": "5.5.2",
@@ -223,6 +225,7 @@
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -283,6 +286,9 @@
           {
             "env": "IS_SHIPPING"
           },
+          {
+            "env": "GHOST_BUILD_VERSION"
+          },
           "default",
           "cardAssets",
           "{workspaceRoot}/tools/scripts/build/assemble-admin-assets.ts",
@@ -304,6 +310,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/kg-converters",
               "@tryghost/metafield-types",

@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 // Filtering members by their custom field values over the real browse endpoint. Values are
-// stored one row per leaf — a composite like an address stores one row per part — and a
+// stored one row per value — a composite like an address stores one row per part — and a
 // filter names the field by namespace and key (plus part), pairing it with a value in one
-// group: (metafields.key:'custom.company'+metafields.value:'Ghost').
+// group: (metafields.identity:'custom.company'+metafields.value:'Ghost').
 describe('Members filtering by custom fields', function () {
   let agent: {
     get: (_url: string) => any;
@@ -80,7 +85,9 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Acme' });
       await createMember();
 
-      const matched = await browse("(metafields.key:'custom.company'+metafields.value:'Ghost')");
+      const matched = await browse(
+        "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
+      );
       assert.deepEqual(matched, [ghost.email]);
     });
 
@@ -90,7 +97,9 @@ describe('Members filtering by custom fields', function () {
       const b = await createMember({ company: 'Ghosting Inc' });
       await createMember({ company: 'Acme' });
 
-      const matched = await browse("(metafields.key:'custom.company'+metafields.value:~'Ghost')");
+      const matched = await browse(
+        "(metafields.identity:'custom.company'+metafields.value:~'Ghost')",
+      );
       assert.deepEqual(matched.sort(), [a.email, b.email].sort());
     });
 
@@ -100,7 +109,7 @@ describe('Members filtering by custom fields', function () {
       const noCompanyA = await createMember({}, ['prospect']);
       const noCompanyB = await createMember();
 
-      const matched = await browse("metafields.key:-'custom.company'");
+      const matched = await browse("metafields.identity:-'custom.company'");
       assert.deepEqual(matched.sort(), [noCompanyA.email, noCompanyB.email].sort());
     });
 
@@ -110,7 +119,7 @@ describe('Members filtering by custom fields', function () {
       const acme = await createMember({ company: 'Acme' });
       await createMember();
 
-      const matched = await browse("metafields.key:'custom.company'");
+      const matched = await browse("metafields.identity:'custom.company'");
       assert.deepEqual(matched.sort(), [ghost.email, acme.email].sort());
     });
 
@@ -126,13 +135,33 @@ describe('Members filtering by custom fields', function () {
         .body({ members_metafields: [{ status: 'archived' }] })
         .expectStatus(200);
 
-      const matched = await browse("metafields.key:-'custom.company'");
+      const matched = await browse("metafields.identity:-'custom.company'");
       assert.deepEqual(matched, [noCompany.email]);
+    });
+
+    // While the host switches custom fields off, every field reads as archived, so a saved
+    // view that names one keeps working the way it does for an archived field.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('still filters on the values members hold', async function () {
+        await createField({ name: 'Company' });
+        const ghost = await createMember({ company: 'Ghost' });
+        await createMember({ company: 'Acme' });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        const matched = await browse(
+          "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
+        );
+        assert.deepEqual(matched, [ghost.email]);
+      });
     });
   });
 
   describe('address fields', function () {
-    it('filters by a subfield inside the address (country)', async function () {
+    it('filters by a part inside the address (country)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const uk = await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -148,12 +177,12 @@ describe('Members filtering by custom fields', function () {
       await createMember();
 
       const matched = await browse(
-        "(metafields.key:'custom.shipping_address.country'+metafields.value:'GB')",
+        "(metafields.identity:'custom.shipping_address.country'+metafields.value:'GB')",
       );
       assert.deepEqual(matched, [uk.email]);
     });
 
-    it('filters a subfield by any of a list of values (is any of)', async function () {
+    it('filters a part by any of a list of values (is any of)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const uk = await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -177,12 +206,12 @@ describe('Members filtering by custom fields', function () {
       await createMember();
 
       const matched = await browse(
-        "(metafields.key:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
+        "(metafields.identity:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
       );
       assert.deepEqual(matched.sort(), [uk.email, de.email].sort());
     });
 
-    it('excludes a subfield holding any of a list of values (is none of)', async function () {
+    it('excludes a part holding any of a list of values (is none of)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -206,7 +235,7 @@ describe('Members filtering by custom fields', function () {
       await createMember();
 
       const matched = await browse(
-        "(metafields.key:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
+        "(metafields.identity:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
       );
       assert.deepEqual(matched, [us.email]);
     });
@@ -218,11 +247,11 @@ describe('Members filtering by custom fields', function () {
       });
       const noAddress = await createMember();
 
-      const matched = await browse("metafields.key:-'custom.shipping_address'");
+      const matched = await browse("metafields.identity:-'custom.shipping_address'");
       assert.deepEqual(matched, [noAddress.email]);
     });
 
-    it('finds members who have a value for a subfield (part is set)', async function () {
+    it('finds members who have a value for a part (part is set)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const withCountry = await createMember({
         shipping_address: { city: 'London', country: 'GB' },
@@ -230,21 +259,21 @@ describe('Members filtering by custom fields', function () {
       await createMember({ shipping_address: { city: 'Boston' } });
       await createMember();
 
-      const matched = await browse("metafields.key:'custom.shipping_address.country'");
+      const matched = await browse("metafields.identity:'custom.shipping_address.country'");
       assert.deepEqual(matched, [withCountry.email]);
     });
 
-    it('finds members missing a subfield (part is not set), including those with no address', async function () {
+    it('finds members missing a part (part is not set), including those with no address', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       await createMember({ shipping_address: { city: 'London', country: 'GB' } });
       const cityOnly = await createMember({ shipping_address: { city: 'Boston' } });
       const noAddress = await createMember();
 
-      const matched = await browse("metafields.key:-'custom.shipping_address.country'");
+      const matched = await browse("metafields.identity:-'custom.shipping_address.country'");
       assert.deepEqual(matched.sort(), [cityOnly.email, noAddress.email].sort());
     });
 
-    it('matches a subfield case-insensitively (contains)', async function () {
+    it('matches a part case-insensitively (contains)', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const london = await createMember({
         shipping_address: { line1: '1 King St', city: 'London', postal_code: 'EC1', country: 'GB' },
@@ -259,14 +288,14 @@ describe('Members filtering by custom fields', function () {
       });
 
       const matched = await browse(
-        "(metafields.key:'custom.shipping_address.city'+metafields.value:~'LONDON')",
+        "(metafields.identity:'custom.shipping_address.city'+metafields.value:~'LONDON')",
       );
       assert.deepEqual(matched, [london.email]);
     });
   });
 
   describe('negation', function () {
-    // A negated value clause must stay on the same joined row as the key
+    // A negated value clause must stay on the same joined row as the identity
     // clause: "company is-not Ghost" means the member's *company* row isn't
     // Ghost, not that the member has no row valued Ghost anywhere. The Acme
     // member here also carries a team valued Ghost, which a split query would
@@ -279,7 +308,9 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Ghost' });
       await createMember();
 
-      const matched = await browse("(metafields.key:'custom.company'+metafields.value:-'Ghost')");
+      const matched = await browse(
+        "(metafields.identity:'custom.company'+metafields.value:-'Ghost')",
+      );
       assert.deepEqual(matched.sort(), [acmeGhostTeam.email, acme.email].sort());
     });
 
@@ -289,14 +320,16 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Ghost Foundation' });
       await createMember();
 
-      const matched = await browse("(metafields.key:'custom.company'+metafields.value:-~'Ghost')");
+      const matched = await browse(
+        "(metafields.identity:'custom.company'+metafields.value:-~'Ghost')",
+      );
       assert.deepEqual(matched, [acme.email]);
     });
 
     // "country is not GB" asks for members who HAVE an address whose country
     // isn't GB. A member with the GB address is excluded, and so is a member with
-    // no address at all — the key discriminator requires the field to be present.
-    it('excludes an address subfield value (is-not) and members with no address', async function () {
+    // no address at all — the identity clause requires the field to be present.
+    it('excludes an address part value (is-not) and members with no address', async function () {
       await createField({ name: 'Shipping address', type: 'address' });
       const us = await createMember({
         shipping_address: {
@@ -312,7 +345,7 @@ describe('Members filtering by custom fields', function () {
       await createMember();
 
       const matched = await browse(
-        "(metafields.key:'custom.shipping_address.country'+metafields.value:-'GB')",
+        "(metafields.identity:'custom.shipping_address.country'+metafields.value:-'GB')",
       );
       assert.deepEqual(matched, [us.email]);
     });
@@ -323,7 +356,7 @@ describe('Members filtering by custom fields', function () {
       await createMember();
 
       assert.deepEqual(
-        await browse("(metafields.key:'custom.company'+metafields.value:'Ghost')"),
+        await browse("(metafields.identity:'custom.company'+metafields.value:'Ghost')"),
         [],
       );
     });
@@ -331,9 +364,9 @@ describe('Members filtering by custom fields', function () {
 
   describe('invalid grammar', function () {
     // A value or path clause names no field on its own — it means something only paired
-    // with a key in the same leaf, which arrives as a group. An unpaired one is rejected
-    // rather than passed through to a storage column that does not exist.
-    it('rejects a value clause with no field key', async function () {
+    // with an identity for the same value, which arrives as a group. An unpaired one is
+    // rejected rather than passed through to a storage column that does not exist.
+    it('rejects a value clause naming no field', async function () {
       await agent
         .get(`members/?filter=${encodeURIComponent("metafields.value:'Ghost'")}`)
         .expectStatus(400);
@@ -345,13 +378,13 @@ describe('Members filtering by custom fields', function () {
         .expectStatus(400);
     });
 
-    // A recognised (key + …) compound that also carries a clause naming no leaf
+    // A recognised (identity + …) compound that also carries a clause naming no value
     // column is rejected rather than silently dropped, which would leave a wider
-    // match on the key alone.
+    // match on the identity alone.
     it('rejects an unsupported clause inside a field compound', async function () {
       await agent
         .get(
-          `members/?filter=${encodeURIComponent("(metafields.key:'custom.company'+metafields.invalid:'x')")}`,
+          `members/?filter=${encodeURIComponent("(metafields.identity:'custom.company'+metafields.invalid:'x')")}`,
         )
         .expectStatus(400);
     });
@@ -362,13 +395,13 @@ describe('Members filtering by custom fields', function () {
       await createField({ name: 'Company' });
       await createMember({ company: 'Ghost' });
 
-      const matched = await browse("metafields.key:'transistor.private_url'");
+      const matched = await browse("metafields.identity:'transistor.private_url'");
       assert.deepEqual(matched, []);
     });
 
     it('rejects a bare key with no namespace segment', async function () {
       await agent
-        .get(`members/?filter=${encodeURIComponent("metafields.key:'company'")}`)
+        .get(`members/?filter=${encodeURIComponent("metafields.identity:'company'")}`)
         .expectStatus(400);
     });
   });
@@ -381,7 +414,7 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Acme' }, ['vip']);
 
       const matched = await browse(
-        "label:'vip'+(metafields.key:'custom.company'+metafields.value:'Ghost')",
+        "label:'vip'+(metafields.identity:'custom.company'+metafields.value:'Ghost')",
       );
       assert.deepEqual(matched, [target.email]);
     });
@@ -394,14 +427,14 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Acme', industry: 'Retail' });
 
       const matched = await browse(
-        "(metafields.key:'custom.company'+metafields.value:'Ghost'),(metafields.key:'custom.industry'+metafields.value:'Tech')",
+        "(metafields.identity:'custom.company'+metafields.value:'Ghost'),(metafields.identity:'custom.industry'+metafields.value:'Tech')",
       );
       assert.deepEqual(matched.sort(), [ghost.email, tech.email].sort());
     });
 
     // Two whole-field is-set filters carry no value, so neither needs a group of its
-    // own and they arrive as one flat conjunction of key clauses. That reads as a
-    // compound describing a single leaf unless the transformer counts the keys.
+    // own and they arrive as one flat conjunction of identity clauses. That reads as a
+    // compound describing a single value unless the transformer counts the identity clauses.
     it('combines two whole-field is-set filters using AND', async function () {
       await createField({ name: 'Company' });
       await createField({ name: 'Industry' });
@@ -410,7 +443,7 @@ describe('Members filtering by custom fields', function () {
       await createMember({ industry: 'Retail' });
 
       const matched = await browse(
-        "metafields.key:'custom.company'+metafields.key:'custom.industry'",
+        "metafields.identity:'custom.company'+metafields.identity:'custom.industry'",
       );
       assert.deepEqual(matched, [both.email]);
     });
@@ -423,7 +456,7 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Ghost' });
 
       const matched = await browse(
-        "metafields.key:'custom.industry'+(metafields.key:'custom.company'+metafields.value:'Ghost')",
+        "metafields.identity:'custom.industry'+(metafields.identity:'custom.company'+metafields.value:'Ghost')",
       );
       assert.deepEqual(matched, [target.email]);
     });
@@ -436,7 +469,7 @@ describe('Members filtering by custom fields', function () {
       const acme = await createMember({ company: 'Acme' });
 
       const filter = encodeURIComponent(
-        "(metafields.key:'custom.company'+metafields.value:'Ghost')",
+        "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
       );
       const { text } = await agent
         .get(`members/upload/?limit=all&filter=${filter}`)
@@ -453,7 +486,7 @@ describe('Members filtering by custom fields', function () {
       const label = await models.Label.add({ name: 'cf-bulk-target' });
 
       const filter = encodeURIComponent(
-        "(metafields.key:'custom.company'+metafields.value:'Ghost')",
+        "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
       );
       const { body } = await agent
         .put(`members/bulk/?filter=${filter}`)

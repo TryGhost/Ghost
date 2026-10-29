@@ -27,12 +27,24 @@ async function paidTier(page: Page, stripe: StripeTestService, name: string): Pr
 }
 
 /** What Ghost asked Stripe to collect on the checkout a member was most recently sent to. */
-function latestShippingRequest(stripe: StripeTestService) {
+function latestCollectionRequest(stripe: StripeTestService) {
   const session = stripe.getCheckoutSessions().at(-1);
   if (!session) {
     throw new Error('No checkout session was created');
   }
-  return session.request.shipping_address_collection;
+  return session.request;
+}
+
+function latestShippingRequest(stripe: StripeTestService) {
+  return latestCollectionRequest(stripe).shipping_address_collection;
+}
+
+function latestPhoneRequest(stripe: StripeTestService) {
+  return latestCollectionRequest(stripe).phone_number_collection;
+}
+
+function latestTaxIdRequest(stripe: StripeTestService) {
+  return latestCollectionRequest(stripe).tax_id_collection;
 }
 
 test.describe('Ghost Admin - Checkout fields', () => {
@@ -95,7 +107,7 @@ test.describe('Ghost Admin - Checkout fields', () => {
       addressField: { create: 'Delivery address' },
       nameField: { create: 'Recipient' },
     });
-    await expect(checkout.previewShippingTag(shipped)).toBeVisible();
+    await expect(checkout.previewTierTag(shipped)).toBeVisible();
     await checkout.save();
     await checkout.close();
 
@@ -113,7 +125,10 @@ test.describe('Ghost Admin - Checkout fields', () => {
     const tierName = await paidTier(page, stripe!, 'Print Edition');
 
     const checkout = await openCheckoutFields(page);
-    await checkout.shippingSwitch.setChecked(true);
+    await checkout.collectShipping({
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
     const tab = await checkout.previewInStripe(tierName);
     await tab.close();
 
@@ -134,6 +149,119 @@ test.describe('Ghost Admin - Checkout fields', () => {
     await expect(checkout.shippingSwitch).toBeChecked();
     await expect(checkout.addressFieldPicker).toHaveText('Delivery address');
     await expect(checkout.nameFieldPicker).toHaveText('Recipient');
+  });
+
+  test('phone number - a member gives one at checkout, and it lands on their record', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Print Edition');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectPhone({ field: { create: 'Courier phone' } });
+    await expect(checkout.previewPhone).toBeVisible();
+    await checkout.save();
+    await checkout.close();
+
+    const { name } = await startPaidSignupViaPortal(page, { tierName });
+    expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
+
+    await stripe!.completeLatestSubscriptionCheckout({
+      name,
+      collected: { phone: '+442079460000' },
+    });
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await membersPage.getMemberLinkByName(name).click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Courier phone')).toHaveAccessibleName(
+      'Edit Courier phone: +442079460000',
+    );
+  });
+
+  test('phone number on specific tiers - only their checkouts ask for one', async ({
+    page,
+    stripe,
+  }) => {
+    const shipped = await paidTier(page, stripe!, 'Print Edition');
+    const digital = await paidTier(page, stripe!, 'Digital');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectPhone({ tiers: [shipped], field: { create: 'Courier phone' } });
+    await expect(checkout.previewTierTag(shipped)).toBeVisible();
+    await checkout.save();
+    await checkout.close();
+
+    await startPaidSignupViaPortal(page, { tierName: digital });
+    expect(latestPhoneRequest(stripe!)).toBeUndefined();
+
+    await startPaidSignupViaPortal(page, { tierName: shipped });
+    expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
+  });
+
+  test('preview in Stripe - asks for a phone number as the unsaved settings say', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Print Edition');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectPhone({ field: { create: 'Contact phone' } });
+    const tab = await checkout.previewInStripe(tierName);
+    await tab.close();
+
+    expect(latestPhoneRequest(stripe!)).toEqual({ enabled: true });
+    expect(latestShippingRequest(stripe!)).toBeUndefined();
+  });
+
+  test('tax ID - a business buyer can give one at checkout, and still becomes a member', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Business');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectTaxId();
+    await expect(checkout.previewTaxId).toBeVisible();
+    await checkout.save();
+    await checkout.close();
+
+    const { name } = await startPaidSignupViaPortal(page, { tierName });
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
+
+    // Stripe keeps the tax ID on the customer, so there is nothing of it to see in Ghost.
+    await stripe!.completeLatestSubscriptionCheckout({
+      name,
+      collected: { taxId: 'GB123456789' },
+    });
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await expect(membersPage.getMemberLinkByName(name)).toBeVisible();
+  });
+
+  test('tax ID on specific tiers - only their checkouts offer it, previewed before saving', async ({
+    page,
+    stripe,
+  }) => {
+    const business = await paidTier(page, stripe!, 'Business');
+    const personal = await paidTier(page, stripe!, 'Personal');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectTaxId([business]);
+    await expect(checkout.previewTierTag(business)).toBeVisible();
+    const tab = await checkout.previewInStripe(business);
+    await tab.close();
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
+    await checkout.save();
+    await checkout.close();
+
+    await startPaidSignupViaPortal(page, { tierName: personal });
+    expect(latestTaxIdRequest(stripe!)).toBeUndefined();
+
+    await startPaidSignupViaPortal(page, { tierName: business });
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
   });
 
   test('incomplete - saving says which fields are missing, and saves nothing', async ({

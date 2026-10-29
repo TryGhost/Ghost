@@ -7,7 +7,7 @@ import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import { UpgradeBase } from '@tryghost/adapter-base-upgrade';
 
-import type { BaseClassMap } from './adapter-manager';
+import type { BaseClassMap } from '../../../kernel/adapter-manager';
 
 /**
  * The base class every adapter of a given type must extend. Also read by

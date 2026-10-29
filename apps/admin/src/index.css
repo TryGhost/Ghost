@@ -48,7 +48,7 @@ body {
   }
 }
 
-/* The editor's chrome while the writer types (admin7EditorImprovements): each
+/* The editor's chrome while the writer types: each
    piece carries `data-writing-focus` and fades out, keeping its place so the
    document never moves. Hidden controls take no pointer input but stay
    focusable; focusing one brings the chrome back. */
@@ -207,7 +207,7 @@ body {
   font-variation-settings: normal;
 }
 
-/* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
+/* The writer's editor font, set as `data-editor-font`
    on the editor. Koenig reads the --kg-font-* variables for the body and its
    headings; the title and excerpt read the --editor-display-* ones. Serif sets
    nothing, so the editor keeps its own typography. Sans sets the body in Inter,
@@ -265,15 +265,6 @@ body {
 
 .dark .shade .gh-loading-orb {
   filter: invert(100%);
-}
-
-/* Legacy utility compatibility (Spirit/Tachyons-style percentages). */
-.w-100 {
-  width: 100%;
-}
-
-.h-100 {
-  height: 100%;
 }
 
 /* Settings' raw h1-h5 still expect the 1.25em admin-x heading line-height; Shade's base gives 1.5.

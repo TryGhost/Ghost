@@ -4,7 +4,6 @@ import {
   getDataAttributes,
   // @ts-expect-error This module lacks type definitions.
 } from '../../../../core/frontend/utils/frontend-apps';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 
 describe('Frontend apps:', function () {

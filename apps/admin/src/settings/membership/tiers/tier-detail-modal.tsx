@@ -598,7 +598,7 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                     children: <LucideIcon.Plus />,
                   },
                   (input) => (
-                    <Field className="w-100">
+                    <Field className="w-full">
                       <FieldLabel className="sr-only" htmlFor="new-tier-benefit">
                         New benefit
                       </FieldLabel>

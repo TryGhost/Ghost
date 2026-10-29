@@ -1,13 +1,8 @@
 #!/usr/bin/env node
-import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-// @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
 import { runGhostCommand } from './run-ghost-command.ts';
-
-type Command = { flags: string; desc: string; run: () => void | Promise<void> };
-type CommandGroup = { command: (command: Command) => unknown };
 
 const args = process.argv.slice(2);
 let commandRun = false;
@@ -20,7 +15,7 @@ const cli = prettyCli.Api.get({ name: 'pnpm gx' })
 cli.command({
   flags: 'generate',
   desc: 'Generate a package, golden-email or migration.',
-  setup(group: CommandGroup) {
+  setup(group) {
     group.command({
       flags: 'package',
       desc: 'Scaffold an internal workspace package.',
@@ -61,7 +56,7 @@ cli.command({
 cli.command({
   flags: 'dev',
   desc: 'Start, stop, inspect and clean up development stacks.',
-  setup(group: CommandGroup) {
+  setup(group) {
     for (const command of [
       { flags: 'up', desc: 'Start this checkout in the background.' },
       { flags: 'down', desc: 'Stop development stacks and orphaned processes.' },
@@ -82,9 +77,32 @@ cli.command({
 });
 
 cli.command({
+  flags: 'services',
+  desc: 'Inspect service migration and dependency work.',
+  setup(group) {
+    group.showHelpByDefault();
+    for (const command of [
+      { flags: 'list', desc: 'List service ownership, migration status and dependency counts.' },
+      { flags: 'report', desc: 'Show migration totals or details for one service.' },
+      { flags: 'dependencies', desc: 'Rank disallowed dependencies by importing files.' },
+      { flags: 'audit', desc: 'Use Dependency Cruiser’s native dependency reports.' },
+    ]) {
+      group.command({
+        ...command,
+        async run() {
+          commandRun = true;
+          const { runServices } = await import('./services.ts');
+          runServices(command.flags, args.slice(2));
+        },
+      });
+    }
+  },
+});
+
+cli.command({
   flags: 'db',
   desc: 'Development database tools.',
-  setup(group: CommandGroup) {
+  setup(group) {
     group.command({
       flags: 'rebuild-development-tables',
       desc: 'Drop and recreate development-only tables.',
@@ -99,7 +117,7 @@ cli.command({
 cli.command({
   flags: 'data',
   desc: 'Generate development data and verification scenarios.',
-  setup(group: CommandGroup) {
+  setup(group) {
     for (const command of [
       { flags: 'generate', desc: 'Generate a development dataset.', file: './generate-data.ts' },
       {
@@ -128,7 +146,7 @@ cli.command({
 cli.command({
   flags: 'benchmark',
   desc: 'Run development benchmarks.',
-  setup(group: CommandGroup) {
+  setup(group) {
     group.command({
       flags: 'recipient-preparation',
       desc: 'Measure email recipient preparation with synthetic members.',
@@ -154,13 +172,12 @@ cli.command({
 // Parse only the command path; tool arguments and help flags pass through untouched.
 const rootHelp =
   args.length === 0 || (args.length === 1 && ['--help', '-h'].includes(args[0] ?? ''));
-const result: unknown = await cli.parse(
-  rootHelp ? ['--help'] : args.slice(0, args[0] === 'repl' ? 1 : 2),
-);
-assert(result && typeof result === 'object' && 'code' in result && typeof result.code === 'number');
-assert('output' in result && typeof result.output === 'string');
+const servicesHelp =
+  args[0] === 'services' &&
+  (args.length === 1 || (args.length === 2 && ['--help', '-h'].includes(args[1] ?? '')));
+const result = await cli.parse(rootHelp ? ['--help'] : args.slice(0, args[0] === 'repl' ? 1 : 2));
 if (!commandRun) {
-  process.exitCode = rootHelp ? result.code : result.code || 1;
+  process.exitCode = rootHelp || servicesHelp ? result.code : result.code || 1;
   const output = result.output || cli.getHelp();
   const stream = process.exitCode === 0 ? process.stdout : process.stderr;
   stream.write(`${output}\n`);

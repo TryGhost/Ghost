@@ -16,6 +16,8 @@ const { normalizeEmail } = require('../utils/normalize-email');
 const { hasActiveOffer } = require('../utils/has-active-offer');
 const { getInboxLinks } = require('../../../../lib/get-inbox-links');
 const { SIGNUP_CONTEXTS } = require('../../../../lib/member-signup-contexts');
+
+/** @import { CheckoutService } from '../../../stripe-checkout-config' */
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
@@ -153,6 +155,7 @@ module.exports = class RouterController {
    * @param {any} deps.settingsHelpers
    * @param {any} deps.urlUtils
    * @param {any} deps.emailAddressService
+   * @param {Pick<CheckoutService, 'read'>} deps.checkouts Decides the checkout a card update opens.
    */
   constructor({
     offersAPI,
@@ -173,6 +176,7 @@ module.exports = class RouterController {
     urlUtils,
     emailAddressService,
     giftService,
+    checkouts,
   }) {
     this._offersAPI = offersAPI;
     this._paymentsService = paymentsService;
@@ -192,6 +196,7 @@ module.exports = class RouterController {
     this._urlUtils = urlUtils;
     this._emailAddressService = emailAddressService;
     this._giftService = giftService;
+    this._checkouts = checkouts;
   }
 
   async ensureStripe(_req, res, next) {
@@ -270,6 +275,7 @@ module.exports = class RouterController {
       cancelUrl: sanitizeReturnUrl(req.body.cancelUrl, siteUrl),
       subscription_id: req.body.subscription_id,
       currency,
+      checkout: await this._checkouts.read(),
     });
     const publicKey = this._stripeAPIService.getPublicKey();
     const sessionInfo = {
@@ -540,6 +546,7 @@ module.exports = class RouterController {
    * @param {string} [options.email] Email address of the customer
    * @param {object} [options.member] Currently authenticated member OR member associated with the email address
    * @param {number|null} [options.giftTrialDays] Stable continuation decision from gift subscriptions
+   * @param {string} [options.referrer] Page to return to after signing in with the magic link
    * @param {boolean} options.isAuthenticated
    * @param {object} options.metadata Metadata to be passed to Stripe
    * @returns
@@ -605,7 +612,11 @@ module.exports = class RouterController {
       if (restrictCheckout) {
         if (!options.isAuthenticated && options.email) {
           try {
-            await this._sendEmailWithMagicLink({ email: options.email, requestedType: 'signin' });
+            await this._sendEmailWithMagicLink({
+              email: options.email,
+              requestedType: 'signin',
+              referrer: options.referrer,
+            });
           } catch (err) {
             logging.warn(err);
           }
@@ -869,6 +880,7 @@ module.exports = class RouterController {
         cadence,
         offer,
         giftTrialDays,
+        referrer: req.get('referer'),
       });
 
       // Add welcome_page_url to the response if available and member is authenticated
