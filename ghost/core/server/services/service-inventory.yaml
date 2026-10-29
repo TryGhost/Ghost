@@ -2857,7 +2857,8 @@ services:
       consumers:
         summary: >-
           Boot passes the three wrappers to jobs handlers that retain them and return startFetch
-          in separate two-slot queues. Background boot schedules all three; newsletter sends,
+          on the five-slot email queue shared with newsletter sends. Background boot schedules
+          all three; newsletter sends,
           automation sends and accepted gift deliveries request their own schedule with the
           recent-send lookup bypass. The Admin emails endpoint reads current newsletter service
           status and requests backfill/cancel via root getters. Booted-backend integration tests
@@ -3170,7 +3171,7 @@ services:
           insert/outer-transaction failures leave no email or published post. Its dispatch is
           stubbed, so these are persistence/scheduling assertions, not provider-delivery evidence.
           Handler units
-          assert the injected job, two-slot email queue and rejection propagation. These do not
+          assert the injected job, shared five-slot email queue and rejection propagation. These do not
           prove every consumer survives root replacement or sibling reinitialization.
         sources:
           - core/boot.js

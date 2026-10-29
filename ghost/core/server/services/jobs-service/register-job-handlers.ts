@@ -28,10 +28,14 @@ import signingKeys from '../signing-keys';
 
 const updateCheck = require('../update-check');
 
-// Keep newsletter sends independent of imports and other shared work. Two sends
-// can progress at once, each with its own two batch workers, so a long send or
-// retry does not hold up every other newsletter.
-const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
+// Newsletter sends and email analytics share a lane, so neither waits behind
+// imports or other default-lane work. Each analytics pipeline fetches on its
+// own five-minute tick and its wrapper skips a tick while the previous fetch
+// is still running. An overlapping tick holds a slot only long enough to reach
+// that guard and be skipped, instead of queueing behind the running fetch and
+// firing late. So the three pipelines hold at most three slots for long, and
+// at least two sends can always progress, each with its own two batch workers.
+const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 5 };
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
@@ -73,19 +77,12 @@ export default function registerJobHandlers({
   siteImporter,
   tinybirdSync,
 }: RegisterJobHandlersDependencies): void {
-  // Each email analytics pipeline fetches on its own five-minute tick and the
-  // wrapper skips a tick while its previous fetch is still running. The second
-  // slot lets an overlapping tick reach that guard and be skipped straight away
-  // instead of queueing behind the running fetch and firing late.
   for (const [JobClass, pipeline] of [
     [EmailAnalyticsFetchLatestJob, newsletters],
     [EmailAnalyticsAutomationFetchLatestJob, automations],
     [EmailAnalyticsGiftFetchLatestJob, gifts],
   ] as const) {
-    jobsService.handle(JobClass, () => pipeline.startFetch(), {
-      queue: JobClass.type,
-      concurrency: 2,
-    });
+    jobsService.handle(JobClass, () => pipeline.startFetch(), EMAIL_QUEUE);
   }
 
   jobsService.handle(CleanTokensJob, async () => {

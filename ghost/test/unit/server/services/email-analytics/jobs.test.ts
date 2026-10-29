@@ -46,7 +46,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
     assert.deepEqual(new ReconstructedJob(payload), new JobClass());
   });
 
-  it('registers one handler in its own two-slot queue and awaits its injected executor', async function () {
+  it('registers one handler on the shared email lane and awaits its injected executor', async function () {
     const jobsService = { handle: sinon.stub() };
     let release!: () => void;
     const newsletters = {
@@ -61,10 +61,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
       .getCalls()
       .filter((call) => call.args[0].type === JobClass.type);
     assert.equal(calls.length, 1);
-    assert.deepEqual(calls[0].args[2], {
-      queue: JobClass.type,
-      concurrency: 2,
-    });
+    assert.deepEqual(calls[0].args[2], { queue: 'email', concurrency: 5 });
     let completed = false;
     const invocation = calls[0].args[1](new JobClass()).then(() => {
       completed = true;

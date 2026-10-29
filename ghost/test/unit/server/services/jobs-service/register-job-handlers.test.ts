@@ -340,10 +340,28 @@ describe('register-job-handlers', function () {
     assert.ok(emailService.handleSendEmailJob.calledOnceWithExactly(job));
   });
 
-  it('registers send-email on a dedicated queue with room for two sends', function () {
-    const registration = registrationFor('send-email');
+  // Pins the whole lane map: each declared lane costs a backend connection per
+  // process, so a new one should be a deliberate change to this test.
+  it('registers newsletter sends and email analytics on one email lane and everything else on the default lane', function () {
+    const emailJobTypes = new Set([
+      'send-email',
+      'email-analytics-fetch-latest',
+      'email-analytics-automation-fetch-latest',
+      'email-analytics-gift-fetch-latest',
+    ]);
+    const calls = jobsService.handle.getCalls();
 
-    assert.deepEqual(registration.args[2], { queue: 'email', concurrency: 2 });
+    assert.deepEqual(
+      new Set(calls.filter((c) => c.args[2] !== undefined).map((c) => c.args[0].type)),
+      emailJobTypes,
+    );
+    for (const call of calls) {
+      if (emailJobTypes.has(call.args[0].type)) {
+        assert.deepEqual(call.args[2], { queue: 'email', concurrency: 5 }, call.args[0].type);
+      } else {
+        assert.equal(call.args[2], undefined, call.args[0].type);
+      }
+    }
   });
 
   it('propagates send-email failures', async function () {
