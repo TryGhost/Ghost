@@ -110,6 +110,7 @@ export default defineService(
           trustedOrigins: appsConfig().trustedOrigins,
           trustLoopback: isDevelopment(),
         }),
+        getAllowLocalhost: isDevelopment,
       }),
     });
   },

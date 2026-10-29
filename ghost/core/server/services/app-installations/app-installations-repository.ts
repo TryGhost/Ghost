@@ -32,6 +32,11 @@ const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: 
 
 const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_data_url: true });
 
+const SignedAtRow = DbAppInstallation.pick({
+  manifest_signed_at: true,
+  manifest_signed_digest: true,
+});
+
 const HistoryActionRow = z
   .object({
     id: z.string(),
@@ -110,6 +115,18 @@ class LockedInstallation {
       created_at: toDatabaseDate(new Date()),
     });
     return id;
+  }
+
+  /**
+   * Records that the installation has seen a verified manifest signed at `loaded.issuedAt`,
+   * unless it has seen a later one. It doesn't move the revision on: nothing a session runs
+   * changes, so open sessions carry on.
+   */
+  async raiseSignedAt(loaded: LoadedManifest): Promise<void> {
+    await this.trx(INSTALLATIONS)
+      .where({ id: this.id })
+      .where('manifest_signed_at', '<', loaded.issuedAt)
+      .update({ manifest_signed_at: loaded.issuedAt, manifest_signed_digest: loaded.digest });
   }
 
   /**
@@ -200,16 +217,26 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * Records that the installation has seen a verified manifest signed at `loaded.issuedAt`,
-   * unless it has seen a later one. It doesn't move the revision on: nothing a session runs
-   * changes, so open sessions carry on. Uninstalled installations are left as they ended.
+   * When the newest manifest any ended installation of the app was signed, among those
+   * signed with this identity key, and that manifest's digest. Installing the app again
+   * starts from there, so uninstalling doesn't let an older manifest back in.
    */
-  async raiseSignedAt(id: string, loaded: LoadedManifest): Promise<void> {
-    await this.knex(INSTALLATIONS)
-      .where({ id })
-      .whereNot('status', 'uninstalled')
-      .where('manifest_signed_at', '<', loaded.issuedAt)
-      .update({ manifest_signed_at: loaded.issuedAt, manifest_signed_digest: loaded.digest });
+  async lastSignedAtOf(
+    appId: string,
+    identityKeyThumbprint: string,
+  ): Promise<{ signedAt: number; signedDigest: string } | undefined> {
+    const row = await this.knex(INSTALLATIONS)
+      .where({ app_id: appId, identity_key_thumbprint: identityKeyThumbprint })
+      .orderBy('manifest_signed_at', 'desc')
+      .first<z.input<typeof SignedAtRow> | undefined>(
+        'manifest_signed_at',
+        'manifest_signed_digest',
+      );
+    if (!row) {
+      return undefined;
+    }
+    const decoded = z.decode(SignedAtRow, row);
+    return { signedAt: decoded.manifest_signed_at, signedDigest: decoded.manifest_signed_digest };
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
