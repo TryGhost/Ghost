@@ -14926,8 +14926,9 @@ services:
           browse/read/readDefaultTier/add/edit; browse returns one-page metadata, read returns
           null for a missing valid ID and readDefaultTier can return undefined. API units use
           the separate in-memory repository: they assert edited name, archived status, browse
-          counts and a default-tier name, but only a truthy add/read result. Root export
-          identity, property timing and missing-result shapes are source-only.
+          counts and a default-tier name, but only a truthy add/read result. Root units pin
+          index/service identity, both properties undefined before init and API operations
+          needing the API as receiver. Missing-result shapes are source-only.
         sources:
           - core/server/services/tiers/index.js
           - core/server/services/tiers/service.js
@@ -14935,6 +14936,7 @@ services:
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/in-memory-tier-repository.js
         tests:
+          - test/unit/server/services/tiers/index.test.ts
           - test/unit/server/services/tiers/tiers-api.test.js
       construction:
         summary: >-
@@ -14943,15 +14945,17 @@ services:
           loading products with benefits, publishes repository then TiersAPI. This is the only
           production construction path found for these two implementations. Deep Tier and event
           classes support that graph; the in-memory tier repository is used by API units, not
-          production composition. These wiring and publication claims are source-only; fully
-          booted HTTP tests do not isolate construction.
+          production composition. Root units pin the benefits load, the API reading through the
+          published repository, TierCreatedEvent dispatch through DomainEvents, and slugs from
+          the current Product model while the repository saves through the model read at init.
         sources:
           - core/server/services/tiers/service.js
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tiers-api.js
           - core/server/services/tiers/tier.js
           - core/server/services/tiers/in-memory-tier-repository.js
-        tests: []
+        tests:
+          - test/unit/server/services/tiers/index.test.ts
       consumers:
         summary: >-
           Source searches found boot, Admin/Content tier endpoints, post/page/
@@ -14964,8 +14968,13 @@ services:
           fields, visibility and null trial-day updates, plus a persisted benefit capitalization
           check. Content HTTP assertions cover active/visibility filtering. The gift delivery
           unit proves API lookup at send time with an injected wrapper whose api is assigned
-          after construction. It does not initialize the real root; other retained-consumer and
-          event paths are source-checked rather than comprehensively protected by those tests.
+          after construction. Consumer units pin per-call API reads with the API as receiver for
+          both endpoints, the four post/page/preview/email-post serializers, the members
+          access-cookie middleware through its deep service.js import and the Stripe Checkout
+          readTier callback, and that the members API and gift services retain the real root and
+          read its current API at each access. The members importer's tier lookups are covered
+          only through the Admin members import HTTP suite; payment-event paths remain
+          source-checked.
         sources:
           - core/boot.js
           - core/server/api/endpoints/tiers.js
@@ -14993,6 +15002,8 @@ services:
           - test/e2e-api/content/tiers.test.js
           - test/unit/server/services/gifts/gift-delivery-service.test.ts
           - test/e2e-api/admin/stripe-checkout-preview.test.ts
+          - test/e2e-api/admin/members-import.test.js
+          - test/unit/server/services/tiers/consumers.test.ts
       startup:
         summary: >-
           Source establishes that initServices awaits Stripe, constructs gifts with the tiers
@@ -15000,16 +15011,23 @@ services:
           before that group and boot can finish; members and gifts deliberately retain the
           wrapper before its API is available. There is no pending-init promise: the guard only
           checks an already-published api, so overlapping calls can each load and publish a
-          graph. These ordering and concurrency contracts have no focused test. HTTP fixtures
-          separately call repository.init after inserting fixture rows; that refresh is not
-          evidence that calling the guarded wrapper again reloads tiers.
+          graph. Root units pin publication only after priming resolves, nothing published and a
+          retry loading again after priming or API construction rejects, sequential init
+          retaining both instances without reloading, and overlapping calls settling with an API
+          over the published repository. Boot units pin gifts constructed before tiers.init
+          starts, and jobs waiting for tiers.init and not starting when it rejects. The per-call
+          load count of overlapping calls remains unpinned. HTTP fixtures separately call
+          repository.init after inserting fixture rows; that refresh is not evidence that
+          calling the guarded wrapper again reloads tiers.
         sources:
           - core/boot.js
           - core/server/services/tiers/service.js
           - core/server/services/members/members-api/members-api.js
           - core/server/services/gifts/index.ts
           - test/utils/fixture-utils.js
-        tests: []
+        tests:
+          - test/unit/boot/init-services.test.ts
+          - test/unit/server/services/tiers/index.test.ts
       lifetime:
         summary: >-
           Source establishes that successful sequential init calls retain the repository and API
@@ -15092,14 +15110,15 @@ services:
           - core/server/services/tiers/tier.js
           - core/server/services/members/members-api/services/payments-service.js
         tests:
+          - test/unit/server/services/tiers/index.test.ts
           - test/unit/server/services/tiers/tiers-api.test.js
           - test/e2e-api/admin/tiers.test.js
     unverified: []
     blockers:
       - >-
-        Pin real root identity, pre-init access, boot prerequisites, concurrent initialization,
-        sequential no-op behavior and partial-publication recovery. Include retained members/
-        gifts consumers; a late-bound fake wrapper does not prove real boot wiring.
+        Pin how many loads overlapping init calls perform. Root, consumer and boot units cover
+        identity, pre-init access, priming, failure retry, sequential retention, boot ordering
+        and the retained members/gifts wrappers.
       - >-
         Characterize production repository clone boundaries, external-write/reload behavior,
         failed reload ID/store consistency, write races, database normalization/timestamps and

@@ -15,6 +15,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
   const donations = sinon.stub().resolves();
+  const tiers = sinon.stub().resolves();
   const register = sinon.stub();
   const start = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
@@ -59,6 +60,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       },
       './server/services/email-service': { init: email, service: {} },
       './server/services/donations': { default: { init: donations } },
+      './server/services/tiers': { init: tiers },
       './server/services/media-inliner': {
         init: media,
         getInstance: () => ({}),
@@ -81,6 +83,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     media,
     email,
     donations,
+    tiers,
     register,
     start,
     automations,
@@ -167,7 +170,16 @@ it('propagates a synchronous recommendations initialization error without starti
   sinon.assert.notCalled(boot.reschedule);
 });
 
-for (const dependency of ['mentions', 'media', 'email', 'donations'] as const) {
+it('constructs gifts over the tiers root before tiers initialization starts', async function () {
+  const boot = createServicesHarness();
+
+  await boot.initServices();
+
+  sinon.assert.calledOnce(boot.tiers);
+  sinon.assert.callOrder(boot.gifts, boot.tiers);
+});
+
+for (const dependency of ['mentions', 'media', 'email', 'donations', 'tiers'] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();
     const ready = Promise.withResolvers<void>();
