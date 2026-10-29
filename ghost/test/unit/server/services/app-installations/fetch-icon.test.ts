@@ -30,7 +30,7 @@ async function refusal(loading: Promise<unknown>): Promise<Refusal> {
   assert.fail('Expected the icon to be refused');
 }
 
-/** Checks the icon was refused as the manifest's `icon.url` problem, with this message. */
+/** Asserts the icon was refused as an invalid manifest at `icon.url`, with this message. */
 function assertRefused(err: Refusal, message: string) {
   assert.equal(err.code, 'APP_MANIFEST_INVALID');
   assert.equal(err.message, 'The app manifest is not valid.');
@@ -115,7 +115,7 @@ describe('createIconFetcher', function () {
     assert.equal(await fetchIcon({ url: ICON_URL }), sanitized);
   });
 
-  // Sanitizing escapes text, so the copy can be larger than the download it came from.
+  // Sanitizing can escape characters, so the copy can end up larger than the download.
   it('refuses a sanitized copy larger than 16 KB, counted in bytes', async function () {
     const sanitized = 'é'.repeat(8 * 1024 + 1);
     assert.ok(sanitized.length < 16 * 1024);

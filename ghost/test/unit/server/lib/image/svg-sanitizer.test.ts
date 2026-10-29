@@ -125,12 +125,12 @@ describe('lib/image: svg-sanitizer', function () {
         </svg>`)!;
 
         assert.doesNotMatch(svg, /tracker|data:|<image|<feImage|\\/i);
-        // The shapes themselves stay.
+        // The shapes are kept.
         assert.equal(svg.match(/<path /g)?.length, 5);
         assert.match(svg, /<circle r="2"\/>/);
       });
 
-      /** The prefix the SVG's IDs were given, from the ID of its element with `original`. */
+      /** Reads the generated ID prefix off the element whose original ID was `original`. */
       const idPrefix = (svg: string, original: string) => {
         const prefix = new RegExp(`id="(svg-[0-9a-f]+-)${original}"`).exec(svg)?.[1];
         assert.ok(prefix, `Expected an ID ending in ${original}`);
@@ -160,7 +160,7 @@ describe('lib/image: svg-sanitizer', function () {
           new RegExp(`fill="url\\( #${prefix}g \\)" stroke="URL\\( ' #${prefix}g' \\)"`),
         );
         assert.match(svg, new RegExp(`style="stroke: url\\('#${prefix}g'\\)"`));
-        // Every ID and every reference has the prefix.
+        // Every ID and every reference to one got the prefix.
         const reference = `(?:href="\\s*|url\\(\\s*['"]?\\s*)#`;
         assert.equal(svg.match(/id="/g)?.length, 3);
         assert.equal(svg.match(new RegExp(`id="${prefix}`, 'g'))?.length, 3);
@@ -189,7 +189,7 @@ describe('lib/image: svg-sanitizer', function () {
         assert.equal(svg.match(/<path /g)?.length, 2);
       });
 
-      // As Adobe Illustrator writes them.
+      // Illustrator styles shapes this way.
       it('moves its stylesheet onto the elements it styles', function () {
         const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <defs>
@@ -241,8 +241,7 @@ describe('lib/image: svg-sanitizer', function () {
         assert.match(svg, /<path d="M0 0h24v24H0z" style="stroke:white"\/>/);
       });
 
-      // Removing an element DOMPurify doesn't allow also removes its text, which joins the
-      // text either side of it.
+      // Removing a disallowed element also removes its text, joining the text either side.
       it('empties a stylesheet that only refers to another document once sanitized', function () {
         const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <style>@im<script>x</script>port "https://tracker.example.net/1.css";</style>
@@ -254,7 +253,7 @@ describe('lib/image: svg-sanitizer', function () {
         assert.match(svg, /<path d="M0 0h24v24H0z"\/>/);
       });
 
-      /** The SVG's root as an image would read it. Throws if it isn't well-formed XML. */
+      /** Parses the SVG the way an <img> would, as XML. Throws if it isn't well-formed. */
       const asImage = (svg: string) =>
         new JSDOM(svg, { contentType: 'image/svg+xml' }).window.document.documentElement;
 
@@ -268,8 +267,8 @@ describe('lib/image: svg-sanitizer', function () {
         assert.equal(root.querySelector('text')!.textContent, 'a\u00a0b & c');
       });
 
-      // As Adobe Illustrator's Save As writes it. Parsed as HTML, the doctype ends at the
-      // first `>`, which is inside the entity declarations.
+      // Illustrator's Save As writes this. The HTML parser ends the doctype at the first `>`,
+      // which is inside the entity declarations.
       it('keeps an SVG whose doctype declares entities', function () {
         const svg = selfContained(`<?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 24.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
@@ -284,7 +283,7 @@ describe('lib/image: svg-sanitizer', function () {
         assert.equal(asImage(svg).namespaceURI, 'http://www.w3.org/2000/svg');
       });
 
-      // A page lays out the root as a box of its own, which its styling could move or grow.
+      // An inlined SVG's root is laid out like any box, so its styling could move it.
       it('moves the styling of its root onto its content, leaving the root only its size', function () {
         const svg = selfContained(`<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
           x="0px" y="0px" id="logo" viewBox="0 0 24 24" width="24" height="24"

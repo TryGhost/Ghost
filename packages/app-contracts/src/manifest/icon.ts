@@ -11,11 +11,10 @@ const EITHER = 'Expected an icon with either a name or a url';
 export type AppIcon = { name: string } | { url: string };
 
 /**
- * The icon is drawn by Ghost on the app's accent colour: either one of the icons Admin
- * ships, by name, or an SVG the app serves. Ghost fetches the SVG when it stores a manifest
- * version, keeps a sanitized copy, and only ever shows that copy, as an image. A name Admin
- * does not know is not an error here, since the set depends on the Admin build; Admin falls
- * back to a default icon.
+ * Ghost draws the icon on the app's accent colour: a named Admin icon or an SVG the app
+ * serves. Ghost keeps a sanitized copy of the SVG with each manifest version it stores, and
+ * only shows that copy. Unknown names aren't rejected, since they depend on the Admin build;
+ * Admin falls back to a default icon.
  */
 export function iconField(url: UrlField) {
   return (

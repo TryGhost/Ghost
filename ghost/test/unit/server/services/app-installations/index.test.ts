@@ -30,7 +30,7 @@ const manifest = {
   surfaces: [{ type: 'admin_page', url: '/admin' }],
 };
 
-/** What the outbound transport answers with: a 200 serving `text`. */
+/** A fake HTTP response: status 200 with `text` as the body. */
 const answering = (text: string) =>
   Object.assign(Promise.resolve({ statusCode: 200 }), { on: () => {}, text: async () => text });
 

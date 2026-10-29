@@ -101,10 +101,7 @@ function forAnotherApp(appId: string) {
   });
 }
 
-/**
- * The icon copy the installation has once `write` is stored: the new row's, or otherwise the
- * copy of the row that is or becomes the approved one.
- */
+/** The icon the installation shows once `write` is stored. */
 function iconCopyKeptBy(
   write: ManifestWrite<AddedRow>,
   current: Installation,
@@ -213,9 +210,8 @@ export class AppInstallationsService {
     if (!current) {
       throw notFound();
     }
-    // No need to fetch for an uninstalled installation. The approval is only written
-    // while the installation is as it was read here, which covers an uninstall or a change
-    // that happens during the fetches.
+    // Skip the fetches for an uninstalled app. Anything that changes during them is caught
+    // by the revision check when storing.
     if (current.status === 'uninstalled') {
       throw uninstalled();
     }
@@ -305,11 +301,9 @@ export class AppInstallationsService {
   }
 
   /**
-   * Shows the icon copy that approving the review would keep. When that's a copy Ghost
-   * already has, the pending manifest's or the approved one's, the icon isn't fetched, as
-   * approving won't fetch it either. Otherwise it's fetched as the app serves it now. The
-   * digest covers only the manifest, and confirming fetches the icon again, so the copy
-   * stored can differ if the app replaced its SVG in between.
+   * Shows the icon approving would store. A reused row shows its stored copy without a
+   * fetch, so the review works even if the icon URL stopped loading. The digest doesn't
+   * cover the icon, so confirming fetches it again.
    */
   private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
     const reviewed = {
@@ -346,10 +340,8 @@ export class AppInstallationsService {
   }
 
   /**
-   * Fetches the icon copy for the row a write adds, so the write's transaction never waits on
-   * the app. Each new row takes a fresh copy, and a write that adds none doesn't fetch it, so
-   * a stored copy never changes and a re-check that stores nothing never contacts the icon's
-   * URL.
+   * Fetches the icon for a write that adds a row, before the transaction opens so it never
+   * waits on the app. Other writes skip the fetch, so a stored copy never changes.
    */
   private async withIconCopy(write: ManifestWrite): Promise<ManifestWrite<AddedRow>> {
     switch (write.kind) {
@@ -390,7 +382,7 @@ export class AppInstallationsService {
     });
   }
 
-  /** The installation's pending manifest, by its ID, digest and icon copy, if it has one. */
+  /** The pending manifest's ID, digest and icon copy, or null if nothing is pending. */
   private async pendingManifestOf(installation: Installation) {
     const id = installation.pending_manifest_id;
     if (id === null) {
@@ -453,9 +445,8 @@ export class AppInstallationsService {
    *
    * If the manifest can't be loaded, or it's for a different app, the app is broken or its
    * URL now serves someone else. The session then fails as unavailable instead of running
-   * the approved manifest. So does an icon that can't be loaded for a manifest that would be
-   * stored, silent changes and resumes included, since each stored version takes a fresh copy;
-   * a re-check that stores nothing never fetches the icon.
+   * the approved manifest. So does an icon that can't be loaded when a new row needs storing,
+   * even for a silent change. A re-check that stores nothing doesn't fetch the icon.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation

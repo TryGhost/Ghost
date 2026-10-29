@@ -382,7 +382,7 @@ describe('App installations Admin API', function () {
         icon: { url: 'https://cdn.example.net/icon.svg' },
         surfaces: [{ type: 'admin_page', url: 'https://app.example.net/ghost' }],
       });
-      // Fetched for the review, and again for the new review the refusal carries.
+      // Fetched once for the review, then again for the fresh preview the refusal includes.
       nock('https://cdn.example.net').get('/icon.svg').times(2).reply(200, ICON);
       serve(absolute);
       const { digest } = await preview();
@@ -1383,7 +1383,7 @@ describe('App installations Admin API', function () {
         .put(`apps/installations/${id}/`)
         .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest, revision }] })
         .expectStatus(200);
-    /** Installs the app with an SVG icon it serves, which the review and the install each fetch. */
+    /** Installs the app with its own SVG icon. The review and the install each fetch it. */
     const installWithIcon = async () => {
       serveIcon(ICON, 2);
       return install(servedIcon);
@@ -1417,8 +1417,8 @@ describe('App installations Admin API', function () {
     });
 
     it('keeps a copy of icons as design tools export them', async function () {
-      // Adobe Illustrator's Save As declares entities in the doctype and styles shapes
-      // through a stylesheet, and Sketch draws shapes it defines through <use>.
+      // Illustrator's Save As puts entity declarations in the doctype and styles shapes with a
+      // stylesheet. Sketch defines shapes once and draws them with <use>.
       const exported = [
         `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
@@ -1534,8 +1534,8 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 0);
     });
 
-    // The copy is only ever taken when a manifest version is stored, so a re-check that
-    // stores nothing never contacts the icon's URL, and the icon can't change by itself.
+    // A re-check that stores nothing never contacts the icon URL, so the icon can't change
+    // by itself.
     it('never fetches the icon again for a re-check that stores nothing', async function () {
       const installed = await installWithIcon();
       serve(manifest(servedIcon));
@@ -1546,7 +1546,7 @@ describe('App installations Admin API', function () {
       assert.equal(unchanged.isDone(), false);
       assert.equal(body.app_sessions[0].installation.icon_svg, ICON);
 
-      // Nor for the pending manifest, which already has its copy.
+      // Same when the app serves the pending manifest, which already has its own copy.
       nock.cleanAll();
       serve(manifest({ ...servedIcon, name: 'Podcasts' }));
       serveIcon(NEW_ICON);
@@ -1594,7 +1594,7 @@ describe('App installations Admin API', function () {
       assert.equal((await installationRow(installed.id)).revision, 0);
       assert.ok(warn.calledWith(`Could not load the app icon at ${MANIFEST_HOST}${ICON_PATH}`));
 
-      // It opens again once the icon loads.
+      // Once the icon loads again, so does the app.
       serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
       serveIcon(NEW_ICON);
       const { body: opened } = await start(installed.id);
@@ -1602,8 +1602,8 @@ describe('App installations Admin API', function () {
       assert.equal(opened.app_sessions[0].installation.icon_svg, NEW_ICON);
     });
 
-    // The re-check and the approval decide before their transaction, so the icon can be
-    // fetched outside it; the transaction then only goes ahead at the same revision.
+    // The icon is fetched between planning a write and storing it, so a revision change
+    // during the fetch must stop the write.
     const changeDuringIconFetch = (id: string, svg: string) =>
       nock(MANIFEST_HOST)
         .get(ICON_PATH)
@@ -1631,7 +1631,7 @@ describe('App installations Admin API', function () {
       const reviewed = await preview();
       serve(manifest({ ...servedIcon, name: 'Podcasts' }));
       changeDuringIconFetch(installed.id, NEW_ICON);
-      // For the new review the refusal carries.
+      // For the fresh preview the refusal includes.
       serveIcon(NEW_ICON);
 
       const { body } = await agent
@@ -1689,9 +1689,8 @@ describe('App installations Admin API', function () {
       assert.equal(await iconOf((await installationRow(installed.id)).manifest_id), NEW_ICON);
     });
 
-    // A review shows the copy approving it would keep. When that's a copy Ghost already has,
-    // neither the review nor the approval fetches the icon, so one that stopped loading
-    // doesn't get in the way.
+    // When approving reuses an existing row, nothing fetches the icon, so one that stopped
+    // loading doesn't get in the way.
     const iconStopsLoading = () => nock(MANIFEST_HOST).get(ICON_PATH).times(2).reply(503);
 
     it('reviews and approves the pending manifest with the copy it already has', async function () {

@@ -178,8 +178,8 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * A manifest row's digest and icon copy, by ID. The manifest itself isn't read, so a row
-   * stored under an older contract, which may no longer decode, can still be compared against.
+   * Reads only the digest and icon copy, skipping the manifest: a row stored under an older
+   * contract may no longer decode, but we still compare against it.
    */
   async findDigestAndIcon(id: string): Promise<z.output<typeof DigestAndIconRow> | undefined> {
     const row = await this.knex(MANIFESTS)

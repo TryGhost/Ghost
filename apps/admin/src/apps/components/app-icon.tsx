@@ -17,7 +17,7 @@ function namedIcon(name: string): LucideIcon.LucideIcon | undefined {
 const TILE_SIZES = { md: 'size-10', lg: 'size-12', xl: 'size-16 rounded-xl' };
 const GLYPH_SIZES = { md: 'size-[18px]', lg: 'size-6', xl: 'size-7' };
 
-/** What an app's icon is drawn from: an installation, or a preview of one. */
+/** An installation or a preview. */
 type AppIconSource = Pick<AppInstallation, 'manifest' | 'icon_svg'>;
 
 interface AppIconProps {
@@ -26,14 +26,15 @@ interface AppIconProps {
   className?: string;
 }
 
+// Drawn as an image, which can't run scripts, load anything or pick up Admin's styles. A
+// second layer on top of the server's sanitizing.
 const StoredSvg: React.FC<{ svg: string; className: string }> = ({ svg, className }) => (
   <img alt="" className={className} src={`data:image/svg+xml,${encodeURIComponent(svg)}`} />
 );
 
 /**
- * An app's icon, drawn by Ghost on the app's accent color: an icon Admin ships, by name, or
- * the copy of the app's SVG Ghost stored. Admin never requests the SVG from the app. A name
- * Admin doesn't know, or an SVG with no stored copy, falls back to a default.
+ * An app's icon on its accent colour: a named icon, or the copy of its SVG that Ghost
+ * stored, so Admin never requests it from the app. Falls back to a default icon.
  */
 export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className }) => {
   const { icon, accent_color: color } = app.manifest;
@@ -63,9 +64,8 @@ export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className })
 };
 
 /**
- * An app's icon at the size of a sidebar item's. A named icon is drawn bare, so the
- * sidebar colours it like its own. The app's own SVG is drawn for its accent colour, so it
- * keeps a small tile of it.
+ * An app's icon at sidebar size. A named icon is drawn bare so the sidebar colours it. An
+ * app's SVG is made for its accent colour, so it keeps a small tile of it.
  */
 export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => {
   if (app.icon_svg) {

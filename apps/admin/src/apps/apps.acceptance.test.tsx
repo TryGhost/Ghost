@@ -1290,7 +1290,7 @@ describe('Managing apps', () => {
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
   });
 
-  // Any request to the app's icon URL would also fail the test, as one the spec didn't fake.
+  // The icon URL isn't faked, so a request to it would fail the test.
   it('draws an app’s own icon from the copy Ghost stored, never from the app', async () => {
     const withIcon = installation({
       manifest: manifest({ icon: { url: ICON_URL } }),

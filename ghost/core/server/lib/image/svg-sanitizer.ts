@@ -12,22 +12,21 @@ import type * as Svgo from 'svgo';
 const gunzip = promisify(zlib.gunzip);
 const gzip = promisify(zlib.gzip);
 
-// A reference to something within the SVG itself, such as `#gradient`.
+// A reference within the SVG itself, such as `#gradient`.
 const FRAGMENT = /^\s*#/;
-// CSS that can reach beyond the SVG: a url() of anything but a fragment, the other
-// functions that take a URL or an element, an import, or an escape, which could spell any
-// of them.
+// CSS that can reach outside the SVG: url() of anything but a fragment, other functions
+// that take a URL or an element, and @import. Any backslash too, since `\75rl(` unescapes
+// to `url(`.
 const UNCONTAINED_CSS = /\\|@import|(?:element|image|image-set|src)\s*\(|url\s*\((?!\s*['"]?\s*#)/i;
-// A url() of a fragment, up to its `#`. Once UNCONTAINED_CSS is ruled out, every url() is.
+// A fragment url() up to its `#`, where the ID prefix goes.
 const URL_FRAGMENT = /url\s*\(\s*['"]?\s*#/gi;
-// A doctype that declares entities, as Adobe Illustrator writes. Parsed as HTML, it ends at
-// the first `>`, inside the declarations, and leaves the rest of them as text.
+// Illustrator writes entity declarations in the doctype. The HTML parser ends the doctype
+// at the first `>`, inside them, so the rest would leak out as text.
 const DOCTYPE_WITH_DECLARATIONS = /<!DOCTYPE[^[>]*\[[^\]]*\]\s*>/i;
 
 /**
- * The sanitized SVG as a document of its own, written as XML so it can be drawn as an
- * image. Null if `body` holds anything besides a single `<svg>`, such as the rest of an
- * HTML page with an SVG in it.
+ * The sanitized SVG as XML, so it works as an image. Null if `body` holds anything besides
+ * a single `<svg>`, such as an HTML page containing a logo.
  */
 function standaloneSvg(body: HTMLElement, window: JSDOMModule.DOMWindow): string | null {
   const [root, ...rest] = [...body.childNodes].filter(
@@ -41,10 +40,9 @@ function standaloneSvg(body: HTMLElement, window: JSDOMModule.DOMWindow): string
   return new window.XMLSerializer().serializeToString(root);
 }
 
-// The attributes that size an <svg> in a page, the only ones its root keeps besides its
-// namespaces.
+// What sizes an <svg> in a page. With the namespaces, the only attributes the root keeps.
 const ROOT_SIZE = new Set(['viewBox', 'width', 'height', 'preserveAspectRatio']);
-// The other attributes only an <svg> has, which would do nothing on its content.
+// Attributes that only work on an <svg>, so they're dropped rather than moved to the <g>.
 const SVG_ONLY = new Set([
   'x',
   'y',
@@ -55,7 +53,10 @@ const SVG_ONLY = new Set([
   'contentStyleType',
 ]);
 
-/** Moves the root's styling onto a <g> around its content, which a page doesn't lay out. */
+/**
+ * An inlined SVG's root is laid out like any box, so its styling could move or resize it.
+ * A <g> isn't laid out, so the styling moves onto one around the content.
+ */
 const moveRootStyling: Svgo.CustomPlugin = {
   name: 'moveRootStyling',
   fn: () => ({
@@ -85,18 +86,17 @@ const moveRootStyling: Svgo.CustomPlugin = {
 };
 
 /**
- * The SVG with all of its styling on elements a page doesn't lay out, so that inlined,
- * nothing can move or grow the box the page gives it. The stylesheet is moved onto the
- * elements it styles, as `style` attributes, and the rules that can't be moved, since they
- * depend on how the SVG is shown, such as `:hover` or `@media (prefers-color-scheme:
- * dark)`, are removed with it. The root's styling is then moved onto its content.
+ * Moves the stylesheet onto the elements it matches, then the root's styling onto its
+ * content. Inlined, a <style> would apply to the whole page, while a `style` attribute only
+ * affects its own element. Rules that depend on how the SVG is shown, such as `:hover` or
+ * `@media`, are dropped. Design tools rarely export them.
  */
 function flattenStyles(svg: string): string {
   // Loaded lazily, like jsdom.
   const { optimize } = require('svgo') as typeof Svgo;
   return optimize(svg, {
     plugins: [
-      // Without removeMatchedSelectors, which drops IDs that are still referred to.
+      // removeMatchedSelectors would strip IDs that are still referenced.
       { name: 'inlineStyles', params: { onlyMatchedOnce: false, removeMatchedSelectors: false } },
       'removeStyleElement',
       moveRootStyling,
@@ -105,10 +105,9 @@ function flattenStyles(svg: string): string {
 }
 
 /**
- * Sanitizes the content with DOMPurify. `contained` makes it self-contained, as
- * `sanitizeSvgContent` describes. With an `idPrefix`, every ID and every reference to one
- * gets the prefix, and anything that could only style the SVG through a stylesheet is
- * removed, since its stylesheet must have been flattened by then.
+ * Runs DOMPurify. `contained` applies the rules described on `sanitizeSvgContent`. An
+ * `idPrefix` is only passed after `flattenStyles`: it prefixes IDs and references to them,
+ * and drops <style> and `class`, whose styling is on the elements by then.
  */
 function purify(
   content: string,
@@ -139,24 +138,25 @@ function purify(
     contained ? content.replace(DOCTYPE_WITH_DECLARATIONS, '') : content,
     {
       USE_PROFILES: { svg: true, svgFilters: true },
-      // Links, tab stops and data attributes only matter once it's inlined, where a page's
-      // focus, clicks and scripts would reach them. A link's content stays.
+      // Harmless in an image, but if inlined, the page's focus, clicks and scripts would
+      // reach links, tab stops and data attributes. A link's content is kept.
       FORBID_TAGS: [
         ...(contained ? ['image', 'feImage', 'a'] : []),
         ...(flattened ? ['style'] : []),
       ],
       FORBID_ATTR: [...(contained ? ['tabindex'] : []), ...(flattened ? ['class'] : [])],
       ALLOW_DATA_ATTR: !contained,
-      // Some of them refer to elements by ID, which would be the page's if it's inlined.
+      // Some point at IDs we don't prefix, which would be the page's if inlined.
       ALLOW_ARIA_ATTR: !contained,
-      // DOMPurify leaves it out for its reference, which can only be a fragment here.
+      // DOMPurify drops <use> because its href can load another document, but the hook
+      // above only keeps fragments. Sketch exports draw shapes with <use>.
       ADD_TAGS: contained ? ['use'] : [],
       RETURN_DOM: true,
     },
   ) as HTMLElement;
   if (contained) {
-    // Checked once DOMPurify is done: removing an element it doesn't allow removes the
-    // element's text too, which joins the text either side of it.
+    // Checked after DOMPurify: removing an element inside a <style> joins the text either
+    // side, so `@im<script>x</script>port` becomes `@import`.
     for (const style of body.querySelectorAll('style')) {
       if (UNCONTAINED_CSS.test(style.textContent ?? '')) {
         style.textContent = '';
@@ -177,17 +177,16 @@ function purify(
 /**
  * Returns sanitized SVG content, or null if the content is invalid.
  *
- * `selfContained` also removes every reference to another document, such as an external
- * image, link or stylesheet URL, so drawing the SVG never requests anything. Images are
- * removed outright, since they only ever show another document, and a stylesheet with a
- * reference is emptied, since CSS can't be pared down safely here. The SVG is returned as
- * a document of its own, which can be drawn as an image, or null if the content is
- * anything but a single SVG.
+ * `selfContained` is for SVGs we don't trust, such as app icons. It also:
  *
- * It's also kept from reaching beyond its own elements if it's inlined into a page. All of
- * its styling is moved onto elements the page doesn't lay out (see `flattenStyles`), its
- * IDs get a prefix of its own, from a digest of it, so the page's elements and the SVG's
- * never refer to each other, and its links, tab stops and data attributes are removed.
+ * - Removes references to other documents, so drawing the SVG never makes a request.
+ *   Images go entirely, and a stylesheet with any external reference is emptied, since we
+ *   can't safely trim CSS.
+ * - Returns a standalone XML document that works as an image, or null for anything but a
+ *   single SVG.
+ * - Keeps the SVG from affecting the page if inlined: styling moves onto elements the page
+ *   doesn't lay out (see `flattenStyles`), IDs get a prefix from the SVG's digest, and links,
+ *   tab stops and data attributes are removed.
  */
 export function sanitizeSvgContent(
   content: string,
@@ -197,7 +196,7 @@ export function sanitizeSvgContent(
   if (!selfContained || sanitized === null) {
     return sanitized;
   }
-  // Sanitized again, so nothing reaches the result without DOMPurify's checks.
+  // SVGO rewrites the markup, so sanitize its output again.
   const flattened = flattenStyles(sanitized);
   const digest = createHash('sha256').update(flattened).digest('hex').slice(0, 16);
   return purify(flattened, { contained: true, idPrefix: `svg-${digest}-` });

@@ -70,10 +70,9 @@ that app.
 **Loaded manifest**:
 A manifest fetched server-side from its manifest URL and parsed, ready to
 preview, compare or store. A manifest is only ever used in this form, never as
-the browser sent it. When a manifest version with an SVG icon is stored, the
-icon is fetched too, and a sanitized copy is kept with that version; Admin
-only ever shows that copy. A preview shows the copy approving it would keep,
-so it only fetches the icon when that would be a new copy.
+the browser sent it. When Ghost stores a manifest version with an SVG icon,
+it keeps a sanitized copy of the icon with it, and Admin only shows that copy.
+A preview only fetches the icon when approving would add a new row.
 _Avoid_: intake, fetched manifest, raw manifest
 
 **Preview**:
@@ -108,14 +107,12 @@ _Avoid_: login, token, connection
 
 **Re-check**:
 Fetching an installed app's manifest again from its approved manifest URL when
-an app session starts, and storing what changed. The icon is only fetched for
-a manifest version that will be stored, so a stored copy never changes. Each
-version stored takes a fresh copy, even at the same icon URL, so the icon shown
-can change with a silent change or a resume, without approval. A manifest that
-can't be loaded, one for another app, or an icon that can't be loaded for a
-version that would be stored makes the app unavailable, even when the only
-change is a silent one: the session fails and nothing is stored, so the app
-opens again once they load.
+an app session starts, and storing what changed. The icon is only fetched when
+a new version is stored, so a stored copy never changes. Every new version gets
+a fresh copy, so an app can change its icon with a silent change or a resume.
+If the manifest can't be loaded, is for another app, or a new version's icon
+can't be loaded, the app is unavailable: the session fails and nothing is
+stored, so the app opens again once it's fixed.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:
