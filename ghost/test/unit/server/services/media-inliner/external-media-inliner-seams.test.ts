@@ -5,12 +5,9 @@ import sinon from 'sinon';
 import type { ExternalMediaImportResult } from '../../../../../core/server/services/media-inliner/types';
 
 const loggingLib = require('@tryghost/logging');
+const request = require('../../../../../core/server/lib/request-external');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const ExternalMediaInliner = require('../../../../../core/server/services/media-inliner/external-media-inliner');
-// The HEIC codec is required lazily inside the implementation, so the only
-// seam that reaches that require today is Node's CommonJS loader.
-const Module = require('node:module') as {
-  _load: (request: string, ...rest: unknown[]) => unknown;
-};
 
 type Inliner = {
   importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
@@ -66,26 +63,19 @@ function pageModel(resources: object[]) {
 }
 
 describe('ExternalMediaInliner seams', function () {
-  const originalLoad = Module._load;
   let logging: { info: sinon.SinonStub; error: sinon.SinonStub; warn: sinon.SinonStub };
-  let heicLoads = 0;
 
+  // The root supplies these collaborators in production; the tests keep the
+  // real ones and replace a loader only where a case needs it.
   function create(deps: object = {}): Inliner {
-    return new ExternalMediaInliner(deps);
-  }
-
-  // Every lookup of the codec goes through here, loaded or not, so the
-  // production require inside the conversion path stays observable.
-  function interceptHeicConvert(replacement?: () => unknown) {
-    Module._load = function (request: string, ...rest: unknown[]) {
-      if (request === 'heic-convert') {
-        heicLoads += 1;
-        if (replacement) {
-          return replacement();
-        }
-      }
-      return originalLoad.call(this, request, ...rest);
-    };
+    return new ExternalMediaInliner({
+      logging: loggingLib,
+      request,
+      urlUtils,
+      loadFileType: () => import('file-type'),
+      loadHeicConvert: () => require('heic-convert'),
+      ...deps,
+    });
   }
 
   function models() {
@@ -98,7 +88,6 @@ describe('ExternalMediaInliner seams', function () {
   }
 
   beforeEach(function () {
-    heicLoads = 0;
     logging = {
       info: sinon.stub(loggingLib, 'info'),
       error: sinon.stub(loggingLib, 'error'),
@@ -107,7 +96,6 @@ describe('ExternalMediaInliner seams', function () {
   });
 
   afterEach(function () {
-    Module._load = originalLoad;
     sinon.restore();
   });
 
@@ -262,16 +250,16 @@ describe('ExternalMediaInliner seams', function () {
   describe('lazy codecs', function () {
     const heicUrl = 'https://cdn.example/image.heic';
 
-    function harness(body: Buffer, headers: Record<string, string> = {}) {
+    function harness(body: Buffer, deps: object = {}) {
       const storage = fakeStorage();
       const getMediaStorage = sinon.stub().resolves(storage);
-      const inliner = create({ getMediaStorage });
-      sinon.stub(inliner, 'getRemoteMedia').resolves({ body, headers });
+      const inliner = create({ getMediaStorage, ...deps });
+      sinon.stub(inliner, 'getRemoteMedia').resolves({ body, headers: {} });
       return { inliner, getMediaStorage, storage };
     }
 
     it('prefers the sniffed file type over the response headers and URL', async function () {
-      const { inliner } = harness(fixture('ghost-logo.png'), { 'content-type': 'image/gif' });
+      const { inliner } = harness(fixture('ghost-logo.png'));
 
       const media = await inliner.extractFileDataFromResponse('https://cdn.example/photo.gif', {
         body: fixture('ghost-logo.png'),
@@ -283,9 +271,19 @@ describe('ExternalMediaInliner seams', function () {
     });
 
     it('does not load the HEIC codec when the inliner module is loaded', function () {
-      // The module under test is required at the top of this file, before the
-      // interceptor exists, so load a fresh copy to observe its import.
-      interceptHeicConvert();
+      // The module under test is required at the top of this file, so load a fresh
+      // copy under a CommonJS loader interceptor to observe its imports.
+      const Module = require('node:module') as {
+        _load: (request: string, ...rest: unknown[]) => unknown;
+      };
+      const originalLoad = Module._load;
+      let heicLoads = 0;
+      Module._load = function (moduleName: string, ...rest: unknown[]) {
+        if (moduleName === 'heic-convert') {
+          heicLoads += 1;
+        }
+        return originalLoad.call(this, moduleName, ...rest);
+      };
       const inlinerPath =
         require.resolve('../../../../../core/server/services/media-inliner/external-media-inliner');
       const cached = require.cache[inlinerPath];
@@ -294,33 +292,62 @@ describe('ExternalMediaInliner seams', function () {
         require(inlinerPath);
         assert.equal(heicLoads, 0);
       } finally {
+        Module._load = originalLoad;
         require.cache[inlinerPath] = cached;
       }
     });
 
-    it('loads the HEIC codec when a HEIC file is converted, not before', async function () {
-      interceptHeicConvert();
-      const png = harness(fixture('ghost-logo.png'));
+    it('falls back to the response headers when file-type cannot be loaded, and tries again next time', async function () {
+      const failure = new Error('file-type unavailable');
+      const loadFileType = sinon
+        .stub()
+        .callsFake(() => import('file-type'))
+        .onFirstCall()
+        .rejects(failure);
+      const { inliner } = harness(fixture('ghost-logo.png'), { loadFileType });
+      const response = {
+        body: fixture('ghost-logo.png'),
+        headers: { 'content-type': 'image/gif' },
+      };
 
-      assert.equal(heicLoads, 0);
+      const fallback = await inliner.extractFileDataFromResponse(
+        'https://cdn.example/photo.gif',
+        response,
+      );
+      const sniffed = await inliner.extractFileDataFromResponse(
+        'https://cdn.example/photo.gif',
+        response,
+      );
+
+      assert.equal(fallback.extension, '.gif');
+      assert.equal(sniffed.extension, '.png');
+      sinon.assert.calledTwice(loadFileType);
+    });
+
+    it('loads the HEIC codec when a HEIC file is converted, not before', async function () {
+      const loadHeicConvert = sinon.spy(() => require('heic-convert'));
+      const png = harness(fixture('ghost-logo.png'), { loadHeicConvert });
+
+      sinon.assert.notCalled(loadHeicConvert);
       const pngResult = await png.inliner.importUrl('https://cdn.example/logo.png');
       assert.equal(pngResult.status, 'stored');
-      assert.equal(heicLoads, 0);
+      sinon.assert.notCalled(loadHeicConvert);
 
-      const heic = harness(fixture('image.heic'));
+      const heic = harness(fixture('image.heic'), { loadHeicConvert });
       const result = await heic.inliner.importUrl(heicUrl);
 
       assert.equal(result.status, 'stored');
-      assert.ok(heicLoads >= 1, 'the codec is required on first conversion');
+      sinon.assert.calledOnce(loadHeicConvert);
       assert.equal(heic.getMediaStorage.firstCall.args[0], '.jpg');
     });
 
     it('surfaces a codec that cannot be loaded as an extraction failure rather than storing the original', async function () {
       const failure = new Error("Cannot find module 'heic-convert'");
-      interceptHeicConvert(() => {
-        throw failure;
+      const { inliner, getMediaStorage } = harness(fixture('image.heic'), {
+        loadHeicConvert: () => {
+          throw failure;
+        },
       });
-      const { inliner, getMediaStorage } = harness(fixture('image.heic'));
 
       const result = await inliner.importUrl(heicUrl);
 
@@ -337,11 +364,12 @@ describe('ExternalMediaInliner seams', function () {
 
     it('keeps the original HEIC bytes and extension when conversion itself fails', async function () {
       const failure = new Error('Unsupported HEIC variant');
-      interceptHeicConvert(() => async () => {
-        throw failure;
-      });
       const heicFile = fixture('image.heic');
-      const { inliner, getMediaStorage, storage } = harness(heicFile);
+      const { inliner, getMediaStorage, storage } = harness(heicFile, {
+        loadHeicConvert: () => async () => {
+          throw failure;
+        },
+      });
 
       const result = await inliner.importUrl(heicUrl);
 

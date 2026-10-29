@@ -322,7 +322,7 @@ services:
           - core/server/auth/session/index.js
           - core/server/services/route-settings/index.js
           - core/server/services/custom-redirects/index.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/oembed/service.js
           - core/server/services/jobs-service/index.ts
           - core/server/services/members/import-export/index.ts
@@ -7098,65 +7098,60 @@ services:
   media-inliner:
     kind: directory
     disposition: retain
+    migrated: true
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        The constructor captures shared models and a storage-selection callback without
-        starting work or owning resources. Return one retained inliner after adapters are
-        ready, then register jobs with that instance and adapt getInstance consumers.
-        Current init replaces the object, but no production replacement requirement was
-        found; cover retention and per-call storage selection explicitly.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned default root returns one ready ExternalMediaInliner once the storage
+        adapters and models exist; boot registers the job handler with that instance and
+        content import reads it per run. Repeated init now retains the instance, which no
+        production path relied on changing. Storage selection still reads the uploads policy
+        on every call over the adapters resolved at init.
+      reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
       sources:
-        - core/server/services/media-inliner/service.js
+        - core/server/services/media-inliner/index.ts
         - core/server/services/media-inliner/external-media-inliner.js
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
-        - test/unit/server/services/media-inliner/service.test.ts
+        - test/unit/server/services/media-inliner/root.test.ts
       dependencies:
         complexity: straightforward
         reason: >-
-          Models and live storage selection already use a constructor seam. The remaining request,
-          logging, URL/image helpers and codecs can use that seam too. Preserve the existing
-          first-use file-type/HEIC loading and per-call upload configuration; these are bounded
-          wiring changes, not a dependency cycle.
-        preparation:
-          - >-
-            Move service.js composition into index.ts and pass request, logging, image/URL helpers
-            and utility operations into ExternalMediaInliner.
-          - >-
-            Supply lazy file-type/HEIC loaders and the bounded-regex operation from the root,
-            preserving import-error behavior and current codec loading timing.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+          The root composes models, the three storage adapters, live upload configuration,
+          logging, the external request client, URL utilities and lazy file-type and HEIC
+          loaders in index.ts; the implementation receives them through its constructor and
+          keeps first-use loading and the fallback on a failed file-type load. mime-types, path,
+          node:vm and the shared image-content and svg-sanitizer helpers are stateless and stay
+          imported directly under exact allowances; no disallowed dependency remains.
+        preparation: []
+        reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
         sources:
-          - core/server/services/media-inliner/index.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/boot.js
     entryPoints:
-      - media-inliner/index.js
+      - media-inliner/index.ts
     notes: >-
       Preserve the boot-owned inliner, retained job handlers and per-import media consumers.
-      Root replacement and shared transport/storage ownership need contracts before lifecycle
-      migration; successful job completion does not mean every resource was inlined.
+      Shared transport/storage ownership needs contracts before any disposal is added;
+      successful job completion does not mean every resource was inlined.
     contracts:
       exports:
         summary: >-
-          The CommonJS index re-exports a stable object with receiver-independent async init
-          and synchronous getInstance. getInstance throws IncorrectUsageError until publication;
-          there is no shutdown/reset. The deep module exports ExternalMediaInliner, including
-          receiver-dependent importUrl and inline plus processing helpers and static findMatches.
-          importUrl resolves stored/failed result objects; inline resolves undefined. Unit tests
-          pin injected importUrl stages and helpers. Root units pin getInstance throwing
-          IncorrectUsageError before init, init resolving undefined and getInstance then returning
-          the same ready inliner synchronously.
+          The TypeScript root default-exports a defineService initializer with init and a
+          service getter that throws IncorrectUsageError until the inliner is published; there
+          is no shutdown/reset and no extras. The deep module exports ExternalMediaInliner,
+          including receiver-dependent importUrl and inline plus processing helpers and static
+          findMatches. importUrl resolves stored/failed result objects; inline resolves undefined.
+          Unit tests pin injected importUrl stages and helpers. Root units pin the getter throwing
+          before init, init resolving undefined and the getter then returning the same ready
+          inliner synchronously.
         sources:
-          - core/server/services/media-inliner/index.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/media-inliner/types.ts
         tests:
@@ -7164,16 +7159,18 @@ services:
           - test/unit/server/services/media-inliner/root.test.ts
       construction:
         summary: >-
-          Importing the root creates no inliner. Every init loads the class/models, obtains
-          media/image/file adapters and creates a new inliner with retained models and a storage
-          callback. The async function has no await, so assignment occurs before its fulfilled
-          promise is returned. Construction only stores references, but importing its request
-          dependency creates shared HTTP/HTTPS agents. Root tests stub adapter lookup and exercise
-          the resulting selector, and pin that import resolves no adapter, that init resolves the
-          three storage adapters once and publishes one inliner, and that an adapter lookup
-          failure publishes nothing and allows an explicit retry.
+          Importing the root creates no inliner. The first init loads the class, models and
+          collaborators, obtains the media/image/file adapters and creates one inliner with
+          retained models, logging, the external request client, URL utilities, lazy codec
+          loaders and a storage callback; later init calls return the same instance. The factory
+          is synchronous, so the kernel publishes once its promise settles. Construction only
+          stores references, but requiring the request client creates shared HTTP/HTTPS agents.
+          Root tests stub adapter lookup and exercise the resulting selector, and pin that import
+          resolves no adapter, that init resolves the three storage adapters once and publishes
+          one inliner, that an adapter lookup failure publishes nothing and allows an explicit
+          retry, and that the root's loaders convert a HEIC download.
         sources:
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/lib/request-external.js
         tests:
@@ -7181,16 +7178,16 @@ services:
           - test/unit/server/services/media-inliner/root.test.ts
       consumers:
         summary: >-
-          Boot passes the current instance to a retained external-media job handler. Admin
+          Boot passes the ready service to a retained external-media job handler. Admin
           db.inlineMedia dispatches explicit/default domains and returns after enqueue, not
-          completion. Content import instead reads getInstance when creating each run's
+          completion. Content import instead reads the service getter when creating each run's
           PostMediaInliner, which retains that instance and caches URL promises across its rows.
           Handler/endpoint units use stubs; a real job integration proves a stored feature-image
           URL and completion log. CSV HTTP tests cover real referenced-media composition,
           reuse, skipped local URLs and unsupported-row isolation, with network interception.
           Root units register the real handler with the published inliner and show it keeps
           that inliner across a later init, and that a PostMediaInliner over the published
-          inliner caches per run while a later run reads the current instance.
+          inliner caches per run while a later run downloads the same URL again.
         sources:
           - core/boot.js
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -7209,16 +7206,16 @@ services:
       startup:
         summary: >-
           Required boot initialization awaits media init in the service Promise.all before
-          retrieving the instance, registering job handlers and starting job delivery. Rejection
+          reading the service, registering job handlers and starting job delivery. Rejection
           prevents those later steps but does not undo other services' concurrent initialization.
-          Direct getInstance has only a publication guard; the class accepts incomplete injected
-          dependencies. Boot units pin that pending media init blocks handler registration and
-          job start and that its rejection propagates without starting them; root units pin
-          adapter lookup failure publishing nothing and a later init succeeding. Construction
-          acquires nothing, so there is no partial-startup cleanup to pin.
+          The service getter has only the kernel's publication guard; the class accepts
+          incomplete injected dependencies. Boot units pin that pending media init blocks handler
+          registration and job start and that its rejection propagates without starting them;
+          root units pin adapter lookup failure publishing nothing and a later init succeeding.
+          Construction acquires nothing, so there is no partial-startup cleanup to pin.
         sources:
           - core/boot.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
@@ -7228,19 +7225,19 @@ services:
           - test/unit/server/services/media-inliner/root.test.ts
       lifetime:
         summary: >-
-          Each successful init replaces the root instance, without disposing the previous one.
-          A failed init before assignment leaves any old instance available. Previously registered
-          handlers and running imports retain old instances; future getInstance calls return the
-          replacement. The inliner has no shared URL cache or concurrency guard; inline downloads
-          duplicate occurrences independently. Content import owns a separate cache per run.
-          Deep module caches retain the file-type function and reusable VM context; match input
-          references are cleared in finally. Root units pin replacement on repeated init as
-          incidental, a registered handler and an import run keeping the inliner they captured,
-          the published inliner surviving a later failed init, and no root-wide URL cache: a
-          second import run downloads a URL the first run already stored. Seam units pin that
-          every occurrence in one body downloads again. Restart remains unasserted.
+          The kernel retains the first published inliner across later init calls, so handlers,
+          running imports and later reads share one instance; a failed first init publishes
+          nothing and a later explicit init runs the factory again. The inliner has no shared URL
+          cache or concurrency guard; inline downloads duplicate occurrences independently.
+          Content import owns a separate cache per run. Each inliner retains the file-type
+          function after its first download; the deep module keeps a reusable VM context whose
+          match inputs are cleared in finally. Root units pin retention across repeated init, a
+          registered handler and an import run keeping the inliner, the published inliner
+          surviving a later failed init, and no root-wide URL cache: a second import run downloads
+          a URL the first run already stored. Seam units pin that every occurrence in one body
+          downloads again. Restart remains unasserted.
         sources:
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/content-import/index.ts
@@ -7251,7 +7248,7 @@ services:
       configuration:
         summary: >-
           Storage adapter identities are captured at init; allowed upload extensions are read
-          through config.get per selection. Images take precedence and need allowed contents,
+          through config.get per selection inside the root's selector. Images take precedence and need allowed contents,
           with SVG sanitization before selection; media/files use extension membership. Network
           agent options are captured when request-external loads, while its environment/site-URL
           guards read the accessor per request. These are immutable-config access/capture rules,
@@ -7262,7 +7259,7 @@ services:
           literal startsWith(domain). Seam units pin that distinction for one pattern domain and
           that the sniffed file type wins over Content-Type and the URL.
         sources:
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/lib/image/image-content.ts
           - core/server/lib/image/svg-sanitizer.ts
@@ -7275,9 +7272,9 @@ services:
           - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
       resources:
         summary: >-
-          The inliner borrows models, storage and shared request agents. It buffers each download,
-          may load the HEIC codec and writes files before updating models, without a transaction
-          or rollback linking those effects. It owns no timer/listener, pending-request registry
+          The inliner borrows models, storage and the shared request client the root injects. It
+          buffers each download, may load the HEIC codec through the root's loader and writes
+          files before updating models, without a transaction or rollback linking those effects. It owns no timer/listener, pending-request registry
           or cancellation/drain hook. Jobs owns queued work and delegates shutdown to its backend;
           no media-specific abort is passed to downloads. Request defaults include redirects and
           a 10-second timeout; test mode changes timeout/retries. Existing intercepted requests,
@@ -7285,7 +7282,7 @@ services:
           production retry policy, socket disposal or orphan-file cleanup.
         sources:
           - core/server/services/media-inliner/external-media-inliner.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/lib/request-external.js
           - core/server/services/jobs-service/jobs-service.ts
           - core/boot.js
@@ -7306,14 +7303,14 @@ services:
           download failure leaving that post untouched while later posts proceed, query failures
           rejecting inline before any write or after earlier writes, the HEIC codec required on
           first conversion only, a codec that cannot load escaping as an extraction failure, and
-          a conversion failure keeping the original bytes and extension. A failing file-type
-          import falls into the same fallback as an unrecognised buffer; it is not pinned
-          because the dynamic import has no seam. Handler units pin rejection forwarding. CSV
+          a conversion failure keeping the original bytes and extension, and a failed file-type
+          load falling back to Content-Type and retried on the next download. Handler units pin
+          rejection forwarding. CSV
           tests prove row isolation for unsupported files and no post after an injected
           unexpected throw, not rollback of already-stored remote media or every error stage.
         sources:
           - core/server/services/media-inliner/external-media-inliner.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/content-import/import/media.ts
           - core/server/services/content-import/import/importer.ts
@@ -7324,10 +7321,6 @@ services:
           - test/e2e-api/admin/posts-importer.test.js
     unverified: []
     blockers:
-      - >-
-        Repeated init is pinned as replacement, which nothing in production relies on; retained
-        handlers and import runs keep the inliner they captured. Adopting an idempotency guard
-        changes that one assertion, not any consumer contract.
       - >-
         Pending validation/downloads across a configuration change remain unpinned; the
         selection policy is read per call and the adapters are retained from init.
