@@ -213,7 +213,8 @@ const processStep = async ({
     return null;
   }
 
-  // Exclude 'from' trigger rules; the member has already been added to the automation
+  // For paid_subscription_changed triggers, only the destination rules determine whether the run continues.
+  // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
   const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
 
   const memberRelationsToLoad = ['newsletters'];
