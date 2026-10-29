@@ -146,7 +146,7 @@ describe('approvalWrite', function () {
     });
   });
 
-  // The app reverted the pending changes, and approving lets go of them.
+  // The app went back to the approved manifest, and approving it discards the pending one.
   it('approves the approved manifest’s row again when nothing differs from it', function () {
     assert.deepEqual(approvalWrite({ current, pending, loaded: loaded() }), {
       kind: 'approve_existing',

@@ -330,9 +330,8 @@ export class AppInstallationsService {
   }
 
   /**
-   * Carries out a write planned from `current`, unless the installation has changed since.
-   * The value it returns is the ID of the new approved or pending manifest, or null for a
-   * `nothing` write.
+   * Applies a write planned from `current`, unless the installation changed since. Returns
+   * the newly approved or pending manifest's ID, or null for `nothing`.
    */
   private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {

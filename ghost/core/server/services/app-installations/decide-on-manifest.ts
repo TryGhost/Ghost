@@ -34,17 +34,14 @@ function compare(approved: Approved, loaded: LoadedManifest) {
   };
 }
 
-/** The manifests a decision is made from: the approved one, the pending one and the loaded one. */
+/** The approved, pending and just-loaded manifests. */
 interface Manifests {
   current: Pick<Installation, 'manifest_id' | 'manifest_url' | 'manifest'>;
   pending: { id: string; digest: string } | null;
   loaded: LoadedManifest;
 }
 
-/**
- * What to do with a loaded manifest, with the changes it was based on. `decideOnManifest`
- * describes each kind.
- */
+/** See `decideOnManifest` for each kind. Carries the changes so callers don't compare again. */
 export type ManifestDecision =
   | { kind: 'unchanged' | 'apply' | 'resume' | 'suspend'; changes: AppManifestChange[] }
   | { kind: 'use_pending'; changes: AppManifestChange[]; pendingManifestId: string };
@@ -80,14 +77,12 @@ export function decideOnManifest({ current, pending, loaded }: Manifests): Manif
 }
 
 /**
- * What storing a decision writes, decided before anything is written:
+ * Prepare the write so that anything a new row needs can be done outside the transaction.
  *
- * - `nothing`: the installation stays as it is.
- * - `approve_existing`: a manifest that already has a row becomes the approved manifest, and
- *   any pending one is let go of.
- * - `add_approved`: the loaded manifest gets a new row, which becomes the approved manifest,
- *   and any pending one is let go of.
- * - `add_pending`: the loaded manifest gets a new row, which becomes the pending manifest.
+ * - `nothing`: no write.
+ * - `approve_existing`: approve an existing row and clear any pending one.
+ * - `add_approved`: add a row, approve it and clear any pending one.
+ * - `add_pending`: add a row as the pending manifest, which suspends the installation.
  */
 export type ManifestWrite =
   | { kind: 'nothing' }
@@ -95,14 +90,15 @@ export type ManifestWrite =
   | { kind: 'add_approved'; row: AddedRow }
   | { kind: 'add_pending'; row: AddedRow };
 
-/** An approval always makes the reviewed manifest the approved one, so it's never left pending. */
+/**
+ * Approving never leaves a manifest pending, so the staff history can't record an approval
+ * while the app stays suspended.
+ */
 export type ApprovalWrite = Exclude<ManifestWrite, { kind: 'add_pending' }>;
 
 /**
- * What a publisher's approval of the loaded manifest writes. It becomes the approved manifest
- * whatever changed. The pending manifest and the approved one already have rows, so
- * approving either adds none; approving the approved manifest lets go of the pending one,
- * and writes nothing if nothing is pending. Any other manifest gets an `approval` row.
+ * The reviewed manifest becomes the approved one, even with changes that need approval. It
+ * reuses the pending or approved row when it matches, and otherwise adds an `approval` row.
  */
 export function approvalWrite(manifests: Manifests): ApprovalWrite {
   const decision = decideOnManifest(manifests);
@@ -129,8 +125,8 @@ export function approvalWrite(manifests: Manifests): ApprovalWrite {
 }
 
 /**
- * What a re-check writes for the loaded manifest. No person made these changes, so each gets
- * a manifest row as its only record.
+ * Every change gets a row, silent ones too: nobody approved them, so the row is their only
+ * record.
  */
 export function recheckWrite(manifests: Manifests): ManifestWrite {
   const decision = decideOnManifest(manifests);
@@ -139,8 +135,7 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
     case 'unchanged':
     case 'use_pending':
       return { kind: 'nothing' };
-    // Silent changes are applied straight away. When the app reverted the pending changes,
-    // that lifts the suspension.
+    // Silent changes apply right away. A resume means the app reverted the pending changes.
     case 'apply':
     case 'resume':
       return {
@@ -151,7 +146,7 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
           requiresApproval: false,
         },
       };
-    // Any other change becomes the pending manifest, replacing an older one.
+    // Replaces any older pending manifest, since only the latest is worth reviewing.
     case 'suspend':
       return {
         kind: 'add_pending',
