@@ -25,12 +25,20 @@ import { SettingsModal } from '@tryghost/shade/patterns';
 import { ValidationError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import {
-  memberCustomFieldPlainUserTypes,
+  memberCustomFieldUserTypes,
   useCreateMemberCustomField,
   useDeleteMemberCustomField,
   useEditMemberCustomField,
   userTypeForFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { SetSettingsSchema } from '@tryghost/metafield-types';
+import { dequal } from 'dequal';
+import ListOptionsEditor from '@/shared/member-custom-fields/list-options-editor';
+import {
+  isListType,
+  listSettings,
+  typedSettings,
+} from '@/shared/member-custom-fields/list-settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -48,13 +56,20 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   const memberCount = useMemberCount();
   const isEdit = field !== undefined;
 
+  const offeredTypes = memberCustomFieldUserTypes;
+
   const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps } = useForm({
     initialState: {
       name: field?.name || '',
       // Form state tracks the user-type id; it maps to the API storage
       // type on save
-      userTypeId: field ? field.type : memberCustomFieldPlainUserTypes[0].id,
+      userTypeId: field ? field.type : offeredTypes[0].id,
       access: field ? field.access.member : 'none',
+      // A list's settings, kept for every type so switching the type back and forth keeps what
+      // was typed. Only a list sends them.
+      options: field?.settings?.options ?? [],
+      newOption: '',
+      multiple: field?.settings?.multiple ?? false,
     },
     savingDelay: 500,
     onValidate: (state) => {
@@ -65,6 +80,12 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       if (!state.name.trim()) {
         newErrors.name = 'Enter a name for the field';
       }
+      // A list's options are checked by the same rule the server applies, with its words.
+      const settings =
+        isListType(state.userTypeId) && SetSettingsSchema.safeParse(listSettings(state));
+      if (settings && !settings.success) {
+        newErrors.options = settings.error.issues[0].message;
+      }
       return newErrors;
     },
     onSave: async (state) => {
@@ -73,23 +94,21 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
         // would carry whatever the list held when it was loaded, so saving a rename
         // would silently restore the access a colleague had changed in the meantime.
         const name = state.name.trim();
+        // The settings this field's type takes, from the form, sent only when they change.
+        const { settings } = typedSettings(field.type, listSettings(state));
         await editField({
           key: field.key,
           ...(name === field.name ? {} : { name }),
           ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
+          ...(settings && !dequal(settings, field.settings) ? { settings } : {}),
         });
       } else {
-        // No key: the backend mints it from the name. Only a type with nothing to set up is
-        // offered here, so the field takes no settings.
-        const plain = memberCustomFieldPlainUserTypes.find(({ id }) => id === state.userTypeId);
-        if (plain) {
-          await createField({
-            name: state.name.trim(),
-            type: plain.id,
-            settings: null,
-            access: { member: state.access },
-          });
-        }
+        // No key: the backend mints it from the name.
+        await createField({
+          name: state.name.trim(),
+          ...typedSettings(state.userTypeId, listSettings(state)),
+          access: { member: state.access },
+        });
       }
     },
     onSaveError: (error) => {
@@ -99,6 +118,10 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       // "cannot save ..." summary), so read it via getErrorMessage.
       if (error instanceof ValidationError && error.data?.errors?.[0]?.property === 'name') {
         setErrors({ name: getErrorMessage(error, 'Invalid name') });
+        return;
+      }
+      if (error instanceof ValidationError && error.data?.errors?.[0]?.property === 'settings') {
+        setErrors({ options: getErrorMessage(error, 'Check the options') });
         return;
       }
       handleError(error);
@@ -314,9 +337,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
             disabled={isEdit}
             value={formState.userTypeId}
             onValueChange={(value) => {
-              const chosen = memberCustomFieldPlainUserTypes.find(
-                (userType) => userType.id === value,
-              );
+              const chosen = offeredTypes.find((userType) => userType.id === value);
               if (chosen) {
                 updateForm((state) => ({ ...state, userTypeId: chosen.id }));
               }
@@ -328,7 +349,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {memberCustomFieldPlainUserTypes.map((userType) => (
+              {offeredTypes.map((userType) => (
                 <SelectItem key={userType.id} value={userType.id}>
                   <CustomFieldTypeOption type={userType.id} />
                 </SelectItem>
@@ -337,6 +358,40 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           </Select>
           {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
         </Field>
+        {isListType(formState.userTypeId) && (
+          <>
+            <ListOptionsEditor
+              disabled={isArchived}
+              error={errors.options}
+              idPrefix="custom-field"
+              newOption={formState.newOption}
+              options={formState.options}
+              onChange={({ options, newOption }) => {
+                clearError('options');
+                updateForm((state) => ({ ...state, options, newOption }));
+              }}
+            />
+            <Field data-disabled={isArchived || undefined} orientation="horizontal">
+              <FieldContent>
+                <FieldLabel htmlFor="custom-field-multiple">Allow multiple answers</FieldLabel>
+                <FieldDescription>
+                  {formState.multiple
+                    ? 'Members can choose more than one option.'
+                    : 'Members choose one option.'}
+                  {isEdit && field.settings?.multiple && !formState.multiple && (
+                    <> Members who chose several keep them until they next answer.</>
+                  )}
+                </FieldDescription>
+              </FieldContent>
+              <Switch
+                checked={formState.multiple}
+                disabled={isArchived}
+                id="custom-field-multiple"
+                onCheckedChange={(multiple) => updateForm((state) => ({ ...state, multiple }))}
+              />
+            </Field>
+          </>
+        )}
         <Field data-disabled={isArchived || undefined} orientation="horizontal">
           <FieldContent>
             <FieldLabel htmlFor="custom-field-visible-to-members">Visible to members</FieldLabel>

@@ -862,4 +862,134 @@ describe('Custom fields', () => {
     // moving back under Active) is server behavior, owned by the API suite.
     await expect.poll(() => customFieldsApi.requests.length).toBeGreaterThan(fetchesBeforeConfirm);
   });
+  describe('list fields', () => {
+    const animalsField: MemberCustomField = {
+      ...companyField,
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list',
+      settings: { options: ['Dog', 'Cat'], multiple: true },
+    };
+
+    // The fields the site lists, filtered or not.
+    const fakeListedFields = (fields: MemberCustomField[] = [companyField]) =>
+      fakeAdminEndpoint('GET', new RegExp('^/members/metafields/custom/(\\?|$)'), {
+        members_metafields: fields,
+      });
+
+    const openNewField = async () => {
+      await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Type').click();
+      return modal;
+    };
+
+    it('keeps a list’s options when its type is switched away and back', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      await modal.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /Short text/ }).click();
+      await modal.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+
+      await expect.element(modal.getByRole('button', { name: 'Remove Dog' })).toBeInTheDocument();
+    });
+
+    it('creates a list with the options typed in, in their order, taking several answers', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      // Typed but not added: saved with the rest.
+      await modal.getByLabelText('New option').fill(' Cat ');
+      await modal.getByLabelText('Allow multiple answers').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(createApi.lastRequest?.body).toEqual({
+        members_metafields: [
+          {
+            name: 'Favourite animals',
+            type: 'list',
+            settings: { options: ['Dog', 'Cat'], multiple: true },
+            access: { member: 'none' },
+          },
+        ],
+      });
+    });
+
+    it('asks for a second option before saving a list', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Dog');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(modal.getByText('Give the list at least 2 options.')).toBeVisible();
+      expect(createApi.lastRequest).toBeUndefined();
+    });
+
+    it('takes a pasted list as one option per line, skipping repeats', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewField();
+      await page.getByRole('option', { name: /List/ }).click();
+      const input = modal.getByLabelText('New option');
+      await input.click();
+      const pasted = new DataTransfer();
+      pasted.setData('text/plain', 'Dog\nCat\n\nDog\nFish');
+      input
+        .element()
+        .dispatchEvent(
+          new ClipboardEvent('paste', { clipboardData: pasted, bubbles: true, cancelable: true }),
+        );
+
+      await expect.element(modal.getByRole('button', { name: 'Remove Fish' })).toBeVisible();
+      await expect(modal.getByRole('button', { name: /^Remove / })).toHaveCount(3);
+    });
+
+    it('changes the options of a list, sending them whole', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByRole('button', { name: 'Remove Dog' }).click();
+      await modal.getByLabelText('New option').fill('Fish');
+      await modal.getByRole('button', { name: 'Add option' }).click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({
+        members_metafields: [{ settings: { options: ['Cat', 'Fish'], multiple: true } }],
+      });
+    });
+  });
 });
