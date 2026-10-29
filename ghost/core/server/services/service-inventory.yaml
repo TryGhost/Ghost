@@ -13060,23 +13060,24 @@ services:
       dependencies:
         complexity: straightforward
         reason: >-
-          Models, logging, mail, settings, URLs, DomainEvents and attribution already enter through
-          the root. Remaining work is injecting event constructors and renderer dependencies such as
-          template I/O, Handlebars, Juice and the shared address parser; Moment can come from the
-          existing clock. Gifts and Stripe use Staff emails through deferred access, so preserving
-          that access avoids a new construction cycle.
+          Models, logging, mail, settings, URLs, DomainEvents, attribution, the four event
+          constructors and a template reader enter through the root. The reader confines HTML and
+          partial reads to the fixed staff files, the root supplies the file access, and Moment
+          comes from the kernel clock. CSS inlining goes through the allowlisted shared
+          inline-css helper. The renderer still imports Handlebars and the shared delivery
+          address formatter, which need exact library allowances before the ratchet applies.
+          Gifts and Stripe use Staff emails through deferred access, so preserving that access
+          avoids a new construction cycle.
         preparation:
           - >-
-            Inject event contracts and renderer I/O/libraries through the existing constructors, and
-            use the shared clock for unchanged Moment behavior.
-          - >-
-            Preserve independent address-parser use and await attribution before Staff construction;
-            retain call-time Staff-email access in Gifts and Stripe.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Resolve the remaining Handlebars and delivery address formatter imports with exact
+            allowances, and preserve call-time Staff-email access in Gifts and Stripe.
+        reviewedAt: a7dfbfff558768efd13bd1cba076039bdd889733
         sources:
           - core/server/services/staff/index.js
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
+          - core/server/services/staff/email-template-files.ts
           - core/server/services/gifts/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/boot.js
