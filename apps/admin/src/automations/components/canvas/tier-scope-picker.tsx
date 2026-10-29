@@ -23,6 +23,8 @@ export type TierScopePickerProps<TStandalone extends string> = {
   // "Any paid tier" or "Free": choosing it replaces the tiers, and a tier replaces it.
   standalone: { value: TStandalone; label: string };
   tiers: readonly TierScopeTier[];
+  // Missing saved tiers stay removable without becoming dropdown options.
+  missingTierLabel?: string;
   onChange: (next: TStandalone | string[]) => void;
   tiersHeading?: string;
   emptyMessage: string;
@@ -41,6 +43,7 @@ export function TierScopePicker<TStandalone extends string>({
   value,
   standalone,
   tiers,
+  missingTierLabel = 'Unavailable tier',
   onChange,
   tiersHeading = 'Specific tiers',
   emptyMessage,
@@ -61,7 +64,11 @@ export function TierScopePicker<TStandalone extends string>({
 
   const standaloneChosen = value === standalone.value;
   const chosenIds: readonly string[] = typeof value === 'string' ? [] : value;
-  const chosenTiers = tiers.filter((tier) => chosenIds.includes(tier.id));
+  const missingTierIds = chosenIds.filter((id) => !tiers.some((tier) => tier.id === id));
+  const chosenTiers = [
+    ...tiers.filter((tier) => chosenIds.includes(tier.id)),
+    ...missingTierIds.map((id) => ({ id, name: missingTierLabel })),
+  ];
 
   const term = search.trim().toLowerCase();
   const updateSearch = useCallback(
@@ -172,7 +179,7 @@ export function TierScopePicker<TStandalone extends string>({
   }, [highlightedIndex, open]);
 
   const inTierOrder = (ids: readonly string[]) =>
-    tiers.map((tier) => tier.id).filter((id) => ids.includes(id));
+    [...tiers.map((tier) => tier.id), ...missingTierIds].filter((id) => ids.includes(id));
 
   const choose = (row: Row) => {
     if (row.kind === 'standalone') {
