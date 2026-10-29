@@ -373,13 +373,14 @@ describe('Trial invitation admission', function () {
     assert.deepEqual(await savedCounter(), { periodStart: '2026-11-10T10:00:00.000Z', count: 1 });
   });
 
-  it('rechecks if the limit check itself crosses the reset, even when the old period is full', async function () {
+  it('rejects a full period at the reset boundary and allows the next request', async function () {
     vi.setSystemTime(new Date('2026-11-10T09:59:59Z'));
+    const oldPeriod = dependencies.getPeriodStart();
     await db
       .knex('settings')
       .where('key', 'staff_invitation_emails')
       .update({
-        value: JSON.stringify({ periodStart: dependencies.getPeriodStart(), count: 15 }),
+        value: JSON.stringify({ periodStart: oldPeriod, count: 15 }),
       });
     const check = limitService.errorIfWouldGoOverLimit.bind(limitService);
     vi.spyOn(limitService, 'errorIfWouldGoOverLimit').mockImplementationOnce(
@@ -391,8 +392,13 @@ describe('Trial invitation admission', function () {
         }
       },
     );
-    await limiter.run('boundary@example.com', (transaction) =>
-      prepare('boundary@example.com', transaction),
+    await assert.rejects(
+      limiter.run('boundary@example.com', () => assert.fail('Must not prepare an email')),
+      { errorType: 'HostLimitError' },
+    );
+    assert.deepEqual(await savedCounter(), { periodStart: oldPeriod, count: 15 });
+    await limiter.run('next-request@example.com', (transaction) =>
+      prepare('next-request@example.com', transaction),
     );
     assert.deepEqual(await savedCounter(), { periodStart: '2026-11-10T10:00:00.000Z', count: 1 });
   });

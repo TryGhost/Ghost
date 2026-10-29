@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { LimitService } from '@tryghost/limit-service';
 import type { lockStaffInvites } from '../../lib/staff-invite-usage';
@@ -58,28 +57,11 @@ export default class InvitationLimiter {
     transaction: Knex.Transaction,
     counterValue: string | null,
   ): Promise<void> {
-    // Retry only if the monthly period changes during the allowance check.
-    while (true) {
-      const periodStart = this.deps.getPeriodStart();
-      try {
-        await this.deps.limitService.errorIfWouldGoOverLimit('inviteEmails', {
-          transacting: transaction,
-        });
-      } catch (error) {
-        if (
-          !(error instanceof errors.HostLimitError) ||
-          this.deps.getPeriodStart() === periodStart
-        ) {
-          throw error;
-        }
-        continue;
-      }
-      if (this.deps.getPeriodStart() !== periodStart) {
-        continue;
-      }
-      await this.incrementEmailCounter(transaction, counterValue, periodStart);
-      return;
-    }
+    const periodStart = this.deps.getPeriodStart();
+    await this.deps.limitService.errorIfWouldGoOverLimit('inviteEmails', {
+      transacting: transaction,
+    });
+    await this.incrementEmailCounter(transaction, counterValue, periodStart);
   }
 
   private async incrementEmailCounter(
