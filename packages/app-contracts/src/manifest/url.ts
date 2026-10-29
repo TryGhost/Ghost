@@ -40,6 +40,11 @@ export interface UrlRules {
   /** The URLs Ghost itself is served from, which no loaded URL may share an origin with. */
   ghostUrls: string[];
   allowLocalhost: boolean;
+  /**
+   * The address the manifest was fetched from, already checked, which the paths in it
+   * resolve against.
+   */
+  base: string;
 }
 
 /**
@@ -48,20 +53,37 @@ export interface UrlRules {
  */
 export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
 
+const PATH_PROBLEM = 'Expected a path on the manifest’s own origin, such as /admin';
+
 /**
- * A URL Ghost will load, never on an origin Ghost is served from. `linkOnly` lifts that
- * last rule for a URL that is only ever linked to, which a publisher's own app may well
- * point at their own site.
+ * A URL in the manifest. What Ghost loads is written as a path, resolved against the
+ * address the manifest was fetched from, so an app is one origin: the one Ghost fetches
+ * the manifest from and challenges is the one every surface runs on. The manifest names
+ * that address as its signed `manifest_url`, so the resolved URLs are as fixed as if they
+ * were written out. A loaded URL never shares an origin with Ghost.
  *
- * Only absolute URLs are accepted, so the manifest's signature covers every origin Ghost
- * loads or links to: the same signed bytes served from somewhere else still point at the
- * app that signed them.
+ * `linkOnly` marks a URL that is only ever linked to, never loaded, which is absolute and
+ * may be anywhere, the publisher's own site included.
  */
-export function urlField({ ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
-  return z.string('Expected an absolute URL').transform((value, ctx) => {
-    const url = URL.parse(value);
-    if (!url) {
-      ctx.addIssue({ code: 'custom', message: 'Expected an absolute URL' });
+export function urlField({ ghostUrls, allowLocalhost, base }: UrlRules, linkOnly = false) {
+  if (linkOnly) {
+    return z.string('Expected an absolute URL').transform((value, ctx) => {
+      const url = URL.parse(value);
+      const problem = url ? checkResolvedUrl(url, allowLocalhost) : 'Expected an absolute URL';
+      if (problem) {
+        ctx.addIssue({ code: 'custom', message: problem });
+        return z.NEVER;
+      }
+      return url!.href;
+    });
+  }
+  const origin = new URL(base).origin;
+  return z.string(PATH_PROBLEM).transform((value, ctx) => {
+    // A path, or a path-relative reference. A URL with a scheme, or a `//host` one, names
+    // its own origin, which the manifest's would then not be.
+    const url = URL.canParse(value) ? null : URL.parse(value, base);
+    if (!url || url.origin !== origin) {
+      ctx.addIssue({ code: 'custom', message: PATH_PROBLEM });
       return z.NEVER;
     }
     const problem = checkResolvedUrl(url, allowLocalhost);
@@ -69,7 +91,7 @@ export function urlField({ ghostUrls, allowLocalhost }: UrlRules, linkOnly = fal
       ctx.addIssue({ code: 'custom', message: problem });
       return z.NEVER;
     }
-    if (!linkOnly && isGhostOrigin(url, ghostUrls)) {
+    if (isGhostOrigin(url, ghostUrls)) {
       ctx.addIssue({
         code: 'custom',
         message: 'Expected an address other than the one Ghost itself is served from',

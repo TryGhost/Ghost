@@ -50,8 +50,8 @@ _Avoid_: handshake, ping
 
 **Identity check**:
 What a manifest must pass before Ghost uses it: it is signed with the identity
-key it names, and every origin it names answers the challenge, unless the site
-trusts that origin.
+key it names, no earlier than the newest one the site has seen for the app, and
+the app's origin answers the challenge, unless the site trusts that origin.
 _Avoid_: verification, validation
 
 ### Manifests
@@ -62,8 +62,9 @@ manifest.
 _Avoid_: config, app.json, descriptor
 
 **Signed manifest**:
-A manifest's exact bytes, signed with the app's identity key: what an app
-serves. Ghost only reads a manifest out of a signed manifest it has verified.
+A manifest's exact bytes, signed with the app's identity key with the time it
+was signed: what an app serves. Ghost only reads a manifest out of a signed
+manifest it has verified.
 _Avoid_: JWS, envelope, signed config
 
 **Manifest URL**:
@@ -73,8 +74,9 @@ the manifest comes from, so it is part of what a publisher approves.
 _Avoid_: install URL, app URL
 
 **Parsed manifest**:
-A manifest Ghost has accepted from a signed manifest it verified. Every URL in
-it is absolute. Manifests are compared and kept in this form.
+A manifest Ghost has accepted from a signed manifest it verified. Its paths are
+resolved against its manifest URL, so every URL in it is absolute. Manifests are
+compared and kept in this form.
 _Avoid_: validated manifest, resolved manifest
 
 **Ghost URLs**:
@@ -91,8 +93,8 @@ _Avoid_: extension point, slot, placement
 The surface that shows an app's own page inside Admin.
 
 **Served from**:
-The host an app's page loads from: where the app runs. It can differ from the
-host of its manifest URL.
+The host an app's page loads from: where the app runs. It is always the host
+of its manifest URL, since a surface is a path resolved against it.
 _Avoid_: app host, origin
 
 **Surface origin**:

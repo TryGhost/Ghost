@@ -68,8 +68,8 @@ function manifestShape(url: UrlField) {
           .toLowerCase(),
         icon: iconField(url),
         surfaces: surfacesField(url),
-        // Where the signed manifest is served from. Ghost fetches it server-side, so it is
-        // never loaded as a page and may sit on any origin.
+        // Where the signed manifest is served from: the app's one origin, which every path
+        // in it resolves against. Ghost fetches it server-side and never loads it as a page.
         manifest_url: url(true).refine((address) => !hasFragment(address), FRAGMENT_PROBLEM),
         identity_key: publicKeyField,
         backend_key: publicKeyField,

@@ -12,6 +12,8 @@ import {
 import { encode, newKeyPair, type KeyPair } from './helpers.ts';
 
 const MANIFEST = { id: 'com.example.podcast', name: 'Podcast' };
+const ISSUED_AT = new Date('2026-10-29T12:00:00.999Z');
+const IAT = Math.floor(ISSUED_AT.getTime() / 1000);
 
 let identity: KeyPair;
 let other: KeyPair;
@@ -29,14 +31,22 @@ function read(body: unknown) {
 
 describe('signManifest', () => {
   it('signs a manifest as flattened JWS JSON, typed as a manifest', async () => {
-    const signed = await signManifest(MANIFEST, identity.privateKey);
+    const signed = await signManifest(MANIFEST, identity.privateKey, { issuedAt: ISSUED_AT });
 
     expect(Object.keys(signed).sort()).toEqual(['payload', 'protected', 'signature']);
     expect(JSON.parse(Buffer.from(signed.protected, 'base64url').toString())).toEqual({
       alg: 'Ed25519',
       typ: 'ghost-app-manifest',
+      iat: IAT,
     });
     expect(read(signed).payload).toBe(JSON.stringify(MANIFEST));
+  });
+
+  it('signs as of now by default, in whole seconds', async () => {
+    const before = Math.floor(Date.now() / 1000);
+    const { issuedAt } = read(await signManifest(MANIFEST, identity.privateKey));
+    expect(issuedAt).toBeGreaterThanOrEqual(before);
+    expect(issuedAt).toBeLessThanOrEqual(Math.ceil(Date.now() / 1000));
   });
 
   it('signs text as its exact bytes', async () => {
@@ -47,8 +57,13 @@ describe('signManifest', () => {
 
 describe('readSignedManifest', () => {
   it('reads the manifest’s text out of a signed manifest', async () => {
-    const signed = await signManifest(MANIFEST, identity.privateKey);
-    expect(read(signed)).toEqual({ success: true, signed, payload: JSON.stringify(MANIFEST) });
+    const signed = await signManifest(MANIFEST, identity.privateKey, { issuedAt: ISSUED_AT });
+    expect(read(signed)).toEqual({
+      success: true,
+      signed,
+      payload: JSON.stringify(MANIFEST),
+      issuedAt: IAT,
+    });
   });
 
   it.each([
@@ -64,11 +79,15 @@ describe('readSignedManifest', () => {
   });
 
   it.each([
-    ['another type', { alg: 'Ed25519', typ: 'JWT' }],
-    ['no type', { alg: 'Ed25519' }],
-    ['another algorithm', { alg: 'ES256', typ: 'ghost-app-manifest' }],
-    ['the old name of the algorithm', { alg: 'EdDSA', typ: 'ghost-app-manifest' }],
-    ['anything more', { alg: 'Ed25519', typ: 'ghost-app-manifest', kid: 'main' }],
+    ['another type', { alg: 'Ed25519', typ: 'JWT', iat: IAT }],
+    ['no type', { alg: 'Ed25519', iat: IAT }],
+    ['another algorithm', { alg: 'ES256', typ: 'ghost-app-manifest', iat: IAT }],
+    ['the old name of the algorithm', { alg: 'EdDSA', typ: 'ghost-app-manifest', iat: IAT }],
+    ['anything more', { alg: 'Ed25519', typ: 'ghost-app-manifest', iat: IAT, kid: 'main' }],
+    ['no time', { alg: 'Ed25519', typ: 'ghost-app-manifest' }],
+    ['a time in milliseconds as text', { alg: 'Ed25519', typ: 'ghost-app-manifest', iat: '1' }],
+    ['a fractional time', { alg: 'Ed25519', typ: 'ghost-app-manifest', iat: IAT + 0.5 }],
+    ['a time before the epoch', { alg: 'Ed25519', typ: 'ghost-app-manifest', iat: -1 }],
     ['a header that isn’t JSON', encode('alg')],
     ['a header that isn’t UTF-8', Buffer.from([0xff]).toString('base64url')],
   ])('refuses a protected header with %s', async (_, header) => {
@@ -76,7 +95,8 @@ describe('readSignedManifest', () => {
     const encoded = typeof header === 'string' ? header : encode(header);
     expect(readSignedManifest({ ...signed, protected: encoded })).toEqual({
       success: false,
-      error: 'Expected a protected header of {"alg":"Ed25519","typ":"ghost-app-manifest"}',
+      error:
+        'Expected a protected header of {"alg":"Ed25519","typ":"ghost-app-manifest","iat":<seconds since the epoch>}',
     });
   });
 
@@ -111,12 +131,13 @@ describe('verifySignedManifest', () => {
   // The type stops anything else the identity key signs from passing as a manifest.
   it('refuses a signature made for something other than a manifest', async () => {
     const jws = await new FlattenedSign(new TextEncoder().encode(JSON.stringify(MANIFEST)))
-      .setProtectedHeader({ alg: 'Ed25519', typ: 'JWT' })
+      .setProtectedHeader({ alg: 'Ed25519', typ: 'JWT', iat: IAT })
       .sign(identity.privateKey);
     const signed = { protected: jws.protected!, payload: jws.payload, signature: jws.signature };
     expect(await verifySignedManifest(signed, identity.publicJwk)).toEqual({
       success: false,
-      error: 'Expected a protected header of {"alg":"Ed25519","typ":"ghost-app-manifest"}',
+      error:
+        'Expected a protected header of {"alg":"Ed25519","typ":"ghost-app-manifest","iat":<seconds since the epoch>}',
     });
   });
 
@@ -127,12 +148,13 @@ describe('verifySignedManifest', () => {
   ])('refuses a header with $name, though validly signed', async ({ header }) => {
     const payload = JSON.stringify(MANIFEST);
     const jws = await new FlattenedSign(new TextEncoder().encode(payload))
-      .setProtectedHeader({ alg: 'Ed25519', typ: 'ghost-app-manifest', ...header })
+      .setProtectedHeader({ alg: 'Ed25519', typ: 'ghost-app-manifest', iat: IAT, ...header })
       .sign(identity.privateKey);
     const signed = { protected: jws.protected!, payload: jws.payload, signature: jws.signature };
     expect(await verifySignedManifest(signed, identity.publicJwk)).toEqual({
       success: false,
-      error: 'Expected a protected header of {"alg":"Ed25519","typ":"ghost-app-manifest"}',
+      error:
+        'Expected a protected header of {"alg":"Ed25519","typ":"ghost-app-manifest","iat":<seconds since the epoch>}',
     });
   });
 

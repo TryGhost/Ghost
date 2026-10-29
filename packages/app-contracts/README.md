@@ -42,7 +42,7 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   "author": { "name": "Example Audio", "url": "https://example.com" },
   "accent_color": "#ff5500",
   "icon": { "name": "audio-lines" },
-  "surfaces": [{ "type": "admin_page", "url": "https://podcast.example.com/admin" }],
+  "surfaces": [{ "type": "admin_page", "url": "/admin" }],
   "manifest_url": "https://podcast.example.com/ghost-app.json",
   "identity_key": { "kty": "OKP", "crv": "Ed25519", "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo" },
   "backend_key": { "kty": "OKP", "crv": "Ed25519", "x": "H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk" },
@@ -60,11 +60,14 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   `{ "url": "/icon.svg" }`, an SVG the app serves, which Ghost shows as an image
   and never inlines. A name Admin does not know is not rejected here; Admin falls
   back to a default icon.
-- Every URL is absolute, so the signature covers every origin Ghost loads or
-  links to. Served from anywhere else, the same signed bytes still point at the
-  app that signed them.
+- An app is one origin. Everything Ghost loads from it, the surfaces and an
+  icon's `url`, is a path resolved against `manifest_url`, so the origin Ghost
+  fetches the manifest from and challenges is the one every surface runs on. A
+  URL with its own scheme or host is refused, even the manifest's own. The
+  author's `url` is only linked to, so it is absolute and may be anywhere.
 - `manifest_url` is the address the signed manifest is served from. A manifest
-  read from any other address is refused, so a copy can't pass as the app.
+  read from any other address is refused, so a copy can't pass as the app, and
+  the paths resolve to the same URLs wherever the bytes are served.
 - `identity_key` and `backend_key` are public Ed25519 keys as JWKs, with exactly
   `kty`, `crv` and `x`. A key that includes its private part `d` is refused, and
   so are two keys that are the same.
@@ -98,8 +101,8 @@ if (result.success) {
 ```
 
 `manifestUrl` is the address Ghost was asked to fetch the manifest from, before any
-redirects. It is checked by the same rules as the URLs inside the manifest, and the
-manifest must name it as its `manifest_url`; one that names another address fails with
+redirects. The paths inside the manifest resolve against it, and the manifest must
+name it as its `manifest_url`; one that names another address fails with
 `reason: 'manifest_url_mismatch'`, any other problem with `reason: 'invalid'`.
 
 `parseManifest` is for a manifest as an app serves it. A manifest it has accepted is
@@ -178,8 +181,16 @@ Admin never imports it.
 
 An app serves its manifest as flattened JWS JSON, signed with its identity key,
 which the developer keeps offline. The protected header is exactly
-`{"alg":"Ed25519","typ":"ghost-app-manifest"}`, and the payload is the
-manifest's exact bytes.
+`{"alg":"Ed25519","typ":"ghost-app-manifest","iat":<seconds>}`, and the payload
+is the manifest's exact bytes.
+
+`iat` is when it was signed. Ghost keeps the newest it has seen for each
+installation and refuses an older one, so a copy of an earlier manifest, with a
+backend key since replaced, can't be served again. It is in the header so that
+signing the same manifest again keeps its digest. To roll back, sign the older
+manifest again: a platform's rollback that serves the old signed file is
+refused. Serve the signed manifest with `Cache-Control: no-cache`, so a stale
+copy in a cache isn't refused as outdated.
 
 ```ts
 import {
@@ -188,7 +199,7 @@ import {
   verifySignedManifest,
 } from '@tryghost/app-contracts/identity';
 
-const signed = await signManifest(manifest, identityPrivateKey);
+const signed = await signManifest(manifest, identityPrivateKey); // iat: now
 
 const read = readSignedManifest(body);
 // Parse read.payload with parseManifest, then:
@@ -196,7 +207,7 @@ await verifySignedManifest(read.signed, parsed.manifest.identity_key); // { succ
 ```
 
 The key to verify with is named inside the manifest, so `readSignedManifest`
-hands back the payload unverified. Nothing in it may be used until
+hands back the payload and `issuedAt` unverified. Nothing in either may be used until
 `verifySignedManifest` has passed with the manifest's own `identity_key`.
 
 `thumbprintOf(key)` is a key's RFC 7638 thumbprint, the same however its JWK is
@@ -215,15 +226,20 @@ signed with its backend key. Its protected header is exactly `{"alg":"Ed25519"}`
 // The app's backend:
 const result = await answerChallenge(body, {
   backendKey: backendPrivateKey,
-  origins: ['https://podcast.example.com'],
+  requestUrl: request.url, // as the platform reports it
 });
 
 // Ghost:
 await verifyChallengeAnswer(challenge, answerText, manifest.backend_key); // { success: true }
 ```
 
-`answerChallenge` refuses a challenge for any origin but the backend's own, so
-nobody can relay one to it to prove an origin it doesn't serve.
+`answerChallenge` refuses a challenge for any origin but the one the request
+arrived at. Pass the URL the platform reports, never one built from
+`X-Forwarded-Host` or another header the sender sets. Whoever takes over a name
+the app used to serve then can't relay Ghost's challenge for it to the real
+backend. Ghost can't see this check, so it only helps on platforms that route
+requests by host (Workers, Vercel, Netlify, Fly); a server that answers for any
+host gains nothing from it.
 
 ## The bridge
 

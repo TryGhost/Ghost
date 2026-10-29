@@ -2,7 +2,8 @@ import { CompactSign, base64url, compactVerify, importJWK } from 'jose';
 import { z } from 'zod';
 
 import type { PublicKeyJwk } from '../manifest/keys.ts';
-import { decodeJson, decodeUtf8, type PrivateKey } from './keys.ts';
+import { ALGORITHM, readExactHeader } from './jws.ts';
+import { decodeUtf8, type PrivateKey } from './keys.ts';
 import type { VerifyResult } from './signed-manifest.ts';
 
 /** Where on an origin Ghost posts a challenge. */
@@ -11,7 +12,6 @@ export const CHALLENGE_PATH = '/.well-known/ghost-app/challenge';
 /** What a challenge is for, signed with it, so its answer can't pass for any other signature. */
 export const CHALLENGE_PURPOSE = 'ghost-app-challenge';
 
-const ALGORITHM = 'Ed25519';
 const NONCE_BYTES = 32;
 
 const ProtectedHeader = z.strictObject({ alg: z.literal(ALGORITHM) });
@@ -64,21 +64,29 @@ export type AnswerChallengeResult =
   | { success: false; error: string };
 
 /**
- * Answers a challenge a backend received, signing it with the backend key. A challenge
- * for any origin but the backend's own is refused, so nobody can relay it to the backend
- * to prove an origin it doesn't serve.
+ * Answers a challenge a backend received, signing it with the backend key. `requestUrl` is
+ * the URL the request arrived at, as the platform reports it (`request.url` on Workers):
+ * never one built from `X-Forwarded-Host` or any other header the sender controls. A
+ * challenge for any origin but that one is refused, so whoever takes over a name the app
+ * used to serve can't relay Ghost's challenge to the real backend to prove it.
+ *
+ * Ghost can't see this check, so it only helps where the platform routes requests by host,
+ * as Workers, Vercel, Netlify and Fly do. A server that answers for any host gains nothing.
  */
 export async function answerChallenge(
   body: string,
-  { backendKey, origins }: { backendKey: PrivateKey; origins: string[] },
+  { backendKey, requestUrl }: { backendKey: PrivateKey; requestUrl: string | URL },
 ): Promise<AnswerChallengeResult> {
   const challenge = ChallengeShape.safeParse(parseJson(body));
   if (!challenge.success) {
     return { success: false, error: 'Expected a challenge of {purpose, origin, nonce}' };
   }
-  const own = new Set(origins.map((origin) => new URL(origin).origin));
-  if (!own.has(challenge.data.origin)) {
-    return { success: false, error: `${challenge.data.origin} is not this backend’s origin` };
+  const arrivedAt = URL.parse(requestUrl)?.origin;
+  if (arrivedAt !== challenge.data.origin) {
+    return {
+      success: false,
+      error: `The challenge is for ${challenge.data.origin}, but arrived at ${arrivedAt ?? 'an unknown origin'}`,
+    };
   }
   const signature = await new CompactSign(new TextEncoder().encode(body))
     .setProtectedHeader({ alg: ALGORITHM })
@@ -88,9 +96,8 @@ export async function answerChallenge(
 
 /**
  * Checks an origin's answer to a challenge: a signature with the backend key over the
- * exact text Ghost posted, under a protected header of only `alg`. Any other member could
- * change what the signature covers, as `b64: false` does, or name another key. The error
- * only says how the answer fell short.
+ * exact text Ghost posted, under a protected header of only `alg`. The error only says how
+ * the answer fell short.
  */
 export async function verifyChallengeAnswer(
   challenge: string,
@@ -108,7 +115,7 @@ export async function verifyChallengeAnswer(
     return { success: false, error: 'backend_key is not a usable Ed25519 key' };
   }
   const [header = ''] = parsed.data.signature.split('.');
-  if (!ProtectedHeader.safeParse(decodeJson(header)).success) {
+  if (!readExactHeader(header, ProtectedHeader)) {
     return { success: false, error: `Expected a protected header of ${EXPECTED_HEADER}` };
   }
   let payload: Uint8Array;
