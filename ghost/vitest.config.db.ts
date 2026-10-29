@@ -94,6 +94,30 @@ const bullmqEnv = {
   services__jobs__outbox__enabled: 'false',
 };
 
+// These pause Redis and kill its clients, so never run them alongside another
+// BullMQ project
+const bullmqScenarios = (name: string, outbox: boolean, include: string[]) => ({
+  ...sharedDbConfig,
+  name,
+  isolate: true,
+  fileParallelism: false,
+  include,
+  exclude: ['**/node_modules/**'],
+  globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
+  setupFiles: [...sharedDbConfig.setupFiles, './test/utils/vitest-setup-bullmq.ts'],
+  env: {
+    ...bullmqEnv,
+    services__jobs__outbox__enabled: String(outbox),
+    adapters__jobs__BullMQJobsBackend__lockDuration: '3000',
+    adapters__jobs__BullMQJobsBackend__stalledInterval: '1000',
+    adapters__jobs__BullMQJobsBackend__enqueueTimeoutMs: '500',
+    services__jobs__outbox__pollIntervalMs: '100',
+    services__jobs__outbox__submissionTimeoutMs: '1000',
+    services__jobs__outbox__retryDelayMs: '200',
+  },
+  testTimeout: 30000,
+});
+
 // Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
 // test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + VersityGW,
 // minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
@@ -299,6 +323,19 @@ export default defineConfig({
           env: bullmqEnv,
           testTimeout: 15000,
         },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: bullmqScenarios('bullmq-scenarios', true, [
+          'test/e2e-bullmq/newsletter-failures.test.ts',
+        ]),
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: bullmqScenarios('bullmq-scenarios-outbox-off', false, [
+          'test/e2e-bullmq/newsletter-failures.test.ts',
+          'test/e2e-bullmq/boot-without-redis.test.ts',
+        ]),
       },
     ],
   },
