@@ -636,7 +636,6 @@ module.exports = class RouterController {
 
       return { url: paymentLink };
     } catch (err) {
-      logging.error(err);
       this._sentry?.captureException?.(err);
       throw new BadRequestError({
         err,
@@ -696,7 +695,6 @@ module.exports = class RouterController {
 
       return { url: paymentLink };
     } catch (err) {
-      logging.error(err);
       this._sentry?.captureException?.(err);
       throw new BadRequestError({
         err,
@@ -757,7 +755,6 @@ module.exports = class RouterController {
         throw err;
       }
 
-      logging.error(err);
       this._sentry?.captureException?.(err);
       throw new BadRequestError({
         err,

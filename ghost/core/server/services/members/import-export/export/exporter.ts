@@ -191,11 +191,8 @@ export default class MembersCSVExporter {
           { event: { name: 'members-export.completed' }, durationMs: Date.now() - start },
           'Members export completed',
         ),
-      (err) =>
-        logging.error(
-          { event: { name: 'members-export.stream.error' }, err },
-          'Members export stream failed',
-        ),
+      // The export's span logs a failure.
+      () => {},
     );
     attempt.ended(streamed);
 
