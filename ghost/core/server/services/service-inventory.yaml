@@ -12705,7 +12705,7 @@ services:
           - core/server/services/members/members-api/services/token-service.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/e2e-server/well-known.test.js
+          - test/e2e-server/well-known.test.ts
           - test/e2e-api/members/well-known.test.js
           - test/legacy/api/admin/identities.test.js
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
