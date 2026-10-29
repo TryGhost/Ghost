@@ -1,18 +1,14 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { LimitService } from '@tryghost/limit-service';
+import type { Settings } from '../../models/settings';
 
 const INVITE_EMAIL_COUNTER_KEY = 'staff_invitation_emails';
 
 interface InvitationLimiterDeps {
   transaction: <T>(callback: (transaction: Knex.Transaction) => Promise<T>) => Promise<T>;
   limitService: Pick<LimitService, 'isLimited' | 'errorIfWouldGoOverLimit'>;
-  Settings: {
-    findOne(
-      data: { key: string },
-      options: { transacting: Knex.Transaction; forUpdate: true },
-    ): Promise<{ get(key: 'value'): string | null } | null>;
-  };
+  Settings: Pick<typeof Settings, 'findOne'>;
   getPeriodStart: () => string | null;
 }
 
@@ -72,7 +68,7 @@ export default class InvitationLimiter {
         message: 'Cannot lock the staff invitation email counter.',
       });
     }
-    return setting.get('value');
+    return setting.get('value') as string | null;
   }
 
   private async reserveEmail(
