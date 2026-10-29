@@ -252,12 +252,6 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
-    async getNumberOfAutomations() {
-      return await repository2.withConnection((connection) =>
-        repository2.getNumberOfAutomations(connection),
-      );
-    },
-
     async exists(id) {
       return !!(await knex('automations').where({ id }).first('id'));
     },

@@ -199,7 +199,6 @@ export type AutomationRunMember = {
 
 export type AutomationsRepository = {
   browse(): Promise<Page<AutomationSummary>>;
-  getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
   getRunHistory(automationId: string, runId: string): Promise<AutomationRunHistory | null>;
