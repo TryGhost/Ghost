@@ -56,7 +56,7 @@ describe('Unit: services/invites/accept', function () {
     models = {
       Base: { transaction: transactionStub },
       Invite: { findOne: findOneInviteStub },
-      User: { findOne: findOneUserStub, addWithRoles: addUserStub },
+      User: { findOne: findOneUserStub, add: addUserStub },
     };
   });
 

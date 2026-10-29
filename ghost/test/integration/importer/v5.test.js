@@ -89,14 +89,10 @@ describe('Importing 5.x export', function () {
     const limitsService = require('../../../core/server/services/limits');
     const originalPolicy = config.get('hostSettings:limits');
     config.set('hostSettings:limits', {
-      limitTrialStaff: {
+      allStaff: {
         max: 10,
         error:
           'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
-      },
-      limitTrialStaffInvites: {
-        max: 15,
-        error: 'Your trial allows {{max}} staff invitation emails in total, including resends.',
       },
     });
     limitsService.init();

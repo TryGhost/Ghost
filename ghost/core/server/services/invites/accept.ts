@@ -13,6 +13,12 @@ type TransactionOptions<Transaction> = {
   forUpdate: true;
 };
 
+type InviteLookupOptions<Transaction> = {
+  context: { internal: true };
+  transacting?: Transaction;
+  forUpdate?: true;
+};
+
 export type AcceptanceModels<Transaction = Knex.Transaction> = {
   Base: {
     transaction<T>(callback: (transacting: Transaction) => Promise<T>): Promise<T>;
@@ -20,7 +26,7 @@ export type AcceptanceModels<Transaction = Knex.Transaction> = {
   Invite: {
     findOne(
       data: { token: string; status: 'sent' },
-      options: { context: { internal: true }; transacting?: Transaction; forUpdate?: true },
+      options: InviteLookupOptions<Transaction>,
     ): Promise<{
       get(key: 'expires'): number;
       get(key: 'email' | 'role_id'): string;
@@ -29,7 +35,7 @@ export type AcceptanceModels<Transaction = Knex.Transaction> = {
   };
   User: {
     findOne(data: { email: string }, options: TransactionOptions<Transaction>): Promise<unknown>;
-    addWithRoles(
+    add(
       data: { email: string; name: string; password: string; roles: string[] },
       options: TransactionOptions<Transaction>,
     ): Promise<unknown>;
@@ -105,7 +111,7 @@ export async function accept<Transaction>(
     await invite.destroy(options);
 
     // The validated invitation already occupies this seat, even after a large import.
-    await models.User.addWithRoles(
+    await models.User.add(
       {
         email,
         name: data.name,

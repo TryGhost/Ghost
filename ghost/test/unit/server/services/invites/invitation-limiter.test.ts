@@ -9,6 +9,7 @@ describe('Invitation limiter', function () {
       transaction: async () => assert.fail('Unexpected database access'),
       limitService: new LimitService(),
       lockStaffInvites,
+      getPeriodStart: () => assert.fail('Unexpected period lookup'),
     });
     assert.equal(await limiter.run('recipient@example.com', async () => 'prepared'), 'prepared');
   });

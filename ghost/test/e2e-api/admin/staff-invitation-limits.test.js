@@ -17,6 +17,7 @@ const spamPrevention = require('../../../core/server/web/shared/middleware/api/s
 describe('Trial staff invitation limits', function () {
   let request;
   let originalLimits;
+  let originalSubscription;
   let send;
   let clock;
 
@@ -26,6 +27,7 @@ describe('Trial staff invitation limits', function () {
     await localUtils.doAuth(request, 'invites');
     await testUtils.initFixtures('api_keys');
     originalLimits = config.get('hostSettings:limits');
+    originalSubscription = config.get('hostSettings:subscription');
   });
 
   beforeEach(async function () {
@@ -34,15 +36,17 @@ describe('Trial staff invitation limits', function () {
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
+    await db.knex('settings').where('key', 'staff_invitation_emails').update({ value: null });
+    config.set('hostSettings:subscription', { start: new Date().toISOString() });
     config.set('hostSettings:limits', {
-      limitTrialStaff: {
+      allStaff: {
         max: 10,
         error:
           'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
       },
-      limitTrialStaffInvites: {
-        max: 15,
-        error: 'Your trial allows {{max}} staff invitation emails in total, including resends.',
+      inviteEmails: {
+        maxPeriodic: 15,
+        error: 'Your trial allows {{max}} staff invitation emails per month, including resends.',
       },
     });
     limitsService.init();
@@ -56,10 +60,16 @@ describe('Trial staff invitation limits', function () {
       .pluck('id');
     await db.knex('roles_users').whereIn('user_id', created).delete();
     await db.knex('users').whereIn('id', created).delete();
+    config.set('hostSettings:subscription', originalSubscription);
     config.set('hostSettings:limits', originalLimits);
     limitsService.init();
     sinon.restore();
   });
+
+  async function savedCount() {
+    const row = await db.knex('settings').where('key', 'staff_invitation_emails').first();
+    return JSON.parse(row.value ?? 'null')?.count ?? 0;
+  }
 
   function invite(email, roleName = 'Contributor', integration = false, session = request) {
     const role = testUtils.getExistingData().roles.find((entry) => entry.name === roleName);
@@ -113,7 +123,7 @@ describe('Trial staff invitation limits', function () {
       const rejected = await invite('plan-admin@example.com', 'Administrator').expect(403);
       assert.match(rejected.body.errors[0].context, /plan supports up to 2 staff/);
       assert.equal(await models.Invite.findOne({ email: 'plan-admin@example.com' }), null);
-      assert.equal((await invitationActions()).length, 1);
+      assert.equal(await savedCount(), 1);
 
       const users = await db.knex('users').count('id', { as: 'count' }).first();
       const remaining = 10 - Number(users.count) - 1;
@@ -243,7 +253,7 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.notCalled(send);
     await nextMinute();
     await invite('valid@example.com').expect(201);
-    assert.equal((await invitationActions()).length, 1);
+    assert.equal(await savedCount(), 1);
   });
 
   it('counts authenticated Contributor attempts toward the shared burst limit', async function () {
@@ -329,11 +339,11 @@ describe('Trial staff invitation limits', function () {
   it('retains a reservation when mail transport fails', async function () {
     send.rejects(new errors.EmailError({ message: 'Transport timed out' }));
     await invite('transport@example.com').expect(500);
-    assert.equal((await invitationActions()).length, 1);
+    assert.equal(await savedCount(), 1);
     await invite('transport@example.com').expect(500);
     await invite('transport@example.com').expect(500);
     await invite('transport@example.com').expect(429);
-    assert.equal((await invitationActions()).length, 3);
+    assert.equal(await savedCount(), 3);
     sinon.assert.callCount(send, 3);
   });
 
@@ -501,46 +511,63 @@ describe('Trial staff invitation limits', function () {
     sinon.assert.calledTwice(send);
   });
 
-  it('commits the audit entry before attempting delivery', async function () {
+  it('commits the counter before attempting delivery', async function () {
     send.callsFake(async () => {
-      const recorded = await invitationActions();
-      assert.equal(recorded.length, 1);
-      assert.equal(
-        recorded[0].resource_id,
-        (await models.Invite.findOne({ email: 'durable@example.com' })).id,
-      );
+      assert.equal(await savedCount(), 1);
+      assert.ok(await models.Invite.findOne({ email: 'durable@example.com' }));
       return 'Mail is disabled';
     });
     await invite('durable@example.com').expect(201);
     sinon.assert.calledOnce(send);
   });
 
-  it('does not send or create an invitation if its audit entry cannot be saved', async function () {
+  it('reserves allowance even if best-effort audit logging fails', async function () {
     sinon
       .stub(models.Action, 'add')
       .rejects(new errors.InternalServerError({ message: 'Audit insert failed' }));
-    await invite('audit-failed@example.com').expect(500);
-    assert.equal(await models.Invite.findOne({ email: 'audit-failed@example.com' }), null);
-    assert.deepEqual(await invitationActions(), []);
-    sinon.assert.notCalled(send);
+    await invite('audit-failed@example.com').expect(201);
+    assert.equal(await savedCount(), 1);
+    sinon.assert.calledOnce(send);
   });
 
-  it('preserves the original invitation and allowance when recording a resend fails', async function () {
-    await invite('resend-audit@example.com').expect(201);
-    const original = await models.Invite.findOne({ email: 'resend-audit@example.com' });
+  it('preserves the original invitation and allowance when preparing a resend fails', async function () {
+    await invite('resend-prepare@example.com').expect(201);
+    const original = await models.Invite.findOne({ email: 'resend-prepare@example.com' });
     await nextMinute();
-    const recordAction = models.Action.add;
-    sinon.stub(models.Action, 'add').callsFake(function (action, options) {
-      if (action.resource_type === 'invite' && action.event === 'added') {
-        return Promise.reject(new errors.InternalServerError({ message: 'Audit insert failed' }));
-      }
-      return recordAction.call(this, action, options);
-    });
-    await invite('resend-audit@example.com').expect(500);
-    const retained = await models.Invite.findOne({ email: 'resend-audit@example.com' });
+    sinon
+      .stub(mailService.utils, 'generateContent')
+      .rejects(new errors.InternalServerError({ message: 'Rendering failed' }));
+    await invite('resend-prepare@example.com').expect(500);
+    const retained = await models.Invite.findOne({ email: 'resend-prepare@example.com' });
     assert.equal(retained.id, original.id);
     assert.equal(retained.get('token'), original.get('token'));
-    assert.equal((await invitationActions()).length, 1);
+    assert.equal(await savedCount(), 1);
+    sinon.assert.calledOnce(send);
+  });
+
+  it('still accepts a valid invitation when sending is disabled after expiry', async function () {
+    const security = require('@tryghost/security');
+    const email = 'trial-created-expired-site@example.com';
+    await invite(email).expect(201);
+    const pending = await models.Invite.findOne({ email });
+    config.set('hostSettings:limits:inviteEmails', { disabled: true });
+    config.set('hostSettings:subscription', undefined);
+    limitsService.init();
+    await invite(email).expect(403);
+    await request
+      .post(localUtils.API.getApiQuery('authentication/invitation/'))
+      .set('Origin', config.get('url'))
+      .send({
+        invitation: [
+          {
+            token: security.url.encodeBase64(pending.get('token')),
+            name: 'Accepted contributor',
+            password: 'Sl1m3rson99',
+          },
+        ],
+      })
+      .expect(200);
+    assert.equal(await savedCount(), 1);
     sinon.assert.calledOnce(send);
   });
 

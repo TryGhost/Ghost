@@ -1,18 +1,21 @@
 import type { Knex } from 'knex';
 import errors from '@tryghost/errors';
 
-const STAFF_INVITE_LOCK_KEY = 'staff_invitation_lock';
+const STAFF_INVITE_EMAILS_KEY = 'staff_invitation_emails';
 
-/** All trial staff creation and invitation replacement use the same lock order. */
-export async function lockStaffInvites(transaction: Knex.Transaction): Promise<void> {
+/** Sending and accepting invitations use the same lock order. */
+export async function lockStaffInvites(
+  transaction: Knex.Transaction,
+): Promise<{ value: string | null }> {
   const lock = await transaction('settings')
-    .select('id')
-    .where('key', STAFF_INVITE_LOCK_KEY)
+    .select('value')
+    .where('key', STAFF_INVITE_EMAILS_KEY)
     .forUpdate()
     .first();
   if (!lock) {
     throw new errors.InternalServerError({
-      message: 'Cannot lock the trial staff invitation limits.',
+      message: 'Cannot lock the staff invitation email counter.',
     });
   }
+  return lock;
 }

@@ -1,6 +1,6 @@
 {
   "core": {
-    "staff_invitation_lock": {
+    "staff_invitation_emails": {
       "defaultValue": null,
       "type": "string"
     },

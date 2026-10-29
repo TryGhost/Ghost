@@ -1,3 +1,5 @@
+import { lastPeriodStart } from '@tryghost/limit-service';
+import config from '../../../shared/config';
 import { lockStaffInvites } from '../../lib/staff-invite-usage';
 import { defineService } from '../../../kernel/define-service';
 import { Invites } from './invites';
@@ -23,6 +25,10 @@ export default defineService('Invites', () => {
       transaction: (callback) => models.Base.transaction(callback),
       limitService,
       lockStaffInvites,
+      getPeriodStart: () =>
+        config.get('hostSettings:limits:inviteEmails:maxPeriodic') !== undefined
+          ? lastPeriodStart(config.get('hostSettings:subscription:start'), 'month')
+          : null,
     }),
   });
 });

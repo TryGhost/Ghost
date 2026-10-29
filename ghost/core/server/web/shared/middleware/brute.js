@@ -1,6 +1,6 @@
 const url = require('url');
 const spamPrevention = require('./api/spam-prevention');
-const config = require('../../../../shared/config');
+const { limitService } = require('../../../services/limits');
 
 /**
  * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.
@@ -8,7 +8,7 @@ const config = require('../../../../shared/config');
  */
 module.exports = {
   staffInviteLimiter(req, res, next) {
-    if (!config.get('hostSettings:limits:limitTrialStaffInvites')) {
+    if (!limitService.isLimited('inviteEmails')) {
       return next();
     }
     return spamPrevention.staffInviteBlock().getMiddleware({
