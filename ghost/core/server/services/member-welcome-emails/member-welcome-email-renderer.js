@@ -1,16 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const lexicalLib = require('../../lib/lexical');
-const labs = require('../../../shared/labs');
-const urlUtils = require('../../../shared/url-utils').default;
 const { finalize } = require('../../lib/email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const { MESSAGES } = require('./constants');
 const { wrapReplacementStrings } = require('@tryghost/kg-default-nodes').utils.replacementStrings;
 const linkReplacer = require('../../lib/link-replacer');
-const linkTracking = require('../link-tracking');
 const emailDesign = require('../../lib/email-rendering/email-design');
-const { registerHelpers } = require('../email-service/helpers/register-helpers');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
@@ -18,9 +14,22 @@ const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
 class MemberWelcomeEmailRenderer {
   #wrapperTemplate;
   #dir;
+  #urlUtils;
+  #linkTracking;
 
-  constructor({ t, dir }) {
+  /**
+   * @param {object} deps
+   * @param {(key: string, options?: object) => string} deps.t
+   * @param {(locale: string) => string} [deps.dir]
+   * @param {object} deps.labs
+   * @param {object} deps.urlUtils
+   * @param {{addAutomationTrackingToUrl: (url: URL, automationActionRevisionId: string, automationRunStepId: string, memberUuid: string) => Promise<URL>}} deps.linkTracking
+   * @param {(handlebars: object, labs: object, t: Function) => void} deps.registerHelpers
+   */
+  constructor({ t, dir, labs, urlUtils, linkTracking, registerHelpers }) {
     this.#dir = dir;
+    this.#urlUtils = urlUtils;
+    this.#linkTracking = linkTracking;
     this.Handlebars = require('handlebars').create();
     registerHelpers(this.Handlebars, labs, t);
     const baseStylesSource = fs.readFileSync(
@@ -156,7 +165,7 @@ class MemberWelcomeEmailRenderer {
 
     let content;
     try {
-      const absoluteLexical = urlUtils.transformReadyToAbsolute(lexical);
+      const absoluteLexical = this.#urlUtils.transformReadyToAbsolute(lexical);
       content = await lexicalLib.render(absoluteLexical, { target: 'email', design });
     } catch (err) {
       throw new errors.IncorrectUsageError({
@@ -202,8 +211,7 @@ class MemberWelcomeEmailRenderer {
           member.uuid &&
           isTrackable
         ) {
-          await linkTracking.init();
-          return await linkTracking.service.addAutomationTrackingToUrl(
+          return await this.#linkTracking.addAutomationTrackingToUrl(
             url,
             automationActionRevisionId,
             automationRunStepId,

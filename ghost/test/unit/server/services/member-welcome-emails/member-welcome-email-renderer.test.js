@@ -5,7 +5,11 @@ const errors = require('@tryghost/errors');
 const lexicalLib = require('../../../../../core/server/lib/lexical');
 const config = require('../../../../../core/shared/config');
 const emailDesign = require('../../../../../core/server/lib/email-rendering/email-design');
-const linkTracking = require('../../../../../core/server/services/link-tracking');
+const labs = require('../../../../../core/shared/labs');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
+const {
+  registerHelpers,
+} = require('../../../../../core/server/services/email-service/helpers/register-helpers');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
 
@@ -38,6 +42,12 @@ describe('MemberWelcomeEmailRenderer', function () {
   function createRenderer(options = {}) {
     return new MemberWelcomeEmailRenderer({
       t: (key) => key,
+      labs,
+      urlUtils,
+      registerHelpers,
+      linkTracking: {
+        addAutomationTrackingToUrl: sinon.stub().rejects(new Error('Link tracking not expected')),
+      },
       ...options,
     });
   }
@@ -316,7 +326,7 @@ describe('MemberWelcomeEmailRenderer', function () {
 
     it('shows an unsubscribe link in the footer when an unsubscribeUrl is provided', async function () {
       lexicalRenderStub.resolves('<p>Content</p>');
-      const renderer = new MemberWelcomeEmailRenderer({ t: (key) => key });
+      const renderer = createRenderer();
 
       const result = await renderer.render({
         lexical: '{}',
@@ -630,7 +640,6 @@ describe('MemberWelcomeEmailRenderer', function () {
       let addAutomationTrackingToUrl;
 
       beforeEach(function () {
-        sinon.stub(linkTracking, 'init').resolves();
         addAutomationTrackingToUrl = sinon
           .stub()
           .callsFake(async (url, revisionId, runStepId, uuid) => {
@@ -640,12 +649,11 @@ describe('MemberWelcomeEmailRenderer', function () {
             tracked.searchParams.set('step', runStepId);
             return tracked;
           });
-        sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl });
       });
 
       const renderTracked = async (html, options = {}) => {
         lexicalRenderStub.resolves(html);
-        return await createRenderer().render({
+        return await createRenderer({ linkTracking: { addAutomationTrackingToUrl } }).render({
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com', uuid: memberUuid },
