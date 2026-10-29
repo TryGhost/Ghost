@@ -496,6 +496,186 @@ describe('automations poll', function () {
     });
   });
 
+  describe('paid subscription changed', function () {
+    describe('paid tier destination', function () {
+      let step: SendEmailStep;
+
+      beforeEach(function () {
+        step = buildEmailStep({
+          automation_trigger_rules: [
+            {
+              id: 'from-bronze',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'specific_paid_tier',
+              product_id: 'bronze',
+              direction: 'from',
+            },
+            {
+              id: 'to-silver',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'specific_paid_tier',
+              product_id: 'silver',
+              direction: 'to',
+            },
+          ],
+        });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      });
+
+      it('bails out for a tier change when the member only matches the From tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'bronze' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(
+          automationsApi.markStepTerminal,
+          step,
+          'member changed tier',
+        );
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+      });
+
+      it('bails out for a status change even when the member still has the To tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'free', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(
+          automationsApi.markStepTerminal,
+          step,
+          'member changed status',
+        );
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+      });
+
+      it('does not bail out if the member still matches the To tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnceWithExactly(
+          memberWelcomeEmailService.api.sendAutomationEmail,
+          sinon.match({ memberStatus: 'paid' }),
+        );
+      });
+
+      it('does not bail out if a gift member still matches the To tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'gift', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+      });
+
+      it('advances a wait while the To tier matches, then bails out when the member leaves it', async function () {
+        const waitStep = buildWaitStep({ automation_trigger_rules: step.automation_trigger_rules });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [waitStep], nextStepReadyAt: null });
+        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, waitStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+
+        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'bronze' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(
+          automationsApi.markStepTerminal,
+          waitStep,
+          'member changed tier',
+        );
+        sinon.assert.calledOnce(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+      });
+    });
+
+    describe('free destination', function () {
+      let step: SendEmailStep;
+
+      beforeEach(function () {
+        step = buildEmailStep({
+          automation_trigger_rules: [
+            {
+              id: 'from-paid',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'any_paid_tier',
+              product_id: null,
+              direction: 'from',
+            },
+            {
+              id: 'to-free',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'free',
+              product_id: null,
+              direction: 'to',
+            },
+          ],
+        });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      });
+
+      it('does not bail out if the member remains free', async function () {
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnceWithExactly(
+          memberWelcomeEmailService.api.sendAutomationEmail,
+          sinon.match({ memberStatus: 'free' }),
+        );
+      });
+
+      it.each(['paid', 'gift'])(
+        'bails out for a status change when the member becomes %s',
+        async function (status) {
+          Member.findOne.resolves(buildMember({ status }));
+
+          await poll(options);
+
+          sinon.assert.calledOnceWithExactly(
+            automationsApi.markStepTerminal,
+            step,
+            'member changed status',
+          );
+          sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+          sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        },
+      );
+
+      it('bails out of a wait when the member is no longer free', async function () {
+        const waitStep = buildWaitStep({ automation_trigger_rules: step.automation_trigger_rules });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [waitStep], nextStepReadyAt: null });
+        Member.findOne.resolves(buildMember({ status: 'paid' }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(
+          automationsApi.markStepTerminal,
+          waitStep,
+          'member changed status',
+        );
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+      });
+    });
+  });
+
   it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
