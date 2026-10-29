@@ -574,7 +574,7 @@ export function createDatabaseAutomationsRepository({
         return [];
       }
       return await knex('automated_email_recipients')
-        .select('id', 'mailgun_message_id', 'automation_action_revision_id')
+        .select('id', 'member_id', 'mailgun_message_id', 'automation_action_revision_id')
         .whereNotNull('automation_action_revision_id')
         .whereIn('mailgun_message_id', mailgunMessageIds);
     },

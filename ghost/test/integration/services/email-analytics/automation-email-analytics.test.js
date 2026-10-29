@@ -3,7 +3,9 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const { default: ObjectId } = require('bson-objectid');
 const sinon = require('sinon');
+const DomainEvents = require('@tryghost/domain-events');
 const { agentProvider } = require('../../../utils/e2e-framework');
+const settingsCache = require('../../../../core/shared/settings-cache');
 const testUtils = require('../../../utils');
 const MailgunClient = require('../../../../core/server/lib/mailgun/mailgun-client');
 const {
@@ -29,6 +31,7 @@ function clearInMemoryCursors() {
 describe('Automation email analytics', function () {
   let mailgunEvents = [];
   let emailDesignSettingId;
+  const sandbox = sinon.createSandbox();
 
   beforeAll(async function () {
     sinon.stub(Queries.prototype, 'getLastEventTimestamp').resolves(new Date(2000, 0, 1));
@@ -77,6 +80,8 @@ describe('Automation email analytics', function () {
   });
 
   afterEach(async function () {
+    await DomainEvents.allSettled();
+    sandbox.restore();
     await cleanupTables();
   });
 
@@ -226,6 +231,16 @@ describe('Automation email analytics', function () {
     return await testUtils.knex('automation_action_revisions').where({ id }).first();
   }
 
+  async function readMember(id) {
+    return await testUtils.knex('members').where({ id }).first();
+  }
+
+  async function fetchOpenedEvents() {
+    const count = await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
+    await DomainEvents.allSettled();
+    return count;
+  }
+
   function assertDateEqual(actual, expected, message) {
     assert.ok(actual, `${message}: expected a date, got ${actual}`);
     assert.equal(new Date(actual).toUTCString(), expected.toUTCString(), message);
@@ -247,6 +262,7 @@ describe('Automation email analytics', function () {
     ];
 
     const eventCount = await emailAnalytics.getAutomations().fetchLatestNonOpenedEvents();
+    await DomainEvents.allSettled();
     assert.equal(eventCount, 1);
 
     const updated = await readRecipient(recipient.id);
@@ -256,9 +272,12 @@ describe('Automation email analytics', function () {
       'delivered_at should match the Mailgun event timestamp',
     );
     assert.equal(updated.opened_at, null, 'a delivered event should not set opened_at');
+    const member = await readMember(recipient.member_id);
+    assert.equal(member.last_seen_at, null, 'delivery should not update member activity');
   });
 
   it('records opened events and counts the open against the revision', async function () {
+    const otherMember = await createMember();
     const revision = await createSendEmailRevision();
     const messageId = 'opened-message-id@mg.example.com';
     const recipient = await recordEmailSent({ revision, mailgunMessageId: messageId });
@@ -271,7 +290,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
+    const eventCount = await fetchOpenedEvents();
     assert.equal(eventCount, 1);
 
     const updated = await readRecipient(recipient.id);
@@ -283,6 +302,70 @@ describe('Automation email analytics', function () {
 
     const updatedRevision = await readRevision(revision.id);
     assert.equal(updatedRevision.email_opened_count, 1);
+
+    const member = await readMember(recipient.member_id);
+    assertDateEqual(member.last_seen_at, EVENT_DATE, 'last_seen_at should match the open time');
+    const unchangedMember = await readMember(otherMember.id);
+    assert.equal(unchangedMember.last_seen_at, null, 'unrelated members should be untouched');
+  });
+
+  it('updates member activity once per publication day while counting an email open only once', async function () {
+    sandbox
+      .stub(settingsCache, 'get')
+      .callThrough()
+      .withArgs('timezone')
+      .returns('America/New_York');
+    const revision = await createSendEmailRevision();
+    const messageId = 'member-activity@mg.example.com';
+    const recipient = await recordEmailSent({ revision, mailgunMessageId: messageId });
+
+    async function processOpen(timestamp) {
+      mailgunEvents = [
+        mailgunEvent({
+          type: 'opened',
+          messageId,
+          recipientEmail: recipient.member_email,
+          timestamp,
+        }),
+      ];
+      const eventCount = await fetchOpenedEvents();
+      assert.equal(eventCount, 1, 'the open should reach the analytics processor');
+      return await readMember(recipient.member_id);
+    }
+
+    // These opens share a UTC date but cross midnight in New York.
+    const sameDay = new Date('2024-01-01T01:00:00.000Z');
+    const nextDay = new Date('2024-01-01T05:00:00.000Z');
+    assertDateEqual((await processOpen(EVENT_DATE)).last_seen_at, EVENT_DATE, 'first open');
+    assertDateEqual((await processOpen(sameDay)).last_seen_at, EVENT_DATE, 'same-day open');
+    assertDateEqual((await processOpen(nextDay)).last_seen_at, nextDay, 'next-day open');
+
+    // Refetching an old event must not move member activity backwards.
+    mailgunEvents = [
+      mailgunEvent({ type: 'opened', messageId, recipientEmail: recipient.member_email }),
+    ];
+    assert.equal(await emailAnalytics.getAutomations().fetchMissing(), 1);
+    await DomainEvents.allSettled();
+    const member = await readMember(recipient.member_id);
+    assertDateEqual(member.last_seen_at, nextDay, 'replayed older open');
+    assertDateEqual((await readRecipient(recipient.id)).opened_at, EVENT_DATE, 'earliest open');
+    assert.equal((await readRevision(revision.id)).email_opened_count, 1, 'one unique opener');
+  });
+
+  it('continues processing opens when the recipient member has been deleted', async function () {
+    const revision = await createSendEmailRevision();
+    const messageId = 'deleted-member@mg.example.com';
+    const recipient = await recordEmailSent({ revision, mailgunMessageId: messageId });
+    await testUtils.knex('members').where({ id: recipient.member_id }).del();
+
+    mailgunEvents = [
+      mailgunEvent({ type: 'opened', messageId, recipientEmail: recipient.member_email }),
+    ];
+    assert.equal(await fetchOpenedEvents(), 1);
+
+    assert.equal((await readRevision(revision.id)).email_opened_count, 1);
+    assertDateEqual((await readRecipient(recipient.id)).opened_at, EVENT_DATE, 'stored open');
+    assert.equal(await readMember(recipient.member_id), undefined);
   });
 
   it('keeps the earliest timestamp when a message has several events', async function () {
@@ -290,7 +373,7 @@ describe('Automation email analytics', function () {
     const messageId = 'repeated-message-id@mg.example.com';
     const recipient = await recordEmailSent({ revision, mailgunMessageId: messageId });
 
-    const laterDate = new Date(EVENT_DATE.getTime() + 60 * 60 * 1000);
+    const laterDate = new Date(EVENT_DATE.getTime() + 24 * 60 * 60 * 1000);
 
     // Deliberately out of order: the later open is listed first.
     mailgunEvents = [
@@ -308,11 +391,18 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    const eventCount = await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
+    const eventCount = await fetchOpenedEvents();
     assert.equal(eventCount, 2);
 
     const updated = await readRecipient(recipient.id);
     assertDateEqual(updated.opened_at, EVENT_DATE, 'opened_at should be the earliest open');
+
+    const member = await readMember(recipient.member_id);
+    assertDateEqual(
+      member.last_seen_at,
+      laterDate,
+      'out-of-order opens should retain the later day',
+    );
 
     const updatedRevision = await readRevision(revision.id);
     assert.equal(
@@ -346,7 +436,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
+    await fetchOpenedEvents();
 
     const updatedRevision = await readRevision(revision.id);
     assert.equal(updatedRevision.email_opened_count, 2);
@@ -365,7 +455,7 @@ describe('Automation email analytics', function () {
       }),
     ];
 
-    await emailAnalytics.getAutomations().fetchLatestOpenedEvents();
+    await fetchOpenedEvents();
     assert.equal((await readRevision(revision.id)).email_opened_count, 1);
 
     // fetchMissing keeps its own cursor and sweeps a window overlapping the
