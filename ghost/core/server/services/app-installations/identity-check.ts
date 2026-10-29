@@ -202,7 +202,8 @@ export function createIdentityChecker({
     const origin = new URL(address.manifestUrl).origin;
     const outcome = send(origin).catch((error: unknown): ChallengeOutcome => ({
       kind: 'failed',
-      error: () => (error instanceof Error ? error : new Error(String(error))),
+      error: () =>
+        error instanceof Error ? error : new errors.InternalServerError({ message: String(error) }),
     }));
     return { origin, outcome };
   }
