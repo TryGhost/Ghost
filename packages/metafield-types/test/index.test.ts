@@ -10,6 +10,7 @@ import {
   partsOf,
   valueSchemaFor,
   type Address,
+  TypedSettingsInputSchema,
   type FieldType,
 } from '../src/index.ts';
 
@@ -362,17 +363,29 @@ describe('metafield-types catalog', function () {
           { [part]: 'x'.repeat(256) },
         ]),
       ];
+      const brokenSettings: Array<[FieldType, unknown]> = [
+        ['short_text', { options: ['Dog', 'Cat'], multiple: true }],
+      ];
 
-      for (const [type, value] of brokenValues) {
-        const reason = reasonFor(type, value);
-        assert.ok(reason, `${type} ${JSON.stringify(value)} should be rejected`);
-        assert.doesNotMatch(
-          reason,
-          /Too big|Too small|Invalid input|expected /,
+      const reasons: Array<[string, string | null]> = [
+        ...brokenValues.map(([type, value]): [string, string | null] => [
           `${type} ${JSON.stringify(value)}`,
-        );
+          reasonFor(type, value),
+        ]),
+        ...brokenSettings.map(([type, settings]): [string, string | null] => {
+          const result = TypedSettingsInputSchema.safeParse({ type, settings });
+          return [
+            `${type} settings ${JSON.stringify(settings)}`,
+            result.success ? null : (result.error.issues[0]?.message ?? null),
+          ];
+        }),
+      ];
+
+      for (const [what, reason] of reasons) {
+        assert.ok(reason, `${what} should be rejected`);
+        assert.doesNotMatch(reason, /Too big|Too small|Invalid input|expected /, what);
         // A whole sentence: a screen shows it unedited.
-        assert.match(reason, /^[A-Z].*\.$/, `${type} ${JSON.stringify(value)}`);
+        assert.match(reason, /^[A-Z].*\.$/, what);
       }
     });
   });
