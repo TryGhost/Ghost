@@ -11,6 +11,7 @@ const {
   registerHelpers,
 } = require('../../../../../core/server/services/email-service/helpers/register-helpers');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
+const { readTemplate } = require('../../../../utils/member-welcome-email-templates');
 const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
 
 describe('MemberWelcomeEmailRenderer', function () {
@@ -48,6 +49,8 @@ describe('MemberWelcomeEmailRenderer', function () {
       linkTracking: {
         addAutomationTrackingToUrl: sinon.stub().rejects(new Error('Link tracking not expected')),
       },
+      renderLexical: (lexical, renderOptions) => lexicalLib.render(lexical, renderOptions),
+      readTemplate,
       ...options,
     });
   }

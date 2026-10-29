@@ -221,6 +221,7 @@
         "ghost/core/server/services/invites/index.ts",
         "ghost/core/server/services/link-redirection/index.ts",
         "ghost/core/server/services/member-attribution/index.ts",
+        "ghost/core/server/services/member-welcome-emails/index.ts",
         "ghost/core/server/services/mentions/index.ts",
         "ghost/core/server/services/newsletters/index.ts",
         "ghost/core/server/services/posts-public/index.ts",
