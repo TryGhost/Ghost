@@ -95,7 +95,7 @@ describe('GiftService', function () {
   let memberRepository: {
     get: sinon.SinonStub;
     update: sinon.SinonStub;
-    triggerMemberSignupAutomation: sinon.SinonStub;
+    triggerMembershipStartedAutomation: sinon.SinonStub;
   };
   let staffServiceEmails: {
     notifyGiftPurchased: sinon.SinonStub;
@@ -190,7 +190,7 @@ describe('GiftService', function () {
         return Promise.resolve({ id: 'member_1', get: memberGet });
       }),
       update: sinon.stub().resolves(undefined),
-      triggerMemberSignupAutomation: sinon.stub().resolves(undefined),
+      triggerMembershipStartedAutomation: sinon.stub().resolves(undefined),
     };
     staffServiceEmails = {
       notifyGiftPurchased: sinon.stub(),
@@ -2035,7 +2035,7 @@ describe('GiftService', function () {
       await service.redeem({ token: 'gift-token', memberId: 'member_1', newMember: true });
 
       sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
+        memberRepository.triggerMembershipStartedAutomation,
         await memberRepository.get.firstCall.returnValue,
         'paid',
         { transacting },
@@ -2056,7 +2056,7 @@ describe('GiftService', function () {
       await service.redeem({ token: 'gift-token', memberId: 'member_1' });
 
       sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
+        memberRepository.triggerMembershipStartedAutomation,
         await memberRepository.get.firstCall.returnValue,
         'paid',
         { transacting },
@@ -2078,7 +2078,7 @@ describe('GiftService', function () {
       await service.redeem({ token: 'gift-token', memberId: 'member_1', transacting: externalTrx });
 
       sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
+        memberRepository.triggerMembershipStartedAutomation,
         await memberRepository.get.firstCall.returnValue,
         'paid',
         { transacting: externalTrx },
