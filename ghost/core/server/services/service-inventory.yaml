@@ -7126,7 +7126,9 @@ services:
           there is no shutdown/reset. The deep module exports ExternalMediaInliner, including
           receiver-dependent importUrl and inline plus processing helpers and static findMatches.
           importUrl resolves stored/failed result objects; inline resolves undefined. Unit tests
-          pin injected importUrl stages and helpers, not root export shape or pre-init access.
+          pin injected importUrl stages and helpers. Root units pin getInstance throwing
+          IncorrectUsageError before init, init resolving undefined and getInstance then returning
+          the same ready inliner synchronously.
         sources:
           - core/server/services/media-inliner/index.js
           - core/server/services/media-inliner/service.js
@@ -7134,6 +7136,7 @@ services:
           - core/server/services/media-inliner/types.ts
         tests:
           - test/unit/server/services/media-inliner/test/external-media-inliner.test.js
+          - test/unit/server/services/media-inliner/root.test.ts
       construction:
         summary: >-
           Importing the root creates no inliner. Every init loads the class/models, obtains
@@ -7141,13 +7144,16 @@ services:
           callback. The async function has no await, so assignment occurs before its fulfilled
           promise is returned. Construction only stores references, but importing its request
           dependency creates shared HTTP/HTTPS agents. Root tests stub adapter lookup and exercise
-          the resulting selector; they do not assert publication timing or instance identity.
+          the resulting selector, and pin that import resolves no adapter, that init resolves the
+          three storage adapters once and publishes one inliner, and that an adapter lookup
+          failure publishes nothing and allows an explicit retry.
         sources:
           - core/server/services/media-inliner/service.js
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/lib/request-external.js
         tests:
           - test/unit/server/services/media-inliner/service.test.ts
+          - test/unit/server/services/media-inliner/root.test.ts
       consumers:
         summary: >-
           Boot passes the current instance to a retained external-media job handler. Admin
@@ -7157,6 +7163,9 @@ services:
           Handler/endpoint units use stubs; a real job integration proves a stored feature-image
           URL and completion log. CSV HTTP tests cover real referenced-media composition,
           reuse, skipped local URLs and unsupported-row isolation, with network interception.
+          Root units register the real handler with the published inliner and show it keeps
+          that inliner across a later init, and that a PostMediaInliner over the published
+          inliner caches per run while a later run reads the current instance.
         sources:
           - core/boot.js
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -7171,14 +7180,17 @@ services:
           - test/integration/services/media-inliner/external-media-inliner-job.test.ts
           - test/e2e-api/admin/posts-importer.test.js
           - test/unit/server/services/content-import/import/media.test.ts
+          - test/unit/server/services/media-inliner/root.test.ts
       startup:
         summary: >-
           Required boot initialization awaits media init in the service Promise.all before
           retrieving the instance, registering job handlers and starting job delivery. Rejection
           prevents those later steps but does not undo other services' concurrent initialization.
           Direct getInstance has only a publication guard; the class accepts incomplete injected
-          dependencies. Successful boot/job/CSV tests do not pin deferred or rejected media init,
-          adapter-construction failure or cleanup after partial startup.
+          dependencies. Boot units pin that pending media init blocks handler registration and
+          job start and that its rejection propagates without starting them; root units pin
+          adapter lookup failure publishing nothing and a later init succeeding. Construction
+          acquires nothing, so there is no partial-startup cleanup to pin.
         sources:
           - core/boot.js
           - core/server/services/media-inliner/service.js
@@ -7187,6 +7199,8 @@ services:
         tests:
           - test/integration/services/media-inliner/external-media-inliner-job.test.ts
           - test/e2e-api/admin/posts-importer.test.js
+          - test/unit/boot/init-services.test.ts
+          - test/unit/server/services/media-inliner/root.test.ts
       lifetime:
         summary: >-
           Each successful init replaces the root instance, without disposing the previous one.
@@ -7195,14 +7209,20 @@ services:
           replacement. The inliner has no shared URL cache or concurrency guard; inline downloads
           duplicate occurrences independently. Content import owns a separate cache per run.
           Deep module caches retain the file-type function and reusable VM context; match input
-          references are cleared in finally. No root replacement/restart assertions were found.
+          references are cleared in finally. Root units pin replacement on repeated init as
+          incidental, a registered handler and an import run keeping the inliner they captured,
+          the published inliner surviving a later failed init, and no root-wide URL cache: a
+          second import run downloads a URL the first run already stored. Seam units pin that
+          every occurrence in one body downloads again. Restart remains unasserted.
         sources:
           - core/server/services/media-inliner/service.js
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/media.ts
-        tests: []
+        tests:
+          - test/unit/server/services/media-inliner/root.test.ts
+          - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
       configuration:
         summary: >-
           Storage adapter identities are captured at init; allowed upload extensions are read
@@ -7210,9 +7230,12 @@ services:
           with SVG sanitization before selection; media/files use extension membership. Network
           agent options are captured when request-external loads, while its environment/site-URL
           guards read the accessor per request. These are immutable-config access/capture rules,
-          not production hot reload. Root units cover storage choices; class units cover SVG,
-          conversions, URL formatting, CDN paths and regex matching. Body patterns are regexes
-          with bounded VM execution; simple fields use literal startsWith(domain).
+          not production hot reload. Root units cover storage choices and pin that a retained
+          inliner reads a replaced uploads policy on each selection while keeping the adapters
+          resolved at init; class units cover SVG, conversions, URL formatting, CDN paths and
+          regex matching. Body patterns are regexes with bounded VM execution; simple fields use
+          literal startsWith(domain). Seam units pin that distinction for one pattern domain and
+          that the sniffed file type wins over Content-Type and the URL.
         sources:
           - core/server/services/media-inliner/service.js
           - core/server/services/media-inliner/external-media-inliner.js
@@ -7223,6 +7246,8 @@ services:
         tests:
           - test/unit/server/services/media-inliner/service.test.ts
           - test/unit/server/services/media-inliner/test/external-media-inliner.test.js
+          - test/unit/server/services/media-inliner/root.test.ts
+          - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
       resources:
         summary: >-
           The inliner borrows models, storage and shared request agents. It buffers each download,
@@ -7252,10 +7277,15 @@ services:
           continue. Query-list failures escape inline; previous writes remain. Regex timeouts skip
           that pattern for later post bodies, while other patterns continue. Units pin injected
           importUrl stage mappings, selector/SVG rejection, selected error logs and timeout
-          skipping; HEIC failure/absent-codec paths remain source-only. Handler units pin
-          rejection forwarding. CSV tests prove row isolation for unsupported files and no post
-          after an injected unexpected throw, not rollback of already-stored remote media or every
-          error stage.
+          skipping. Seam units pin continuation after a failed post or tag write, an expected
+          download failure leaving that post untouched while later posts proceed, query failures
+          rejecting inline before any write or after earlier writes, the HEIC codec required on
+          first conversion only, a codec that cannot load escaping as an extraction failure, and
+          a conversion failure keeping the original bytes and extension. A failing file-type
+          import falls into the same fallback as an unrecognised buffer; it is not pinned
+          because the dynamic import has no seam. Handler units pin rejection forwarding. CSV
+          tests prove row isolation for unsupported files and no post after an injected
+          unexpected throw, not rollback of already-stored remote media or every error stage.
         sources:
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/media-inliner/service.js
@@ -7264,22 +7294,22 @@ services:
           - core/server/services/content-import/import/importer.ts
         tests:
           - test/unit/server/services/media-inliner/test/external-media-inliner.test.js
+          - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
           - test/e2e-api/admin/posts-importer.test.js
     unverified: []
     blockers:
       - >-
-        Pin pre-init access, synchronous publication, repeated init, failed replacement and
-        retained handlers/imports. Awaited boot wiring is source evidence; add pending/rejected
-        init contracts before changing construction or introducing an idempotency guard.
+        Repeated init is pinned as replacement, which nothing in production relies on; retained
+        handlers and import runs keep the inliner they captured. Adopting an idempotency guard
+        changes that one assertion, not any consumer contract.
       - >-
-        Characterize configuration replacement separately from adapter capture, including pending
-        validation/downloads. Preserve regex body matching versus literal field matching and
-        per-import caching; these belong to different consumers, not one root-wide cache.
+        Pending validation/downloads across a configuration change remain unpinned; the
+        selection policy is read per call and the adapters are retained from init.
       - >-
-        Test query failures, stored-file/model-write partial failure and overlapping jobs/imports.
-        Existing completion/URL assertions do not establish atomic writes, cleanup, exactly-once
-        downloads or that every resource succeeded. Keep per-resource best-effort behavior explicit.
+        Overlapping jobs/imports, atomic writes, cleanup of stored files after a failed model
+        write and exactly-once downloads remain unestablished. Per-resource best-effort
+        continuation and query failures escaping inline are now explicit.
       - >-
         Establish shared request/storage ownership and pending-work shutdown before adding disposal.
         Production timeout/retry/redirect behavior differs from the test harness; cancellation
@@ -7626,14 +7656,19 @@ services:
           edit/verification methods. Welcome/test sends resolve undefined; automation send
           returns the bulk transport result; previews return html/plaintext/subject and sender
           edits return models/meta. The renderer is a separate exported class. Integration
-          tests assert automation result identity and HTTP preview/204/verification responses,
-          not the barrel shape, receiver contract or every method's return value.
+          tests assert automation result identity and HTTP preview/204/verification responses.
+          The root unit test asserts the barrel exports exactly the wrapper singleton and the
+          constants, that init is synchronous with api and i18n undefined before the first
+          call, that welcome sends resolve undefined, automation sends return the bulk
+          transport result and sender edits/verification return the collection models with
+          sent_email_verification or email_verified meta.
         sources:
           - core/server/services/member-welcome-emails/index.js
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/constants.ts
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
           - test/e2e-api/admin/automated-emails.test.ts
           - test/e2e-api/admin/automations.test.ts
@@ -7647,7 +7682,9 @@ services:
           the template. These implementation/renderer production constructors are reached
           only here; tests construct the renderer directly. Lexical rendering additionally
           initializes a shared renderer and retains a separate PostsService graph through
-          its deep factory. No root construction-count or partial-failure test was found.
+          its deep factory. The root unit test asserts one api across repeated init, one
+          translator and one locale listener across api resets, and that the renderer uses
+          the translator the wrapper built. No partial-failure test exists.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7657,7 +7694,8 @@ services:
           - core/server/lib/magic-link/magic-link.js
           - core/server/lib/lexical.js
           - core/server/services/posts/posts-service-instance.js
-        tests: []
+        tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
       consumers:
         summary: >-
           Automated-email and automation-preview endpoints retain the deep wrapper and read
@@ -7667,8 +7705,10 @@ services:
           automation repositories/seeders and analytics deep-import constants only. No
           production caller of the barrel or direct private implementation construction was
           found. HTTP tests use real root methods for selected previews, test sends and
-          shared sender persistence; mail is stubbed. Poll and Stripe tests instead inject
-          fake welcome services/callbacks, proving selected forwarding and gating only.
+          shared sender persistence; mail is stubbed. Poll tests inject fake welcome services
+          and assert init before each eligible send or batch. The root unit test drives the
+          real Stripe checkout callback and all six endpoint operations against the wrapper,
+          asserting each initializes it before reading api and forwards the frame as today.
         sources:
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
@@ -7686,6 +7726,7 @@ services:
           - core/server/data/seeders/importers/automation-action-revisions-importer.ts
           - core/server/data/seeders/importers/automations-importer.ts
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/e2e-api/admin/automated-emails.test.ts
           - test/e2e-api/admin/automations.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
@@ -7703,6 +7744,8 @@ services:
           finds empty slots, whereas active checks and previews query models independently.
           Fake-wrapper poll tests assert no init/load for empty batches and init/load for
           populated batches; they do not enforce real boot readiness or dependency ordering.
+          The root unit test asserts a welcome send before any load rejects with the missing
+          email message without querying automations or sending.
         sources:
           - core/boot.js
           - core/server/services/automations/service.ts
@@ -7713,6 +7756,7 @@ services:
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/unit/server/services/automations/poll.test.ts
       lifetime:
@@ -7725,12 +7769,16 @@ services:
           refresh the sender cache; automation sends fetch design per call; shared sender
           edits/verification reload response models but do not invalidate private caches.
           An integration assertion changes stored footer/badge after load and confirms the
-          old design is sent. Helpers often null api before init, so those tests do not prove
-          identity, listener count, production reset or coherent concurrent refresh.
+          old design is sent. The root unit test asserts the welcome content cache is filled
+          only by load and replaced by the next load, the newsletter sender memoizes across
+          automation sends until a load or test send refreshes it, test sends leave welcome
+          content untouched, and automation sends look the design up per send. Concurrent or
+          failed refresh remains unasserted.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
       configuration:
         summary: >-
@@ -7743,8 +7791,10 @@ services:
           links; polling supplies tracking preferences and eligibility checks. Tokens use
           24-hour lifetime, 10 minutes after first use and max seven uses. Integration tests
           with stubbed transports assert selected sender fallback/precedence, tags, open
-          tracking and unsubscribe payloads. Config stubs are not production hot reload;
-          actual locale-change and token-limit wiring remain unasserted here.
+          tracking and unsubscribe payloads. Config stubs are not production hot reload. The
+          root unit test asserts the configured locale seeds the translator, a locale edit
+          delivered to the listener changes rendered footer text, and site title is read at
+          each send. Token-limit wiring remains unasserted here.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7756,6 +7806,7 @@ services:
           - core/shared/url-utils.ts
           - core/shared/config/loader.ts
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
       resources:
         summary: >-
@@ -7801,8 +7852,12 @@ services:
           retry on send failure but continuation on recipient or analytics failure. Unconfigured
           Mailgun returns null; the real send forwards it and new polling can still finish,
           without an acceptance check. Root integration tests assert inactive/missing welcome
-          errors and no mail call; renderer tests assert wrapped render rejection. Construction,
-          refresh, verification failure and null-provider-result paths remain source-only.
+          errors and no mail call; renderer tests assert wrapped render rejection. The root
+          unit test asserts an unconfigured bulk transport's null result is returned without a
+          transactional fallback, a verification-required reply-to sends a link through the
+          transactional mailer without persisting, a token for another property is rejected
+          after its use is recorded, and an unknown token rejects before any edit.
+          Construction and refresh failure paths remain source-only.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7812,6 +7867,7 @@ services:
           - core/server/services/automations/welcome-email-automation-poll.ts
           - core/server/services/automations/poll.ts
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
           - test/unit/server/services/member-welcome-emails/member-welcome-email-renderer.test.js
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
@@ -7819,33 +7875,36 @@ services:
     unverified: []
     blockers:
       - >-
-        Protect real barrel/deep-wrapper compatibility, receiver/return contracts, construction
-        identity/count, settings readiness and boot/consumer ordering before moving initialization.
-        Existing HTTP coverage does not assert a single owner; poll/Stripe tests use fakes.
+        Boot does not own initialization, so no assertion orders settings, mail, token and
+        link-tracking readiness before the first consumer. Shape, return contracts, identity
+        and caller-owned init at every call site are now characterized.
       - >-
         Define and cover stop/re-init ownership for the locale listener, i18n, mail transport
         and outstanding sends, including partial constructor failure/retry. No root cleanup
         or shutdown assertion exists; api-null test setup is not a lifecycle contract.
       - >-
-        Cover sender memoization/refresh, real locale changes, overlapping/failed welcome loads,
-        and edits during send. Current refresh is staged, not atomic; the one cached-design
-        assertion does not cover coherent sender/content snapshots or invalidation policy.
+        Cover overlapping/failed welcome loads and edits during send. Current refresh is
+        staged, not atomic; memoization, load and test-send refresh and listener-driven locale
+        changes are characterized, but coherent sender/content snapshots and invalidation
+        policy are not.
       - >-
-        Cover verification generation/expiry/reuse, disallowed token properties, concurrent
-        sender edits and mail/database failures. Shared MagicLink.transporter is replaced per
-        request before awaiting token creation; concurrent calls can use a later sender closure.
-        Edits and token use may persist before subsequent failure. The HTTP happy path creates
-        a token directly and does not exercise verification-mail generation or root token limits.
+        Cover verification expiry/reuse limits, concurrent sender edits and mail/database
+        failures. Shared MagicLink.transporter is replaced per request before awaiting token
+        creation; concurrent calls can use a later sender closure. Generation, the disallowed
+        property rejection and the recorded token use before that rejection are characterized;
+        root token limits are not.
       - >-
-        Decide and enforce the unconfigured bulk-mail/null-result outcome: current service
-        forwards null and polling can record/finish without sending. Protect failure boundaries
+        Decide and enforce the unconfigured bulk-mail/null-result outcome: the characterized
+        service returns null without a fallback send and polling can record/finish without
+        sending. Protect failure boundaries
         between send, redirect rows, recipient persistence and run completion; legacy retry after
         acceptance can duplicate mail. Provider delivery, restart/reclaim and duplicate prevention
         are not established by stubbed mail or the tested database rollback.
       - >-
         Preserve the separate legacy welcome and general automation send contracts while their
         ownership is decided; the source already identifies general automation sending here as
-        misplaced. Keep rendering/sender/verification business logic outside the HTTP layer.
+        misplaced. Transport, tags and per-send design lookup are characterized. Keep
+        rendering/sender/verification business logic outside the HTTP layer.
   members:
     kind: directory
     disposition: review
@@ -16163,25 +16222,29 @@ services:
           CommonJS exports the Users constructor, not an initialized instance. Instances expose
           lockAll, assignTagToUserPosts and destroyUser; only assignTagToUserPosts is bound in
           the constructor. lockAll resolves an object with count, while tagging and destruction resolve
-          without a result. Tests construct the class and cover locking/tagging calls, not
-          export shape or detached invocation.
+          without a result. Tests construct the class and cover locking/tagging calls and
+          detached invocation of the bound method, not export shape.
         sources:
           - core/server/services/users.js
         tests:
           - test/unit/server/services/users/users-service.test.js
+          - test/unit/server/services/users/index.test.ts
       construction:
         summary: >-
           Authentication and users endpoints each construct and retain a separate Users at
           module evaluation. The constructor captures mutable models, auth, apiMail and
           apiSettings references and binds one method; current methods only use models.
           destroyUser constructs a PostRevisions helper per call. No other runtime constructor
-          was found. These composition and identity boundaries have no direct assertions.
+          was found. Units pin each endpoint's retained instance, the models, auth, mail and
+          settings references it captures, the bound tagging method, the per-call PostRevisions
+          helper around the PostRevision model and that operations use only models.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/users.js
           - core/server/lib/post-revisions.ts
-        tests: []
+        tests:
+          - test/unit/server/services/users/index.test.ts
       consumers:
         summary: >-
           Admin user deletion calls the users endpoint's retained instance. Authentication
@@ -16190,6 +16253,9 @@ services:
           rescheduling happen afterward. assignTagToUserPosts has no external runtime caller
           found. HTTP tests prove deletion, owner reassignment, internal tagging and successful
           authentication reset; reset orchestration units inject lockAll rather than this class.
+          Units pin the users endpoint delegating frame options to its retained instance and
+          the reset endpoint passing its own instance, with the real lockAll, to
+          resetAuthentication on every call.
         sources:
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
@@ -16201,6 +16267,7 @@ services:
           - test/legacy/api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/auth/reset-authentication.test.ts
+          - test/unit/server/services/users/index.test.ts
       startup:
         summary: >-
           Users has no init or readiness guard and performs no I/O during construction. Endpoint
@@ -16210,8 +16277,9 @@ services:
           users endpoint and its otherwise-unused Users instance outside an Admin request. HTTP composition
           also resolves mail/settings API collaborators; the settings endpoint constructs its
           BREAD helper at import, and authentication resolves its scheduling adapter then. These
-          endpoint dependencies are not used by Users methods. HTTP tests use completed boot,
-          not premature endpoint import or composition failure.
+          endpoint dependencies are not used by Users methods. A unit evaluates the users
+          endpoint afresh through the API registry the update check uses, without an Admin
+          request or boot; HTTP tests use completed boot, not composition failure.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
@@ -16229,20 +16297,24 @@ services:
         tests:
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
+          - test/unit/server/services/users/index.test.ts
       lifetime:
         summary: >-
           Endpoint module caching retains two instances and their collaborators. No init/reset,
           pending-operation guard or instance-local result cache exists. lockAll clones options
           when opening its own transaction and otherwise uses the caller's transaction.
           destroyUser always opens a new transaction and overwrites the caller's transacting
-          field; it does not reuse an outer transaction. The lock unit proves no nested callback
-          when an outer transaction is supplied, not lifetime, concurrency or options isolation.
+          field; it does not reuse an outer transaction. Units pin the two separately retained
+          endpoint instances, lockAll's cloned options carrying its own transaction versus the
+          caller's options passed through unchanged, and destroyUser overwriting a supplied
+          transaction in every stage; concurrency stays unasserted.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
         tests:
           - test/unit/server/services/users/users-service.test.js
+          - test/unit/server/services/users/index.test.ts
       configuration:
         summary: >-
           This root reads no configuration or settings values. Operations use current model
@@ -16264,8 +16336,10 @@ services:
           removes the staff API key and destroys the user within its transaction. Tagging emits
           PostsBulkAddTagsEvent before that transaction commits; dispatch does not await handlers
           and has no compensation; no current Core subscriber was found despite the collection
-          update comment. Tests prove selected persisted outcomes and mocked helper
-          arguments, not full rollback, event settlement or shutdown drain.
+          update comment. Units pin the stage order inside the transaction, the per-call
+          revisions helper arguments and one event dispatched before the transaction settles
+          carrying only newly tagged ids; HTTP tests prove selected persisted outcomes. Full
+          rollback, event settlement and shutdown drain stay unasserted.
         sources:
           - core/server/services/users.js
           - core/server/lib/post-revisions.ts
@@ -16276,6 +16350,7 @@ services:
         tests:
           - test/unit/server/services/users/users-service.test.js
           - test/unit/server/lib/post-revisions.test.ts
+          - test/unit/server/services/users/index.test.ts
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
       failures:
@@ -16285,8 +16360,10 @@ services:
           but cannot undo an already-dispatched tag event. The users endpoint returns the async
           deletion promise inside try without awaiting it, so that catch does not remap its
           rejected promise. Authentication reset failures after commit can leave users locked
-          despite a failed response. Existing success tests and fake-transaction short-circuit
-          tests do not establish rollback or those partial-failure responses.
+          despite a failed response. Units pin the ignored NotFoundError, other key failures
+          rejecting before user deletion and the tag event staying dispatched after a later
+          stage fails; success tests and fake-transaction short-circuit tests do not establish
+          rollback or those partial-failure responses.
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
@@ -16294,25 +16371,27 @@ services:
           - core/server/api/endpoints/authentication.js
         tests:
           - test/unit/server/auth/reset-authentication.test.ts
+          - test/unit/server/services/users/index.test.ts
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
     unverified: []
     blockers:
       - >-
-        Pin the two retained endpoint instances, bound tagging method and model-reference
-        behavior before sharing composition. Test repeated boot and import prerequisites;
-        moving construction must account for currently retained but unused API collaborators.
+        Test repeated boot and import prerequisites before sharing composition. Units pin the
+        two retained endpoint instances, the bound tagging method, model references and the
+        retained but unused API collaborators, not module reload or reboot.
       - >-
         Add real transaction failure tests across lockAll and each deletion stage, including
         revision authors, tags/actions, coauthors, API keys, roles and user deletion. Current
         unit transactions are callback fakes and the reset failure test proves short-circuiting,
-        not database rollback. Preserve caller transaction/options behavior explicitly.
+        not database rollback. Units pin caller transaction and options propagation against
+        those fakes only.
       - >-
-        Characterize tag-event delivery before commit and failed transactions. Existing units
-        replace dispatch; source search found no current Core subscriber, so collection updates
-        cannot be inferred from the producer comment. Record concurrent
-        deletion/tag creation and pending-operation shutdown rather than inferring safety from
-        the absence of owned timers.
+        Units characterize dispatch before the fake transaction settles and after a later stage
+        fails, not delivery against a real commit or rollback. Source search found no current
+        Core subscriber, so collection updates cannot be inferred from the producer comment.
+        Record concurrent deletion/tag creation and pending-operation shutdown rather than
+        inferring safety from the absence of owned timers.
       - >-
         Pin deletion error identity and HTTP status for failures inside the async service,
         optional missing API keys, and authentication reset failures after commit. Root lock
