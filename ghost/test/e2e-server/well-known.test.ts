@@ -1,8 +1,8 @@
-const { agentProvider, matchers, mockManager } = require('../utils/e2e-framework');
+import { agentProvider, matchers, mockManager } from '../utils/e2e-framework';
 const { anyString, anyEtag } = matchers;
 
 describe('.well-known', function () {
-  let agentGhostAPI;
+  let agentGhostAPI: Awaited<ReturnType<typeof agentProvider.getGhostAPIAgent>>;
 
   beforeAll(async function () {
     agentGhostAPI = await agentProvider.getGhostAPIAgent();
