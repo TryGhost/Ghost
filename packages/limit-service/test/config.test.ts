@@ -30,7 +30,7 @@ describe('Config', function () {
             whereExists: vi.fn(returnsChain),
             whereRaw: vi.fn(returnsChain),
             whereNull: vi.fn(returnsChain),
-            first: vi.fn().mockResolvedValue(options.firstResult || {count: 0}),
+            first: vi.fn().mockResolvedValue(options.firstResult),
             select: vi.fn(returnsChain),
             leftJoin: vi.fn(returnsChain),
             whereNot: vi.fn(returnsChain),
@@ -130,6 +130,16 @@ describe('Config', function () {
 
     describe('inviteEmails', function () {
         const periodStart = '2026-10-10T10:00:00.000Z';
+
+        it('rejects a missing counter setting instead of granting a fresh allowance', async function () {
+            const query = config.inviteEmails?.currentCountQuery;
+            assertExists(query);
+            await assert.rejects(async () => query(createMockKnex(), periodStart), {
+                errorType: 'IncorrectUsageError',
+                message: 'Missing staff invitation email counter.'
+            });
+        });
+
         it.each([
             [null, 0],
             [JSON.stringify({periodStart, count: 7}), 7],
