@@ -27,8 +27,8 @@ import { useHelpCenterIndex } from './use-help-center-index';
  * answer: one of the FAQ questions offered under their message
  * (help-form.tsx). It takes over the panel with the message kept behind it,
  * lists the article's own further reading under "More from the help center",
- * and ends by asking whether it answered the question, with the message to
- * send or go back to if not.
+ * and ends by asking whether it answered the question, with the way back to
+ * the message if not.
  *
  * The article's HTML comes from the help center, made safe and readable by
  * help-article-html.ts. Its links to other help articles open in the panel
@@ -246,7 +246,7 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
             )}
 
             {/* When the article didn't answer it, the message is still there,
-                kept as it was left: send it from here, or go on writing it */}
+                kept as it was left; sending is always from the form */}
             <Stack
               className={cn('mt-8 border-t border-border-default pt-5', REVEAL_CLASS_NAME)}
               gap="sm"
@@ -255,24 +255,11 @@ export function HelpArticleView({ article, session, showClose, onClose }: HelpAr
               <Text size="sm" weight="medium">
                 Didn’t answer your question?
               </Text>
-              <Inline gap="sm" wrap>
-                {session.canSend ? (
-                  <>
-                    <Button size="sm" variant="outline" onClick={session.leaveArticle}>
-                      <LucideIcon.PenLine />
-                      Keep writing
-                    </Button>
-                    <Button size="sm" onClick={session.send}>
-                      <LucideIcon.Send />
-                      Send your message
-                    </Button>
-                  </>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={session.leaveArticle}>
-                    <LucideIcon.PenLine />
-                    Write to support
-                  </Button>
-                )}
+              <Inline>
+                <Button size="sm" variant="outline" onClick={session.leaveArticle}>
+                  <LucideIcon.PenLine />
+                  Back to your message
+                </Button>
               </Inline>
             </Stack>
           </>

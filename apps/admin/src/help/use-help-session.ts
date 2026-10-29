@@ -8,7 +8,7 @@ import type { HelpArticle } from './help-center';
  *
  * The message is the thing; the articles are there to answer it before it's
  * sent. Reading one never touches the draft, so the user comes back to the
- * message as they left it, and can send it from the article too. The session
+ * message as they left it, and send it from there. The session
  * lives in HelpPanel, so closing the panel or moving between pages keeps it.
  */
 

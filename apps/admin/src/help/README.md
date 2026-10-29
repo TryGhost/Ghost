@@ -7,7 +7,7 @@ questions for the page they're on under it ("You might be looking for"),
 swaps them for the help center articles closest in meaning to what they've
 written as they type (DocsBot's semantic search, FAQ answers nudged forward),
 opens any of them inside Admin with the message kept as it was, and sends the
-message from the form or from the article.
+message from the form.
 
 This is the **form** prototype, the third of three built to compare:
 
@@ -115,7 +115,7 @@ Within Ghost(Pro), billing alerts only show to people who can manage billing
 
 - [ ] **Measurement.** Use Admin's `trackEvent` for: panel opened, question
       opened (and whether it was a page question or matched the message),
-      message sent, and sent from an article. Without these the test can't
+      and message sent. Without these the test can't
       show whether tickets are deflected.
 - [ ] **Move the API URL and key into Ghost config** (`help-center.ts`), so
       they can change without an Admin release. Admin and Core deploy
@@ -193,7 +193,7 @@ around them are thin.
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                                 |
 | `help-form.tsx`         | The headline, message, "You might be looking for" under it, attach and send as one form, and the sent confirmation |
-| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?": keep writing, or send the message    |
+| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?" and the way back to the message       |
 | `help-cards.tsx`        | The cards under an article for what to read next                                                                   |
 | `help-panel-size.tsx`   | The maximize button                                                                                                |
 | `help-reveal.ts`        | The staggered entrance blocks use                                                                                  |
@@ -314,11 +314,10 @@ right of Admin's sidebar, for long articles. Under the article, "More from
 the help center" lists the article's own "Further reading" (the docs team's
 bookmark cards, lifted out of the body by `splitFurtherReading` so they don't
 show twice; help articles open in the panel, other pages in a new tab). The
-article ends with "Didn't answer your question?": "Keep writing" goes back to
-the message and "Send your message" sends it from there, so a ticket is never
-more than a click away; while nothing is written yet, a single "Write to
-support" goes back instead. Opened questions are marked "Read" in the list
-under the message.
+article ends with "Didn't answer your question?" and "Back to your message",
+which returns to the draft with focus in it. Sending is only ever from the
+form, so the user sees what they're sending. Opened questions are marked
+"Read" in the list under the message.
 
 `help-article-html.ts` prepares the HTML:
 
@@ -366,7 +365,9 @@ for the next one. Only what the user writes is sent.
   section stays useful and doesn't flash in and out as the user types.
 - **The message is kept, always.** Reading an article never touches the draft,
   and Back returns to it with focus in the message. The draft lives in the
-  session, so closing the panel keeps it too.
+  session, so closing the panel keeps it too. An earlier version also offered
+  "Send your message" at the end of an article; it went, so that sending
+  always happens where the message is in view.
 - **Ghost(Pro) only:** self-hosted sites have no Ghost(Pro) support team to
   write to, so they keep the link they have.
 
