@@ -4,12 +4,14 @@ import { GiftEmailService } from '../../../../../core/server/services/gifts/gift
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 
 type GiftEmailServiceDeps = ConstructorParameters<typeof GiftEmailService>[0];
-type TransactionalMessage = Parameters<GiftEmailServiceDeps['transactionalMailer']['send']>[0] &
-  Record<string, unknown>;
+type TransactionalMessage = Parameters<GiftEmailServiceDeps['transactionalMailer']['send']>[0];
 type BulkSendArgs = Parameters<GiftEmailServiceDeps['bulkMailer']['send']>;
-type BulkMessage = BulkSendArgs[0] & Record<string, unknown>;
+type BulkMessage = BulkSendArgs[0];
 type PurchaseConfirmationData = Parameters<GiftEmailService['sendPurchaseConfirmation']>[0];
 type TranslateOptions = { interpolation?: { escapeValue?: boolean }; [key: string]: unknown };
+
+const transactionalBodyFields: Array<'html' | 'text'> = ['html', 'text'];
+const bulkBodyFields: Array<'html' | 'plaintext'> = ['html', 'plaintext'];
 
 describe('GiftEmailService', function () {
   let transactionalMailer: {
@@ -134,7 +136,7 @@ describe('GiftEmailService', function () {
 
     const message = transactionalMailer.send.firstCall.firstArg;
     assert.equal(message.subject, 'Your gift is on its way');
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('recipient@example.com'));
       sinon.assert.match(message[field], sinon.match('is on its way to'));
       sinon.assert.match(
@@ -155,7 +157,7 @@ describe('GiftEmailService', function () {
 
     const message = transactionalMailer.send.firstCall.firstArg;
     assert.match(message.subject, /^Your gift will be sent on /);
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('Your gift is scheduled'));
       sinon.assert.match(message[field], sinon.match('will be sent to'));
     }
@@ -178,7 +180,7 @@ describe('GiftEmailService', function () {
       replyTo: 'support@example.com',
       disableTracking: true,
     });
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('recipient@example.com'));
       sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
     }
@@ -200,7 +202,7 @@ describe('GiftEmailService', function () {
       disableTracking: true,
     });
     assert.equal(message.tags, undefined);
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(message[field], sinon.match('recipient@example.com'));
       sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
       sinon.assert.match(message[field], sinon.match('Send them the gift link below'));
@@ -212,7 +214,7 @@ describe('GiftEmailService', function () {
 
     const msg = transactionalMailer.send.getCall(0).args[0];
 
-    for (const field of ['html', 'text']) {
+    for (const field of transactionalBodyFields) {
       sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
       sinon.assert.match(msg[field], sinon.match('Gold'));
     }
@@ -383,7 +385,7 @@ describe('GiftEmailService', function () {
           disable_tracking: true,
         });
         assert.deepEqual(bulkMailer.send.firstCall.args[1], { 'recipient@example.com': {} });
-        for (const field of ['html', 'plaintext']) {
+        for (const field of bulkBodyFields) {
           sinon.assert.match(message[field], sinon.match('Recipient'));
           sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
           sinon.assert.match(message[field], sinon.match('All stories'));
@@ -798,7 +800,7 @@ describe('GiftEmailService', function () {
         timeZone: 'Etc/UTC',
       }).format(reminderData.consumesAt);
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match(expectedDate));
         sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
       }
@@ -818,7 +820,7 @@ describe('GiftEmailService', function () {
 
       const msg = transactionalMailer.send.getCall(0).args[0];
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match('Hi Jamie,'));
       }
     });
@@ -828,7 +830,7 @@ describe('GiftEmailService', function () {
 
       const msg = transactionalMailer.send.getCall(0).args[0];
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match('Hey there,'));
       }
     });
@@ -871,7 +873,7 @@ describe('GiftEmailService', function () {
         timeZone: 'Etc/UTC',
       }).format(reminderData.consumesAt);
 
-      for (const field of ['html', 'text']) {
+      for (const field of transactionalBodyFields) {
         sinon.assert.match(msg[field], sinon.match(expectedDate));
       }
     });
