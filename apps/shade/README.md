@@ -76,10 +76,6 @@ createRoot(document.getElementById('root')!).render(
 `.dark` to `document.documentElement` and pass the same state to `ShadeApp` so
 portalled menus and dialogs receive the theme too.
 
-`ShadeApp` also renders the toaster. Show toasts with `toast` from
-`@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add
-`sonner` as a dependency: a second copy of it shows nothing.
-
 Import from the layer subpaths, such as `@tryghost/shade/components` and
 `@tryghost/shade/primitives`, never the root `@tryghost/shade`.
 
