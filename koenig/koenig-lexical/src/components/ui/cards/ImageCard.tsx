@@ -46,9 +46,9 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragH
                 </div>
             ) : null}
             {(isPinturaEnabled && !isGif(src)) &&
-                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100`}>
+                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-4 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100`}>
                     <div className="flex flex-row-reverse">
-                        <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
+                        <IconButton className="!w-8 !rounded-full" Icon={WandIcon} label="Edit image" onClick={() => openImageEditor({
                             image: src,
                             handleSave: (editedImage) => {
                                 onFileChange({

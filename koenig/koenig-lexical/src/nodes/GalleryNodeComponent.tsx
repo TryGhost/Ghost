@@ -5,22 +5,19 @@ import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import useGalleryReorder from '../hooks/useGalleryReorder';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {GalleryCard} from '../components/ui/cards/GalleryCard';
 import {MAX_IMAGES, recalculateImageRows} from './GalleryNode';
-import {SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
-import {SettingsPanel} from '../components/ui/SettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
-import {VisibilitySettings} from '../components/ui/VisibilitySettings';
 import {getImageDimensions} from '../utils/getImageDimensions';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
 
 export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
-    const {fileUploader, cardConfig, darkMode} = React.useContext(KoenigComposerContext);
-    const {isSelected} = React.useContext(CardContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const [errorMessage, setErrorMessage] = React.useState(null);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -31,20 +28,6 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         });
         return existingImages;
     });
-
-
-    const {showVisibilitySettings} = useKoenigSelectedCardContext();
-    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
-
-    const visibilitySettingsTabs = [
-        {id: 'visibility', label: 'Visibility'}
-    ];
-
-    const handleVisibilityToggle = React.useCallback((event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
-    }, [editor, nodeKey]);
 
     const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected});
     const imageUploader = fileUploader.useFileUpload('image');
@@ -143,6 +126,14 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         await handleImageUploads(files);
     }
 
+    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
+
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
+
     function handleToolbarAdd(event) {
         event.preventDefault();
         fileInputRef.current.click();
@@ -154,6 +145,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
 
     const hideToolbar =
         !isSelected ||
+        isEditing ||
         imageFilesDropper.isDraggedOver ||
         galleryReorder.isDraggedOver ||
         images.length <= 0;
@@ -189,18 +181,15 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="add-gallery-image" icon="add" isActive={false} label="Add images" onClick={handleToolbarAdd} />
-                    {isVisibilityEnabled && (
-                        <>
-                            <ToolbarMenuSeparator />
-                            <ToolbarMenuItem
-                                dataTestId="show-visibility"
-                                icon="visibility"
-                                isActive={showVisibilitySettings}
-                                label="Visibility"
-                                onClick={handleVisibilityToggle}
-                            />
-                        </>
-                    )}
+                    <ToolbarMenuSeparator hide={!isVisibilityEnabled} />
+                    <ToolbarMenuItem
+                        dataTestId="edit-gallery-card"
+                        hide={!isVisibilityEnabled}
+                        icon="edit"
+                        isActive={false}
+                        label="Edit"
+                        onClick={handleToolbarEdit}
+                    />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -213,26 +202,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {isVisibilityEnabled && showVisibilitySettings && isSelected && (
-                <SettingsPanel
-                    darkMode={darkMode}
-                    defaultTab="visibility"
-                    tabs={visibilitySettingsTabs}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
-                >
-                    {{
-                        visibility: (
-                            <VisibilitySettings
-                                toggleVisibility={toggleVisibility}
-                                visibilityOptions={visibilityOptions}
-                            />
-                        )
-                    }}
-                </SettingsPanel>
-            )}
+            <CardSettingsPanel />
         </>
     );
 }

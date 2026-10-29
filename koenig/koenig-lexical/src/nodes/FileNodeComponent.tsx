@@ -4,17 +4,13 @@ import React from 'react';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {FileCard} from '../components/ui/cards/FileCard';
-import {SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
-import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {fileUploadHandler} from '../utils/fileUploadHandler';
 import {openFileSelection} from '../utils/openFileSelection';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.jsx';
 
 function FileNodeComponent({
     fileDesc,
@@ -31,22 +27,9 @@ function FileNodeComponent({
 }) {
     const [editor] = useLexicalComposerContext();
     const [isPopulated, setIsPopulated] = React.useState(false);
-    const {fileUploader, cardConfig, darkMode} = React.useContext(KoenigComposerContext);
-    const {isSelected, isEditing} = React.useContext(CardContext);
+    const {fileUploader} = React.useContext(KoenigComposerContext);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
-    const {showVisibilitySettings} = useKoenigSelectedCardContext();
-    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
-
-    const visibilitySettingsTabs = [
-        {id: 'visibility', label: 'Visibility'}
-    ];
-
-    const handleVisibilityToggle = React.useCallback((event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
-    }, [editor, nodeKey]);
-
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const uploader = fileUploader.useFileUpload('file');
@@ -92,7 +75,7 @@ function FileNodeComponent({
         e.preventDefault();
         // prevent card from propagating click event to the editor
         e.stopPropagation();
-        // TODO make it go to the first input field in the card
+        setEditing(true);
     };
 
     const handleFileTitle = (e) => {
@@ -177,18 +160,6 @@ function FileNodeComponent({
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-file-upload-card" icon="edit" isActive={false} label="Edit" onClick={enableEditing} />
-                    {isVisibilityEnabled && (
-                        <>
-                            <ToolbarMenuSeparator />
-                            <ToolbarMenuItem
-                                dataTestId="show-visibility"
-                                icon="visibility"
-                                isActive={showVisibilitySettings}
-                                label="Visibility"
-                                onClick={handleVisibilityToggle}
-                            />
-                        </>
-                    )}
                     <ToolbarMenuSeparator />
                     <ToolbarMenuItem
                         icon="snippet"
@@ -199,26 +170,7 @@ function FileNodeComponent({
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {isVisibilityEnabled && showVisibilitySettings && isSelected && (
-                <SettingsPanel
-                    darkMode={darkMode}
-                    defaultTab="visibility"
-                    tabs={visibilitySettingsTabs}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
-                >
-                    {{
-                        visibility: (
-                            <VisibilitySettings
-                                toggleVisibility={toggleVisibility}
-                                visibilityOptions={visibilityOptions}
-                            />
-                        )
-                    }}
-                </SettingsPanel>
-            )}
+            <CardSettingsPanel />
         </>
     );
 }

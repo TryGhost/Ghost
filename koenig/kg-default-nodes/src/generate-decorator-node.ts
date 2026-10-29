@@ -345,13 +345,11 @@ export function generateDecoratorNode({nodeType, properties, defaultRenderFn, ve
         }
 
         /**
-         * Defines whether a node's visibility settings live inside its own
-         * settings panel, shown while the card is being edited (e.g. the call
-         * to action card). Cards that return false get a standalone visibility
-         * panel while the card is selected, without entering edit mode.
+         * Defines whether a node has a visibility property, which the editor
+         * shows as a Visibility tab in the card's settings panel
          */
-        hasVisibilitySettingsInEditMode() {
-            return false;
+        hasVisibility() {
+            return internalProps.some(prop => prop.name === 'visibility');
         }
 
         /*
@@ -375,7 +373,7 @@ export function generateDecoratorNode({nodeType, properties, defaultRenderFn, ve
          * @returns {boolean}
          */
         getIsVisibilityActive() {
-            if (!internalProps.some(prop => prop.name === 'visibility')) {
+            if (!this.hasVisibility()) {
                 return false;
             }
 

@@ -1,3 +1,4 @@
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
@@ -53,6 +54,7 @@ import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
+import {cardHasEditMode} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
 import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
@@ -124,6 +126,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         setIsEditingCard,
         setShowVisibilitySettings
     } = useKoenigSelectedCardContext();
+    const {cardConfig} = React.useContext(KoenigComposerContext);
 
     const isShiftPressed = React.useRef(false);
 
@@ -357,7 +360,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     setSelectedCardKey(cardKey);
 
                     const cardNode = $getNodeByKey(cardKey);
-                    if (cardNode.hasEditMode?.()) {
+                    if (cardHasEditMode(cardNode, cardConfig)) {
                         setIsEditingCard(true);
                     }
                 },
@@ -442,8 +445,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
                     if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
                         const cardNode = $getNodeByKey(selectedCardKey);
+                        // in the caption of a card without its own edit mode (e.g. image),
+                        // ctrl/cmd+enter keeps moving the cursor to a paragraph after the card
+                        const isPanelOnlyEditFromCaption = event._fromNested && !cardNode.hasEditMode?.();
 
-                        if (cardNode.hasEditMode?.()) {
+                        if (cardHasEditMode(cardNode, cardConfig) && !isPanelOnlyEditFromCaption) {
                             event.preventDefault();
 
                             // when leaving edit mode, ensure focus moves back to the editor
@@ -1508,29 +1514,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 SHOW_CARD_VISIBILITY_SETTINGS_COMMAND,
                 ({cardKey}) => {
-                    editor.update(() => {
-                        const cardNode = $getNodeByKey(cardKey);
-
-                        // Cards that keep visibility settings inside their own
-                        // settings panel (e.g. call to action) need edit mode. Every
-                        // other card gets a standalone panel while it's selected, so
-                        // the card's toolbar stays available to toggle it back off.
-                        if (cardNode?.hasVisibilitySettingsInEditMode?.() !== true) {
-                            if (selectedCardKey === cardKey) {
-                                setShowVisibilitySettings(current => !current);
-                            } else {
-                                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey, focusEditor: true});
-                                setShowVisibilitySettings(true);
-                            }
-                        } else {
-                            if (cardNode?.hasEditMode?.() && !isEditingCard) {
-                                setShowVisibilitySettings(true);
-                                editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
-                            } else if (isEditingCard) {
-                                $deselectCard(editor, cardKey);
-                            }
-                        }
-                    });
+                    // visibility lives in the card's settings panel, which is only
+                    // shown in edit mode, so open the panel on its Visibility tab
+                    setShowVisibilitySettings(true);
+                    editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
                     return true;
                 },
                 COMMAND_PRIORITY_LOW

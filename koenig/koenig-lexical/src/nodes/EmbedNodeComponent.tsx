@@ -5,37 +5,22 @@ import {$createBookmarkNode} from './BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {EmbedCard} from '../components/ui/cards/EmbedCard';
-import {SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
-import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {getEmbedRendererUrl} from '../utils/embed-renderer';
 import {useCallback} from 'react';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.jsx';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
 
 export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, metadata, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
 
-    const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
-    const {isSelected} = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
+    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
     const [urlInputValue, setUrlInputValue] = React.useState('');
-    const {showVisibilitySettings} = useKoenigSelectedCardContext();
-    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
-
-    const visibilitySettingsTabs = [
-        {id: 'visibility', label: 'Visibility'}
-    ];
-
-    const handleVisibilityToggle = React.useCallback((event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
-    }, [editor, nodeKey]);
-
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -47,6 +32,12 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         }
         return getEmbedRendererUrl(cardConfig.embedPreviewUrl, window.location.origin)?.href ?? null;
     }, [cardConfig.embedPreviewUrl]);
+
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
 
     const handleUrlChange = (event) => {
         setUrlInputValue(event.target.value);
@@ -181,18 +172,17 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
 
             <ActionToolbar
                 data-kg-card-toolbar="embed"
-                isVisible={html && isSelected && !showSnippetToolbar && (cardConfig.createSnippet || isVisibilityEnabled)}
+                isVisible={html && isSelected && !isEditing && !showSnippetToolbar && (isVisibilityEnabled || cardConfig.createSnippet)}
             >
                 <ToolbarMenu>
-                    {isVisibilityEnabled && (
-                        <ToolbarMenuItem
-                            dataTestId="show-visibility"
-                            icon="visibility"
-                            isActive={showVisibilitySettings}
-                            label="Visibility"
-                            onClick={handleVisibilityToggle}
-                        />
-                    )}
+                    <ToolbarMenuItem
+                        dataTestId="edit-embed-card"
+                        hide={!isVisibilityEnabled}
+                        icon="edit"
+                        isActive={false}
+                        label="Edit"
+                        onClick={handleToolbarEdit}
+                    />
                     <ToolbarMenuSeparator hide={!isVisibilityEnabled || !cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -205,26 +195,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {isVisibilityEnabled && showVisibilitySettings && isSelected && (
-                <SettingsPanel
-                    darkMode={darkMode}
-                    defaultTab="visibility"
-                    tabs={visibilitySettingsTabs}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
-                >
-                    {{
-                        visibility: (
-                            <VisibilitySettings
-                                toggleVisibility={toggleVisibility}
-                                visibilityOptions={visibilityOptions}
-                            />
-                        )
-                    }}
-                </SettingsPanel>
-            )}
+            <CardSettingsPanel />
         </>
     );
 }

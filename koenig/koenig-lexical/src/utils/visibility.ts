@@ -1,3 +1,4 @@
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {buildDefaultVisibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
@@ -6,6 +7,20 @@ export const VISIBILITY_SETTINGS = {
     EMAIL_ONLY: 'email only',
     NONE: 'none'
 };
+
+export function isVisibilityEnabled(cardConfig) {
+    return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
+}
+
+// Cards without an edit mode of their own (image, gallery, embed) still open
+// their settings panel in edit mode when visibility is something to edit
+export function cardHasEditMode(cardNode, cardConfig) {
+    if (!$isKoenigCard(cardNode)) {
+        return false;
+    }
+
+    return cardNode.hasEditMode() || (cardNode.hasVisibility?.() === true && isVisibilityEnabled(cardConfig));
+}
 
 export function parseVisibilityToToggles(visibility) {
     visibility = visibility || buildDefaultVisibility();
