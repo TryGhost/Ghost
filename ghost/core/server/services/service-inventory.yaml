@@ -7656,14 +7656,19 @@ services:
           edit/verification methods. Welcome/test sends resolve undefined; automation send
           returns the bulk transport result; previews return html/plaintext/subject and sender
           edits return models/meta. The renderer is a separate exported class. Integration
-          tests assert automation result identity and HTTP preview/204/verification responses,
-          not the barrel shape, receiver contract or every method's return value.
+          tests assert automation result identity and HTTP preview/204/verification responses.
+          The root unit test asserts the barrel exports exactly the wrapper singleton and the
+          constants, that init is synchronous with api and i18n undefined before the first
+          call, that welcome sends resolve undefined, automation sends return the bulk
+          transport result and sender edits/verification return the collection models with
+          sent_email_verification or email_verified meta.
         sources:
           - core/server/services/member-welcome-emails/index.js
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/constants.ts
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
           - test/e2e-api/admin/automated-emails.test.ts
           - test/e2e-api/admin/automations.test.ts
@@ -7677,7 +7682,9 @@ services:
           the template. These implementation/renderer production constructors are reached
           only here; tests construct the renderer directly. Lexical rendering additionally
           initializes a shared renderer and retains a separate PostsService graph through
-          its deep factory. No root construction-count or partial-failure test was found.
+          its deep factory. The root unit test asserts one api across repeated init, one
+          translator and one locale listener across api resets, and that the renderer uses
+          the translator the wrapper built. No partial-failure test exists.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7687,7 +7694,8 @@ services:
           - core/server/lib/magic-link/magic-link.js
           - core/server/lib/lexical.js
           - core/server/services/posts/posts-service-instance.js
-        tests: []
+        tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
       consumers:
         summary: >-
           Automated-email and automation-preview endpoints retain the deep wrapper and read
@@ -7697,8 +7705,10 @@ services:
           automation repositories/seeders and analytics deep-import constants only. No
           production caller of the barrel or direct private implementation construction was
           found. HTTP tests use real root methods for selected previews, test sends and
-          shared sender persistence; mail is stubbed. Poll and Stripe tests instead inject
-          fake welcome services/callbacks, proving selected forwarding and gating only.
+          shared sender persistence; mail is stubbed. Poll tests inject fake welcome services
+          and assert init before each eligible send or batch. The root unit test drives the
+          real Stripe checkout callback and all six endpoint operations against the wrapper,
+          asserting each initializes it before reading api and forwards the frame as today.
         sources:
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
@@ -7716,6 +7726,7 @@ services:
           - core/server/data/seeders/importers/automation-action-revisions-importer.ts
           - core/server/data/seeders/importers/automations-importer.ts
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/e2e-api/admin/automated-emails.test.ts
           - test/e2e-api/admin/automations.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
@@ -7733,6 +7744,8 @@ services:
           finds empty slots, whereas active checks and previews query models independently.
           Fake-wrapper poll tests assert no init/load for empty batches and init/load for
           populated batches; they do not enforce real boot readiness or dependency ordering.
+          The root unit test asserts a welcome send before any load rejects with the missing
+          email message without querying automations or sending.
         sources:
           - core/boot.js
           - core/server/services/automations/service.ts
@@ -7743,6 +7756,7 @@ services:
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/unit/server/services/automations/poll.test.ts
       lifetime:
@@ -7755,12 +7769,16 @@ services:
           refresh the sender cache; automation sends fetch design per call; shared sender
           edits/verification reload response models but do not invalidate private caches.
           An integration assertion changes stored footer/badge after load and confirms the
-          old design is sent. Helpers often null api before init, so those tests do not prove
-          identity, listener count, production reset or coherent concurrent refresh.
+          old design is sent. The root unit test asserts the welcome content cache is filled
+          only by load and replaced by the next load, the newsletter sender memoizes across
+          automation sends until a load or test send refreshes it, test sends leave welcome
+          content untouched, and automation sends look the design up per send. Concurrent or
+          failed refresh remains unasserted.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
       configuration:
         summary: >-
@@ -7773,8 +7791,10 @@ services:
           links; polling supplies tracking preferences and eligibility checks. Tokens use
           24-hour lifetime, 10 minutes after first use and max seven uses. Integration tests
           with stubbed transports assert selected sender fallback/precedence, tags, open
-          tracking and unsubscribe payloads. Config stubs are not production hot reload;
-          actual locale-change and token-limit wiring remain unasserted here.
+          tracking and unsubscribe payloads. Config stubs are not production hot reload. The
+          root unit test asserts the configured locale seeds the translator, a locale edit
+          delivered to the listener changes rendered footer text, and site title is read at
+          each send. Token-limit wiring remains unasserted here.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7786,6 +7806,7 @@ services:
           - core/shared/url-utils.ts
           - core/shared/config/loader.ts
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
       resources:
         summary: >-
@@ -7831,8 +7852,12 @@ services:
           retry on send failure but continuation on recipient or analytics failure. Unconfigured
           Mailgun returns null; the real send forwards it and new polling can still finish,
           without an acceptance check. Root integration tests assert inactive/missing welcome
-          errors and no mail call; renderer tests assert wrapped render rejection. Construction,
-          refresh, verification failure and null-provider-result paths remain source-only.
+          errors and no mail call; renderer tests assert wrapped render rejection. The root
+          unit test asserts an unconfigured bulk transport's null result is returned without a
+          transactional fallback, a verification-required reply-to sends a link through the
+          transactional mailer without persisting, a token for another property is rejected
+          after its use is recorded, and an unknown token rejects before any edit.
+          Construction and refresh failure paths remain source-only.
         sources:
           - core/server/services/member-welcome-emails/service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7842,6 +7867,7 @@ services:
           - core/server/services/automations/welcome-email-automation-poll.ts
           - core/server/services/automations/poll.ts
         tests:
+          - test/unit/server/services/member-welcome-emails/index.test.ts
           - test/integration/services/member-welcome-emails.test.js
           - test/unit/server/services/member-welcome-emails/member-welcome-email-renderer.test.js
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
@@ -7849,33 +7875,36 @@ services:
     unverified: []
     blockers:
       - >-
-        Protect real barrel/deep-wrapper compatibility, receiver/return contracts, construction
-        identity/count, settings readiness and boot/consumer ordering before moving initialization.
-        Existing HTTP coverage does not assert a single owner; poll/Stripe tests use fakes.
+        Boot does not own initialization, so no assertion orders settings, mail, token and
+        link-tracking readiness before the first consumer. Shape, return contracts, identity
+        and caller-owned init at every call site are now characterized.
       - >-
         Define and cover stop/re-init ownership for the locale listener, i18n, mail transport
         and outstanding sends, including partial constructor failure/retry. No root cleanup
         or shutdown assertion exists; api-null test setup is not a lifecycle contract.
       - >-
-        Cover sender memoization/refresh, real locale changes, overlapping/failed welcome loads,
-        and edits during send. Current refresh is staged, not atomic; the one cached-design
-        assertion does not cover coherent sender/content snapshots or invalidation policy.
+        Cover overlapping/failed welcome loads and edits during send. Current refresh is
+        staged, not atomic; memoization, load and test-send refresh and listener-driven locale
+        changes are characterized, but coherent sender/content snapshots and invalidation
+        policy are not.
       - >-
-        Cover verification generation/expiry/reuse, disallowed token properties, concurrent
-        sender edits and mail/database failures. Shared MagicLink.transporter is replaced per
-        request before awaiting token creation; concurrent calls can use a later sender closure.
-        Edits and token use may persist before subsequent failure. The HTTP happy path creates
-        a token directly and does not exercise verification-mail generation or root token limits.
+        Cover verification expiry/reuse limits, concurrent sender edits and mail/database
+        failures. Shared MagicLink.transporter is replaced per request before awaiting token
+        creation; concurrent calls can use a later sender closure. Generation, the disallowed
+        property rejection and the recorded token use before that rejection are characterized;
+        root token limits are not.
       - >-
-        Decide and enforce the unconfigured bulk-mail/null-result outcome: current service
-        forwards null and polling can record/finish without sending. Protect failure boundaries
+        Decide and enforce the unconfigured bulk-mail/null-result outcome: the characterized
+        service returns null without a fallback send and polling can record/finish without
+        sending. Protect failure boundaries
         between send, redirect rows, recipient persistence and run completion; legacy retry after
         acceptance can duplicate mail. Provider delivery, restart/reclaim and duplicate prevention
         are not established by stubbed mail or the tested database rollback.
       - >-
         Preserve the separate legacy welcome and general automation send contracts while their
         ownership is decided; the source already identifies general automation sending here as
-        misplaced. Keep rendering/sender/verification business logic outside the HTTP layer.
+        misplaced. Transport, tags and per-send design lookup are characterized. Keep
+        rendering/sender/verification business logic outside the HTTP layer.
   members:
     kind: directory
     disposition: review
