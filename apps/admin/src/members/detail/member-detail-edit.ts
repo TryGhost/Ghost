@@ -2,7 +2,12 @@ import moment from 'moment-timezone';
 import validator from 'validator';
 import { z } from 'zod';
 import { PartSchema, QUALIFIER, SEPARATOR } from '@tryghost/metafield-types/identity';
-import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
+import {
+  FIELD_STRUCTURES,
+  editableAnswers,
+  isRecordValue,
+  matchField,
+} from '@tryghost/metafield-types/structure';
 import {
   memberCustomFieldIdentity,
   memberCustomFieldValueSchema,
@@ -69,10 +74,8 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
   };
 }
 
-export function emptyEditableValue(
-  field: Pick<MemberCustomField, 'type'>,
-): EditableCustomFieldValue {
-  return matchShape<EditableCustomFieldValue>(field.type, {
+export function emptyEditableValue(field: MemberCustomField): EditableCustomFieldValue {
+  return matchField<MemberCustomField, EditableCustomFieldValue>(field, {
     scalar: () => '',
     record: () => ({}),
     set: () => [],
@@ -97,23 +100,33 @@ function trimmedParts(
 /**
  * The value trimmed and with empty parts dropped, or undefined when nothing is left, so a value of
  * only blanks counts as no value whatever its shape.
+ *
+ * A list is edited as the options the field still offers, in its order. An option the field no
+ * longer offers can't be picked again, and a field that has gone from several answers to one reads
+ * as unanswered while it holds several, so the next answer replaces them rather than one being
+ * kept for the member.
  */
 export function editableValueOf(
-  field: Pick<MemberCustomField, 'type'>,
+  field: MemberCustomField,
   value: unknown,
 ): EditableCustomFieldValue | undefined {
-  return matchShape<EditableCustomFieldValue | undefined>(field.type, {
+  return matchField<MemberCustomField, EditableCustomFieldValue | undefined>(field, {
     scalar: () => (typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined),
-    record: ({ parts }) => {
+    record: ({ type }) => {
       if (!isRecordValue(value)) {
         return undefined;
       }
       const record = Object.fromEntries(
-        Object.entries(trimmedParts(parts, value)).filter(([, held]) => held !== ''),
+        Object.entries(trimmedParts(FIELD_STRUCTURES[type].parts, value)).filter(
+          ([, held]) => held !== '',
+        ),
       );
       return Object.keys(record).length ? record : undefined;
     },
-    set: () => undefined,
+    set: ({ settings }) => {
+      const answers = editableAnswers(settings, Array.isArray(value) ? value : []);
+      return answers.length > 0 ? answers : undefined;
+    },
   });
 }
 
@@ -283,19 +296,19 @@ export function buildMemberFieldEditPayload(
  * refuses it rather than the save treating it as a clear and deleting what the member holds.
  */
 function customFieldValueToSave(
-  field: Pick<MemberCustomField, 'type'>,
+  field: MemberCustomField,
   value: EditableCustomFieldValue,
 ): EditableCustomFieldValue | undefined {
-  return matchShape<EditableCustomFieldValue | undefined>(field.type, {
+  return matchField<MemberCustomField, EditableCustomFieldValue | undefined>(field, {
     scalar: () => (typeof value === 'string' ? value.trim() || undefined : value),
     // A write changes only the parts it names, so an emptied part has to be sent as an empty
     // string; leaving it out would leave it unchanged. A record with nothing left in it clears the
     // whole field, which the caller sends as `null`.
-    record: ({ parts }) => {
+    record: ({ type }) => {
       if (typeof value === 'string' || Array.isArray(value)) {
         return value;
       }
-      const record = trimmedParts(parts, value);
+      const record = trimmedParts(FIELD_STRUCTURES[type].parts, value);
       return Object.values(record).some((part) => part !== '') ? record : undefined;
     },
     // A list is written whole, and one picking nothing clears it.
@@ -310,7 +323,7 @@ function customFieldValueToSave(
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
-  field: Pick<MemberCustomField, 'namespace' | 'key' | 'type'>,
+  field: MemberCustomField,
   value: EditableCustomFieldValue,
 ): EditMemberData {
   return {
