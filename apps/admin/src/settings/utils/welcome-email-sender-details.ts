@@ -1,4 +1,3 @@
-// NOTE: counterpart lives in apps/admin/src/automations/components/email-modal/sender-details.ts — the email design modal needs equivalent sender-detail behavior in both apps until Automations GAs; keep in sync
 import {
   type Config,
   hasSendingDomain,
