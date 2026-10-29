@@ -554,7 +554,7 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
       });
 
-      it('does not bail out if the member still matches the To tier', async function () {
+      it('continues when the member still matches the To tier', async function () {
         Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'silver' }] }));
 
         await poll(options);
@@ -567,7 +567,7 @@ describe('automations poll', function () {
         );
       });
 
-      it('does not bail out if a gift member still matches the To tier', async function () {
+      it('continues when a gift member still matches the To tier', async function () {
         Member.findOne.resolves(buildMember({ status: 'gift', products: [{ id: 'silver' }] }));
 
         await poll(options);
@@ -630,7 +630,7 @@ describe('automations poll', function () {
         automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
       });
 
-      it('does not bail out if the member remains free', async function () {
+      it('continues when the member remains free', async function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
