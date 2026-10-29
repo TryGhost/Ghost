@@ -11,12 +11,13 @@
 // The values table holds one row per stored value: `metafield_namespace`,
 // `metafield_key`, `path` (empty for a plain field, the part's name for one part of a
 // composite) and `value_text`. A filter addresses those columns directly, so each one
-// becomes a single $elemMatch over them: positive asserts a matching row exists, and $not
-// asserts none does, with no lookup against the field definitions.
+// becomes an $elemMatch over them: positive asserts a matching row exists, and $not
+// asserts none does, with no lookup against the field definitions. Which path holds a
+// field's whole value is the storage layouts' to say, for every type at once.
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { ROOT_PATH, pathOf } from './storage';
+import { ROOT_PATH, pathOf, pathsHolding } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -83,21 +84,70 @@ function targetOf(raw: unknown): Target {
   return { namespace, key, path: parts.length > 0 ? pathOf(parts) : ANY_PATH };
 }
 
+const Texts = z.union([z.string().transform((text) => [text]), z.array(z.string())]);
+
+// The texts an equality names: one, or any of a list (`value:['a','b']`), which NQL compiles to
+// `$in`. Null for any other comparison.
+function equalTexts(value: unknown): string[] | null {
+  const texts = isPlainObject(value) ? Texts.safeParse(value.$in) : Texts.safeParse(value);
+  return texts.success ? texts.data : null;
+}
+
+// The texts a negated equality names: not one (`$ne`), or none of a list (`$nin`).
+function unequalTexts(value: unknown): string[] | null {
+  if (!isPlainObject(value)) {
+    return null;
+  }
+  const texts = Texts.safeParse(value.$ne ?? value.$nin);
+  return texts.success ? texts.data : null;
+}
+
+// One value, or any of several, as a match on one column takes them.
+const oneOf = (values: readonly string[]): unknown =>
+  values.length === 1 ? values[0] : { $in: values };
+
 export function createMetafieldsFilterTransformer() {
-  // One (maybe-negated) $elemMatch over the value row columns: positive is "a row pinned
-  // by these matches", `$not` is "no row does".
-  function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
+  function rowsOf(target: Target): QueryNode {
     const match: QueryNode = { metafield_namespace: target.namespace, metafield_key: target.key };
-    if (value !== undefined) {
-      match.path = target.path ?? ROOT_PATH;
-      match.value_text = value;
-    } else if (target.path !== ANY_PATH) {
+    if (target.path !== ANY_PATH) {
       match.path = target.path;
     }
-    if (negate) {
-      return { [RELATION]: { $not: { $elemMatch: match } } };
+    return match;
+  }
+
+  // The rows that hold one of `texts` as the target's value: at its part, or wherever a field's
+  // whole value can be kept.
+  function rowsHolding(target: Target, texts: readonly string[]): QueryNode {
+    return {
+      ...rowsOf(target),
+      path: oneOf(target.path === ANY_PATH ? pathsHolding(texts) : [target.path]),
+      value_text: oneOf(texts),
+    };
+  }
+
+  const some = (match: QueryNode): QueryNode => ({ [RELATION]: { $elemMatch: match } });
+  const none = (match: QueryNode): QueryNode => ({ [RELATION]: { $not: { $elemMatch: match } } });
+
+  function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
+    if (value === undefined) {
+      return negate ? none(rowsOf(target)) : some(rowsOf(target));
     }
-    return { [RELATION]: { $elemMatch: match } };
+
+    const equal = equalTexts(value);
+    if (equal) {
+      return some(rowsHolding(target, equal));
+    }
+
+    // "Is not" is asked of a value that is there: the target holds something, and none of what
+    // it holds is one of these. A member holding nothing has no value to compare.
+    const unequal = unequalTexts(value);
+    if (unequal) {
+      return { $and: [some(rowsOf(target)), none(rowsHolding(target, unequal))] };
+    }
+
+    // Any other comparison, such as a match on part of the text, is made against one row: the
+    // target's part, or the root a single-row value is kept at.
+    return some({ ...rowsOf(target), path: target.path ?? ROOT_PATH, value_text: value });
   }
 
   function toElemMatch(clauses: QueryNode[]): QueryNode {

@@ -44,7 +44,7 @@ import {
   type FieldSource,
 } from './queries';
 import { canWrite, type Audience, type MemberAccess } from './access';
-import { ROOT_PATH, valueRowsToWrite, valuesFromRows, type ValueRow } from './storage';
+import { storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
 const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
@@ -155,40 +155,6 @@ function clearsWhole(type: FieldType, raw: unknown): boolean {
   return matchShape(type, {
     scalar: () => raw === '',
     record: () => false,
-  });
-}
-
-/**
- * What a field holds, read from its rows in the layout its type declares: a scalar's row at the
- * root, or a record's rows at its declared parts. Undefined when none of them is there. A row
- * anywhere else is left out, and `leftOut` is called. No write through this service stores one,
- * and a client couldn't draw it.
- *
- * The declared rows are read whatever else sits beside them, because a write names only declared
- * paths and so can never remove a stray row. Hiding a value for one would hide it for good,
- * however often staff saved the field again.
- *
- * Only the layout is checked, not the type's rule, so tightening a rule later never hides values
- * members already hold.
- */
-function storedValueAs(type: FieldType, rows: readonly ValueRow[], leftOut: () => void): unknown {
-  return matchShape<unknown>(type, {
-    scalar: () => {
-      const root = rows.find((row) => row.path === ROOT_PATH);
-      if (rows.length > (root ? 1 : 0)) {
-        leftOut();
-      }
-      return root?.value_text;
-    },
-    record: ({ parts }) => {
-      const declared = rows.filter((row) => Object.prototype.hasOwnProperty.call(parts, row.path));
-      if (declared.length < rows.length) {
-        leftOut();
-      }
-      return declared.length > 0
-        ? Object.fromEntries(declared.map((row) => [row.path, row.value_text]))
-        : undefined;
-    },
   });
 }
 
