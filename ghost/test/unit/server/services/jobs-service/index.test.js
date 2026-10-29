@@ -85,12 +85,12 @@ describe('jobs-service wrapper', function () {
     sinon.assert.calledOnceWithExactly(adapterManager.getAdapter, 'jobs');
   });
 
-  it('checked-in defaults select the in-memory backend with three workers', function () {
+  it('checked-in defaults select the in-memory backend with five workers', function () {
     const defaults = require('../../../../../core/shared/config/defaults.json');
 
     assert.deepEqual(defaults.adapters.jobs, {
       active: 'InMemoryJobsBackend',
-      InMemoryJobsBackend: { concurrency: 3 },
+      InMemoryJobsBackend: { concurrency: 5 },
     });
   });
 

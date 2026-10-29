@@ -95,14 +95,14 @@ describe('InMemoryJobsBackend', function () {
     await new Promise((resolve) => {
       setTimeout(resolve, 20);
     });
-    assert.equal(maxConcurrent, 3, 'at most 3 deliveries run concurrently');
+    assert.equal(maxConcurrent, 5, 'at most 5 deliveries run concurrently');
 
     release.forEach((resolve) => resolve());
     const drainRelease = setInterval(() => release.forEach((resolve) => resolve()), 5);
     await backend.shutdown({ timeoutMs: 2000 });
     clearInterval(drainRelease);
 
-    assert.ok(maxConcurrent <= 3);
+    assert.ok(maxConcurrent <= 5);
   });
 
   it('caps concurrent deliveries at the configured concurrency', async function () {
@@ -195,7 +195,7 @@ describe('InMemoryJobsBackend', function () {
       },
     });
 
-    for (let i = 0; i < 6; i = i + 1) {
+    for (let i = 0; i < 8; i = i + 1) {
       backend.enqueue(`d${i}`, dispatch({ type: `job-${i}`, payload: '{}' }));
     }
     await new Promise((resolve) => {
@@ -207,7 +207,7 @@ describe('InMemoryJobsBackend', function () {
     await backend.shutdown({ timeoutMs: 2000 });
     clearInterval(releaser);
 
-    assert.equal(received.length, 3, `only in-flight deliveries ran, got ${received.join(',')}`);
+    assert.equal(received.length, 5, `only in-flight deliveries ran, got ${received.join(',')}`);
   });
 
   it('drops work enqueued after shutdown (no replay on the next start)', async function () {
@@ -367,7 +367,7 @@ describe('InMemoryJobsBackend', function () {
 
       backend.start({ processor, queues: { webmentions: { concurrency: 1 } } });
 
-      for (let i = 0; i < 4; i = i + 1) {
+      for (let i = 0; i < 6; i = i + 1) {
         backend.enqueue(
           `w${i}`,
           dispatch({ type: 'webmention', payload: '{"lane":"webmentions"}' }, 'webmentions'),
@@ -379,7 +379,7 @@ describe('InMemoryJobsBackend', function () {
       });
 
       assert.equal(max.get('webmentions'), 1, 'the declared queue runs serially');
-      assert.equal(max.get('default'), 3, 'a busy declared queue does not occupy default workers');
+      assert.equal(max.get('default'), 5, 'a busy declared queue does not occupy default workers');
 
       await drainAndShutdown(backend, release);
     });

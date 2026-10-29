@@ -5929,7 +5929,7 @@ services:
         summary: >-
           The wrapper looks up the jobs adapter on first init; reinit reuses the same
           service and backend. Checked-in defaults select InMemoryJobsBackend with
-          concurrency 3. Registration declares separate queue limits. Boot passes
+          concurrency 5. Registration declares a separate email queue limit. Boot passes
           server:shutdownTimeout to jobs shutdown when its cleanup task runs; the in-memory
           backend otherwise waits 10 seconds.
         sources:
@@ -8804,8 +8804,8 @@ services:
           and read controller per call. Browse adds a source exclusion, normalizes
           options and maps mentions/resources to the HTTP shape; receive awaits job
           dispatch and returns 202 without awaiting processing. Boot passes concrete
-          controller/sender objects to job handlers on the webmentions queue with
-          concurrency three. Recommendations retains api/sender for refresh/list/sendAll,
+          controller/sender objects to job handlers on the shared default queue.
+          Recommendations retains api/sender for refresh/list/sendAll,
           adds a metadata mapper and subscribes to MentionCreatedEvent. Real HTTP tests
           assert a limited Admin browse snapshot, incoming persisted metadata/payload,
           verification and deletion, and outgoing post/page publish/edit/unpublish
@@ -15380,10 +15380,11 @@ services:
       consumers:
         summary: >-
           Boot imports the root for job-handler registration and later recurring scheduling.
-          The handler awaits sync through the retained root namespace and declares a dedicated
-          tinybird-sync queue with concurrency one. No runtime direct factory/helper consumer
-          or HTTP/CLI entry was found. Handler units assert one exact injected sync call and
-          the queue declaration, not a real queued upload or deferred completion. The background
+          The handler awaits sync through the retained root namespace on the shared default
+          queue; sync skips a pass that overlaps one already running in the process. No runtime
+          direct factory/helper consumer or HTTP/CLI entry was found. Handler units assert one
+          exact injected sync call and the default-queue registration, not a real queued upload
+          or deferred completion. The background
           boot harness asserts scheduling is reached after sibling email-analytics registration
           failures, using a stub root. Persisted cursor data also appears in the exporter backup
           table list; the exporter test asserts its output key, not a populated cursor round-trip.

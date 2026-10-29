@@ -67,7 +67,7 @@
     "jobs": {
       "active": "InMemoryJobsBackend",
       "InMemoryJobsBackend": {
-        "concurrency": 3
+        "concurrency": 5
       }
     }
   },

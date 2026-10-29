@@ -307,13 +307,10 @@ describe('register-job-handlers', function () {
     assert.ok(mentionsController.processWebmention.calledOnceWithExactly(job));
   });
 
-  // Guards the webmention isolation itself: dropping the options object in a
-  // refactor would silently move webmentions back onto the shared queue while
-  // every handler-behavior test still passes.
-  it('registers process-webmention on the dedicated webmentions queue', function () {
+  it('registers process-webmention on the shared default lane', function () {
     const registration = registrationFor('process-webmention');
 
-    assert.deepEqual(registration.args[2], { queue: 'webmentions', concurrency: 3 });
+    assert.equal(registration.args[2], undefined);
   });
 
   it('runs send-webmentions with the injected mentions sending service', async function () {
@@ -328,10 +325,10 @@ describe('register-job-handlers', function () {
     assert.ok(mentionsSendingService.sendWebmentions.calledOnceWithExactly(job));
   });
 
-  it('registers send-webmentions on the dedicated webmentions queue', function () {
+  it('registers send-webmentions on the shared default lane', function () {
     const registration = registrationFor('send-webmentions');
 
-    assert.deepEqual(registration.args[2], { queue: 'webmentions', concurrency: 3 });
+    assert.equal(registration.args[2], undefined);
   });
 
   it('runs send-email with the injected email service', async function () {
@@ -365,9 +362,11 @@ describe('register-job-handlers', function () {
     sinon.assert.calledOnceWithExactly(tinybirdSync.sync);
   });
 
-  it('registers tinybird-sync on its own queue, one pass at a time', function () {
+  // The sync service skips overlapping passes itself, so it needs no lane of
+  // its own.
+  it('registers tinybird-sync on the shared default lane', function () {
     const registration = registrationFor('tinybird-sync');
 
-    assert.deepEqual(registration.args[2], { queue: 'tinybird-sync', concurrency: 1 });
+    assert.equal(registration.args[2], undefined);
   });
 });

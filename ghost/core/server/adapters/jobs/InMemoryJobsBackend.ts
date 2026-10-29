@@ -21,7 +21,7 @@ const logging = require('@tryghost/logging');
 later.date.localTime();
 
 const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10000;
-const DEFAULT_CONCURRENCY = 3;
+const DEFAULT_CONCURRENCY = 5;
 // Envelopes with no routing share this lane; routing to "default" by name is
 // the same lane, not a collision.
 const DEFAULT_QUEUE = 'default';

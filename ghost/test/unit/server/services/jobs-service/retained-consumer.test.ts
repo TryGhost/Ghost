@@ -68,10 +68,7 @@ describe('jobs-service retained consumers', function () {
       await controller.processWebmention(job);
       firstDelivery.resolve();
     });
-    service.handle(ProcessWebmentionJobClass, firstHandler, {
-      queue: 'webmentions',
-      concurrency: 3,
-    });
+    service.handle(ProcessWebmentionJobClass, firstHandler);
     await service.start();
 
     await controller.receive({
@@ -101,10 +98,7 @@ describe('jobs-service retained consumers', function () {
       await controller.processWebmention(job);
       secondDelivery.resolve();
     });
-    restartedService.handle(ProcessWebmentionJobClass, secondHandler, {
-      queue: 'webmentions',
-      concurrency: 3,
-    });
+    restartedService.handle(ProcessWebmentionJobClass, secondHandler);
     await restartedService.start();
 
     await controller.receive({

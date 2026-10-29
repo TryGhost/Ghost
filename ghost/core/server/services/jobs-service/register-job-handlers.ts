@@ -28,14 +28,6 @@ import signingKeys from '../signing-keys';
 
 const updateCheck = require('../update-check');
 
-// Webmention processing fetches external pages and is triggered by
-// unauthenticated requests, so webmention jobs run in their own lane where a
-// flood cannot occupy the shared workers. The concurrency matches the old
-// dedicated mentions job queue. Every webmention job type must register with
-// this shared declaration so none can declare the queue with a different
-// concurrency.
-const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrency: 3 };
-
 // Keep newsletter sends independent of imports and other shared work. Two sends
 // can progress at once, each with its own two batch workers, so a long send or
 // retry does not hold up every other newsletter.
@@ -136,21 +128,17 @@ export default function registerJobHandlers({
     await signingKeys.service.check();
   });
 
-  jobsService.handle(
-    ProcessWebmentionJob,
-    async (job) => {
-      await mentionsController.processWebmention(job);
-    },
-    WEBMENTIONS_QUEUE,
-  );
+  // Webmention processing fetches external pages and is triggered by
+  // unauthenticated requests, so a flood can delay other default-lane jobs.
+  // It cannot reach newsletter sends or email analytics, which have their own
+  // lane. Capping in-flight webmentions is a follow-up.
+  jobsService.handle(ProcessWebmentionJob, async (job) => {
+    await mentionsController.processWebmention(job);
+  });
 
-  jobsService.handle(
-    SendWebmentionsJob,
-    async (job) => {
-      await mentionsSendingService.sendWebmentions(job);
-    },
-    WEBMENTIONS_QUEUE,
-  );
+  jobsService.handle(SendWebmentionsJob, async (job) => {
+    await mentionsSendingService.sendWebmentions(job);
+  });
 
   jobsService.handle(
     SendEmailJob,
@@ -160,11 +148,7 @@ export default function registerJobHandlers({
     EMAIL_QUEUE,
   );
 
-  jobsService.handle(
-    TinybirdSyncJob,
-    async () => {
-      await tinybirdSync.sync();
-    },
-    { queue: TinybirdSyncJob.type, concurrency: 1 },
-  );
+  jobsService.handle(TinybirdSyncJob, async () => {
+    await tinybirdSync.sync();
+  });
 }
