@@ -282,6 +282,22 @@ describe('ExternalMediaInliner seams', function () {
       assert.equal(media.filename, 'photo-gif.png');
     });
 
+    it('does not load the HEIC codec when the inliner module is loaded', function () {
+      // The module under test is required at the top of this file, before the
+      // interceptor exists, so load a fresh copy to observe its import.
+      interceptHeicConvert();
+      const inlinerPath =
+        require.resolve('../../../../../core/server/services/media-inliner/external-media-inliner');
+      const cached = require.cache[inlinerPath];
+      delete require.cache[inlinerPath];
+      try {
+        require(inlinerPath);
+        assert.equal(heicLoads, 0);
+      } finally {
+        require.cache[inlinerPath] = cached;
+      }
+    });
+
     it('loads the HEIC codec when a HEIC file is converted, not before', async function () {
       interceptHeicConvert();
       const png = harness(fixture('ghost-logo.png'));

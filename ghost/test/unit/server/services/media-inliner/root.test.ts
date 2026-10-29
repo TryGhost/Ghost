@@ -143,16 +143,21 @@ describe('Media inliner service root', function () {
     await root.init();
     const retained = root.getInstance();
     const mediaStorage = storages['storage:media'];
+    const imageStorage = storages['storage:images'];
     assert.equal(await retained.getMediaStorage('.mp4', Buffer.alloc(0)), mediaStorage);
+    // SVG skips the image content check, so it reaches the image adapter directly.
+    assert.equal(await retained.getMediaStorage('.svg', Buffer.alloc(0)), imageStorage);
     assert.equal(await retained.getMediaStorage('.webm', Buffer.alloc(0)), null);
 
     // The e2e lane boots Ghost repeatedly in one process, so a root that
     // captured the extension lists at construction would keep stale policy.
     uploads = { ...uploads, media: { extensions: ['.webm'] } };
     storages['storage:media'] = { type: 'replacement' };
+    storages['storage:images'] = { type: 'replacement' };
 
     assert.equal(await retained.getMediaStorage('.mp4', Buffer.alloc(0)), null);
     assert.equal(await retained.getMediaStorage('.webm', Buffer.alloc(0)), mediaStorage);
+    assert.equal(await retained.getMediaStorage('.svg', Buffer.alloc(0)), imageStorage);
     sinon.assert.calledThrice(getAdapter);
   });
 
