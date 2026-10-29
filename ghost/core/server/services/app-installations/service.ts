@@ -12,7 +12,7 @@ import {
   type ManifestWrite,
 } from './decide-on-manifest';
 import { approvalManifestIds, buildHistory } from './history';
-import { IDENTITY_FAILURE_CODES, type CheckIdentity, type PinnedIdentity } from './identity-check';
+import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
 
@@ -29,8 +29,8 @@ export interface AppInstallationPreview {
    */
   digest: string;
   /**
-   * The origins the manifest names, its own included, that the site's configuration
-   * trusts, so they skipped the challenge. Empty when every origin answered it.
+   * The app's origin, if the site's configuration trusts it so it skipped the challenge.
+   * Empty when it answered the challenge.
    */
   trusted_origins: string[];
   /**
@@ -82,21 +82,15 @@ function uninstalled() {
 
 /**
  * The app's manifest URL doesn't serve a usable manifest for this app, or one that passes
- * the identity check, which keeps its own code. Nothing is written, so the app opens again
- * once the URL serves one.
+ * the identity check. The session fails with the failure's own code, which Admin reads to
+ * tell an app that's down or broken from one Ghost couldn't confirm. Nothing is written, so
+ * the app opens again once the URL serves one.
  */
 function unavailable(err: InstanceType<typeof errors.ValidationError>) {
-  if (err.code && IDENTITY_FAILURE_CODES.has(err.code)) {
-    return new errors.ConflictError({
-      message: err.message,
-      context: err.context,
-      code: err.code,
-    });
-  }
   return new errors.ConflictError({
-    message: 'This app is unavailable.',
-    context: `${err.code}: ${err.message}${err.context ? ` (${err.context})` : ''}`,
-    code: 'APP_UNAVAILABLE',
+    message: err.message,
+    context: err.context,
+    code: err.code ?? 'APP_UNAVAILABLE',
   });
 }
 
@@ -120,7 +114,7 @@ export class AppInstallationsService {
   private repository: AppInstallationsRepository;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
-  private checkIdentity: CheckIdentity;
+  private identity: IdentityChecker;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -128,17 +122,17 @@ export class AppInstallationsService {
     knex,
     recordAction,
     loadManifest,
-    checkIdentity,
+    identity,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
-    checkIdentity: CheckIdentity;
+    identity: IdentityChecker;
   }) {
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
-    this.checkIdentity = checkIdentity;
+    this.identity = identity;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -169,7 +163,8 @@ export class AppInstallationsService {
    * review. Stores nothing.
    */
   async preview(manifestUrl: string): Promise<AppInstallationPreview> {
-    return this.previewOf(await this.review(await this.loadManifest(manifestUrl)));
+    const { loaded, started } = await this.load(manifestUrl);
+    return this.previewOf(await this.review(loaded, started));
   }
 
   /** Installs an app after the publisher has reviewed its manifest, as previewed. */
@@ -232,6 +227,7 @@ export class AppInstallationsService {
     if (stored.status === 'changed') {
       throw await this.changedSinceReview(checked, id);
     }
+    await this.repository.raiseSignedAt(id, loaded);
     const approved = stored.value;
     if (approved) {
       await this.recordAction({
@@ -295,12 +291,24 @@ export class AppInstallationsService {
     );
   }
 
-  /** The pinned identity key and retired backend keys of an installation. */
-  private async pinnedIdentityOf(installation: Installation): Promise<PinnedIdentity> {
+  /** What the site holds an installation's manifests to: its key, and the newest signing. */
+  private pinnedIdentityOf(installation: Installation): PinnedIdentity {
     return {
       identityKeyThumbprint: installation.identity_key_thumbprint,
-      retiredBackendKeys: await this.repository.retiredBackendKeysOf(installation.id),
+      signedAt: installation.manifest_signed_at,
+      signedDigest: installation.manifest_signed_digest,
     };
+  }
+
+  /**
+   * Loads a manifest with its origin's challenge already on the way, so the two requests
+   * run together rather than one after the other.
+   */
+  private async load(
+    manifestUrl: string,
+  ): Promise<{ loaded: LoadedManifest; started: StartedChallenge }> {
+    const started = this.identity.challenge(manifestUrl);
+    return { loaded: await this.loadManifest(manifestUrl), started };
   }
 
   /**
@@ -309,12 +317,13 @@ export class AppInstallationsService {
    */
   private async review(
     loaded: LoadedManifest,
+    started: StartedChallenge,
     installation?: Installation,
   ): Promise<CheckedManifest> {
     const current =
       installation ?? (await this.repository.currentInstallationOf(loaded.manifest.id)) ?? null;
-    const pinned = current ? await this.pinnedIdentityOf(current) : null;
-    const { trustedOrigins } = await this.checkIdentity(loaded, pinned);
+    const pinned = current ? this.pinnedIdentityOf(current) : null;
+    const { trustedOrigins } = await this.identity.check(loaded, pinned, started);
     return { loaded, trustedOrigins, installation: current };
   }
 
@@ -354,11 +363,11 @@ export class AppInstallationsService {
     digest: string,
     installation?: Installation,
   ): Promise<CheckedManifest> {
-    const loaded = await this.loadManifest(manifestUrl);
+    const { loaded, started } = await this.load(manifestUrl);
     if (installation && loaded.manifest.id !== installation.app_id) {
       throw forAnotherApp(loaded.manifest.id);
     }
-    const checked = await this.review(loaded, installation);
+    const checked = await this.review(loaded, started, installation);
     if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
@@ -445,8 +454,8 @@ export class AppInstallationsService {
    *
    * If the manifest can't be loaded, fails the identity check, or is for a different app,
    * the app is broken or its URL now serves someone else. The session then fails instead of
-   * running the approved manifest: with the identity check's code when it failed, and as
-   * unavailable otherwise.
+   * running the approved manifest, with the failure's own code. The challenge goes out with
+   * the manifest fetch, so a session start waits for one round trip to the app, not two.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation
@@ -461,14 +470,15 @@ export class AppInstallationsService {
 
     let loaded: LoadedManifest;
     try {
-      loaded = await this.loadManifest(before.manifest_url);
+      let started: StartedChallenge;
+      ({ loaded, started } = await this.load(before.manifest_url));
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
           code: 'APP_MANIFEST_OTHER_APP',
         });
       }
-      await this.checkIdentity(loaded, await this.pinnedIdentityOf(before));
+      await this.identity.check(loaded, this.pinnedIdentityOf(before), started);
     } catch (err) {
       // A ValidationError means the app served something that can't be used. Anything else
       // is a fault in Ghost, which fails the session as it is.
@@ -478,6 +488,7 @@ export class AppInstallationsService {
       return this.unavailableUnlessChanged(before, err);
     }
 
+    await this.repository.raiseSignedAt(before.id, loaded);
     const write = recheckWrite({
       current: before,
       pending: await this.pendingManifestOf(before),

@@ -35,7 +35,7 @@ function manifestFor(manifestUrl: string) {
     author: { name: 'Example Audio', url: 'https://example.com' },
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
-    surfaces: [{ type: 'admin_page', url: new URL('/admin', manifestUrl).href }],
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
     manifest_url: manifestUrl,
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
@@ -85,7 +85,7 @@ describe('App installations composition root', function () {
           asked.host = options.headers.host;
         }
         const text = options.body
-          ? answerTestChallenge(options.body, keys.backend, [asked.origin])
+          ? answerTestChallenge(options.body, keys.backend, asked.href)
           : signTestManifest(manifestFor(asked.href), keys.identity).then((signed) =>
               JSON.stringify(signed),
             );
@@ -212,6 +212,17 @@ describe('App installations composition root', function () {
     sinon.assert.calledOnceWithExactly(error, failure);
   });
 
+  // Found at boot, rather than failing every app.
+  it('refuses to start with trusted origins that aren’t origins', async function () {
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({ trustedOrigins: ['https://app.example.net/ghost'] });
+
+    await assert.rejects(root.init(), {
+      errorType: 'InternalServerError',
+      code: 'APP_CONFIG_INVALID',
+    });
+  });
+
   it('reads manifest rules and the development localhost alias per operation', async function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('env').returns('development');
@@ -237,14 +248,15 @@ describe('App installations composition root', function () {
     await assert.rejects(service.preview('https://podcast.example/manifest.json'), {
       errorType: 'ValidationError',
     });
-    sinon.assert.calledThrice(request);
+    // The manifest, and the challenge that goes out with it.
+    sinon.assert.callCount(request, 4);
     assert.equal(request.lastCall.args[0].hostname, 'podcast.example');
     // The Admin URL is a separate rule from the site URL.
     urlFor.withArgs('admin', true).returns('https://admin.example/ghost/');
     await assert.rejects(service.preview('https://admin.example/manifest.json'), {
       errorType: 'ValidationError',
     });
-    sinon.assert.callCount(request, 4);
+    sinon.assert.callCount(request, 6);
     assert.equal(request.lastCall.args[0].hostname, 'admin.example');
     assert.equal(root.service, service);
   });

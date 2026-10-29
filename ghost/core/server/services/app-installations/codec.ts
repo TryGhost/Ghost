@@ -6,6 +6,8 @@ export const InstallationFields = DbAppInstallation.pick({
   id: true,
   app_id: true,
   identity_key_thumbprint: true,
+  manifest_signed_at: true,
+  manifest_signed_digest: true,
   status: true,
   manifest_id: true,
   pending_manifest_id: true,

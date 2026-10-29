@@ -32,8 +32,6 @@ const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: 
 
 const ManifestDigestRow = DbAppInstallationManifest.pick({ digest: true });
 
-const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
-
 const HistoryActionRow = z
   .object({
     id: z.string(),
@@ -106,7 +104,6 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
-      backend_key_thumbprint: loaded.backendKeyThumbprint,
       source,
       requires_approval: requiresApproval,
       created_at: toDatabaseDate(new Date()),
@@ -189,22 +186,16 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * The backend keys an installation has seen replaced: every key its manifest rows name,
-   * other than the newest row's. Rows are only added for verified manifests, pending ones
-   * included, so a key is retired as soon as a verified manifest names a newer one.
+   * Records that the installation has seen a verified manifest signed at `loaded.issuedAt`,
+   * unless it has seen a later one. It doesn't move the revision on: nothing a session runs
+   * changes, so open sessions carry on. Uninstalled installations are left as they ended.
    */
-  async retiredBackendKeysOf(id: string): Promise<Set<string>> {
-    const newest = this.knex(MANIFESTS)
-      .where({ installation_id: id })
-      .orderBy('created_at', 'desc')
-      .orderBy('id', 'desc')
-      .limit(1)
-      .select('backend_key_thumbprint');
-    const rows = await this.knex(MANIFESTS)
-      .where({ installation_id: id })
-      .whereNot('backend_key_thumbprint', newest)
-      .distinct<z.input<typeof BackendKeyRow>[]>('backend_key_thumbprint');
-    return new Set(rows.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
+  async raiseSignedAt(id: string, loaded: LoadedManifest): Promise<void> {
+    await this.knex(INSTALLATIONS)
+      .where({ id })
+      .whereNot('status', 'uninstalled')
+      .where('manifest_signed_at', '<', loaded.issuedAt)
+      .update({ manifest_signed_at: loaded.issuedAt, manifest_signed_digest: loaded.digest });
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
@@ -280,6 +271,8 @@ export class AppInstallationsRepository {
       id,
       app_id: manifest.id,
       identity_key_thumbprint: loaded.identityKeyThumbprint,
+      manifest_signed_at: loaded.issuedAt,
+      manifest_signed_digest: loaded.digest,
       status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
@@ -297,6 +290,8 @@ export class AppInstallationsRepository {
             app_id: written.app_id,
             current_app_id: written.app_id,
             identity_key_thumbprint: written.identity_key_thumbprint,
+            manifest_signed_at: written.manifest_signed_at,
+            manifest_signed_digest: written.manifest_signed_digest,
             status: written.status,
             manifest_id: written.manifest_id,
             created_at: now,
@@ -308,7 +303,6 @@ export class AppInstallationsRepository {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
-            backend_key_thumbprint: loaded.backendKeyThumbprint,
             source: 'install',
             requires_approval: false,
             created_at: now,

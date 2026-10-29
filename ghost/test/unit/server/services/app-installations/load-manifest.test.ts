@@ -19,6 +19,7 @@ import {
 } from '../../../../utils/app-identity';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
+const SIGNED_AT = new Date('2026-10-29T12:00:00Z');
 
 const RULES: ManifestRules = {
   ghostUrls: ['https://site.example.com', 'https://site.example.com/ghost/'],
@@ -39,7 +40,7 @@ function manifest(overrides: Record<string, unknown> = {}) {
     author: { name: 'Example Audio', url: 'https://example.com' },
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
-    surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
     manifest_url: MANIFEST_URL,
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
@@ -78,7 +79,10 @@ const serving =
     { finalUrl, identity }: { finalUrl?: string; identity?: TestAppKeys['identity'] } = {},
   ): App =>
   async (url) =>
-    servingText(await signTestManifest(body, identity ?? keys.identity), finalUrl)(url);
+    servingText(
+      await signTestManifest(body, identity ?? keys.identity, { issuedAt: SIGNED_AT }),
+      finalUrl,
+    )(url);
 
 const failing =
   (failure: AppFetchFailure): App =>
@@ -127,17 +131,31 @@ describe('createManifestLoader', function () {
   });
 
   describe('fetching', function () {
-    it('asks the app for JSON no larger than it can store', async function () {
+    // The signed manifest carries the manifest in base64url, a third larger.
+    it('asks the app for JSON that fits a manifest as large as it can store, signed', async function () {
       const { loadManifest, fetchFromApp } = setup();
 
       await loadManifest(MANIFEST_URL);
 
       assert.deepEqual(fetchFromApp.mock.calls, [
-        [MANIFEST_URL, { maxBytes: 64 * 1024, headers: { accept: 'application/json' } }],
+        [
+          MANIFEST_URL,
+          {
+            maxBytes: Math.ceil((64 * 1024 * 4) / 3) + 1024,
+            headers: { accept: 'application/json' },
+          },
+        ],
       ]);
     });
 
-    it('loads a signed manifest, with the thumbprints of its keys', async function () {
+    it('refuses a signed manifest carrying a manifest larger than it can store', async function () {
+      const large = manifest({ description: 'x'.repeat(64 * 1024) });
+      const { loadManifest } = setup({ app: serving(large) });
+
+      assert.equal((await refusal(loadManifest(MANIFEST_URL))).code, 'APP_MANIFEST_TOO_LARGE');
+    });
+
+    it('loads a signed manifest, with its identity key’s thumbprint and when it was signed', async function () {
       const { loadManifest } = setup();
 
       const loaded = await loadManifest(MANIFEST_URL);
@@ -148,7 +166,7 @@ describe('createManifestLoader', function () {
       ]);
       assert.deepEqual(JSON.parse(loaded.serialised), loaded.manifest);
       assert.equal(loaded.identityKeyThumbprint, await thumbprintOf(keys.identity.publicJwk));
-      assert.equal(loaded.backendKeyThumbprint, await thumbprintOf(keys.backend.publicJwk));
+      assert.equal(loaded.issuedAt, SIGNED_AT.getTime() / 1000);
     });
 
     // Ghost compares the address it was asked for, which is the one it stores and fetches

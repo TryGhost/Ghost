@@ -3,7 +3,11 @@ import type { GhostLogger } from '@tryghost/logging';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
-const MANIFEST_MAX_BYTES = 64 * 1024;
+export const MANIFEST_MAX_BYTES = 64 * 1024;
+
+// The signed manifest carries the manifest in base64url, a third larger, with a header and
+// signature well under a kilobyte, so a manifest of the largest size still fits.
+const SIGNED_MANIFEST_MAX_BYTES = Math.ceil((MANIFEST_MAX_BYTES * 4) / 3) + 1024;
 
 /** The signed manifest's JSON, as the app served it. */
 type FetchManifest = (manifestUrl: string) => Promise<unknown>;
@@ -52,12 +56,16 @@ function manifestError(
         context: `${manifestUrl} redirects to ${failure.host}`,
       });
     case 'too_large':
-      return new errors.ValidationError({
-        message: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
-        code: 'APP_MANIFEST_TOO_LARGE',
-        context: manifestUrl,
-      });
+      return manifestTooLarge(manifestUrl);
   }
+}
+
+export function manifestTooLarge(manifestUrl: string): errors.ValidationError {
+  return new errors.ValidationError({
+    message: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
+    code: 'APP_MANIFEST_TOO_LARGE',
+    context: manifestUrl,
+  });
 }
 
 /**
@@ -74,7 +82,7 @@ export function createManifestFetcher({
   return async function fetchManifest(manifestUrl) {
     // The text is decoded as UTF-8, which is what JSON should use.
     const fetched = await fetchFromApp(manifestUrl, {
-      maxBytes: MANIFEST_MAX_BYTES,
+      maxBytes: SIGNED_MANIFEST_MAX_BYTES,
       headers: { accept: 'application/json' },
     });
     if (!fetched.success) {

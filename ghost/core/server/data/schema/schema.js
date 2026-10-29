@@ -2677,6 +2677,12 @@ module.exports = {
     // The RFC 7638 thumbprint of the identity key the app was installed with. It never
     // changes: a manifest signed with any other key is a different app.
     identity_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
+    // When the newest manifest the installation has seen was signed, in seconds since the
+    // epoch, and that manifest's digest. A manifest signed earlier is refused, so a replaced
+    // backend key can't come back. Raised without moving `revision` on, since nothing a
+    // session runs changes.
+    manifest_signed_at: { type: 'bigInteger', nullable: false },
+    manifest_signed_digest: { type: 'string', maxlength: 64, nullable: false },
     status: {
       type: 'string',
       maxlength: 50,
@@ -2714,9 +2720,6 @@ module.exports = {
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
-    // The RFC 7638 thumbprint of the manifest's backend key. Every key named before the
-    // newest row's is retired: a manifest naming one is refused.
-    backend_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: the app was installed, an Administrator approved changes, the
     // re-check applied a newer manifest or stored one for approval (`update`), or the
     // re-check lifted a suspension because the app reverted the pending changes (`resume`).
