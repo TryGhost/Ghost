@@ -16,6 +16,9 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const email = sinon.stub().resolves();
   const donations = sinon.stub().resolves();
   const tiers = sinon.stub().resolves();
+  const memberAttribution = sinon.stub().resolves();
+  // Staff initializes synchronously and captures the ready attribution service.
+  const staff = sinon.stub();
   const register = sinon.stub();
   const start = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
@@ -61,6 +64,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/email-service': { init: email, service: {} },
       './server/services/donations': { default: { init: donations } },
       './server/services/tiers': { default: { init: tiers } },
+      './server/services/member-attribution': { default: { init: memberAttribution } },
+      './server/services/staff': { init: staff },
       './server/services/media-inliner': {
         init: media,
         getInstance: () => ({}),
@@ -84,6 +89,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     email,
     donations,
     tiers,
+    memberAttribution,
+    staff,
     register,
     start,
     automations,
@@ -155,6 +162,38 @@ it('waits for Stripe initialization before initializing gifts and the other serv
   sinon.assert.calledOnce(boot.gifts);
   sinon.assert.calledOnce(boot.register);
   sinon.assert.calledOnce(boot.start);
+});
+
+it('waits for member attribution initialization before initializing staff', async function () {
+  const boot = createServicesHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.memberAttribution.returns(ready.promise);
+  const startup = boot.initServices();
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.memberAttribution);
+    sinon.assert.notCalled(boot.staff);
+    sinon.assert.notCalled(boot.register);
+  } finally {
+    ready.resolve();
+    await startup;
+  }
+
+  sinon.assert.calledOnce(boot.staff);
+  sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
+});
+
+it('propagates a staff initialization error without starting dependent work', async function () {
+  const boot = createServicesHarness();
+  const failure = new Error('staff initialization failed');
+  boot.staff.throws(failure);
+
+  await assert.rejects(boot.initServices(), (error) => error === failure);
+
+  sinon.assert.notCalled(boot.register);
+  sinon.assert.notCalled(boot.start);
+  sinon.assert.notCalled(boot.automations);
 });
 
 it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
