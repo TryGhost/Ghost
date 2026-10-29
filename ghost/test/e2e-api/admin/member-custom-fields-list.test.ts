@@ -12,6 +12,7 @@ describe('List custom fields', function () {
     put: (_url: string) => any;
     post: (_url: string) => any;
     loginAsOwner: () => Promise<void>;
+    loginAsEditor: () => Promise<void>;
   };
 
   const ANIMALS = { options: ['Dog', 'Cat'], multiple: true };
@@ -331,6 +332,52 @@ describe('List custom fields', function () {
 
       await setValues(memberId, { [field.key]: ['Cat'] });
       assert.deepEqual(await readValues(memberId), { [field.key]: ['Cat'] });
+    });
+  });
+
+  describe('Options members hold', function () {
+    const heldOptions = async (key: string) => {
+      const { body } = await agent
+        .get(`members/metafields/custom/${key}/held-options/`)
+        .expectStatus(200);
+      return [...body.held_options].sort();
+    };
+
+    it('names each option members hold once, including ones the field no longer offers', async function () {
+      const field = await createList({ options: ['Dog', 'Cat', 'Dolphin'], multiple: true });
+      await setValues(await createMember(), { [field.key]: ['Dog', 'Dolphin'] });
+      await setValues(await createMember(), { [field.key]: ['Dog'] });
+      await editSettings(field.key, ANIMALS);
+
+      assert.deepEqual(await heldOptions(field.key), ['Dog', 'Dolphin']);
+    });
+
+    it('names none for a list nobody has answered', async function () {
+      const field = await createList(ANIMALS);
+      assert.deepEqual(await heldOptions(field.key), []);
+    });
+
+    it('refuses a field that is not a list, and one that does not exist', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+        .expectStatus(201);
+
+      await agent
+        .get(`members/metafields/custom/${body.members_metafields[0].key}/held-options/`)
+        .expectStatus(422);
+      await agent.get('members/metafields/custom/nothing_here/held-options/').expectStatus(404);
+    });
+
+    // What members answered is about members, so it takes being able to browse them.
+    it('is not shown to a role that cannot browse members', async function () {
+      const field = await createList(ANIMALS);
+      await agent.loginAsEditor();
+      try {
+        await agent.get(`members/metafields/custom/${field.key}/held-options/`).expectStatus(403);
+      } finally {
+        await agent.loginAsOwner();
+      }
     });
   });
 });

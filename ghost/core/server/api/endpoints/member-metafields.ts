@@ -70,6 +70,17 @@ const controller = {
     },
   },
 
+  // Which options members hold says something about members, so it asks what browsing them does.
+  heldOptions: {
+    headers: noCacheInvalidation,
+    options: ['namespace', 'key'],
+    validation: { options: { namespace: { required: true }, key: { required: true } } },
+    permissions: { docName: 'member', method: 'browse' },
+    query(frame: ReadFrame) {
+      return booted().values.heldOptions(fieldRoute(frame.options));
+    },
+  },
+
   add: {
     statusCode: 201,
     headers: noCacheInvalidation,
@@ -138,6 +149,7 @@ const controller = {
 } satisfies Controller<{
   browse: ReadFrame;
   read: ReadFrame;
+  heldOptions: ReadFrame;
   add: WriteFrame;
   reorder: WriteFrame;
   edit: WriteFrame;

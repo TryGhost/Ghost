@@ -132,6 +132,38 @@ describe('Members list', () => {
     );
   });
 
+  it('filters a list field by an option members still hold after it was removed', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/held-options/', {
+      held_options: ['Dog', 'Dolphin'],
+    });
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Dolphin Fan' })] : [member({ name: 'Dolphin Fan' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await membersScreen.openFilterField('Favourite animals');
+    await page.getByLabelText('Favourite animals value').click();
+    await page.getByRole('option', { name: 'Dolphin' }).click();
+
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+  });
+
   // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
   // Core without the definitions endpoint must keep filtering intact. Adding a filter swaps
   // the filter bar between its two placements, and each one asks for the definitions; the

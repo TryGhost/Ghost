@@ -271,6 +271,12 @@ export const MetafieldDefinitionSchema = z
 export type MetafieldDefinition = z.output<typeof MetafieldDefinitionSchema>;
 
 /**
+ * The text of every option members hold for a list field, as the Admin API answers it, including
+ * options the field no longer offers. Ghost writes it through this and Admin reads it through it.
+ */
+export const HeldOptionsResponseSchema = z.object({ held_options: z.array(z.string()) });
+
+/**
  * Where a change to a member's values was made, as a member's activity feed names it.
  * Shared so a place added on the server is one Admin has to be told how to describe.
  */

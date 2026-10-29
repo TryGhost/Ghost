@@ -17,12 +17,13 @@ import {
   type SetSettings,
   type SettingsOf,
   type TypedSettings,
+  HeldOptionsResponseSchema,
 } from '@tryghost/metafield-types';
 import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { createMutation, createQuery } from '../utils/api/hooks';
+import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 import { countryName, countryOptions } from '../utils/countries';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
@@ -209,19 +210,19 @@ export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFiel
 };
 
 /**
- * How a list field's options are offered: each by its text, in the field's order, then any
- * already held that the field no longer offers, so a saved answer or filter still shows what it
- * holds.
+ * How a list field's options are offered: each by its text, in the field's order, then any members
+ * hold that the field no longer offers, and any already picked, so a saved answer or filter still
+ * shows what it holds.
  */
 export const memberCustomFieldOptionList = (
   settings: SetSettings,
+  heldByMembers: readonly string[] = [],
 ): MemberCustomFieldChoiceList => ({
-  options: (held) => {
-    const heldOptions = typeof held === 'string' ? [held] : (held ?? []);
-    return [
-      ...settings.options,
-      ...heldOptions.filter((option) => !settings.options.includes(option)),
-    ].map((option) => ({ value: option, label: option }));
+  options: (picked) => {
+    const pickedOptions = typeof picked === 'string' ? [picked] : (picked ?? []);
+    return [...new Set([...settings.options, ...heldByMembers, ...pickedOptions])].map(
+      (option) => ({ value: option, label: option }),
+    );
   },
   label: (option) => option,
   placeholder: 'Select options...',
@@ -389,6 +390,27 @@ export const useBrowseMemberCustomFields = createQuery<MemberCustomField[]>({
   path: '/members/metafields/custom/',
   parseResponse: (raw) => readMemberCustomFieldsResponse(raw).members_metafields,
 });
+
+const useHeldOptionsAt = createQueryWithId<string[]>({
+  dataType: 'MemberCustomFieldHeldOptionsResponseType',
+  path: (field) => `/members/metafields/${field}/held-options/`,
+  parseResponse: (raw) => HeldOptionsResponseSchema.parse(raw).held_options,
+});
+
+/**
+ * The text of every option members hold for a list field, including ones it no longer offers, for
+ * a filter to offer them all. Asked only of a list. A failure says nothing: an older server has no
+ * such read, and staff who can't browse members are refused it, and either way the filter still
+ * offers the field's own options.
+ */
+export const useMemberCustomFieldHeldOptions = (
+  field: Pick<MemberCustomField, 'namespace' | 'key'> | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) =>
+  useHeldOptionsAt(field ? `${field.namespace}/${field.key}` : '', {
+    enabled: enabled && field !== undefined,
+    defaultErrorHandler: false,
+  });
 
 // Browse hides archived fields by default. Settings is the one surface that
 // manages both, so it opts into every status through this variant rather than

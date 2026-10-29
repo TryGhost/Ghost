@@ -5,6 +5,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
   isRecordValue,
+  matchField,
   matchShape,
   valueSchemaFor,
   type FieldType,
@@ -37,6 +38,7 @@ import { toDatabaseDate } from '../../lib/db-types/date';
 import type { MetafieldsTracking } from './tracking';
 import {
   ACTIVE_ONLY,
+  ANY_STATUS,
   FIELDS_TABLE,
   fieldReference,
   knexify,
@@ -45,10 +47,13 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { canWrite, type Audience, type MemberAccess } from './access';
-import { storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
+import { ADMIN, canWrite, type Audience, type MemberAccess } from './access';
+import { heldOptionTexts, storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
+
+/** One option a list field has been answered with: its path, and the text one of its rows holds. */
+const HeldOptionRow = z.object({ path: z.string(), value_text: z.string() });
 const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
 const MEMBERS_TABLE = 'members';
 
@@ -710,6 +715,49 @@ export class MetafieldValuesService {
 
     // Joins the caller's transaction rather than nesting a savepoint under it.
     await (executor ? apply(executor) : this.knex.transaction(apply));
+  }
+
+  /**
+   * The text of every option members hold for a list field, the ones it offers and any it no longer
+   * does, sorted by text. A filter offers them all, so a publisher can find who answered
+   * with an option after it was removed.
+   *
+   * Read from the table's key: each option a field has been answered with is one path, and every row
+   * under a path holds the same text, so one row is read for each.
+   */
+  async heldOptions(field: FieldIdentity): Promise<string[]> {
+    const [row] = await this.fields
+      .definitions(this.knex, { audience: ADMIN, status: ANY_STATUS, field })
+      .read.select(...Object.keys(DbTypedField.shape));
+    const stored = DbTypedField.safeParse(row);
+    const typed = stored.success ? z.safeDecode(DbTypedSettings, stored.data) : null;
+    if (!typed?.success) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
+    const notAList = (): never => {
+      throw new errors.ValidationError({
+        message: 'Only a list field has options members hold.',
+        property: 'key',
+      });
+    };
+    return matchField<TypedSettings, Promise<string[]>>(typed.data, {
+      scalar: notAList,
+      record: notAList,
+      set: async () => {
+        const held = this.knex(VALUES_TABLE)
+          .distinct('path')
+          .where(fieldReference(field))
+          .as('held');
+        const rows = await this.knex.from(held).select('held.path', {
+          value_text: this.knex(VALUES_TABLE)
+            .select('value_text')
+            .where(fieldReference(field))
+            .whereRaw('?? = ??', [`${VALUES_TABLE}.path`, 'held.path'])
+            .limit(1),
+        });
+        return heldOptionTexts(z.array(HeldOptionRow).parse(rows));
+      },
+    });
   }
 
   /**

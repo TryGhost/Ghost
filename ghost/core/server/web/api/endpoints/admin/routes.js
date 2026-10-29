@@ -225,6 +225,7 @@ module.exports = function apiRoutes() {
   // list rather than a 404.
   metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
+  metafieldsRouter.get('/:namespace/:key/held-options', http(api.membersMetafields.heldOptions));
 
   // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
   // change a namespace's fields, and whether its limits let them, is the namespace's own

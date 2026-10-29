@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { CUSTOM_FIELD_SET_OPERATORS, parseMetafieldFieldId } from './addressing';
-import { matchField, matchLeaf, matchShape } from '@tryghost/metafield-types/structure';
+import {
+  type FieldOfShape,
+  matchField,
+  matchLeaf,
+  matchShape,
+} from '@tryghost/metafield-types/structure';
 import { FILTER_TYPES, createOperatorOptions, listsOperator } from '@/shared/filters';
 import {
   FilterSegmentInput,
@@ -11,6 +16,7 @@ import {
   memberCustomFieldChoiceLists,
   memberCustomFieldOptionList,
   memberCustomFieldParts,
+  useMemberCustomFieldHeldOptions,
   type MemberCustomField,
   type MemberCustomFieldChoiceList,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -42,6 +48,49 @@ function offeredOperators(field: FilterFieldConfig<string>, part: LeafFilterType
   // part, "is any of" for a picked one, presence for the whole.
   return { options, ids, fallback: ids[0] ?? 'is-set' };
 }
+
+interface ChoicesValueProps {
+  label: string;
+  codes: string[];
+  readOnly?: boolean;
+  onChange: (codes: string[]) => void;
+}
+
+/** A value picked from a list of choices. */
+const ChoicesValue: React.FC<ChoicesValueProps & { list: MemberCustomFieldChoiceList }> = ({
+  label,
+  list,
+  codes,
+  readOnly,
+  onChange,
+}) => (
+  <FilterSegmentMultiSelect
+    ariaLabel={`${label} value`}
+    options={list.options(codes)}
+    placeholder={list.placeholder}
+    readOnly={readOnly}
+    searchPlaceholder={list.searchPlaceholder}
+    testId="custom-field-filter-value"
+    values={codes}
+    onChange={onChange}
+  />
+);
+
+/**
+ * A list field's options to pick from, with those members still hold after it stopped offering
+ * them. Its own component, so only a list field asks for what members hold.
+ */
+const ListFieldValue: React.FC<
+  ChoicesValueProps & { definition: FieldOfShape<'set', MemberCustomField> }
+> = ({ definition, ...value }) => {
+  const { data: heldByMembers } = useMemberCustomFieldHeldOptions(definition);
+  return (
+    <ChoicesValue
+      {...value}
+      list={memberCustomFieldOptionList(definition.settings, heldByMembers)}
+    />
+  );
+};
 
 const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   field,
@@ -78,13 +127,6 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
         choice: ({ from }) => memberCustomFieldChoiceLists[from],
       })
     : null;
-  const list = definition
-    ? matchField<MemberCustomField, MemberCustomFieldChoiceList | null>(definition, {
-        scalar: () => leafList,
-        record: () => leafList,
-        set: ({ settings }) => memberCustomFieldOptionList(settings),
-      })
-    : null;
 
   const {
     options: operatorOptions,
@@ -103,6 +145,45 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   const partOptions = [{ value: '', label: 'Any' }, ...parts];
   // A presence pill carries an empty value slot; it is not a code.
   const codes = useMemo(() => values.slice(1).filter((code) => code !== ''), [values]);
+  const pickCodes = (nextCodes: string[]) => onChange([part, ...nextCodes]);
+  const typedValue = (
+    <FilterSegmentInput
+      ariaLabel={`${fieldLabel} value`}
+      placeholder="Enter value..."
+      readOnly={readOnly}
+      testId="custom-field-filter-value"
+      value={rest[0] ?? ''}
+      onChange={(nextValue) => onChange([part, nextValue])}
+    />
+  );
+  // What a value is picked from, by the field's shape: a leaf's choices, or typed in, or a list
+  // field's options.
+  const leafValue = leafList ? (
+    <ChoicesValue
+      codes={codes}
+      label={fieldLabel}
+      list={leafList}
+      readOnly={readOnly}
+      onChange={pickCodes}
+    />
+  ) : (
+    typedValue
+  );
+  const valueControl = definition
+    ? matchField<MemberCustomField, React.ReactElement>(definition, {
+        scalar: () => leafValue,
+        record: () => leafValue,
+        set: (listField) => (
+          <ListFieldValue
+            codes={codes}
+            definition={listField}
+            label={fieldLabel}
+            readOnly={readOnly}
+            onChange={pickCodes}
+          />
+        ),
+      })
+    : typedValue;
 
   return (
     <>
@@ -133,29 +214,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
         />
       )}
 
-      {needsValue && list && (
-        <FilterSegmentMultiSelect
-          ariaLabel={`${fieldLabel} value`}
-          options={list.options(codes)}
-          placeholder={list.placeholder}
-          readOnly={readOnly}
-          searchPlaceholder={list.searchPlaceholder}
-          testId="custom-field-filter-value"
-          values={codes}
-          onChange={(nextCodes) => onChange([part, ...nextCodes])}
-        />
-      )}
-
-      {needsValue && !list && (
-        <FilterSegmentInput
-          ariaLabel={`${fieldLabel} value`}
-          placeholder="Enter value..."
-          readOnly={readOnly}
-          testId="custom-field-filter-value"
-          value={rest[0] ?? ''}
-          onChange={(nextValue) => onChange([part, nextValue])}
-        />
-      )}
+      {needsValue && valueControl}
     </>
   );
 };

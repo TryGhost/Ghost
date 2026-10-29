@@ -55,13 +55,14 @@ export let bindings: MetafieldBindingsService | undefined;
 export function booted(): {
   namespaces: Namespaces;
   definitions: MetafieldDefinitionsService;
+  values: MetafieldValuesService;
 } {
-  if (!namespaces || !definitions) {
+  if (!namespaces || !definitions || !values) {
     throw new errors.IncorrectUsageError({
       message: 'Members metafields were used before boot initialised them.',
     });
   }
-  return { namespaces, definitions };
+  return { namespaces, definitions, values };
 }
 
 export function init(): void {
