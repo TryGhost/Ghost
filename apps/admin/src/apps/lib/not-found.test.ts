@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type ErrorResponse, JSONError } from '@tryghost/admin-x-framework/errors';
-import { isAppUnavailable, isInstallationNotFound, isSessionsRouteMissing } from './not-found';
+import { isInstallationNotFound, isSessionsRouteMissing, sessionFailureOf } from './not-found';
 
 const apiError = (status: number, code: string | null) =>
   new JSONError(new Response(null, { status }), {
@@ -24,28 +24,25 @@ describe('isSessionsRouteMissing', () => {
   });
 });
 
-describe('isAppUnavailable', () => {
-  it('treats a 409 with APP_UNAVAILABLE as the app being unavailable', () => {
-    expect(isAppUnavailable(apiError(409, 'APP_UNAVAILABLE'))).toBe(true);
-    expect(isInstallationNotFound(apiError(409, 'APP_UNAVAILABLE'))).toBe(false);
+describe('sessionFailureOf', () => {
+  it('reads a 409 as a failure of the app, with its own code', () => {
+    expect(sessionFailureOf(apiError(409, 'APP_MANIFEST_UNREACHABLE'))).toEqual({
+      code: 'APP_MANIFEST_UNREACHABLE',
+      unconfirmed: false,
+    });
+    expect(isInstallationNotFound(apiError(409, 'APP_MANIFEST_UNREACHABLE'))).toBe(false);
   });
 
-  // One screen covers every failed session for now, whatever the identity check found.
-  it.each([
-    'APP_MANIFEST_UNSIGNED',
-    'APP_MANIFEST_URL_MISMATCH',
-    'APP_MANIFEST_SIGNATURE_INVALID',
-    'APP_IDENTITY_MISMATCH',
-    'APP_BACKEND_KEY_RETIRED',
-    'APP_CHALLENGE_FAILED',
-    'APP_CHALLENGE_UNREACHABLE',
-  ])('treats a 409 with %s as the app being unavailable', (code) => {
-    expect(isAppUnavailable(apiError(409, code))).toBe(true);
-  });
+  it.each(['APP_IDENTITY_MISMATCH', 'APP_CHALLENGE_FAILED', 'APP_MANIFEST_OUTDATED'])(
+    'says Ghost couldn’t confirm the app for %s',
+    (code) => {
+      expect(sessionFailureOf(apiError(409, code))).toEqual({ code, unconfirmed: true });
+    },
+  );
 
   it('leaves other failures alone', () => {
-    expect(isAppUnavailable(apiError(409, null))).toBe(false);
-    expect(isAppUnavailable(apiError(404, 'APP_NOT_INSTALLED'))).toBe(false);
-    expect(isAppUnavailable(new Error('offline'))).toBe(false);
+    expect(sessionFailureOf(apiError(409, null))).toBeUndefined();
+    expect(sessionFailureOf(apiError(404, 'APP_NOT_INSTALLED'))).toBeUndefined();
+    expect(sessionFailureOf(new Error('offline'))).toBeUndefined();
   });
 });

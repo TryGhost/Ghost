@@ -44,7 +44,12 @@ import { appEntryPath, appPathFromLocation, appPathRoute, isAppLocation } from '
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
-import { isAppUnavailable, isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
+import {
+  isInstallationNotFound,
+  isSessionsRouteMissing,
+  sessionFailureOf,
+  type SessionFailure,
+} from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -89,13 +94,23 @@ const NotResponding: React.FC<{
 /**
  * Shown when Ghost couldn't use the app's manifest as the session started. The session's response
  * has no installation, so the app's name comes from the list the sidebar reads.
+ *
+ * There's no Uninstall here. When Ghost couldn't confirm the app, uninstalling it and installing
+ * it again from a link is the one way another developer's key gets pinned, so the screen sends the
+ * publisher to the developer instead. Uninstall stays on the app's details page.
  */
-const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = ({
-  installationId,
-  onRetry,
-}) => {
+const Unavailable: React.FC<{
+  installationId: string;
+  failure: SessionFailure;
+  onRetry: () => void;
+}> = ({ installationId, failure, onRetry }) => {
   const { data } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installation = data?.app_installations.find(({ id }) => id === installationId);
+  const name = installation?.manifest.name ?? 'This app';
+  const at = installation ? ` at ${servedFrom(installation.manifest)}` : '';
+  const explanation = failure.unconfirmed
+    ? `Ghost couldn’t confirm the app${at} is the one you installed. Contact its developer, and don’t install it again from a link until they’ve fixed it. Your site isn’t affected.`
+    : `Ghost couldn’t load the app${at}. It might be down or misconfigured. Your site isn’t affected.`;
   return (
     <Centered testId="app-unavailable">
       <EmptyIndicator
@@ -107,8 +122,19 @@ const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = (
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
-        description={`Ghost couldn’t confirm the app’s details${installation ? ` at ${servedFrom(installation.manifest)}` : ''}. It might be down, or no longer serve the app you installed. Your site isn’t affected.`}
-        title={`${installation?.manifest.name ?? 'This app'} isn’t available`}
+        description={
+          <>
+            {explanation}
+            <span className="mt-2 block font-mono text-xs" data-testid="app-failure-code">
+              {failure.code}
+            </span>
+          </>
+        }
+        title={
+          failure.unconfirmed
+            ? `Ghost couldn’t confirm this is ${name}`
+            : `${name} isn’t available right now`
+        }
       >
         <LucideIcon.TriangleAlert />
       </EmptyIndicator>
@@ -528,12 +554,13 @@ export const AppPage: React.FC = () => {
   const { settled, session, error, restart } = useAppSession(installationId);
   const installation = session?.installation;
   const notFound = isInstallationNotFound(error);
-  const unavailable = isAppUnavailable(error);
+  const failure = sessionFailureOf(error);
+  const appFailed = failure !== undefined;
   useEffect(() => {
-    if (error && !notFound && !unavailable) {
+    if (error && !notFound && !appFailed) {
       reportAppsError(error);
     }
-  }, [error, notFound, unavailable]);
+  }, [error, notFound, appFailed]);
 
   let body: React.ReactNode;
   if (!settled) {
@@ -546,8 +573,8 @@ export const AppPage: React.FC = () => {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} onApproved={restart} />;
-  } else if (unavailable) {
-    body = <Unavailable installationId={installationId} onRetry={restart} />;
+  } else if (failure) {
+    body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {
     body = (
       <Centered>

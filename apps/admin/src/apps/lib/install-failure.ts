@@ -1,3 +1,4 @@
+import { isUnconfirmedAppCode } from '@tryghost/app-contracts';
 import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 
 /** Something the app's developer has to fix, with what Ghost said about it. */
@@ -57,10 +58,6 @@ export function installFailureOf(error: unknown): InstallFailure {
       return { kind: 'unreachable', detail };
     case 'APP_IDENTITY_MISMATCH':
       return { kind: 'another-developer' };
-    case 'APP_MANIFEST_SIGNATURE_INVALID':
-    case 'APP_BACKEND_KEY_RETIRED':
-    case 'APP_CHALLENGE_FAILED':
-      return { kind: 'unconfirmed', detail };
     case 'APP_MANIFEST_UNSIGNED':
       return {
         kind: 'problems',
@@ -70,6 +67,11 @@ export function installFailureOf(error: unknown): InstallFailure {
       return {
         kind: 'problems',
         problems: [{ title: 'The app’s details are for another install link', detail }],
+      };
+    case 'APP_MANIFEST_SIGNED_IN_FUTURE':
+      return {
+        kind: 'problems',
+        problems: [{ title: 'The app’s details say they were signed in the future', detail }],
       };
     case 'APP_MANIFEST_URL_INVALID':
       return { kind: 'problems', problems: [{ title: 'The install link isn’t valid', detail }] };
@@ -103,6 +105,10 @@ export function installFailureOf(error: unknown): InstallFailure {
       };
     }
     default:
+      // A bad signature, a failed challenge, or a manifest older than one the site has seen.
+      if (isUnconfirmedAppCode(apiError?.code)) {
+        return { kind: 'unconfirmed', detail };
+      }
       return { kind: 'error', message: getErrorMessage(error, FALLBACK_MESSAGE) };
   }
 }

@@ -553,12 +553,17 @@ describe('Managing apps', () => {
   it('says an app is unavailable when Ghost can’t use its manifest, and opens it once it can', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());
-    sessionsApi.set(apiError(409, 'This app is unavailable.', 'APP_UNAVAILABLE'));
+    sessionsApi.set(
+      apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+    );
 
     await renderAdminApp(APP_ROUTE, { labs });
 
-    await expect.element(appsScreen.unavailable()).toHaveTextContent('Podcast isn’t available');
+    await expect
+      .element(appsScreen.unavailable())
+      .toHaveTextContent('Podcast isn’t available right now');
     await expect.element(appsScreen.unavailable()).toHaveTextContent('podcast.example.com');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_MANIFEST_UNREACHABLE');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
 
     sessionsApi.set(installation());
@@ -568,8 +573,8 @@ describe('Managing apps', () => {
     expect(sessionsApi.requests).toHaveLength(2);
   });
 
-  // One screen covers every failed session for now; the codes let it be split later.
-  it('says an app is unavailable when Ghost can’t confirm it’s the app installed, and opens it once it can', async () => {
+  // Uninstalling and installing it again from a link is how another developer's key gets pinned.
+  it('says Ghost couldn’t confirm it’s the app installed, sending the publisher to its developer', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());
     sessionsApi.set(
@@ -578,7 +583,11 @@ describe('Managing apps', () => {
 
     await renderAdminApp(APP_ROUTE, { labs });
 
-    await expect.element(appsScreen.unavailable()).toHaveTextContent('Podcast isn’t available');
+    await expect
+      .element(appsScreen.unavailable())
+      .toHaveTextContent('Ghost couldn’t confirm this is Podcast');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('Contact its developer');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_IDENTITY_MISMATCH');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Uninstall' })).not.toBeInTheDocument();
 
