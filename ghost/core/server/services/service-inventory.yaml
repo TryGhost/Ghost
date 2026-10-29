@@ -1084,7 +1084,7 @@ services:
           - core/server/services/automations/service.ts
           - core/server/services/automations/automations-api.ts
           - core/server/services/automations/database-automations-repository.ts
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/lib/request-external.js
         tests:
           - test/unit/server/services/automations/service.test.ts
@@ -1187,7 +1187,7 @@ services:
           - core/server/services/automations/scheduler-poll-time.ts
           - core/server/services/automations/poll.ts
           - core/server/services/automations/database-automations-repository.ts
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/lib/request-external.js
           - core/shared/url-utils.ts
@@ -1219,7 +1219,7 @@ services:
           - core/server/services/automations/automation-member-search.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/lib/request-external.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/email-analytics/jobs/index.js
           - core/server/ghost-server.ts
           - package.json
@@ -2558,7 +2558,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/email-address/email-address-service-wrapper.js
-        - core/server/services/member-welcome-emails/service.js
+        - core/server/services/member-welcome-emails/index.ts
         - core/server/api/endpoints/automated-email-design.js
         - core/boot.js
         - test/unit/server/services/email-address/wrapper.test.ts
@@ -2588,7 +2588,7 @@ services:
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/api/endpoints/automated-email-design.js
     entryPoints:
       - email-address/index.js
@@ -2658,7 +2658,7 @@ services:
           - core/server/services/settings/settings-service.js
           - core/server/services/newsletters/index.ts
           - core/server/api/endpoints/utils/serializers/output/mappers/newsletters.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automated-email-design.js
           - core/server/services/staff/staff-service-emails.js
@@ -2683,7 +2683,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/email-address/email-address-service-wrapper.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automated-email-design.js
           - core/server/services/members/api.js
@@ -2701,7 +2701,7 @@ services:
           - core/server/services/email-address/email-address-service.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/members/api.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/automations/welcome-email-automation-poll.ts
           - core/server/ghost-server.ts
         tests:
@@ -7615,49 +7615,48 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Move initialization out of endpoints, Stripe callbacks and both automation pollers
-        into boot, after its mail and tracking dependencies. Keep content/sender refresh
-        separate from instance readiness, preserve legacy and general-automation sends, and
-        roll back the locale listener and partial mail/template construction on failure. One
-        retained instance fits; caller and resource ownership need substantial work.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        Boot initializes the root after the email-address policy, members and link tracking are
+        ready and before job handlers and automation polling start. The factory builds the
+        translator, token provider, mailers, renderer and implementation once and subscribes
+        the locale listener last, so a failed attempt leaves nothing to unwind and an explicit
+        retry builds a fresh graph. Stripe and the endpoints read the ready instance per call
+        and the automations service passes it to both pollers. Welcome content and sender
+        refresh stay explicit operations on the instance, and legacy welcome and general
+        automation sends keep their separate transports.
+      reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
       sources:
-        - core/server/services/member-welcome-emails/service.js
+        - core/server/services/member-welcome-emails/index.ts
         - core/server/services/member-welcome-emails/member-welcome-email-service.js
         - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
+        - core/boot.js
+        - core/server/services/automations/service.ts
         - core/server/services/automations/welcome-email-automation-poll.ts
         - core/server/api/endpoints/automated-emails.js
+        - test/unit/server/services/member-welcome-emails/index.test.ts
+        - test/unit/boot/init-services.test.ts
         - test/integration/services/member-welcome-emails.test.js
       dependencies:
         complexity: complex
         reason: >-
-          The implementation class and renderer now receive logging, config, labs, sentry,
-          settings, URL utils, models, the ready email-address policy, settings helpers, both
-          mailers, the verify-email template, the token provider, helper registration and a
-          link-tracking adapter through their constructors; the deep wrapper composes them on
-          first use and still initializes link tracking on demand for tracked renders. The
-          renderer keeps handlebars, fs, path, Lexical, the Koenig replacement helper and the
-          shared email-design and finalize files; the implementation keeps the delivery address
-          formatter. Stripe, automation pollers and API endpoints still initialize the wrapper
-          on demand, so the ready graph is not boot-owned yet.
-        preparation:
-          - >-
-            Move the wrapper's composition into a boot-owned root, pass link tracking's ready
-            instance instead of the on-demand adapter, and adapt Stripe, both automation pollers
-            and the endpoints to read the ready instance; preserve their explicit content-loading
-            operations rather than treating readiness as content refresh.
-          - >-
-            Settle the renderer's remaining library and shared-file imports (handlebars, fs, path,
-            Lexical, Koenig replacement strings, email-design, finalize) and the delivery address
-            formatter as exact allowances or injected capabilities.
+          The root wires logging, config, labs, sentry, settings, URL utils, models, the ready
+          email-address policy, settings helpers, both mailers, the verify-email template, the
+          token provider, helper registration, the ready link tracking instance and a forwarded
+          Lexical render and a strict template loader (a closed name-to-file map read
+          synchronously from the root) into the implementation and renderer; neither reads its
+          own root, the filesystem or initializes a dependency. The renderer imports handlebars,
+          the Koenig replacement helper and the shared email-design and finalize files, and the
+          implementation imports the delivery address formatter, each under an exact allowance
+          with a boundary regression.
+        preparation: []
         reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
         sources:
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/stripe/stripe-service.js
@@ -7666,31 +7665,30 @@ services:
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
     entryPoints:
-      - member-welcome-emails/index.js
-      - member-welcome-emails/service.js
+      - member-welcome-emails/index.ts
     notes: >-
-      Preserve the nested singleton, caller initialization, locale listener and separate
-      welcome-content and sender caches while establishing boot ownership. General automation
-      sends currently share this implementation; its source TODO leaves their eventual owner open.
+      Migrated against b7cad8406041d09d9e4085c5f981f958d454fc76. Boot owns one retained instance; the locale listener,
+      welcome-content and sender caches live on it, and content/sender refresh remain explicit
+      operations. General automation sends still share this implementation; its source TODO
+      leaves their eventual owner open. Constants keep their deep import for models, seeders,
+      analytics and automations.
     contracts:
       exports:
         summary: >-
-          The CommonJS barrel exports service (the wrapper singleton) and constants; it has
-          no own init. Deep service.js exports the same receiver-dependent synchronous init
-          wrapper, with api and i18n created on first use. The private implementation exposes
-          async load/send, automation send, active check, preview/test-send and shared-sender
-          edit/verification methods. Welcome/test sends resolve undefined; automation send
-          returns the bulk transport result; previews return html/plaintext/subject and sender
-          edits return models/meta. The renderer is a separate exported class. Integration
-          tests assert automation result identity and HTTP preview/204/verification responses.
-          The root unit test asserts the barrel exports exactly the wrapper singleton and the
-          constants, that init is synchronous with api and i18n undefined before the first
-          call, that welcome sends resolve undefined, automation sends return the bulk
-          transport result and sender edits/verification return the collection models with
-          sent_email_verification or email_verified meta.
+          The TypeScript root default-exports a defineService root with init and a guarded
+          service getter and nothing else; constants keep their own module. The service is the
+          implementation instance with async load/send, automation send, active check,
+          preview/test-send and shared-sender edit/verification methods. Welcome/test sends
+          resolve undefined; automation send returns the bulk transport result; previews return
+          html/plaintext/subject and sender edits return models/meta. The renderer is a separate
+          class. Integration tests assert automation result identity and HTTP
+          preview/204/verification responses. The root unit test asserts the root exposes only
+          init and service, that service throws before init, that welcome sends resolve
+          undefined, automation sends return the bulk transport result and sender
+          edits/verification return the collection models with sent_email_verification or
+          email_verified meta.
         sources:
-          - core/server/services/member-welcome-emails/index.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/constants.ts
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
@@ -7701,21 +7699,23 @@ services:
           - test/e2e-api/admin/automations.test.ts
       construction:
         summary: >-
-          First init creates ghost-namespace i18n, subscribes to settings.locale.edited,
-          initializes email-address, constructs GhostMailer, MailgunClient, a model-backed
-          SingleUseTokenProvider and the renderer, then passes them with logging, config,
-          labs, sentry, settings, URL utils, models, settings helpers and the verify-email
-          template into the implementation, which constructs only MagicLink itself. The
-          renderer creates isolated Handlebars, registers the injected email helpers,
-          synchronously reads partials/wrapper and compiles the template. These production
-          constructors are reached only in the wrapper; tests construct the renderer directly
-          with the same collaborators. Lexical rendering additionally
-          initializes a shared renderer and retains a separate PostsService graph through
-          its deep factory. The root unit test asserts one api across repeated init, one
-          translator and one locale listener across api resets, and that the renderer uses
-          the translator the wrapper built. No partial-failure test exists.
+          The root factory asserts the email-address policy and link tracking are ready,
+          creates ghost-namespace i18n, constructs GhostMailer, MailgunClient, a model-backed
+          SingleUseTokenProvider and the renderer, passes them with logging, config, labs,
+          sentry, settings, URL utils, models, settings helpers and the verify-email template
+          into the implementation (which constructs only MagicLink itself), and subscribes to
+          settings.locale.edited last. The renderer creates isolated Handlebars, registers the
+          injected email helpers, synchronously reads partials/wrapper and compiles the
+          template; it reads partials and wrapper through the injected loader, which is the only
+          filesystem access and only reaches the six known template files. Production
+          constructors are reached only in the root; tests construct the renderer directly with
+          the same collaborators. The injected Lexical render forwards to
+          the shared facade, which initializes its renderer lazily and retains a separate
+          PostsService graph through its deep factory. The root unit test asserts a failed attempt (link tracking not ready)
+          rejects without a listener, a later init builds the service with one listener, and
+          repeated or concurrent init retains the same instance.
         sources:
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/members/single-use-token-provider.js
@@ -7728,17 +7728,16 @@ services:
           - test/unit/server/services/member-welcome-emails/index.test.ts
       consumers:
         summary: >-
-          Automated-email and automation-preview endpoints retain the deep wrapper and read
-          api after init for previews, tests and sender changes. AutomationsService injects
-          that wrapper into both pollers; Stripe's paid-welcome callback resolves its api
-          when deciding whether a signup email is needed. Models, member enrollment,
-          automation repositories/seeders and analytics deep-import constants only. No
-          production caller of the barrel or direct private implementation construction was
-          found. HTTP tests use real root methods for selected previews, test sends and
-          shared sender persistence; mail is stubbed. Poll tests inject fake welcome services
-          and assert init before each eligible send or batch. The root unit test drives the
-          real Stripe checkout callback and all six endpoint operations against the wrapper,
-          asserting each initializes it before reading api and forwards the frame as today.
+          Automated-email and automation-preview endpoints read the ready service per request
+          for previews, tests and sender changes. AutomationsService reads the ready service
+          when each poll runs and passes it to both pollers, whose option types are the
+          instance's send methods; Stripe's paid-welcome callback reads the service at call
+          time because Stripe initializes earlier in boot. Models, member enrollment,
+          automation repositories/seeders and analytics deep-import constants only. HTTP tests
+          use the real root for selected previews, test sends and shared sender persistence;
+          mail is stubbed. Poll tests inject fake instances. The root unit test drives the
+          real Stripe checkout callback and all six endpoint operations against a stubbed
+          service getter, asserting each forwards the frame to the ready service.
         sources:
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
@@ -7748,6 +7747,7 @@ services:
           - core/server/services/automations/welcome-email-automation-poll.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/email-analytics/index.ts
           - core/server/services/automations/database-automations-repository.ts
           - core/server/services/members/members-api/repositories/member-repository.js
@@ -7764,48 +7764,50 @@ services:
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
       startup:
         summary: >-
-          Boot has no direct welcome init. It initializes AutomationsService, which dispatches
-          a poll after yielding the event loop; nonempty legacy batches or eligible new sends
-          reach welcome init.
-          Requests and Stripe checks can initialize it independently. Settings, models and
-          mail configuration must already be usable. Legacy polling claims runs before init
-          and loadMemberWelcomeEmails; new polling initializes immediately before each
-          eligible send without loading legacy content. Direct welcome send before loading
-          finds empty slots, whereas active checks and previews query models independently.
-          Fake-wrapper poll tests assert no init/load for empty batches and init/load for
-          populated batches; they do not enforce real boot readiness or dependency ordering.
-          The root unit test asserts a welcome send before any load rejects with the missing
-          email message without querying automations or sending.
+          Boot awaits the root's init after the services group that includes members and link
+          tracking, and before job handlers register and AutomationsService dispatches its
+          first poll. Settings, models, mail configuration, the email-address policy and link
+          tracking are therefore usable when the factory runs. Legacy polling claims runs then
+          calls loadMemberWelcomeEmails; new polling sends without loading legacy content.
+          Direct welcome send before loading finds empty slots, whereas active checks and
+          previews query models independently. The boot harness asserts init waits for link
+          tracking, runs before job registration and automations init, and that its failure
+          stops dependent work. Fake-instance poll tests assert load for populated legacy
+          batches only. The root unit test asserts a welcome send before any load rejects with
+          the missing email message without querying automations or sending.
         sources:
           - core/boot.js
           - core/server/services/automations/service.ts
           - core/server/services/automations/poll.ts
           - core/server/services/automations/welcome-email-automation-poll.ts
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/api/endpoints/automated-emails.js
           - core/server/api/endpoints/automation-email-previews.js
         tests:
           - test/unit/server/services/member-welcome-emails/index.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/unit/server/services/automations/poll.test.ts
       lifetime:
         summary: >-
-          Truthy api makes init a no-op; the graph, i18n/listener and compiled templates
-          persist without reset. Each legacy load replaces newsletter sender options then
+          defineService retains the first successful instance for the process; the graph,
+          i18n/listener and compiled templates persist without reset, and a failed attempt
+          resets only the helper's state. Each legacy load replaces newsletter sender options then
           sequentially replaces free/paid content, status and design snapshots. A failed or
           overlapping load can leave mixed generations. Sender lookup otherwise memoizes a
           resolved value, including an empty object, without an in-flight guard. Test sends
           refresh the sender cache; automation sends fetch design per call; shared sender
           edits/verification reload response models but do not invalidate private caches.
           An integration assertion changes stored footer/badge after load and confirms the
-          old design is sent. The root unit test asserts the welcome content cache is filled
-          only by load and replaced by the next load, the newsletter sender memoizes across
-          automation sends until a load or test send refreshes it, test sends leave welcome
-          content untouched, and automation sends look the design up per send. Concurrent or
-          failed refresh remains unasserted.
+          old design is sent. Integration helpers reload rather than rebuild the instance. The
+          root unit test asserts the welcome content cache is filled only by load and replaced
+          by the next load, the newsletter sender memoizes across automation sends until a load
+          or test send refreshes it, test sends leave welcome content untouched, automation
+          sends look the design up per send, and repeated init retains the instance.
+          Concurrent or failed refresh remains unasserted.
         sources:
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
         tests:
@@ -7817,8 +7819,8 @@ services:
           and settings facades, resolving credentials per use. Site title/accent/icon/locale,
           email-address policy and the optional bulk tag are read during use; derived newsletter
           sender strings and welcome designs remain cached. The retained URL facade has
-          frozen base URLs. The locale callback changes retained i18n; renderer keeps its t
-          and bound dir. There is no root feature gate: automations labs gates unsubscribe
+          frozen base URLs. The locale is read once when the root initializes; the locale
+          callback changes the retained i18n and the renderer keeps its t and bound dir. There is no root feature gate: automations labs gates unsubscribe
           links; polling supplies tracking preferences and eligibility checks. Tokens use
           24-hour lifetime, 10 minutes after first use and max seven uses. Integration tests
           with stubbed transports assert selected sender fallback/precedence, tags, open
@@ -7827,7 +7829,7 @@ services:
           delivered to the listener changes rendered footer text, and site title is read at
           each send. Token-limit wiring remains unasserted here.
         sources:
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/member-welcome-emails/constants.ts
@@ -7842,18 +7844,18 @@ services:
           - test/integration/services/member-welcome-emails.test.js
       resources:
         summary: >-
-          The wrapper owns its locale subscription, i18n, implementation, cached content,
+          The root owns its locale subscription, i18n, implementation, cached content,
           sender options, mail transport, MagicLink and renderer/templates. Models/database,
-          email-address, settings, URL, Lexical and link-tracking are borrowed. The wrapper's
-          link-tracking adapter awaits link-tracking init before tracked renders, which can
-          persist automation redirect rows before mail acceptance. Mailgun creates an SDK client per use with a 60-second
+          email-address, settings, URL, Lexical and the ready link-tracking instance are
+          borrowed. Tracked renders can persist automation redirect rows before mail
+          acceptance. Mailgun creates an SDK client per use with a 60-second
           timeout. Verification tokens are persisted in the shared token table; members
           cleanup jobs own age-based deletion. The root owns no timer/job and registers no
           mail drain, transport close or listener removal with GhostServer. Renderer unit
           tests assert URL forwarding/output with fake tracking; real renderer snapshots
           cover selected content, not tracking persistence or resource cleanup.
         sources:
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/services/email-service/helpers/register-helpers.js
@@ -7875,8 +7877,9 @@ services:
           - test/integration/services/member-welcome-emails-snapshot.test.js
       failures:
         summary: >-
-          Constructor failure can leave the locale listener and partial collaborators while
-          api remains unset. Validation, model, rendering and send failures usually propagate;
+          A failed factory run rejects init with the original error and registers no locale
+          listener, because the subscription is the last step; partial mailers and templates
+          are garbage. Validation, model, rendering and send failures usually propagate;
           only Lexical/URL transformation errors are wrapped as invalid content. Sender edits
           persist allowed fields before verification mail; token usage commits before sender
           update. Neither is an atomic mail/database operation. Legacy polling sends before
@@ -7889,10 +7892,12 @@ services:
           unit test asserts an unconfigured bulk transport's null result is returned without a
           transactional fallback, a verification-required reply-to sends a link through the
           transactional mailer without persisting, a token for another property is rejected
-          after its use is recorded, and an unknown token rejects before any edit.
-          Construction and refresh failure paths remain source-only.
+          after its use is recorded, and an unknown token rejects before any edit, and that a
+          not-ready dependency rejects init without a listener. The boot harness asserts an
+          init failure stops job registration and automations init. Refresh failure paths
+          remain source-only.
         sources:
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/member-welcome-emails/member-welcome-email-service.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
           - core/server/lib/mailgun/mailgun-client.js
@@ -7902,6 +7907,7 @@ services:
           - core/server/services/automations/poll.ts
         tests:
           - test/unit/server/services/member-welcome-emails/index.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/integration/services/member-welcome-emails.test.js
           - test/unit/server/services/member-welcome-emails/member-welcome-email-renderer.test.js
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
@@ -7909,13 +7915,10 @@ services:
     unverified: []
     blockers:
       - >-
-        Boot does not own initialization, so no assertion orders settings, mail, token and
-        link-tracking readiness before the first consumer. Shape, return contracts, identity
-        and caller-owned init at every call site are now characterized.
-      - >-
-        Define and cover stop/re-init ownership for the locale listener, i18n, mail transport
-        and outstanding sends, including partial constructor failure/retry. No root cleanup
-        or shutdown assertion exists; api-null test setup is not a lifecycle contract.
+        Define and cover shutdown ownership for the locale listener, i18n, mail transport and
+        outstanding sends. Failed-init retry without a stale listener is characterized; no
+        root cleanup or shutdown assertion exists and the locale read at init is not refreshed
+        by a later boot in the same process.
       - >-
         Cover overlapping/failed welcome loads and edits during send. Current refresh is
         staged, not atomic; memoization, load and test-send refresh and listener-driven locale
@@ -8054,7 +8057,7 @@ services:
           - core/server/services/verification-trigger.js
           - core/server/services/settings/settings-service.js
           - core/server/services/newsletters/index.ts
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/unit/server/services/members/members-api/members-api.test.js
@@ -9498,7 +9501,7 @@ services:
           - core/server/services/members/members-api/members-api.js
           - core/server/services/members/members-api/repositories/member-repository.js
           - core/server/services/members/members-api/controllers/router-controller.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
         tests:
           - test/e2e-api/admin/newsletters.test.js
           - test/e2e-api/admin/members.test.js
@@ -12628,7 +12631,7 @@ services:
           - core/server/services/members/middleware.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-renderer.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/comments/index.ts
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/staff/index.js
@@ -12684,7 +12687,7 @@ services:
           - core/server/services/settings/settings-service.js
           - core/frontend/services/proxy.js
           - core/server/api/endpoints/themes.js
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
           - core/server/services/stripe/config.js
           - core/server/services/stripe/service.js
           - core/server/services/machine-payments/stripe/deposit-address-store.ts
@@ -12732,7 +12735,7 @@ services:
           - core/server/services/settings/settings-service.js
           - core/server/services/stripe/service.js
           - core/server/services/machine-payments/stripe/deposit-address-store.ts
-          - core/server/services/member-welcome-emails/service.js
+          - core/server/services/member-welcome-emails/index.ts
         tests:
           - test/unit/server/services/settings/repeated-init.test.ts
       failures:

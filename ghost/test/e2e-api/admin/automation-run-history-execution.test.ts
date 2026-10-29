@@ -41,10 +41,7 @@ describe('Automation run history from the execution', function () {
     automationsApi: typeof repository;
     enqueueAnotherPollAt: sinon.SinonStub;
     scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
-    memberWelcomeEmailService: {
-      init: sinon.SinonStub;
-      api: { sendAutomationEmail: sinon.SinonStub };
-    };
+    memberWelcomeEmailService: { sendAutomationEmail: sinon.SinonStub };
   };
 
   beforeAll(async function () {
@@ -80,8 +77,7 @@ describe('Automation run history from the execution', function () {
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       memberWelcomeEmailService: {
-        init: sinon.stub(),
-        api: { sendAutomationEmail: sinon.stub().resolves({ id: '<history@example.com>' }) },
+        sendAutomationEmail: sinon.stub().resolves({ id: '<history@example.com>' }),
       },
     };
     await automationsApi2.trigger({
@@ -176,7 +172,7 @@ describe('Automation run history from the execution', function () {
     assert.equal(completed.steps.length, 4);
     assert.ok(completed.steps.every((step: { status: string }) => step.status === 'finished'));
     assert.equal(completed.steps[3].email_sent_at, '2026-09-19T12:00:02.000Z');
-    sinon.assert.calledTwice(pollOptions.memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledTwice(pollOptions.memberWelcomeEmailService.sendAutomationEmail);
   });
 
   it('preserves the send timestamp and later failure timestamp when advancing the run fails', async function () {
@@ -201,7 +197,7 @@ describe('Automation run history from the execution', function () {
     assert.equal(history.steps[1].email_sent_at, '2026-09-16T12:00:01.000Z');
     assert.equal(history.steps[1].email_delivered_at, null);
     assert.equal(history.steps[1].finished_at, '2026-09-16T12:00:06.000Z');
-    sinon.assert.calledOnce(pollOptions.memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnce(pollOptions.memberWelcomeEmailService.sendAutomationEmail);
   });
 
   it('retains a deleted member’s pending run and then exposes the poller’s exit without sending', async function () {
@@ -218,6 +214,6 @@ describe('Automation run history from the execution', function () {
     assert.equal(stopped.steps.length, 1);
     assert.equal(stopped.steps[0].status, 'member unsubscribed');
     assert.equal(stopped.steps[0].finished_at, '2026-09-16T12:00:00.000Z');
-    sinon.assert.notCalled(pollOptions.memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(pollOptions.memberWelcomeEmailService.sendAutomationEmail);
   });
 });

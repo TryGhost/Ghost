@@ -3,12 +3,14 @@ const i18nLib = require('@tryghost/i18n').default;
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
 const { assertMatchSnapshot } = require('../../utils/assertions');
+const lexicalLib = require('../../../core/server/lib/lexical');
 const labs = require('../../../core/shared/labs');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const {
   registerHelpers,
 } = require('../../../core/server/services/email-service/helpers/register-helpers');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
+const { readTemplate } = require('../../utils/member-welcome-email-templates');
 
 describe('Member Welcome Email Renderer Snapshots', function () {
   let renderer;
@@ -29,6 +31,8 @@ describe('Member Welcome Email Renderer Snapshots', function () {
       linkTracking: {
         addAutomationTrackingToUrl: sinon.stub().rejects(new Error('Link tracking not expected')),
       },
+      renderLexical: (lexical, options) => lexicalLib.render(lexical, options),
+      readTemplate,
     });
 
     sinon.stub(Date.prototype, 'getFullYear').returns(2020);

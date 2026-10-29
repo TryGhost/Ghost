@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-const lexicalLib = require('../../lib/lexical');
 const { finalize } = require('../../lib/email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const { MESSAGES } = require('./constants');
@@ -16,6 +13,7 @@ class MemberWelcomeEmailRenderer {
   #dir;
   #urlUtils;
   #linkTracking;
+  #renderLexical;
 
   /**
    * @param {object} deps
@@ -25,43 +23,29 @@ class MemberWelcomeEmailRenderer {
    * @param {object} deps.urlUtils
    * @param {{addAutomationTrackingToUrl: (url: URL, automationActionRevisionId: string, automationRunStepId: string, memberUuid: string) => Promise<URL>}} deps.linkTracking
    * @param {(handlebars: object, labs: object, t: Function) => void} deps.registerHelpers
+   * @param {(lexical: string, options: {target: 'email', design: object}) => Promise<string>} deps.renderLexical
+   * @param {(name: 'baseStyles' | 'contentStyles' | 'cardStyles' | 'styles' | 'emailWrapper' | 'wrapper') => string} deps.readTemplate
    */
-  constructor({ t, dir, labs, urlUtils, linkTracking, registerHelpers }) {
+  constructor({
+    t,
+    dir,
+    labs,
+    urlUtils,
+    linkTracking,
+    registerHelpers,
+    renderLexical,
+    readTemplate,
+  }) {
     this.#dir = dir;
     this.#urlUtils = urlUtils;
     this.#linkTracking = linkTracking;
+    this.#renderLexical = renderLexical;
     this.Handlebars = require('handlebars').create();
     registerHelpers(this.Handlebars, labs, t);
-    const baseStylesSource = fs.readFileSync(
-      path.join(__dirname, '../../lib/email-rendering/partials/base-styles.hbs'),
-      'utf8',
-    );
-    const contentStylesSource = fs.readFileSync(
-      path.join(__dirname, '../../lib/email-rendering/partials/content-styles.hbs'),
-      'utf8',
-    );
-    const cardStylesSource = fs.readFileSync(
-      path.join(__dirname, '../../lib/email-rendering/partials/card-styles.hbs'),
-      'utf8',
-    );
-    this.Handlebars.registerPartial('baseStyles', baseStylesSource);
-    this.Handlebars.registerPartial('contentStyles', contentStylesSource);
-    this.Handlebars.registerPartial('cardStyles', cardStylesSource);
-    const emailStylesSource = fs.readFileSync(
-      path.join(__dirname, '../email-service/email-templates/partials/styles.hbs'),
-      'utf8',
-    );
-    this.Handlebars.registerPartial('styles', emailStylesSource);
-    const emailWrapperSource = fs.readFileSync(
-      path.join(__dirname, '../../lib/email-rendering/partials/email-wrapper.hbs'),
-      'utf8',
-    );
-    this.Handlebars.registerPartial('emailWrapper', emailWrapperSource);
-    const wrapperSource = fs.readFileSync(
-      path.join(__dirname, './email-templates/wrapper.hbs'),
-      'utf8',
-    );
-    this.#wrapperTemplate = this.Handlebars.compile(wrapperSource);
+    for (const partial of ['baseStyles', 'contentStyles', 'cardStyles', 'styles', 'emailWrapper']) {
+      this.Handlebars.registerPartial(partial, readTemplate(partial));
+    }
+    this.#wrapperTemplate = this.Handlebars.compile(readTemplate('wrapper'));
   }
 
   /**
@@ -166,7 +150,7 @@ class MemberWelcomeEmailRenderer {
     let content;
     try {
       const absoluteLexical = this.#urlUtils.transformReadyToAbsolute(lexical);
-      content = await lexicalLib.render(absoluteLexical, { target: 'email', design });
+      content = await this.#renderLexical(absoluteLexical, { target: 'email', design });
     } catch (err) {
       throw new errors.IncorrectUsageError({
         message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
