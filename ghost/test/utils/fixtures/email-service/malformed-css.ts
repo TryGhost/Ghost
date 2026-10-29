@@ -23,7 +23,12 @@ const styleTags = {
   'style tag property without a colon': 'p { color }',
 };
 
-const malformedCssCases = [
+type MalformedCssCase = {
+  name: string;
+  html: string;
+};
+
+const malformedCssCases: MalformedCssCase[] = [
   ...Object.entries(styleAttributes).map(([name, style]) => ({
     name,
     html: `<p style="${style}">Malformed CSS case: ${name}</p>`,
@@ -34,6 +39,4 @@ const malformedCssCases = [
   })),
 ];
 
-module.exports = {
-  malformedCssCases,
-};
+export { malformedCssCases };
