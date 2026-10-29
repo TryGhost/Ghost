@@ -212,7 +212,8 @@ test.describe('Content Visibility', async () => {
 
         test('double-click and Cmd+Enter do not open the panel', async function () {
             const card = page.locator('[data-kg-card="image"]');
-            await card.dblclick();
+            // the middle of the placeholder is its "select an image" button
+            await card.dblclick({position: {x: 5, y: 5}});
             await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
             await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
 
@@ -220,6 +221,10 @@ test.describe('Content Visibility', async () => {
 
             await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
             await expect(page.getByTestId('settings-panel')).toHaveCount(0);
+
+            // the shortcut still moves the cursor to a new paragraph after the placeholder
+            await page.keyboard.type('After the image');
+            await expect(page.locator('[data-lexical-editor] > [data-lexical-decorator] + p')).toHaveText('After the image');
         });
     });
 
