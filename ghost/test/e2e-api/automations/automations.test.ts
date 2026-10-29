@@ -218,7 +218,7 @@ async function runAutomationForFreeMember(automation: Automation, email: string)
   }
 }
 
-describe('Members Automations', function () {
+describe('automations', function () {
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'integrations', 'api_keys');
