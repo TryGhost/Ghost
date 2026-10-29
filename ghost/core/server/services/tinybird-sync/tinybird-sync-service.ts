@@ -42,6 +42,7 @@ export function createTinybirdSyncService({
   createId,
 }: TinybirdSyncDependencies) {
   let scheduled = false;
+  let syncing = false;
 
   const syncAll = async (ingest: IngestConfig): Promise<void> => {
     const results = await Promise.allSettled(
@@ -71,13 +72,28 @@ export function createTinybirdSyncService({
     }
   };
 
+  // Skips a tick that overlaps a running sync in this process. Other
+  // containers can still sync at the same time.
   const sync = async (): Promise<void> => {
-    const ingest = getIngestConfig({ config, settingsCache });
-    if (!ingest) {
+    if (syncing) {
+      logging.info(
+        { system: { event: 'tinybird.sync.skipped' } },
+        '[Tinybird sync] Skipped: a sync is already running',
+      );
       return;
     }
+    syncing = true;
 
-    await syncAll(ingest);
+    try {
+      const ingest = getIngestConfig({ config, settingsCache });
+      if (!ingest) {
+        return;
+      }
+
+      await syncAll(ingest);
+    } finally {
+      syncing = false;
+    }
   };
 
   const scheduleJob = async (

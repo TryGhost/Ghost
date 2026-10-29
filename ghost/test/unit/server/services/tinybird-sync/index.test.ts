@@ -184,6 +184,65 @@ describe('createTinybirdSyncService', () => {
     );
   });
 
+  it('skips a sync while another is running and allows one after it completes', async () => {
+    const database = await createEmptyDatabase();
+    await database('automation_runs').insert({
+      id: 'run-id',
+      automation_id: 'automation-id',
+      created_at: '2026-03-01 11:50:00',
+      updated_at: '2026-03-01 11:50:00',
+    });
+    const response = Promise.withResolvers<Response>();
+    const fetch = vi
+      .fn()
+      .mockReturnValueOnce(response.promise)
+      .mockResolvedValue(new Response(null, { status: 202 }));
+    const { dependencies, service } = createService({ knex: database, fetch });
+    const completedEvents = () =>
+      dependencies.logging.info.mock.calls.filter(
+        ([fields]) => fields?.system?.event === 'tinybird.sync.completed',
+      ).length;
+
+    const first = service.sync();
+    await vi.waitFor(() => assert.equal(fetch.mock.calls.length, 1));
+
+    await service.sync();
+
+    assert.equal(fetch.mock.calls.length, 1);
+    assert.deepEqual(dependencies.logging.info.mock.calls.at(-1), [
+      { system: { event: 'tinybird.sync.skipped' } },
+      '[Tinybird sync] Skipped: a sync is already running',
+    ]);
+
+    response.resolve(new Response(null, { status: 202 }));
+    await first;
+    assert.equal(completedEvents(), 2);
+
+    await service.sync();
+
+    assert.equal(completedEvents(), 4);
+  });
+
+  it('allows a sync after a failed one', async () => {
+    const database = await createEmptyDatabase();
+    const failure = new Error('config unavailable');
+    const { dependencies, service } = createService({ knex: database });
+    dependencies.config.get.mockImplementationOnce(() => {
+      throw failure;
+    });
+
+    await assert.rejects(service.sync(), failure);
+    await service.sync();
+
+    assert.deepEqual(
+      dependencies.logging.info.mock.calls.map((call) => call[0].system),
+      [
+        { event: 'tinybird.sync.completed', table: 'automation_runs', sent: 0 },
+        { event: 'tinybird.sync.completed', table: 'automation_run_steps', sent: 0 },
+      ],
+    );
+  });
+
   it('limits Traffic Analytics requests to 1000 messages', async () => {
     const database = await createEmptyDatabase();
     const updatedAt = toDatabaseDate(new Date('2026-03-01T11:50:00.000Z'));
