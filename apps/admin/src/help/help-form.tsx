@@ -12,6 +12,7 @@ import {
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { type HelpArticle, HELP_CENTER_URL } from './help-center';
+import { isFaqArticle } from './help-questions';
 import { HelpPanelSizeButton } from './help-panel-size';
 import { REVEAL_CLASS_NAME, revealAt } from './help-reveal';
 import type { HelpSignals } from './help-signals';
@@ -105,36 +106,74 @@ export function HelpFormView({
           }}
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-6">
-            <Stack gap="lg">
-              <Text className={REVEAL_CLASS_NAME} leading="snug" size="sm" tone="secondary">
-                Tell the Ghost(Pro) support team what you need help with. A person will reply to{' '}
-                {signals.user.email} within 24 hours during working days.
-              </Text>
-
-              <Stack className={REVEAL_CLASS_NAME} gap="sm" style={revealAt(1)}>
-                <Textarea
-                  ref={textareaRef}
-                  aria-label="Your message"
-                  className="min-h-32"
-                  disabled={sending}
-                  placeholder="Describe the problem, or ask a question…"
-                  rows={5}
-                  value={message.body}
-                  onChange={(event) => editMessage({ body: event.target.value })}
-                />
-                {message.files.length > 0 && (
-                  <Inline gap="xs" wrap>
-                    {message.files.map((name) => (
-                      <Badge key={name} className="gap-1" size="sm" variant="secondary">
-                        <LucideIcon.Paperclip className="size-3" />
-                        {name}
-                      </Badge>
-                    ))}
-                  </Inline>
-                )}
+            <Stack gap="xl">
+              {/* The form: what to write, the message, and sending it, as one block */}
+              <Stack className={REVEAL_CLASS_NAME} gap="md">
+                <Text as="h3" leading="heading" size="lg" weight="semibold">
+                  Describe the problem you’re having
+                </Text>
+                <Stack gap="sm">
+                  <Textarea
+                    ref={textareaRef}
+                    aria-label="Your message"
+                    className="min-h-32"
+                    disabled={sending}
+                    placeholder="What happened, and what did you expect to happen?"
+                    rows={5}
+                    value={message.body}
+                    onChange={(event) => editMessage({ body: event.target.value })}
+                  />
+                  {message.files.length > 0 && (
+                    <Inline gap="xs" wrap>
+                      {message.files.map((name) => (
+                        <Badge key={name} className="gap-1" size="sm" variant="secondary">
+                          <LucideIcon.Paperclip className="size-3" />
+                          {name}
+                        </Badge>
+                      ))}
+                    </Inline>
+                  )}
+                </Stack>
+                <Inline align="center" gap="sm" justify="between">
+                  <Button
+                    disabled={sending}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInput.current?.click()}
+                  >
+                    <LucideIcon.Paperclip />
+                    Attach a file
+                  </Button>
+                  <input
+                    ref={fileInput}
+                    className="hidden"
+                    type="file"
+                    multiple
+                    onChange={(event) => {
+                      const names = Array.from(event.target.files ?? [], (file) => file.name);
+                      editMessage({ files: [...new Set([...message.files, ...names])] });
+                      event.target.value = '';
+                    }}
+                  />
+                  <Button disabled={!canSend} size="sm" type="submit">
+                    {sending ? (
+                      <>
+                        <LoadingIndicator color="light" size="sm" />
+                        Sending
+                      </>
+                    ) : (
+                      'Send to support'
+                    )}
+                  </Button>
+                </Inline>
+                <Text leading="snug" size="xs" tone="secondary">
+                  A person on the Ghost(Pro) support team will reply to {signals.user.email} within
+                  24 hours during working days.
+                </Text>
               </Stack>
 
-              <div className={REVEAL_CLASS_NAME} style={revealAt(2)}>
+              <div className={REVEAL_CLASS_NAME} style={revealAt(1)}>
                 <HelpRelatedQuestionsList
                   opened={session.openedArticles}
                   related={related}
@@ -143,50 +182,6 @@ export function HelpFormView({
               </div>
             </Stack>
           </div>
-
-          <Inline
-            align="center"
-            className="shrink-0 border-t border-border-default p-3 pl-2"
-            gap="sm"
-            justify="between"
-          >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  aria-label="Attach a file"
-                  disabled={sending}
-                  size="icon-sm"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => fileInput.current?.click()}
-                >
-                  <LucideIcon.Paperclip />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Attach a file</TooltipContent>
-            </Tooltip>
-            <input
-              ref={fileInput}
-              className="hidden"
-              type="file"
-              multiple
-              onChange={(event) => {
-                const names = Array.from(event.target.files ?? [], (file) => file.name);
-                editMessage({ files: [...new Set([...message.files, ...names])] });
-                event.target.value = '';
-              }}
-            />
-            <Button disabled={!canSend} type="submit">
-              {sending ? (
-                <>
-                  <LoadingIndicator color="light" size="sm" />
-                  Sending
-                </>
-              ) : (
-                'Send to support'
-              )}
-            </Button>
-          </Inline>
         </form>
       )}
     </div>
@@ -244,7 +239,7 @@ interface HelpRelatedQuestionsListProps {
   onPick: (article: HelpArticle) => void;
 }
 
-/** The FAQ questions the user might be looking for, under the message. */
+/** The help center articles the user might be looking for, under the message. */
 function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuestionsListProps) {
   if (related.failed) {
     return (
@@ -270,7 +265,7 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
       </Text>
       <ul
         aria-busy={related.loading}
-        aria-label="Questions from the help center"
+        aria-label="Articles from the help center"
         className="-mx-2 flex flex-col"
         data-help-source={related.source}
       >
@@ -302,7 +297,11 @@ function HelpRelatedQuestionsList({ related, opened, onPick }: HelpRelatedQuesti
                   type="button"
                   onClick={() => onPick(question)}
                 >
-                  <LucideIcon.CircleHelp className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+                  {isFaqArticle(question) ? (
+                    <LucideIcon.CircleHelp className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+                  ) : (
+                    <LucideIcon.FileText className="mt-0.5 size-4 shrink-0 text-text-tertiary" />
+                  )}
                   <Text
                     as="span"
                     className="min-w-0 flex-1 transition-colors group-hover:text-text-primary"

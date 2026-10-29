@@ -1,16 +1,17 @@
 import { useDeferredValue, useMemo } from 'react';
 import type { HelpArticle } from './help-center';
-import { findRelatedQuestions, getFaqQuestions } from './help-questions';
+import { findRelatedArticles } from './help-questions';
 import type { HelpSignals } from './help-signals';
 import { useHelpCenterIndex } from './use-help-center-index';
 import { useHelpSuggestions } from './use-help-suggestions';
 
 /*
- * The FAQ questions offered under the message as "You might be looking for":
- * before anything's written, the page's questions (use-help-suggestions.ts);
- * as the user writes, the questions related to their words
- * (findRelatedQuestions in help-questions.ts), and the page's again while
- * none are. The text is deferred, so typing never waits on the matching.
+ * What's offered under the message as "You might be looking for": before
+ * anything's written, the page's FAQ questions (use-help-suggestions.ts); as
+ * the user writes, the help center articles related to their words, FAQ
+ * answers first (findRelatedArticles in help-questions.ts), and the page's
+ * questions again while none are. The text is deferred, so typing never
+ * waits on the matching.
  */
 
 export interface HelpRelatedQuestions {
@@ -30,10 +31,9 @@ export function useHelpRelatedQuestions(
   const index = useHelpCenterIndex(enabled);
   const forPage = useHelpSuggestions(signals, true, enabled);
   const deferredText = useDeferredValue(text);
-  const faq = useMemo(() => (index.data ? getFaqQuestions(index.data) : []), [index.data]);
   const related = useMemo(
-    () => findRelatedQuestions(faq, deferredText, signals.pageKey),
-    [faq, deferredText, signals.pageKey],
+    () => findRelatedArticles(index.data ?? [], deferredText, signals.pageKey),
+    [index.data, deferredText, signals.pageKey],
   );
 
   return useMemo(() => {

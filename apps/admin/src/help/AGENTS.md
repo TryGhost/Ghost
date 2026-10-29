@@ -21,9 +21,10 @@ trade-offs and the production checklist.
   versions live on `poc-help-search` and `poc-help-chat` for comparison.
 - Reading an article must never change the draft. The message lives in the
   session (`use-help-session.ts`); keep it there, not in a view.
-- The message never leaves the browser until it's sent: the questions under
-  it are matched locally from the FAQ titles. Don't send what's being typed
-  to any service (DocsBot included) without a privacy review.
+- The message never leaves the browser until it's sent: the articles under
+  it are matched locally from the help center's titles and excerpts. Don't
+  send what's being typed to any service (DocsBot included) without a
+  privacy review.
 - Mocked behaviour is marked `PROTOTYPE:`. Keep the marker on anything new
   that's mocked, and remove it with the mock.
 - The panel is Ghost(Pro) only (`HelpPanelProvider`). Self-hosted sites must

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { article } from './help-fixtures';
 import type { HelpPageKey } from './help-pages';
 import {
-  findRelatedQuestions,
+  findRelatedArticles,
   getFaqQuestions,
   getPageRelevance,
   isQuestion,
@@ -28,25 +28,41 @@ describe('getFaqQuestions', () => {
   });
 });
 
-describe('findRelatedQuestions', () => {
-  const questions = [
+describe('findRelatedArticles', () => {
+  const articles = [
     faq('cancel', 'How do I cancel member subscriptions'),
     faq('pause', 'How do I pause member subscriptions?'),
     faq('sign-in', 'How do members sign in to my site?'),
     faq('fees', 'Are there any transaction fees?'),
     faq('welcome', 'How do I send a welcome email to new members?'),
+    article('stripe', 'Setting up Stripe payments', 'Connect Stripe to take member subscriptions', [
+      'Payments',
+    ]),
+    article('fees-guide', 'Understanding transaction fees', 'What Stripe charges per payment', [
+      'Payments',
+    ]),
   ];
   const slugs = (text: string, page: HelpPageKey | null = null) =>
-    findRelatedQuestions(questions, text, page).map(({ slug }) => slug);
+    findRelatedArticles(articles, text, page).map(({ slug }) => slug);
 
-  it('relates the questions sharing the most words that carry meaning', () => {
+  it('relates the articles sharing the most words that carry meaning', () => {
     expect(slugs('I want to pause a subscription')).toEqual(['pause', 'cancel']);
-    expect(slugs('transaction fees')).toEqual(['fees']);
+    expect(slugs('stripe payments')).toEqual(['stripe', 'fees-guide']);
+  });
+
+  it('puts FAQ answers before articles sharing as many words', () => {
+    expect(slugs('transaction fees')).toEqual(['fees', 'fees-guide']);
+    expect(slugs('stripe member subscriptions').slice(0, 3)).toEqual(['cancel', 'pause', 'stripe']);
   });
 
   it('finds a word in its other forms', () => {
     expect(slugs('cancelling')).toEqual(['cancel']);
     expect(slugs('members').sort()).toEqual(['cancel', 'pause', 'sign-in', 'welcome']);
+  });
+
+  it('counts a word found only in the excerpt as half of one', () => {
+    expect(slugs('charges')).toEqual([]);
+    expect(slugs('stripe charges')).toEqual(['stripe', 'fees-guide']);
   });
 
   it('relates nothing to words that say nothing about the question', () => {
@@ -59,9 +75,9 @@ describe('findRelatedQuestions', () => {
     expect(slugs('members cannot sign in to my site since the move')).toEqual(['sign-in']);
   });
 
-  it('puts questions about the page first among equals', () => {
+  it('puts articles about the page first among equals', () => {
     const onMembers = article('import', 'How do I import members?', '', ['FAQ'], ['members']);
-    const related = findRelatedQuestions([...questions, onMembers], 'members', 'members');
+    const related = findRelatedArticles([...articles, onMembers], 'members', 'members');
     expect(related[0]?.slug).toBe('import');
   });
 });

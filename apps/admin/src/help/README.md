@@ -4,9 +4,9 @@ The Support panel is where a Ghost(Pro) user writes to the support team, and
 it tries to answer them from the [help center](https://ghost.org/help/) while
 they write. It docks beside the page, opens on a message box, offers the FAQ
 questions for the page they're on under it ("You might be looking for"),
-swaps them for the questions related to their words as they type, opens any
-of them inside Admin with the message kept as it was, and sends the message
-from the form or from the article.
+swaps them for the help center articles related to their words as they type
+(FAQ answers first), opens any of them inside Admin with the message kept as
+it was, and sends the message from the form or from the article.
 
 This is the **form** prototype, the third of three built to compare:
 
@@ -151,7 +151,7 @@ around them are thin.
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `help-pages.ts`        | Page keys, their labels, route to key (`getPageKey`), each page's topics, fallback articles, fallback questions and words |
 | `help-suggestions.ts`  | Account alerts (`getAccountAlert`) and the order of the page's questions (`getSuggestedArticles`)                         |
-| `help-questions.ts`    | The FAQ's questions (`getFaqQuestions`) and the ones related to what's being written (`findRelatedQuestions`)             |
+| `help-questions.ts`    | The FAQ's questions (`getFaqQuestions`) and the articles related to what's being written (`findRelatedArticles`)          |
 | `help-contract.ts`     | Every key, slug and topic Admin relies on the help center for, in one place                                               |
 | `help-article-html.ts` | Makes an article's HTML safe and readable in the panel, and lifts out its "Further reading"                               |
 | `help-format.ts`       | Small text helpers (`plural`, `inDays`, `getInitials`)                                                                    |
@@ -167,24 +167,24 @@ around them are thin.
 
 **State**
 
-| File                                               | What it owns                                                                                  |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `help-panel-provider.tsx`, `help-panel-context.ts` | Whether the panel is open, and the Ghost(Pro) gate                                            |
-| `use-help-session.ts`                              | The session: the message (draft, sending, sent), the article being read, and which view shows |
-| `use-help-suggestions.ts`                          | Runs `getSuggestedArticles` for the current page over the loaded article list                 |
-| `use-help-related-questions.ts`                    | The questions under the message: related to its words, or the page's while none are           |
-| `use-help-panel-size.ts`                           | The docked width, and the maximized width (the page area right of Admin's sidebar)            |
+| File                                               | What it owns                                                                                        |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `help-panel-provider.tsx`, `help-panel-context.ts` | Whether the panel is open, and the Ghost(Pro) gate                                                  |
+| `use-help-session.ts`                              | The session: the message (draft, sending, sent), the article being read, and which view shows       |
+| `use-help-suggestions.ts`                          | Runs `getSuggestedArticles` for the current page over the loaded article list                       |
+| `use-help-related-questions.ts`                    | What's under the message: the articles related to its words, or the page's questions while none are |
+| `use-help-panel-size.ts`                           | The docked width, and the maximized width (the page area right of Admin's sidebar)                  |
 
 **Views**
 
-| File                    | What it shows                                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                                  |
-| `help-form.tsx`         | The message to support with "You might be looking for" under it, the attach and send bar, and the sent confirmation |
-| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?": keep writing, or send the message     |
-| `help-cards.tsx`        | The cards under an article for what to read next                                                                    |
-| `help-panel-size.tsx`   | The maximize button                                                                                                 |
-| `help-reveal.ts`        | The staggered entrance blocks use                                                                                   |
+| File                    | What it shows                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `help-panel.tsx`        | The shell: docked on desktop, a sheet on mobile, and the two views (form, article)                                 |
+| `help-form.tsx`         | The headline, message, attach and send as one form, "You might be looking for" under it, and the sent confirmation |
+| `help-article-view.tsx` | An article read over the message, ending with "Didn't answer your question?": keep writing, or send the message    |
+| `help-cards.tsx`        | The cards under an article for what to read next                                                                   |
+| `help-panel-size.tsx`   | The maximize button                                                                                                |
+| `help-reveal.ts`        | The staggered entrance blocks use                                                                                  |
 
 ## Where the content comes from
 
@@ -245,16 +245,16 @@ dunning warnings use it).
 
 These live in `ACCOUNT_ALERTS` (`help-suggestions.ts`).
 
-## The questions under the message
+## What's under the message
 
-Under the message, "You might be looking for" lists FAQ questions from the
-help center's [FAQ](https://ghost.org/help/topic/faq/): the articles tagged
-`faq` whose titles are questions (`getFaqQuestions`; a few FAQ titles are
-topics, such as "Modifying robots.txt", and are left out). Which ones depends
-on what's written (`useHelpRelatedQuestions`):
+Under the message, "You might be looking for" lists help center articles.
+Which ones depends on what's written (`useHelpRelatedQuestions`):
 
 **Before anything is written**, up to three questions for the page the user
-is on (`getSuggestedArticles`). In order:
+is on (`getSuggestedArticles`), from the help center's
+[FAQ](https://ghost.org/help/topic/faq/): the articles tagged `faq` whose
+titles are questions (`getFaqQuestions`; a few FAQ titles are topics, such as
+"Modifying robots.txt", and are left out). In order:
 
 1. **Account alert**, if one applies: the article tagged for it, or its
    fallback.
@@ -264,18 +264,24 @@ is on (`getSuggestedArticles`). In order:
 3. **The FAQ's featured questions**, then the rest of the FAQ, for any slot
    left.
 
-**As the user writes**, up to four questions related to their words
-(`findRelatedQuestions` in `help-questions.ts`), and the page's again while
-none are. The words that carry meaning (not "how do I": a stop word list, and
-nothing under three letters) are compared with the words of each title with
-their endings taken off, so "members" finds "member" and "cancelling" finds
-"cancel". A short message relates by one shared word; from four meaningful
-words on it takes two, or every message mentioning members would relate to
-half the FAQ. The questions sharing the most words come first, then the ones
-about the page (`getPageRelevance`: tagged `#admin-<page>` or in
-`PAGE_QUESTIONS`, then a title with one of the page's `PAGE_WORDS`), then
-the shorter. The text is deferred (`useDeferredValue`), so typing never waits
-on the matching.
+**As the user writes**, up to four articles from the whole help center
+related to their words (`findRelatedArticles` in `help-questions.ts`), and
+the page's questions again while none are. The words that carry meaning are
+compared with the words of each article's title, and at half weight its
+excerpt, with their endings taken off, so "members" finds "member" and
+"cancelling" finds "cancel". Words that carry no meaning are skipped: "how do
+I", anything under three letters, words in almost every help center page
+("ghost", "site", "use"), and the words problems are described with rather
+than about ("still", "doesn't", "error"). A short message relates by one
+shared word; from four meaningful words on it takes two, or every message
+mentioning members would relate to half the help center. The articles sharing
+the most words come first, with FAQ answers given half a word's bonus: an FAQ
+answer comes before an article sharing as many words, but not before one
+sharing a word more in its title. Then the ones about the page
+(`getPageRelevance`: tagged `#admin-<page>` or in `PAGE_QUESTIONS`, then a
+title with one of the page's `PAGE_WORDS`), then FAQ on a tie, then the
+shorter. The text is deferred (`useDeferredValue`), so typing never waits on
+the matching. FAQ answers show a question mark icon, other articles a page.
 
 The FAQ's articles carry no topic tag, only `faq`, so which questions suit
 which page can't come from topics: `PAGE_QUESTIONS` and `PAGE_WORDS` were
@@ -317,11 +323,12 @@ under the message.
 
 ## Sending to support
 
-The message is the whole of the form: no subject, and the account is the
-signed-in one (the intro names the address the reply goes to). Files can be
-attached from the bar at the bottom. Sending shows a confirmation in the
-form's place, with Done (and a start-over icon in the header) clearing the
-message for the next one. Only what the user writes is sent.
+The form is one block: a headline asking the user to describe the problem
+they're having, the message, and under it "Attach a file" and "Send to
+support" with a line naming the address the reply goes to. No subject: the
+account is the signed-in one. Sending shows a confirmation in the form's
+place, with Done (and a start-over icon in the header) clearing the message
+for the next one. Only what the user writes is sent.
 
 ## Decisions and trade-offs
 
@@ -329,11 +336,14 @@ message for the next one. Only what the user writes is sent.
   and puts the help center beside the message rather than in front of it.
   Nothing has to be searched before a ticket can be sent (Linear's contact
   form and Slack's help request page were the references).
-- **Text matching rather than DocsBot.** The questions under the message are
-  matched in the browser from the FAQ titles: instant, free, and nothing
-  leaves the browser while the user writes. The price is that only the FAQ's
-  39 questions can be offered, and only by their words; the search prototype
-  shows what semantic search over the whole help center finds instead.
+- **Text matching rather than DocsBot.** The articles under the message are
+  matched in the browser from the help center's titles and excerpts: instant,
+  free, and nothing leaves the browser while the user writes. The price is
+  that only words count, not meaning; the search prototype shows what
+  semantic search finds instead.
+- **FAQ answers rank higher, but don't win outright.** The FAQ is written to
+  answer exactly these messages, so it gets a bonus; a full article sharing
+  clearly more of the message's words still comes first.
 - **The page's questions stay while nothing matches.** A message that matches
   no FAQ title keeps the page's questions rather than an empty list: the
   section stays useful and doesn't flash in and out as the user types.
@@ -356,9 +366,8 @@ Search the code for `PROTOTYPE:`. In short:
 **Matching**
 
 - **Words only.** "Can't log in" doesn't find "How do members sign in to my
-  site?": there's no synonym list and no semantic matching. The FAQ is small
-  (39 questions, 35 of them question-shaped), which bounds how much that
-  costs.
+  site?": there's no synonym list and no semantic matching, and only titles
+  and excerpts are matched, not article bodies.
 - **Long messages match little.** From four meaningful words a question needs
   two of them, so a long, specific message often falls back to the page's
   questions.
