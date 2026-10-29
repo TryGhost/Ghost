@@ -3,7 +3,7 @@ const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const stripe = require('stripe');
-const i18n = require('../../../../../core/server/services/i18n');
+const i18n = require('../../../../../core/shared/i18n');
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
 const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
 const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
@@ -11,7 +11,7 @@ const {
   NOTHING_COLLECTED,
 } = require('../../../../../core/server/services/stripe-checkout-config/checkout-service');
 
-i18n.init();
+i18n.init({ events: require('../../../../../core/server/lib/common/events') });
 
 describe('StripeAPI', function () {
   const mockCustomerEmail = 'foo@example.com';

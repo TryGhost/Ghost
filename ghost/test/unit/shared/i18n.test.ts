@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-const events = require('../../../../../core/server/lib/common/events');
-const settingsCache = require('../../../../../core/shared/settings-cache');
-const ROOT_PATH = require.resolve('../../../../../core/server/services/i18n');
+const events = require('../../../core/server/lib/common/events');
+const settingsCache = require('../../../core/shared/settings-cache');
+const ROOT_PATH = require.resolve('../../../core/shared/i18n');
 const LOCALE_EVENT = 'settings.locale.edited';
 const NOT_INITIALIZED = /Expected i18n instance to be initialized/;
 
 type TranslateOptions = Record<string, unknown>;
 type Root = {
-  init(): void;
+  init(deps: { events: NodeJS.EventEmitter }): void;
   t(key: string, options?: TranslateOptions): string;
   dir(language?: string): string;
   changeLanguage(language: string): Promise<(key: string, options?: TranslateOptions) => string>;
@@ -61,28 +61,28 @@ describe('i18n root', function () {
   it('does not subscribe to locale changes until init', function () {
     assert.deepEqual(addedListeners(), []);
 
-    root.init();
+    root.init({ events });
 
     assert.equal(addedListeners().length, 1);
   });
 
   it('falls back to English when no locale is configured', function () {
     getLocale.returns(undefined);
-    root.init();
+    root.init({ events });
 
     assert.equal(root.t('Gift subscription'), 'Gift subscription');
   });
 
   it('translates with the configured locale', function () {
     getLocale.returns('fr');
-    root.init();
+    root.init({ events });
 
     assert.equal(root.t('Gift subscription'), 'Abonnement offert');
   });
 
   it('forwards translation options to the translator', function () {
     getLocale.returns('fr');
-    root.init();
+    root.init({ events });
 
     assert.equal(
       root.t('Welcome back to {siteTitle}!', { siteTitle: 'Example' }),
@@ -92,7 +92,7 @@ describe('i18n root', function () {
 
   it('forwards direction arguments and reports the current direction', function () {
     getLocale.returns('fr');
-    root.init();
+    root.init({ events });
 
     assert.equal(root.dir(), 'ltr');
     assert.equal(root.dir('ar'), 'rtl');
@@ -101,7 +101,7 @@ describe('i18n root', function () {
   it('changes the language for retained delegates and returns the translator', async function () {
     getLocale.returns('fr');
     const { t, dir, changeLanguage } = root;
-    root.init();
+    root.init({ events });
 
     const translate = await changeLanguage('ar');
 
@@ -118,7 +118,7 @@ describe('i18n root', function () {
 
   it('changes the language when its locale listener receives an edited setting', function () {
     const { t } = root;
-    root.init();
+    root.init({ events });
     const get = sandbox.stub().returns('fr');
     const [listener] = addedListeners();
 
@@ -129,16 +129,24 @@ describe('i18n root', function () {
     sinon.assert.alwaysCalledWithExactly(get, 'value');
   });
 
-  // Boot calls init once. Repeating it is current behaviour, not a supported contract.
-  it('replaces the translator and adds another listener when init repeats', function () {
+  // Boot calls init once. A repeat replaces the translator and must not leave the
+  // previous listener behind, or every init would add one more.
+  it('replaces the translator and its listener when init repeats', function () {
     const { t } = root;
-    root.init();
+    root.init({ events });
+    const [firstListener] = addedListeners();
     getLocale.returns('fr');
 
-    root.init();
+    root.init({ events });
 
     assert.equal(t('Gift subscription'), 'Abonnement offert');
-    assert.equal(addedListeners().length, 2);
+    assert.equal(addedListeners().length, 1);
+    assert.notEqual(addedListeners()[0], firstListener);
+  });
+
+  it('requires the events bus', function () {
+    assert.throws(() => root.init({} as never), /Expected the events bus/);
+    assert.deepEqual(addedListeners(), []);
   });
 
   it('propagates a settings read failure from init without publishing a translator or listener', function () {
@@ -146,7 +154,7 @@ describe('i18n root', function () {
     getLocale.throws(failure);
 
     assert.throws(
-      () => root.init(),
+      () => root.init({ events }),
       (error: unknown) => error === failure,
     );
 
@@ -156,11 +164,11 @@ describe('i18n root', function () {
 
   it('initializes after a failed init once the locale setting is readable', function () {
     getLocale.throws(new Error('Locale setting unavailable'));
-    assert.throws(() => root.init());
+    assert.throws(() => root.init({ events }));
     getLocale.resetBehavior();
     getLocale.returns('fr');
 
-    root.init();
+    root.init({ events });
 
     assert.equal(root.t('Gift subscription'), 'Abonnement offert');
     assert.equal(addedListeners().length, 1);

@@ -5,8 +5,8 @@ const emailService = require('../../../../../core/server/services/email-service'
 // The email helper destructures `t` from the i18n root at load time; the reply
 // notification subject calls it, so the root must be initialised first. The
 // init helper falls back to 'en' when the locale setting is not set.
-const i18n = require('../../../../../core/server/services/i18n');
-i18n.init();
+const i18n = require('../../../../../core/shared/i18n');
+i18n.init({ events: require('../../../../../core/server/lib/common/events') });
 
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
 
