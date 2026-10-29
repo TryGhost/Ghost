@@ -1,9 +1,10 @@
+import { matchShape, type FieldShape, type FieldType } from '@tryghost/metafield-types';
 import { type Part, SEPARATOR } from '@tryghost/metafield-types/identity';
 
-// A value is a tree, stored as one row per leaf under the path of parts that leads to it; a value
-// with no parts is one row at the root. Nothing here consults a field type: rows are gathered by
-// the field they belong to, and reading them in the layout the field's type declares is the values
-// service's job.
+// How a value is laid out in rows, for every shape a type can have: a value is a tree, stored as
+// one row per leaf under the path of parts that leads to it, and a value with no parts is one row
+// at the root. Reading a field's rows back, writing a value's, and finding a value a filter names
+// all follow the layouts here, so a shape added to the catalog is laid out once, in this file.
 
 /** Empty rather than null, because the path is part of a value row's primary key. */
 export const ROOT_PATH = '';
@@ -54,6 +55,65 @@ export function valueRowsToWrite(value: ValueTree): { set: ValueRow[]; cleared: 
     set: named.filter((row) => row.value_text !== ''),
     cleared: named.filter((row) => row.value_text === '').map((row) => row.path),
   };
+}
+
+/**
+ * What a field holds, read from its rows in the layout its type declares: a scalar's row at the
+ * root, or a record's rows at its declared parts. Undefined when none of them is there. A row
+ * anywhere else is left out, and `leftOut` is called. No write through the values service stores
+ * one, and a client couldn't draw it.
+ *
+ * The declared rows are read whatever else sits beside them, because a write names only declared
+ * paths and so can never remove a stray row. Hiding a value for one would hide it for good,
+ * however often staff saved the field again.
+ *
+ * Only the layout is checked, not the type's rule, so tightening a rule later never hides values
+ * members already hold.
+ */
+export function storedValueAs(
+  type: FieldType,
+  rows: readonly ValueRow[],
+  leftOut: () => void,
+): unknown {
+  return matchShape<unknown>(type, {
+    scalar: () => {
+      const root = rows.find((row) => row.path === ROOT_PATH);
+      if (rows.length > (root ? 1 : 0)) {
+        leftOut();
+      }
+      return root?.value_text;
+    },
+    record: ({ parts }) => {
+      const declared = rows.filter((row) => Object.prototype.hasOwnProperty.call(parts, row.path));
+      if (declared.length < rows.length) {
+        leftOut();
+      }
+      return declared.length > 0
+        ? Object.fromEntries(declared.map((row) => [row.path, row.value_text]))
+        : undefined;
+    },
+  });
+}
+
+/**
+ * Where each shape keeps a row whose text is its field's whole value, given that text, or null for
+ * a shape whose whole value is never the text of one row.
+ */
+const WHOLE_VALUE_PATH: { [S in FieldShape]: ((text: string) => string) | null } = {
+  scalar: () => ROOT_PATH,
+  record: null,
+};
+
+/**
+ * Every path a row holding one of `texts` as its field's whole value can be at, whatever the
+ * field's type. A filter names a field and a value but not the field's type, so it looks wherever
+ * a type could keep that value.
+ */
+export function pathsHolding(texts: readonly string[]): string[] {
+  const paths = Object.values(WHOLE_VALUE_PATH).flatMap((pathOfText) =>
+    pathOfText ? texts.map(pathOfText) : [],
+  );
+  return [...new Set(paths)];
 }
 
 /**
