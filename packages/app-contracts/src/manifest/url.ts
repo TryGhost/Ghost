@@ -55,6 +55,10 @@ export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
 
 const PATH_PROBLEM = 'Expected a path on the manifest’s own origin, such as /admin';
 
+function isManifestItself(url: URL, base: string): boolean {
+  return url.pathname === new URL(base).pathname;
+}
+
 /**
  * A URL in the manifest. What Ghost loads is written as a path, resolved against the
  * address the manifest was fetched from, so an app is one origin: the one Ghost fetches
@@ -80,9 +84,10 @@ export function urlField({ ghostUrls, allowLocalhost, base }: UrlRules, linkOnly
   const origin = new URL(base).origin;
   return z.string(PATH_PROBLEM).transform((value, ctx) => {
     // A path, or a path-relative reference. A URL with a scheme, or a `//host` one, names
-    // its own origin, which the manifest's would then not be.
+    // its own origin, which the manifest's would then not be. An empty one, or one that's
+    // only a query or fragment, would be the manifest itself.
     const url = URL.canParse(value) ? null : URL.parse(value, base);
-    if (!url || url.origin !== origin) {
+    if (!url || url.origin !== origin || isManifestItself(url, base)) {
       ctx.addIssue({ code: 'custom', message: PATH_PROBLEM });
       return z.NEVER;
     }

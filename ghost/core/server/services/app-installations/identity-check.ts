@@ -152,11 +152,14 @@ export function createIdentityChecker({
   fetchFromApp,
   logging,
   getTrustConfig,
+  getAllowLocalhost,
   now = () => Math.floor(Date.now() / 1000),
 }: {
   fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
   getTrustConfig: () => TrustConfig;
+  /** Whether a manifest URL on localhost is one Ghost fetches, as the manifest rules say. */
+  getAllowLocalhost: () => boolean;
   /** Ghost's clock, in seconds since the epoch. */
   now?: () => number;
 }): IdentityChecker {
@@ -195,7 +198,7 @@ export function createIdentityChecker({
   function challenge(manifestUrl: string): StartedChallenge {
     // Only an address Ghost would fetch the manifest from gets a request. Loading the
     // manifest refuses the rest with its own error.
-    const address = parseManifestUrl(manifestUrl, getTrustConfig().trustLoopback);
+    const address = parseManifestUrl(manifestUrl, getAllowLocalhost());
     if (!address.success) {
       return { origin: null, outcome: Promise.resolve({ kind: 'skipped' }) };
     }

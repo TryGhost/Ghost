@@ -379,8 +379,10 @@ describe('App installations Admin API', function () {
       assert.equal(error.code, 'APP_MANIFEST_NOT_JSON');
     });
 
-    it('refuses a manifest larger than it can store', async function () {
-      serve(manifest({ padding: 'a'.repeat(70 * 1024) }));
+    it('refuses a manifest larger than it can store, signed', async function () {
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, JSON.stringify({ payload: 'a'.repeat(100 * 1024) }));
 
       const error = await preview(MANIFEST_URL, 422);
       assert.equal(error.code, 'APP_MANIFEST_TOO_LARGE');
@@ -1761,6 +1763,22 @@ describe('App installations Admin API', function () {
 
         assert.equal(body.errors[0].code, 'APP_MANIFEST_OUTDATED');
         assert.equal((await installationRow(installed.id)).status, 'suspended');
+      });
+
+      it('still refuses the manifest from before the rotation once the app is installed again', async function () {
+        const installed = await install();
+        const installedAt = new Date(clock * 1000);
+        const replacement = await generateTestAppKeys();
+        serve(manifest({ backend_key: replacement.backend.publicJwk }), MANIFEST_URL, {
+          backend: replacement.backend,
+        });
+        await start(installed.id);
+        await service().uninstall(owner, installed.id);
+
+        serve(manifest(), MANIFEST_URL, { issuedAt: installedAt });
+        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_MANIFEST_OUTDATED');
+        serve(manifest());
+        await preview();
       });
 
       it('records a manifest signed again without moving the revision on', async function () {

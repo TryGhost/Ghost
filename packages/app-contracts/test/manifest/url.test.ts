@@ -41,6 +41,13 @@ describe('paths', () => {
     expect(surfaceUrlError('data:text/html,<script>alert(1)</script>')).toBe(PATH_PROBLEM);
   });
 
+  // Each would be the manifest itself.
+  it('rejects an empty path, or one that is only a query or fragment', () => {
+    for (const path of ['', '?tab=1', '#admin', 'ghost-app.json', '/ghost-app.json#x']) {
+      expect(surfaceUrlError(path)).toBe(PATH_PROBLEM);
+    }
+  });
+
   it('rejects values that aren’t strings', () => {
     expect(surfaceUrlError(42)).toBe(PATH_PROBLEM);
   });

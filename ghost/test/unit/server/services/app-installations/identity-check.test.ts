@@ -88,6 +88,7 @@ function setup({
     fetchFromApp,
     logging: { warn },
     getTrustConfig: () => trust,
+    getAllowLocalhost: () => trust.trustLoopback,
     now: () => NOW,
   });
   /** Challenges the manifest URL's origin, then checks the loaded manifest. */

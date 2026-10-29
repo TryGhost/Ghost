@@ -204,23 +204,27 @@ describe('AppInstallationsRepository whileUnchanged', function () {
   });
 });
 
-describe('AppInstallationsRepository raiseSignedAt', function () {
+describe('AppInstallationsRepository signed times', function () {
   let knex: Knex;
 
   beforeEach(async function () {
     knex = createKnex({ client: 'better-sqlite3', connection: ':memory:', useNullAsDefault: true });
     await knex.schema.createTable('app_installations', (table) => {
       table.string('id').primary();
+      table.string('app_id');
+      table.string('identity_key_thumbprint');
       table.string('status');
       table.bigInteger('manifest_signed_at');
       table.string('manifest_signed_digest');
       table.integer('revision');
     });
-    // Only the columns this reads and writes, so not a row the table's type would accept.
+    // Only the columns these read and write, so not a row the table's type would accept.
     await knex
       .insert([
-        { id: 'installation', status: 'active', revision: 3, ...signed(100, 'first') },
-        { id: 'uninstalled', status: 'uninstalled', revision: 3, ...signed(100, 'first') },
+        row('installation', 'active', 100, 'first'),
+        row('ended', 'uninstalled', 300, 'third'),
+        row('older', 'uninstalled', 200, 'second'),
+        { ...row('another-key', 'uninstalled', 400, 'fourth'), identity_key_thumbprint: 'other' },
       ])
       .into('app_installations');
   });
@@ -229,8 +233,16 @@ describe('AppInstallationsRepository raiseSignedAt', function () {
     await knex.destroy();
   });
 
-  function signed(at: number, digest: string) {
-    return { manifest_signed_at: at, manifest_signed_digest: digest };
+  function row(id: string, status: string, signedAt: number, digest: string) {
+    return {
+      id,
+      app_id: manifest.id,
+      identity_key_thumbprint: 'identity-thumbprint',
+      status,
+      manifest_signed_at: signedAt,
+      manifest_signed_digest: digest,
+      revision: 3,
+    };
   }
 
   const read = (id: string) =>
@@ -238,29 +250,44 @@ describe('AppInstallationsRepository raiseSignedAt', function () {
       .where({ id })
       .first('manifest_signed_at', 'manifest_signed_digest', 'revision');
 
-  it('records a later signing, without moving the revision on', async function () {
-    const repository = new AppInstallationsRepository(knex);
+  const raise = (issuedAt: number, digest: string) =>
+    new AppInstallationsRepository(knex).whileUnchanged(installation, (locked) =>
+      locked.raiseSignedAt({ ...loaded, issuedAt, digest }),
+    );
 
-    await repository.raiseSignedAt('installation', { ...loaded, issuedAt: 200, digest: 'second' });
+  it('records a later signing under the lock, without moving the revision on', async function () {
+    assert.equal((await raise(200, 'second')).status, 'written');
 
-    assert.deepEqual(await read('installation'), { ...signed(200, 'second'), revision: 3 });
+    assert.deepEqual(await read('installation'), {
+      manifest_signed_at: 200,
+      manifest_signed_digest: 'second',
+      revision: 3,
+    });
   });
 
   // Two re-checks may race; the later signing wins whichever writes last.
   it('never lowers it, nor changes the digest at the same time', async function () {
-    const repository = new AppInstallationsRepository(knex);
+    await raise(50, 'older');
+    await raise(100, 'other');
 
-    await repository.raiseSignedAt('installation', { ...loaded, issuedAt: 50, digest: 'older' });
-    await repository.raiseSignedAt('installation', { ...loaded, issuedAt: 100, digest: 'other' });
-
-    assert.deepEqual(await read('installation'), { ...signed(100, 'first'), revision: 3 });
+    assert.deepEqual(await read('installation'), {
+      manifest_signed_at: 100,
+      manifest_signed_digest: 'first',
+      revision: 3,
+    });
   });
 
-  it('leaves an uninstalled installation as it ended', async function () {
+  it('reads the newest signing among the app’s installations with the same key', async function () {
     const repository = new AppInstallationsRepository(knex);
 
-    await repository.raiseSignedAt('uninstalled', { ...loaded, issuedAt: 200, digest: 'second' });
-
-    assert.deepEqual(await read('uninstalled'), { ...signed(100, 'first'), revision: 3 });
+    assert.deepEqual(await repository.lastSignedAtOf(manifest.id, 'identity-thumbprint'), {
+      signedAt: 300,
+      signedDigest: 'third',
+    });
+    assert.equal(await repository.lastSignedAtOf(manifest.id, 'unknown'), undefined);
+    assert.equal(
+      await repository.lastSignedAtOf('com.example.other', 'identity-thumbprint'),
+      undefined,
+    );
   });
 });

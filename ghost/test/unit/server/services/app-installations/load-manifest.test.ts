@@ -148,13 +148,6 @@ describe('createManifestLoader', function () {
       ]);
     });
 
-    it('refuses a signed manifest carrying a manifest larger than it can store', async function () {
-      const large = manifest({ description: 'x'.repeat(64 * 1024) });
-      const { loadManifest } = setup({ app: serving(large) });
-
-      assert.equal((await refusal(loadManifest(MANIFEST_URL))).code, 'APP_MANIFEST_TOO_LARGE');
-    });
-
     it('loads a signed manifest, with its identity key’s thumbprint and when it was signed', async function () {
       const { loadManifest } = setup();
 

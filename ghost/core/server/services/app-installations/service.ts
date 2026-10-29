@@ -220,14 +220,13 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(current),
       loaded,
     });
-    const stored = await this.store(current, write);
+    const stored = await this.store(current, write, loaded);
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
     if (stored.status === 'changed') {
       throw await this.changedSinceReview(checked, id);
     }
-    await this.repository.raiseSignedAt(id, loaded);
     const approved = stored.value;
     if (approved) {
       await this.recordAction({
@@ -313,7 +312,9 @@ export class AppInstallationsService {
 
   /**
    * Runs the identity check on a manifest a publisher is to review, against `installation`,
-   * or else the site's installation of that app, if it has one.
+   * or else the site's installation of that app, if it has one. Without one, a manifest
+   * signed with the same key as an ended installation is still held to its newest signing,
+   * so uninstalling and installing again can't bring back an older manifest.
    */
   private async review(
     loaded: LoadedManifest,
@@ -322,7 +323,14 @@ export class AppInstallationsService {
   ): Promise<CheckedManifest> {
     const current =
       installation ?? (await this.repository.currentInstallationOf(loaded.manifest.id)) ?? null;
-    const pinned = current ? this.pinnedIdentityOf(current) : null;
+    let pinned: PinnedIdentity | null = current ? this.pinnedIdentityOf(current) : null;
+    if (!current) {
+      const ended = await this.repository.lastSignedAtOf(
+        loaded.manifest.id,
+        loaded.identityKeyThumbprint,
+      );
+      pinned = ended ? { identityKeyThumbprint: loaded.identityKeyThumbprint, ...ended } : null;
+    }
     const { trustedOrigins } = await this.identity.check(loaded, pinned, started);
     return { loaded, trustedOrigins, installation: current };
   }
@@ -405,11 +413,17 @@ export class AppInstallationsService {
   }
 
   /**
-   * Applies a write planned from `current`, unless the installation changed since. Returns
-   * the newly approved or pending manifest's ID, or null for `nothing`.
+   * Applies a write planned from `current`, unless the installation changed since, and
+   * records when `loaded`, which passed the identity check, was signed. Returns the newly
+   * approved or pending manifest's ID, or null for `nothing`.
    */
-  private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
+  private store(
+    current: Installation,
+    write: ManifestWrite,
+    loaded: LoadedManifest,
+  ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
+      await locked.raiseSignedAt(loaded);
       switch (write.kind) {
         case 'nothing':
           return null;
@@ -488,13 +502,12 @@ export class AppInstallationsService {
       return this.unavailableUnlessChanged(before, err);
     }
 
-    await this.repository.raiseSignedAt(before.id, loaded);
     const write = recheckWrite({
       current: before,
       pending: await this.pendingManifestOf(before),
       loaded,
     });
-    const stored = await this.store(before, write);
+    const stored = await this.store(before, write, loaded);
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }

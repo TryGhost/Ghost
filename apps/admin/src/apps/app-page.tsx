@@ -132,7 +132,7 @@ const Unavailable: React.FC<{
         }
         title={
           failure.unconfirmed
-            ? `Ghost couldn’t confirm this is ${name}`
+            ? `Ghost couldn’t confirm this is ${installation?.manifest.name ?? 'the app you installed'}`
             : `${name} isn’t available right now`
         }
       >

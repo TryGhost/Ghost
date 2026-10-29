@@ -102,10 +102,6 @@ export function createManifestLoader({
         context: signed.error,
       });
     }
-    if (Buffer.byteLength(signed.payload) > MANIFEST_MAX_BYTES) {
-      throw manifestTooLarge(manifestUrl);
-    }
-
     const parsed = parseManifest(parseJson(signed.payload, manifestUrl), { ...rules, manifestUrl });
     if (!parsed.success) {
       const context = parsed.errors
@@ -137,7 +133,12 @@ export function createManifestLoader({
       });
     }
 
+    // Measured on what's stored, which holds the paths resolved, so it can be longer than
+    // what the app signed.
     const serialised = z.encode(StoredManifest, manifest);
+    if (Buffer.byteLength(serialised) > MANIFEST_MAX_BYTES) {
+      throw manifestTooLarge(manifestUrl);
+    }
     return {
       manifestUrl,
       manifest,
