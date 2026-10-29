@@ -88,6 +88,16 @@ const show = async (name = 'First') => {
   await settleTransitions();
 };
 const height = (name = 'First') => card(name).element().getBoundingClientRect().height;
+// A second card starts below the default viewport. React Flow snaps any scroll of its pane back
+// to the top, so a click scrolled to that card can land after the card has moved away again.
+const withBothCardsInView = async (run: () => Promise<void>) => {
+  await page.viewport(1280, 1600);
+  try {
+    await run();
+  } finally {
+    await page.viewport(1280, 800);
+  }
+};
 const OFF = 'Tracking is off in Analytics settings.';
 
 describe('Email card analytics', () => {
@@ -115,20 +125,21 @@ describe('Email card analytics', () => {
     await expect.element(subject).toBeVisible();
   });
 
-  it('opens each card on its own and never shrinks a card below its email view', async () => {
-    prepare([email('First'), email('Second', unsent)]);
-    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(1) });
-    await boot();
-    await expect.element(toggle('Second')).toBeVisible();
-    await settleTransitions();
-    const closedHeight = height('Second');
+  it('opens each card on its own and never shrinks a card below its email view', () =>
+    withBothCardsInView(async () => {
+      prepare([email('First'), email('Second', unsent)]);
+      fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(1) });
+      await boot();
+      await expect.element(toggle('Second')).toBeVisible();
+      await settleTransitions();
+      const closedHeight = height('Second');
 
-    await show();
-    await show('Second');
-    await expect.element(toggle()).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(card('Second').getByText('No click data yet')).toBeVisible();
-    expect(height('Second')).toBeGreaterThanOrEqual(closedHeight);
-  });
+      await show();
+      await show('Second');
+      await expect.element(toggle()).toHaveAttribute('aria-pressed', 'true');
+      await expect.element(card('Second').getByText('No click data yet')).toBeVisible();
+      expect(height('Second')).toBeGreaterThanOrEqual(closedHeight);
+    }));
 
   it('pages through many links, ten at a time', async () => {
     prepare();
@@ -144,20 +155,23 @@ describe('Email card analytics', () => {
     await expect.element(card().getByRole('button', { name: 'Next page' })).toBeDisabled();
   });
 
-  it('keeps an email with few links as tall as one with none', async () => {
-    prepare([email('First'), email('Second', unclicked)]);
-    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(1) });
-    fakeAdminEndpoint('GET', linksPath('Second'), { automation_action_links: [] });
-    await boot();
-    await show();
-    await show('Second');
-    await expect(card().getByRole('link')).toHaveCount(1);
-    await expect
-      .element(card('Second').getByRole('status').getByText('No click data yet'))
-      .toBeVisible();
-    await expect.element(card().getByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
-    expect(height()).toBeGreaterThanOrEqual(height('Second'));
-  });
+  it('keeps an email with few links as tall as one with none', () =>
+    withBothCardsInView(async () => {
+      prepare([email('First'), email('Second', unclicked)]);
+      fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(1) });
+      fakeAdminEndpoint('GET', linksPath('Second'), { automation_action_links: [] });
+      await boot();
+      await show();
+      await show('Second');
+      await expect(card().getByRole('link')).toHaveCount(1);
+      await expect
+        .element(card('Second').getByRole('status').getByText('No click data yet'))
+        .toBeVisible();
+      await expect
+        .element(card().getByRole('button', { name: 'Next page' }))
+        .not.toBeInTheDocument();
+      expect(height()).toBeGreaterThanOrEqual(height('Second'));
+    }));
 
   it('shows no click rate for an email without links', async () => {
     prepare([email('First', unclicked)]);
