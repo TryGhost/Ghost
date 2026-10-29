@@ -27,6 +27,7 @@ const FIELDS: MemberCustomField[] = [
     key: KeySchema.parse('job_title'),
     name: 'Job title',
     type: 'short_text',
+    settings: null,
     status: 'active',
     access: { member: 'none' },
     created_at: '2026-07-14T00:00:00.000Z',
@@ -37,6 +38,7 @@ const FIELDS: MemberCustomField[] = [
     key: KeySchema.parse('company'),
     name: 'Company',
     type: 'long_text',
+    settings: null,
     status: 'active',
     access: { member: 'none' },
     created_at: '2026-07-14T00:00:00.000Z',
@@ -47,6 +49,7 @@ const FIELDS: MemberCustomField[] = [
     key: KeySchema.parse('home_address'),
     name: 'Home address',
     type: 'address',
+    settings: null,
     status: 'active',
     access: { member: 'none' },
     created_at: '2026-07-14T00:00:00.000Z',
@@ -62,14 +65,18 @@ const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', coun
  * sent as null, so the refetch a save triggers must return the merged result, not the
  * original.
  */
-function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>) {
+function fakeMemberDetailWorld(
+  m: Member,
+  initialValues: Record<string, unknown>,
+  fields: MemberCustomField[] = FIELDS,
+) {
   let current: Record<string, unknown> = { ...m };
   const values: Record<string, unknown> = { ...initialValues };
   fakeMembers([m]);
   fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), () => ({
     members: [{ ...current, metafields: { custom: { ...values } } }],
   }));
-  fakeMemberCustomFields(FIELDS);
+  fakeMemberCustomFields(fields);
   fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
     events: [],
     meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
@@ -369,6 +376,61 @@ describe('Member detail custom fields', () => {
     await expect
       .element(modal().getByText('Rejected by the server for reasons the client could not know.'))
       .toBeVisible();
+  });
+
+  describe('a list', () => {
+    const animals: MemberCustomField = {
+      ...FIELDS[0],
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list',
+      settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+    };
+
+    it('shows every option a member holds, including one the field no longer offers', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { favourite_animals: ['Cat', 'Dolphin'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      // One chip per answer, since an option's text can hold a comma.
+      const row = memberDetailScreen.editFieldButton('Favourite animals');
+      await expect.element(row.getByText('Cat', { exact: true })).toBeVisible();
+      await expect.element(row.getByText('Dolphin', { exact: true })).toBeVisible();
+      await expect.element(row).toHaveAccessibleName('Edit Favourite animals: Cat, Dolphin');
+    });
+
+    it('closes the open list on Escape and keeps the editor', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { favourite_animals: ['Fish'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+      await modal().getByLabelText('Favourite animals').click();
+      await expect.element(page.getByRole('option', { name: 'Dog' })).toBeVisible();
+      await userEvent.keyboard('{Escape}');
+
+      await expect.element(page.getByRole('option', { name: 'Dog' })).not.toBeInTheDocument();
+      await expect.element(modal()).toBeVisible();
+    });
+
+    it('saves the options picked, in the order the field offers them', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      const editApi = fakeMemberDetailWorld(m, { favourite_animals: ['Fish'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+      await modal().getByLabelText('Favourite animals').click();
+      await page.getByRole('option', { name: 'Dog' }).click();
+      await userEvent.keyboard('{Escape}');
+      await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+      await expect
+        .element(memberDetailScreen.editFieldButton('Favourite animals'))
+        .toHaveAccessibleName('Edit Favourite animals: Dog, Fish');
+      await expect
+        .poll(() => editApi.lastRequest && savedMember(editApi.lastRequest.body).metafields)
+        .toEqual({ custom: { favourite_animals: ['Dog', 'Fish'] } });
+    });
   });
 
   it('hides the section when the site has no custom fields defined', async () => {

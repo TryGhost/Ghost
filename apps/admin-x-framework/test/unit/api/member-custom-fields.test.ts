@@ -83,19 +83,24 @@ export {
 
 const field = ({
   key = 'nickname',
-  ...overrides
-}: Omit<Partial<MemberCustomField>, 'key'> & { key?: string }): MemberCustomField => ({
+  name = 'Nickname',
+  type = 'short_text',
+}: {
+  key?: string;
+  name?: string;
+  type?: 'short_text' | 'address';
+}): MemberCustomField => ({
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse(key),
-  name: 'Nickname',
-  type: 'short_text',
+  name,
+  type,
+  settings: null,
   status: 'active',
   // The server reads a field with no access set as closed to members, so a case that says
   // nothing about access gets the field the API would return for one.
   access: { member: 'none' },
   created_at: '2026-07-01T00:00:00.000Z',
   updated_at: null,
-  ...overrides,
 });
 
 describe('member custom fields api helpers', () => {

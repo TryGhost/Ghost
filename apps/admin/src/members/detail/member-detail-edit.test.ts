@@ -17,14 +17,18 @@ import {
 } from './member-detail-edit';
 import { memberCustomFieldValueSchema } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { describe, expect, it } from 'vitest';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type {
+  MemberCustomField,
+  PlainFieldType,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
-const customField = (key: string, type: MemberCustomField['type']): MemberCustomField => ({
+const customField = (key: string, type: PlainFieldType): MemberCustomField => ({
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse(key),
   name: key,
   type,
+  settings: null,
   status: 'active',
   access: { member: 'none' },
   created_at: '2026-07-14T00:00:00.000Z',

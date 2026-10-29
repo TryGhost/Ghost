@@ -14,6 +14,7 @@ import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
 
 // The import dialog is served to everyone now, so custom fields are the only switch left, and
 // the dialog has to hold up on either side of it.
@@ -37,6 +38,13 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 // leave that request unhandled.
 const customFieldsBrowsePath = new RegExp('^/members/metafields/custom/(\\?|$)');
 
+// What the import's create form sends: a type that needs nothing but a name.
+const CreateBody = z.object({
+  members_metafields: z.array(
+    z.object({ name: z.string(), type: z.enum(['short_text', 'long_text', 'address']) }),
+  ),
+});
+
 const EXPORTED_CSV = 'email,metafields.custom.nickname\nada@example.com,Countess\n';
 
 /**
@@ -52,14 +60,13 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
   const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', ({ body }) => {
-    const [input] = (
-      body as { members_metafields: Array<{ name: string; type: MemberCustomField['type'] }> }
-    ).members_metafields;
+    const [input] = CreateBody.parse(body).members_metafields;
     const field: MemberCustomField = {
       namespace: CUSTOM_NAMESPACE,
       key: KeySchema.parse(input.name.trim().toLowerCase().replace(/\s+/g, '_')),
       name: input.name.trim(),
       type: input.type,
+      settings: null,
       status: 'active',
       access: { member: 'none' },
       created_at: '2026-08-05T00:00:00.000Z',
@@ -77,6 +84,7 @@ const NICKNAME_FIELD: MemberCustomField = {
   key: KeySchema.parse('nickname'),
   name: 'Nickname',
   type: 'short_text',
+  settings: null,
   status: 'active',
   access: { member: 'none' },
   created_at: '2026-08-05T00:00:00.000Z',
@@ -145,7 +153,9 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_metafields: [{ name: 'Nickname', type: 'short_text', access: { member: 'none' } }],
+        members_metafields: [
+          { name: 'Nickname', type: 'short_text', settings: null, access: { member: 'none' } },
+        ],
       });
 
     // The row carries the new field immediately, from the create response: the browse query
@@ -296,7 +306,7 @@ describe('Import members custom fields', () => {
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
         members_metafields: [
-          { name: 'Shipping address', type: 'address', access: { member: 'none' } },
+          { name: 'Shipping address', type: 'address', settings: null, access: { member: 'none' } },
         ],
       });
 

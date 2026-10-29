@@ -12,6 +12,7 @@ type Fields = readonly { type: FieldType }[];
 const CHANGES = {
   rename: 'rename',
   changeAccess: 'change_access',
+  changeSettings: 'change_settings',
   archive: 'archive',
   restore: 'restore',
 } as const satisfies Partial<Record<MetafieldVerb, string>>;

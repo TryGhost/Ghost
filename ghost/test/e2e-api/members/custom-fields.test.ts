@@ -49,11 +49,15 @@ describe('Member Custom Fields Members API', function () {
   // so the tests that want a closed one ask for it explicitly.
   async function defineField(
     name: string,
-    { type = 'short_text', access = 'write' }: { type?: string; access?: string } = {},
+    {
+      type = 'short_text',
+      access = 'write',
+      settings,
+    }: { type?: string; access?: string; settings?: unknown } = {},
   ): Promise<string> {
     const { body } = await adminAgent
       .post('members/metafields/custom/')
-      .body({ members_metafields: [{ name, type, access: { member: access } }] })
+      .body({ members_metafields: [{ name, type, settings, access: { member: access } }] })
       .expectStatus(201);
     const { key } = body.members_metafields[0];
     defined.add(key);
@@ -268,6 +272,36 @@ describe('Member Custom Fields Members API', function () {
     assert.equal(stored.metafields.custom[fieldKey], '12');
   });
 
+  it('writes the options a member picks from a list, read back in the field’s order', async function () {
+    const key = await defineField('Favourite animals', {
+      type: 'list',
+      settings: { options: ['Dog', 'Cat'], multiple: true },
+    });
+
+    const { body } = await membersAgent
+      .put('/api/member/')
+      .body({ metafields: { custom: { [key]: ['Cat', 'Dog'] } } })
+      .expectStatus(200);
+
+    assert.deepEqual(body.metafields.custom[key], ['Dog', 'Cat']);
+    assert.deepEqual((await readMemberAsStaff()).metafields.custom[key], ['Dog', 'Cat']);
+  });
+
+  it('refuses a member picking more than one option where the field takes one', async function () {
+    const key = await defineField('Favourite animal', {
+      type: 'list',
+      settings: { options: ['Dog', 'Cat'], multiple: false },
+    });
+
+    const { body } = await membersAgent
+      .put('/api/member/')
+      .body({ metafields: { custom: { [key]: ['Cat', 'Dog'] } } })
+      .expectStatus(422);
+
+    assert.equal(body.errors[0].message, 'Choose one option.');
+    assert.equal((await readMemberAsStaff()).metafields?.custom?.[key], undefined);
+  });
+
   describe('webhooks', function () {
     const url = 'https://test-webhook-receiver.com/member-edited/';
     // The mock receiver is untyped; this is the shape these tests use.
@@ -324,6 +358,21 @@ describe('Member Custom Fields Members API', function () {
 
       assert.deepEqual(delivered().current.metafields.custom, { [fieldKey]: '12' });
       assert.deepEqual(delivered().previous.metafields.custom, { [fieldKey]: '9' });
+    });
+
+    it('tells a subscriber the options a member picked, by their names', async function () {
+      const key = await defineField('Favourite animals', {
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+      });
+
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [key]: ['Cat'] } } })
+        .expectStatus(200);
+      await receiver.receivedRequest();
+
+      assert.deepEqual(delivered().current.metafields.custom[key], ['Cat']);
     });
 
     it('tells a subscriber the new value when a member changes their name with it', async function () {

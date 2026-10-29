@@ -14,7 +14,10 @@ import {
   Switch,
 } from '@tryghost/shade/components';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type {
+  MemberCustomField,
+  PlainFieldType,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { type CollectFormState, tierChoiceOf } from './collect-form';
 
@@ -82,7 +85,7 @@ export const MultiPicker: React.FC<{
 /** The custom field a collected value is saved into, of the one type that can hold it. */
 export const Destination: React.FC<{
   label: string;
-  type: MemberCustomField['type'];
+  type: PlainFieldType;
   fields: MemberCustomField[];
   /**
    * The fields chosen for every collected value. Another value's field isn't offered, as the

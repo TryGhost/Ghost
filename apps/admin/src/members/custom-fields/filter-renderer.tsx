@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { CUSTOM_FIELD_SET_OPERATORS, parseMetafieldFieldId } from './addressing';
-import { matchLeaf, matchShape } from '@tryghost/metafield-types/structure';
+import { matchField, matchLeaf, matchShape } from '@tryghost/metafield-types/structure';
 import { FILTER_TYPES, createOperatorOptions, listsOperator } from '@/shared/filters';
 import {
   FilterSegmentInput,
@@ -9,7 +9,9 @@ import {
 } from '@tryghost/shade/patterns';
 import {
   memberCustomFieldChoiceLists,
+  memberCustomFieldOptionList,
   memberCustomFieldParts,
+  type MemberCustomField,
   type MemberCustomFieldChoiceList,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { filterLeaf, partFilterType } from './filter-fields';
@@ -62,7 +64,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
     : [];
   const fieldLabel = field.label ?? definition?.name ?? 'Custom field';
   const isComposite = definition
-    ? matchShape(definition.type, { scalar: () => false, record: () => true })
+    ? matchShape(definition.type, { scalar: () => false, record: () => true, set: () => false })
     : false;
 
   // The part first, then what it holds: one text, or the codes an "is any of" lists.
@@ -70,10 +72,17 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   const partType = definition ? partFilterType(definition.type, part) : undefined;
   const filtersAs = isComposite ? (partType ?? 'whole') : null;
   const leaf = definition ? filterLeaf(definition.type, part) : undefined;
-  const list = leaf
+  const leafList = leaf
     ? matchLeaf<MemberCustomFieldChoiceList | null>(leaf, {
         text: () => null,
         choice: ({ from }) => memberCustomFieldChoiceLists[from],
+      })
+    : null;
+  const list = definition
+    ? matchField<MemberCustomField, MemberCustomFieldChoiceList | null>(definition, {
+        scalar: () => leafList,
+        record: () => leafList,
+        set: ({ settings }) => memberCustomFieldOptionList(settings),
       })
     : null;
 

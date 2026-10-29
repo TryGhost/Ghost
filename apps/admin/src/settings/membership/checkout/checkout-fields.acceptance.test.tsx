@@ -36,6 +36,7 @@ const phoneField: MemberCustomField = {
   key: KeySchema.parse('contact_phone'),
   name: 'Contact phone',
   type: 'short_text',
+  settings: null,
   status: 'active',
   access: { member: 'none' },
   created_at: '2026-10-19T00:00:00.000Z',
@@ -428,6 +429,7 @@ describe('Checkout settings', () => {
             key: KeySchema.parse('delivery_address'),
             name: 'Delivery address',
             type: 'address',
+            settings: null,
           },
         ],
       );

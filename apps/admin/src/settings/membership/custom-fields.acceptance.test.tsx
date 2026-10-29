@@ -20,6 +20,7 @@ const companyField: MemberCustomField = {
   key: KeySchema.parse('company'),
   name: 'Company',
   type: 'short_text',
+  settings: null,
   status: 'active',
   access: { member: 'none' },
   created_at: '2026-07-13T00:00:00.000Z',
@@ -31,6 +32,7 @@ const archivedField: MemberCustomField = {
   key: KeySchema.parse('old_hobby'),
   name: 'Old hobby',
   type: 'short_text',
+  settings: null,
   status: 'archived',
   access: { member: 'none' },
   created_at: '2026-07-12T00:00:00.000Z',
@@ -65,7 +67,7 @@ async function dragField(name: string, target: Locator) {
   );
 }
 
-type CustomField = typeof companyField;
+type CustomField = MemberCustomField;
 
 function fakeCustomFields(fields: CustomField[] = [companyField]) {
   return fakeMemberCustomFields(fields);
@@ -227,7 +229,9 @@ describe('Custom fields', () => {
 
     await expect(modal).toHaveCount(0);
     expect(createApi.lastRequest?.body).toEqual({
-      members_metafields: [{ name: 'Job Title', type: 'short_text', access: { member: 'none' } }],
+      members_metafields: [
+        { name: 'Job Title', type: 'short_text', settings: null, access: { member: 'none' } },
+      ],
     });
   });
 
@@ -248,7 +252,9 @@ describe('Custom fields', () => {
 
     await expect(modal).toHaveCount(0);
     expect(createApi.lastRequest?.body).toEqual({
-      members_metafields: [{ name: 'Bio', type: 'long_text', access: { member: 'none' } }],
+      members_metafields: [
+        { name: 'Bio', type: 'long_text', settings: null, access: { member: 'none' } },
+      ],
     });
   });
 
@@ -586,7 +592,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     const shirtField = { ...companyField, key: KeySchema.parse('shirt_size'), name: 'Shirt size' };
     const nicknameField = { ...companyField, key: KeySchema.parse('nickname'), name: 'Nickname' };
-    let currentFields = [companyField, shirtField, nicknameField];
+    let currentFields: MemberCustomField[] = [companyField, shirtField, nicknameField];
     const browseApi = fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
       currentFields = reordered(request.body, currentFields);
@@ -626,7 +632,7 @@ describe('Custom fields', () => {
   it('leaves the dragged field where it was dropped while the request is in flight', async () => {
     fakeSettingsScreens();
     const nicknameField = { ...companyField, key: KeySchema.parse('nickname'), name: 'Nickname' };
-    let currentFields = [companyField, nicknameField];
+    let currentFields: MemberCustomField[] = [companyField, nicknameField];
     fakeMemberCustomFields(() => currentFields);
 
     // The PUT is held open so the assertion below lands while the request is still
@@ -705,7 +711,7 @@ describe('Custom fields', () => {
     const shirtField = { ...companyField, key: KeySchema.parse('shirt_size'), name: 'Shirt size' };
     // Archived between the two active fields, which is the arrangement that catches a
     // move applied to the visible tab instead of the whole list.
-    let currentFields = [companyField, archivedField, shirtField];
+    let currentFields: MemberCustomField[] = [companyField, archivedField, shirtField];
     fakeMemberCustomFields(() => currentFields);
     const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
       currentFields = reordered(request.body, currentFields);
@@ -729,7 +735,7 @@ describe('Custom fields', () => {
 
   it('reorders from a collapsed list without disturbing the fields behind Show all', async () => {
     fakeSettingsScreens();
-    let currentFields = Array.from({ length: 7 }, (_, index) => ({
+    let currentFields: MemberCustomField[] = Array.from({ length: 7 }, (_, index) => ({
       ...companyField,
       key: KeySchema.parse(`field_${index}`),
       name: `Field ${index}`,

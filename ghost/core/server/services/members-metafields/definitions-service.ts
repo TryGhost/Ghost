@@ -1,13 +1,18 @@
+import { isDeepStrictEqual } from 'node:util';
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { Metafield } from './models';
-import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
+import {
+  FieldTypeSchema,
+  TypedSettingsInputSchema,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
 import { metafieldCodec } from './codec';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
 import type { Namespaces } from './namespaces';
-import { FIELD_STATUS, FieldStatusSchema } from './schema';
+import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
 import {
   ADMIN,
   MEMBER_ACCESS,
@@ -63,13 +68,11 @@ const FieldName = z
 
 const FieldAccess = z.object({ member: MemberAccessSchema });
 
-// No key: the backend mints it from the name.
+// No key: the backend mints it from the name. The type is checked with the settings it takes.
 
-const AddFieldInput = z.object({
-  name: FieldName,
-  type: FieldTypeSchema,
-  access: FieldAccess.optional(),
-});
+const AddFieldInput = z
+  .object({ name: FieldName, access: FieldAccess.optional() })
+  .and(TypedSettingsInputSchema);
 
 // A bound on the work one request can ask for, separate from how many definitions
 // a site may hold in total. Every definition in a batch costs several queries
@@ -100,15 +103,21 @@ const ReorderInput = z
   )
   .min(1, { message: 'The order must name every custom field.' });
 
-// Name, status and access are mutable. `key` and `type` are accepted so the
-// immutability rules can reject a change loudly; they are never persisted.
+// Name, settings, status and access are mutable. `key` and `type` are accepted so the
+// immutability rules can reject a change loudly; they are never persisted. Settings are checked
+// against the field's type once the field is read.
 const EditFieldInput = z.object({
   name: FieldName.optional(),
+  settings: z.unknown().optional(),
   status: FieldStatusSchema.optional(),
   access: FieldAccess.optional(),
   key: z.optional(KeySchema),
   type: FieldTypeSchema.optional(),
 });
+
+/** Settings as their column holds them. */
+const storedSettings = (typed: TypedSettings): string | null =>
+  z.encode(DbTypedSettings, typed).settings;
 
 export class MetafieldDefinitionsService {
   private knex: Knex;
@@ -242,7 +251,7 @@ export class MetafieldDefinitionsService {
               namespace,
               key,
               name: field.name,
-              type: field.type,
+              typed: field,
               memberAccess: field.access?.member ?? MEMBER_ACCESS.none,
               sortOrder: firstSortOrder + index,
             });
@@ -284,9 +293,8 @@ export class MetafieldDefinitionsService {
     wanted: {
       key: string;
       name: string;
-      type: FieldType;
       access: z.infer<typeof FieldAccess>;
-    },
+    } & TypedSettings,
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
     await this.namespaces.assertChangeable(namespace);
@@ -303,7 +311,7 @@ export class MetafieldDefinitionsService {
         namespace,
         key,
         name: wanted.name,
-        type: wanted.type,
+        typed: wanted,
         memberAccess: wanted.access.member,
         sortOrder: await this.nextSortOrder(db, namespace),
       });
@@ -337,7 +345,7 @@ export class MetafieldDefinitionsService {
       namespace: Namespace;
       key: Key;
       name: string;
-      type: FieldType;
+      typed: TypedSettings;
       memberAccess: MemberAccess;
       sortOrder: number;
     },
@@ -347,7 +355,8 @@ export class MetafieldDefinitionsService {
       namespace: field.namespace,
       key: field.key,
       name: field.name,
-      type: field.type,
+      type: field.typed.type,
+      settings: storedSettings(field.typed),
       member_access: field.memberAccess,
       sort_order: field.sortOrder,
       created_at: new Date(),
@@ -608,6 +617,18 @@ export class MetafieldDefinitionsService {
         });
       }
 
+      // Checked before anything is written, so an edit refused for its settings changes nothing.
+      const settings =
+        patch.settings === undefined
+          ? undefined
+          : TypedSettingsInputSchema.safeParse({ type: existing.type, settings: patch.settings });
+      if (settings && !settings.success) {
+        throw new errors.ValidationError({
+          message: settings.error.issues[0].message,
+          property: 'settings',
+        });
+      }
+
       // Only write (and log a rename) when the name actually changes, so
       // re-saving an unchanged field is a no-op rather than a spurious edit.
       if (patch.name !== undefined && patch.name !== existing.name) {
@@ -630,6 +651,20 @@ export class MetafieldDefinitionsService {
           verb: 'rename',
           subject: existing.id,
           details: { primary_name: patch.name, key, previous_name: existing.name },
+        });
+      }
+
+      // Only a change is written and logged, so re-saving the same options is a no-op.
+      if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
+        attempt.changing('changeSettings');
+        await this.knex(FIELDS_TABLE)
+          .where({ namespace, key })
+          .update({ settings: storedSettings(settings.data), updated_at: new Date() });
+        await this.recordAction({
+          context,
+          verb: 'changeSettings',
+          subject: existing.id,
+          details: { primary_name: patch.name ?? existing.name, key },
         });
       }
 

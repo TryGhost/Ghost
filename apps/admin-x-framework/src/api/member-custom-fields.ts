@@ -10,9 +10,13 @@ import {
   type MetafieldDefinition,
   partsOf,
   type FieldType,
+  type FieldTypeOfShape,
   type Leaf,
   type ListSource,
   type PartsOf,
+  type SetSettings,
+  type SettingsOf,
+  type TypedSettings,
 } from '@tryghost/metafield-types';
 import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
@@ -78,8 +82,8 @@ export const memberAccessLabel = (access: MemberCustomFieldAccess): string =>
  * what a type is; this says what a publisher is told it is. How a value is edited and shown comes
  * from the leaves the type is composed of, so every type made of the same leaves is edited alike.
  */
-export type MemberCustomFieldUserType = {
-  id: FieldType;
+export type MemberCustomFieldUserType<T extends FieldType = FieldType> = {
+  id: T;
   label: string;
   icon: typeof LucideIcon.Type;
 };
@@ -99,6 +103,7 @@ export type FieldTypePresentation<T extends FieldType> = {
 const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
   short_text: { label: 'Short text', icon: LucideIcon.Type },
   long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
+  list: { label: 'List', icon: LucideIcon.List },
   address: {
     label: 'Address',
     icon: LucideIcon.MapPin,
@@ -129,6 +134,18 @@ export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYP
   id,
   ...fieldTypePresentation[id],
 }));
+
+/**
+ * A type whose fields are set up with nothing but a name, so any form that names a field can
+ * create one. A list also needs its options, which only a form that asks for them can give.
+ */
+export type PlainFieldType = FieldTypeOfShape<'scalar' | 'record'>;
+
+const isPlainFieldType = (type: FieldType): type is PlainFieldType =>
+  matchShape(type, { scalar: () => true, record: () => true, set: () => false });
+
+export const memberCustomFieldPlainUserTypes: MemberCustomFieldUserType<PlainFieldType>[] =
+  FIELD_TYPE_IDS.filter(isPlainFieldType).map((id) => ({ id, ...fieldTypePresentation[id] }));
 
 export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => ({
   id: type,
@@ -197,6 +214,26 @@ export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFiel
   },
 };
 
+/**
+ * How a list field's options are offered: each by its text, in the field's order, then any
+ * already held that the field no longer offers, so a saved answer or filter still shows what it
+ * holds.
+ */
+export const memberCustomFieldOptionList = (
+  settings: SetSettings,
+): MemberCustomFieldChoiceList => ({
+  options: (held) => {
+    const heldOptions = typeof held === 'string' ? [held] : (held ?? []);
+    return [
+      ...settings.options,
+      ...heldOptions.filter((option) => !settings.options.includes(option)),
+    ].map((option) => ({ value: option, label: option }));
+  },
+  label: (option) => option,
+  placeholder: 'Select options...',
+  searchPlaceholder: 'Search options...',
+});
+
 /** A leaf's value as a publisher reads it: text as written, and a choice by its name. */
 export const memberCustomFieldLeafText = (leaf: Leaf, value: string): string =>
   matchLeaf(leaf, {
@@ -231,6 +268,7 @@ export const memberCustomFieldParts = (type: FieldType): MemberCustomFieldPart[]
         fullRow: fullRow.includes(key),
       }));
     },
+    set: () => null,
   });
 
 /**
@@ -292,9 +330,9 @@ const partRuns = new Map(FIELD_TYPE_IDS.map((type) => [type, partRunsFor(type)])
 
 /**
  * A member's value for one field as a single readable line: the string itself for a
- * scalar, and for a composite its parts joined the way that type reads — e.g.
- * "1 Main St, 12 apt B, New York, NY 00001, US". Missing parts drop out, so a partial
- * value still reads naturally.
+ * scalar, for a composite its parts joined the way that type reads — e.g.
+ * "1 Main St, 12 apt B, New York, NY 00001, US" — and for a list the options picked. Missing
+ * parts drop out, so a partial value still reads naturally.
  *
  * Empty string for a value that is not the shape its type declares: the type decides
  * which shape is readable, so a composite reads only from its parts and a scalar only
@@ -329,6 +367,11 @@ export const formatMemberCustomFieldValue = (
         .filter(Boolean)
         .join(', ');
     },
+    // In the order the server reads them back, which is the field's own.
+    set: () =>
+      Array.isArray(value)
+        ? value.filter((option): option is string => typeof option === 'string').join(', ')
+        : '',
   });
 
 const MemberCustomFieldList = z.array(MetafieldDefinitionSchema);
@@ -361,12 +404,20 @@ export const useBrowseMemberCustomFieldsIncludingArchived = (
 ) =>
   useBrowseMemberCustomFields({ ...options, searchParams: { filter: 'status:[active,archived]' } });
 
-/** Everything a new field is created from. The backend mints the key from the name. */
-export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'>;
+/**
+ * Everything a new field is created from: its type with the settings that type takes. The backend
+ * mints the key from the name.
+ */
+export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'access'> & TypedSettings;
 
-/** A change to one field, addressed by key. Anything omitted is left as it is. */
+/**
+ * A change to one field, addressed by key. Anything omitted is left as it is. A list's settings
+ * are stated whole, its options in order.
+ */
 export type MemberCustomFieldEdit = Pick<MemberCustomField, 'key'> &
-  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>>;
+  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>> & {
+    settings?: NonNullable<SettingsOf<FieldType>>;
+  };
 
 export const useCreateMemberCustomField = createMutation<
   MemberCustomFieldsResponseType,

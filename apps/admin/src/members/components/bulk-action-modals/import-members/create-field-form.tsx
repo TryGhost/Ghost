@@ -12,10 +12,10 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-field-type-option';
-import { memberCustomFieldUserTypes } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { memberCustomFieldPlainUserTypes } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { suggestedFieldName } from '@/members/components/bulk-action-modals/import-members/mapping';
 import { useEffect, useRef, useState } from 'react';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { PlainFieldType } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 interface CreateFieldFormProps {
   // The CSV column this field is being created for. Seeds the name, since a header is
@@ -32,7 +32,7 @@ interface CreateFieldFormProps {
   // False once a refusal cannot be argued with — a site at its field ceiling — so the
   // button stops inviting the same doomed request.
   canRetry: boolean;
-  onSubmit: (name: string, type: MemberCustomField['type']) => void;
+  onSubmit: (name: string, type: PlainFieldType) => void;
   // Editing answers the last refusal: it was about what was there before.
   onEdit: () => void;
   onCancel: () => void;
@@ -56,7 +56,7 @@ export function CreateFieldForm({
   onCancel,
 }: CreateFieldFormProps) {
   const [name, setName] = useState(() => suggestedFieldName(columnKey));
-  const [typeId, setTypeId] = useState(memberCustomFieldUserTypes[0].id);
+  const [typeId, setTypeId] = useState(memberCustomFieldPlainUserTypes[0].id);
 
   // Opened from a row that may sit at the bottom edge of the scroll area, in which case the
   // form lands below the fold and its buttons are out of reach. `nearest` scrolls only when
@@ -119,7 +119,12 @@ export function CreateFieldForm({
           <FieldLabel className="text-sm!">Type</FieldLabel>
           <Select
             value={typeId}
-            onValueChange={(value) => setTypeId(value as MemberCustomField['type'])}
+            onValueChange={(value) => {
+              const chosen = memberCustomFieldPlainUserTypes.find(({ id }) => id === value);
+              if (chosen) {
+                setTypeId(chosen.id);
+              }
+            }}
           >
             <SelectTrigger aria-label="Type" className="h-8 text-sm!">
               <SelectValue>
@@ -127,7 +132,7 @@ export function CreateFieldForm({
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {memberCustomFieldUserTypes.map((userType) => (
+              {memberCustomFieldPlainUserTypes.map((userType) => (
                 <SelectItem key={userType.id} value={userType.id}>
                   <CustomFieldTypeOption type={userType.id} />
                 </SelectItem>

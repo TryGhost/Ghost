@@ -21,6 +21,7 @@ import {
 import {
   memberCustomFieldCsvColumns,
   useCreateMemberCustomField,
+  type PlainFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { matchShape } from '@tryghost/metafield-types/structure';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -91,7 +92,8 @@ function toggled(set: ReadonlySet<string>, key: string, present: boolean): Reado
  * The CSV column a row should map onto, resolved from the field the server actually created
  * rather than from the type that was asked for.
  *
- * Null for a composite, which spans several columns and so has no single answer. Which of them
+ * Null for a composite, which spans several columns and so has no single answer. A list's
+ * options share one column. Which of them
  * this column holds is asked in the field picker afterwards, not here: it is the same question
  * as any other mapping, and the picker already knows how to ask it.
  */
@@ -99,6 +101,7 @@ function columnFor(field: MemberCustomField): string | null {
   return matchShape(field.type, {
     scalar: () => memberCustomFieldCsvColumns([field])[0]?.value ?? null,
     record: () => null,
+    set: () => memberCustomFieldCsvColumns([field])[0]?.value ?? null,
   });
 }
 
@@ -212,16 +215,17 @@ export function MappingStep({
 
   // The whole create, from asking to what its answer means for the row. Named rather than
   // inlined into the form's prop: it is the step's business end, not markup.
-  const createFieldForRow = async (
-    rowKey: string,
-    name: string,
-    type: MemberCustomField['type'],
-  ) => {
+  const createFieldForRow = async (rowKey: string, name: string, type: PlainFieldType) => {
     clearCreateErrors();
 
     let field;
     try {
-      const response = await createField({ name, type, access: { member: 'none' } });
+      const response = await createField({
+        name,
+        type,
+        settings: null,
+        access: { member: 'none' },
+      });
       field = response.members_metafields?.[0];
     } catch (error) {
       reportCreateFailure(error);

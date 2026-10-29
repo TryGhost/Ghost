@@ -1,4 +1,4 @@
-import type { FieldType, MemberAccess, MetafieldDefinition } from '@tryghost/metafield-types';
+import type { MemberAccess, MetafieldDefinition, TypedSettings } from '@tryghost/metafield-types';
 import { isFieldType, isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { isPreviewMode } from './check-mode';
 import { hasCustomFieldsEnabled } from './helpers';
@@ -8,12 +8,11 @@ import { hasCustomFieldsEnabled } from './helpers';
  * without what only says where and when it is stored. The key and type are plain strings, because
  * Portal also runs beside newer Ghost sites, which can send a type this build doesn't know.
  */
-export type MemberCustomField = Omit<
-  MetafieldDefinition,
-  'namespace' | 'key' | 'type' | 'status' | 'created_at' | 'updated_at'
-> & {
+export type MemberCustomField = Pick<MetafieldDefinition, 'name' | 'access'> & {
   key: string;
   type: string;
+  /** What the field is set up with, checked against its type once the type is known. */
+  settings: unknown;
 };
 
 /**
@@ -40,7 +39,7 @@ function readMemberCustomField(raw: unknown): MemberCustomField | null {
   if (!isRecordValue(raw)) {
     return null;
   }
-  const { key, name, type, access } = raw;
+  const { key, name, type, settings, access } = raw;
   const { member } = isRecordValue(access) ? access : { member: undefined };
   if (
     typeof key !== 'string' ||
@@ -51,7 +50,13 @@ function readMemberCustomField(raw: unknown): MemberCustomField | null {
   ) {
     return null;
   }
-  const field = { key, name, type, access: { member } } satisfies EveryProperty<MemberCustomField>;
+  const field = {
+    key,
+    name,
+    type,
+    settings,
+    access: { member },
+  } satisfies EveryProperty<MemberCustomField>;
   return field;
 }
 
@@ -92,15 +97,24 @@ export async function fetchMemberCustomFields({
   }
 }
 
-export type DrawableCustomField = Omit<MemberCustomField, 'type'> & { type: FieldType };
+export type DrawableCustomField = Pick<MemberCustomField, 'key' | 'name' | 'access'> &
+  TypedSettings;
 
 /**
  * The field, or null when its type is one this build doesn't know. A site can offer a type added
- * after this bundle shipped, and there is nothing sensible to draw for one.
+ * after this bundle shipped, and there is nothing sensible to draw for one. A list isn't drawn
+ * yet, so it is left out the same way.
  */
 function drawable(field: MemberCustomField): DrawableCustomField | null {
-  const { type } = field;
-  return isFieldType(type) ? { ...field, type } : null;
+  const { key, name, access, type } = field;
+  if (!isFieldType(type)) {
+    return null;
+  }
+  return matchShape<DrawableCustomField | null>(type, {
+    scalar: (_structure, scalarType) => ({ key, name, access, type: scalarType, settings: null }),
+    record: (_structure, recordType) => ({ key, name, access, type: recordType, settings: null }),
+    set: () => null,
+  });
 }
 
 export function drawableCustomFields(
@@ -115,8 +129,8 @@ export function drawableCustomFields(
 /** What a composite holds: one string per part, and not every part need be filled in. */
 export type CompositeValue = Record<string, string | undefined>;
 
-/** A value as the member holds it: one string, or one per part of a composite. */
-export type CustomFieldValue = string | CompositeValue | undefined;
+/** A value as the member holds it: one string, one per part of a composite, or a list's options. */
+export type CustomFieldValue = string | CompositeValue | string[] | undefined;
 
 /**
  * Narrowed rather than asserted. Which shape a value has follows from its field's type,
@@ -127,6 +141,8 @@ export const compositeValue = (value: CustomFieldValue): CompositeValue | undefi
 
 export const scalarValue = (value: CustomFieldValue): string =>
   typeof value === 'string' ? value : '';
+
+export const listValue = (value: CustomFieldValue): string[] => (Array.isArray(value) ? value : []);
 
 /** A part is changed when what the member has differs from what the site holds. */
 const changedParts = (
@@ -161,6 +177,14 @@ export function changedCustomFields(
           ? undefined
           : Object.fromEntries(changed.map((part) => [part, held?.[part] ?? '']));
       },
+      // A list is written whole, so any change sends every option picked.
+      set: () => {
+        const picked = listValue(value);
+        const held = listValue(was);
+        const same =
+          picked.length === held.length && picked.every((option) => held.includes(option));
+        return same ? undefined : picked;
+      },
     });
     if (change !== undefined) {
       custom[field.key] = change;
@@ -179,6 +203,8 @@ export function withChange(
   return matchShape<CustomFieldValue>(field.type, {
     scalar: () => value,
     record: () => (part === null ? held : { ...compositeValue(held), [part]: value }),
+    // A list's options are changed as a whole by its own picker rather than one input at a time.
+    set: () => held,
   });
 }
 
@@ -198,5 +224,6 @@ export function refusedInput(field: MemberCustomField, part: string): string | n
     scalar: () => (part === '' ? `custom:${drawn.key}` : null),
     record: ({ parts }) =>
       part !== '' && Object.keys(parts).includes(part) ? `custom:${drawn.key}:${part}` : null,
+    set: () => (part === '' ? `custom:${drawn.key}` : null),
   });
 }

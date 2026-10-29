@@ -10,6 +10,7 @@ import {
   type FieldType,
   type FieldValue,
   type MetafieldChangeEventField,
+  type TypedSettings,
 } from '@tryghost/metafield-types';
 import {
   IdentityTextSchema,
@@ -26,6 +27,7 @@ import {
   DbStoredValueRow,
   DbMetafieldValue,
   FIELD_STATUS,
+  DbTypedSettings,
   StoredFieldList,
   type MetafieldChangeEvent,
   type SingleWriteOrigin,
@@ -108,22 +110,44 @@ function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
   });
 }
 
-/** What a write needs of a field, decoded so its namespace and key arrive checked. */
+/**
+ * What a write needs of a field, decoded so its namespace and key arrive checked, and its type
+ * and settings read against each other.
+ */
 const WritableField = DbMetafield.pick({
   id: true,
   name: true,
   type: true,
+  settings: true,
   member_access: true,
 }).extend({ namespace: NamespaceSchema, key: KeySchema });
 
-interface AllowedField {
+/** A field's identity with its type and settings as the table holds them, for reading its values. */
+const DbTypedField = DbMetafield.pick({ type: true, settings: true }).extend({
+  namespace: NamespaceSchema,
+  key: KeySchema,
+});
+
+/**
+ * The columns of the joined read of values, each from the table that holds it. Keyed by the row it
+ * is parsed as, so a column the row reads can't be left out of the select.
+ */
+const STORED_VALUE_COLUMNS = {
+  member_id: VALUES_TABLE,
+  namespace: FIELDS_TABLE,
+  key: FIELDS_TABLE,
+  type: FIELDS_TABLE,
+  path: VALUES_TABLE,
+  value_text: VALUES_TABLE,
+} satisfies Record<keyof z.input<typeof DbStoredValueRow>, string>;
+
+type AllowedField = {
   id: string;
   namespace: Namespace;
   key: Key;
   name: string;
-  type: FieldType;
   memberAccess: MemberAccess;
-}
+} & TypedSettings;
 
 /** An absent `value` means clear the field. */
 export interface PlannedWrite {
@@ -148,13 +172,14 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
 
 /**
  * Whether a write of `raw` clears the whole field. The caller handles `null`, which clears any
- * field; `''` clears a scalar. For a record `''` names no part, so it goes on to fail validation
- * rather than being read as a delete.
+ * field; `''` clears a scalar, and a set picking no options clears it. For a record `''` names no
+ * part, so it goes on to fail validation rather than being read as a delete.
  */
 function clearsWhole(type: FieldType, raw: unknown): boolean {
   return matchShape(type, {
     scalar: () => raw === '',
     record: () => false,
+    set: () => Array.isArray(raw) && raw.length === 0,
   });
 }
 
@@ -216,18 +241,19 @@ export class MetafieldValuesService {
           );
         }
       })
-      .select('id', 'namespace', 'key', 'name', 'type', 'member_access');
+      .select(...Object.keys(WritableField.shape));
 
     const allowed = new Map<string, AllowedField>();
     for (const row of rows) {
       // Skipped rather than thrown, the way an unreadable value is: the write then reports
       // this one field as unknown instead of failing every other value it carries.
       const field = WritableField.safeParse(row);
-      if (!field.success) {
+      const typed = field.success ? z.safeDecode(DbTypedSettings, field.data) : field;
+      if (!field.success || !typed.success) {
         logging.warn(
           {
             event: { name: 'members.metafields.field_unreadable' },
-            err: field.error,
+            err: field.error ?? typed.error,
             metafieldNamespace: row.namespace,
             metafieldKey: row.key,
           },
@@ -246,8 +272,8 @@ export class MetafieldValuesService {
           namespace: field.data.namespace,
           key: field.data.key,
           name: field.data.name,
-          type: field.data.type,
           memberAccess: field.data.member_access,
+          ...typed.data,
         },
       );
     }
@@ -264,6 +290,38 @@ export class MetafieldValuesService {
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
     return (await this.getValuesForMembers([memberId], audience, executor)).get(memberId);
+  }
+
+  /**
+   * The type and settings of each active field the audience can read, keyed by identity. A field
+   * whose type or settings can't be read is left out, and its values with it.
+   */
+  private async typedFields(
+    executor: Knex,
+    audience: Audience,
+  ): Promise<Map<string, TypedSettings>> {
+    const rows = await this.fields
+      .definitions(executor, { audience, status: ACTIVE_ONLY })
+      .read.select(...Object.keys(DbTypedField.shape));
+    const typedFields = new Map<string, TypedSettings>();
+    for (const row of rows) {
+      const field = DbTypedField.safeParse(row);
+      const typed = field.success ? z.safeDecode(DbTypedSettings, field.data) : field;
+      if (!field.success || !typed.success) {
+        logging.warn(
+          {
+            event: { name: 'members.metafields.field_unreadable' },
+            err: typed.error,
+            metafieldNamespace: row.namespace,
+            metafieldKey: row.key,
+          },
+          'Skipping the values of an unreadable metafield',
+        );
+        continue;
+      }
+      typedFields.set([field.data.namespace, field.data.key].join(SEPARATOR), typed.data);
+    }
+    return typedFields;
   }
 
   /**
@@ -291,12 +349,7 @@ export class MetafieldValuesService {
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
       .select(
-        `${VALUES_TABLE}.member_id`,
-        `${FIELDS_TABLE}.namespace`,
-        `${FIELDS_TABLE}.key`,
-        `${FIELDS_TABLE}.type`,
-        `${VALUES_TABLE}.path`,
-        `${VALUES_TABLE}.value_text`,
+        ...Object.entries(STORED_VALUE_COLUMNS).map(([column, table]) => `${table}.${column}`),
       );
 
     const stored: z.output<typeof DbStoredValueRow>[] = [];
@@ -317,16 +370,30 @@ export class MetafieldValuesService {
       }
     }
 
+    // Each field's type and settings are read once, from its definition, rather than beside every
+    // row: a list's settings would otherwise come back once for every answer, and one read can
+    // cover a whole list or export.
+    const typedFields = stored.length > 0 ? await this.typedFields(executor, audience) : new Map();
+    const typedField = ({ namespace, key }: (typeof stored)[number]) =>
+      typedFields.get([namespace, key].join(SEPARATOR)) ?? null;
+
     // Counted per field and logged once, because one read can cover a whole list or export, and a
     // field with stray rows would otherwise log once per member.
     const misshapen = new Map<string, { namespace: string; key: string; members: number }>();
-    const values = valuesFromRows(stored, ({ namespace, key, type }, fieldRows) =>
-      storedValueAs(type, fieldRows, () => {
-        const identity = [namespace, key].join(SEPARATOR);
-        const counted = misshapen.get(identity) ?? { namespace, key, members: 0 };
-        misshapen.set(identity, { ...counted, members: counted.members + 1 });
-      }),
-    );
+    const values = valuesFromRows(stored, (row, fieldRows) => {
+      const field = typedField(row);
+      return field
+        ? storedValueAs(field, fieldRows, () => {
+            const identity = [row.namespace, row.key].join(SEPARATOR);
+            const counted = misshapen.get(identity) ?? {
+              namespace: row.namespace,
+              key: row.key,
+              members: 0,
+            };
+            misshapen.set(identity, { ...counted, members: counted.members + 1 });
+          })
+        : undefined;
+    });
     for (const { namespace, key, members } of misshapen.values()) {
       logging.warn(
         {
@@ -463,8 +530,9 @@ export class MetafieldValuesService {
    *
    * A write touches the paths it names and nothing else, at every level: naming a path
    * with an empty value clears that part, naming the field with `null` clears all of
-   * them, and saying nothing about a path leaves it alone. There is no whole-value
-   * replace, so a caller that does not know about a field cannot erase it.
+   * them, and saying nothing about a path leaves it alone, so a caller that does not know
+   * about a field cannot erase it. A list is the one value replaced whole: the options a
+   * write picks are all it holds afterwards.
    *
    * `writtenBy` and `source` are required and have no default: every writer has to name
    * itself and where it wrote, so a new one cannot quietly inherit the identity of
@@ -532,6 +600,7 @@ export class MetafieldValuesService {
       const now = new Date();
       const clearedFields: FieldIdentity[] = [];
       const clearedPaths: Array<{ field: FieldIdentity; paths: string[] }> = [];
+      const replaced: Array<{ field: FieldIdentity; kept: string[] }> = [];
       const rows: DbValueRow[] = [];
 
       for (const { field, value } of writes) {
@@ -540,9 +609,17 @@ export class MetafieldValuesService {
           continue;
         }
 
-        const { set, cleared } = valueRowsToWrite(value);
-        if (cleared.length > 0) {
-          clearedPaths.push({ field, paths: cleared });
+        const toWrite = valueRowsToWrite(field, value);
+        const { set } = toWrite;
+        switch (toWrite.mode) {
+          case 'replace':
+            replaced.push({ field, kept: set.map((row) => row.path) });
+            break;
+          case 'merge':
+            if (toWrite.cleared.length > 0) {
+              clearedPaths.push({ field, paths: toWrite.cleared });
+            }
+            break;
         }
 
         rows.push(
@@ -578,6 +655,21 @@ export class MetafieldValuesService {
             for (const { field, paths } of clearedPaths) {
               builder.orWhere((rowsOf) =>
                 rowsOf.where(fieldReference(field)).whereIn('path', paths),
+              );
+            }
+          })
+          .del();
+      }
+
+      // A set is replaced as a whole: every row it no longer picks goes, and the ones it still
+      // picks stay, keeping when they were first picked.
+      if (replaced.length > 0) {
+        await trx(VALUES_TABLE)
+          .where('member_id', memberId)
+          .where((builder) => {
+            for (const { field, kept } of replaced) {
+              builder.orWhere((rowsOf) =>
+                rowsOf.where(fieldReference(field)).whereNotIn('path', kept),
               );
             }
           })

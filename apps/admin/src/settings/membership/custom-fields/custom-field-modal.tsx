@@ -25,7 +25,7 @@ import { SettingsModal } from '@tryghost/shade/patterns';
 import { ValidationError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import {
-  memberCustomFieldUserTypes,
+  memberCustomFieldPlainUserTypes,
   useCreateMemberCustomField,
   useDeleteMemberCustomField,
   useEditMemberCustomField,
@@ -53,7 +53,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       name: field?.name || '',
       // Form state tracks the user-type id; it maps to the API storage
       // type on save
-      userTypeId: field ? field.type : memberCustomFieldUserTypes[0].id,
+      userTypeId: field ? field.type : memberCustomFieldPlainUserTypes[0].id,
       access: field ? field.access.member : 'none',
     },
     savingDelay: 500,
@@ -79,12 +79,17 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
         });
       } else {
-        // No key: the backend mints it from the name.
-        await createField({
-          name: state.name.trim(),
-          type: state.userTypeId,
-          access: { member: state.access },
-        });
+        // No key: the backend mints it from the name. Only a type with nothing to set up is
+        // offered here, so the field takes no settings.
+        const plain = memberCustomFieldPlainUserTypes.find(({ id }) => id === state.userTypeId);
+        if (plain) {
+          await createField({
+            name: state.name.trim(),
+            type: plain.id,
+            settings: null,
+            access: { member: state.access },
+          });
+        }
       }
     },
     onSaveError: (error) => {
@@ -309,7 +314,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
             disabled={isEdit}
             value={formState.userTypeId}
             onValueChange={(value) => {
-              const chosen = memberCustomFieldUserTypes.find((userType) => userType.id === value);
+              const chosen = memberCustomFieldPlainUserTypes.find(
+                (userType) => userType.id === value,
+              );
               if (chosen) {
                 updateForm((state) => ({ ...state, userTypeId: chosen.id }));
               }
@@ -321,7 +328,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {memberCustomFieldUserTypes.map((userType) => (
+              {memberCustomFieldPlainUserTypes.map((userType) => (
                 <SelectItem key={userType.id} value={userType.id}>
                   <CustomFieldTypeOption type={userType.id} />
                 </SelectItem>

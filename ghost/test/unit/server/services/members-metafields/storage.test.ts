@@ -34,10 +34,14 @@ describe('custom field value storage', function () {
     it('splits what a value names into what it sets and what it clears', function () {
       // A path not mentioned appears in neither list, which is how "leave it alone"
       // is expressed: by saying nothing about it.
-      assert.deepEqual(valueRowsToWrite({ line1: '1 High St', city: '' }), {
-        set: [{ path: 'line1', value_text: '1 High St' }],
-        cleared: ['city'],
-      });
+      assert.deepEqual(
+        valueRowsToWrite({ type: 'address', settings: null }, { line1: '1 High St', city: '' }),
+        {
+          mode: 'merge',
+          set: [{ path: 'line1', value_text: '1 High St' }],
+          cleared: ['city'],
+        },
+      );
     });
   });
 

@@ -63,6 +63,8 @@ export function filterLeaf(type: FieldType, part: string): Leaf | undefined {
   return matchShape<Leaf | undefined>(type, {
     scalar: ({ leaf }) => leaf,
     record: ({ parts }) => partNamed(parts, part),
+    // A list's options are its field's own, not a leaf's.
+    set: () => undefined,
   });
 }
 
@@ -76,6 +78,7 @@ export function partFilterType(
       const leaf = partNamed(parts, part);
       return leaf && LEAF_FILTER[leaf.leaf];
     },
+    set: () => undefined,
   });
 }
 
@@ -153,6 +156,20 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           label: definition.name,
           type: 'custom',
           defaultOperator: 'is-set',
+        },
+      }),
+    // Options are picked, as labels are: "is any of" a choice of them, or "is none of".
+    set: () =>
+      domainField({
+        key: metafieldFieldId(definition),
+        icon: 'text',
+        semantics: customFieldSemantics(['set']),
+        operators: customFieldOperators(['set']),
+        addressing: customFieldAddressing(definition),
+        ui: {
+          label: definition.name,
+          type: 'custom',
+          defaultOperator: 'is-any',
         },
       }),
   });

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
   LoadingIndicator,
   MultiSelectCombobox,
   Textarea,
+  tokenFieldClasses,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { dequal } from 'dequal';
@@ -32,10 +34,14 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { IdentityTextSchema } from '@tryghost/metafield-types/identity';
 import {
+  FIELD_STRUCTURES,
+  inOptionOrder,
   isRecordValue,
+  matchField,
   matchLeaf,
   matchShape,
   type Leaf,
+  type SetSettings,
   type TextSize,
 } from '@tryghost/metafield-types/structure';
 import { partOf } from '@/members/custom-fields/addressing';
@@ -47,6 +53,7 @@ import {
   type MemberCustomFieldChoiceList,
   type MemberCustomFieldPart,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
 import type { EditableCustomFieldValue, EditableRecordValue } from './member-detail-edit';
@@ -103,6 +110,77 @@ const ChoiceInput: React.FC<{
           values={value ? [value] : []}
           autoCloseOnSelect
           onChange={(values) => onChange(values[0] ?? '')}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
+};
+
+// The options a list field offers: several as chips, like a post's tiers, or one, like a country.
+// Only the options it offers now: one it no longer offers can't be picked again.
+const ListInput: React.FC<{
+  id: string;
+  label: string;
+  settings: SetSettings;
+  value: string[];
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (options: string[]) => void;
+  /** Says when the chips' list opens and closes, for a dialog that must leave Escape to it. */
+  onOpenChange: (open: boolean) => void;
+}> = ({ id, label, settings, value, invalid, disabled, onChange, onOpenChange }) => {
+  const [open, setOpen] = React.useState(false);
+  // Kept in the field's order, however they were picked.
+  const inOrder = (picked: readonly string[]) => inOptionOrder(settings, picked);
+
+  if (settings.multiple) {
+    return (
+      <ChipPicker<string, string>
+        disabled={disabled}
+        emptyMessage="No options found"
+        getKey={(option) => option}
+        getLabel={(option) => option}
+        inputId={id}
+        inputLabel={label}
+        invalid={invalid}
+        matches={(option, term) => option.toLowerCase().includes(term.toLowerCase())}
+        options={settings.options}
+        placeholder="Select..."
+        renderOption={(option, { chosen }) => (
+          <>
+            <span className="truncate">{option}</span>
+            {chosen && <LucideIcon.Check className="ms-auto size-4 shrink-0 text-primary" />}
+          </>
+        )}
+        selected={inOrder(value)}
+        onAdd={(option) => onChange(inOrder([...value, option]))}
+        onOpenChange={onOpenChange}
+        onRemove={(option) => onChange(inOrder(value.filter((answer) => answer !== option)))}
+      />
+    );
+  }
+
+  return (
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      <ComboboxTrigger
+        aria-invalid={invalid || undefined}
+        aria-label={label}
+        disabled={disabled}
+        id={id}
+      >
+        <ComboboxValue placeholder={inOrder(value).length === 0}>
+          {inOrder(value)[0] ?? 'Select...'}
+        </ComboboxValue>
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search options...' }}
+          isMultiSelect={false}
+          options={settings.options.map((option) => ({ value: option, label: option }))}
+          values={inOrder(value)}
+          autoCloseOnSelect
+          onChange={(picked) => onChange(inOrder(picked))}
           onClose={() => setOpen(false)}
         />
       </ComboboxContent>
@@ -204,20 +282,21 @@ const CustomFieldInput: React.FC<{
   errors?: Record<string, string>;
   disabled?: boolean;
   onChange: (value: EditableCustomFieldValue) => void;
-}> = ({ field, inputId, value, errors, disabled, onChange }) =>
-  matchShape(field.type, {
-    scalar: ({ leaf }) => (
+  onOpenChange: (open: boolean) => void;
+}> = ({ field, inputId, value, errors, disabled, onChange, onOpenChange }) =>
+  matchField<MemberCustomField, React.ReactElement>(field, {
+    scalar: ({ type }) => (
       <LeafInput
         disabled={disabled}
         id={inputId}
         invalid={Boolean(errors?.[''])}
         label={field.name}
-        leaf={leaf}
+        leaf={FIELD_STRUCTURES[type].leaf}
         value={typeof value === 'string' ? value : ''}
         onChange={onChange}
       />
     ),
-    record: (_structure, type) => (
+    record: ({ type }) => (
       <RecordInput
         disabled={disabled}
         errors={errors}
@@ -225,6 +304,18 @@ const CustomFieldInput: React.FC<{
         parts={memberCustomFieldParts(type) ?? []}
         value={isRecordValue(value) ? value : {}}
         onChange={onChange}
+      />
+    ),
+    set: ({ settings }) => (
+      <ListInput
+        disabled={disabled}
+        id={inputId}
+        invalid={Boolean(errors?.[''])}
+        label={field.name}
+        settings={settings}
+        value={Array.isArray(value) ? value : []}
+        onChange={onChange}
+        onOpenChange={onOpenChange}
       />
     ),
   });
@@ -246,6 +337,9 @@ const MemberCustomFieldEditModal: React.FC<{
     initialValue ?? emptyEditableValue(field),
   );
   const [saveAttempted, setSaveAttempted] = React.useState(false);
+  // Whether a list inside is open. Its Escape closes that list, and the dialog hears the key
+  // first, so it lets the key go while the list is open.
+  const [listOpen, setListOpen] = React.useState(false);
   const [serverErrors, setServerErrors] = React.useState<Record<string, string> | undefined>();
   const editMutation = useEditMember();
 
@@ -314,7 +408,7 @@ const MemberCustomFieldEditModal: React.FC<{
       <DialogContent
         data-testid="member-custom-field-edit-modal"
         onEscapeKeyDown={(event) => {
-          if (isDirty || editMutation.isPending) {
+          if (isDirty || editMutation.isPending || listOpen) {
             event.preventDefault();
           }
         }}
@@ -331,7 +425,7 @@ const MemberCustomFieldEditModal: React.FC<{
           {/* The dialog title names the field visually; this gives the
                         scalar control a real label association (a record's parts
                         carry their own labels). */}
-          {matchShape(field.type, { scalar: () => true, record: () => false }) && (
+          {matchShape(field.type, { scalar: () => true, record: () => false, set: () => true }) && (
             <Label className="sr-only" htmlFor={inputId}>
               {field.name}
             </Label>
@@ -346,6 +440,7 @@ const MemberCustomFieldEditModal: React.FC<{
               setServerErrors(undefined);
               setValue(next);
             }}
+            onOpenChange={setListOpen}
           />
           <ErrorMessage message={inputErrors['']} />
         </div>
@@ -368,6 +463,17 @@ const MemberCustomFieldEditModal: React.FC<{
     </Dialog>
   );
 };
+
+/** A list's answers as the member holds them, and none for any other field. */
+const listAnswers = (field: MemberCustomField, stored: unknown): string[] =>
+  matchShape(field.type, {
+    scalar: () => [],
+    record: () => [],
+    set: () =>
+      Array.isArray(stored)
+        ? stored.filter((answer): answer is string => typeof answer === 'string')
+        : [],
+  });
 
 /**
  * The Custom fields section of the member detail screen: a read-only list of
@@ -409,9 +515,14 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
           <ul>
             {fields.map((field) => {
               // Null rather than an empty line, so an unset value shows its placeholder.
-              const display =
-                formatMemberCustomFieldValue(field, values[memberCustomFieldIdentity(field)]) ||
-                null;
+              // What the member holds, read as it is stored: the editor starts from only the
+              // options a list still offers, but an answer to one it no longer offers is still
+              // theirs.
+              const stored = metafields?.[field.namespace]?.[field.key];
+              const display = formatMemberCustomFieldValue(field, stored) || null;
+              // A list's answers are drawn as the chips its editor shows, since an option can
+              // hold a comma and a comma-joined line would split it.
+              const answers = listAnswers(field, stored);
               return (
                 // Dividers fade around the hovered row (its own border-b, and the
                 // previous row's via :has), so the hover tint floats free of the
@@ -448,11 +559,27 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                       <span className="block text-sm text-muted-foreground">{field.name}</span>
                       {/* select-text: button text is unselectable by default,
                                                 and values (addresses especially) get copied. */}
-                      {display ? (
-                        <span className="block break-words select-text">{display}</span>
-                      ) : (
-                        <span className="block text-muted-foreground">–</span>
+                      {answers.length > 0 && (
+                        <span className="mt-1 flex flex-wrap gap-1 select-text">
+                          {answers.map((answer) => (
+                            <Badge
+                              key={answer}
+                              className={cn(
+                                tokenFieldClasses.chip,
+                                'cursor-[inherit] bg-secondary pr-2',
+                              )}
+                              variant="outline"
+                              asChild
+                            >
+                              <span>{answer}</span>
+                            </Badge>
+                          ))}
+                        </span>
                       )}
+                      {answers.length === 0 && display && (
+                        <span className="block break-words select-text">{display}</span>
+                      )}
+                      {!display && <span className="block text-muted-foreground">–</span>}
                     </span>
                     <LucideIcon.Pen
                       aria-hidden="true"

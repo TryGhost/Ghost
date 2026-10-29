@@ -17,7 +17,7 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { ROOT_PATH, pathOf, pathsHolding } from './storage';
+import { pathOf, pathsComparable, pathsHolding } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -84,7 +84,10 @@ function targetOf(raw: unknown): Target {
   return { namespace, key, path: parts.length > 0 ? pathOf(parts) : ANY_PATH };
 }
 
-const Texts = z.union([z.string().transform((text) => [text]), z.array(z.string())]);
+// NQL reads an unquoted number as one, but every value is stored as text, so it is compared as
+// the text it was written as.
+const Text = z.union([z.string(), z.number().transform(String)]);
+const Texts = z.union([Text.transform((text) => [text]), z.array(Text)]);
 
 // The texts an equality names: one, or any of a list (`value:['a','b']`), which NQL compiles to
 // `$in`. Null for any other comparison.
@@ -145,9 +148,13 @@ export function createMetafieldsFilterTransformer() {
       return { $and: [some(rowsOf(target)), none(rowsHolding(target, unequal))] };
     }
 
-    // Any other comparison, such as a match on part of the text, is made against one row: the
-    // target's part, or the root a single-row value is kept at.
-    return some({ ...rowsOf(target), path: target.path ?? ROOT_PATH, value_text: value });
+    // Any other comparison, such as a match on part of the text, is made against the target's
+    // part, or wherever a type keeps a whole value such a comparison applies to.
+    return some({
+      ...rowsOf(target),
+      path: target.path ?? oneOf(pathsComparable()),
+      value_text: value,
+    });
   }
 
   function toElemMatch(clauses: QueryNode[]): QueryNode {

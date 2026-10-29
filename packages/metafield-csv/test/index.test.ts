@@ -269,3 +269,36 @@ describe('reading metafield values from a CSV row', function () {
     );
   });
 });
+
+// A list is one column whatever its options, so the column set still follows from the fields
+// alone, and a cell joins its options with a separator no option may contain.
+describe('a list in CSV', function () {
+  const topics = customField('topics', 'list');
+
+  it('gives a list one column, holding no particular part', function () {
+    assert.deepEqual(csvColumnsForField(topics), [
+      { column: 'metafields.custom.topics', part: null },
+    ]);
+  });
+
+  it('joins the options a member picked in one cell, and leaves it empty for none', function () {
+    assert.deepEqual(csvCellsForFields([topics], { custom: { topics: ['Film, TV', 'Travel'] } }), {
+      'metafields.custom.topics': 'Film, TV | Travel',
+    });
+    assert.deepEqual(csvCellsForFields([topics], { custom: {} }), {
+      'metafields.custom.topics': '',
+    });
+  });
+
+  it('splits a cell into its options, however it is spaced', function () {
+    assert.deepEqual(
+      fieldValuesFromCsvRow([topics], { 'metafields.custom.topics': 'Film, TV|  Travel | ' }),
+      { 'custom.topics': ['Film, TV', 'Travel'] },
+    );
+  });
+
+  it('leaves a list untouched when its cell names no option', function () {
+    assert.deepEqual(fieldValuesFromCsvRow([topics], { 'metafields.custom.topics': ' | ' }), {});
+    assert.deepEqual(fieldValuesFromCsvRow([topics], {}), {});
+  });
+});

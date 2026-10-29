@@ -33,6 +33,7 @@ import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-fiel
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   type MemberCustomField,
+  type PlainFieldType,
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -60,7 +61,7 @@ export interface CustomFieldPickerProps {
    * Keep it within the types `fields` is filtered by — a creation outside that range
    * would make a field this picker then refuses to list. Omit to hide the create action.
    */
-  createTypes?: MemberCustomField['type'][];
+  createTypes?: PlainFieldType[];
 }
 
 /**
@@ -141,7 +142,7 @@ export function CustomFieldPicker({
     }
   };
 
-  const createNewField = async (name: string, type: MemberCustomField['type']) => {
+  const createNewField = async (name: string, type: PlainFieldType) => {
     clearCreateErrors();
     if (!name.trim()) {
       setNameError('Enter a name for the field');
@@ -156,6 +157,7 @@ export function CustomFieldPicker({
       const response = await createField({
         name: name.trim(),
         type,
+        settings: null,
         access: { member: 'none' },
       });
       const field = response.members_metafields?.[0];
@@ -326,14 +328,14 @@ function CreateFieldInline({
   nameError: string | null;
   /** Below the form, for one they can't. */
   saveError: string | null;
-  types: MemberCustomField['type'][];
+  types: PlainFieldType[];
   onCancel: () => void;
   /** Editing answers the last refusal, which was about what was there before. */
   onEdit: () => void;
-  onSubmit: (name: string, type: MemberCustomField['type']) => void;
+  onSubmit: (name: string, type: PlainFieldType) => void;
 }) {
   const [name, setName] = useState(initialName);
-  const [typeId, setTypeId] = useState<MemberCustomField['type']>(types[0]);
+  const [typeId, setTypeId] = useState<PlainFieldType>(types[0]);
 
   return (
     <div

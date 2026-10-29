@@ -20,7 +20,7 @@ describe('Members filtering by custom fields', function () {
     loginAsOwner: () => Promise<void>;
   };
 
-  async function createField(field: { name: string; type?: string }) {
+  async function createField(field: { name: string; type?: string; settings?: unknown }) {
     const { body } = await agent
       .post('members/metafields/custom/')
       .body({ members_metafields: [{ type: 'short_text', ...field }] })
@@ -157,6 +157,96 @@ describe('Members filtering by custom fields', function () {
         );
         assert.deepEqual(matched, [ghost.email]);
       });
+    });
+  });
+
+  describe('list fields', function () {
+    // Options picked, in the order each member picked them, one member to a row.
+    async function animalLovers(...picks: string[][]) {
+      await createField({
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', 'Film & TV'], multiple: true },
+      });
+      return Promise.all(picks.map((favourite_animals) => createMember({ favourite_animals })));
+    }
+
+    it('finds members holding an option, named by its text (is any of)', async function () {
+      const [dogs, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+      await createMember();
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:'Dog')",
+      );
+      assert.deepEqual(matched.sort(), [dogs.email, both.email].sort());
+    });
+
+    it('finds members holding any of several options', async function () {
+      const [dogs, , film] = await animalLovers(['Dog'], ['Cat'], ['Film & TV']);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog','Film & TV'])",
+      );
+      assert.deepEqual(matched.sort(), [dogs.email, film.email].sort());
+    });
+
+    it('finds members holding every one of several options (is all of)', async function () {
+      const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:'Dog')+(metafields.identity:'custom.favourite_animals'+metafields.value:'Cat')",
+      );
+      assert.deepEqual(matched, [both.email]);
+    });
+
+    it('finds members who answered with none of the options named (is none of)', async function () {
+      const [, , cats] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+      await createMember();
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:-['Dog'])",
+      );
+      assert.deepEqual(matched, [cats.email]);
+    });
+
+    it('finds members who answered, and those who did not', async function () {
+      const [dogs, cats] = await animalLovers(['Dog'], ['Cat']);
+      const unanswered = await createMember();
+
+      assert.deepEqual(
+        (await browse("metafields.identity:'custom.favourite_animals'")).sort(),
+        [dogs.email, cats.email].sort(),
+      );
+      assert.deepEqual(await browse("metafields.identity:-'custom.favourite_animals'"), [
+        unanswered.email,
+      ]);
+    });
+
+    // NQL reads an unquoted number as a number, and an option is stored as its text.
+    it('finds members holding an option named by an unquoted number', async function () {
+      await createField({
+        name: 'Year',
+        type: 'list',
+        settings: { options: ['2024', '2025'], multiple: false },
+      });
+      const recent = await createMember({ year: ['2025'] });
+      await createMember({ year: ['2024'] });
+
+      const matched = await browse("(metafields.identity:'custom.year'+metafields.value:2025)");
+      assert.deepEqual(matched, [recent.email]);
+    });
+
+    it('still finds members holding an option the field no longer offers', async function () {
+      const [dogs] = await animalLovers(['Dog'], ['Cat']);
+      await agent
+        .put('members/metafields/custom/favourite_animals/')
+        .body({ members_metafields: [{ settings: { options: ['Cat', 'Fish'], multiple: true } }] })
+        .expectStatus(200);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:'Dog')",
+      );
+      assert.deepEqual(matched, [dogs.email]);
     });
   });
 
