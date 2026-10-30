@@ -1,12 +1,13 @@
 import type {
   RedisPresenceClient,
-  RedisPresenceTransaction,
+  RedisPresencePipeline,
 } from '../../../../../core/server/services/editor-presence/redis-presence-store';
 
 /** In-memory stand-in for the sorted-set commands the store uses. */
 export class FakeRedisClient implements RedisPresenceClient {
   readonly sets = new Map<string, Map<string, number>>();
   readonly ttls = new Map<string, number>();
+  readonly commands: string[] = [];
   failNext: Error | null = null;
 
   private set(key: string): Map<string, number> {
@@ -18,14 +19,21 @@ export class FakeRedisClient implements RedisPresenceClient {
     return set;
   }
 
-  multi(): RedisPresenceTransaction {
+  pipeline(): RedisPresencePipeline {
     const queue: Array<() => unknown> = [];
-    const transaction: RedisPresenceTransaction = {
+    const pipeline: RedisPresencePipeline = {
       zadd: (key, score, member) => {
+        this.commands.push('zadd');
         queue.push(() => this.set(key).set(member, score));
-        return transaction;
+        return pipeline;
+      },
+      pexpire: (key, milliseconds) => {
+        this.commands.push('pexpire');
+        queue.push(() => this.ttls.set(key, milliseconds));
+        return pipeline;
       },
       zremrangebyscore: (key, min, max) => {
+        this.commands.push('zremrangebyscore');
         queue.push(() => {
           const set = this.set(key);
           const lower = min === '-inf' ? -Infinity : Number(min);
@@ -36,11 +44,7 @@ export class FakeRedisClient implements RedisPresenceClient {
             }
           }
         });
-        return transaction;
-      },
-      pexpire: (key, milliseconds) => {
-        queue.push(() => this.ttls.set(key, milliseconds));
-        return transaction;
+        return pipeline;
       },
       exec: async () => {
         if (this.failNext) {
@@ -51,7 +55,7 @@ export class FakeRedisClient implements RedisPresenceClient {
         return queue.map((command) => [null, command()] as [Error | null, unknown]);
       },
     };
-    return transaction;
+    return pipeline;
   }
 
   async zrangebyscore(
