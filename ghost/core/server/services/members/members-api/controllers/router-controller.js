@@ -774,6 +774,13 @@ module.exports = class RouterController {
       });
     }
 
+    // invite-only sites block new members, so a recipient who isn't already a member couldn't redeem
+    if (this._settingsCache.get('members_signup_access') === 'invite') {
+      throw new DisabledFeatureError({
+        message: tpl(messages.inviteOnly),
+      });
+    }
+
     try {
       return await this._giftService.service.startCheckout({
         tierId: options.tierId,
