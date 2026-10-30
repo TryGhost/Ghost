@@ -306,18 +306,7 @@
       },
       "lint": {
         "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/admin-x-framework",
-              "@tryghost/app-contracts",
-              "@tryghost/app-sdk",
-              "@tryghost/checkout",
-              "@tryghost/kg-converters",
-              "@tryghost/metafield-types",
-              "@tryghost/shade"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "assemble:assets": {
