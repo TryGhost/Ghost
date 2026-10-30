@@ -3072,11 +3072,16 @@ describe('automations repository', function () {
       clickedAt?: Date;
       automationRunStepId?: string;
     } = {}): Promise<void> => {
-      await repo.trackEmailClicked({
-        automationActionRevisionId: firstRevisionId,
-        automationRunStepId,
-        memberId,
-        clickedAt,
+      await knex.transaction(async (transacting) => {
+        await repo.trackEmailClicked(
+          {
+            automationActionRevisionId: firstRevisionId,
+            automationRunStepId,
+            memberId,
+            clickedAt,
+          },
+          { transacting },
+        );
       });
     };
 
