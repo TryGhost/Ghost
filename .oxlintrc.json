@@ -9,6 +9,7 @@
     "restriction": "off",
     "nursery": "off"
   },
+  "plugins": ["vitest"],
   "jsPlugins": [
     {
       "name": "ghost",
@@ -24,6 +25,13 @@
     }
   ],
   "overrides": [
+    {
+      "files": ["**/*.test.{js,jsx,ts,tsx}"],
+      "rules": {
+        "vitest/no-focused-tests": "error",
+        "vitest/no-identical-title": "error"
+      }
+    },
     {
       "files": ["apps/admin/src/**/*.{ts,tsx}"],
       "rules": {
