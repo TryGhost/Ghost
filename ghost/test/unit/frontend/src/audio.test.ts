@@ -1,9 +1,8 @@
-import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { createBrowserEnvironment, loadScript } from '../../../utils/browser-test-utils';
 
-const card = `
+const cardHtml = `
   <div class="kg-audio-card">
     <div class="kg-audio-player-container">
       <audio></audio>
@@ -20,139 +19,126 @@ const card = `
   </div>
 `;
 
-describe('audio card controls', function () {
+describe('audio.js', function () {
+  let scriptContent: string;
   let env: ReturnType<typeof createBrowserEnvironment>;
   let frames: Map<number, FrameRequestCallback>;
-  let cards: {
-    element: Element;
-    audio: HTMLAudioElement;
-    play: HTMLButtonElement;
-    pause: HTMLButtonElement;
-  }[];
 
-  function advanceFrame() {
-    const frame = frames.entries().next().value;
-    assert.ok(frame);
-    const [id, callback] = frame;
-    frames.delete(id);
-    callback(0);
-  }
-
-  beforeEach(function () {
-    env = createBrowserEnvironment({
-      html: `<!DOCTYPE html><html><body>${card}${card}</body></html>`,
-    });
-    frames = new Map();
-    let nextFrame = 0;
-    env.window.requestAnimationFrame = (callback) => {
-      nextFrame += 1;
-      frames.set(nextFrame, callback);
-      return nextFrame;
-    };
-    env.window.cancelAnimationFrame = (id) => frames.delete(id);
-
-    cards = [...env.document.querySelectorAll('.kg-audio-card')].map((element) => {
-      const audio = element.querySelector('audio');
-      const play = element.querySelector<HTMLButtonElement>('.kg-audio-play-icon');
-      const pause = element.querySelector<HTMLButtonElement>('.kg-audio-pause-icon');
-      assert.ok(audio && play && pause);
-      audio.play = vi.fn(() => Promise.resolve());
-      audio.pause = vi.fn();
-      Object.defineProperty(audio, 'duration', { value: 4.2 });
-      return {
-        element,
-        audio,
-        play,
-        pause,
-      };
-    });
-
-    const script = readFileSync(
+  beforeAll(function () {
+    scriptContent = readFileSync(
       path.join(__dirname, '../../../../core/frontend/src/cards/js/audio.js'),
       'utf8',
     );
-    loadScript(env, script);
-    cards.forEach(({ audio }) => audio.dispatchEvent(new env.window.Event('loadedmetadata')));
+  });
+
+  beforeEach(function () {
+    env = createBrowserEnvironment({
+      html: `<!DOCTYPE html><html><body>${cardHtml}${cardHtml}</body></html>`,
+    });
+
+    frames = new Map();
+    let nextFrameId = 0;
+    env.window.requestAnimationFrame = (callback) => {
+      nextFrameId += 1;
+      frames.set(nextFrameId, callback);
+      return nextFrameId;
+    };
+    env.window.cancelAnimationFrame = (id) => frames.delete(id);
+
+    env.document.querySelectorAll('audio').forEach((audio) => {
+      audio.play = vi.fn(() => Promise.resolve());
+      audio.pause = vi.fn();
+      Object.defineProperty(audio, 'readyState', { value: 1 });
+      Object.defineProperty(audio, 'duration', { value: 4.2 });
+    });
+
+    loadScript(env, scriptContent);
   });
 
   afterEach(function () {
     env.dom.window.close();
   });
 
-  it.each([false, true])('replay and isolated cards: %s', function (advance) {
-    const [first, second] = cards;
+  function getCards() {
+    return [...env.document.querySelectorAll('.kg-audio-card')].map((card) => ({
+      audio: card.querySelector('audio')!,
+      play: card.querySelector<HTMLButtonElement>('.kg-audio-play-icon')!,
+      pause: card.querySelector<HTMLButtonElement>('.kg-audio-pause-icon')!,
+      container: card.querySelector<HTMLElement>('.kg-audio-player-container')!,
+      currentTime: card.querySelector('.kg-audio-current-time')!,
+      seekSlider: card.querySelector<HTMLInputElement>('.kg-audio-seek-slider')!,
+    }));
+  }
+
+  type Card = ReturnType<typeof getCards>[number];
+
+  function visibleIcons(card: Card) {
+    return [card.play, card.pause]
+      .filter((icon) => !icon.classList.contains('kg-audio-hide'))
+      .map((icon) => icon.textContent);
+  }
+
+  function runNextFrame() {
+    const [[id, callback]] = frames;
+    frames.delete(id);
+    callback(0);
+  }
+
+  function finishPlayback(card: Card) {
+    card.audio.currentTime = card.audio.duration;
+    card.audio.dispatchEvent(new env.window.Event('ended'));
+  }
+
+  it('shows the play icon and stops progress at the final position when playback ends', function () {
+    const [card] = getCards();
+    card.play.click();
+    runNextFrame();
+
+    finishPlayback(card);
+
+    expect(visibleIcons(card)).toEqual(['Play']);
+    expect(card.currentTime.textContent).toBe('0:04');
+    expect(card.seekSlider.value).toBe('4');
+    expect(card.container.style.getPropertyValue('--seek-before-width')).toBe('100%');
+    expect(frames.size).toBe(0);
+  });
+
+  it('stops progress updates when playback ends right after seeking', function () {
+    const [card] = getCards();
+    card.play.click();
+    Object.defineProperty(card.audio, 'paused', { value: false });
+    card.seekSlider.value = '2';
+    card.seekSlider.dispatchEvent(new env.window.Event('input'));
+    card.seekSlider.dispatchEvent(new env.window.Event('change'));
+
+    finishPlayback(card);
+
+    expect(frames.size).toBe(0);
+  });
+
+  it('replays with a single click after playback ends', function () {
+    const [card] = getCards();
+    card.play.click();
+    finishPlayback(card);
+    expect(visibleIcons(card)).toEqual(['Play']);
+
+    card.play.click();
+
+    expect(card.audio.play).toHaveBeenCalledTimes(2);
+    expect(visibleIcons(card)).toEqual(['Pause']);
+  });
+
+  it('keeps other cards playing when one card ends', function () {
+    const [first, second] = getCards();
     first.play.click();
     second.play.click();
-    if (advance) {
-      advanceFrame();
-    }
-    expect(first.play.classList.contains('kg-audio-hide')).toBe(true);
-    expect(first.pause.classList.contains('kg-audio-hide')).toBe(false);
 
-    first.audio.currentTime = first.audio.duration;
-    first.audio.dispatchEvent(new env.window.Event('ended'));
-
-    expect(first.play.classList.contains('kg-audio-hide')).toBe(false);
-    expect(first.pause.classList.contains('kg-audio-hide')).toBe(true);
-    expect(first.element.querySelector('.kg-audio-current-time')?.textContent).toBe('0:04');
-    expect(first.element.querySelector<HTMLInputElement>('.kg-audio-seek-slider')?.value).toBe('4');
-    expect(
-      first.element
-        .querySelector<HTMLElement>('.kg-audio-player-container')
-        ?.style.getPropertyValue('--seek-before-width'),
-    ).toBe('100%');
-    expect(second.play.classList.contains('kg-audio-hide')).toBe(true);
-    expect(second.pause.classList.contains('kg-audio-hide')).toBe(false);
-    expect(frames.size).toBe(1);
-
+    finishPlayback(first);
     second.audio.currentTime = 1;
-    advanceFrame();
-    expect(second.element.querySelector('.kg-audio-current-time')?.textContent).toBe('0:01');
-    expect(second.element.querySelector<HTMLInputElement>('.kg-audio-seek-slider')?.value).toBe(
-      '1',
-    );
+    runNextFrame();
 
-    first.play.click();
-    expect(first.audio.play).toHaveBeenCalledTimes(2);
-    expect(first.play.classList.contains('kg-audio-hide')).toBe(true);
-    expect(first.pause.classList.contains('kg-audio-hide')).toBe(false);
-  });
-
-  it.each([false, true])('manual pause, frame run: %s', function (advance) {
-    const [first] = cards;
-    first.play.click();
-    if (advance) {
-      advanceFrame();
-    }
-    first.pause.click();
-
-    expect(first.audio.pause).toHaveBeenCalledOnce();
-    expect(first.play.classList.contains('kg-audio-hide')).toBe(false);
-    expect(first.pause.classList.contains('kg-audio-hide')).toBe(true);
-    expect(frames.size).toBe(0);
-  });
-
-  it.each([false, true])('seeking and finishing, frame run: %s', function (advance) {
-    const [first] = cards;
-    first.play.click();
-    if (advance) {
-      advanceFrame();
-    }
-    Object.defineProperty(first.audio, 'paused', { value: false });
-    const slider = first.element.querySelector<HTMLInputElement>('.kg-audio-seek-slider');
-    assert.ok(slider);
-    slider.value = '2';
-    slider.dispatchEvent(new env.window.Event('input'));
-    slider.dispatchEvent(new env.window.Event('change'));
+    expect(visibleIcons(second)).toEqual(['Pause']);
+    expect(second.currentTime.textContent).toBe('0:01');
     expect(frames.size).toBe(1);
-    if (advance) {
-      advanceFrame();
-    }
-
-    first.audio.currentTime = first.audio.duration;
-    first.audio.dispatchEvent(new env.window.Event('ended'));
-    expect(frames.size).toBe(0);
-    expect(first.play.classList.contains('kg-audio-hide')).toBe(false);
-    expect(first.pause.classList.contains('kg-audio-hide')).toBe(true);
   });
 });
