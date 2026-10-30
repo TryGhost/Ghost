@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 
 import { DirtyConfirmDialog } from '../../../../src/components/patterns/dirty-confirm-dialog';
@@ -26,8 +25,8 @@ describe('DirtyConfirmDialog', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Navigate away' }));
 
-    assert.equal(onLeave.mock.calls.length, 1);
-    assert.equal(screen.queryByRole('alertdialog'), null);
+    expect(onLeave.mock.calls.length).toBe(1);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
   it('keeps the pending action behind the Stay action', () => {
@@ -37,8 +36,8 @@ describe('DirtyConfirmDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Navigate away' }));
     fireEvent.click(screen.getByRole('button', { name: 'Stay' }));
 
-    assert.equal(onLeave.mock.calls.length, 0);
-    assert.equal(screen.queryByRole('alertdialog'), null);
+    expect(onLeave.mock.calls.length).toBe(0);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
   it('runs the pending action from the Leave action', () => {
@@ -48,12 +47,12 @@ describe('DirtyConfirmDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Navigate away' }));
     const leaveButton = screen.getByRole('button', { name: 'Leave' });
 
-    assert.match(leaveButton.className, /bg-destructive/);
-    assert.doesNotMatch(leaveButton.className, /bg-primary/);
+    expect(leaveButton.className).toMatch(/bg-destructive/);
+    expect(leaveButton.className).not.toMatch(/bg-primary/);
 
     fireEvent.click(leaveButton);
 
-    assert.equal(onLeave.mock.calls.length, 1);
-    assert.equal(screen.queryByRole('alertdialog'), null);
+    expect(onLeave.mock.calls.length).toBe(1);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 });
