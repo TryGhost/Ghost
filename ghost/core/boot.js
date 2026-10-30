@@ -408,6 +408,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats');
   const explorePingService = require('./server/services/explore-ping').default;
+  const users = require('./server/services/users').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -488,6 +489,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     recommendationsService.init(),
     statsService.init(),
     explorePingService.init(),
+    users.init(),
     machinePaymentsService.init(),
   ]);
 

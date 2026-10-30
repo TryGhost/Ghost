@@ -16181,74 +16181,84 @@ services:
         consumers before migrating. Existing database and HTTP cases cover important selected
         paths, not every service, author/page shape, malformed route or model-query failure.
         Add resource-bound and concurrent-write coverage before changing enumeration/cleanup.
-  users.js:
-    kind: file
+  users:
+    kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Keep this business capability as a service and consolidate the two endpoint-owned
-        instances into one boot-owned composition. Its constructor captures dependencies;
-        mutable options, transactions and work stay per operation. Preserve those operation
-        contracts while removing unnecessary API-level composition dependencies; no resource
-        lifecycle or replacement model is apparent.
-      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+        The boot-owned default root returns one ready Users instance in the services phase.
+        The users and authentication endpoints read it per request instead of constructing
+        their own, so both share one composition. Operation contracts are unchanged: mutable
+        options, transactions and work stay per call, and the stale auth, mail and settings
+        inputs are gone. No resource lifecycle or replacement model is needed.
+      reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
       sources:
-        - core/server/services/users.js
+        - core/server/services/users/index.ts
+        - core/server/services/users/users-service.js
         - core/server/api/endpoints/users.js
         - core/server/api/endpoints/authentication.js
+        - core/boot.js
+        - test/unit/server/services/users/index.test.ts
       dependencies:
         complexity: straightforward
         reason: >-
-          Both endpoint-owned instances receive the same models. Auth, apiMail and apiSettings are
-          stored but unused by the implementation; removing those stale inputs avoids bringing API
-          composition into the new root. Domain-event dispatch, its event constructor and
-          PostRevisions are the remaining hidden dependencies.
-        preparation:
-          - >-
-            Remove unused auth/apiMail/apiSettings constructor inputs from both endpoint
-            compositions.
-          - >-
-            Inject event dispatch and revision cleanup from the new root, retaining
-            transaction-local options and one shared Users instance.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+          The root composes models, the domain event dispatcher, the PostsBulkAddTagsEvent
+          constructor and the PostRevisions helper class in index.ts; the implementation
+          receives them instead of requiring them. ObjectId generation stays an allowlisted
+          library import. The endpoints no longer resolve the mail and settings API
+          collaborators on the service's behalf.
+        preparation: []
+        reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
         sources:
-          - core/server/services/users.js
+          - core/server/services/users/index.ts
+          - core/server/services/users/users-service.js
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
           - core/server/lib/post-revisions.ts
+          - core/boot.js
     entryPoints:
-      - users.js
+      - users/index.ts
     notes: >-
-      Two endpoint modules currently construct this business service. Preserve transaction
-      behavior and bound methods when moving composition under boot.
+      One boot-owned instance replaces the two endpoint-owned ones. The prior auditedAt
+      records the pre-migration baseline. The bounded migration was inspected on main
+      b7cad8406041d09d9e4085c5f981f958d454fc76; the characterization units, the existing service units,
+      the boot orchestration units and the reset orchestration units passed before production
+      changes. Transaction behavior and the bound tagging method are preserved and pinned.
+      Repeated boot, real rollback and tag-event settlement remain separate obligations below.
     contracts:
       exports:
         summary: >-
-          CommonJS exports the Users constructor, not an initialized instance. Instances expose
-          lockAll, assignTagToUserPosts and destroyUser; only assignTagToUserPosts is bound in
-          the constructor. lockAll resolves an object with count, while tagging and destruction resolve
-          without a result. Tests construct the class and cover locking/tagging calls and
-          detached invocation of the bound method, not export shape.
+          The TypeScript root default-exports a defineService initializer with init and a
+          guarded service getter plus a type-only UsersService interface; there are no extras.
+          The ready instance exposes lockAll, assignTagToUserPosts and destroyUser; only
+          assignTagToUserPosts is bound. lockAll resolves an object with count, while tagging
+          and destruction resolve without a result. Units pin the readiness guard, detached
+          invocation of the bound method and the operation results; generic shared
+          initialization and retry belong to kernel tests.
         sources:
-          - core/server/services/users.js
+          - core/kernel/define-service.ts
+          - core/server/services/users/index.ts
+          - core/server/services/users/users-service.js
         tests:
           - test/unit/server/services/users/users-service.test.js
           - test/unit/server/services/users/index.test.ts
       construction:
         summary: >-
-          Authentication and users endpoints each construct and retain a separate Users at
-          module evaluation. The constructor captures mutable models, auth, apiMail and
-          apiSettings references and binds one method; current methods only use models.
-          destroyUser constructs a PostRevisions helper per call. No other runtime constructor
-          was found. Units pin each endpoint's retained instance, the models, auth, mail and
-          settings references it captures, the bound tagging method, the per-call PostRevisions
-          helper around the PostRevision model and that operations use only models.
+          Import declares the root without resolving runtime collaborators. The factory
+          requires the implementation, models, the domain event dispatcher, the event
+          constructor and the revisions helper class, then returns one Users synchronously.
+          destroyUser still constructs a PostRevisions helper around the PostRevision model per
+          call. The endpoints capture the root at import and read its service per request.
+          Units pin the captured models reference, the per-call helper and that an endpoint
+          import before readiness does not evaluate the guarded getter.
         sources:
-          - core/server/services/users.js
+          - core/server/services/users/index.ts
+          - core/server/services/users/users-service.js
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/users.js
           - core/server/lib/post-revisions.ts
@@ -16256,21 +16266,21 @@ services:
           - test/unit/server/services/users/index.test.ts
       consumers:
         summary: >-
-          Admin user deletion calls the users endpoint's retained instance. Authentication
-          reset passes its own instance to auth.resetAuthentication, which calls lockAll inside
-          a transaction shared with key rotation and audit creation; session deletion and
-          rescheduling happen afterward. assignTagToUserPosts has no external runtime caller
-          found. HTTP tests prove deletion, owner reassignment, internal tagging and successful
-          authentication reset; reset orchestration units inject lockAll rather than this class.
-          Units pin the users endpoint delegating frame options to its retained instance and
-          the reset endpoint passing its own instance, with the real lockAll, to
-          resetAuthentication on every call.
+          Admin user deletion reads the ready service from the root and delegates frame options
+          to destroyUser. Authentication reset passes the same ready instance to
+          auth.resetAuthentication, which calls lockAll inside a transaction shared with key
+          rotation and audit creation; session deletion and rescheduling happen afterward.
+          assignTagToUserPosts has no external runtime caller found. Units pin both endpoints
+          reading one instance with the real lockAll; HTTP tests prove deletion, owner
+          reassignment, internal tagging and successful authentication reset; reset
+          orchestration units inject lockAll rather than this class.
         sources:
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
           - core/server/auth/reset-authentication.ts
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/services/users.js
+          - core/server/services/users/index.ts
+          - core/server/services/users/users-service.js
         tests:
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/users.test.js
@@ -16279,22 +16289,19 @@ services:
           - test/unit/server/services/users/index.test.ts
       startup:
         summary: >-
-          Users has no init or readiness guard and performs no I/O during construction. Endpoint
-          evaluation constructs it; boot does not initialize it explicitly. Normal endpoint loading
-          occurs through the lazy Admin router, potentially after readiness. The update-check job
-          can separately force api.users.browse while composing its checker, constructing the
-          users endpoint and its otherwise-unused Users instance outside an Admin request. HTTP composition
-          also resolves mail/settings API collaborators; the settings endpoint constructs its
-          BREAD helper at import, and authentication resolves its scheduling adapter then. These
-          endpoint dependencies are not used by Users methods. A unit evaluates the users
-          endpoint afresh through the API registry the update check uses, without an Admin
-          request or boot; HTTP tests use completed boot, not composition failure.
+          Boot requires the root in initServices and awaits its init in the shared service
+          group, after models are ready and before the server accepts requests; the factory
+          performs no I/O. The Admin router loads the endpoints lazily, and the update-check
+          job can load the users endpoint through the API registry outside an Admin request.
+          That import no longer constructs an instance or resolves the mail and settings API
+          collaborators, and reading service before init throws. Authentication still resolves
+          its scheduling adapter at import. Units pin the fresh endpoint load before readiness;
+          HTTP tests use completed boot, not composition failure.
         sources:
-          - core/server/services/users.js
+          - core/boot.js
+          - core/server/services/users/index.ts
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
-          - core/server/api/endpoints/settings.js
-          - core/server/services/settings/settings-service.js
           - core/server/api/endpoints/index.js
           - core/server/services/update-check/index.js
           - core/shared/express.js
@@ -16302,23 +16309,24 @@ services:
           - core/server/web/api/app.js
           - core/server/web/api/endpoints/admin/app.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/boot.js
         tests:
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
           - test/unit/server/services/users/index.test.ts
       lifetime:
         summary: >-
-          Endpoint module caching retains two instances and their collaborators. No init/reset,
-          pending-operation guard or instance-local result cache exists. lockAll clones options
-          when opening its own transaction and otherwise uses the caller's transaction.
-          destroyUser always opens a new transaction and overwrites the caller's transacting
-          field; it does not reuse an outer transaction. Units pin the two separately retained
-          endpoint instances, lockAll's cloned options carrying its own transaction versus the
-          caller's options passed through unchanged, and destroyUser overwriting a supplied
-          transaction in every stage; concurrency stays unasserted.
+          Successful init retains one instance for the process and repeated init returns it;
+          the endpoints hold the root, not the instance. No reset, pending-operation guard or
+          instance-local result cache exists. lockAll clones options when opening its own
+          transaction and otherwise uses the caller's transaction. destroyUser always opens a
+          new transaction and overwrites the caller's transacting field; it does not reuse an
+          outer transaction. Units pin the shared endpoint instance, lockAll's cloned options
+          versus the caller's options passed through unchanged, and destroyUser overwriting a
+          supplied transaction in every stage; concurrency and same-process reboot stay
+          unasserted.
         sources:
-          - core/server/services/users.js
+          - core/server/services/users/index.ts
+          - core/server/services/users/users-service.js
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
         tests:
@@ -16327,13 +16335,13 @@ services:
       configuration:
         summary: >-
           This root reads no configuration or settings values. Operations use current model
-          results and per-call id/context/transacting options; retained auth/mail/settings
-          collaborators are presently unused. Tagging derives an internal tag from the current
+          results and per-call id/context/transacting options. Tagging derives an internal tag
+          from the current
           author slug, reuses it by hash slug, avoids already-tagged posts and inserts new links
           with sort_order zero. Unit tests pin reuse/skip behavior and HTTP tests pin tag name
           and position; they do not cover concurrent tag creation or author changes.
         sources:
-          - core/server/services/users.js
+          - core/server/services/users/users-service.js
         tests:
           - test/unit/server/services/users/users-service.test.js
           - test/legacy/api/admin/users.test.js
@@ -16350,7 +16358,7 @@ services:
           carrying only newly tagged ids; HTTP tests prove selected persisted outcomes. Full
           rollback, event settlement and shutdown drain stay unasserted.
         sources:
-          - core/server/services/users.js
+          - core/server/services/users/users-service.js
           - core/server/lib/post-revisions.ts
           - core/server/models/user.js
           - core/server/models/relations/authors.js
@@ -16364,7 +16372,8 @@ services:
           - test/legacy/api/admin/authentication.test.js
       failures:
         summary: >-
-          Model/helper failures reject and stop later work; only ApiKey.NotFoundError is ignored
+          The factory performs no I/O, so init can only fail on a missing module and leaves
+          nothing to release. Model/helper failures reject and stop later work; only ApiKey.NotFoundError is ignored
           during deletion. Managed transaction callbacks provide the database rollback boundary,
           but cannot undo an already-dispatched tag event. The users endpoint returns the async
           deletion promise inside try without awaiting it, so that catch does not remap its
@@ -16374,7 +16383,7 @@ services:
           stage fails; success tests and fake-transaction short-circuit tests do not establish
           rollback or those partial-failure responses.
         sources:
-          - core/server/services/users.js
+          - core/server/services/users/users-service.js
           - core/server/api/endpoints/users.js
           - core/server/auth/reset-authentication.ts
           - core/server/api/endpoints/authentication.js
@@ -16386,9 +16395,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Test repeated boot and import prerequisites before sharing composition. Units pin the
-        two retained endpoint instances, the bound tagging method, model references and the
-        retained but unused API collaborators, not module reload or reboot.
+        Test repeated boot for the shared composition. Units pin one retained instance across
+        both endpoints within a single module instance, not module reload or same-process
+        reboot.
       - >-
         Add real transaction failure tests across lockAll and each deletion stage, including
         revision authors, tags/actions, coauthors, API keys, roles and user deletion. Current

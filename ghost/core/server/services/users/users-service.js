@@ -2,11 +2,6 @@
 const ObjectId = require('bson-objectid').default;
 
 /**
- * @TODO: pass these in as dependencies
- */
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
-
-/**
  * @typedef {Object} IModels
  * @prop {Object} Base
  * @prop {(callback: function) => Promise} Base.transaction
@@ -23,27 +18,33 @@ const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
  */
 
 /**
- * @typedef {Object} IAuth
- * @prop {Object} setup
- * @prop {(isComplete: boolean) => () => Promise} setup.assertSetupCompleted
- * @prop {Object} passwordreset
- * @prop {(email: string, apiSettings: Object, transcation?: Object) => Promise<string>} passwordreset.generateToken
- * @prop {(token: string, apiMail: Object) => Promise} passwordreset.sendResetNotification
+ * @typedef {Object} IDomainEvents
+ * @prop {(event: Object) => void} dispatch
+ */
+
+/**
+ * @typedef {Object} IPostsBulkAddTagsEvent
+ * @prop {(postIds: string[]) => Object} create
+ */
+
+/**
+ * @typedef {Object} IPostRevisions
+ * @prop {(authorId: string, options: {transacting: Object}) => Promise<void>} removeAuthorFromRevisions
  */
 
 class Users {
   /**
    * @param {Object} dependencies
    * @param {IModels} dependencies.models
-   * @param {IAuth} dependencies.auth
-   * @param {Object} dependencies.apiMail
-   * @param {Object} dependencies.apiSettings
+   * @param {IDomainEvents} dependencies.DomainEvents
+   * @param {IPostsBulkAddTagsEvent} dependencies.PostsBulkAddTagsEvent
+   * @param {new (deps: {model: Object}) => IPostRevisions} dependencies.PostRevisions
    */
-  constructor({ models, auth, apiMail, apiSettings }) {
+  constructor({ models, DomainEvents, PostsBulkAddTagsEvent, PostRevisions }) {
     this.models = models;
-    this.auth = auth;
-    this.apiMail = apiMail;
-    this.apiSettings = apiSettings;
+    this.DomainEvents = DomainEvents;
+    this.PostsBulkAddTagsEvent = PostsBulkAddTagsEvent;
+    this.PostRevisions = PostRevisions;
 
     this.assignTagToUserPosts = this.assignTagToUserPosts.bind(this);
   }
@@ -163,8 +164,7 @@ class Users {
     await this.models.Post.addActions('edited', usersPostIds, { transacting, context });
 
     // dispatch event to ensure collections are updated
-    const { PostsBulkAddTagsEvent } = require('../../shared/events-ts');
-    DomainEvents.dispatch(PostsBulkAddTagsEvent.create(usersPostIds));
+    this.DomainEvents.dispatch(this.PostsBulkAddTagsEvent.create(usersPostIds));
   }
 
   /**
@@ -178,10 +178,8 @@ class Users {
     return this.models.Base.transaction(async (t) => {
       frameOptions.transacting = t;
 
-      const { PostRevisions } = require('../lib/post-revisions');
-
       // null author field for users' post revisions
-      const postRevisions = new PostRevisions({
+      const postRevisions = new this.PostRevisions({
         model: this.models.PostRevision,
       });
       await postRevisions.removeAuthorFromRevisions(frameOptions.id, {
