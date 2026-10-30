@@ -12,6 +12,7 @@ const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
  * @prop {(callback: function) => Promise} Base.transaction
  * @prop {Object} Post
  * @prop {(frameOptions: Object) => Promise} Post.reassignByAuthor
+ * @prop {(linkTable: string, foreignKey: string, where: Object, options: Object) => Promise<string[]>} Post.lockLinkedForUpdate
  * @prop {Object} ApiKey
  * @prop {(Object) => Promise} ApiKey.destroy
  * @prop {Object} ApiKey.NotFoundError
@@ -98,7 +99,8 @@ class Users {
     const userPosts = await this.models.Base.knex('posts_authors')
       .transacting(transacting)
       .where('author_id', id)
-      .select('post_id');
+      .select('post_id')
+      .forUpdate();
     let usersPostIds = userPosts.map((p) => p.post_id);
 
     if (usersPostIds.length === 0) {
@@ -136,7 +138,9 @@ class Users {
       const taggedPostIds = await this.models.Base.knex('posts_tags')
         .transacting(transacting)
         .where('tag_id', tagId)
-        .select('post_id');
+        .whereIn('post_id', usersPostIds)
+        .select('post_id')
+        .forUpdate();
       const taggedPostIdSet = new Set(taggedPostIds.map((p) => p.post_id));
       usersPostIds = usersPostIds.filter((postId) => !taggedPostIdSet.has(postId));
     }
@@ -177,6 +181,14 @@ class Users {
   async destroyUser(frameOptions) {
     return this.models.Base.transaction(async (t) => {
       frameOptions.transacting = t;
+
+      // The user's posts are tagged and reassigned below, so lock them first
+      await this.models.Post.lockLinkedForUpdate(
+        'posts_authors',
+        'post_id',
+        { author_id: frameOptions.id },
+        { transacting: t },
+      );
 
       const { PostRevisions } = require('../lib/post-revisions');
 

@@ -196,24 +196,26 @@ const Tag = ghostBookshelf.Model.extend(
       });
       options.withRelated = ['posts'];
 
-      return this.forge({ id: options.id })
-        .fetch(options)
-        .then(function destroyTagsAndPost(tag) {
-          if (!tag) {
-            return Promise.reject(
-              new errors.NotFoundError({
-                message: tpl(messages.tagNotFound),
-              }),
-            );
-          }
+      const destroyTag = async (transacting) => {
+        // Detaching changes the relations of the posts, so lock them as an edit would
+        await ghostBookshelf
+          .model('Post')
+          .lockLinkedForUpdate('posts_tags', 'post_id', { tag_id: options.id }, { transacting });
 
-          return tag
-            .related('posts')
-            .detach(null, options)
-            .then(function destroyTags() {
-              return tag.destroy(options);
-            });
-        });
+        const tag = await this.forge({ id: options.id }).fetch({ ...options, transacting });
+        if (!tag) {
+          throw new errors.NotFoundError({
+            message: tpl(messages.tagNotFound),
+          });
+        }
+
+        await tag.related('posts').detach(null, { ...options, transacting });
+        return tag.destroy({ ...options, transacting });
+      };
+
+      return options.transacting
+        ? destroyTag(options.transacting)
+        : ghostBookshelf.transaction(destroyTag);
     },
   },
 );

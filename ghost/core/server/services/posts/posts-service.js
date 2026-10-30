@@ -332,6 +332,9 @@ class PostsService {
     const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
     const postIds = postRows.map((post) => post.id);
 
+    // Adding tags changes the posts' relations, so lock them as an edit would
+    await this.models.Post.lockForUpdate(postIds, { transacting: options.transacting });
+
     const tagIds = [...new Set(tags.map((tag) => tag.id))];
 
     // Posts in the selection may already carry the tag, filter those pairs out
@@ -341,6 +344,7 @@ class PostsService {
             .transacting('posts_tags')
             .whereIn('post_id', postIds)
             .select('post_id', 'tag_id', 'sort_order')
+            .forUpdate()
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
 
@@ -401,12 +405,16 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select(
-      'posts.id',
-      'posts.status',
-    );
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
     const deleteIds = postRows.map((row) => row.id);
-    const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
+
+    // The posts' relations are deleted before the posts, so lock them first.
+    // Statuses come from the locked rows, as a post can be published before the lock
+    const lockedRows = await this.models.Post.lockForUpdate(deleteIds, {
+      transacting: options.transacting,
+      columns: ['id', 'status'],
+    });
+    const allDraft = lockedRows.length > 0 && lockedRows.every((row) => row.status === 'draft');
 
     const postTablesToDelete = [
       'posts_authors',
@@ -478,6 +486,11 @@ class PostsService {
     if (data.tiers) {
       tiers = data.tiers;
       delete data.tiers;
+    }
+
+    // Before the update, which locks the posts in chunks of request order
+    if (tiers) {
+      await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
     }
 
     const result = await this.models.Post.bulkEdit(editIds, 'posts', {

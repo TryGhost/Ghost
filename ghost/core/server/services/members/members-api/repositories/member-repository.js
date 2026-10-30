@@ -28,6 +28,8 @@ const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
+const BULK_EDIT_CHUNK_SIZE = 1000;
+
 const messages = {
   noStripeConnection: 'Cannot {action} without a Stripe Connection',
   moreThanOneProduct: 'A member cannot have more than one Product',
@@ -1254,45 +1256,70 @@ module.exports = class MemberRepository {
 
     const memberIds = memberRows.map((row) => row.id);
 
+    // Each action changes the members' relations, so lock them as an edit would.
+    // A chunk at a time, so a bulk action across every member doesn't hold
+    // every member's lock until it finishes
+    const results = [];
+    for (const chunk of _.chunk(memberIds.sort(), BULK_EDIT_CHUNK_SIZE)) {
+      results.push(
+        await this._Member.transaction(async (transacting) => {
+          await this._Member.lockForUpdate(chunk, { transacting });
+          return this.#bulkEditChunk(data, chunk, { transacting });
+        }),
+      );
+    }
+
+    return {
+      successful: _.sumBy(results, 'successful'),
+      unsuccessful: _.sumBy(results, 'unsuccessful'),
+      unsuccessfulData: results.flatMap((result) => result.unsuccessfulData),
+      errors: results.flatMap((result) => result.errors),
+    };
+  }
+
+  async #bulkEditChunk(data, memberIds, { transacting }) {
     if (data.action === 'unsubscribe') {
       const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
         const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
           filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`,
+          transacting,
         });
         const toUnsubscribe = unsubscribeRows.map((row) => row.id);
 
-        return await this._MemberNewsletter.bulkDestroy(toUnsubscribe);
+        return await this._MemberNewsletter.bulkDestroy(toUnsubscribe, undefined, { transacting });
       }
-      if (!hasNewsletterSelected) {
-        return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {
-          column: 'member_id',
-        });
-      }
-    }
-    if (data.action === 'removeLabel') {
-      const membersLabelsRows = await this._Member.getLabelRelations({
-        labelId: data.meta.label.id,
-        memberIds,
+
+      return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {
+        column: 'member_id',
+        transacting,
       });
+    }
+
+    if (data.action === 'removeLabel') {
+      const membersLabelsRows = await this._Member.getLabelRelations(
+        {
+          labelId: data.meta.label.id,
+          memberIds,
+        },
+        { transacting },
+      );
 
       const membersLabelsIds = membersLabelsRows.map((row) => row.id);
 
-      return this._Member.bulkDestroy(membersLabelsIds, 'members_labels');
+      return this._Member.bulkDestroy(membersLabelsIds, 'members_labels', { transacting });
     }
 
-    if (data.action === 'addLabel') {
-      const relations = memberIds.map((id) => {
-        return {
-          member_id: id,
-          label_id: data.meta.label.id,
-          id: ObjectId().toHexString(),
-        };
-      });
+    const relations = memberIds.map((id) => {
+      return {
+        member_id: id,
+        label_id: data.meta.label.id,
+        id: ObjectId().toHexString(),
+      };
+    });
 
-      return this._Member.bulkAdd(relations, 'members_labels');
-    }
+    return this._Member.bulkAdd(relations, 'members_labels', { transacting });
   }
 
   async upsertCustomer(data) {

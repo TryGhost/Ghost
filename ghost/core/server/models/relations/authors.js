@@ -269,15 +269,25 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
               .select('roles_users.user_id');
             const ownerId = ownerUser[0].user_id;
 
+            const authorsPostIds = await this.lockLinkedForUpdate(
+              'posts_authors',
+              'post_id',
+              { author_id: authorId },
+              { transacting: trx },
+            );
+
             const authorsPosts = await knex('posts_authors')
               .transacting(trx)
               .where('author_id', authorId)
-              .select('post_id', 'sort_order');
+              .select('post_id', 'sort_order')
+              .forUpdate();
 
             const ownersPosts = await knex('posts_authors')
               .transacting(trx)
+              .whereIn('post_id', authorsPostIds)
               .where('author_id', ownerId)
-              .select('post_id');
+              .select('post_id')
+              .forUpdate();
 
             const authorsPrimaryPosts = authorsPosts.filter((ap) => ap.sort_order === 0);
             const primaryPostsWithOwnerCoauthor = _.intersectionBy(
