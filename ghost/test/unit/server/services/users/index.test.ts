@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
-import { IncorrectUsageError } from '@tryghost/errors';
+import { IncorrectUsageError, NotFoundError as UserNotFoundError } from '@tryghost/errors';
 import sinon from 'sinon';
 
 // require, not import: the service and its endpoints are CommonJS and must share these
 // module instances so prototype stubs and instanceof checks observe the real composition.
 const { PostsBulkAddTagsEvent } = require('../../../../../core/shared/events-ts');
-const { PostRevisions } = require('../../../../../core/server/lib/post-revisions');
+const {
+  removeAuthorFromRevisions,
+}: typeof import('../../../../../core/server/lib/post-revisions') = require('../../../../../core/server/lib/post-revisions');
 const models = require('../../../../../core/server/models');
 const auth = require('../../../../../core/server/auth');
-const Users = require('../../../../../core/server/services/users/users-service');
+const { UsersService: Users } = require('../../../../../core/server/services/users/users-service');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/users');
 const USERS_ENDPOINT_PATH = require.resolve('../../../../../core/server/api/endpoints/users');
 const AUTHENTICATION_ENDPOINT_PATH =
@@ -110,12 +112,15 @@ describe('Users service', function () {
   const sandbox = sinon.createSandbox();
   let dispatch: sinon.SinonStub;
 
-  function createService(fakes: ReturnType<typeof createModels>['models']) {
+  function createService(
+    fakes: ReturnType<typeof createModels>['models'],
+    removeAuthor = removeAuthorFromRevisions,
+  ) {
     return new Users({
       models: fakes,
       DomainEvents: { dispatch },
       PostsBulkAddTagsEvent,
-      PostRevisions,
+      removeAuthorFromRevisions: removeAuthor,
     });
   }
 
@@ -287,6 +292,24 @@ describe('Users service', function () {
       ]);
     });
 
+    it('throws NotFoundError before any post work when the user is missing', async function () {
+      const { models: fakes, calls } = createModels();
+      fakes.User.findOne.resolves(null);
+      const service = createService(fakes);
+
+      await assert.rejects(
+        service.assignTagToUserPosts({ id: 'user-id', context, transacting }),
+        UserNotFoundError,
+      );
+
+      sinon.assert.calledOnce(fakes.User.findOne);
+      assert.deepEqual(calls, []);
+      sinon.assert.notCalled(fakes.Tag.findOne);
+      sinon.assert.notCalled(fakes.Tag.add);
+      sinon.assert.notCalled(fakes.Post.addActions);
+      sinon.assert.notCalled(dispatch);
+    });
+
     it('returns before any tag work when the author has no posts', async function () {
       const { models: fakes, calls, inserted } = createModels({ userPostIds: [] });
       const service = createService(fakes);
@@ -441,23 +464,25 @@ describe('Users service', function () {
       assert.equal(state.settled, true);
     });
 
-    it('constructs a revisions helper around the PostRevision model on every call', async function () {
+    it('passes the revision model and current transaction to author removal on every call', async function () {
       const { models: fakes, transaction } = createModels();
-      const removeAuthor = sandbox.spy(PostRevisions.prototype, 'removeAuthorFromRevisions');
-      const service = createService(fakes);
+      const removeAuthor = sandbox.spy(removeAuthorFromRevisions);
+      const service = createService(fakes, removeAuthor);
 
       await service.destroyUser({ id: 'user-id', context });
       await service.destroyUser({ id: 'other-user-id', context });
 
       sinon.assert.calledTwice(removeAuthor);
-      assert.deepEqual(removeAuthor.firstCall.args, ['user-id', { transacting: transaction }]);
+      assert.deepEqual(removeAuthor.firstCall.args, [
+        fakes.PostRevision,
+        'user-id',
+        { transacting: transaction },
+      ]);
       assert.deepEqual(removeAuthor.secondCall.args, [
+        fakes.PostRevision,
         'other-user-id',
         { transacting: transaction },
       ]);
-      assert.equal(removeAuthor.firstCall.thisValue.model, fakes.PostRevision);
-      assert.equal(removeAuthor.secondCall.thisValue.model, fakes.PostRevision);
-      assert.notEqual(removeAuthor.firstCall.thisValue, removeAuthor.secondCall.thisValue);
     });
 
     it('dispatches the tag event before the transaction settles', async function () {
