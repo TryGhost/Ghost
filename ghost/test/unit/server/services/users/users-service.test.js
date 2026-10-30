@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const { PostsBulkAddTagsEvent } = require('../../../../../core/shared/events-ts');
-const { PostRevisions } = require('../../../../../core/server/lib/post-revisions');
+const { removeAuthorFromRevisions } = require('../../../../../core/server/lib/post-revisions');
 const { UsersService: Users } = require('../../../../../core/server/services/users/users-service');
 
 describe('Users service', function () {
@@ -45,7 +45,7 @@ describe('Users service', function () {
         },
         DomainEvents: { dispatch: sinon.stub() },
         PostsBulkAddTagsEvent,
-        PostRevisions,
+        removeAuthorFromRevisions,
       });
     }
 
@@ -166,7 +166,7 @@ describe('Users service', function () {
         },
         DomainEvents: { dispatch: dispatchStub },
         PostsBulkAddTagsEvent,
-        PostRevisions,
+        removeAuthorFromRevisions,
       };
     }
 

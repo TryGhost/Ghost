@@ -1,7 +1,7 @@
 import ObjectId from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
-import type { PostRevisions } from '../../lib/post-revisions';
+import type { removeAuthorFromRevisions } from '../../lib/post-revisions';
 import type { PostsBulkAddTagsEvent } from '../../../shared/events-ts';
 
 type SluggedModel = {
@@ -34,20 +34,14 @@ type Models = {
     destroy(options: object): Promise<unknown>;
     NotFoundError: new (...args: never[]) => Error;
   };
-  PostRevision: unknown;
+  PostRevision: Parameters<typeof removeAuthorFromRevisions>[0];
 };
-
-// Author removal only reads the revision model, so the revisions helper is built without the
-// generation config that its other methods need.
-type RevisionAuthorRemover = new (deps: {
-  model: unknown;
-}) => Pick<PostRevisions, 'removeAuthorFromRevisions'>;
 
 type UsersServiceDependencies = {
   models: Models;
   DomainEvents: { dispatch(event: PostsBulkAddTagsEvent): void };
   PostsBulkAddTagsEvent: typeof PostsBulkAddTagsEvent;
-  PostRevisions: RevisionAuthorRemover;
+  removeAuthorFromRevisions: typeof removeAuthorFromRevisions;
 };
 
 type FrameOptions = {
@@ -70,18 +64,18 @@ export class UsersService {
   models: Models;
   DomainEvents: UsersServiceDependencies['DomainEvents'];
   PostsBulkAddTagsEvent: typeof PostsBulkAddTagsEvent;
-  PostRevisions: RevisionAuthorRemover;
+  removeAuthorFromRevisions: typeof removeAuthorFromRevisions;
 
   constructor({
     models,
     DomainEvents,
     PostsBulkAddTagsEvent,
-    PostRevisions,
+    removeAuthorFromRevisions,
   }: UsersServiceDependencies) {
     this.models = models;
     this.DomainEvents = DomainEvents;
     this.PostsBulkAddTagsEvent = PostsBulkAddTagsEvent;
-    this.PostRevisions = PostRevisions;
+    this.removeAuthorFromRevisions = removeAuthorFromRevisions;
 
     this.assignTagToUserPosts = this.assignTagToUserPosts.bind(this);
   }
@@ -209,10 +203,7 @@ export class UsersService {
       frameOptions.transacting = t;
 
       // null author field for users' post revisions
-      const postRevisions = new this.PostRevisions({
-        model: this.models.PostRevision,
-      });
-      await postRevisions.removeAuthorFromRevisions(frameOptions.id, {
+      await this.removeAuthorFromRevisions(this.models.PostRevision, frameOptions.id, {
         transacting: t,
       });
 

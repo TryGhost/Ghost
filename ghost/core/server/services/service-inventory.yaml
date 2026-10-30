@@ -16208,7 +16208,7 @@ services:
         complexity: straightforward
         reason: >-
           The root composes models, the domain event dispatcher, the PostsBulkAddTagsEvent
-          constructor and the PostRevisions helper class in index.ts; the implementation
+          constructor and the removeAuthorFromRevisions function in index.ts; the implementation
           receives them instead of requiring them. ObjectId generation stays an allowlisted
           library import. The endpoints no longer resolve the mail and settings API
           collaborators on the service's behalf.
@@ -16249,12 +16249,12 @@ services:
           - test/unit/server/services/users/index.test.ts
       construction:
         summary: >-
-          Import declares the root without resolving runtime collaborators. The factory
-          requires the implementation, models, the domain event dispatcher, the event
-          constructor and the revisions helper class, then returns one Users synchronously.
-          destroyUser still constructs a PostRevisions helper around the PostRevision model per
-          call. The endpoints capture the root at import and read its service per request.
-          Units pin the captured models reference, the per-call helper and that an endpoint
+          Import declares the root and loads the implementation without resolving its runtime
+          collaborators. The factory requires models, the domain event dispatcher, the event
+          constructor and the revision author-removal function, then returns one UsersService
+          synchronously. destroyUser passes the PostRevision model and its transaction to that
+          function per call. The endpoints capture the root at import and read its service per request.
+          Units pin the captured models reference, the per-call helper arguments and that an endpoint
           import before readiness does not evaluate the guarded getter.
         sources:
           - core/server/services/users/index.ts
