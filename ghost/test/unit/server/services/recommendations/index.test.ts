@@ -331,7 +331,14 @@ describe('Recommendations service root', function () {
     const renderHTML = sandbox.stub().resolves('<p>New recommendation</p>');
     const renderText = sandbox.stub().resolves('New recommendation');
     // Staff publishes its API from its own init; the renderer reads it per email.
-    sandbox.define(staff, 'api', { emails: { renderHTML, renderText } });
+    // Another file in this worker may already have initialized Staff, so replace
+    // the published API when it exists and define it otherwise.
+    const staffApi = { emails: { renderHTML, renderText } };
+    if (Object.hasOwn(staff, 'api')) {
+      sandbox.replace(staff, 'api', staffApi);
+    } else {
+      sandbox.define(staff, 'api', staffApi);
+    }
     const send = sandbox.stub(mail.GhostMailer.prototype, 'send').resolves({});
     const getByUrl = sandbox.stub(root.service.repository, 'getByUrl').resolves(null);
 
