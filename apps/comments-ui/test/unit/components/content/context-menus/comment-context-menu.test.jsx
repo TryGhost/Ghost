@@ -222,20 +222,40 @@ describe('<CommentContextMenu>', () => {
       expect(close.called).toBe(false);
     });
 
-    it('tells the reader when the link could not be copied', async () => {
-      sinon.stub(console, 'error');
+    it('tells the reader when the link could not be copied and keeps the menu open', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       writeText.rejects(new Error('Not allowed'));
+      const close = sinon.spy();
       const comment = buildComment();
 
-      contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {
+      contextualRender(<CommentContextMenu close={close} comment={comment} />, {
         appContext: { member: { uuid: 'viewer-uuid' } },
       });
 
       fireEvent.click(screen.getByTestId('copy-link-button'));
+      await clock.tickAsync(1000);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('copy-link-button')).toHaveTextContent('Could not copy link');
+      expect(screen.getByTestId('copy-link-button')).toHaveTextContent('Could not copy link');
+      expect(close.called).toBe(false);
+    });
+
+    it('does not close the menu after a failed retry of a successful copy', async () => {
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const close = sinon.spy();
+      const comment = buildComment();
+
+      contextualRender(<CommentContextMenu close={close} comment={comment} />, {
+        appContext: { member: { uuid: 'viewer-uuid' } },
       });
+
+      fireEvent.click(screen.getByTestId('copy-link-button'));
+      await clock.tickAsync(0);
+      writeText.rejects(new Error('Not allowed'));
+      fireEvent.click(screen.getByTestId('copy-link-button'));
+      await clock.tickAsync(1000);
+
+      expect(screen.getByTestId('copy-link-button')).toHaveTextContent('Could not copy link');
+      expect(close.called).toBe(false);
     });
   });
 });

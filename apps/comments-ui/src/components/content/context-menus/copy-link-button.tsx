@@ -34,12 +34,11 @@ const CopyLinkButton: React.FC<Props> = ({ comment, close, className, iconClassN
     // click's user activation, so write through that frame's clipboard
     const frameWindow = event.currentTarget.ownerDocument.defaultView || window;
 
-    let copied = false;
+    let copied = true;
     try {
       await frameWindow.navigator.clipboard.writeText(url);
-      copied = true;
-    } catch (e) {
-      console.error('[Comments] Failed to copy comment link:', e); // eslint-disable-line no-console
+    } catch {
+      copied = false;
     }
 
     // The menu may have closed while the clipboard write was pending; a
@@ -50,7 +49,10 @@ const CopyLinkButton: React.FC<Props> = ({ comment, close, className, iconClassN
 
     setStatus(copied ? 'copied' : 'failed');
     window.clearTimeout(closeTimeout.current);
-    closeTimeout.current = window.setTimeout(close, CLOSE_DELAY_MS);
+    // On failure the menu stays open so the error can be read
+    if (copied) {
+      closeTimeout.current = window.setTimeout(close, CLOSE_DELAY_MS);
+    }
   };
 
   let label = t('Copy link');
