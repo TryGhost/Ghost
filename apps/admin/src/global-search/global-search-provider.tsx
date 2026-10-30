@@ -4,6 +4,7 @@ import { useLocation } from '@tryghost/admin-x-framework';
 import {
   Button,
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -40,6 +41,9 @@ function SearchError({ open, onOpenChange }: SearchModalProps) {
           <DialogDescription>Reload Ghost Admin to try again.</DialogDescription>
         </DialogHeader>
         <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
           <Button onClick={() => reloadAdmin(`${pathname}${search}`)}>Reload</Button>
         </DialogFooter>
       </DialogContent>

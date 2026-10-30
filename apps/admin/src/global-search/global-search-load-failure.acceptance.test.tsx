@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { page } from 'vitest/browser';
 
 import { failModuleLoads, fakeTags, renderAdminApp } from '@test-utils/acceptance';
 import { reloadAdmin } from '@/auth/reload';
@@ -23,6 +23,6 @@ it('reloads the admin when the search modal failed to load, and offers a reload 
     .click();
   await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/tags'], ['/tags']]);
 
-  await userEvent.keyboard('{Escape}');
+  await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
   await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
 });
