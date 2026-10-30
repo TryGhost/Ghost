@@ -49,6 +49,9 @@ migration, private feature flag, Shade component, or internal package.
   use `admin-x-framework` for APIs, and use Shade for UI. Admin and Core deploy
   independently, so feature-detect backend support and test the older-backend
   case.
+  - Shade docs: in this repo, `https://shade.ghost.org/docs/<page>.md` is the
+    source `apps/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
+    is `apps/shade/src/components/<path>.mdx`. Read those files directly.
 - **Embedded Admin CSS:** do not import `@tryghost/shade/styles.css` from an
   embedded app. Admin owns the single Tailwind and Shade CSS lane.
 - **Translations:** follow the

@@ -275,8 +275,7 @@ describe('Tag detail', () => {
     const saved = (saveApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
     expect(saved.name).toBe('Renamed');
     expect(saved.slug).toBe('news');
-    // The name changed, so the payload re-derives visibility (Ember
-    // `models/tag.js` recomputes it in `save()` whenever the name changed).
+    // The name changed, so the payload re-derives visibility.
     expect(saved.visibility).toBe('public');
   });
 
@@ -329,7 +328,7 @@ describe('Tag detail', () => {
 
     await tagDetailScreen.saveButton().click();
 
-    // Ember replaces `/tags/new` with the saved tag's route after creating.
+    // Creating replaces `/tags/new` with the saved tag's route.
     await expect.poll(currentRoute).toBe('/tags/weekly-news');
     await expect.element(tagDetailScreen.savedButton()).toBeVisible();
     const sent = (createApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
@@ -660,7 +659,6 @@ describe('Tag detail', () => {
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await tagDetailScreen.backLink().click();
 
-    // The dialog carries Ember's ConfirmUnsavedChangesModal copy.
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
     await tagDetailScreen.stayButton().click();
     // The dismissed dialog outlives the click, so re-triggering the guard

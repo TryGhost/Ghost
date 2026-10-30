@@ -59,9 +59,9 @@ export function init(options: GiftServiceInitOptions): void {
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsHelpers = require('../settings-helpers');
-  const emailAddressParser = require('../email-address/email-address-parser');
+  const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
   const { blogIcon } = require('../../../server/lib/image');
-  const { t } = require('../i18n');
+  const { t } = require('../../../shared/i18n');
 
   const repository = new GiftBookshelfRepository({
     GiftModel,
@@ -83,7 +83,7 @@ export function init(options: GiftServiceInitOptions): void {
     bulkMailer: new MailgunClient({ config, settings: settingsCache }),
     settingsCache,
     urlUtils,
-    getFromAddress: () => emailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
+    getFromAddress: () => formatAddressForDelivery(settingsHelpers.getDefaultEmail()),
     getReplyToAddress: () => settingsHelpers.getMembersSupportAddress(),
     blogIcon,
     t,

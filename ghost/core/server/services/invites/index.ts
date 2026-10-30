@@ -1,6 +1,5 @@
 import { defineService } from '../../../kernel/define-service';
-// @ts-expect-error The existing CommonJS implementation has no type declarations.
-import Invites from './invites';
+import { Invites } from './invites';
 
 export default defineService('Invites', () => {
   const settingsCache = require('../../../shared/settings-cache');

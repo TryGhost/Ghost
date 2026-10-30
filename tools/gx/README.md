@@ -81,6 +81,7 @@ Clearing the REPL restores those bindings; exiting closes the connection.
 
 Run `pnpm gx data shift-dates` to shift database dates up to the present day, or
 pass `--offset=<days>` to choose an offset. This modifies all dateTime columns.
+The default offset is the number of whole UTC days since the last member login.
 It asks for confirmation unless `--force` is supplied. Both commands retain
 their development/local environment restriction and use the same Core runner.
 
@@ -106,18 +107,20 @@ Dependency Cruiser audit. Run them from the repository root:
 
 | Command                                 | Output                                                         |
 | --------------------------------------- | -------------------------------------------------------------- |
-| `pnpm gx services report`               | Migration totals and categories                                |
-| `pnpm gx services list`                 | Entries, migration categories and dependency counts            |
+| `pnpm gx services report`               | Ownership totals, migration progress and remaining work        |
+| `pnpm gx services list`                 | Entries, ownership, migration status and dependency counts     |
 | `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
 | `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
 
-List any group from the report with `list --group <group>`. Each report row
-shows its group ID; `list --help` lists all groups. For example:
+List a group with `list --group <group>`. Report tables show group IDs;
+`list --help` lists all groups. For example:
 
 ```sh
 pnpm gx services list --group straightforward-clear
 pnpm gx services list --group needs-preparation
+pnpm gx services list --group unmigrated-retained
+pnpm gx services list --group ownership-undecided
 pnpm gx services list --group migrated --json
 ```
 
@@ -129,25 +132,35 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 
 ### Interpreting the reports
 
-Counts are calculated from the checkout, not stored in the inventory. Categories
-come from the inventory's ownership and migration assessments:
+Counts are calculated from the checkout, not stored in the inventory. The report
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Ownership and
+migration progress are counted independently: a migrated entry marked for
+relocation appears in both counts. Migration does not complete its move.
+The `relocation` filter includes these migrated entries.
+The `migrated-relocation` row and filter show just the migrated entries planned
+for a move or split.
+
+**Staying in services/** comprises three groups:
 
 - **Migrated:** marked `migrated: true`.
-- **Move or split planned:** marked `disposition: relocate`; this records intended
-  ownership, not completed work.
-- **Ownership undecided:** marked `disposition: review`.
-- **Needs preparation:** either assessment is complex, or the overall assessment
-  identifies a possible model change.
-- **Straightforward:** both assessments are straightforward and the existing
-  model fits. This can still include dependency violations.
+- **Needs preparation:** not migrated, and either assessment is
+  complex or identifies a possible model change.
+- **Straightforward:** not migrated, both assessments are
+  straightforward, and the existing model fits. This can still include
+  dependency violations and test gaps.
 
-Migration and ownership categories take precedence over complexity.
-**Staying in services/** counts entries marked `disposition: retain`, not all
-runtime services. Entries planned for a move or split can still be configured
-runtime services with dependency, readiness and lifetime contracts. Groups can
-overlap: an entry staying here can also be unmigrated and need preparation.
-The filter names remain `retained`, `unmigrated-retained`,
-`unmigrated-retained-with-violations` and `relocation`.
+The `unmigrated-retained` filter shows what's left to migrate:
+**needs preparation + straightforward**. It excludes relocation and undecided
+ownership. Entries needing a decision before proceeding use the existing
+`disposition: review` and appear under `ownership-undecided`; their notes and
+migration assessments explain the work needed.
+
+Lists and per-service JSON expose independent `ownership` and `migrationStatus`
+fields instead of a combined category. Summary JSON retains labelled counts;
+ownership counts sum to **Catalogued entries**, and **Migrated + Unmigrated
+entries** gives the same total. Diagnostic counts are overlapping subsets,
+not additional services. Entries planned for a move or split can still be
+configured runtime services with dependency, readiness and lifetime contracts.
 
 Per-service reports show inventory notes before the migration assessments, so
 planned ownership changes are visible alongside earlier assessments. Notes are
@@ -156,6 +169,8 @@ also included in JSON output as `entry.notes`.
 Entries found by the audit but absent from the inventory are **Not inventoried**;
 entries absent from the dependency graph have unknown counts. Malformed or
 incomplete assessments fail the report.
+The `not-analyzed` and `not-inventoried` diagnostic counts are available in
+summary JSON and list filters, but omitted from the text summary.
 
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct

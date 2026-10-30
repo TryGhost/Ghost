@@ -16,16 +16,16 @@ const urlService = require('../url');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
 const tiersService = require('../tiers');
-const newslettersService = require('../newsletters');
-const memberAttributionService = require('../member-attribution');
+const newsletters = require('../newsletters').default;
+const memberAttributionService = require('../member-attribution').default;
 const emailSuppressionList = require('../email-suppression-list');
-const commentsService = require('../comments');
+const commentsService = require('../comments').default;
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
 const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
-const { t } = require('../i18n');
+const { t } = require('../../../shared/i18n');
 const sentry = require('../../../shared/sentry');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
@@ -264,7 +264,7 @@ function createApiInstance(config) {
     tiersService: tiersService,
     offersAPI: offersService.api,
     labsService: labsService,
-    newslettersService: newslettersService,
+    newslettersService: newsletters.service,
     memberAttributionService: memberAttributionService.service,
     emailSuppressionList,
     settingsCache,

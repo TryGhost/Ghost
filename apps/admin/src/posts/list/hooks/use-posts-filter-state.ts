@@ -24,7 +24,7 @@ import type { PostListParams } from '@/posts/list/post-query-params';
 const ORDER_PARAM = 'order';
 
 interface SetOptions {
-  /** Filter changes replace history by default, matching Ember. */
+  /** Filter changes replace history by default. */
   replace?: boolean;
 }
 
@@ -36,7 +36,7 @@ export interface UsePostsFilterStateReturn {
   order: string | null;
   setFilters: (filters: Filter<string>[], options?: SetOptions) => void;
   setOrder: (order: string | null, options?: SetOptions) => void;
-  /** Clears the filters but keeps the sort, matching Ember. */
+  /** Clears the filters but keeps the sort. */
   clearFilters: (options?: SetOptions) => void;
   /** Whether any *filter* is active. Sorting deliberately doesn't count. */
   hasFilters: boolean;
@@ -101,15 +101,11 @@ export function usePostsFilterState(): UsePostsFilterStateReturn {
   );
 
   /**
-   * Clears the filters and leaves the sort alone — Ember's "Show all posts"
-   * link resets `type`, `author`, `tag` and `visibility` but deliberately
-   * not `order` (`templates/posts.hbs:51`), so a chosen sort survives.
+   * Clears `type`, `author`, `tag` and `visibility` but deliberately not
+   * `order`, so a chosen sort survives "Show all posts".
    *
-   * Replaces rather than pushes, like every other filter change here: the
-   * Ember route forces `transition.method('replace')` for any posts→posts
-   * transition (`routes/posts.js:60-70`, added for TryGhost/Ghost#11057) so
-   * filter changes don't pile up history entries — and "Show all posts" is
-   * one of those transitions.
+   * Replaces rather than pushes, like every other filter change here, so
+   * filter changes don't pile up history entries.
    */
   const clearFilters = useCallback(
     (options?: SetOptions) => {

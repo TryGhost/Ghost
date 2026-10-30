@@ -593,6 +593,44 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
 });
 
+test('recognizes exact JavaScript library paths without approving siblings', () => {
+  const allowances = [
+    String.raw`^ghost/core/server/lib/fixture-helper\.js$`,
+    String.raw`^fixture-library$|(^|/)node_modules/fixture-library/index\.js$`,
+  ];
+  const boundarySource = readFileSync(path.join(root, '.dependency-cruiser.cjs'), 'utf8').replace(
+    'const serviceDependencyAllowlist = [',
+    () =>
+      `const serviceDependencyAllowlist = [${allowances.map((pattern) => JSON.stringify(pattern)).join(',')},`,
+  );
+  const libraries = [
+    '../../lib/fixture-helper',
+    '../../lib/fixture-helper.js',
+    'fixture-library',
+    'fixture-library/index',
+    'fixture-library/index.js',
+  ];
+  const siblings = [
+    '../../lib/fixture-helper-extra',
+    'fixture-library/other',
+    'fixture-library-extra',
+  ];
+  const source = `
+    import Service from './service';
+    ${[...libraries, ...siblings].map((name, i) => `import dep${i} from '${name}';`).join('\n')}
+    new Service({${[...libraries, ...siblings].map((_, i) => `dep${i}`).join(',')}});
+  `;
+  const result = lint(source, serviceRoot, false, undefined, boundarySource);
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, libraries.length);
+  for (const library of libraries) {
+    assert.ok(
+      result.diagnostics.some((d) => d.message.includes(`Import ${library} directly`)),
+      library,
+    );
+  }
+});
+
 test('keeps the guard bounded to direct constructor wiring and supports explicit exceptions', () => {
   const result = lint(
     `

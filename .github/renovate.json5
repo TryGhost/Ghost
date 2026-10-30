@@ -241,6 +241,18 @@
       allowedVersions: '<3.14',
     },
 
+    // The Tinybird CLI's fixture loader regressed at 4.6.14: a nested JSON
+    // object lands in a String column as ClickHouse Tuple syntax, so every
+    // JSONExtract over `payload` reads '' and all 33 pipe tests fail. Still
+    // broken at 5.0.3. Drop with the pin comments in docker/tb-cli/Dockerfile
+    // and .github/workflows/tinybird.yml once upstream fixes it.
+    {
+      description: 'Hold the Tinybird CLI at 4.6.13 (4.6.14+ breaks fixture ingestion)',
+      matchDatasources: ['pypi'],
+      matchPackageNames: ['tinybird'],
+      allowedVersions: '<4.6.14',
+    },
+
     // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
     // local dev run against. Capping (rather than disabling) keeps 8.x
     // patches and digest re-pins flowing.
@@ -272,7 +284,7 @@
     //    Node.js runtime declared in `engines`, not a dependency — so a hard
     //    version cap is the only lever. Raise it when we bump the Node engine.
     {
-      description: 'Cap @types/node at the default Node major (devEngines: 22.23.3)',
+      description: 'Cap @types/node at the default Node major (devEngines: 22.23.4)',
       matchPackageNames: ['@types/node'],
       allowedVersions: '<23',
     },
@@ -288,7 +300,7 @@
     // PR rather than lumped into one mega "Types packages (major)" PR (so one
     // breaking type can't block the rest). Ordering matters: this ungroup
     // default comes BEFORE the pairings so the pairings (later) win for paired
-    // packages, and the pairings come BEFORE the react17/eslint9/tailwind3
+    // packages, and the pairings come BEFORE the react17/tailwind3
     // catalog rules below so those version-lane groups still win for their own
     // depTypes (e.g. react@17 in the react17 catalog stays in its own PR).
     {
@@ -443,18 +455,18 @@
 
     // Group each pinned-version pnpm catalog into a single PR per catalog.
     //
-    // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
-    // tailwind3) each hold a version lane we deliberately keep separate
-    // from the main `catalog:` — e.g. eslint 9 lives in `eslint9` while the
-    // default catalog stays on eslint 8. Renovate tags every catalog dep
+    // The named catalogs in pnpm-workspace.yaml (react17, tailwind3) each
+    // hold a version lane we deliberately keep separate from the main
+    // `catalog:` — e.g. React 17 lives in `react17` while the default
+    // catalog moves on. Renovate tags every catalog dep
     // with a depType of `pnpm.catalog.<name>`, so matching the depType
     // groups the whole catalog without restating its package list and stays
     // correct as entries are added or removed in pnpm-workspace.yaml.
     //
     // These also override the shared preset's `group:monorepos` rules,
-    // which would otherwise group e.g. eslint + @eslint/js *by name* and
-    // mix the default-catalog (v8) and eslint9-catalog (v9) bumps into one
-    // PR. Matching by depType keeps each lane in its own reviewable PR.
+    // which would otherwise group e.g. react + react-dom *by name* and
+    // mix the default-catalog and react17-catalog bumps into one PR.
+    // Matching by depType keeps each lane in its own reviewable PR.
     //
     // The main `catalog:` is intentionally left ungrouped: its entries are
     // independent, so grouping them would only couple unrelated bumps and
@@ -462,10 +474,6 @@
     {
       groupName: 'react17 catalog',
       matchDepTypes: ['pnpm.catalog.react17'],
-    },
-    {
-      groupName: 'eslint9 catalog',
-      matchDepTypes: ['pnpm.catalog.eslint9'],
     },
     {
       groupName: 'tailwind3 catalog',

@@ -41,7 +41,7 @@
     "@tryghost/logging": "catalog:",
     "@tryghost/metafield-types": "workspace:*",
     "@tryghost/test-data": "workspace:*",
-    "@types/dockerode": "4.0.1",
+    "@types/dockerode": "4.0.2",
     "@types/express": "catalog:",
     "@typescript/native": "catalog:",
     "busboy": "1.6.0",

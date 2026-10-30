@@ -129,6 +129,21 @@ describe('formatRelativeTime', () => {
     return key;
   };
 
+  // Node applies runtime TZ changes per process, so this relies on vitest's forks pool.
+  function withTz(tz: string, fn: () => void) {
+    const originalTz = process.env.TZ;
+    process.env.TZ = tz;
+    try {
+      fn();
+    } finally {
+      if (originalTz === undefined) {
+        delete process.env.TZ;
+      } else {
+        process.env.TZ = originalTz;
+      }
+    }
+  }
+
   function testFormatRelativeTime(
     humanDiff: string,
     duration: DurationInputObject,
@@ -136,13 +151,15 @@ describe('formatRelativeTime', () => {
     now?: Date,
   ) {
     it(`${humanDiff} = ${expected}`, function () {
-      if (now) {
-        clock = sinon.useFakeTimers(now);
-      } else {
-        clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
-      }
-      const time = moment().subtract(duration);
-      expect(helpers.formatRelativeTime(time.toISOString(), t)).toEqual(expected);
+      withTz('UTC', () => {
+        if (now) {
+          clock = sinon.useFakeTimers(now);
+        } else {
+          clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+        }
+        const time = moment().subtract(duration);
+        expect(helpers.formatRelativeTime(time.toISOString(), t)).toEqual(expected);
+      });
     });
   }
 
@@ -180,6 +197,23 @@ describe('formatRelativeTime', () => {
   describe('in UTC', function () {
     testCases.forEach(([humanDiff, duration, expected, now]) => {
       testFormatRelativeTime(humanDiff, duration, expected, now);
+    });
+  });
+
+  const localDayCases: Array<[string, string, string, string]> = [
+    ['America/Sao_Paulo', '2026-10-21T01:00:00.000Z', '2026-10-20T22:00:00.000Z', '3 hrs ago'],
+    ['Asia/Tokyo', '2026-10-21T14:00:00.000Z', '2026-10-19T16:00:00.000Z', 'Yesterday'],
+    ['America/New_York', '2025-03-10T14:00:00.000Z', '2025-03-09T16:00:00.000Z', 'Yesterday'],
+  ];
+
+  describe('across local calendar days', function () {
+    localDayCases.forEach(([tz, now, date, expected]) => {
+      it(`${date} at ${now} in ${tz} = ${expected}`, function () {
+        withTz(tz, () => {
+          clock = sinon.useFakeTimers(new Date(now));
+          expect(helpers.formatRelativeTime(date, t)).toEqual(expected);
+        });
+      });
     });
   });
 });

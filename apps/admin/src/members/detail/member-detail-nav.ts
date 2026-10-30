@@ -1,6 +1,5 @@
 /**
- * Works out where the member-detail "back" control should navigate to, mirroring
- * the Ember member controller's `membersListPath`:
+ * Works out where the member-detail "back" control should navigate to:
  *   1. a `back` param that points at the members area (so list filters/scroll are
  *      preserved) wins;
  *   2. otherwise a `post` param scopes the return link to that post's members list;

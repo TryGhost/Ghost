@@ -1,8 +1,15 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import type { ServerApp } from 'storybook/internal/types';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import path from 'path';
 import remarkGfm from 'remark-gfm';
+import {
+  generateStorybookDocs,
+  STORYBOOK_DOCS_DIR,
+  storybookDocsPlugin,
+  utf8DocsMiddleware,
+} from '../scripts/storybook-docs.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,7 +19,11 @@ const __dirname = dirname(__filename);
 const getAbsolutePath = (value: string): string =>
   dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
 
-const config: StorybookConfig = {
+// Storybook resolves `staticDirs` more than once; generate the docs once per run.
+let docsGenerated: Promise<boolean> | undefined;
+
+// `experimental_devServer` is a preset property that `StorybookConfig` doesn't list yet.
+const config: StorybookConfig & { experimental_devServer?: (app: ServerApp) => ServerApp } = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
 
   addons: [
@@ -30,12 +41,29 @@ const config: StorybookConfig = {
     },
   ],
 
+  // Serves the Markdown docs at /docs/<path>.md and /llms.txt (see scripts/storybook-docs.ts).
+  // A failed docs build stops `storybook build` but only logs during `storybook dev`.
+  async staticDirs(dirs, { configType }) {
+    docsGenerated ??= generateStorybookDocs({ failOnError: configType === 'PRODUCTION' });
+    await docsGenerated;
+    return [...(dirs ?? []), STORYBOOK_DOCS_DIR];
+  },
+
+  // Runs before Storybook's static handler (a Vite middleware would run after it),
+  // so the served docs get `charset=utf-8` in dev.
+  experimental_devServer(app) {
+    return app.use(utf8DocsMiddleware);
+  },
+
   framework: {
     name: getAbsolutePath('@storybook/react-vite'),
     options: {},
   },
 
-  async viteFinal(config) {
+  async viteFinal(config, { configType }) {
+    if (configType === 'DEVELOPMENT') {
+      config.plugins = [...(config.plugins ?? []), storybookDocsPlugin()];
+    }
     config.resolve = config.resolve ?? {};
     config.build = config.build ?? {};
     config.build.rollupOptions = config.build.rollupOptions ?? {};

@@ -1,6 +1,7 @@
 import logging from '@tryghost/logging';
+import { z } from 'zod';
 import type { MemberAccess } from './access';
-import type { WriteOrigin } from './schema';
+import type { SingleWriteOrigin } from './schema';
 
 export interface Actor {
   id: string;
@@ -13,6 +14,12 @@ export interface RequestContext {
   actor: Actor | null;
 }
 
+const ApiFrameContext = z.object({
+  user: z.string().nullish(),
+  integration: z.object({ id: z.string() }).nullish(),
+  api_key: z.unknown().optional(),
+});
+
 /**
  * Who is acting, read off an API frame's context.
  *
@@ -22,11 +29,7 @@ export interface RequestContext {
  * has none, and the history says so rather than guessing.
  */
 export function actingContext(context: unknown): RequestContext {
-  const frame = (context ?? {}) as {
-    user?: string;
-    integration?: { id: string };
-    api_key?: unknown;
-  };
+  const frame = ApiFrameContext.safeParse(context).data ?? {};
   const viaApiKey = Boolean(frame.api_key);
   if (frame.integration) {
     return { actor: { id: frame.integration.id, type: 'integration', viaApiKey } };
@@ -42,7 +45,7 @@ export function actingContext(context: unknown): RequestContext {
  * `actingContext`, so the values a request writes and the history it records name the
  * same writer. Null when nobody is acting, which no Admin API write should be.
  */
-export function adminWriteOrigin(context: unknown): WriteOrigin | null {
+export function adminWriteOrigin(context: unknown): SingleWriteOrigin | null {
   const { actor } = actingContext(context);
   if (!actor) {
     return null;

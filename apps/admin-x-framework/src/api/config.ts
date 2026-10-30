@@ -58,6 +58,10 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      uploads?: {
+        max?: number; // Bytes, enforced on file and media uploads but not images
+        error?: string;
+      };
       emails?: {
         maxPeriodic?: number;
         disabled?: boolean;

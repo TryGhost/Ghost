@@ -78,7 +78,7 @@ export const usePostSuccessModal = () => {
     const isEmailStillSending = !didEmailFail && emailStatus !== 'submitted';
     const emailCount = didEmailFail ? 0 : post.email?.email_count;
 
-    // Build description with React elements to match Ember modal format with bold text
+    // Built with React elements so parts of the description can be bold.
     const getDescription = () => {
       const parts = [];
 

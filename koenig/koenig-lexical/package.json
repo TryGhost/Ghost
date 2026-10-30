@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "1.13.0",
+  "version": "1.13.1",
   "description": "Ghost's Lexical-based rich text post editor",
   "repository": {
     "type": "git",
@@ -15,13 +15,9 @@
     "README.md",
     "dist/"
   ],
-  "main": "./dist/koenig-lexical.umd.js",
-  "module": "./dist/koenig-lexical.js",
+  "main": "./dist/koenig-lexical.js",
   "exports": {
-    ".": {
-      "import": "./dist/koenig-lexical.js",
-      "require": "./dist/koenig-lexical.umd.js"
-    },
+    ".": "./dist/koenig-lexical.js",
     "./style.css": "./dist/style.css"
   },
   "scripts": {
@@ -79,7 +75,6 @@
     "@mdx-js/rollup": "3.1.1",
     "@playwright/test": "catalog:",
     "@prettier/sync": "0.6.1",
-    "@sentry/vite-plugin": "5.3.0",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
     "@storybook/react": "10.4.6",
@@ -103,7 +98,7 @@
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "autoprefixer": "10.5.4",
+    "autoprefixer": "10.6.2",
     "clsx": "catalog:",
     "concurrently": "catalog:",
     "dompurify": "catalog:",
@@ -124,7 +119,7 @@
     "lodash": "catalog:",
     "pluralize": "8.0.0",
     "postcss": "catalog:",
-    "postcss-import": "16.1.1",
+    "postcss-import": "16.2.0",
     "prettier": "catalog:",
     "prettier-plugin-organize-attributes": "1.0.0",
     "prop-types": "15.8.1",
@@ -153,9 +148,6 @@
     "targets": {
       "build": {
         "inputs": [
-          {
-            "env": "IS_SHIPPING"
-          },
           "default",
           "^default"
         ]

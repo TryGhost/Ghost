@@ -9,6 +9,7 @@ const dbUtils = require('../../../utils/db-utils');
 const urlUtils = require('../../../../core/shared/url-utils').default;
 const LinkRedirectRepository = require('../../../../core/server/services/link-redirection/link-redirect-repository');
 const LinkRedirectsService = require('../../../../core/server/services/link-redirection/link-redirects-service');
+const DomainEvents = require('@tryghost/domain-events');
 const EventRegistry = require('../../../../core/server/lib/common/events');
 const { Redirect } = require('../../../../core/server/models');
 
@@ -55,6 +56,7 @@ describe('automation link redirects', function () {
     });
     linkRedirectsService = new LinkRedirectsService({
       linkRedirectRepository,
+      DomainEvents,
       config: { baseURL: new URL(urlUtils.getSiteUrl()) },
     });
 

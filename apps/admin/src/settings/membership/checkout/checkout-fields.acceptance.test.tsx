@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
@@ -41,11 +42,14 @@ const phoneField: MemberCustomField = {
   updated_at: null,
 };
 
+type HostSettings = ReturnType<typeof configResponse>['config']['hostSettings'];
+
 /** The checkout settings with this config saved, and the request that saves them. */
 async function openCheckoutFields(
   config: StripeCheckoutConfig,
-  fields: MemberCustomField[] = [phoneField],
+  fields: Parameters<typeof fakeMemberCustomFields>[0] = [phoneField],
   labs: Record<string, boolean> = {},
+  hostSettings?: HostSettings,
 ) {
   fakeSettingsScreens();
   fakeTiers([freeTier, paidTier]);
@@ -58,14 +62,22 @@ async function openCheckoutFields(
   const saveApi = fakeAdminEndpoint('PUT', '/stripe/checkout/config/', {
     checkout_config: [config],
   });
+  const allLabs = {
+    stripeCheckoutDesign: true,
+    stripeCheckoutCollection: true,
+    membersCustomFields: true,
+    ...labs,
+  };
+  const siteConfig = configResponse({ labs: allLabs });
+  if (hostSettings) {
+    siteConfig.config.hostSettings = hostSettings;
+  }
   await renderAdminApp('/settings/tiers/checkout', {
-    labs: {
-      stripeCheckoutDesign: true,
-      stripeCheckoutCollection: true,
-      membersCustomFields: true,
-      ...labs,
+    labs: allLabs,
+    boot: {
+      browseSettings: { response: stripeSettings() },
+      browseConfig: { response: siteConfig },
     },
-    boot: { browseSettings: { response: stripeSettings() } },
   });
 
   const modal = page.getByRole('region', { name: 'Checkout' });
@@ -179,6 +191,150 @@ describe('Checkout settings', () => {
       });
   });
 
+  // A site keeps its Stripe connection when the host switches its custom fields off, so it
+  // can still reach these settings. Its fields read as archived, and the server refuses a new
+  // one with the host's sentence.
+  it('says why a site whose host switched custom fields off cannot add one', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'Host Limit error, cannot save members_metafield.',
+            context: 'Custom fields are available on the Publisher plan and above.',
+            type: 'HostLimitError',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [{ ...phoneField, status: 'archived' }],
+      {},
+      { limits: { limitCustomFields: { disabled: true } } },
+    );
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(
+      page.getByRole('textbox', { name: 'New custom field for Save phone as' }),
+      'Phone',
+    );
+    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    await form.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(form.getByText('Custom fields are available on the Publisher plan and above.'))
+      .toBeVisible();
+    await expect.element(form.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  // Each save gets its own answer: the last attempt's refusal goes as the next save starts, rather
+  // than sitting under "Saving" or beside the new answer.
+  it('shows only the latest refusal when a new field is saved again', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      { errors: [{ message: 'Internal server error', type: 'InternalServerError' }] },
+      { status: 500 },
+    );
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(
+      page.getByRole('textbox', { name: 'New custom field for Save phone as' }),
+      'Contact phone',
+    );
+    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    await form.getByRole('button', { name: 'Save' }).click();
+    // Any refusal will do, so the test doesn't depend on the server's wording.
+    await expect.element(form.getByRole('alert')).toBeVisible();
+
+    let finishSaving = () => {};
+    const saving = new Promise<void>((resolve) => {
+      finishSaving = resolve;
+    });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => finishSaving());
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      async () => {
+        await saving;
+        return {
+          errors: [
+            {
+              message: 'Validation error, cannot save members_metafield.',
+              context: 'A custom field with this name already exists.',
+              type: 'ValidationError',
+              property: 'name',
+            },
+          ],
+        };
+      },
+      { status: 422 },
+    );
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect.element(form.getByRole('button', { name: 'Saving' })).toBeDisabled();
+    await expect.element(form.getByRole('alert')).not.toBeInTheDocument();
+
+    finishSaving();
+    await expect
+      .element(form.getByText('A custom field with this name already exists.'))
+      .toBeVisible();
+    expect(form.getByRole('alert').all()).toHaveLength(1);
+  });
+
+  // Like the CSV import's, a new field's form stays open until its save settles, as its Cancel
+  // does. Put away any other way, the save would choose the field over whatever was picked since.
+  it("keeps a new field's form open until it has saved, then chooses the field", async () => {
+    const workPhone = { ...phoneField, key: KeySchema.parse('work_phone'), name: 'Work phone' };
+    const fields = [phoneField];
+    let finishSaving = () => {};
+    const saving = new Promise<void>((resolve) => {
+      finishSaving = resolve;
+    });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => finishSaving());
+    fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
+      await saving;
+      fields.push(workPhone);
+      return { members_metafields: [workPhone] };
+    });
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      () => fields,
+    );
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+    // Found before the dropdown opens, which hides the rest of the page from role queries.
+    const elsewhere = modal.getByRole('tab', { name: 'Fields' }).element();
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const name = page.getByRole('textbox', { name: 'New custom field for Save phone as' });
+    await userEvent.fill(name, 'Work phone');
+    // Escape straight after Enter as well as later, as the form can be left the moment it saves.
+    await userEvent.keyboard('{Enter}{Escape}');
+    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    await expect.element(form.getByRole('button', { name: 'Saving' })).toBeDisabled();
+    await userEvent.keyboard('{Escape}');
+    await page.elementLocator(elsewhere).click({ force: true });
+    await expect.element(name).toBeVisible();
+
+    finishSaving();
+    await expect.element(picker).toHaveTextContent('Work phone');
+  });
+
   it('previews on paid tiers only, as a free tier has no checkout', async () => {
     const { modal } = await openCheckoutFields({
       design: { customize: false },
@@ -247,6 +403,84 @@ describe('Checkout settings', () => {
     await modal.getByRole('combobox', { name: 'Save phone as' }).click();
     await expect.element(page.getByRole('option', { name: 'Contact phone' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Recipient name' })).toHaveCount(0);
+  });
+
+  // No setting's name opens its dropdown, and clicking away from an open dropdown only closes it,
+  // so a click aimed between the close-set rows never acts on another one.
+  describe('with every setting showing', () => {
+    async function openEverySetting() {
+      return openCheckoutFields(
+        {
+          design: { customize: false },
+          shipping: {
+            collect: true,
+            allowed_countries: ['GB'],
+            address: { custom_field_key: 'delivery_address' },
+            name: { custom_field_key: 'recipient_name' },
+          },
+          phone: { collect: true, custom_field_key: 'contact_phone' },
+        },
+        [
+          phoneField,
+          { ...phoneField, key: KeySchema.parse('recipient_name'), name: 'Recipient name' },
+          {
+            ...phoneField,
+            key: KeySchema.parse('delivery_address'),
+            name: 'Delivery address',
+            type: 'address',
+          },
+        ],
+      );
+    }
+
+    it("opens a setting's dropdown from the dropdown only, never from its name", async () => {
+      const { modal } = await openEverySetting();
+
+      for (const setting of [
+        'Collect for',
+        'Ships to',
+        'Countries',
+        'Save address as',
+        'Save name as',
+        'Save phone as',
+      ]) {
+        await expect.element(modal.getByText(setting, { exact: true }).first()).toBeVisible();
+        const names = modal.getByText(setting, { exact: true }).all();
+        const controls = modal.getByRole('combobox', { name: setting }).all();
+        expect(names.length).toBeGreaterThan(0);
+        expect(controls).toHaveLength(names.length);
+        for (const [index, name] of names.entries()) {
+          await name.click();
+          await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+          await controls[index].click();
+          await expect.element(page.getByRole('listbox')).toBeVisible();
+          await userEvent.keyboard('{Escape}');
+          await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+        }
+      }
+    });
+
+    // Clicking away from an open dropdown only closes it, so the click can't switch on or off
+    // the part whose name it lands on.
+    it('closes an open dropdown without acting on what the click lands on', async () => {
+      const { modal } = await openEverySetting();
+      const shipping = modal.getByRole('switch', { name: 'Shipping address' });
+      // Found before a dropdown opens, which hides the rest of the page from role queries.
+      const shippingName = modal
+        .getByRole('group', { name: 'Shipping address' })
+        .getByText('Shipping address', { exact: true })
+        .element();
+
+      // Both kinds of picker: the tiers a part is collected for, and the field it's saved into.
+      for (const picker of ['Collect for', 'Save name as']) {
+        await modal.getByRole('combobox', { name: picker }).first().click();
+        await expect.element(page.getByRole('listbox')).toBeVisible();
+        await page.elementLocator(shippingName).click({ force: true });
+
+        await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+        await expect.element(shipping).toBeChecked();
+      }
+    });
   });
 
   it('lets business buyers give a tax ID on every paid tier, with no field to choose', async () => {

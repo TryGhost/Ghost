@@ -6,7 +6,6 @@ import { LimitService } from '@tryghost/limit-service';
 
 // @ts-expect-error This module lacks type definitions.
 import WebhookTrigger from '../../../core/server/services/webhooks/webhook-trigger';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../utils/config-utils';
 
 const WEBHOOK_EVENT = 'post.added';

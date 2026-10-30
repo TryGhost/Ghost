@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 // Filtering members by their custom field values over the real browse endpoint. Values are
@@ -132,6 +137,26 @@ describe('Members filtering by custom fields', function () {
 
       const matched = await browse("metafields.identity:-'custom.company'");
       assert.deepEqual(matched, [noCompany.email]);
+    });
+
+    // While the host switches custom fields off, every field reads as archived, so a saved
+    // view that names one keeps working the way it does for an archived field.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('still filters on the values members hold', async function () {
+        await createField({ name: 'Company' });
+        const ghost = await createMember({ company: 'Ghost' });
+        await createMember({ company: 'Acme' });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        const matched = await browse(
+          "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
+        );
+        assert.deepEqual(matched, [ghost.email]);
+      });
     });
   });
 

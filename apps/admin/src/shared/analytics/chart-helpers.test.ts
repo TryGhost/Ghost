@@ -10,6 +10,7 @@ import {
   getRangeDates,
   getRangeForStartDate,
   resolveEffectiveRangeDays,
+  setSiteTimezoneFallback,
   sanitizeChartData,
   truncateLeadingEmptyData,
 } from '@/shared/analytics/chart-helpers';
@@ -481,6 +482,77 @@ describe('chart-helpers', () => {
       expect(centsToDollars(0)).toBe(0);
       expect(centsToDollars(1050)).toBe(11);
       expect(centsToDollars(123456)).toBe(1235);
+    });
+  });
+
+  describe('timezone fallback', () => {
+    // Chrome on Windows reports timeZone as undefined when the OS time zone
+    // has no ICU mapping; moment().tz(undefined) returns undefined and the
+    // chained .endOf('day') used to throw
+    const mockResolvedTimezone = (timeZone: string | undefined) => {
+      const options = new Intl.DateTimeFormat().resolvedOptions();
+      vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+        ...options,
+        timeZone: timeZone as string,
+      });
+    };
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+      setSiteTimezoneFallback(undefined);
+    });
+
+    it.each([undefined, ''])(
+      'getRangeDates falls back to UTC when the browser reports %j',
+      (timeZone) => {
+        mockResolvedTimezone(timeZone);
+
+        const { startDate, endDate, timezone } = getRangeDates(30);
+
+        expect(timezone).toBe('Etc/UTC');
+        expect(endDate.isValid()).toBe(true);
+        expect(startDate.isValid()).toBe(true);
+        expect(endDate.diff(startDate, 'days')).toBe(29);
+      },
+    );
+
+    it('getRangeForStartDate falls back to UTC when the browser reports no timezone', () => {
+      mockResolvedTimezone(undefined);
+
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+      expect(getRangeForStartDate('2026-10-20T12:00:00Z')).toBe(10);
+    });
+
+    it('getRangeDates uses the site timezone fallback when the browser reports none', () => {
+      mockResolvedTimezone(undefined);
+      setSiteTimezoneFallback('America/Vancouver');
+
+      const { startDate, endDate, timezone } = getRangeDates(30);
+
+      expect(timezone).toBe('America/Vancouver');
+      expect(endDate.isValid()).toBe(true);
+      expect(startDate.isValid()).toBe(true);
+      expect(endDate.diff(startDate, 'days')).toBe(29);
+    });
+
+    it('prefers the browser timezone over the site timezone fallback', () => {
+      mockResolvedTimezone('Europe/Berlin');
+      setSiteTimezoneFallback('America/Vancouver');
+
+      expect(getRangeDates(30).timezone).toBe('Europe/Berlin');
+    });
+
+    it('getRangeForStartDate uses the site timezone fallback when the browser reports none', () => {
+      mockResolvedTimezone(undefined);
+      setSiteTimezoneFallback('America/Vancouver');
+
+      vi.useFakeTimers();
+      // 01:00 UTC on 29 Oct is still 28 Oct in Vancouver (UTC-7), so the count
+      // is one day shorter than the UTC fallback would give
+      vi.setSystemTime(new Date('2026-10-29T01:00:00Z'));
+      expect(getRangeForStartDate('2026-10-20T12:00:00Z')).toBe(9);
     });
   });
 

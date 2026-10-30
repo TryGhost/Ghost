@@ -109,10 +109,7 @@ function UserMenuAppearance() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger
-        className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground"
-        data-test-nav="appearance"
-      >
+      <DropdownMenuSubTrigger className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground">
         <LucideIcon.Palette />
         <UserMenuItem.Label>Appearance</UserMenuItem.Label>
         <span className="text-sm text-muted-foreground">{THEME_LABELS[theme]}</span>
@@ -122,7 +119,6 @@ function UserMenuAppearance() {
           <DropdownMenuItem
             key={value}
             aria-label={`${label} appearance`}
-            data-test-theme-option={value}
             disabled={isSettingTheme}
             onSelect={() => {
               void setTheme(value);
@@ -203,10 +199,7 @@ function UserMenu(props: UserMenuProps) {
               {currentUser.data?.email}
             </span>
           </div>
-          <LucideIcon.ChevronsUpDown
-            className="ml-auto size-4 text-gray-700"
-            data-test-nav="arrow-down"
-          />
+          <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-gray-700" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -220,7 +213,6 @@ function UserMenu(props: UserMenuProps) {
         <DropdownMenuSeparator />
         <UserMenuItem
           asChild={false}
-          data-test-nav="whatsnew"
           onSelect={() => {
             props.onOpenWhatsNew?.();
           }}
@@ -263,7 +255,7 @@ function UserMenu(props: UserMenuProps) {
  * Floating profile menu for contributor users
  * Positioned in top-right corner, minimal menu with essential actions only
  *
- * Mirrors Ember behavior where contributors have a simplified menu with:
+ * Contributors get a simplified menu with:
  * - Posts (navigate to posts list)
  * - View site (open site in new tab)
  * - Your profile (navigate to profile settings)

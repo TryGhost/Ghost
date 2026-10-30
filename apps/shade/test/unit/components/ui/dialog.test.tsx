@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
-import { describe, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { describe, it, vi } from 'vitest';
+import { fireEvent, screen, within } from '@testing-library/react';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,90 @@ describe('Dialog Components', () => {
     const trigger = screen.getByTestId('dialog-trigger');
     assert.ok(trigger, 'Dialog trigger should be rendered');
     assert.equal(trigger.textContent, 'Open Dialog', 'Trigger should have correct text');
+  });
+
+  it('pins the dialog to the window by default', () => {
+    render(
+      <Dialog open>
+        <DialogContent data-testid="dialog-content">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByTestId('dialog-content');
+    assert.ok(content.className.includes('fixed'), 'Should be fixed in the window');
+  });
+
+  it('scrolls the whole dialog with the backdrop when scroll is overlay', () => {
+    render(
+      <Dialog open>
+        <DialogContent data-testid="dialog-content" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByTestId('dialog-content');
+    assert.ok(!content.className.includes('fixed'), 'Should sit in the backdrop, not the window');
+    const overlay = content.closest('[data-slot="dialog-overlay"]');
+    assert.ok(overlay, 'The dialog should sit inside the backdrop');
+    assert.ok(
+      overlay.className.includes('overflow-y-auto'),
+      'The backdrop should be the scroll container',
+    );
+    assert.ok(overlay.className.includes('fixed'), 'The backdrop should cover the window');
+  });
+
+  it('shows a non-modal overlay dialog and leaves the page behind it usable', () => {
+    render(
+      <Dialog modal={false} open>
+        <DialogContent data-testid="dialog-content" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByTestId('dialog-content');
+    const scroller = content.closest<HTMLElement>('[data-slot="dialog-scroller"]');
+    assert.ok(scroller, 'The dialog should sit in a scroll container');
+    assert.ok(
+      scroller.className.includes('pointer-events-none'),
+      'Presses beside the dialog should reach the page',
+    );
+    assert.ok(content.className.includes('pointer-events-auto'), 'The dialog should take presses');
+  });
+
+  it('closes an overlay dialog only when the backdrop is clicked, not just pressed', async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={onOpenChange}>
+        <DialogContent data-testid="dialog-content" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+    // Radix starts listening for outside presses on the next tick.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    const overlay = screen
+      .getByTestId('dialog-content')
+      .closest<HTMLElement>('[data-slot="dialog-overlay"]');
+    assert.ok(overlay);
+
+    // Dragging the backdrop's scrollbar presses the backdrop but never clicks it.
+    fireEvent.pointerDown(overlay, { button: 0 });
+    fireEvent.pointerUp(overlay, { button: 0 });
+    assert.equal(onOpenChange.mock.calls.length, 0, 'A press alone should keep the dialog open');
+
+    fireEvent.pointerDown(overlay, { button: 0 });
+    fireEvent.click(overlay);
+    assert.deepEqual(onOpenChange.mock.calls, [[false]], 'A click on the backdrop should close');
   });
 
   it('applies custom className to DialogHeader correctly', () => {

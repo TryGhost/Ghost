@@ -86,7 +86,7 @@ describe('Front-end gift links — theme toast override', function () {
     });
     await testUtils.fixtures.insertPosts([paidPost]);
 
-    const giftLinksService = require('../../core/server/services/gift-links');
+    const giftLinksService = require('../../core/server/services/gift-links').default;
     const post = await giftLinksService.service.ensure({ actor: null }, paidPost.id);
     token = post.giftLinks[0].token;
 

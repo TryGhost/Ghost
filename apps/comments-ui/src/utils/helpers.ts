@@ -83,10 +83,10 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     return t('One hour ago');
   }
 
-  // Check if dates are on different calendar days by comparing UTC dates
-  const dateUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const nowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const dayDiff = Math.floor((nowUTC.getTime() - dateUTC.getTime()) / (1000 * 60 * 60 * 24));
+  // Compare local calendar days using UTC ordinals to avoid DST-length days.
+  const dateLocalDay = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowLocalDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const dayDiff = Math.floor((nowLocalDay - dateLocalDay) / (1000 * 60 * 60 * 24));
 
   if (dayDiff === 1) {
     return t('Yesterday');

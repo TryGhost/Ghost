@@ -6,6 +6,7 @@ import {
   csvCellsForFields,
   csvColumnsForField,
   fieldValuesFromCsvRow,
+  hasFieldColumns,
   isMetafieldColumn,
   type CsvField,
 } from '../src/index.ts';
@@ -132,6 +133,21 @@ describe('metafield CSV columns', function () {
       { column: 'metafields.custom.shipping_address.postal_code', part: 'postal_code' },
       { column: 'metafields.custom.shipping_address.country', part: 'country' },
     ]);
+  });
+
+  it('finds a column for a field in any row, filled in or not', function () {
+    const nickname = customField('nickname', 'short_text');
+    const address = customField('shipping_address', 'address');
+    // A short row leaves out the columns it doesn't reach.
+    const short = { email: 'a@b.com' };
+
+    assert.equal(hasFieldColumns([nickname], [short, { 'metafields.custom.nickname': '' }]), true);
+    assert.equal(
+      hasFieldColumns([address], [short, { 'metafields.custom.shipping_address.city': 'Leeds' }]),
+      true,
+    );
+    assert.equal(hasFieldColumns([nickname, address], [short, { name: 'Bex' }]), false);
+    assert.equal(hasFieldColumns([], [{ 'metafields.custom.nickname': 'Bex' }]), false);
   });
 
   it('recognises a metafield column by its qualifier', function () {

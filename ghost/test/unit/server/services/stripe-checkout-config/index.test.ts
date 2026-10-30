@@ -14,12 +14,15 @@ describe('Stripe Checkout config root', function () {
   let previousRoot: NodeJS.Module | undefined;
   let readKnex: sinon.SinonStub;
 
-  /** A fresh root, built over custom field bindings the test chooses. */
-  function loadRoot(bindings: unknown): typeof StripeCheckoutConfigRoot {
+  /** A fresh root, built over the custom fields services the test chooses. */
+  function loadRoot(services: {
+    bindings?: unknown;
+    fields?: unknown;
+  }): typeof StripeCheckoutConfigRoot {
     require(metafieldsPath);
     const metafields = require.cache[metafieldsPath];
     assert.ok(metafields);
-    sandbox.replace(metafields, 'exports', { bindings });
+    sandbox.replace(metafields, 'exports', services);
     return require(rootPath).default;
   }
 
@@ -39,7 +42,7 @@ describe('Stripe Checkout config root', function () {
   });
 
   it('acquires the database only at init, and keeps the same services across later inits', async function () {
-    const root = loadRoot({});
+    const root = loadRoot({ bindings: {}, fields: {} });
     assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(readKnex);
 
@@ -52,7 +55,7 @@ describe('Stripe Checkout config root', function () {
   });
 
   it('refuses to start before the custom fields services are set up', async function () {
-    const root = loadRoot(undefined);
+    const root = loadRoot({});
 
     await assert.rejects(root.init(), IncorrectUsageError);
     assert.throws(() => root.service, IncorrectUsageError);

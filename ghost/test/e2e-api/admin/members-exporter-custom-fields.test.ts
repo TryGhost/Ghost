@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 
 const Papa = require('papaparse');
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 const CORE_COLUMNS = [
@@ -339,6 +344,27 @@ describe('Members API — exportCSV with custom fields', function () {
 
     assert.deepEqual(columns, [...CORE_COLUMNS, columnFor(kept.key)]);
     assert.equal(rowFor(member.id)[columnFor(kept.key)], 'Bex');
+  });
+
+  // While the host switches custom fields off, every field reads as archived, so the export
+  // has none of them, and has them all again once the host switches them back on.
+  describe('while the host switches custom fields off', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('excludes every field, and includes them again once they are back on', async function () {
+      const field = await createField('Nickname', 'short_text');
+      const member = await createMember({ [field.key]: 'Bex' });
+
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+      const { columns } = await exportCSV();
+      assert.deepEqual(columns, CORE_COLUMNS);
+
+      await hostLimits.restoreHostLimits();
+      const { rowFor } = await exportCSV();
+      assert.equal(rowFor(member.id)[columnFor(field.key)], 'Bex');
+    });
   });
 
   it('omits custom field columns on a site that defines none', async function () {

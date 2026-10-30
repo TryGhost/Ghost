@@ -7,7 +7,7 @@ const supertest = require('supertest');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
-const { mockManager } = require('../../utils/e2e-framework');
+const { mockManager, hostLimits } = require('../../utils/e2e-framework');
 
 // The importer reading custom field values back out of a members CSV, exercised at the
 // API boundary. Its sibling members-exporter-custom-fields covers the write direction;
@@ -407,6 +407,29 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.invalid.length, 0);
 
     assert.notEqual(await findMember(email), undefined);
+  });
+
+  // While the host switches custom fields off, every field reads as archived, so a file
+  // naming one imports its members and drops the column, the way it does for an archived field.
+  describe('while the host switches custom fields off', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('imports the members and writes nothing into any field', async function () {
+      const key = await createField('Nickname', 'short_text');
+      const email = 'cf-switched-off@example.com';
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Bex\n`);
+      assert.equal(res.status, 201);
+      assert.equal(res.body.meta.stats.imported, 1);
+      assert.equal(res.body.meta.stats.invalid.length, 0);
+
+      await hostLimits.restoreHostLimits();
+      const member = await findMember(email);
+      assert.equal(member.metafields?.custom?.[key], undefined);
+    });
   });
 
   it('ignores custom field columns on a site that defines none', async function () {

@@ -143,7 +143,7 @@ describe('usePostsFilterState', () => {
     });
   });
 
-  // "Show all posts" in the filtered empty state. Ember's link resets
+  // "Show all posts" in the filtered empty state. It resets
   // type/author/tag/visibility but deliberately NOT order, so a chosen sort
   // survives clearing the filters.
   it('clears the filters but keeps the sort', async () => {

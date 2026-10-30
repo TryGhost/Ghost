@@ -8,7 +8,7 @@ import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import MemberCustomFields from '../common/member-custom-fields';
-import { changedCustomFields, drawableCustomFields } from '../../utils/custom-fields';
+import { changedCustomFields, drawableCustomFields, withChange } from '../../utils/custom-fields';
 
 export default class AccountProfilePage extends React.Component {
   static contextType = AppContext;
@@ -151,7 +151,7 @@ export default class AccountProfilePage extends React.Component {
     this.setState(({ metafields }) => ({
       metafields: {
         ...metafields,
-        [field.key]: part ? { ...(metafields[field.key] || {}), [part]: value } : value,
+        [field.key]: withChange(field, metafields[field.key], part, value),
       },
     }));
   }

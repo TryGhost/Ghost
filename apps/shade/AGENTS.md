@@ -2,22 +2,24 @@
 
 Read the human documentation before changing Shade:
 
-- [`README.md`](./README.md) covers integration, development, and package tests.
-- [Introduction](./src/docs/introduction.mdx) and
-  [Layers](./src/docs/layers.mdx) explain the design system and where code
-  belongs.
-- [Contributing](./src/docs/contributing.mdx) defines implementation, Storybook,
-  testing, and review requirements.
-- Review the [common anti-patterns](./src/docs/contributing.mdx#common-anti-patterns)
-  before making a change.
-- [Component contracts](./src/docs/component-contracts.mdx),
+- [`README.md`](./README.md) is for people using Shade: installing it in an
+  app, and how Ghost Admin sets it up.
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) is for working on Shade: development,
+  layers, conventions, Storybook, tests and publishing. Read
+  [Layers](./CONTRIBUTING.md#layers) to decide where code belongs, and review
+  the [common anti-patterns](./CONTRIBUTING.md#common-anti-patterns) before
+  making a change.
+- The Storybook docs in `src/docs/` explain how to use Shade:
+  [introduction](./src/docs/introduction.mdx),
+  [component contracts](./src/docs/component-contracts.mdx),
   [patterns](./src/docs/patterns-guide.mdx),
   [primitives](./src/docs/primitives-guide.mdx),
   [recipes](./src/docs/recipes-guide.mdx), and
-  [tokens](./src/docs/tokens.mdx) provide layer-specific guidance.
+  [tokens](./src/docs/tokens.mdx).
 
-- When constructing or changing page headers or their actions, use the
-  [Shade page header skill](../../.agents/skills/shade-page-header/SKILL.md).
+- When building screens with Shade, use the design skills in
+  [`skills/`](./skills/). For page headers and their actions, use
+  [`shade-page-header`](./skills/shade-page-header/SKILL.md).
 
 ## Required workflow
 
@@ -34,5 +36,17 @@ Read the human documentation before changing Shade:
   use Shade primitives for layout-only wrappers.
 - Run `pnpm lint` and `pnpm test`. Visually verify changed UI and stories in
   Storybook.
-- Update the Storybook human documentation when a shared Shade convention
-  changes; do not make this file the only source.
+- Update the Storybook docs when a shared rule for using Shade changes, and
+  `CONTRIBUTING.md` when a rule for working on Shade changes; do not make this
+  file the only source.
+- The npm package ships code only. Storybook serves the docs as Markdown at
+  `/docs/<page>.md` and `/llms.txt`, generated from the `.mdx` sources; see
+  [Docs for agents](./CONTRIBUTING.md#docs-for-agents).
+- The design skills live in [`skills/`](./skills/). Apps install them with
+  `npx skills@1.7.4 add TryGhost/Ghost/apps/shade/skills --skill '*'`; `build-ghost-app-ui` is
+  their front door and is for apps only. In this repo, `.agents/skills` links
+  the other six, so agents working on Ghost find them as before. They hold no
+  rules: each routes to the docs, so a rule change belongs in the `.mdx`
+  source. Follow [Skills](./CONTRIBUTING.md#skills) when changing them.
+- `dev-skill/` holds the internal `ghost-app-ui-dev-setup` skill for Ghost's
+  own team. It isn't shipped or installed with the design skills.

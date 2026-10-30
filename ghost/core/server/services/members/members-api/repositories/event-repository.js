@@ -108,12 +108,10 @@ module.exports = class EventRepository {
         { type: 'gift_ended_event', action: 'getGiftEndedEvents' },
       );
 
-      if (this._AutomatedEmailRecipient) {
-        pageActions.push({
-          type: 'automated_email_sent_event',
-          action: 'getAutomatedEmailSentEvents',
-        });
-      }
+      pageActions.push({
+        type: 'automated_email_sent_event',
+        action: 'getAutomatedEmailSentEvents',
+      });
     }
 
     if (this._EmailRecipient) {

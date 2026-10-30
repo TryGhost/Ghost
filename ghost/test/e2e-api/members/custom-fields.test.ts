@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
+import { z } from 'zod';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 
 const MEMBER_EMAIL = 'member@example.com';
 const SHOE_SIZE = 'Shoe size';
@@ -181,6 +187,41 @@ describe('Member Custom Fields Members API', function () {
       { custom: { [fieldKey]: '9' } },
       'and the answer they gave for the archived one is not handed back',
     );
+  });
+
+  // While the host switches custom fields off, every field and every answer is kept, and
+  // they all read as archived until the host switches them back on.
+  describe('while the host switches custom fields off', function () {
+    beforeEach(async function () {
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+    });
+
+    // Before the outer cleanup, which archives and deletes fields: the limit refuses both.
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('offers a member no fields and hands back none of their answers', async function () {
+      const { body: offered } = await membersAgent
+        .get('/api/member/metafields/custom/')
+        .expectStatus(200);
+      assert.deepEqual(offered.members_metafields, []);
+
+      const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.equal(account.metafields?.custom?.[fieldKey], undefined);
+    });
+
+    it('refuses a member writing to a field, and keeps the answer they gave', async function () {
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: '12' } } })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, `metafields.custom.${fieldKey}`);
+
+      await hostLimits.restoreHostLimits();
+      const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.deepEqual(account.metafields, { custom: { [fieldKey]: '9' } });
+    });
   });
 
   it('will not name the fields to someone who is not signed in', async function () {
@@ -537,11 +578,7 @@ describe('Member Custom Fields Members API', function () {
 
       const stored = await readMemberAsStaff();
       assert.deepEqual(stored.metafields.custom, { [fieldKey]: '9' }, 'nothing else was written');
-      assert.equal(
-        ({} as Record<string, unknown>).anything,
-        undefined,
-        'and nothing leaked onto Object',
-      );
+      assert.equal('anything' in {}, false, 'and nothing leaked onto Object');
     });
 
     // A write names several values, and a composite is several again. Refusing at the
@@ -569,9 +606,10 @@ describe('Member Custom Fields Members API', function () {
       assert.equal(error.property, `metafields.custom.${addressKey}.line1`);
 
       // And the whole set rides alongside, each naming the value it belongs to.
-      const refused = (error.details as Array<{ property: string }>).map(
-        (detail) => detail.property,
-      );
+      const refused = z
+        .array(z.object({ property: z.string() }))
+        .parse(error.details)
+        .map((detail) => detail.property);
       assert.deepEqual(refused.sort(), [
         `metafields.custom.${addressKey}.country`,
         `metafields.custom.${addressKey}.line1`,

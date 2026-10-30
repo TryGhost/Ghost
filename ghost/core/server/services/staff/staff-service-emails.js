@@ -2,7 +2,7 @@ const { promises: fs, readFileSync } = require('fs');
 const path = require('path');
 const moment = require('moment');
 const { globSync } = require('glob');
-const emailAddressParser = require('../email-address/email-address-parser');
+const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
 
 class StaffServiceEmails {
   constructor({
@@ -593,7 +593,7 @@ class StaffServiceEmails {
   }
 
   get fromEmailAddress() {
-    return emailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
+    return formatAddressForDelivery(this.settingsHelpers.getDefaultEmail());
   }
 
   extractInitials(name = '') {
@@ -667,13 +667,9 @@ class StaffServiceEmails {
       ...sharedData,
     });
 
-    const juice = require('juice');
+    const { inlineCss } = require('../../lib/email-rendering/inline-css');
 
-    return juice(html, {
-      inlinePseudoElements: true,
-      removeStyleTags: true,
-      resolveCSSVariables: false,
-    });
+    return inlineCss(html);
   }
 
   async renderText(templateName, data) {

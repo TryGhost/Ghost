@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.73.0-rc.0",
+  "version": "6.74.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -22,8 +22,6 @@
   "files": [
     "core/",
     "!core/built/**/*.map",
-    "!core/built/**/test-*",
-    "!core/built/**/tests-*",
     "content/*/README.md",
     "content/themes/casper/",
     "!content/themes/casper/pnpm-lock.yaml",
@@ -77,7 +75,7 @@
     "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1079.0",
+    "@aws-sdk/client-s3": "3.1157.0",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
@@ -133,7 +131,7 @@
     "@tryghost/referrer-parser": "0.1.25",
     "@tryghost/request": "catalog:",
     "@tryghost/root-utils": "2.3.18",
-    "@tryghost/security": "3.3.18",
+    "@tryghost/security": "catalog:",
     "@tryghost/social-urls": "0.1.66",
     "@tryghost/string": "catalog:",
     "@tryghost/tpl": "catalog:",
@@ -210,10 +208,10 @@
     "moment-timezone": "catalog:",
     "mppx": "catalog:",
     "multer": "2.4.0",
-    "mysql2": "3.24.5",
+    "mysql2": "3.24.6",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
-    "nodemailer": "10.0.16",
+    "nodemailer": "catalog:",
     "on-headers": "1.1.0",
     "otplib": "12.0.1",
     "papaparse": "5.5.4",
@@ -251,7 +249,7 @@
     "@types/js-yaml": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/jsonwebtoken": "9.0.10",
-    "@types/lodash": "4.17.25",
+    "@types/lodash": "4.17.27",
     "@types/lodash-es": "4.17.12",
     "@types/luxon": "catalog:",
     "@types/mime-types": "3.0.1",

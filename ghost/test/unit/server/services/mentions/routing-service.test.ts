@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import nock from 'nock';
 const ObjectID = require('bson-objectid').default;
 
+const logging = require('@tryghost/logging');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const RoutingService = require('../../../../../core/server/services/mentions/routing-service');
 
@@ -20,6 +21,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,
@@ -36,6 +38,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,
@@ -62,6 +65,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,
@@ -81,6 +85,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,
@@ -102,6 +107,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,
@@ -123,6 +129,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,
@@ -144,6 +151,7 @@ describe('RoutingService', function () {
           getByURL: sinon.stub(),
         };
         const routingService = new RoutingService({
+          logging,
           siteUrl,
           resourceService,
           externalRequest,

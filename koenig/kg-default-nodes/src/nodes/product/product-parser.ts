@@ -22,6 +22,10 @@ export function parseProductNode(ProductNode: new (data: Record<string, unknown>
                         if (img && img.getAttribute('src')) {
                             payload.productImageSrc = img.getAttribute('src');
 
+                            if (img.getAttribute('alt')) {
+                                payload.productImageAlt = img.getAttribute('alt');
+                            }
+
                             if (img.getAttribute('width')) {
                                 const productImageWidth = Number(img.getAttribute('width'));
 

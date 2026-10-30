@@ -42,9 +42,8 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { TagsResponseType } from '@tryghost/admin-x-framework/api/tags';
 import type { TagEditableFields, TagFieldName } from './tag-detail-edit';
 
-// The create screen reuses this route with the sentinel slug "new". Safe
-// because Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
-// tag with the literal slug "new" was already unreachable in the admin.
+// The create screen reuses this route with the sentinel slug "new", so a tag
+// with the literal slug "new" is unreachable in the admin.
 const CREATE_SLUG = 'new';
 
 type TagFieldErrors = Partial<Record<TagFieldName, string>>;
@@ -62,8 +61,8 @@ const TagDetail: React.FC = () => {
   const handleError = useHandleError();
   const isCreating = tagSlug === CREATE_SLUG;
 
-  // `include=count.posts` mirrors the Ember route so the delete modal can
-  // report how many posts the tag will be removed from.
+  // `include=count.posts` lets the delete modal report how many posts the tag
+  // will be removed from.
   const { data, isLoading, error, refetch } = useTagBySlug(tagSlug, {
     enabled: !!tagSlug && !isCreating,
     searchParams: { include: 'count.posts' },
@@ -76,8 +75,8 @@ const TagDetail: React.FC = () => {
     (error as { response?: Response } | null)?.response?.status === 404;
   const loadError = !isCreating && !isLoading && !!error && !notFound;
 
-  // `blogUrl` is not part of the config API response — Ember derives it
-  // client-side from the site endpoint's `url` (`config-manager.js`).
+  // `blogUrl` is not part of the config API response, so it is derived from
+  // the site endpoint's `url`.
   const { data: siteData } = useBrowseSite();
   const blogUrl = siteData?.site.url.replace(/\/$/, '') ?? '';
 
@@ -95,8 +94,8 @@ const TagDetail: React.FC = () => {
   routeKeyRef.current = tagSlug;
   const savedRouteRef = React.useRef<string | null>(null);
   // Whether the user has manually edited the slug on the create screen —
-  // once they have, name changes stop regenerating it (Ember `tag-form.js`
-  // `hasChangedSlug`). Clearing the slug re-enables regeneration.
+  // once they have, name changes stop regenerating it. Clearing the slug
+  // re-enables regeneration.
   const hasChangedSlugRef = React.useRef(false);
   const [saveStatus, setSaveStatus] = React.useState<SaveStatus>('idle');
   const [showDelete, setShowDelete] = React.useState(false);
@@ -242,7 +241,7 @@ const TagDetail: React.FC = () => {
     }
     const validationErrors: TagFieldErrors = { ...validateTagDraft(draft) };
     // The colour field validates itself on input/blur; a lingering error
-    // there blocks saving exactly like Ember's pre-save errors check.
+    // there blocks saving too.
     if (errors.accentColor) {
       validationErrors.accentColor = errors.accentColor;
     }
@@ -332,8 +331,6 @@ const TagDetail: React.FC = () => {
     resumeBlockedNavigationAfterSave,
   ]);
 
-  // Cmd/Ctrl+S saves, matching the `{{on-key "cmd+s"}}` binding on the
-  // Ember save button.
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -345,9 +342,8 @@ const TagDetail: React.FC = () => {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onSave]);
 
-  // Save button state (Save / Saving / Saved / Retry), mirroring the Ember
-  // task button. Unlike the member screen, the button stays enabled with no
-  // unsaved changes — Ember lets a clean tag be re-saved.
+  // Save button state (Save / Saving / Saved / Retry). Unlike the member
+  // screen, the button stays enabled so a clean tag can be re-saved.
   let saveLabel: React.ReactNode = 'Save';
   let saveVariant: ButtonProps['variant'] = 'default';
   if (saveStatus === 'pending') {

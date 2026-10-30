@@ -14,8 +14,6 @@ import { LucideIcon } from '@tryghost/shade/utils';
  * One icon per action. Kept here rather than on the item itself so
  * `post-context-menu-items.ts` stays a plain module with no React in it — it is
  * the piece the unit tests lean on hardest.
- *
- * Star, Tag and Lock match the icons Ember uses for the same three actions.
  */
 const POST_MENU_ICONS: Record<PostContextMenuKey, typeof LucideIcon.Link> = {
   'copy-link': LucideIcon.Link,
@@ -42,9 +40,8 @@ interface PostsContextMenuProps {
   /** Only this row may offer a gift link, which is a single-post action. */
   showGiftLink: boolean;
   /**
-   * Off for authors and contributors. Ember bails before intercepting the
-   * event, letting the browser's own menu through; anything else would swap a
-   * working native menu for an empty box.
+   * Off for authors and contributors, who keep the browser's own menu;
+   * anything else would swap a working native menu for an empty box.
    */
   enabled: boolean;
   onOpenChange: (open: boolean) => void;
@@ -64,14 +61,13 @@ export function PostsContextMenu({
   onOpenChange,
   onAction,
 }: PostsContextMenuProps) {
-  // Ember bails before intercepting the event for roles that cannot act, so
-  // they keep the browser's own menu rather than getting an empty box.
+  // Roles that cannot act keep the browser's own menu rather than getting an
+  // empty box.
   //
   // Deliberately *not* also gating on `visible.length === 0`: with nothing
   // selected the list is empty until the right-click's transient selection
   // lands, so refusing to render the trigger would mean the menu could never
-  // open at all. Ember has the same ordering — `openContextMenu` selects the
-  // row first, then opens.
+  // open at all.
   if (!enabled) {
     return <>{children}</>;
   }

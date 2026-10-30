@@ -188,8 +188,6 @@ Caddyfile
 # Typescript build artifacts
 tsconfig.tsbuildinfo
 
-# Admin X
-
 # Tinybird
 .tinyb
 .venv

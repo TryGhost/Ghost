@@ -1,5 +1,3 @@
-const oembedService = require('../oembed');
-
 function isTransientError(err) {
   const statusCode = err.statusCode || err.response?.statusCode;
   return (
@@ -16,11 +14,22 @@ function tagFetchError(err) {
 }
 
 module.exports = class WebmentionMetadata {
+  /** @type {import('../oembed/oembed-service')} */
+  #oembedService;
+
   /**
    * Helpers that change the URL for which metadata for a given external resource is fetched. Return undefined to now handle the URL.
    * @type {((url: URL) => URL|undefined)[]}
    */
   #mappers = [];
+
+  /**
+   * @param {object} deps
+   * @param {import('../oembed/oembed-service')} deps.oembedService
+   */
+  constructor({ oembedService }) {
+    this.#oembedService = oembedService;
+  }
 
   /**
    * @param {(url: URL) => URL|undefined} mapper
@@ -51,7 +60,7 @@ module.exports = class WebmentionMetadata {
     const mappedUrl = this.#getMappedUrl(url);
     let data;
     try {
-      data = await oembedService.fetchOembedDataFromUrl(mappedUrl.href, 'mention', {
+      data = await this.#oembedService.fetchOembedDataFromUrl(mappedUrl.href, 'mention', {
         timeout: {
           request: 15000,
         },
@@ -80,7 +89,7 @@ module.exports = class WebmentionMetadata {
       // Still need to fetch body and contentType separately now
       // For verification
       try {
-        const { body, contentType } = await oembedService.fetchPageHtml(url, {
+        const { body, contentType } = await this.#oembedService.fetchPageHtml(url, {
           timeout: {
             request: 15000,
           },

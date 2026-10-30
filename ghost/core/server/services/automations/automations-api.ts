@@ -13,7 +13,6 @@ import { knex } from '../../data/db';
 import lexicalLib from '../../lib/lexical';
 // @ts-expect-error This module lacks type definitions.
 import requestExternal from '../../lib/request-external';
-// @ts-expect-error This module lacks type definitions.
 import { create as createTinybirdClient } from '../stats/utils/tinybird';
 // @ts-expect-error This module lacks type definitions.
 import TinybirdServiceWrapper from '../tinybird';
@@ -24,16 +23,8 @@ import {
   searchCursorScope,
 } from './automation-member-search';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
-import type {
-  Automation,
-  AutomationsRepository,
-  EditAutomationData,
-} from './automations-repository';
-import {
-  addAutomationDataSchema,
-  editAutomationDataSchema,
-  editAutomationStatusOnlySchema,
-} from './automations-schemas';
+import type { Automation, AutomationsRepository } from './automations-repository';
+import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import {
@@ -44,7 +35,6 @@ import {
 } from './tinybird-automation-stats';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
-import { buildInvalidAutomationPayloadMessage } from './util/build-invalid-automation-payload-message';
 
 const RUN_PAGE_SIZE = 50;
 
@@ -58,11 +48,6 @@ const messages = {
   automationNotFound: 'Automation not found.',
   runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
-  invalidAutomationCreationPayload: 'Invalid automation payload.',
-  invalidAutomationEditPayload: 'Invalid automation edit payload.',
-  invalidAutomationStatus: 'Automation status must be one of: active, inactive, archived.',
-  invalidStatusOnlyEdit:
-    'Status-only automation edits can only set status to inactive or archived.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
   duplicateAutomationEdge: 'Automation edges must be unique.',
@@ -297,65 +282,22 @@ export async function browseActionLinks(automationId: string, actionId: string) 
   return links;
 }
 
-export async function add(data: unknown) {
-  const result = addAutomationDataSchema.safeParse(data);
-  if (!result.success) {
-    const issue = result.error.issues[0];
-    throwValidationError(
-      buildInvalidAutomationPayloadMessage(
-        result.error.issues,
-        messages.invalidAutomationCreationPayload,
-      ),
-      String(issue.path[0] ?? 'automations'),
-    );
-  }
-  await validateAutomationData(result.data);
-  return await repository.add(result.data);
+export async function add(data: AddAutomationData) {
+  await validateAutomationData(data);
+  return await repository.add(data);
 }
 
-export async function edit(automationId: string, data: unknown) {
-  const parsedData = await validateEditData(data);
-
-  const automation = await repository.edit(automationId, parsedData);
-
+export async function edit(automationId: string, data: EditAutomationData) {
+  if ('actions' in data && data.actions !== undefined) {
+    await validateAutomationData(data);
+  }
+  const automation = await repository.edit(automationId, data);
   if (!automation) {
     throw new errors.NotFoundError({
       message: tpl(messages.automationNotFound),
     });
   }
-
   return automation;
-}
-
-async function validateEditData(data: unknown): Promise<EditAutomationData> {
-  // We use two separate schemas to preserve field-level errors, which Zod loses
-  // if we use its union types.
-  const hasGraphField =
-    typeof data === 'object' && data !== null && ('actions' in data || 'edges' in data);
-  const schema = hasGraphField ? editAutomationDataSchema : editAutomationStatusOnlySchema;
-  const result = schema.safeParse(data);
-
-  if (!result.success) {
-    if (result.error.issues.some((issue) => issue.path[0] === 'status')) {
-      throwValidationError(
-        hasGraphField ? messages.invalidAutomationStatus : messages.invalidStatusOnlyEdit,
-        'status',
-      );
-    }
-
-    throwValidationError(
-      buildInvalidAutomationPayloadMessage(
-        result.error.issues,
-        messages.invalidAutomationEditPayload,
-      ),
-    );
-  }
-
-  const parsedData: EditAutomationData = result.data;
-  if (parsedData.actions !== undefined) {
-    await validateAutomationData(parsedData);
-  }
-  return parsedData;
 }
 
 async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {

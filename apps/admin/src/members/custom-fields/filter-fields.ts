@@ -12,69 +12,85 @@ import {
   textSemantics,
 } from '@/shared/filters';
 import {
-  memberCustomFieldKind,
-  memberCustomFieldParts,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
+  matchShape,
+  type FieldType,
+  type Leaf,
+  type LeafKind,
+} from '@tryghost/metafield-types/structure';
 import type {
   FieldDescriptor,
   FieldProvider,
-  FilterTypeId,
+  PresenceAddressing,
   ValueSemantics,
 } from '@/shared/filters';
-import type {
-  MemberCustomField,
-  MemberCustomFieldKind,
-  MemberCustomFieldPartType,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-export const SCALAR_KIND_FILTER_TYPE: {
-  [K in Exclude<MemberCustomFieldKind, 'record'>]: FilterTypeId;
-} = {
-  text: 'text',
-  date: 'plain_date',
-  number: 'number',
+type ScalarFilterBase = {
+  key: string;
+  icon: 'text';
+  addressing: PresenceAddressing;
+  ui: { label: string; type: 'custom' };
 };
 
-// How each part of a composite filters. A typed part is text; a part picked from a
-// list (a country) is a set, the way labels and tiers are: "is any of" a choice of them.
-export type PartFilterType = 'text' | 'set';
+// How each leaf filters. Typed text is text; a choice picked from a list is a set, the way labels
+// and tiers are: "is any of" a choice of them.
+export type LeafFilterType = 'text' | 'set';
 
-export const PART_FILTER_TYPE: { [P in MemberCustomFieldPartType]: PartFilterType } = {
-  short_text: 'text',
-  postal_code: 'text',
-  country_code: 'set',
+export const LEAF_FILTER: { [K in LeafKind]: LeafFilterType } = { text: 'text', choice: 'set' };
+
+// Each entry builds its own descriptor so the compiler checks it against that filter type, which a
+// map to a union of filter types can't do.
+const SCALAR_FILTER: { [F in LeafFilterType]: (base: ScalarFilterBase) => FieldDescriptor } = {
+  text: (base) => ({ ...base, type: 'text' }),
+  set: (base) => ({ ...base, type: 'set' }),
 };
 
 // Parse order: a plain string is text ("is"), and only a list is a set ("is any of").
 // Set semantics would also claim a plain string, so text has to be asked first.
-const PART_FILTER_TYPES: readonly PartFilterType[] = ['text', 'set'];
+const LEAF_FILTER_TYPES: readonly LeafFilterType[] = ['text', 'set'];
 
-const PART_SEMANTICS: { [T in PartFilterType]: () => ValueSemantics<string> } = {
+const LEAF_SEMANTICS: { [T in LeafFilterType]: () => ValueSemantics<string> } = {
   text: () => textSemantics(),
   // Quoted, as the text a sibling part holds is, so a code reads the same either way.
   set: () => setSemantics({ quoteStrings: true }),
 };
 
+const partNamed = (parts: Readonly<Record<string, Leaf>>, part: string): Leaf | undefined =>
+  Object.entries(parts).find(([name]) => name === part)?.[1];
+
+/** The leaf a filter on `part` compares: a scalar's own, or the named part of a record. */
+export function filterLeaf(type: FieldType, part: string): Leaf | undefined {
+  return matchShape<Leaf | undefined>(type, {
+    scalar: ({ leaf }) => leaf,
+    record: ({ parts }) => partNamed(parts, part),
+  });
+}
+
 export function partFilterType(
   type: MemberCustomField['type'],
   part: string,
-): PartFilterType | undefined {
-  const declared = memberCustomFieldParts(type)?.find((candidate) => candidate.key === part);
-  return declared ? PART_FILTER_TYPE[declared.type] : undefined;
+): LeafFilterType | undefined {
+  return matchShape<LeafFilterType | undefined>(type, {
+    scalar: () => undefined,
+    record: ({ parts }) => {
+      const leaf = partNamed(parts, part);
+      return leaf && LEAF_FILTER[leaf.leaf];
+    },
+  });
 }
 
-function usedPartTypes(type: MemberCustomField['type']): readonly PartFilterType[] {
-  const used = new Set((memberCustomFieldParts(type) ?? []).map((p) => PART_FILTER_TYPE[p.type]));
-  return PART_FILTER_TYPES.filter((candidate) => used.has(candidate));
+function usedFilterTypes(parts: Readonly<Record<string, Leaf>>): readonly LeafFilterType[] {
+  const used = new Set(Object.values(parts).map((leaf) => LEAF_FILTER[leaf.leaf]));
+  return LEAF_FILTER_TYPES.filter((candidate) => used.has(candidate));
 }
 
 // A composite is read with one semantics, so it combines its parts' registered types:
 // an operator serializes through the type that owns it, and a clause parses back by
 // its shape, not by which part it names. The renderer offers each part only the
 // operators of its own type, and moves an operator the part cannot use.
-export function customFieldSemantics(partTypes: readonly PartFilterType[]): ValueSemantics<string> {
-  const members = PART_FILTER_TYPES.filter((candidate) => partTypes.includes(candidate)).map(
-    (candidate) => PART_SEMANTICS[candidate](),
+export function customFieldSemantics(partTypes: readonly LeafFilterType[]): ValueSemantics<string> {
+  const members = LEAF_FILTER_TYPES.filter((candidate) => partTypes.includes(candidate)).map(
+    (candidate) => LEAF_SEMANTICS[candidate](),
   );
 
   return {
@@ -101,9 +117,9 @@ export function customFieldSemantics(partTypes: readonly PartFilterType[]): Valu
 }
 
 // The operators offered in the registered order of each part type, then presence.
-export function customFieldOperators(partTypes: readonly PartFilterType[]): readonly string[] {
+export function customFieldOperators(partTypes: readonly LeafFilterType[]): readonly string[] {
   return [
-    ...PART_FILTER_TYPES.filter((candidate) => partTypes.includes(candidate)).flatMap(
+    ...LEAF_FILTER_TYPES.filter((candidate) => partTypes.includes(candidate)).flatMap(
       (candidate) => FILTER_TYPES[candidate].operators,
     ),
     ...CUSTOM_FIELD_SET_OPERATORS,
@@ -115,33 +131,31 @@ export const CUSTOM_FIELD_CLAUSE = METAFIELDS_FIELD_PREFIX;
 export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' | 'name' | 'type'>;
 
 export function customFieldDescriptor(definition: CustomFieldDefinition): FieldDescriptor {
-  const kind = memberCustomFieldKind(definition.type);
-
-  if (kind === 'record') {
-    return domainField({
-      key: metafieldFieldId(definition),
-      icon: 'text',
-      semantics: customFieldSemantics(usedPartTypes(definition.type)),
-      operators: customFieldOperators(usedPartTypes(definition.type)),
-      addressing: customFieldAddressing(definition),
-      ui: {
-        label: definition.name,
-        type: 'custom',
-        defaultOperator: 'is-set',
-      },
-    });
-  }
-
-  return {
-    key: metafieldFieldId(definition),
-    icon: 'text',
-    type: SCALAR_KIND_FILTER_TYPE[kind],
-    addressing: customFieldAddressing(definition),
-    ui: {
-      label: definition.name,
-      type: 'custom',
-    },
-  } as FieldDescriptor;
+  return matchShape<FieldDescriptor>(definition.type, {
+    scalar: ({ leaf }) =>
+      SCALAR_FILTER[LEAF_FILTER[leaf.leaf]]({
+        key: metafieldFieldId(definition),
+        icon: 'text',
+        addressing: customFieldAddressing(definition),
+        ui: {
+          label: definition.name,
+          type: 'custom',
+        },
+      }),
+    record: ({ parts }) =>
+      domainField({
+        key: metafieldFieldId(definition),
+        icon: 'text',
+        semantics: customFieldSemantics(usedFilterTypes(parts)),
+        operators: customFieldOperators(usedFilterTypes(parts)),
+        addressing: customFieldAddressing(definition),
+        ui: {
+          label: definition.name,
+          type: 'custom',
+          defaultOperator: 'is-set',
+        },
+      }),
+  });
 }
 
 export function customFieldProvider(

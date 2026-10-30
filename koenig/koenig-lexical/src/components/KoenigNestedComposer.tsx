@@ -1,5 +1,6 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import SelectionWordCountPlugin from '../plugins/SelectionWordCountPlugin';
 import WordCountPlugin from '../plugins/WordCountPlugin';
 import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {LexicalNestedComposer} from '@lexical/react/LexicalNestedComposer';
@@ -7,7 +8,7 @@ import {useCollaborationContext} from '@lexical/react/LexicalCollaborationContex
 
 const KoenigNestedComposer = ({initialEditor, initialEditorState, initialNodes, initialTheme, skipCollabChecks, children} = {}) => {
     const {isCollabActive} = useCollaborationContext();
-    const {createWebsocketProvider, onWordCountChangeRef} = React.useContext(KoenigComposerContext);
+    const {createWebsocketProvider, onWordCountChangeRef, onSelectionWordCountChangeRef} = React.useContext(KoenigComposerContext);
 
     return (
         <LexicalNestedComposer
@@ -26,6 +27,9 @@ const KoenigNestedComposer = ({initialEditor, initialEditorState, initialNodes, 
             ) : null }
             {onWordCountChangeRef?.current ? (
                 <WordCountPlugin onChange={onWordCountChangeRef.current} />
+            ) : null}
+            {onSelectionWordCountChangeRef?.current ? (
+                <SelectionWordCountPlugin onChange={onSelectionWordCountChangeRef.current} />
             ) : null}
             {children}
         </LexicalNestedComposer>

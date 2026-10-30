@@ -18,9 +18,7 @@ import type { PostResource } from '@/posts/list/post-resource';
  * **The selection is snapshotted when the action starts.** Radix closes the
  * menu the moment an item is chosen, which clears a transient selection — so a
  * confirmation modal that read the live selection would find it empty by the
- * time the user pressed Delete. Ember solves this by freezing the selection
- * list for the whole modal lifetime; taking a copy up front is the same
- * guarantee with none of the state machine.
+ * time the user pressed Delete.
  *
  * **Edited rows are pruned client-side, not refetched.** That is what makes
  * unfeaturing a post while viewing `?type=featured` remove it immediately
@@ -35,7 +33,7 @@ export interface BulkActionSnapshot {
   /** The selection count, which after Cmd+A is the server total. */
   count: number;
   /**
-   * Ember's `isSingle` — one id selected *and not inverted*. Captured here
+   * One id selected *and not inverted*. Captured here
    * rather than read at modal-render time, because by then the transient
    * selection is already gone. Deriving it from `count === 1` instead is
    * actively dangerous: `getPostSelectionCount` floors at 1, so an inverted
@@ -50,11 +48,10 @@ export interface BulkActionSnapshot {
    */
   inverted: boolean;
   /**
-   * The bucket filters the screen is currently showing. Ember iterates only
-   * the three infinity models on screen; `setQueriesData` would otherwise
-   * reach every cached list for the resource — including a Featured list
-   * cached from an earlier visit — and prune it against the *current*
-   * screen's filter, which is not its own.
+   * The bucket filters the screen is currently showing. Without them,
+   * `setQueriesData` would reach every cached list for the resource —
+   * including a Featured list cached from an earlier visit — and prune it
+   * against the *current* screen's filter, which is not its own.
    */
   bucketFilters: string[];
 }
@@ -62,9 +59,9 @@ export interface BulkActionSnapshot {
 /**
  * Maps a menu item to the server's bulk action and its toast.
  *
- * Feature and unfeature have no message: Ember shows no notification for
- * either, because the star appearing or disappearing on the row is the
- * feedback. Both are also unconfirmed — they apply straight away.
+ * Feature and unfeature have no message, because the star appearing or
+ * disappearing on the row is the feedback. Both are also unconfirmed — they
+ * apply straight away.
  */
 const BULK_ACTIONS: Partial<
   Record<
@@ -83,9 +80,8 @@ const BULK_ACTIONS: Partial<
 
 /**
  * How each action changes a row locally, so the pruner decides against the
- * post's *new* state. Ember pushes the same fields into its store for the same
- * reason — without it, unpublishing while viewing `?type=published` would leave
- * the rows in place until a refetch.
+ * post's *new* state. Without it, unpublishing while viewing `?type=published`
+ * would leave the rows in place until a refetch.
  */
 function applyLocalEdit(post: PostListItem, key: PostContextMenuKey): PostListItem {
   switch (key) {
@@ -127,14 +123,12 @@ function getQueryKeyFilter(queryKey: readonly unknown[]): string | null {
 interface UsePostBulkActionsOptions {
   resource: PostResource;
   /**
-   * Called after a delete. Ember force-clears the whole selection here,
-   * because every selected row is gone.
+   * Called after a delete, when every selected row is gone.
    */
   onDeleted?: () => void;
   /**
-   * Called after an edit, with the ids still present in the list. Ember calls
-   * `clearUnavailableItems` — it keeps the selection on the rows that are
-   * still visible, so a second action can follow the first.
+   * Called after an edit, with the ids still present in the list, so the
+   * selection can stay on the visible rows and a second action can follow.
    */
   onEdited?: (remainingIds: Set<string>) => void;
 }
@@ -275,13 +269,8 @@ export function usePostBulkActions({ resource, onDeleted, onEdited }: UsePostBul
   /**
    * The two actions that carry a payload. Both refetch rather than prune.
    *
-   * Ember prunes here too, but only after re-fetching every edited post in
-   * batches of 50 — the new tag or visibility has to be in the store before
-   * the filter can be evaluated against it. We cannot shortcut that with a
-   * local edit: a *newly created* tag's slug is decided server-side, so
-   * pruning against `tag:<slug>` locally would be guesswork. Refetching the
-   * list is the same end state for one request instead of N, and costs only
-   * the scroll position.
+   * A local edit can't stand in here: a *newly created* tag's slug is decided
+   * server-side, so pruning against `tag:<slug>` locally would be guesswork.
    */
   const runWithPayload = useCallback(
     async (
@@ -417,13 +406,11 @@ export function usePostBulkActions({ resource, onDeleted, onEdited }: UsePostBul
         void queryClient.invalidateQueries({ queryKey: [dataType], refetchType: 'none' });
 
         // The rows the edit pushed out of the list are no longer selectable,
-        // but the ones still on screen stay selected — matching Ember's
-        // `clearUnavailableItems` rather than a full clear.
+        // but the ones still on screen stay selected.
         onEdited?.(remaining);
       } catch (error) {
         // Without this the rejection is unhandled and the user sees
-        // nothing: the modal simply sits there. Ember surfaces the API
-        // error through `showAPIError`.
+        // nothing: the modal simply sits there.
         toast.error(
           error instanceof Error && error.message
             ? error.message

@@ -1,5 +1,5 @@
-/* Element defaults Admin screens inherited from Ember's global stylesheet. Imported before Shade and
-   kept at element specificity so Shade's preflight and utilities still override them. */
+/* Element defaults for Admin screens. Imported before Shade and kept at element specificity so
+   Shade's preflight and utilities still override them. */
 
 body:where(.react-admin) {
   color: var(--color-gray-900);
@@ -182,9 +182,13 @@ body:where(.react-admin) {
   border: none;
   background: transparent;
   line-height: inherit;
-  text-decoration: none !important;
   user-select: none;
   cursor: pointer;
+}
+
+/* Shade's Link stays underlined on a button, as on a link */
+:where(body.react-admin) button:not([data-slot='link']) {
+  text-decoration: none !important;
 }
 
 :where(body.react-admin) button[disabled] {

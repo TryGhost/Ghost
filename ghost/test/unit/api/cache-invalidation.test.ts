@@ -7,6 +7,7 @@ describe('API', function () {
   describe('Cache Invalidation', function () {
     beforeAll(async function () {
       await require('../../../core/server/services/posts-public').default.init();
+      await require('../../../core/server/services/tags-public').default.init();
     });
 
     it('Controller actions explicitly declare cacheInvalidate header', async function () {

@@ -1,13 +1,15 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../../../utils/assertions');
 const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../../../../utils');
 const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
 const urlUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
 const cleanUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/clean');
 const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
-const memberAttribution = require('../../../../../../../core/server/services/member-attribution');
+const memberAttribution =
+  require('../../../../../../../core/server/services/member-attribution').default;
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 function createJsonModel(data) {
@@ -65,7 +67,16 @@ describe('Unit: utils/serializers/output/mappers', function () {
   });
 
   describe('Posts Mapper', function () {
+    const commentsService = require('../../../../../../../core/server/services/comments').default;
+    let commentsServiceStub;
+
     beforeEach(function () {
+      // The Content API reads the comments setting through the initialized
+      // root; the unit harness never boots it.
+      commentsServiceStub = sinon
+        .stub(commentsService, 'service')
+        .get(() => ({ api: { enabled: 'all' } }));
+
       sinon.stub(dateUtil, 'forPost').returns({});
 
       sinon.stub(urlUtil, 'forPost').returns({});
@@ -78,9 +89,11 @@ describe('Unit: utils/serializers/output/mappers', function () {
       sinon.stub(cleanUtil, 'tag').returns({});
       sinon.stub(cleanUtil, 'author').returns({});
 
-      memberAttribution.outboundLinkTagger = {
-        addToHtml: sinon.stub().callsFake((html) => Promise.resolve(html)),
-      };
+      sinon.stub(memberAttribution, 'service').get(() => ({
+        outboundLinkTagger: {
+          addToHtml: sinon.stub().callsFake((html) => Promise.resolve(html)),
+        },
+      }));
     });
 
     for (const includeEmail of [false, true]) {
@@ -296,6 +309,44 @@ describe('Unit: utils/serializers/output/mappers', function () {
       assert.equal(result.status, undefined);
       assert.equal(result.slug, undefined);
       assert.equal(result.id, 'id1');
+    });
+
+    describe('Content API comments flag', function () {
+      function contentFrame() {
+        return { original: { context: {} }, options: { context: {} }, apiType: 'content' };
+      }
+
+      function createPost() {
+        return createJsonModel(testUtils.DataGenerator.forKnex.createPost({ id: 'id1' }));
+      }
+
+      it('reports comments off when the comments service reports off', async function () {
+        commentsServiceStub.get(() => ({ api: { enabled: 'off' } }));
+
+        const result = await mappers.posts(createPost(), contentFrame());
+
+        assert.equal(result.comments, false);
+      });
+
+      it('reports comments on when the comments service reports paid', async function () {
+        commentsServiceStub.get(() => ({ api: { enabled: 'paid' } }));
+
+        const result = await mappers.posts(createPost(), contentFrame());
+
+        assert.equal(result.comments, true);
+      });
+
+      it('rejects a Content API post before the comments service has initialized', async function () {
+        // The unit harness never initialises the comments root, so the real
+        // getter is the pre-init shape; the Content API only serves after boot.
+        commentsServiceStub.restore();
+        assert.throws(() => commentsService.service, errors.IncorrectUsageError);
+
+        await assert.rejects(
+          () => mappers.posts(createPost(), contentFrame()),
+          errors.IncorrectUsageError,
+        );
+      });
     });
   });
 

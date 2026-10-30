@@ -51,7 +51,7 @@ interface TagDetailFormProps {
 }
 
 const errorId = (field: TagFieldName) => `tag-${field}-error`;
-/** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
+/** The used character count, red once past the limit. */
 const UsedCharacters: React.FC<{
   value: string;
   limit: number;
@@ -430,9 +430,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
                     gap="sm"
                   >
                     <Label>Facebook preview</Label>
-                    {/* The description chain deliberately skips ogDescription: Ember read a
-                                        nonexistent `facebookDescription` attribute, so ogDescription never
-                                        fed this preview (`tag-form.js` `facebookDescription`). */}
+                    {/* The description chain deliberately skips ogDescription. */}
                     <FacebookCardPreview
                       description={seoDescription || siteMetaDescription || ''}
                       domain={blogDomain}

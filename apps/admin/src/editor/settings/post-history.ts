@@ -29,7 +29,7 @@ export const DELETED_AUTHOR = 'Deleted staff user';
  * it also has a web version.
  */
 export function canViewPostHistory(record: EditorRecord | undefined): boolean {
-  // Ember gates on `lexical === null`, so an empty document still has a history.
+  // Gated on a missing document only, so an empty document still has a history.
   if (!record || record.lexical === null || record.lexical === undefined) {
     return false;
   }

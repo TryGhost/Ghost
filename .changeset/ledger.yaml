@@ -200,6 +200,11 @@
   intents:
     - bright-falcons-clean
     - clean-beans-tie
+"@tryghost/kg-default-nodes@2.2.6":
+  dir: koenig/kg-default-nodes
+  intents:
+    - calm-falcons-kneel
+    - cool-ravens-type
 "@tryghost/kg-default-transforms@1.3.4":
   dir: koenig/kg-default-transforms
   intents:
@@ -247,6 +252,10 @@
   intents:
     - curly-waves-sleep
     - wet-icons-tease
+"@tryghost/kg-markdown-html-renderer@7.2.10":
+  dir: koenig/kg-markdown-html-renderer
+  intents:
+    - hungry-moles-type
 "@tryghost/kg-markdown-html-renderer@7.2.4":
   dir: koenig/kg-markdown-html-renderer
   intents:
@@ -304,6 +313,10 @@
   intents:
     - eager-maps-decide
     - wet-icons-tease
+"@tryghost/kg-unsplash-selector@0.4.9":
+  dir: koenig/kg-unsplash-selector
+  intents:
+    - modern-eagles-shout
 "@tryghost/kg-utils@1.1.4":
   dir: koenig/kg-utils
   intents:
@@ -365,6 +378,12 @@
     - clean-beans-tie
     - fresh-chairs-know
     - snug-code-sizes
+"@tryghost/koenig-lexical@1.13.1":
+  dir: koenig/koenig-lexical
+  intents:
+    - gallery-reorder-other-galleries
+    - gentle-dragons-tie
+    - modern-eagles-shout
 "@tryghost/koenig-lexical@1.9.0":
   dir: koenig/koenig-lexical
   intents:
@@ -401,6 +420,11 @@
   dir: packages/metafield-types
   intents:
     - eager-maps-decide
+"@tryghost/metafield-types@0.2.0":
+  dir: packages/metafield-types
+  intents:
+    - pretty-deers-tap
+    - spicy-pears-help
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:

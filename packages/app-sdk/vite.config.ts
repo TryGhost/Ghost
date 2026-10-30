@@ -5,6 +5,8 @@ import { pathToFileURL } from 'node:url';
 import { dts } from 'rolldown-plugin-dts';
 import { defineConfig, type Plugin, type UserConfig } from 'vite';
 
+import { sdkVersion } from './version.config.ts';
+
 // pnpm keeps dependencies in a store outside the repository, so the paths the bundler
 // writes into region comments and the source map include local paths on the build machine.
 // A reader only needs the part from `node_modules/` on.
@@ -104,6 +106,7 @@ const shared = {
 // the parts of @tryghost/app-contracts the SDK uses inlined, so the package depends only on
 // @quilted/threads. A function, so only this build sets up the declaration plugin.
 const packageBuild = (): UserConfig => ({
+  define: sdkVersion,
   plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
   // Vite would compile the generated declarations to JavaScript, which drops every type. This
   // replaces Vite's own exclusions, so JavaScript stays excluded too.
@@ -127,6 +130,7 @@ const packageBuild = (): UserConfig => ({
 // inlined too, for a page to load from a <script type="module"> with no bundler of its own.
 // Admin's acceptance specs build it from this config to run the SDK in a frame.
 const browserBundle: UserConfig = {
+  define: sdkVersion,
   plugins: [refuseNodeBuiltins, tidyRegionComments],
   build: {
     ...shared,
