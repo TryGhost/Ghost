@@ -321,6 +321,34 @@ it('allows the cheerio slim entry required by Mentions without allowing the main
   ]);
 });
 
+it('allows the cheerio slim ESM entry required by Mentions without allowing the ESM main entry', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "import 'cheerio/slim';",
+    [`${alpha}/rejected.ts`]: "import 'cheerio';",
+  });
+  f.write(
+    'node_modules/cheerio/package.json',
+    JSON.stringify({
+      name: 'cheerio',
+      type: 'module',
+      main: 'dist/esm/index.js',
+      exports: { '.': './dist/esm/index.js', './slim': './dist/esm/slim.js' },
+    }),
+  );
+  f.write('node_modules/cheerio/dist/esm/index.js', 'export {};');
+  f.write('node_modules/cheerio/dist/esm/slim.js', 'export {};');
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(
+      ([from, , to]) =>
+        from === `${alpha}/approved.js` && to === 'node_modules/cheerio/dist/esm/slim.js',
+    ),
+  );
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.ts`, 'node_modules/cheerio/dist/esm/index.js'],
+  ]);
+});
+
 it('allows the magic-link constructor required by Newsletters without allowing its siblings', (t) => {
   const approved = 'ghost/core/server/lib/magic-link/magic-link.js';
   const rejected = 'ghost/core/server/lib/magic-link/other.js';
