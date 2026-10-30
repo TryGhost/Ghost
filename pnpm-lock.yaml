@@ -249,8 +249,8 @@ catalogs:
       specifier: 1100.3.8
       version: 1100.3.8
     '@pnpm/workspace.workspace-manifest-reader':
-      specifier: 1100.1.5
-      version: 1100.1.5
+      specifier: 1100.3.1
+      version: 1100.3.1
     '@quilted/threads':
       specifier: 4.1.0
       version: 4.1.0
@@ -4586,7 +4586,7 @@ importers:
         version: 1100.3.8(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
-        version: 1100.1.5
+        version: 1100.3.1
       '@sentry/bundler-plugin-core':
         specifier: 'catalog:'
         version: 5.3.0(supports-color@10.2.2)
@@ -6948,10 +6948,6 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@pnpm/constants@1101.0.0':
-    resolution: {integrity: sha512-jJQU6y8lhic2at0+W246+tMDdEqhbS1WSRlTjmIXeXrrWU2rAbhixi11loE+lI3f/E1Ci1+3i5N6ewOumeNJdg==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/constants@1102.0.1':
     resolution: {integrity: sha512-vLulGZ3iRt6kHcwbGYckrUF2Rd18nfGtpFjyRgbKmEyxLcZmFTBOWKFZSEyS3VVnxFEI7bTPNOGmRC0lD4U1qg==}
     engines: {node: '>=22.13'}
@@ -6964,10 +6960,6 @@ packages:
 
   '@pnpm/deps.peer-range@1100.1.2':
     resolution: {integrity: sha512-PFGNtptMRhqQd7FogcaCsfMpCkvDhFQVuO3+BnMw0PByAUPjXpE7jJMIGduRUSETb2E/zDr2PZ13cXO2OQiAeQ==}
-    engines: {node: '>=22.13'}
-
-  '@pnpm/error@1100.1.1':
-    resolution: {integrity: sha512-dqFXd5jTgBkGkwwI6AO9ON/WBXlQ8LIMRyyRysgSshix1XDyYjMmk7+bdPLuY2gjpB95j0Wu9Xq+3l7uuGZToQ==}
     engines: {node: '>=22.13'}
 
   '@pnpm/error@1100.2.2':
@@ -6996,10 +6988,6 @@ packages:
     resolution: {integrity: sha512-10rRwfC9ffkuS4RugetHD+AiNZLdg9ZVv0rkbr/8o14EW6Vh6ZwFwAfTOlkp3Eyse8518jVFvXXPKQKyeh9kNw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/types@1101.9.0':
-    resolution: {integrity: sha512-lB2aSB2h950UX1GX3JW4AZ86xjXD92YJbV92IBSQqHXXZdiemoVKADLA2cDQ4/wKeS7djY8fkITM6X+6iYF62A==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/types@1102.1.3':
     resolution: {integrity: sha512-uFm6fYunXaWeZs6um75cZefbmzszpaWdf8257a57HgyvodfEHugUKokUS/OEY1Xu15O9kWWlml8EbfX+sRdE/Q==}
     engines: {node: '>=22.13'}
@@ -7018,8 +7006,8 @@ packages:
     resolution: {integrity: sha512-lEvwougkILMozWY/7wN1/uyxrOZJfOHSzmeaFBKa69EhzjoqM0Qn9bE+PrFiMr5xUEc1sln3en6bNh4kQJdfSw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.1.5':
-    resolution: {integrity: sha512-NMUVtTcyY8vm9xPMmpWRtWaCTdO3JyaHrm1AHdCpTQUhvhemLnULrSp5LG36o6BqUOF/P/cj/i8j97vDOypO5A==}
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
+    resolution: {integrity: sha512-FggIroCEbuVuJUdjb4gJspTYF/19sHrEB6dBTa2PHl3ajVWfwTK69R1zmA3OOZ/hVuQ0TvPvCFfqOuN06cM6YA==}
     engines: {node: '>=22.13'}
 
   '@pnpm/yaml.document-sync@1100.0.2':
@@ -19045,8 +19033,6 @@ snapshots:
     dependencies:
       playwright: 1.64.1
 
-  '@pnpm/constants@1101.0.0': {}
-
   '@pnpm/constants@1102.0.1': {}
 
   '@pnpm/core-loggers@1101.0.4(@pnpm/logger@1100.0.0)':
@@ -19057,10 +19043,6 @@ snapshots:
   '@pnpm/deps.peer-range@1100.1.2':
     dependencies:
       semver: 7.8.5
-
-  '@pnpm/error@1100.1.1':
-    dependencies:
-      '@pnpm/constants': 1101.0.0
 
   '@pnpm/error@1100.2.2':
     dependencies:
@@ -19102,8 +19084,6 @@ snapshots:
     dependencies:
       strip-comments-strings: 1.2.0
 
-  '@pnpm/types@1101.9.0': {}
-
   '@pnpm/types@1102.1.3': {}
 
   '@pnpm/workspace.project-manifest-reader@1100.1.5(@pnpm/logger@1100.0.0)':
@@ -19136,11 +19116,11 @@ snapshots:
 
   '@pnpm/workspace.spec-parser@1100.0.1': {}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.1.5':
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
     dependencies:
-      '@pnpm/constants': 1101.0.0
-      '@pnpm/error': 1100.1.1
-      '@pnpm/types': 1101.9.0
+      '@pnpm/constants': 1102.0.1
+      '@pnpm/error': 1100.2.2
+      '@pnpm/types': 1102.1.3
       read-yaml-file: 3.0.0
 
   '@pnpm/yaml.document-sync@1100.0.2':
