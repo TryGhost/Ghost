@@ -200,7 +200,7 @@ catalog:
   react: 18.3.1
   react-day-picker: 9.14.0
   react-dom: 18.3.1
-  react-router: 7.18.4
+  react-router: 7.18.5
   rolldown-plugin-dts: 0.27.11
   semver: 7.8.5
   sharp: 0.35.5
