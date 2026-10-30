@@ -6,6 +6,7 @@ import {
   isEdgeChallengeResponse,
   solveEdgeChallenge,
 } from '../../src/utils/edge-challenge';
+import { fastlyChallenge } from '../../src/utils/edge-challenge/fastly';
 import setupGhostApi from '../../src/utils/api';
 import { chooseBestErrorMessage } from '../../src/utils/errors';
 
@@ -13,13 +14,13 @@ const siteUrl = window.location.origin;
 
 // Mirrors the structure of the real interstitial: it loads script.js (not challenge.js) from
 // inline JS, alongside its own assets
-function challengePage({ status = 200, token = '1T1wmsGaOgGaSxcX' } = {}) {
+function challengePage({ status = 200, token = '1T1wmsGaOgGaSxcX', headers = {} } = {}) {
   return new Response(
     `<html><head><title>Client Challenge</title>
       <link rel="stylesheet" href="/_fs-ch-${token}/assets/styles.css">
       <script>loadScript('/_fs-ch-${token}/errors.js').then(() => loadScript('/_fs-ch-${token}/script.js'));</script>
       </head><body><noscript>JavaScript is disabled in your browser.</noscript><div id="loading-error" role="alert" aria-live="assertive"></div></body></html>`,
-    { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+    { status, headers: { 'Content-Type': 'text/html; charset=utf-8', ...headers } },
   );
 }
 
@@ -149,6 +150,22 @@ describe('fetchWithEdgeChallenge', () => {
     expect(challengeFrame()).toBeNull();
   });
 
+  test('solves a challenge that reaches the page through Cloudflare', async () => {
+    vi.spyOn(window, 'fetch')
+      .mockResolvedValueOnce(
+        challengePage({ status: 403, headers: { 'cf-ray': '8f1e2d3c4b5a6978-VIE' } }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
+    challenges = completeChallengesWhenEmbedded();
+
+    const res = await fetchWithEdgeChallenge(`${siteUrl}/members/api/send-magic-link/`, {
+      method: 'POST',
+    });
+
+    expect(res.status).toBe(201);
+    expect(challenges.frames).toHaveLength(1);
+  });
+
   test('runs the challenge script in its own hidden frame, not the page', async () => {
     challenges = { stop: loadChallengeFramesWhenAdded() };
     vi.spyOn(window, 'fetch')
@@ -275,7 +292,7 @@ describe('challenge frame failures', () => {
   });
 
   test('waits past a load event for the initial blank document', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     const frame = await waitForChallengeFrame();
 
     // jsdom never shows the blank document, so stand in for it
@@ -293,7 +310,7 @@ describe('challenge frame failures', () => {
   });
 
   test('fails when the frame has no usable document', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     const frame = await waitForChallengeFrame();
 
     // e.g. the browser's own error page after the frame failed to load
@@ -305,7 +322,7 @@ describe('challenge frame failures', () => {
   });
 
   test('fails when the challenge script fails to load', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     const frame = await waitForChallengeFrame();
     loadFrame(frame);
 
@@ -318,7 +335,7 @@ describe('challenge frame failures', () => {
   test('gives up after a minute when the frame never loads', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     try {
-      const result = solveEdgeChallenge().catch((e) => e);
+      const result = solveEdgeChallenge(fastlyChallenge()).catch((e) => e);
 
       await vi.advanceTimersByTimeAsync(60 * 1000);
 
@@ -345,7 +362,7 @@ describe('challenge timeout', () => {
   });
 
   test('gives up after a minute when the challenge never finishes', async () => {
-    const result = solveEdgeChallenge().catch((e) => e);
+    const result = solveEdgeChallenge(fastlyChallenge()).catch((e) => e);
 
     await vi.advanceTimersByTimeAsync(60 * 1000);
 
@@ -355,7 +372,7 @@ describe('challenge timeout', () => {
 
   test('gives a visitor solving a CAPTCHA up to four minutes in total', async () => {
     let settled = false;
-    const result = solveEdgeChallenge()
+    const result = solveEdgeChallenge(fastlyChallenge())
       .catch((e) => e)
       .finally(() => {
         settled = true;
@@ -371,7 +388,7 @@ describe('challenge timeout', () => {
   });
 
   test('shows the frame over the page while a CAPTCHA is being solved', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     await vi.advanceTimersByTimeAsync(0);
 
     frameContainer().setAttribute('data-challenge-status', 'captcha_prompted');
@@ -388,7 +405,7 @@ describe('challenge timeout', () => {
   });
 
   test('the visitor can close a CAPTCHA', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     await vi.advanceTimersByTimeAsync(0);
 
     frameContainer().setAttribute('data-challenge-status', 'captcha_prompted');
@@ -406,7 +423,7 @@ describe('challenge timeout', () => {
     ['the CAPTCHA', () => challengeFrame().contentDocument],
     ['the page', () => document],
   ])('Escape in %s closes a CAPTCHA', async (_, target) => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     await vi.advanceTimersByTimeAsync(0);
 
     frameContainer().setAttribute('data-challenge-status', 'captcha_prompted');
@@ -418,7 +435,7 @@ describe('challenge timeout', () => {
   });
 
   test('Escape does nothing while the challenge is hidden', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     await vi.advanceTimersByTimeAsync(0);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -429,7 +446,7 @@ describe('challenge timeout', () => {
   });
 
   test('a CAPTCHA solved within the extended window succeeds', async () => {
-    const result = solveEdgeChallenge();
+    const result = solveEdgeChallenge(fastlyChallenge());
     await vi.advanceTimersByTimeAsync(0);
 
     const container = frameContainer();
