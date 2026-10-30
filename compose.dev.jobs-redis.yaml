@@ -1,0 +1,54 @@
+# Redis-backed durable jobs for Ghost development environment
+# Use with: docker compose -f compose.dev.yaml -f compose.dev.jobs-redis.yaml up
+#
+# This file adds a dedicated Redis for the BullMQ jobs backend and configures ghost-dev
+# to use it. Without this file, Ghost runs jobs in memory (the default).
+#
+# It is separate from the cache Redis on purpose: the queue needs persistence (AOF) and
+# must never evict keys, while the cache tolerates eviction. Redis listens on 6380 inside
+# and outside the container so the same port works when Ghost runs on the host.
+
+services:
+  redis-jobs:
+    image: redis:7.4@sha256:44960b3100c48159a66d28c18b0588c193492e25f7551d60e51dd464fc3eca5b
+    container_name: ghost-dev-redis-jobs
+    command:
+      [
+        'redis-server',
+        '--port',
+        '6380',
+        '--loglevel',
+        'warning',
+        '--appendonly',
+        'yes',
+        '--maxmemory-policy',
+        'noeviction',
+      ]
+    ports:
+      - '127.0.0.1:6380:6380'
+    volumes:
+      - redis-jobs-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - -p
+        - '6380'
+        - --raw
+        - incr
+        - ping
+      interval: 1s
+      retries: 120
+
+  ghost-dev:
+    environment:
+      adapters__jobs__active: BullMQJobsBackend
+      adapters__jobs__BullMQJobsBackend__connection__host: redis-jobs
+      adapters__jobs__BullMQJobsBackend__connection__port: 6380
+      adapters__jobs__BullMQJobsBackend__prefix: ghost-dev
+    depends_on:
+      redis-jobs:
+        condition: service_healthy
+
+volumes:
+  redis-jobs-data:

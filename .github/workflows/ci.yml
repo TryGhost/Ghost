@@ -969,6 +969,16 @@ jobs:
             pnpm nx run ghost:test:e2e
           fi
 
+      # The newsletter suites on the BullMQ jobs backend, against the redis
+      # service above. The full e2e suite does not run on BullMQ yet.
+      - name: Newsletter tests (BullMQ jobs backend)
+        run: pnpm nx run ghost:test:bullmq
+
+      # Pauses Redis and kills its clients, so it runs after the steps above
+      # rather than alongside it
+      - name: Newsletter failure scenarios (BullMQ jobs backend)
+        run: pnpm nx run ghost:test:bullmq:scenarios
+
       - name: Start VersityGW for integration tests
         run: |
           docker run -d --rm --name versitygw \

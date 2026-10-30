@@ -85,6 +85,45 @@ const sharedDbConfig = {
   hookTimeout: 60000,
 };
 
+// The BullMQ lanes: real retries (attempts 3) with a short backoff, so a
+// failed attempt is retried within a test's timeout. The outbox is off, as on
+// staging and production.
+const bullmqEnv = {
+  ...sharedDbConfig.env,
+  adapters__jobs__active: 'BullMQJobsBackend',
+  adapters__jobs__BullMQJobsBackend__attempts: '3',
+  adapters__jobs__BullMQJobsBackend__backoff__delay: '100',
+  services__jobs__outbox__enabled: 'false',
+};
+
+// Failure scenarios for newsletters on BullMQ. They pause Redis and kill its
+// clients, so they run one file at a time, and never alongside another lane:
+// `pnpm test:bullmq:scenarios` runs these projects one after the other.
+const bullmqScenarios = (name: string, outbox: boolean, include: string[]) => ({
+  ...sharedDbConfig,
+  name,
+  isolate: true,
+  fileParallelism: false,
+  include,
+  exclude: ['**/node_modules/**'],
+  globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
+  setupFiles: [...sharedDbConfig.setupFiles, './test/utils/vitest-setup-bullmq.ts'],
+  env: {
+    ...bullmqEnv,
+    services__jobs__outbox__enabled: String(outbox),
+    // A crashed job's lock expires and it is redelivered within a test
+    adapters__jobs__BullMQJobsBackend__lockDuration: '3000',
+    adapters__jobs__BullMQJobsBackend__stalledInterval: '1000',
+    // A paused Redis fails an enqueue fast, and the outbox relay
+    // retries it soon after
+    adapters__jobs__BullMQJobsBackend__enqueueTimeoutMs: '500',
+    services__jobs__outbox__pollIntervalMs: '100',
+    services__jobs__outbox__submissionTimeoutMs: '1000',
+    services__jobs__outbox__retryDelayMs: '200',
+  },
+  testTimeout: 30000,
+});
+
 // Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
 // test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + VersityGW,
 // minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
@@ -265,6 +304,47 @@ export default defineConfig({
           // Matches the mocha `--timeout=15000` for the e2e suites.
           testTimeout: 15000,
         },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'bullmq-newsletters',
+          // The newsletter suites on the BullMQ jobs backend, against Redis on
+          // 6379. Run with `pnpm test:bullmq`. Each file gets its own process,
+          // so its own key prefix (see jobs-backend-utils.ts).
+          isolate: true,
+          include: [
+            'test/integration/services/email-service/batch-sending.test.js',
+            'test/integration/services/email-service/resume-interrupted-sends.test.js',
+            'test/integration/services/email-service/recipient-accounting.test.ts',
+            'test/integration/services/email-service/domain-warming.test.js',
+            'test/integration/services/email-service/cards.test.js',
+            'test/e2e-api/admin/email-retry.test.ts',
+            'test/e2e-api/admin/emails.test.js',
+            'test/e2e-server/click-tracking.isolated.test.js',
+            'test/e2e-bullmq/jobs-backend-cleanup.test.ts',
+          ],
+          exclude: ['**/node_modules/**'],
+          // Sets GHOST_TEST_REDIS_AVAILABLE, which the lane setup requires
+          globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
+          setupFiles: [...sharedDbConfig.setupFiles, './test/utils/vitest-setup-bullmq.ts'],
+          env: bullmqEnv,
+          testTimeout: 15000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: bullmqScenarios('bullmq-scenarios', true, [
+          'test/e2e-bullmq/newsletter-failures.test.ts',
+        ]),
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: bullmqScenarios('bullmq-scenarios-outbox-off', false, [
+          'test/e2e-bullmq/newsletter-failures.test.ts',
+          'test/e2e-bullmq/boot-without-redis.test.ts',
+        ]),
       },
     ],
   },
