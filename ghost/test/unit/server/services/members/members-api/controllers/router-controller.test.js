@@ -2159,6 +2159,54 @@ describe('RouterController', function () {
       );
     });
 
+    it('breaks created_at ties by id', async function () {
+      const createdAt = new Date('2026-01-01');
+      const controller = createController([
+        subscription({
+          id: 'id_b',
+          subscription_id: 'sub_b',
+          customer_id: 'cus_b',
+          status: 'active',
+          created_at: createdAt,
+        }),
+        subscription({
+          id: 'id_a',
+          subscription_id: 'sub_a',
+          customer_id: 'cus_a',
+          status: 'active',
+          created_at: createdAt,
+        }),
+      ]);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_a' }),
+      );
+    });
+
+    for (const status of ['trialing', 'unpaid', 'past_due']) {
+      it(`treats a ${status} subscription as active`, async function () {
+        const controller = createController([
+          canceledSubscription,
+          subscription({
+            subscription_id: `sub_${status}`,
+            customer_id: `cus_${status}`,
+            status,
+            created_at: new Date('2024-01-01'),
+          }),
+        ]);
+
+        await controller.createBillingPortalSession(req, mockRes);
+
+        sinon.assert.calledWith(
+          stripeService.createBillingPortalSession,
+          sinon.match({ id: `cus_${status}` }),
+        );
+      });
+    }
+
     it('falls back to the first customer when no subscription is active', async function () {
       const controller = createController([canceledSubscription]);
 
@@ -2193,6 +2241,19 @@ describe('RouterController', function () {
       sinon.assert.calledWith(
         stripeService.createBillingPortalSession,
         sinon.match({ id: 'cus_first' }),
+      );
+    });
+
+    it('does not send the active subscription currency for a fallback customer', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.resolves({ id: 'cus_active', deleted: true });
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_first' }),
+        sinon.match({ currency: undefined }),
       );
     });
 

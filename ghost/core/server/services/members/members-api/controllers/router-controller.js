@@ -249,8 +249,10 @@ module.exports = class RouterController {
     let customer;
     if (!req.body.subscription_id) {
       const activeSubscription = this._getActiveSubscription(subscriptions);
-      currency = activeSubscription?.get('plan_currency') || undefined;
       customer = await this._getCustomerForSubscription(member, activeSubscription);
+      if (customer.id === activeSubscription?.get('customer_id')) {
+        currency = activeSubscription.get('plan_currency') || undefined;
+      }
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;
@@ -295,7 +297,9 @@ module.exports = class RouterController {
     return subscriptions.models
       .filter((sub) => ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status')))
       .sort(
-        (a, b) => new Date(b.get('created_at')).getTime() - new Date(a.get('created_at')).getTime(),
+        (a, b) =>
+          new Date(b.get('created_at')).getTime() - new Date(a.get('created_at')).getTime() ||
+          (a.get('id') < b.get('id') ? -1 : 1),
       )[0];
   }
 
