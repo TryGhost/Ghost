@@ -1,6 +1,7 @@
 /**
  * @file Middleware to set the appropriate cache headers on the frontend
  */
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const shared = require('../../../server/web/shared');
 const { api } = require('../../services/proxy');
@@ -8,15 +9,19 @@ const { isGiftRequest } = require('../../services/routing/controllers/entry/gift
 const preview = require('../../services/theme-engine/preview');
 
 /**
+ * @typedef {function(): Promise<object>} GetFreeTier
+ */
+
+/**
  * Calculate the member's active tier.
  * @param {object} member - The member object.
- * @param {object} freeTier - The free tier object.
- * @returns {string|null} - The member's active tier, or null if the member has more than one active subscription.
+ * @param {GetFreeTier} getFreeTier - Reads the free tier, only for a member with no active subscription.
+ * @returns {Promise<object|null>} - The member's active tier, or null if the member has more than one active subscription.
  */
-function calculateMemberTier(member, freeTier) {
+async function calculateMemberTier(member, getFreeTier) {
   const activeSubscriptions = member.subscriptions.filter((sub) => sub.status === 'active');
   if (activeSubscriptions.length === 0) {
-    return freeTier;
+    return getFreeTier();
   }
   if (activeSubscriptions.length === 1) {
     return activeSubscriptions[0].tier;
@@ -25,28 +30,25 @@ function calculateMemberTier(member, freeTier) {
 }
 
 /**
- * @typedef {function(): Promise<object>} GetFreeTier
- */
-
-/**
  * Returns the frontend caching middleware.
- * @param {GetFreeTier} [getFreeTier] - Async function that takes no arguments and resolves to the free tier object.
- * @returns {Promise<import('express').RequestHandler>} Middleware function.
+ * @param {GetFreeTier} [getFreeTier] - Async function that takes no arguments and resolves to the
+ * free tier object. Only called for a member with no active subscription whose content can be
+ * cached, as only they need it.
+ * @returns {import('express').RequestHandler} Middleware function.
  */
-const getMiddleware = async (
+const getMiddleware = (
   getFreeTier = async () => {
-    const { tiers } = await api.tiers.browse();
+    const { tiers } = await api.tiers.browse({ filter: 'type:free' });
     return tiers.find((tier) => tier.type === 'free');
   },
 ) => {
-  const freeTier = await getFreeTier();
   /**
    * Middleware to set cache headers based on site configuration and request properties.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    * @param {import('express').NextFunction} next
    */
-  function setFrontendCacheHeadersMiddleware(req, res, next) {
+  async function setFrontendCacheHeadersMiddleware(req, res, next) {
     if (req.header?.(preview._PREVIEW_HEADER_NAME)) {
       return shared.middleware.cacheControl('noCache')(req, res, next);
     }
@@ -82,7 +84,17 @@ const getMiddleware = async (
     // CASE: Cache member's content if this feature is enabled
     if (req.member && shouldCacheMembersContent) {
       // Set the 'cache-control' header to 'public'
-      const memberTier = calculateMemberTier(req.member, freeTier);
+      let memberTier;
+      try {
+        memberTier = await calculateMemberTier(req.member, getFreeTier);
+      } catch (err) {
+        // Kept out of shared caches, as the tier it would be cached under is unknown.
+        logging.error(
+          { event: { name: 'frontend_caching.free_tier.read_failed' }, err },
+          "Failed to read the free tier, so the member's page isn't cached",
+        );
+        return shared.middleware.cacheControl('private')(req, res, next);
+      }
       if (!memberTier) {
         // Member has more than one active subscription, don't cache the content
         return shared.middleware.cacheControl('private')(req, res, next);
@@ -105,5 +117,4 @@ const getMiddleware = async (
 
 module.exports = {
   getMiddleware,
-  calculateMemberTier, // exported for testing
 };

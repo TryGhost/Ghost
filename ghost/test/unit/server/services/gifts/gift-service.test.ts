@@ -1789,7 +1789,8 @@ describe('GiftService', function () {
         { transacting },
       );
       sinon.assert.calledTwice(tiersService.api.read);
-      sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
+      sinon.assert.calledWithExactly(tiersService.api.read, 'tier_1', { transacting });
+      sinon.assert.calledWithExactly(tiersService.api.read, 'tier_1');
       sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
         memberId: 'member_1',
         memberEmail: 'member@example.com',

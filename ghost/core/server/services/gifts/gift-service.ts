@@ -92,7 +92,7 @@ type Tier = Omit<GiftCheckoutTier, 'currency'> & {
 
 interface TiersService {
   api: {
-    read(idString: string): Promise<Tier | null>;
+    read(idString: string, options?: RepositoryTransactionOptions): Promise<Tier | null>;
   };
 }
 
@@ -1538,7 +1538,7 @@ export class GiftService {
       gift.token,
       options,
     );
-    const tier = await this.deps.tiersService.api.read(gift.tierId);
+    const tier = await this.deps.tiersService.api.read(gift.tierId, options);
 
     if (!tier) {
       throw new errors.InternalServerError({

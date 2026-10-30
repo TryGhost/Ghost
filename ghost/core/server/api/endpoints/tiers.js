@@ -45,7 +45,9 @@ const controller = {
       docName: 'products',
     },
     async query(frame) {
-      return await tiersService.api.add(frame.data);
+      const tier = await tiersService.api.add(frame.data);
+      // Read back, so the response carries the dates the database set.
+      return await tiersService.api.read(tier.id.toHexString());
     },
   },
 
@@ -66,7 +68,8 @@ const controller = {
       docName: 'products',
     },
     async query(frame) {
-      return await tiersService.api.edit(frame.options.id, frame.data);
+      await tiersService.api.edit(frame.options.id, frame.data);
+      return await tiersService.api.read(frame.options.id);
     },
   },
 };

@@ -226,6 +226,7 @@ describe('Tiers API', function () {
         tiers: Array(1).fill({
           id: matchers.anyObjectId,
           created_at: matchers.anyISODate,
+          updated_at: matchers.anyISODateTime,
           name: 'new premium tier',
           slug: 'new-premium-tier',
           monthly_price: 100,
@@ -254,6 +255,7 @@ describe('Tiers API', function () {
         tiers: Array(1).fill({
           id: matchers.anyObjectId,
           created_at: matchers.anyISODate,
+          updated_at: matchers.anyISODateTime,
           name: 'benefit test tier',
           slug: 'benefit-test-tier',
           monthly_price: 100,
@@ -283,6 +285,7 @@ describe('Tiers API', function () {
         tiers: Array(1).fill({
           id: matchers.anyObjectId,
           created_at: matchers.anyISODate,
+          updated_at: matchers.anyISODateTime,
           benefits: ['Test benefit'],
         }),
       });
@@ -291,5 +294,31 @@ describe('Tiers API', function () {
     assert(benefit.attributes.name === 'Test benefit', 'The benefit should have been updated.');
     const previousBenefit = await models.Benefit.findOne({ slug: 'test-benefit-2' });
     assert(!previousBenefit, 'The previous benefit should have been overwritten');
+  });
+
+  it('Refuses a filter on a field tiers do not have', async function () {
+    const { body } = await agent.get('/tiers/?filter=status:active').expectStatus(400);
+    assert.equal(body.errors[0].context, "Tiers can't be filtered by status.");
+  });
+
+  it('Reads tiers as stored, so a change another Ghost instance made shows straight away', async function () {
+    const {
+      body: {
+        tiers: [tier],
+      },
+    } = await agent.get('/tiers/?filter=type:paid&limit=1');
+    const renamed = `${tier.name} (renamed elsewhere)`;
+    // Written straight to the database, as another instance serving the same site would.
+    await models.Base.knex('products').where('id', tier.id).update({ name: renamed });
+
+    try {
+      const { body: read } = await agent.get(`/tiers/${tier.id}/`).expectStatus(200);
+      assert.equal(read.tiers[0].name, renamed);
+
+      const { body: browsed } = await agent.get('/tiers/?filter=type:paid').expectStatus(200);
+      assert.equal(browsed.tiers.find(({ id }) => id === tier.id)?.name, renamed);
+    } finally {
+      await models.Base.knex('products').where('id', tier.id).update({ name: tier.name });
+    }
   });
 });

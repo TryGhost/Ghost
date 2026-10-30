@@ -164,10 +164,10 @@ module.exports = function setupSiteApp(routerConfig) {
   siteApp.use(shared.middleware.prettyUrls);
 
   // ### Caching
+  const setCacheHeaders = mw.frontendCaching.getMiddleware();
   siteApp.use(async function frontendCaching(req, res, next) {
     try {
-      const middleware = await mw.frontendCaching.getMiddleware();
-      return middleware(req, res, next);
+      return await setCacheHeaders(req, res, next);
     } catch {
       return next();
     }

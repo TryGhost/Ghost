@@ -235,6 +235,9 @@ describe('Automations API', function () {
           slug: id,
           type: 'paid',
           active: true,
+          currency: 'usd',
+          monthly_price: 500,
+          yearly_price: 5000,
           created_at: new Date(),
         })),
       );

@@ -31,9 +31,11 @@ describe('frontendCaching', function () {
     previewHeader,
     staffFrontendToolsEnabled,
     staffFrontendToolsCookieUpdated,
+    // Null uses the middleware's own loader, which reads the tiers.
+    loadFreeTier = async () => freeTier,
   } = {}) {
     const app = express();
-    const middleware = await frontendCaching.getMiddleware(async () => freeTier);
+    const middleware = await frontendCaching.getMiddleware(loadFreeTier ?? undefined);
 
     app.use((req, res, next) => {
       req.member = member;
@@ -74,17 +76,43 @@ describe('frontendCaching', function () {
     assert.equal(headers['cache-control'], testUtils.cacheRules.public);
   });
 
-  it('should load the free tier when no free tier loader is passed', async function () {
+  it('reads the free tier only for a member with no subscription whose content can be cached', async function () {
     const browse = sinon.stub(api.tiers, 'browse').resolves({
       tiers: [
         { id: 'paidTierId', type: 'paid' },
         { id: 'freeTierId', type: 'free' },
       ],
     });
-    const middleware = await frontendCaching.getMiddleware();
+    configUtils.set(cacheMembersContentConfigKey, true);
 
+    await requestWithFrontendCaching({ loadFreeTier: null });
+    assert.equal(browse.called, false);
+
+    await requestWithFrontendCaching({
+      member: { subscriptions: [{ status: 'active', tier: premiumTier }] },
+      loadFreeTier: null,
+    });
+    assert.equal(browse.called, false);
+
+    const { headers } = await requestWithFrontendCaching({
+      member: { subscriptions: [] },
+      loadFreeTier: null,
+    });
     assert.equal(browse.calledOnce, true);
-    assert.equal(typeof middleware, 'function');
+    assert.equal(headers['x-member-cache-tier'], 'freeTierId');
+  });
+
+  it("keeps a member's page out of shared caches when the free tier can't be read", async function () {
+    configUtils.set(cacheMembersContentConfigKey, true);
+
+    const { headers } = await requestWithFrontendCaching({
+      member: { subscriptions: [] },
+      loadFreeTier: async () => {
+        throw new Error('The database is unavailable');
+      },
+    });
+    assert.equal(headers['cache-control'], testUtils.cacheRules.private);
+    assert.equal(headers['x-member-cache-tier'], undefined);
   });
 
   it('should set cache control to private if the admin toolbar is enabled', async function () {
@@ -153,31 +181,5 @@ describe('frontendCaching', function () {
   it('should set cache control to no-cache if the request includes preview data', async function () {
     const { headers } = await requestWithFrontendCaching({ previewHeader: 'c=%23ff0000' });
     assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
-  });
-
-  describe('calculateMemberTier', function () {
-    it('should return null if the member has more than one active subscription', function () {
-      const member = {
-        subscriptions: [{ status: 'active' }, { status: 'active' }],
-      };
-      const memberTier = frontendCaching.calculateMemberTier(member, freeTier);
-      assert.equal(memberTier, null);
-    });
-
-    it('should return the tier if the member has one active subscription', function () {
-      const member = {
-        subscriptions: [{ status: 'active', tier: premiumTier }],
-      };
-      const memberTier = frontendCaching.calculateMemberTier(member, freeTier);
-      assert.deepEqual(memberTier, premiumTier);
-    });
-
-    it('should return free if the member has no active subscriptions', function () {
-      const member = {
-        subscriptions: [],
-      };
-      const memberTier = frontendCaching.calculateMemberTier(member, freeTier);
-      assert.equal(memberTier, freeTier);
-    });
   });
 });

@@ -14877,9 +14877,8 @@ services:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Await repository priming, construct the API and publish both together instead of
-        exposing the repository before API construction succeeds. The repository owns its
-        in-memory tier state but no startup subscriptions or worker. Preserve the retained
+        Construct the repository and API, then publish the API. The repository holds no tier
+        state, startup subscriptions or worker: it reads and writes the database on each call. Preserve the retained
         graph and update API consumers after boot readiness; the existing helper covers this
         asynchronous factory.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
@@ -14891,8 +14890,8 @@ services:
       dependencies:
         complexity: straightforward
         reason: >-
-          Product models, event dispatch and slug generation are already supplied by the wrapper,
-          and the repository is hydrated before publishing the API. Remaining NQL imports are local
+          Product models, event dispatch and slug generation are already supplied by the wrapper.
+          Remaining NQL imports are local
           repository dependencies. Members, Gifts and Stripe checkout read the shared facade later;
           they do not require a reverse runtime service dependency inside Tiers.
         preparation:
@@ -14915,14 +14914,14 @@ services:
       - tiers/index.js
       - tiers/service.js
     notes: >-
-      Boot owns the tier repository and API. Tier data is cached; members also deep-imports the
-      wrapper.
+      Boot owns the tier repository and API. Tier data is read from the database on every call,
+      so every instance serving a site sees the same tiers; members also deep-imports the wrapper.
     contracts:
       exports:
         summary: >-
           Source establishes that CommonJS index and service export the same mutable wrapper
-          instance, with receiver-dependent async init and no shutdown/reset. repository and api
-          are absent before initialization and become public properties. The API exposes async
+          instance, with receiver-dependent async init and no shutdown/reset. api is absent before
+          initialization and becomes a public property. The API exposes async
           browse/read/readDefaultTier/add/edit; browse returns one-page metadata, read returns
           null for a missing valid ID and readDefaultTier can return undefined. API units use
           the separate in-memory repository: they assert edited name, archived status, browse
@@ -14939,8 +14938,8 @@ services:
       construction:
         summary: >-
           The wrapper is constructed at import; init lazily creates TierRepository with Product
-          and DomainEvents, and a slug collaborator calling Product.generateSlug. It awaits
-          loading products with benefits, publishes repository then TiersAPI. This is the only
+          and DomainEvents, and a slug collaborator calling Product.generateSlug, then publishes
+          TiersAPI. It loads no tiers. This is the only
           production construction path found for these two implementations. Deep Tier and event
           classes support that graph; the in-memory tier repository is used by API units, not
           production composition. These wiring and publication claims are source-only; fully
@@ -14996,32 +14995,27 @@ services:
       startup:
         summary: >-
           Source establishes that initServices awaits Stripe, constructs gifts with the tiers
-          wrapper, then awaits tiers.init alongside members.init. Tier loading must complete
-          before that group and boot can finish; members and gifts deliberately retain the
-          wrapper before its API is available. There is no pending-init promise: the guard only
+          wrapper, then awaits tiers.init alongside members.init, which only constructs the
+          repository and API; members and gifts deliberately retain the wrapper before its API is
+          available. There is no pending-init promise: the guard only
           checks an already-published api, so overlapping calls can each load and publish a
-          graph. These ordering and concurrency contracts have no focused test. HTTP fixtures
-          separately call repository.init after inserting fixture rows; that refresh is not
-          evidence that calling the guarded wrapper again reloads tiers.
+          graph. These ordering and concurrency contracts have no focused test.
         sources:
           - core/boot.js
           - core/server/services/tiers/service.js
           - core/server/services/members/members-api/members-api.js
           - core/server/services/gifts/index.ts
-          - test/utils/fixture-utils.js
         tests: []
       lifetime:
         summary: >-
-          Source establishes that successful sequential init calls retain the repository and API
-          without reloading. The repository keeps tiers and an ID set; reads filter that cache
-          and construct new Tier objects, but retain their benefits arrays, Date objects and
-          ObjectIDs. Scalar edits on a read copy are separate until save, while nested mutation
-          can affect cached data. External database changes are not observed until explicit
-          repository.init; save caches its pre-write Tier copy without applying the returned
-          model's normalization or timestamps. Default-tier selection uses the first matching
-          cached row; members' name lookup takes the last. Repository units only assert add/edit
-          call counts, a truthy read and no findOne; they do not establish clone isolation,
-          saved values, reload or concurrent behavior.
+          Source establishes that successful sequential init calls retain the repository and API.
+          The repository keeps no tiers between calls: each read queries products with benefits,
+          filtered and ordered cheapest first in SQL, with ties in id order, and constructs new
+          Tier objects, so external database changes are seen on the next read. Save reads the
+          row to choose add or edit. Default-tier selection uses the first matching row; members'
+          name lookup takes the most recently created tier with exactly that name, by id within
+          the same second. Admin HTTP asserts that a tier changed directly in the database is
+          read back straight away by read and browse.
         sources:
           - core/server/services/tiers/service.js
           - core/server/services/tiers/tier-repository.js
@@ -15030,11 +15024,11 @@ services:
           - core/server/models/product.js
           - core/server/services/members/service.js
         tests:
-          - test/unit/server/services/tiers/tier-repository.test.js
+          - test/e2e-api/admin/tiers.test.js
       configuration:
         summary: >-
-          Tiers itself does not read operator config. Product fields become cached Tier values
-          at load/save. No root hot-reload/reset is provided. Source also establishes
+          Tiers itself does not read operator config. Product fields become Tier values on each
+          read. No root hot-reload/reset is provided. Source also establishes
           Mongo-object filtering, ignored pagination/order options, paid/active default
           selection and falsy price handling: new paid zero prices become 500/5000, while an API
           edit's zero prices retain existing values. Units assert the new-tier zero defaults;
@@ -15050,9 +15044,8 @@ services:
           - test/e2e-api/admin/tiers.test.js
       resources:
         summary: >-
-          Source establishes retained cache/model references and borrowed model/database
-          resources, with no timers, clients, subscriptions or cleanup registered by this root.
-          Tier save awaits Product persistence, updates its cache and dispatches every queued
+          Source establishes borrowed model/database resources, with no timers, clients, subscriptions or cleanup registered by this root.
+          Tier save awaits Product persistence and dispatches every queued
           event without clearing the queue or awaiting handlers. Members PaymentsService owns
           subscribers that create/update Stripe products/prices and their database mappings; it
           retains tier event payload references and has no subscription disposal here.
@@ -15074,12 +15067,10 @@ services:
         tests: []
       failures:
         summary: >-
-          Source establishes propagated repository-load/slug/validation/database failures. A
-          load failure before publication leaves the wrapper retryable. Failed row conversion
-          during repository reload can retain the old store with a cleared/part-filled ID set. A
-          rejected Product write prevents normal cache replacement and event dispatch, but no
-          transaction joins cached tier state, tier persistence, async Stripe work and its
-          mapping writes. Re-saving the same event-bearing Tier dispatches its old events again.
+          Source establishes propagated slug/validation/database failures. A products row that
+          fails Tier validation fails every read that meets it, including every browse. A rejected Product
+          write prevents event dispatch, but no transaction joins tier persistence, async Stripe
+          work and its mapping writes. Re-saving the same event-bearing Tier dispatches its old events again.
           Direct API edit of a missing valid ID dereferences null; malformed IDs and string
           filters reject. Admin HTTP asserts 422 responses/error snapshots for fractional,
           negative and excessive prices; API units only assert some error for free creation. The

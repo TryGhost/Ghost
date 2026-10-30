@@ -74,7 +74,8 @@ export interface MembersRepository {
 // default tier and a tier a row names.
 interface TiersRepository {
   getDefault(): Promise<Tier>;
-  getByName(name: string): Promise<Tier | null>;
+  /** Reads inside the transaction given, as SQLite has one connection for both. */
+  getByName(name: string, options: { transacting: Knex.Transaction }): Promise<Tier | null>;
 }
 
 // Stripe: the external subscription work a row with Stripe data triggers.
@@ -536,7 +537,7 @@ class MembersCSVImporter<Plan> {
         let importTierId;
         if (row.import_tier) {
           if (!tierIdCache.has(row.import_tier)) {
-            const tier = await this._tiers.getByName(row.import_tier);
+            const tier = await this._tiers.getByName(row.import_tier, { transacting: trx });
             tierIdCache.set(row.import_tier, tier ? tier.id.toString() : null);
           }
           importTierId = tierIdCache.get(row.import_tier);

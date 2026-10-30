@@ -1058,10 +1058,6 @@ const getFixtureOps = (toDos) => {
     fixtureOps.push(toDoList[toDo]);
   });
 
-  fixtureOps.push(() => {
-    return require('../../core/server/services/tiers').repository?.init();
-  });
-
   return fixtureOps;
 };
 
