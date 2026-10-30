@@ -156,9 +156,7 @@ export function isValidMemberEmail(email: string, storedEmail?: string): boolean
 /**
  * Message to render under the email field. Gated on `touched` so the empty
  * initial state on the New member screen (or an email cleared briefly during
- * a paste) doesn't render as an error the user hasn't provoked yet. Ember's
- * validator runs on save-attempt for the same reason
- * (`ghost/admin/app/validators/member.js:15`).
+ * a paste) doesn't render as an error the user hasn't provoked yet.
  */
 export function getEmailErrorMessage(
   email: string,

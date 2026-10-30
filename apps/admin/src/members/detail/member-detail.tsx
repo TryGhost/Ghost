@@ -222,11 +222,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     confirmUnloadWhen: activeMutation.isPending || hasUnsavedChanges,
   });
   const emailValid = !!draft && isValidMemberEmail(draft.email, member?.email ?? undefined);
-  // `touched` is set on the email field's first blur. That keeps the New
-  // member screen from painting an "Email is required." error before the
-  // user has done anything, matching Ember's save-time-only validator
-  // (`ghost/admin/app/validators/member.js:15`). Reset below when the
-  // member id or create-mode flag changes so a fresh screen starts clean.
+  // Set on the email field's first blur so a new member screen doesn't open on
+  // "Email is required."; reset when the member id or create mode changes.
   const [emailTouched, setEmailTouched] = React.useState(false);
   React.useEffect(() => {
     setEmailTouched(false);
