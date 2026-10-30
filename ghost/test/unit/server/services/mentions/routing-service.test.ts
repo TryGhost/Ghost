@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import nock from 'nock';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 const ObjectID = require('bson-objectid').default;
 
-const logging = require('@tryghost/logging');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const RoutingService = require('../../../../../core/server/services/mentions/routing-service');
 
 describe('RoutingService', function () {
+  let logging: ReturnType<typeof createLoggingFake>;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+  });
+
   afterEach(function () {
     sinon.restore();
     nock.cleanAll();
@@ -165,6 +171,29 @@ describe('RoutingService', function () {
           new URL('https://website.com/subdir/big-error'),
         );
         assert.equal(result, false);
+      });
+
+      it('Logs and returns false if the HEAD request fails', async function () {
+        const siteUrl = new URL('https://website.com/subdir');
+        const resourceService = {
+          getByURL: sinon.stub(),
+        };
+        const routingService = new RoutingService({
+          logging,
+          siteUrl,
+          resourceService,
+          externalRequest,
+        });
+
+        resourceService.getByURL.resolves({ type: null, id: null });
+
+        nock('https://website.com').head('/subdir/unreachable').replyWithError('socket hang up');
+
+        const result = await routingService.pageExists(
+          new URL('https://website.com/subdir/unreachable'),
+        );
+        assert.equal(result, false);
+        sinon.assert.calledOnce(logging.error);
       });
     });
   });

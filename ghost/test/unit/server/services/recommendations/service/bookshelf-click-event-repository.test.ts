@@ -4,10 +4,15 @@ import {
   ClickEvent,
 } from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
-
-const logging = { info() {}, error() {} };
+import { createLoggingFake } from '../../../../../utils/logging-utils';
 
 describe('BookshelfClickEventRepository', function () {
+  let logging: ReturnType<typeof createLoggingFake>;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+  });
+
   afterEach(function () {
     sinon.restore();
   });
@@ -85,6 +90,7 @@ describe('BookshelfClickEventRepository', function () {
 
     assert.deepEqual(entity, null);
     sinon.assert.calledOnce(captureException);
+    sinon.assert.calledOnce(logging.error);
   });
 
   it('getFieldToColumnMap returns', async function () {
