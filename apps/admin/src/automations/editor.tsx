@@ -4,7 +4,7 @@ import { LimitModalContent } from '@/settings/api';
 import NewAutomation from './new-automation';
 import AutomationStatusDialog from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
-import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
+import AutomationCanvas from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
@@ -135,9 +135,6 @@ const AutomationEditorContent: React.FC<{
     });
   }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
-  const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
-  const isEmailModalDirtyRef = React.useRef(false);
-  const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
   // Keep the saved snapshot separate from the live query result. Later query updates or errors
   // must not redefine the dirty state or overwrite edits made during this editing session.
@@ -493,37 +490,10 @@ const AutomationEditorContent: React.FC<{
     }
   };
 
-  // The dirty email modal claims navigations that change its `emailStep`
-  // query param (closing the modal, back button, leaving the editor) so the
-  // canvas can run its own discard flow instead of the page-level dialog.
-  const {
-    dialogProps: discardDialogProps,
-    interceptedNavigation,
-    bypassNextNavigation,
-  } = useUnsavedChangesGuard({
-    when: hasUnsavedChanges || isEmailModalDirty,
-    confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
-    interceptNavigation: ({ currentLocation, nextLocation }) => {
-      const currentEmailStep = new URLSearchParams(currentLocation.search).get(
-        EMAIL_STEP_QUERY_PARAM,
-      );
-      const nextEmailStep = new URLSearchParams(nextLocation.search).get(EMAIL_STEP_QUERY_PARAM);
-      if (isEmailModalDirtyRef.current && currentEmailStep && currentEmailStep !== nextEmailStep) {
-        isBlockedEmailNavigationLeavingEditorRef.current =
-          currentLocation.pathname !== nextLocation.pathname;
-        return true;
-      }
-
-      isBlockedEmailNavigationLeavingEditorRef.current = false;
-      return false;
-    },
+  const { dialogProps: discardDialogProps, bypassNextNavigation } = useUnsavedChangesGuard({
+    when: hasUnsavedChanges,
+    confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges,
   });
-  const isEmailNavigationBlocked = interceptedNavigation.isBlocked;
-
-  const onEmailDirtyChange = React.useCallback((dirty: boolean) => {
-    isEmailModalDirtyRef.current = dirty;
-    setIsEmailModalDirty(dirty);
-  }, []);
 
   return (
     <div
@@ -570,30 +540,12 @@ const AutomationEditorContent: React.FC<{
                 : 'closed'
         }
         initialTriggerTop={creation?.triggerTop}
-        isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
         savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
         selectedRunId={selectedRunId}
         tierSelection={triggerTierSelection}
         onChange={onDraftChange}
-        onDiscardBlockedEmailNavigation={(closeEmailModal) => {
-          onEmailDirtyChange(false);
-          if (isBlockedEmailNavigationLeavingEditorRef.current) {
-            isBlockedEmailNavigationLeavingEditorRef.current = false;
-            interceptedNavigation.reset();
-            closeEmailModal();
-            return;
-          }
-
-          isBlockedEmailNavigationLeavingEditorRef.current = false;
-          interceptedNavigation.proceed();
-        }}
-        onEmailDirtyChange={onEmailDirtyChange}
-        onKeepEditingAfterBlockedEmailNavigation={() => {
-          isBlockedEmailNavigationLeavingEditorRef.current = false;
-          interceptedNavigation.reset();
-        }}
         onSelectRun={setSelectedRunId}
         onWaitValidityChange={onWaitValidityChange}
       />
@@ -610,7 +562,7 @@ const AutomationEditorContent: React.FC<{
           }
           onOk={() => {
             setLimitError(null);
-            confirmUpgrade(hasUnsavedChanges || isEmailModalDirty, () => {
+            confirmUpgrade(hasUnsavedChanges, () => {
               navigateTo(upgradeRoute(configData?.config));
             });
           }}
