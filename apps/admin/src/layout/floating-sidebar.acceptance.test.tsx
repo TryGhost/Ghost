@@ -106,7 +106,8 @@ describe('Floating sidebar (admin7Design)', () => {
     fakeTags([]);
     const preferences = fakePreferencesApi();
     await renderAdminApp('/tags', floatingSidebar());
-    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    // The docked sidebar shows the links first, until the labs flag turns it floating
+    await expect.poll(sidebarScreen.floatingState).toBe('pinned');
 
     await unpin();
     // Unpinned under the pointer, the panel stays open until it leaves
