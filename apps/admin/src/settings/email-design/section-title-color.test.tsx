@@ -1,5 +1,4 @@
 import WelcomeEmailPreviewContent from '@/settings/email-design/welcome-email-preview-content';
-import assert from 'node:assert/strict';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
 import { DesignTab } from '@/settings/membership/member-emails/welcome-email-customize-modal';
 import { EmailDesignProvider } from '@/settings/email-design/email-design-provider';
@@ -22,7 +21,7 @@ describe('Section title color', function () {
 
     const label = screen.queryByText('Section title color');
 
-    assert.ok(label);
+    expect(label).toBeTruthy();
   });
 
   it('uses the configured section title color in preview headings', function () {
@@ -38,6 +37,6 @@ describe('Section title color', function () {
 
     const heading = screen.getByRole('heading', { name: 'Your welcome email' });
 
-    assert.equal(heading.style.color, 'rgb(34, 85, 170)');
+    expect(heading.style.color).toBe('rgb(34, 85, 170)');
   });
 });
