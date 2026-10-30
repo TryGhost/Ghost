@@ -79,7 +79,8 @@ function splitMembers(body: string) {
     }
   }
   members.push(body.slice(start));
-  return members.map((member) => member.trim()).filter(Boolean);
+  // Members on their own comment lines keep the leading `*`.
+  return members.map((member) => member.replace(/^\s*\*+/gm, '').trim()).filter(Boolean);
 }
 
 function jsdocMember(member: string) {

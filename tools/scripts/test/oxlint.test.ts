@@ -716,8 +716,12 @@ test('flags JSDoc logger shapes in JavaScript but not library or data types', ()
     " * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} other",
     ' * @param {{id: string, error: {code: number; message: string} | null}} event',
     ' * @param {{logging: {error(err: unknown): void}, name: string}} deps',
+    ' * @param {{',
+    ' *   info: Function,',
+    ' *   warn(message: string): void',
+    ' * }} multiline',
     ' */',
-    'function example(logging, other, event, deps) {}',
+    'function example(logging, other, event, deps, multiline) {}',
   ].join('\n');
   const result = lint(source, `${canonicalFile}.js`);
   assert.equal(result.status, 1);
@@ -726,6 +730,7 @@ test('flags JSDoc logger shapes in JavaScript but not library or data types', ()
     [
       [canonicalCode, 2],
       [canonicalCode, 5],
+      [canonicalCode, 6],
     ],
   );
   assert.ok(
