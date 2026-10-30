@@ -1,7 +1,14 @@
-const assert = require('node:assert/strict');
-const FormData = require('form-data');
-const configUtils = require('../utils/config-utils');
-const { agentProvider, fixtureManager } = require('../utils/e2e-framework');
+import assert from 'node:assert/strict';
+import FormData from 'form-data';
+import type supertest from 'supertest';
+import type { GhostServer } from '../../core/server/ghost-server';
+
+// Share the CommonJS instances used by boot and the database test setup.
+const config: typeof import('../../core/shared/config') = require('../../core/shared/config');
+const {
+  agentProvider,
+  fixtureManager,
+}: typeof import('../utils/e2e-framework') = require('../utils/e2e-framework');
 
 const entries = [
   { kind: 'page', slug: 'about', route: '/questions/about-this-site/', title: 'About this site' },
@@ -14,15 +21,15 @@ const entries = [
 ];
 
 describe('llms.txt with data-bound custom routes', function () {
-  let request;
-  let ghostServer;
-  let siteUrl;
+  let request: ReturnType<typeof supertest.agent>;
+  let ghostServer: GhostServer | undefined;
+  let siteUrl: string;
 
   beforeAll(async function () {
     const agents = await agentProvider.getAgentsWithFrontend();
     request = agents.frontendAgent;
     ghostServer = agents.ghostServer;
-    siteUrl = configUtils.config.get('url').replace(/\/$/, '');
+    siteUrl = config.get('url').replace(/\/$/, '');
 
     await fixtureManager.init();
     await agents.adminAgent.loginAsOwner();
@@ -73,7 +80,9 @@ taxonomies:
       const link = line.match(/\]\((https?:\/\/[^)]+)\)/);
       assert.ok(link, `expected an absolute Markdown URL for the ${kind}`);
 
-      const markdownPath = new URL(link[1]).pathname;
+      const markdownUrl = new URL(link[1]);
+      assert.equal(markdownUrl.origin, new URL(siteUrl).origin);
+      const markdownPath = markdownUrl.pathname;
       for (const query of ['', '?source=llms']) {
         const res = await request
           .get(`${markdownPath}${query}`)
