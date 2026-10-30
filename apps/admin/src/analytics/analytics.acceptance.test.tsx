@@ -442,23 +442,24 @@ describe('Analytics newsletters', () => {
       .toHaveTextContent('Weekly Digest Issue #1');
   });
 
-  it('averages every send in the period, not only the oldest 20', async () => {
+  it('charts the latest 20 sends in the period, oldest first', async () => {
     seedAnalyticsWorld();
     fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
     fakeAdminStats.newsletterSubscribers();
-    const sends = Array.from({ length: 125 }, (_, index) => ({
+    const sends = Array.from({ length: 25 }, (_, index) => ({
       post_id: String(index).padStart(24, '0'),
       post_title: `Issue ${index}`,
-      send_date: `${daysAgo(1)}T10:00:00.000Z`,
-      sent_to: 10,
-      total_opens: index < 25 ? 0 : 10,
-      open_rate: index < 25 ? 0 : 1,
+      send_date: `${daysAgo(25 - index)}T10:00:00.000Z`,
+      sent_to: 100,
+      total_opens: index * 4,
+      open_rate: (index * 4) / 100,
     }));
     fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, ({ url }) => {
-      const limit = Number(new URL(url).searchParams.get('limit') ?? 20);
-      return { stats: sends.slice(0, limit), meta: {} };
+      const params = new URL(url).searchParams;
+      const ordered = params.get('order') === 'date desc' ? [...sends].reverse() : sends;
+      return { stats: ordered.slice(0, Number(params.get('limit') ?? 20)), meta: {} };
     });
-    const clicksApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
       const postIds = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
       const stats = sends
         .filter((send) => postIds.includes(send.post_id))
@@ -474,15 +475,18 @@ describe('Analytics newsletters', () => {
 
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
-      .toHaveTextContent('80%');
+      .toHaveTextContent('58%');
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
-      .toHaveTextContent('80%');
-    const batchSizes = clicksApi.requests.map(
-      ({ url }) => new URL(url).searchParams.get('post_ids')?.split(',').length ?? 0,
-    );
-    expect(batchSizes).toEqual(expect.arrayContaining([100, 25]));
-    expect(batchSizes.every((size) => size <= 100)).toBe(true);
+      .toHaveTextContent('58%');
+
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    const bars = () =>
+      analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle');
+    await expect.poll(() => bars().length).toBe(20);
+    const heights = [...bars()].map((bar) => bar.getBoundingClientRect().height);
+    expect(heights).toEqual([...heights].sort((a, b) => a - b));
+    expect(heights[0]).toBeLessThan(heights[19]);
   });
 
   it('shows the empty state on every newsletter card when none were sent', async () => {

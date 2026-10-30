@@ -42,7 +42,6 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import {
-  useAllNewsletterStatsWithRange,
   useNewsletterStatsWithRangeSplit,
   useSubscriberCountWithRange,
 } from '@/analytics/hooks/use-newsletter-stats-with-range';
@@ -318,12 +317,15 @@ const Newsletters: React.FC = () => {
       shouldFetchStats || false,
     );
 
+  // Get the latest 20 sends with click data to check if any newsletters were sent in the time period
+  // and to calculate averages
   const {
     data: newsletterStatsData,
     isLoading: isNewsletterStatsLoading,
     isClicksLoading,
-  } = useAllNewsletterStatsWithRange(
+  } = useNewsletterStatsWithRangeSplit(
     range,
+    'date desc',
     selectedNewsletterId || undefined,
     shouldFetchStats || false,
   );
@@ -411,13 +413,13 @@ const Newsletters: React.FC = () => {
     return values;
   }, [subscriberStatsData, range]);
 
-  // Create avgsData from newsletter stats for the bar charts
+  // Create avgsData from newsletter stats for the bar charts, oldest send first
   const avgsData: AvgsDataItem[] = useMemo(() => {
     if (!newsletterStatsData?.stats) {
       return [];
     }
 
-    return newsletterStatsData.stats.map((stat) => ({
+    return [...newsletterStatsData.stats].reverse().map((stat) => ({
       post_id: stat.post_id,
       post_title: stat.post_title,
       send_date: stat.send_date,

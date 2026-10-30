@@ -1,24 +1,13 @@
 import {
-  type NewsletterBasicStatsResponseType,
-  type NewsletterClickStatItem,
-  type NewsletterClickStatsResponseType,
   type NewsletterStatsResponseType,
-  newsletterBasicStatsDataType,
-  newsletterClickStatsDataType,
   useNewsletterBasicStats,
   useNewsletterClickStats,
   useNewsletterStats,
   useSubscriberCount,
 } from '@tryghost/admin-x-framework/api/stats';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
-import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
-import { useEffect, useMemo } from 'react';
-import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useQuery } from '@tanstack/react-query';
-
-const ALL_STATS_INITIAL_LIMIT = 1000;
-const CLICK_STATS_BATCH_SIZE = 100;
+import { useMemo } from 'react';
 
 /**
  * Represents the possible fields to order top newsletters by.
@@ -236,29 +225,6 @@ export const useNewsletterClickStatsWithRange = (
   return realResult;
 };
 
-const mergeClickStats = (
-  basicStats: NewsletterBasicStatsResponseType | undefined,
-  clickStats: NewsletterClickStatItem[] = [],
-): NewsletterStatsResponseType | undefined => {
-  if (!basicStats?.stats) {
-    return undefined;
-  }
-
-  const clickStatsMap = new Map(clickStats.map((clickStat) => [clickStat.post_id, clickStat]));
-
-  return {
-    ...basicStats,
-    stats: basicStats.stats.map((basicStat) => {
-      const clickData = clickStatsMap.get(basicStat.post_id);
-      return {
-        ...basicStat,
-        total_clicks: clickData?.total_clicks || 0,
-        click_rate: clickData?.click_rate || 0,
-      };
-    }),
-  };
-};
-
 /**
  * Combined hook to fetch Newsletter Stats using split endpoints for better performance
  * This fetches basic stats immediately and click stats in parallel
@@ -304,10 +270,37 @@ export const useNewsletterStatsWithRangeSplit = (
     shouldFetch && postIds.length > 0,
   );
 
-  const mergedData = useMemo(
-    () => mergeClickStats(basicStatsResult.data, clickStatsResult.data?.stats),
-    [basicStatsResult.data, clickStatsResult.data],
-  );
+  // Merge the data
+  const mergedData = useMemo(() => {
+    if (!basicStatsResult.data?.stats) {
+      return undefined;
+    }
+
+    const basicStats = basicStatsResult.data.stats;
+    const clickStats = clickStatsResult.data?.stats || [];
+
+    // Create a map of click data by post_id for fast lookup
+    type ClickStat = (typeof clickStats)[number];
+    const clickStatsMap = new Map<ClickStat['post_id'], ClickStat>();
+    clickStats.forEach((clickStat) => {
+      clickStatsMap.set(clickStat.post_id, clickStat);
+    });
+
+    // Merge basic stats with click stats
+    const mergedStats = basicStats.map((basicStat) => {
+      const clickData = clickStatsMap.get(basicStat.post_id);
+      return {
+        ...basicStat,
+        total_clicks: clickData?.total_clicks || 0,
+        click_rate: clickData?.click_rate || 0,
+      };
+    });
+
+    return {
+      ...basicStatsResult.data,
+      stats: mergedStats,
+    };
+  }, [basicStatsResult.data, clickStatsResult.data]);
 
   return {
     data: mergedData,
@@ -319,97 +312,5 @@ export const useNewsletterStatsWithRangeSplit = (
       void basicStatsResult.refetch();
       void clickStatsResult.refetch();
     },
-  };
-};
-
-/**
- * Like useNewsletterStatsWithRangeSplit, but returns every send in the range (oldest first)
- * instead of stopping at the endpoint's default limit of 20.
- */
-export const useAllNewsletterStatsWithRange = (
-  range: number,
-  newsletterId?: string,
-  shouldFetch = true,
-) => {
-  const fetchApi = useFetchApi();
-  const handleError = useHandleError();
-  const { startDate, endDate } = useMemo(() => getRangeDates(range), [range]);
-
-  const searchParams = useMemo(() => {
-    const params: Record<string, string> = {
-      date_from: formatQueryDate(startDate),
-      date_to: formatQueryDate(endDate),
-      order: 'date asc',
-    };
-
-    if (newsletterId) {
-      params.newsletter_id = newsletterId;
-    }
-
-    return params;
-  }, [startDate, endDate, newsletterId]);
-
-  const basicStatsResult = useQuery({
-    queryKey: [newsletterBasicStatsDataType, 'all', searchParams],
-    enabled: shouldFetch,
-    queryFn: async ({ signal }) => {
-      // The endpoint has no pagination; grow the limit until a response comes back short.
-      for (let limit = ALL_STATS_INITIAL_LIMIT; ; limit *= 2) {
-        signal.throwIfAborted();
-        const data = await fetchApi<NewsletterBasicStatsResponseType>(
-          apiUrl('/stats/newsletter-basic-stats/', { ...searchParams, limit: String(limit) }),
-        );
-        if (data.stats.length < limit) {
-          return data;
-        }
-      }
-    },
-  });
-
-  const postIds = useMemo(
-    () => basicStatsResult.data?.stats.map((stat) => stat.post_id) ?? [],
-    [basicStatsResult.data],
-  );
-
-  const clickStatsResult = useQuery({
-    queryKey: [newsletterClickStatsDataType, 'all', newsletterId, postIds],
-    enabled: shouldFetch && postIds.length > 0,
-    queryFn: async () => {
-      // Batched so the post_ids query string stays within URL length limits.
-      const batches = Array.from(
-        { length: Math.ceil(postIds.length / CLICK_STATS_BATCH_SIZE) },
-        (_, index) =>
-          postIds.slice(index * CLICK_STATS_BATCH_SIZE, (index + 1) * CLICK_STATS_BATCH_SIZE),
-      );
-      const responses = await Promise.all(
-        batches.map((batch) =>
-          fetchApi<NewsletterClickStatsResponseType>(
-            apiUrl('/stats/newsletter-click-stats/', {
-              ...(newsletterId && { newsletter_id: newsletterId }),
-              post_ids: batch.join(','),
-            }),
-          ),
-        ),
-      );
-      return responses.flatMap((response) => response.stats);
-    },
-  });
-
-  const error = basicStatsResult.error || clickStatsResult.error;
-  useEffect(() => {
-    if (error) {
-      handleError(error);
-    }
-  }, [handleError, error]);
-
-  const data = useMemo(
-    () => mergeClickStats(basicStatsResult.data, clickStatsResult.data),
-    [basicStatsResult.data, clickStatsResult.data],
-  );
-
-  return {
-    data,
-    isLoading: basicStatsResult.isLoading,
-    isClicksLoading: clickStatsResult.isLoading,
   };
 };
