@@ -116,7 +116,7 @@ export function EmailRecipientsOptions({
       tiersError ? undefined : tiersData,
       labelsError ? undefined : labelsData,
     );
-    // A single paid tier adds nothing to a paid/free split, so Ember hides it.
+    // A single paid tier adds nothing to a paid/free split, so it is hidden.
     const tierOptions =
       tiers.length > 1
         ? [...tiers]

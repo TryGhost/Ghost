@@ -3,8 +3,6 @@ import { hasAdminAccess, isEditorUser } from '@tryghost/admin-x-framework/api/us
 /**
  * Whether the current user may share a gift link for this post.
  *
- * Ported from Ember's `utils/gift-link.js`.
- *
  * Two halves: a user senior enough to hand out access, and a post that
  * actually withholds it. A public post has nothing to gift.
  *
@@ -31,10 +29,8 @@ export function canCopyGiftLink({
     return false;
   }
 
-  // Ember's `isAdmin || isEitherEditor`. Two traps: `isAdmin` there means
-  // Owner *or* Administrator, which is `hasAdminAccess` here and not
-  // `isAdminUser`; and `isEditorUser` already covers Super Editor, so
-  // Ember's `or('isEditor', 'isSuperEditor')` is a single call.
+  // Owner or Administrator (`hasAdminAccess`, not `isAdminUser`), or Editor;
+  // `isEditorUser` already covers Super Editor.
   const canManage = hasAdminAccess(user) || isEditorUser(user);
 
   const isGated =

@@ -309,7 +309,7 @@ describe('Post editor', () => {
     await expect.element(excerpt).toHaveValue('A short summary');
     const element = excerpt.element();
     const style = getComputedStyle(element);
-    // Ember's .gh-editor-excerpt: 2rem at Admin's 10px rem, on a 1.5em line
+    // 2rem at Admin's 10px rem, on a 1.5em line
     expect(style.fontSize).toBe('20px');
     expect(style.fontWeight).toBe('440');
     const lineHeight = parseFloat(style.lineHeight);

@@ -538,8 +538,7 @@ describe('Post settings authors', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.publishButton().click();
 
-    // Refused as Ember refuses it: the status line names the rule, and the
-    // panel opens on the field.
+    // Refused: the status line names the rule, and the panel opens on the field.
     await expect
       .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');

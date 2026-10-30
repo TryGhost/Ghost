@@ -38,9 +38,8 @@ interface TagImageFieldProps {
 }
 
 /**
- * One image slot on the tag form (tag image, X image, Facebook image),
- * standing in for Ember's `GhImageUploaderWithPreview`: an upload dropzone
- * when empty, a preview with edit/remove actions when set.
+ * One image slot on the tag form (tag image, X image, Facebook image): an
+ * upload dropzone when empty, a preview with edit/remove actions when set.
  */
 const TagImageField: React.FC<TagImageFieldProps> = ({
   id,
