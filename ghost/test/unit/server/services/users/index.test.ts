@@ -297,8 +297,11 @@ describe('Users service', function () {
         UserNotFoundError,
       );
 
+      sinon.assert.calledOnce(fakes.User.findOne);
       assert.deepEqual(calls, []);
       sinon.assert.notCalled(fakes.Tag.findOne);
+      sinon.assert.notCalled(fakes.Tag.add);
+      sinon.assert.notCalled(fakes.Post.addActions);
       sinon.assert.notCalled(dispatch);
     });
 
