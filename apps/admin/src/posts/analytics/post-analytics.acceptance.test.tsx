@@ -922,6 +922,67 @@ describe('Post analytics growth', () => {
 });
 
 describe('Post analytics newsletter', () => {
+  it('shows an unavailable click average and retries without losing the post statistics', async () => {
+    seedPostAnalyticsWorld();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), { posts: [seededPost()] });
+    fakeAdminStats.newsletterBasic([
+      {
+        post_id: POST_ID,
+        post_title: 'Attack of the Clones',
+        send_date: `${daysAgo(10)}T10:00:00.000Z`,
+        sent_to: 1000,
+        total_opens: 400,
+      },
+    ]);
+    let clicksAvailable = false;
+    let releaseInitial = () => {};
+    let releaseRetry = () => {};
+    const initialReleased = new Promise<void>((resolve) => {
+      releaseInitial = resolve;
+    });
+    const retryReleased = new Promise<void>((resolve) => {
+      releaseRetry = resolve;
+    });
+    onTestFinished(() => {
+      releaseInitial();
+      releaseRetry();
+    });
+    const clickStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, async () => {
+      if (!clicksAvailable) {
+        await initialReleased;
+        return Response.json({ errors: [{ message: 'Click stats unavailable' }] }, { status: 500 });
+      }
+      await retryReleased;
+      return { stats: [{ post_id: POST_ID, total_clicks: 200, click_rate: 0.2 }] };
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}/newsletter`, {
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText('Loading average click rate...')).toBeVisible();
+    await expect.element(page.getByText('400', { exact: true }).first()).toBeVisible();
+    await expect.element(page.getByText('60', { exact: true }).first()).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'example.com/subscribe' })).toBeVisible();
+
+    releaseInitial();
+    await expect.element(page.getByText('Unable to load average click rate.')).toBeVisible();
+    await expect.element(page.getByText('Unavailable', { exact: true })).toBeInTheDocument();
+
+    clicksAvailable = true;
+    await page.getByRole('button', { name: 'Retry click statistics' }).click();
+    await expect.element(page.getByText('Loading average click rate...')).toBeVisible();
+    await expect.element(page.getByText('400', { exact: true }).first()).toBeVisible();
+    await expect.element(page.getByText('60', { exact: true }).first()).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'example.com/subscribe' })).toBeVisible();
+    await expect
+      .element(page.getByText('Unable to load average click rate.'))
+      .not.toBeInTheDocument();
+    releaseRetry();
+    await expect.element(page.getByText('20%', { exact: true })).toBeInTheDocument();
+    await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(1);
+  });
+
   it('renders the seeded email performance', async () => {
     seedPostAnalyticsWorld();
     fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), { posts: [seededPost()] });

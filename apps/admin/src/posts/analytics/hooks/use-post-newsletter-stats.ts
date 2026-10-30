@@ -5,6 +5,7 @@ import {
   useNewsletterClickStats,
 } from '@tryghost/admin-x-framework/api/stats';
 import { useMemo } from 'react';
+import { useEmailTrackClicks } from '@tryghost/admin-x-framework/api/settings';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { usePostTopLinks } from '@/posts/analytics/hooks/use-post-top-links';
 
@@ -12,6 +13,7 @@ export const usePostNewsletterStats = ({
   pauseLinkPolling = false,
 }: { pauseLinkPolling?: boolean } = {}) => {
   const { post, isPostLoading } = usePostAnalytics();
+  const emailTrackClicksEnabled = useEmailTrackClicks();
 
   const stats = useMemo(() => {
     if (!post) {
@@ -55,7 +57,13 @@ export const usePostNewsletterStats = ({
   }, [basicStatsResponse]);
 
   // 2. Click stats (potentially slower) - fetch separately
-  const { data: clickStatsResponse, isLoading: isClickStatsLoading } = useNewsletterClickStats({
+  const shouldFetchClickStats = !!newsletterId && postIds.length > 0 && emailTrackClicksEnabled === true;
+  const {
+    data: clickStatsResponse,
+    isFetching: isClickStatsFetching,
+    isError: isClickStatsError,
+    refetch: refetchClickStats,
+  } = useNewsletterClickStats({
     searchParams:
       newsletterId && postIds.length > 0
         ? {
@@ -63,8 +71,9 @@ export const usePostNewsletterStats = ({
             post_ids: postIds.join(','),
           }
         : {},
-    enabled: !!newsletterId && postIds.length > 0,
+    enabled: shouldFetchClickStats,
   });
+  const isClickStatsLoading = shouldFetchClickStats && isClickStatsFetching;
 
   // Merge basic stats with click stats
   const newsletterStatsResponse = useMemo(() => {
@@ -96,8 +105,6 @@ export const usePostNewsletterStats = ({
       stats: mergedStats,
     };
   }, [basicStatsResponse, clickStatsResponse]);
-
-  const isNewsletterStatsLoading = isBasicStatsLoading || isClickStatsLoading;
 
   // Get the top links from this post
   const {
@@ -141,15 +148,17 @@ export const usePostNewsletterStats = ({
   const averageStats = useMemo(() => {
     return {
       openedRate: averages.openRate,
-      clickedRate: averages.clickRate,
+      clickedRate: isClickStatsError || isClickStatsLoading ? null : averages.clickRate,
     };
-  }, [averages]);
+  }, [averages, isClickStatsError, isClickStatsLoading]);
 
   return {
     stats,
     averageStats,
+    isClickStatsLoading,
+    refetchClickStats,
     topLinks,
     refetchTopLinks,
-    isLoading: isPostLoading || isNewsletterStatsLoading || isClicksLoading,
+    isLoading: isPostLoading || isBasicStatsLoading || isClicksLoading,
   };
 };
