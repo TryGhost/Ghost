@@ -14,7 +14,7 @@ module.exports = class MentionSendingService {
   /**
    * @param {object} deps
    * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
-   * @param {import('@tryghost/logging')} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor({
     discoveryService,

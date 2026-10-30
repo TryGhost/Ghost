@@ -17,7 +17,7 @@ const debug = require('@tryghost/debug')('boot');
  */
 class BootLogger {
   /**
-   * @param {{info: (message: string) => unknown}} logging
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} logging
    * @param {{metric: (name: string, time: number) => unknown}} metrics
    * @param {number} startTime
    */
