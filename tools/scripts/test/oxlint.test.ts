@@ -730,8 +730,12 @@ test('flags JSDoc logger shapes in JavaScript but not library or data types', ()
     ' *   info(): void',
     ' *   get(): string',
     ' * }} mixed',
+    ' * @param {{',
+    ' *   warn(): void',
+    ' *   import(file: string): void',
+    ' * }} importer',
     ' */',
-    'function example(logging, other, event, deps, multiline, newlines, mixed) {}',
+    'function example(logging, other, event, deps, multiline, newlines, mixed, importer) {}',
   ].join('\n');
   const result = lint(source, `${canonicalFile}.js`);
   assert.equal(result.status, 1);

@@ -67,8 +67,9 @@ function closing(text: string, start: number) {
 }
 
 // A line that opens with a member name, after any comment-line `*`. An
-// `import('...')` type there continues the previous member's type.
-const memberStart = /^\s*\**\s*(?!import\s*\()(?:readonly\s+)?[A-Za-z_$][\w$]*\??\s*[:(]/;
+// `import('...')` type there continues the previous member's type; a method
+// named `import` does not.
+const memberStart = /^\s*\**\s*(?!import\s*\(\s*['"`])(?:readonly\s+)?[A-Za-z_$][\w$]*\??\s*[:(]/;
 
 function splitMembers(body: string) {
   const members: string[] = [];
